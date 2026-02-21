@@ -7,6 +7,7 @@
         // ═══════════════════════════════════════════════════════
         let authToken = localStorage.getItem('casinoToken');
         let currentUser = null;
+        const LOCAL_TOKEN_PREFIX = 'local-';
 
         // Restore user from localStorage on load
         (function restoreUser() {
@@ -16,42 +17,218 @@
             }
         })();
 
-        async function login(username, password) {
-            // Local auth: check registered users in localStorage
+        function isServerAuthToken(token = authToken) {
+            return typeof token === 'string' && token.length > 0 && !token.startsWith(LOCAL_TOKEN_PREFIX);
+        }
+
+        function shouldFallbackToLocalAuth(error) {
+            if (!error) return true;
+            if (error.isNetworkError) return true;
+            if (error.status === 404 || error.status === 405) return true;
+            return false;
+        }
+
+        function clearAuthSession() {
+            authToken = null;
+            localStorage.removeItem('casinoToken');
+            currentUser = null;
+            localStorage.removeItem('casinoUser');
+        }
+
+        function applyAuthSession(token, user) {
+            authToken = token;
+            localStorage.setItem('casinoToken', token);
+            currentUser = user ? {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                is_admin: Boolean(user.is_admin),
+            } : null;
+            localStorage.setItem('casinoUser', JSON.stringify(currentUser));
+
+            const userBalance = Number(user?.balance);
+            if (Number.isFinite(userBalance)) {
+                balance = userBalance;
+                updateBalance();
+                saveBalance();
+            }
+        }
+
+        async function apiRequest(path, options = {}) {
+            const method = options.method || 'GET';
+            const body = options.body;
+            const requireAuth = Boolean(options.requireAuth);
+            const headers = { Accept: 'application/json' };
+            if (body !== undefined) {
+                headers['Content-Type'] = 'application/json';
+            }
+            if (requireAuth && authToken) {
+                headers.Authorization = `Bearer ${authToken}`;
+            }
+
+            let response;
+            try {
+                response = await fetch(path, {
+                    method,
+                    headers,
+                    body: body !== undefined ? JSON.stringify(body) : undefined
+                });
+            } catch (error) {
+                const networkError = new Error('Could not reach the casino server.');
+                networkError.isNetworkError = true;
+                networkError.cause = error;
+                throw networkError;
+            }
+
+            let payload = null;
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                try {
+                    payload = await response.json();
+                } catch {
+                    payload = null;
+                }
+            } else {
+                const text = await response.text();
+                if (text) payload = { error: text };
+            }
+
+            if (!response.ok) {
+                const message = payload?.error || payload?.message || `Request failed (${response.status})`;
+                const requestError = new Error(message);
+                requestError.status = response.status;
+                requestError.payload = payload;
+                throw requestError;
+            }
+
+            return payload || {};
+        }
+
+        async function syncServerSession() {
+            if (!isServerAuthToken()) return;
+
+            try {
+                const me = await apiRequest('/api/auth/me', { requireAuth: true });
+                if (me && me.user) {
+                    currentUser = {
+                        id: me.user.id,
+                        username: me.user.username,
+                        email: me.user.email,
+                        is_admin: Boolean(me.user.is_admin),
+                    };
+                    localStorage.setItem('casinoUser', JSON.stringify(currentUser));
+                }
+
+                const balanceRes = await apiRequest('/api/balance', { requireAuth: true });
+                const serverBalance = Number(balanceRes.balance);
+                if (Number.isFinite(serverBalance)) {
+                    balance = serverBalance;
+                    updateBalance();
+                    saveBalance();
+                }
+            } catch (error) {
+                if (error.status === 401 || error.status === 403) {
+                    clearAuthSession();
+                    updateAuthButton();
+                    showToast('Session expired. Please log in again.', 'info');
+                } else {
+                    console.warn('Unable to sync server session:', error);
+                }
+            }
+        }
+
+        function loginWithLocalFallback(username, password) {
             const users = JSON.parse(localStorage.getItem('casinoUsers') || '{}');
             const user = users[username.toLowerCase()];
             if (!user) throw new Error('User not found. Please register first.');
             if (user.password !== password) throw new Error('Incorrect password.');
-            authToken = 'local-' + Date.now();
-            localStorage.setItem('casinoToken', authToken);
-            currentUser = { username: user.username, email: user.email };
-            localStorage.setItem('casinoUser', JSON.stringify(currentUser));
+
+            applyAuthSession(`${LOCAL_TOKEN_PREFIX}${Date.now()}`, {
+                username: user.username,
+                email: user.email,
+                balance,
+            });
+            return user;
+        }
+
+        function registerWithLocalFallback(username, email, password) {
+            const users = JSON.parse(localStorage.getItem('casinoUsers') || '{}');
+            const key = username.toLowerCase();
+            if (users[key]) throw new Error('Username already taken.');
+            if (username.length < 3 || username.length > 20) throw new Error('Username must be 3-20 characters.');
+            if (password.length < 6) throw new Error('Password must be at least 6 characters.');
+
+            users[key] = { username, email, password };
+            localStorage.setItem('casinoUsers', JSON.stringify(users));
+            applyAuthSession(`${LOCAL_TOKEN_PREFIX}${Date.now()}`, {
+                username,
+                email,
+                balance,
+            });
+        }
+
+        async function login(username, password) {
+            let serverError = null;
+            try {
+                const response = await apiRequest('/api/auth/login', {
+                    method: 'POST',
+                    body: { username, password },
+                    requireAuth: false
+                });
+                if (!response.token || !response.user) {
+                    throw new Error('Invalid login response from server.');
+                }
+                applyAuthSession(response.token, response.user);
+                updateAuthButton();
+                hideAuthModal();
+                showToast(`Welcome back, ${response.user.username}!`, 'success');
+                return;
+            } catch (error) {
+                serverError = error;
+            }
+
+            if (!shouldFallbackToLocalAuth(serverError)) {
+                throw serverError;
+            }
+
+            const user = loginWithLocalFallback(username, password);
             updateAuthButton();
             hideAuthModal();
             showToast(`Welcome back, ${user.username}!`, 'success');
         }
 
         async function register(username, email, password) {
-            const users = JSON.parse(localStorage.getItem('casinoUsers') || '{}');
-            const key = username.toLowerCase();
-            if (users[key]) throw new Error('Username already taken.');
-            if (username.length < 3 || username.length > 20) throw new Error('Username must be 3-20 characters.');
-            users[key] = { username, email, password };
-            localStorage.setItem('casinoUsers', JSON.stringify(users));
-            authToken = 'local-' + Date.now();
-            localStorage.setItem('casinoToken', authToken);
-            currentUser = { username, email };
-            localStorage.setItem('casinoUser', JSON.stringify(currentUser));
+            let serverError = null;
+            try {
+                const response = await apiRequest('/api/auth/register', {
+                    method: 'POST',
+                    body: { username, email, password },
+                    requireAuth: false
+                });
+                if (!response.token || !response.user) {
+                    throw new Error('Invalid registration response from server.');
+                }
+                applyAuthSession(response.token, response.user);
+                updateAuthButton();
+                hideAuthModal();
+                showToast(`Welcome, ${response.user.username}! Your account has been created.`, 'success');
+                return;
+            } catch (error) {
+                serverError = error;
+            }
+
+            if (!shouldFallbackToLocalAuth(serverError)) {
+                throw serverError;
+            }
+
+            registerWithLocalFallback(username, email, password);
             updateAuthButton();
             hideAuthModal();
             showToast(`Welcome, ${username}! Your account has been created.`, 'success');
         }
 
         function logout() {
-            authToken = null;
-            localStorage.removeItem('casinoToken');
-            currentUser = null;
-            localStorage.removeItem('casinoUser');
+            clearAuthSession();
             updateAuthButton();
             showToast('Logged out successfully.', 'info');
         }
@@ -2289,6 +2466,32 @@
             }
         }
 
+        function stopReelScrollingImmediately() {
+            reelStripData.forEach(data => {
+                data.stopped = true;
+                if (data.animFrameId) {
+                    cancelAnimationFrame(data.animFrameId);
+                    data.animFrameId = null;
+                }
+                if (data.stripEl) {
+                    data.stripEl.classList.remove('spinning', 'decelerating', 'bouncing');
+                }
+                if (data.colEl) {
+                    data.colEl.classList.remove('spinning');
+                }
+            });
+        }
+
+        function canUseServerSpin(game) {
+            if (!game) return false;
+            if (!isServerAuthToken()) return false;
+            if (freeSpinsActive) return false;
+            if (forcedSpinQueue.length > 0) return false;
+            if (deterministicRng) return false;
+            const freeSpinCount = Number(game.freeSpinsCount || 0);
+            return freeSpinCount <= 0;
+        }
+
         async function spin() {
             if (spinning || !currentGame) return;
             if (freeSpinsActive) return;
@@ -2317,15 +2520,48 @@
 
             const spinGame = currentGame;
             const cols = getGridCols(spinGame);
+            const useServerSpin = canUseServerSpin(spinGame);
 
             // Start reel strip scrolling animation (real rolling)
             startReelScrolling(turboMode);
 
-            // Generate spin result & deduct bet
-            const finalGrid = generateSpinResult(spinGame);
-            balance -= currentBet;
-            updateBalance();
-            saveBalance();
+            let finalGrid = null;
+            let serverResult = null;
+
+            try {
+                if (useServerSpin) {
+                    serverResult = await apiRequest('/api/spin', {
+                        method: 'POST',
+                        body: { gameId: spinGame.id, betAmount: currentBet },
+                        requireAuth: true
+                    });
+                    if (!serverResult || !Array.isArray(serverResult.grid)) {
+                        throw new Error('Invalid spin response from server.');
+                    }
+                    finalGrid = serverResult.grid;
+                    const serverBalance = Number(serverResult.balance);
+                    if (Number.isFinite(serverBalance)) {
+                        balance = serverBalance;
+                        updateBalance();
+                        saveBalance();
+                    }
+                } else {
+                    finalGrid = generateSpinResult(spinGame);
+                    balance -= currentBet;
+                    updateBalance();
+                    saveBalance();
+                }
+            } catch (error) {
+                stopReelScrollingImmediately();
+                spinning = false;
+                const ra = document.querySelector('.slot-reel-area');
+                if (ra) ra.classList.remove('spinning-active');
+                spinBtn.disabled = currentBet > balance;
+                spinBtn.textContent = '';
+                refreshBetControls();
+                showMessage(error?.message || 'Spin failed. Please try again.', 'lose');
+                return;
+            }
 
             // Stagger stop times per column
             const stopDelays = calculateStopDelays(cols, turboMode, false);
@@ -2334,7 +2570,11 @@
             stopDelays.forEach((delay, colIdx) => {
                 setTimeout(() => {
                     animateReelStop(colIdx, finalGrid[colIdx], null, cols, finalGrid, spinGame, () => {
-                        checkWin(flattenGrid(finalGrid), spinGame);
+                        if (serverResult) {
+                            displayServerWinResult(serverResult, spinGame);
+                        } else {
+                            checkWin(flattenGrid(finalGrid), spinGame);
+                        }
                         spinning = false;
                         const ra = document.querySelector('.slot-reel-area');
                         if (ra) ra.classList.remove('spinning-active');
@@ -2348,7 +2588,9 @@
 
             // Update local stats
             stats.totalSpins++;
-            stats.totalWagered += currentBet;
+            if (!serverResult || !serverResult.usedFreeSpin) {
+                stats.totalWagered += currentBet;
+            }
             if (!stats.gamesPlayed[spinGame.id]) stats.gamesPlayed[spinGame.id] = 0;
             stats.gamesPlayed[spinGame.id]++;
             saveStats();
@@ -2381,8 +2623,12 @@
             }
 
             if (winAmount > 0) {
-                balance = result.balance;
+                const serverBalance = Number(result.balance);
+                if (Number.isFinite(serverBalance)) {
+                    balance = serverBalance;
+                }
                 updateBalance();
+                saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 updateSlotWinDisplay(winAmount);
 
@@ -2393,6 +2639,11 @@
                     playSound('win');
                 }
                 showMessage(message, 'win');
+
+                stats.totalWon += winAmount;
+                if (winAmount > stats.biggestWin) stats.biggestWin = winAmount;
+                saveStats();
+                updateStatsSummary();
 
                 if (typeof awardXP === 'function') awardXP(winAmount >= currentBet * 10 ? 25 : 10);
 
@@ -4178,6 +4429,7 @@
             updateXPDisplay();
             startWinTicker();
             updateAuthButton();
+            await syncServerSession();
 
             // Show daily bonus if not claimed today
             checkDailyBonusReset();
