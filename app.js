@@ -1078,6 +1078,12 @@
             const speed = turbo ? REEL_SPIN_PX_PER_SEC_TURBO : REEL_SPIN_PX_PER_SEC;
             const game = currentGame;
 
+            // Clear all win/wild/scatter highlights from the previous spin
+            clearReelAnimations(getAllCells());
+            // Also clear the reel-area pulse that lingers after big wins
+            const reelArea = document.querySelector('.slot-reel-area');
+            if (reelArea) reelArea.classList.remove('big-win-pulse');
+
             reelStripData.forEach((data, colIdx) => {
                 data.stopped = false;
                 data.stripEl.classList.add('spinning');
@@ -3677,6 +3683,9 @@
             if (spinning) return;
             spinning = true;
 
+            // Clear win highlights before respinning
+            clearReelAnimations(getAllCells());
+
             const data = reelStripData[reelIndex];
             const newSymbol = getRandomSymbol();
             const newSymbols = [...currentSymbols];
@@ -3733,6 +3742,9 @@
         function triggerExpandingWildRespin(currentSymbols, game) {
             if (spinning) return;
             spinning = true;
+
+            // Clear win highlights before expanding wild respin
+            clearReelAnimations(getAllCells());
 
             const cols = getGridCols(game);
             const respinIndices = [];
