@@ -1406,38 +1406,95 @@
             border-radius: 0;
         }
 
-        /* Pass 2: Reel cell animations */
+        /* Pass 2: Enhanced Reel cell animations with progressive blur and deceleration */
         .reel-scrolling {
-            animation: reelScroll 0.08s linear infinite;
+            animation: reelScroll 0.06s linear infinite !important;
+            will-change: transform, filter;
         }
 
         @keyframes reelScroll {
-            0% { transform: translateY(0); filter: blur(0px); }
-            25% { filter: blur(3px); }
-            50% { transform: translateY(-10px); filter: blur(4px); }
-            75% { filter: blur(3px); }
-            100% { transform: translateY(0); filter: blur(0px); }
+            0% { transform: translateY(0px); filter: blur(0px) brightness(1); }
+            20% { filter: blur(2px) brightness(1.05); }
+            50% { transform: translateY(-8px); filter: blur(5px) brightness(1.08); }
+            80% { filter: blur(2px) brightness(1.05); }
+            100% { transform: translateY(0px); filter: blur(0px) brightness(1); }
         }
 
         .reel-landing {
-            animation: reelBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: reelBounce 0.65s cubic-bezier(0.32, 1.42, 0.56, 1) forwards;
+            will-change: transform;
         }
 
         @keyframes reelBounce {
-            0% { transform: translateY(-20px); }
-            60% { transform: translateY(5px); }
-            100% { transform: translateY(0); }
+            0% {
+                transform: translateY(-25px) scale(0.98);
+                opacity: 0.8;
+                filter: blur(4px);
+            }
+            50% {
+                transform: translateY(8px) scale(1.02);
+                filter: blur(0.5px);
+            }
+            70% {
+                transform: translateY(-3px) scale(1.01);
+                opacity: 0.95;
+            }
+            100% {
+                transform: translateY(0px) scale(1);
+                opacity: 1;
+                filter: blur(0px);
+            }
         }
 
+        /* High-speed deceleration spin animation for turbo mode */
+        .reel-scrolling-turbo {
+            animation: reelScrollTurbo 0.04s linear infinite !important;
+            will-change: transform, filter;
+        }
+
+        @keyframes reelScrollTurbo {
+            0% { transform: translateY(0px); filter: blur(0px); }
+            30% { filter: blur(3px); }
+            50% { transform: translateY(-6px); filter: blur(6px); }
+            70% { filter: blur(3px); }
+            100% { transform: translateY(0px); filter: blur(0px); }
+        }
+
+        /* Enhanced anticipation animation with shake and glow */
         .reel-anticipation {
             border-color: #ffd700 !important;
-            animation: reelAnticipation 0.3s ease-in-out infinite alternate;
+            animation: reelAnticipationShake 0.25s ease-in-out;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important;
         }
 
-        @keyframes reelAnticipation {
-            0% { transform: rotate(-1deg) scale(1.02); }
-            100% { transform: rotate(1deg) scale(1.04); }
+        @keyframes reelAnticipationShake {
+            0%, 100% { transform: translateX(0px) scale(1); }
+            25% { transform: translateX(-3px) scale(1.01); }
+            75% { transform: translateX(3px) scale(1.01); }
+        }
+
+        /* Win celebration pulse - applied after spin completes with win */
+        .reel-celebrating {
+            animation: winCelebrationGlow 0.8s ease-in-out;
+        }
+
+        @keyframes winCelebrationGlow {
+            0% { filter: brightness(1) drop-shadow(0 0 5px rgba(255,215,0,0.3)); }
+            50% { filter: brightness(1.25) drop-shadow(0 0 25px rgba(255,215,0,1)); }
+            100% { filter: brightness(1) drop-shadow(0 0 8px rgba(255,215,0,0.5)); }
+        }
+
+        /* Mega win celebration - strong intensity */
+        .reel-mega-win {
+            animation: megaWinCelebration 1s cubic-bezier(0.36, 0, 0.66, 1);
+        }
+
+        @keyframes megaWinCelebration {
+            0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+            25% { transform: scale(1.08) rotate(-2deg); filter: brightness(1.3) drop-shadow(0 0 20px rgba(255,215,0,0.8)); }
+            50% { transform: scale(1.04) rotate(2deg); filter: brightness(1.2) drop-shadow(0 0 30px rgba(255,215,0,1)); }
+            75% { transform: scale(1.06) rotate(-1deg); filter: brightness(1.15); }
+            100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
         }
 
         .reel-win-glow {
@@ -1905,27 +1962,63 @@
             letter-spacing: 2px;
         }
 
-        /* Win tier colors */
+        /* Win tier colors with enhanced animations */
         .win-tier-great .pp-win-tier {
             color: #10b981;
             text-shadow: 0 0 30px rgba(16,185,129,0.6);
+            animation: ppTierPulse 1.2s ease-in-out infinite;
         }
+        .win-tier-great .pp-win-overlay {
+            animation: ppWinAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), winGradientShift 2s ease-in-out infinite;
+        }
+
         .win-tier-big .pp-win-tier {
             color: #fbbf24;
-            text-shadow: 0 0 30px rgba(251,191,36,0.6);
+            text-shadow: 0 0 30px rgba(251,191,36,0.6), 0 0 60px rgba(251,191,36,0.4);
+            animation: ppTierPulse 1s ease-in-out infinite;
         }
+        .win-tier-big .pp-win-overlay {
+            animation: ppWinAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), winGradientShift 1.5s ease-in-out infinite;
+        }
+
         .win-tier-mega .pp-win-tier {
             color: #f97316;
-            text-shadow: 0 0 40px rgba(249,115,22,0.7);
+            text-shadow: 0 0 40px rgba(249,115,22,0.7), 0 0 80px rgba(249,115,22,0.4);
             font-size: 42px;
+            animation: ppTierPulse 0.8s ease-in-out infinite;
         }
-        .win-tier-mega .pp-win-amount { font-size: 56px; }
+        .win-tier-mega .pp-win-amount {
+            font-size: 56px;
+            animation: ppAmountCount 0.8s ease-out, megaWinBounce 1s ease-in-out infinite 0.8s;
+        }
+        .win-tier-mega .pp-win-overlay {
+            animation: ppWinAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), megaWinShake 2s ease-in-out infinite;
+        }
+
         .win-tier-epic .pp-win-tier {
             color: #ef4444;
-            text-shadow: 0 0 50px rgba(239,68,68,0.8);
+            text-shadow: 0 0 50px rgba(239,68,68,0.8), 0 0 100px rgba(239,68,68,0.6);
             font-size: 48px;
+            animation: ppTierPulse 0.6s ease-in-out infinite;
         }
-        .win-tier-epic .pp-win-amount { font-size: 64px; }
+        .win-tier-epic .pp-win-amount {
+            font-size: 64px;
+            animation: ppAmountCount 0.8s ease-out, epicWinPulse 0.8s ease-in-out infinite 0.8s;
+        }
+        .win-tier-epic .pp-win-overlay {
+            animation: ppWinAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), epicWinShake 1.2s ease-in-out infinite;
+            background: radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 70%);
+        }
+
+        /* Enhanced background effects for mega/epic wins */
+        .win-tier-mega .pp-win-burst {
+            background: radial-gradient(circle, rgba(249,115,22,0.25) 0%, transparent 50%);
+            animation: ppBurstRotate 2s linear infinite;
+        }
+        .win-tier-epic .pp-win-burst {
+            background: radial-gradient(circle, rgba(239,68,68,0.3) 0%, transparent 50%);
+            animation: ppBurstRotate 1.5s linear infinite;
+        }
 
         @keyframes ppWinAppear {
             from { opacity: 0; transform: scale(0.5); }
@@ -1940,6 +2033,118 @@
         @keyframes ppAmountCount {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Enhanced win animations for mega/epic tiers */
+        @keyframes megaWinBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes megaWinShake {
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 20px rgba(249,115,22,0.3)); }
+            50% { filter: brightness(1.1) drop-shadow(0 0 50px rgba(249,115,22,0.8)); }
+        }
+
+        @keyframes epicWinPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes epicWinShake {
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 30px rgba(239,68,68,0.4)); }
+            33% { filter: brightness(1.15) drop-shadow(0 0 60px rgba(239,68,68,1)); }
+            66% { filter: brightness(1.1) drop-shadow(0 0 60px rgba(239,68,68,0.8)); }
+        }
+
+        @keyframes winGradientShift {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.05); }
+        }
+
+        /* ═══ PARTICLE EFFECTS & SYMBOL CASCADES ═══ */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            will-change: transform;
+            font-size: 24px;
+            z-index: 300;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 1;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(var(--tx)) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        .particle.gold {
+            animation: particleFloat 1.2s ease-out forwards;
+            --tx: 0;
+        }
+
+        .particle.sparkle {
+            animation: particleFloat 1.5s ease-out forwards;
+            filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8));
+        }
+
+        /* Symbol highlight cascade for winning combinations */
+        .symbol-cascade {
+            animation: symbolCascadeEffect 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        @keyframes symbolCascadeEffect {
+            0% {
+                transform: translateY(-20px) scale(0.8);
+                opacity: 0;
+                filter: brightness(1.5);
+            }
+            50% {
+                filter: brightness(1.2);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+                filter: brightness(1);
+            }
+        }
+
+        /* Staggered cascade for multiple winning cells */
+        .symbol-cascade-1 { animation-delay: 0s; }
+        .symbol-cascade-2 { animation-delay: 0.1s; }
+        .symbol-cascade-3 { animation-delay: 0.2s; }
+        .symbol-cascade-4 { animation-delay: 0.3s; }
+        .symbol-cascade-5 { animation-delay: 0.4s; }
+        .symbol-cascade-6 { animation-delay: 0.5s; }
+
+        /* Sparkle/shine effect on symbols */
+        @keyframes symbolSparkle {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3) drop-shadow(0 0 15px rgba(255,215,0,0.6)); }
+        }
+
+        .symbol-sparkle {
+            animation: symbolSparkle 0.8s ease-in-out;
+        }
+
+        /* Color-matched highlight glows */
+        .highlight-gold {
+            filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8)) brightness(1.1);
+        }
+
+        .highlight-green {
+            filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.8)) brightness(1.1);
+        }
+
+        .highlight-purple {
+            filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.8)) brightness(1.1);
         }
 
         .stats-panel {

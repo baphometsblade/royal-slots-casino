@@ -2128,12 +2128,12 @@
             const spinGame = currentGame;
             const cols = getGridCols(spinGame);
 
-            // Start reel scrolling animation
+            // Start reel scrolling animation (apply turbo class if enabled)
             const colEls = getAllColumns();
             colEls.forEach(col => {
                 col.querySelectorAll('.reel-cell').forEach(cell => {
-                    cell.classList.remove('reel-landing', 'reel-win-glow', 'reel-wild-glow', 'reel-scatter-glow');
-                    cell.classList.add('reel-scrolling');
+                    cell.classList.remove('reel-landing', 'reel-win-glow', 'reel-wild-glow', 'reel-scatter-glow', 'reel-celebrating', 'reel-mega-win');
+                    cell.classList.add(turboMode ? 'reel-scrolling-turbo' : 'reel-scrolling');
                 });
             });
 
@@ -2628,6 +2628,17 @@
                 const xpBonus = isBigWin ? 25 : 10;
                 if (typeof awardXP === 'function') awardXP(xpBonus);
 
+                // Apply celebration animations based on win size
+                const isMegaWin = winAmount >= currentBet * 50;
+                const winCells = document.querySelectorAll('.reel-win-glow');
+                if (winCells.length > 0) {
+                    if (isMegaWin) {
+                        winCells.forEach(cell => cell.classList.add('reel-mega-win'));
+                    } else {
+                        winCells.forEach(cell => cell.classList.add('reel-celebrating'));
+                    }
+                }
+
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
                     updateFreeSpinsDisplay();
@@ -2714,6 +2725,10 @@
                         </div>
                     </div>`;
                 createConfetti();
+                // Trigger particle cascade effect
+                if (currentGame) {
+                    setTimeout(() => triggerWinCascade(currentGame), 200);
+                }
             } else {
                 // Small win — just show amount overlay
                 winDiv.innerHTML = `<div class="win-amount">+$${amount.toLocaleString()}</div>`;
@@ -2742,6 +2757,57 @@
 
                 setTimeout(() => confetti.remove(), 4000);
             }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // PARTICLE EFFECTS & SYMBOL CASCADE SYSTEM
+        // ═══════════════════════════════════════════════════════
+
+        function createParticles(x, y, count = 8, type = 'gold') {
+            const symbols = ['✨', '⭐', '💫', '✦', '💰'];
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = `particle ${type}`;
+                particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.setProperty('--tx', (Math.random() - 0.5) * 100 + 'px');
+                particle.style.color = type === 'gold' ? '#fbbf24' : type === 'green' ? '#10b981' : '#a855f7';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1500);
+            }
+        }
+
+        function applySymbolCascade(cells, highlightColor = 'gold') {
+            cells.forEach((cell, index) => {
+                if (cell) {
+                    cell.classList.add(`symbol-cascade`, `symbol-cascade-${Math.min(index + 1, 6)}`);
+                    cell.classList.add(`highlight-${highlightColor}`);
+                    // Trigger sparkle effect
+                    setTimeout(() => {
+                        cell.classList.add('symbol-sparkle');
+                        const rect = cell.getBoundingClientRect();
+                        createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 5, 'gold');
+                    }, 100 * index);
+                }
+            });
+        }
+
+        function triggerWinCascade(game) {
+            const winCells = document.querySelectorAll('.reel-win-glow');
+            const cells = Array.from(winCells);
+
+            // Determine highlight color based on game theme
+            let highlightColor = 'gold';
+            if (game.accentColor && game.accentColor.includes('10b981')) highlightColor = 'green';
+            if (game.accentColor && game.accentColor.includes('a855f7')) highlightColor = 'purple';
+
+            applySymbolCascade(cells, highlightColor);
+
+            // Create burst particles from center of screen
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            createParticles(centerX, centerY, 15, 'sparkle');
         }
 
         // ═══════════════════════════════════════════════════════
