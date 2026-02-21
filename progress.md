@@ -451,3 +451,22 @@ Major 7-phase UI overhaul to make the casino look like a real premium online cas
 - Filter tabs with icons render correctly at all widths
 - Footer with provider badges, payment icons, responsibility badges
 - All existing functionality (spins, deposits, auth, auto-spin, free spins) unaffected
+
+## 2026-02-22 (SDXL turbo slot chrome reasset pass)
+- User request focus: avoid standardized slot UI and make each slot UI theme unique by scraping parent slot visuals and reasseting with local SDXL Turbo.
+- Upgraded `scripts/reasset_slot_chrome.py` from a Pillow-only stylizer to a dual-engine pipeline:
+  - Added `--engine auto|sdxl|pillow` with SDXL img2img primary path and deterministic Pillow fallback.
+  - Added runtime knobs (`--games`, `--limit`, `--force`, `--strength`, `--steps`, `--guidance`, `--seed-base`, `--device`).
+  - SDXL path now uses each `assets/backgrounds/slots/*_bg.png` as init image and deterministic per-game seeds.
+  - Added metadata-aware prompt generation by loading `shared/game-definitions.js` via Node (`name/provider/tag/template/bonus/accent/symbol motif`) so prompts are unique per game theme.
+  - Kept deterministic overlay rails/streaks + alpha mask stage to preserve control readability in top/bottom slot bars.
+- Executed full SDXL generation run:
+  - `py -3.10 scripts/reasset_slot_chrome.py --engine sdxl --force`
+  - Result: regenerated all `80/80` chrome textures in `assets/ui/slot_chrome/` with no failures.
+- Validation:
+  - `npm run qa:regression` passed.
+  - Captured visual spot-checks in `output/web-game/slot-chrome-sdxl/` (feature popup + live slot modal screenshots) for multiple games, confirming per-game visual differentiation.
+
+### TODO / Suggestions
+- Optional: add a tiny launcher npm script (e.g. `qa:reasset`) for one-command SDXL chrome regeneration with preferred defaults.
+- Optional: if generation speed becomes a bottleneck, add a batched mode to keep pipeline warm across subsets (`--games`) during art iteration.
