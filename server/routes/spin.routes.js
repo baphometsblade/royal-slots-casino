@@ -14,7 +14,7 @@ const lastSpinTime = new Map();
 function applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount) {
     if (cappedWinAmount >= uncappedWinAmount) return;
 
-    const moneyPattern = /\$\d[\d,]*(?:\.\d{1,2})?/;
+    const moneyPattern = /\$\d[\d,]*(?:\.\d{1,2})?/g;
     const cappedText = `$${cappedWinAmount.toFixed(2)}`;
     const uncappedText = `$${uncappedWinAmount.toFixed(2)}`;
     const details = (spinResult.winDetails && typeof spinResult.winDetails === 'object')
@@ -22,9 +22,14 @@ function applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount) {
         : { type: 'win', message: '' };
 
     if (typeof details.message === 'string' && details.message.length > 0) {
-        details.message = moneyPattern.test(details.message)
-            ? details.message.replace(moneyPattern, cappedText)
-            : `${details.message} ${cappedText}`;
+        const matches = details.message.match(moneyPattern);
+        if (matches && matches.length > 0) {
+            const lastMatch = matches[matches.length - 1];
+            const lastIndex = details.message.lastIndexOf(lastMatch);
+            details.message = `${details.message.slice(0, lastIndex)}${cappedText}${details.message.slice(lastIndex + lastMatch.length)}`;
+        } else {
+            details.message = `${details.message} ${cappedText}`;
+        }
 
         if (!/capped/i.test(details.message)) {
             details.message += ` (capped from ${uncappedText})`;
