@@ -1,0 +1,1612 @@
+Loaded 80 games with symbols
+
+============================================================
+SDXL Symbol Generator ? 480 symbols to generate
+Model: stabilityai/sdxl-turbo | Size: 512->256px | Steps: 4
+============================================================
+
+Loading SDXL Turbo from HuggingFace cache...
+Loading pipeline components...:   0%|          | 0/7 [00:00<?, ?it/s]Loading pipeline components...:  14%|#4        | 1/7 [00:00<00:01,  4.54it/s]Loading pipeline components...:  43%|####2     | 3/7 [00:00<00:00,  8.83it/s]Loading pipeline components...:  86%|########5 | 6/7 [00:00<00:00, 10.65it/s]Loading pipeline components...: 100%|##########| 7/7 [00:00<00:00, 11.04it/s]
+Pipeline loaded. Device: cuda
+[1/480] sugar_rush/s1_lollipop | elapsed 0s | ETA ~0.0m
+  -> colorful swirling lollipop on a stick, casino slot machine game icon, vibrant pastel candy...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:01,  2.54it/s] 75%|#######5  | 3/4 [00:00<00:00,  5.73it/s]100%|##########| 4/4 [00:00<00:00,  5.90it/s]
+[2/480] sugar_rush/s2_gummy_bear | elapsed 2s | ETA ~16.3m
+  -> translucent gummy bear candy, casino slot machine game icon, vibrant pastel candy colors, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.87it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+[3/480] sugar_rush/s3_candy_cane | elapsed 3s | ETA ~13.7m
+  -> red and white striped candy cane, casino slot machine game icon, vibrant pastel candy colo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.34it/s]100%|##########| 4/4 [00:00<00:00, 10.33it/s]100%|##########| 4/4 [00:00<00:00, 10.33it/s]
+[4/480] sugar_rush/s4_cupcake | elapsed 5s | ETA ~13.0m
+  -> frosted cupcake with sprinkles, casino slot machine game icon, vibrant pastel candy colors...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.05it/s]100%|##########| 4/4 [00:00<00:00, 11.20it/s]100%|##########| 4/4 [00:00<00:00, 11.18it/s]
+[5/480] sugar_rush/s5_diamond_candy | elapsed 6s | ETA ~12.4m
+  -> sparkling diamond-shaped hard candy gem, casino slot machine game icon, vibrant pastel can...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.39it/s]100%|##########| 4/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 11.48it/s]
+[6/480] sugar_rush/wild_sugar | elapsed 8s | ETA ~12.1m
+  -> golden WILD sugar rush emblem with sparkles, casino slot machine game icon, vibrant pastel...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.33it/s]100%|##########| 4/4 [00:00<00:00, 11.17it/s]100%|##########| 4/4 [00:00<00:00, 11.19it/s]
+[7/480] lucky_777/s1_banana | elapsed 9s | ETA ~11.9m
+  -> banana, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]
+[8/480] lucky_777/s2_grape | elapsed 10s | ETA ~11.7m
+  -> grape, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.43it/s]100%|##########| 4/4 [00:00<00:00, 13.57it/s]100%|##########| 4/4 [00:00<00:00, 13.55it/s]
+[9/480] lucky_777/s3_apple | elapsed 12s | ETA ~11.4m
+  -> apple, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.85it/s]100%|##########| 4/4 [00:00<00:00, 14.40it/s]100%|##########| 4/4 [00:00<00:00, 14.47it/s]
+[10/480] lucky_777/s4_watermelon | elapsed 13s | ETA ~11.1m
+  -> watermelon, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.14it/s]100%|##########| 4/4 [00:00<00:00, 14.27it/s]100%|##########| 4/4 [00:00<00:00, 14.25it/s]
+
+  OK 10 done, 0 failed | 0.8 img/s | ~600s remaining
+
+[11/480] lucky_777/s5_heart_gem | elapsed 14s | ETA ~11.0m
+  -> heart gem, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.72it/s]100%|##########| 4/4 [00:00<00:00, 14.53it/s]100%|##########| 4/4 [00:00<00:00, 14.56it/s]
+[12/480] lucky_777/wild_bonanza | elapsed 15s | ETA ~10.8m
+  -> golden glowing WILD bonanza symbol, casino slot machine game icon, vibrant pastel candy co...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.96it/s]100%|##########| 4/4 [00:00<00:00, 13.72it/s]100%|##########| 4/4 [00:00<00:00, 13.60it/s]
+[13/480] gates_olympus/s1_chalice | elapsed 16s | ETA ~10.6m
+  -> ornate golden chalice goblet, casino slot machine game icon, polished 24k gold, divine glo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.72it/s]100%|##########| 4/4 [00:00<00:00, 14.17it/s]100%|##########| 4/4 [00:00<00:00, 14.25it/s]
+[14/480] gates_olympus/s2_ring | elapsed 18s | ETA ~10.5m
+  -> jeweled golden ring with sapphire, casino slot machine game icon, polished 24k gold, divin...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 15.24it/s]100%|##########| 4/4 [00:00<00:00, 14.83it/s]100%|##########| 4/4 [00:00<00:00, 14.89it/s]
+[15/480] gates_olympus/s3_hourglass | elapsed 19s | ETA ~10.4m
+  -> golden hourglass with glowing sand, casino slot machine game icon, polished 24k gold, divi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.35it/s]100%|##########| 4/4 [00:00<00:00, 14.45it/s]100%|##########| 4/4 [00:00<00:00, 14.43it/s]
+[16/480] gates_olympus/s4_crown | elapsed 20s | ETA ~10.3m
+  -> jeweled golden crown, casino slot machine game icon, polished 24k gold, divine glow, ancie...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.56it/s]100%|##########| 4/4 [00:00<00:00, 14.63it/s]100%|##########| 4/4 [00:00<00:00, 14.62it/s]
+[17/480] gates_olympus/s5_lightning | elapsed 21s | ETA ~10.2m
+  -> crackling divine lightning bolt, casino slot machine game icon, polished 24k gold, divine ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.91it/s]100%|##########| 4/4 [00:00<00:00, 13.39it/s]100%|##########| 4/4 [00:00<00:00, 13.44it/s]
+[18/480] gates_olympus/wild_zeus | elapsed 22s | ETA ~10.1m
+  -> golden WILD Zeus thunder emblem, casino slot machine game icon, polished 24k gold, divine ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.67it/s]100%|##########| 4/4 [00:00<00:00, 14.33it/s]100%|##########| 4/4 [00:00<00:00, 14.38it/s]
+[19/480] black_bull/s1_horseshoe | elapsed 23s | ETA ~10.0m
+  -> horseshoe, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 15.02it/s]100%|##########| 4/4 [00:00<00:00, 15.17it/s]100%|##########| 4/4 [00:00<00:00, 15.12it/s]
+[20/480] black_bull/s2_coins | elapsed 25s | ETA ~10.0m
+  -> coins, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.00it/s]100%|##########| 4/4 [00:00<00:00, 14.54it/s]100%|##########| 4/4 [00:00<00:00, 14.46it/s]
+
+  OK 20 done, 0 failed | 0.8 img/s | ~566s remaining
+
+[21/480] black_bull/s3_money_bag | elapsed 26s | ETA ~9.9m
+  -> money bag, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.89it/s]100%|##########| 4/4 [00:00<00:00, 14.74it/s]100%|##########| 4/4 [00:00<00:00, 14.76it/s]
+[22/480] black_bull/s4_gold_bar | elapsed 27s | ETA ~9.8m
+  -> gold bar, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia woo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 15.41it/s]100%|##########| 4/4 [00:00<00:00, 14.64it/s]100%|##########| 4/4 [00:00<00:00, 14.75it/s]
+[23/480] black_bull/s5_diamond | elapsed 28s | ETA ~9.8m
+  -> diamond, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.94it/s]100%|##########| 4/4 [00:00<00:00, 14.78it/s]100%|##########| 4/4 [00:00<00:00, 14.80it/s]
+[24/480] black_bull/wild_bull | elapsed 29s | ETA ~9.7m
+  -> golden glowing WILD bull symbol, casino slot machine game icon, aged brass patina, hand-en...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.45it/s]100%|##########| 4/4 [00:00<00:00, 14.64it/s]100%|##########| 4/4 [00:00<00:00, 14.61it/s]
+[25/480] hot_chillies/s1_taco | elapsed 30s | ETA ~9.6m
+  -> taco, casino slot machine game icon, chrome mirror finish, polished steel, bright casino l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.57it/s]100%|##########| 4/4 [00:00<00:00, 14.66it/s]100%|##########| 4/4 [00:00<00:00, 14.64it/s]
+[26/480] hot_chillies/s2_maracas | elapsed 32s | ETA ~9.6m
+  -> maracas, casino slot machine game icon, chrome mirror finish, polished steel, bright casin...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.72it/s]100%|##########| 4/4 [00:00<00:00, 14.82it/s]100%|##########| 4/4 [00:00<00:00, 14.80it/s]
+[27/480] hot_chillies/s3_sombrero | elapsed 33s | ETA ~9.6m
+  -> sombrero, casino slot machine game icon, chrome mirror finish, polished steel, bright casi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.79it/s]100%|##########| 4/4 [00:00<00:00, 12.91it/s]100%|##########| 4/4 [00:00<00:00, 12.89it/s]
+[28/480] hot_chillies/s4_chilli | elapsed 34s | ETA ~9.6m
+  -> chilli, casino slot machine game icon, chrome mirror finish, polished steel, bright casino...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.75it/s]100%|##########| 4/4 [00:00<00:00, 14.22it/s]100%|##########| 4/4 [00:00<00:00, 14.15it/s]
+[29/480] hot_chillies/s5_hot_7 | elapsed 35s | ETA ~9.5m
+  -> hot 7, casino slot machine game icon, chrome mirror finish, polished steel, bright casino ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.86it/s]100%|##########| 4/4 [00:00<00:00, 13.42it/s]100%|##########| 4/4 [00:00<00:00, 13.48it/s]
+[30/480] hot_chillies/wild_chilli | elapsed 37s | ETA ~9.5m
+  -> golden glowing WILD chilli symbol, casino slot machine game icon, chrome mirror finish, po...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 15.17it/s]100%|##########| 4/4 [00:00<00:00, 14.94it/s]100%|##########| 4/4 [00:00<00:00, 14.97it/s]
+
+  OK 30 done, 0 failed | 0.8 img/s | ~550s remaining
+
+[31/480] super_hot/s1_cherry | elapsed 38s | ETA ~9.5m
+  -> shiny twin red cherries on a stem, casino slot machine game icon, chrome mirror finish, po...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 12.03it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]
+[32/480] super_hot/s2_lemon | elapsed 39s | ETA ~9.5m
+  -> bright yellow lemon fruit, casino slot machine game icon, chrome mirror finish, polished s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.55it/s]100%|##########| 4/4 [00:00<00:00, 13.32it/s]100%|##########| 4/4 [00:00<00:00, 13.20it/s]
+[33/480] super_hot/s3_plum | elapsed 40s | ETA ~9.4m
+  -> purple plum fruit, casino slot machine game icon, chrome mirror finish, polished steel, br...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.67it/s]100%|##########| 4/4 [00:00<00:00, 15.03it/s]100%|##########| 4/4 [00:00<00:00, 14.97it/s]
+[34/480] super_hot/s4_bell | elapsed 42s | ETA ~9.4m
+  -> bell, casino slot machine game icon, chrome mirror finish, polished steel, bright casino l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.79it/s]100%|##########| 4/4 [00:00<00:00, 14.81it/s]100%|##########| 4/4 [00:00<00:00, 14.78it/s]
+[35/480] super_hot/s5_star | elapsed 43s | ETA ~9.4m
+  -> star, casino slot machine game icon, chrome mirror finish, polished steel, bright casino l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 15.23it/s]100%|##########| 4/4 [00:00<00:00, 15.03it/s]100%|##########| 4/4 [00:00<00:00, 15.06it/s]
+[36/480] super_hot/wild_hot | elapsed 44s | ETA ~9.4m
+  -> golden glowing WILD hot symbol, casino slot machine game icon, chrome mirror finish, polis...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.96it/s]100%|##########| 4/4 [00:00<00:00, 13.44it/s]100%|##########| 4/4 [00:00<00:00, 13.37it/s]
+[37/480] wolf_gold/s1_feather | elapsed 45s | ETA ~9.3m
+  -> feather, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 14.40it/s]100%|##########| 4/4 [00:00<00:00, 12.87it/s]100%|##########| 4/4 [00:00<00:00, 13.08it/s]
+[38/480] wolf_gold/s2_paw | elapsed 47s | ETA ~9.3m
+  -> paw, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.82it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.48it/s]100%|##########| 4/4 [00:00<00:00, 10.43it/s]
+[39/480] wolf_gold/s3_eagle | elapsed 48s | ETA ~9.3m
+  -> eagle, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.55it/s]100%|##########| 4/4 [00:00<00:00, 11.09it/s]100%|##########| 4/4 [00:00<00:00, 11.00it/s]
+[40/480] wolf_gold/s4_totem | elapsed 49s | ETA ~9.3m
+  -> totem, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.10it/s]100%|##########| 4/4 [00:00<00:00, 12.03it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+
+  OK 40 done, 0 failed | 0.8 img/s | ~544s remaining
+
+[41/480] wolf_gold/s5_moon | elapsed 51s | ETA ~9.3m
+  -> moon, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.28it/s]100%|##########| 4/4 [00:00<00:00, 11.21it/s]100%|##########| 4/4 [00:00<00:00, 11.22it/s]
+[42/480] wolf_gold/wild_wolf | elapsed 52s | ETA ~9.3m
+  -> golden WILD wolf paw print, casino slot machine game icon, textured natural stone bronze, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.26it/s]100%|##########| 4/4 [00:00<00:00, 11.30it/s]100%|##########| 4/4 [00:00<00:00, 11.29it/s]
+[43/480] big_bass/s1_hook | elapsed 54s | ETA ~9.3m
+  -> shiny chrome fishing hook with red bait, casino slot machine game icon, ocean teal, weathe...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.75it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+[44/480] big_bass/s2_float | elapsed 55s | ETA ~9.3m
+  -> red and white fishing float bobber, casino slot machine game icon, ocean teal, weathered d...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 11.17it/s]100%|##########| 4/4 [00:00<00:00, 11.27it/s]
+[45/480] big_bass/s3_tackle | elapsed 56s | ETA ~9.3m
+  -> fishing tackle lure with hooks, casino slot machine game icon, ocean teal, weathered dock ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.11it/s]100%|##########| 4/4 [00:00<00:00, 10.43it/s]100%|##########| 4/4 [00:00<00:00, 10.38it/s]
+[46/480] big_bass/s4_fish | elapsed 58s | ETA ~9.3m
+  -> jumping largemouth bass fish, casino slot machine game icon, ocean teal, weathered dock wo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00,  9.41it/s]100%|##########| 4/4 [00:00<00:00, 10.59it/s]100%|##########| 4/4 [00:00<00:00, 10.39it/s]
+[47/480] big_bass/s5_treasure | elapsed 59s | ETA ~9.3m
+  -> sunken treasure chest with gold coins, casino slot machine game icon, ocean teal, weathere...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.58it/s]100%|##########| 4/4 [00:00<00:00, 11.64it/s]
+[48/480] big_bass/wild_bass | elapsed 60s | ETA ~9.3m
+  -> golden WILD bass fish WILD symbol, casino slot machine game icon, ocean teal, weathered do...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.59it/s]100%|##########| 4/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]
+[49/480] fire_joker/s1_cherry | elapsed 62s | ETA ~9.2m
+  -> shiny twin red cherries on a stem, casino slot machine game icon, chrome mirror finish, po...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.56it/s]100%|##########| 4/4 [00:00<00:00, 11.96it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]
+[50/480] fire_joker/s2_lemon | elapsed 63s | ETA ~9.2m
+  -> bright yellow lemon fruit, casino slot machine game icon, chrome mirror finish, polished s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.09it/s]100%|##########| 4/4 [00:00<00:00, 12.03it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+
+  OK 50 done, 0 failed | 0.8 img/s | ~541s remaining
+
+[51/480] fire_joker/s3_plum | elapsed 64s | ETA ~9.2m
+  -> purple plum fruit, casino slot machine game icon, chrome mirror finish, polished steel, br...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.59it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.89it/s]100%|##########| 4/4 [00:00<00:00, 11.13it/s]
+[52/480] fire_joker/s4_star | elapsed 66s | ETA ~9.2m
+  -> golden five-pointed star, casino slot machine game icon, chrome mirror finish, polished st...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]
+[53/480] fire_joker/s5_seven | elapsed 67s | ETA ~9.2m
+  -> lucky red 7 seven number, casino slot machine game icon, chrome mirror finish, polished st...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]
+[54/480] fire_joker/wild_joker | elapsed 68s | ETA ~9.2m
+  -> golden WILD joker playing card with jester hat, casino slot machine game icon, chrome mirr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.01it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 12.10it/s]
+[55/480] book_dead/s1_ankh | elapsed 70s | ETA ~9.2m
+  -> ankh, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, anc...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.22it/s]100%|##########| 4/4 [00:00<00:00, 13.12it/s]100%|##########| 4/4 [00:00<00:00, 13.13it/s]
+[56/480] book_dead/s2_scarab | elapsed 71s | ETA ~9.2m
+  -> scarab, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, a...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.46it/s]100%|##########| 4/4 [00:00<00:00, 12.34it/s]100%|##########| 4/4 [00:00<00:00, 12.19it/s]
+[57/480] book_dead/s3_eye | elapsed 72s | ETA ~9.1m
+  -> eye, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, anci...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.20it/s]100%|##########| 4/4 [00:00<00:00, 12.01it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]
+[58/480] book_dead/s4_pharaoh | elapsed 74s | ETA ~9.1m
+  -> pharaoh, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.71it/s]100%|##########| 4/4 [00:00<00:00, 12.50it/s]100%|##########| 4/4 [00:00<00:00, 12.53it/s]
+[59/480] book_dead/s5_anubis | elapsed 75s | ETA ~9.1m
+  -> anubis, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, a...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.99it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]
+Token indices sequence length is longer than the specified maximum sequence length for this model (78 > 77). Running this sequence through the model will result in indexing errors
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+Token indices sequence length is longer than the specified maximum sequence length for this model (78 > 77). Running this sequence through the model will result in indexing errors
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+[60/480] book_dead/wild_book | elapsed 76s | ETA ~9.1m
+  -> golden glowing Book of Dead WILD, casino slot machine game icon, hammered gold leafing, sa...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.22it/s]100%|##########| 4/4 [00:00<00:00, 11.24it/s]
+
+  OK 60 done, 0 failed | 0.8 img/s | ~534s remaining
+
+[61/480] starburst_xxl/s1_gem_red | elapsed 78s | ETA ~9.1m
+  -> brilliant faceted red ruby gem, casino slot machine game icon, electric neon glow, hologra...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.32it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.43it/s]100%|##########| 4/4 [00:00<00:00, 10.02it/s]
+[62/480] starburst_xxl/s2_gem_blue | elapsed 79s | ETA ~9.0m
+  -> brilliant faceted blue sapphire gem, casino slot machine game icon, electric neon glow, ho...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.67it/s]100%|##########| 4/4 [00:00<00:00, 11.03it/s]100%|##########| 4/4 [00:00<00:00, 11.10it/s]
+[63/480] starburst_xxl/s3_gem_green | elapsed 80s | ETA ~9.0m
+  -> brilliant faceted emerald green gem, casino slot machine game icon, electric neon glow, ho...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.90it/s]100%|##########| 4/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 11.64it/s]
+[64/480] starburst_xxl/s4_gem_yellow | elapsed 82s | ETA ~9.0m
+  -> brilliant faceted yellow topaz gem, casino slot machine game icon, electric neon glow, hol...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]
+[65/480] starburst_xxl/s5_gem_purple | elapsed 83s | ETA ~9.0m
+  -> brilliant faceted purple amethyst gem, casino slot machine game icon, electric neon glow, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.68it/s]100%|##########| 4/4 [00:00<00:00, 11.32it/s]100%|##########| 4/4 [00:00<00:00, 11.36it/s]
+[66/480] starburst_xxl/wild_star | elapsed 84s | ETA ~9.0m
+  -> neon starburst star WILD symbol, casino slot machine game icon, electric neon glow, hologr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]
+[67/480] gonzos_quest/s1_stone_face_green | elapsed 86s | ETA ~9.0m
+  -> stone face green, casino slot machine game icon, hammered gold leafing, sand patina, lapis...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.08it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+[68/480] gonzos_quest/s2_stone_face_blue | elapsed 87s | ETA ~8.9m
+  -> stone face blue, casino slot machine game icon, hammered gold leafing, sand patina, lapis ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.20it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+[69/480] gonzos_quest/s3_stone_face_red | elapsed 88s | ETA ~8.9m
+  -> stone face red, casino slot machine game icon, hammered gold leafing, sand patina, lapis l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 11.06it/s]100%|##########| 4/4 [00:00<00:00, 11.12it/s]
+[70/480] gonzos_quest/s4_emerald | elapsed 90s | ETA ~8.9m
+  -> emerald, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.18it/s]100%|##########| 4/4 [00:00<00:00, 11.29it/s]
+
+  OK 70 done, 0 failed | 0.8 img/s | ~526s remaining
+
+[71/480] gonzos_quest/s5_gold_mask | elapsed 91s | ETA ~8.9m
+  -> gold mask, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.40it/s]100%|##########| 4/4 [00:00<00:00, 11.39it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+[72/480] gonzos_quest/wild_gonzo | elapsed 92s | ETA ~8.9m
+  -> golden glowing WILD gonzo symbol, casino slot machine game icon, hammered gold leafing, sa...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.29it/s]100%|##########| 4/4 [00:00<00:00, 12.26it/s]100%|##########| 4/4 [00:00<00:00, 12.27it/s]
+[73/480] starlight_princess/s1_crystal_heart | elapsed 94s | ETA ~8.9m
+  -> crystal heart, casino slot machine game icon, vibrant pastel candy colors, glossy plastic,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.18it/s]100%|##########| 4/4 [00:00<00:00, 11.05it/s]100%|##########| 4/4 [00:00<00:00, 11.07it/s]
+[74/480] starlight_princess/s2_magic_wand | elapsed 95s | ETA ~8.8m
+  -> magic wand, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.65it/s]100%|##########| 4/4 [00:00<00:00, 11.67it/s]
+[75/480] starlight_princess/s3_tiara | elapsed 96s | ETA ~8.8m
+  -> tiara, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.65it/s]100%|##########| 4/4 [00:00<00:00, 11.94it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]
+[76/480] starlight_princess/s4_moon_orb | elapsed 98s | ETA ~8.8m
+  -> moon orb, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 12.05it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+[77/480] starlight_princess/s5_star_crystal | elapsed 99s | ETA ~8.8m
+  -> star crystal, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.40it/s]100%|##########| 4/4 [00:00<00:00, 12.35it/s]100%|##########| 4/4 [00:00<00:00, 12.49it/s]
+[78/480] starlight_princess/wild_empress | elapsed 100s | ETA ~8.8m
+  -> golden glowing WILD empress symbol, casino slot machine game icon, vibrant pastel candy co...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.40it/s]100%|##########| 4/4 [00:00<00:00, 12.92it/s]100%|##########| 4/4 [00:00<00:00, 12.84it/s]
+[79/480] olympus_rising/s1_trident | elapsed 102s | ETA ~8.7m
+  -> trident, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marb...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.73it/s] 75%|#######5  | 3/4 [00:00<00:00, 11.00it/s]100%|##########| 4/4 [00:00<00:00, 10.80it/s]
+[80/480] olympus_rising/s2_shield | elapsed 103s | ETA ~8.7m
+  -> shield, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.21it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]100%|##########| 4/4 [00:00<00:00, 12.11it/s]
+
+  OK 80 done, 0 failed | 0.8 img/s | ~515s remaining
+
+[81/480] olympus_rising/s3_laurel | elapsed 104s | ETA ~8.7m
+  -> laurel, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.12it/s]100%|##########| 4/4 [00:00<00:00, 11.14it/s]100%|##########| 4/4 [00:00<00:00, 11.14it/s]
+[82/480] olympus_rising/s4_thunderbolt | elapsed 106s | ETA ~8.7m
+  -> thunderbolt, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.42it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]100%|##########| 4/4 [00:00<00:00, 11.04it/s]
+[83/480] olympus_rising/s5_olympus_gem | elapsed 107s | ETA ~8.7m
+  -> olympus gem, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.37it/s]100%|##########| 4/4 [00:00<00:00, 11.68it/s]100%|##########| 4/4 [00:00<00:00, 11.78it/s]
+[84/480] olympus_rising/wild_poseidon | elapsed 108s | ETA ~8.6m
+  -> golden glowing WILD poseidon symbol, casino slot machine game icon, polished 24k gold, div...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.88it/s] 75%|#######5  | 3/4 [00:00<00:00, 11.02it/s]100%|##########| 4/4 [00:00<00:00, 10.96it/s]
+[85/480] buffalo_stampede/s1_cactus | elapsed 110s | ETA ~8.6m
+  -> cactus, casino slot machine game icon, textured natural stone bronze, wildlife earthy tone...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.93it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.70it/s]100%|##########| 4/4 [00:00<00:00, 10.61it/s]
+[86/480] buffalo_stampede/s2_horseshoe_gold | elapsed 111s | ETA ~8.6m
+  -> horseshoe gold, casino slot machine game icon, textured natural stone bronze, wildlife ear...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.49it/s]100%|##########| 4/4 [00:00<00:00, 11.54it/s]
+[87/480] buffalo_stampede/s3_cowboy_hat | elapsed 112s | ETA ~8.6m
+  -> cowboy hat, casino slot machine game icon, textured natural stone bronze, wildlife earthy ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.45it/s]100%|##########| 4/4 [00:00<00:00, 10.03it/s]100%|##########| 4/4 [00:00<00:00, 10.09it/s]
+[88/480] buffalo_stampede/s4_buffalo | elapsed 114s | ETA ~8.6m
+  -> buffalo, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.75it/s]100%|##########| 4/4 [00:00<00:00, 12.01it/s]100%|##########| 4/4 [00:00<00:00, 11.97it/s]
+[89/480] buffalo_stampede/s5_sunset_diamond | elapsed 115s | ETA ~8.6m
+  -> sunset diamond, casino slot machine game icon, textured natural stone bronze, wildlife ear...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.63it/s]100%|##########| 4/4 [00:00<00:00, 12.87it/s]100%|##########| 4/4 [00:00<00:00, 12.96it/s]
+[90/480] buffalo_stampede/wild_stampede | elapsed 117s | ETA ~8.5m
+  -> golden glowing WILD stampede symbol, casino slot machine game icon, textured natural stone...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.15it/s]100%|##########| 4/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 11.39it/s]
+
+  OK 90 done, 0 failed | 0.8 img/s | ~505s remaining
+
+[91/480] puppy_palace/s1_bone | elapsed 118s | ETA ~8.5m
+  -> bone, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.30it/s]100%|##########| 4/4 [00:00<00:00, 11.52it/s]100%|##########| 4/4 [00:00<00:00, 11.48it/s]
+[92/480] puppy_palace/s2_collar | elapsed 119s | ETA ~8.5m
+  -> collar, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.84it/s]100%|##########| 4/4 [00:00<00:00, 11.97it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]
+[93/480] puppy_palace/s3_paw_print | elapsed 121s | ETA ~8.5m
+  -> paw print, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.88it/s]100%|##########| 4/4 [00:00<00:00, 12.73it/s]100%|##########| 4/4 [00:00<00:00, 12.76it/s]
+[94/480] puppy_palace/s4_puppy_face | elapsed 122s | ETA ~8.5m
+  -> puppy face, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 11.06it/s]100%|##########| 4/4 [00:00<00:00, 11.19it/s]
+[95/480] puppy_palace/s5_golden_bowl | elapsed 123s | ETA ~8.4m
+  -> golden bowl, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, s...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  8.56it/s] 75%|#######5  | 3/4 [00:00<00:00,  9.02it/s]100%|##########| 4/4 [00:00<00:00,  8.91it/s]100%|##########| 4/4 [00:00<00:00,  8.90it/s]
+[96/480] puppy_palace/wild_puppy | elapsed 125s | ETA ~8.4m
+  -> golden glowing WILD puppy symbol, casino slot machine game icon, vibrant pastel candy colo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.20it/s]100%|##########| 4/4 [00:00<00:00, 11.29it/s]
+[97/480] crimson_fang/s1_garlic | elapsed 126s | ETA ~8.4m
+  -> garlic, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.97it/s] 50%|#####     | 2/4 [00:00<00:00,  9.92it/s]100%|##########| 4/4 [00:00<00:00, 10.95it/s]100%|##########| 4/4 [00:00<00:00, 10.73it/s]
+[98/480] crimson_fang/s2_cross | elapsed 128s | ETA ~8.4m
+  -> cross, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.92it/s]100%|##########| 4/4 [00:00<00:00, 12.31it/s]100%|##########| 4/4 [00:00<00:00, 12.40it/s]
+[99/480] crimson_fang/s3_bat | elapsed 129s | ETA ~8.4m
+  -> bat, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, go...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 11.01it/s]100%|##########| 4/4 [00:00<00:00, 11.12it/s]
+[100/480] crimson_fang/s4_coffin | elapsed 130s | ETA ~8.4m
+  -> coffin, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.59it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.80it/s]100%|##########| 4/4 [00:00<00:00, 11.27it/s]
+
+  OK 100 done, 0 failed | 0.8 img/s | ~495s remaining
+
+[101/480] crimson_fang/s5_vampire | elapsed 132s | ETA ~8.3m
+  -> vampire with cape portrait, casino slot machine game icon, obsidian black, deep crimson, p...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.71it/s]100%|##########| 4/4 [00:00<00:00, 12.78it/s]100%|##########| 4/4 [00:00<00:00, 12.75it/s]
+[102/480] crimson_fang/wild_fang | elapsed 133s | ETA ~8.3m
+  -> golden glowing WILD fang symbol, casino slot machine game icon, obsidian black, deep crims...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.00it/s] 50%|#####     | 2/4 [00:00<00:00,  9.17it/s]100%|##########| 4/4 [00:00<00:00, 11.03it/s]100%|##########| 4/4 [00:00<00:00, 10.56it/s]
+[103/480] pirate_fortune/s1_compass | elapsed 134s | ETA ~8.3m
+  -> compass, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.45it/s]100%|##########| 4/4 [00:00<00:00, 12.50it/s]100%|##########| 4/4 [00:00<00:00, 12.64it/s]
+[104/480] pirate_fortune/s2_anchor | elapsed 136s | ETA ~8.3m
+  -> anchor, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.00it/s]100%|##########| 4/4 [00:00<00:00, 12.05it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+[105/480] pirate_fortune/s3_cannon | elapsed 137s | ETA ~8.3m
+  -> cannon, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.79it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]100%|##########| 4/4 [00:00<00:00, 11.10it/s]
+[106/480] pirate_fortune/s4_treasure_map | elapsed 138s | ETA ~8.2m
+  -> treasure map, casino slot machine game icon, obsidian black, deep crimson, purple spectral...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.66it/s]100%|##########| 4/4 [00:00<00:00, 12.21it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]
+[107/480] pirate_fortune/s5_skull_key | elapsed 140s | ETA ~8.2m
+  -> skull key, casino slot machine game icon, obsidian black, deep crimson, purple spectral gl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.37it/s]100%|##########| 4/4 [00:00<00:00, 11.04it/s]100%|##########| 4/4 [00:00<00:00, 10.94it/s]
+[108/480] pirate_fortune/wild_pirate | elapsed 141s | ETA ~8.2m
+  -> golden glowing WILD pirate symbol, casino slot machine game icon, obsidian black, deep cri...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.60it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]100%|##########| 4/4 [00:00<00:00, 11.74it/s]
+[109/480] lucky_dragon/s1_lantern | elapsed 143s | ETA ~8.2m
+  -> lantern, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 12.63it/s]100%|##########| 4/4 [00:00<00:00, 12.47it/s]
+[110/480] lucky_dragon/s2_fan | elapsed 144s | ETA ~8.2m
+  -> fan, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay, si...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.79it/s]100%|##########| 4/4 [00:00<00:00, 11.60it/s]100%|##########| 4/4 [00:00<00:00, 11.46it/s]
+
+  OK 110 done, 0 failed | 0.8 img/s | ~484s remaining
+
+[111/480] lucky_dragon/s3_koi | elapsed 145s | ETA ~8.1m
+  -> koi, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay, si...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.41it/s]100%|##########| 4/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.32it/s]
+[112/480] lucky_dragon/s4_jade | elapsed 147s | ETA ~8.1m
+  -> jade, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay, s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.67it/s]100%|##########| 4/4 [00:00<00:00, 11.30it/s]100%|##########| 4/4 [00:00<00:00, 11.20it/s]
+[113/480] lucky_dragon/s5_dragon_pearl | elapsed 148s | ETA ~8.1m
+  -> dragon pearl, casino slot machine game icon, lacquered vermilion red, gold filigree, jade ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.79it/s]100%|##########| 4/4 [00:00<00:00, 11.62it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+[114/480] lucky_dragon/wild_dragon | elapsed 149s | ETA ~8.1m
+  -> golden WILD fire dragon WILD symbol, casino slot machine game icon, lacquered vermilion re...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.87it/s]100%|##########| 4/4 [00:00<00:00, 10.91it/s]100%|##########| 4/4 [00:00<00:00, 10.89it/s]
+[115/480] pharaoh_legacy/s1_hieroglyph | elapsed 151s | ETA ~8.1m
+  -> hieroglyph, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazul...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 11.63it/s]100%|##########| 4/4 [00:00<00:00, 11.65it/s]
+[116/480] pharaoh_legacy/s2_sphinx | elapsed 152s | ETA ~8.0m
+  -> sphinx, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, a...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.12it/s]100%|##########| 4/4 [00:00<00:00, 12.11it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]
+[117/480] pharaoh_legacy/s3_pyramid | elapsed 153s | ETA ~8.0m
+  -> pyramid, casino slot machine game icon, hammered gold leafing, sand patina, lapis lazuli, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 11.99it/s]
+[118/480] pharaoh_legacy/s4_golden_cobra | elapsed 155s | ETA ~8.0m
+  -> golden cobra, casino slot machine game icon, hammered gold leafing, sand patina, lapis laz...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.47it/s]100%|##########| 4/4 [00:00<00:00, 12.15it/s]100%|##########| 4/4 [00:00<00:00, 12.33it/s]
+[119/480] pharaoh_legacy/s5_pharaoh_mask | elapsed 156s | ETA ~8.0m
+  -> pharaoh mask, casino slot machine game icon, hammered gold leafing, sand patina, lapis laz...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.70it/s]100%|##########| 4/4 [00:00<00:00, 11.19it/s]100%|##########| 4/4 [00:00<00:00, 11.10it/s]
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: [', masterpiece']
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: [', masterpiece']
+[120/480] pharaoh_legacy/wild_papyrus | elapsed 157s | ETA ~8.0m
+  -> golden glowing WILD papyrus symbol, casino slot machine game icon, hammered gold leafing, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.51it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.97it/s]
+
+  OK 120 done, 0 failed | 0.8 img/s | ~472s remaining
+
+[121/480] quantum_burst/s1_atom | elapsed 159s | ETA ~7.9m
+  -> atom, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk la...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 12.13it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]
+[122/480] quantum_burst/s2_electron | elapsed 160s | ETA ~7.9m
+  -> electron, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.51it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 12.01it/s]
+[123/480] quantum_burst/s3_proton | elapsed 161s | ETA ~7.9m
+  -> proton, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.44it/s]100%|##########| 4/4 [00:00<00:00, 11.49it/s]
+[124/480] quantum_burst/s4_neutron | elapsed 163s | ETA ~7.9m
+  -> neutron, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.09it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]100%|##########| 4/4 [00:00<00:00, 11.65it/s]
+[125/480] quantum_burst/s5_plasma_orb | elapsed 164s | ETA ~7.9m
+  -> plasma orb, casino slot machine game icon, electric neon glow, holographic shimmer, cyberp...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]100%|##########| 4/4 [00:00<00:00, 11.67it/s]
+[126/480] quantum_burst/wild_quantum | elapsed 165s | ETA ~7.8m
+  -> golden glowing WILD quantum symbol, casino slot machine game icon, electric neon glow, hol...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.40it/s]100%|##########| 4/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.63it/s]
+[127/480] olympian_gods/s1_harp | elapsed 167s | ETA ~7.8m
+  -> harp, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.60it/s]100%|##########| 4/4 [00:00<00:00, 11.38it/s]100%|##########| 4/4 [00:00<00:00, 11.40it/s]
+[128/480] olympian_gods/s2_helmet | elapsed 168s | ETA ~7.8m
+  -> helmet, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 12.39it/s]100%|##########| 4/4 [00:00<00:00, 12.37it/s]
+[129/480] olympian_gods/s3_pegasus | elapsed 169s | ETA ~7.8m
+  -> pegasus, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marb...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.77it/s]100%|##########| 4/4 [00:00<00:00, 11.37it/s]100%|##########| 4/4 [00:00<00:00, 11.54it/s]
+[130/480] olympian_gods/s4_olive_branch | elapsed 171s | ETA ~7.7m
+  -> olive branch, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]
+
+  OK 130 done, 0 failed | 0.8 img/s | ~460s remaining
+
+[131/480] olympian_gods/s5_golden_apple | elapsed 172s | ETA ~7.7m
+  -> golden apple, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.24it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]100%|##########| 4/4 [00:00<00:00, 11.84it/s]
+[132/480] olympian_gods/wild_olympian | elapsed 174s | ETA ~7.7m
+  -> golden glowing WILD olympian symbol, casino slot machine game icon, polished 24k gold, div...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.37it/s]100%|##########| 4/4 [00:00<00:00, 12.68it/s]100%|##########| 4/4 [00:00<00:00, 12.47it/s]
+[133/480] twin_helix/s1_cherry_neon | elapsed 175s | ETA ~7.7m
+  -> cherry neon, casino slot machine game icon, electric neon glow, holographic shimmer, cyber...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 11.74it/s]
+[134/480] twin_helix/s2_bar_neon | elapsed 176s | ETA ~7.7m
+  -> bar neon, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.87it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]
+[135/480] twin_helix/s3_bell_neon | elapsed 178s | ETA ~7.6m
+  -> bell neon, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.39it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 11.93it/s]
+[136/480] twin_helix/s4_seven_neon | elapsed 179s | ETA ~7.6m
+  -> seven neon, casino slot machine game icon, electric neon glow, holographic shimmer, cyberp...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.94it/s]100%|##########| 4/4 [00:00<00:00, 11.11it/s]100%|##########| 4/4 [00:00<00:00, 11.09it/s]
+[137/480] twin_helix/s5_diamond_neon | elapsed 180s | ETA ~7.6m
+  -> diamond neon, casino slot machine game icon, electric neon glow, holographic shimmer, cybe...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.82it/s]100%|##########| 4/4 [00:00<00:00, 11.84it/s]
+[138/480] twin_helix/wild_helix | elapsed 182s | ETA ~7.6m
+  -> golden glowing WILD helix symbol, casino slot machine game icon, electric neon glow, holog...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.40it/s]100%|##########| 4/4 [00:00<00:00, 12.14it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]
+[139/480] golden_fortune/s1_champagne | elapsed 183s | ETA ~7.6m
+  -> champagne, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ma...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 12.20it/s]100%|##########| 4/4 [00:00<00:00, 12.16it/s]
+[140/480] golden_fortune/s2_yacht | elapsed 184s | ETA ~7.5m
+  -> yacht, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.15it/s]100%|##########| 4/4 [00:00<00:00, 12.06it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]
+
+  OK 140 done, 0 failed | 0.8 img/s | ~448s remaining
+
+[141/480] golden_fortune/s3_watch | elapsed 186s | ETA ~7.5m
+  -> watch, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.06it/s]100%|##########| 4/4 [00:00<00:00, 10.72it/s]100%|##########| 4/4 [00:00<00:00, 10.90it/s]
+[142/480] golden_fortune/s4_ring_gold | elapsed 187s | ETA ~7.5m
+  -> ring gold, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ma...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.46it/s]100%|##########| 4/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 11.48it/s]
+[143/480] golden_fortune/s5_limo | elapsed 189s | ETA ~7.5m
+  -> limo, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.81it/s]100%|##########| 4/4 [00:00<00:00,  8.73it/s]100%|##########| 4/4 [00:00<00:00,  8.99it/s]
+[144/480] golden_fortune/wild_fortune | elapsed 190s | ETA ~7.5m
+  -> golden glowing WILD fortune symbol, casino slot machine game icon, polished 24k gold, divi...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.59it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.85it/s]100%|##########| 4/4 [00:00<00:00, 10.68it/s]
+[145/480] island_tiki/s1_coconut | elapsed 192s | ETA ~7.5m
+  -> coconut, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.31it/s]100%|##########| 4/4 [00:00<00:00,  9.82it/s]100%|##########| 4/4 [00:00<00:00,  9.89it/s]
+[146/480] island_tiki/s2_hibiscus | elapsed 193s | ETA ~7.4m
+  -> hibiscus, casino slot machine game icon, textured natural stone bronze, wildlife earthy to...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.50it/s]100%|##########| 4/4 [00:00<00:00, 11.71it/s]100%|##########| 4/4 [00:00<00:00, 11.82it/s]
+[147/480] island_tiki/s3_ukulele | elapsed 195s | ETA ~7.4m
+  -> ukulele, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.49it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.50it/s]100%|##########| 4/4 [00:00<00:00, 10.80it/s]
+[148/480] island_tiki/s4_tiki_mask | elapsed 196s | ETA ~7.4m
+  -> tiki mask, casino slot machine game icon, textured natural stone bronze, wildlife earthy t...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00,  9.02it/s] 75%|#######5  | 3/4 [00:00<00:00,  9.08it/s]100%|##########| 4/4 [00:00<00:00,  8.74it/s]100%|##########| 4/4 [00:00<00:00,  8.83it/s]
+[149/480] island_tiki/s5_golden_idol | elapsed 198s | ETA ~7.4m
+  -> golden idol, casino slot machine game icon, textured natural stone bronze, wildlife earthy...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.34it/s]100%|##########| 4/4 [00:00<00:00, 11.32it/s]100%|##########| 4/4 [00:00<00:00, 11.31it/s]
+[150/480] island_tiki/wild_tiki | elapsed 199s | ETA ~7.4m
+  -> golden glowing WILD tiki symbol, casino slot machine game icon, textured natural stone bro...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.83it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.32it/s]100%|##########| 4/4 [00:00<00:00, 10.30it/s]
+
+  OK 150 done, 0 failed | 0.8 img/s | ~438s remaining
+
+[151/480] sakura_princess/s1_cherry_blossom | elapsed 200s | ETA ~7.3m
+  -> cherry blossom, casino slot machine game icon, lacquered vermilion red, gold filigree, jad...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.46it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]
+[152/480] sakura_princess/s2_origami | elapsed 202s | ETA ~7.3m
+  -> origami, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.60it/s] 75%|#######5  | 3/4 [00:00<00:00, 11.55it/s]100%|##########| 4/4 [00:00<00:00, 11.78it/s]
+[153/480] sakura_princess/s3_katana | elapsed 203s | ETA ~7.3m
+  -> katana, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.27it/s]100%|##########| 4/4 [00:00<00:00, 11.58it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]
+[154/480] sakura_princess/s4_moon_fan | elapsed 204s | ETA ~7.3m
+  -> moon fan, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inla...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 11.55it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]
+[155/480] sakura_princess/s5_jade_dragon | elapsed 206s | ETA ~7.3m
+  -> jade dragon, casino slot machine game icon, lacquered vermilion red, gold filigree, jade i...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.36it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]
+[156/480] sakura_princess/wild_sakura | elapsed 207s | ETA ~7.2m
+  -> golden glowing WILD sakura symbol, casino slot machine game icon, lacquered vermilion red,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.96it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]
+[157/480] ares_blade/s1_dagger | elapsed 209s | ETA ~7.2m
+  -> dagger, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.61it/s]100%|##########| 4/4 [00:00<00:00, 12.18it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]
+[158/480] ares_blade/s2_shield_war | elapsed 210s | ETA ~7.2m
+  -> shield war, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek m...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.03it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]
+[159/480] ares_blade/s3_spear | elapsed 211s | ETA ~7.2m
+  -> spear, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.02it/s]100%|##########| 4/4 [00:00<00:00, 11.15it/s]100%|##########| 4/4 [00:00<00:00, 11.13it/s]
+[160/480] ares_blade/s4_war_helm | elapsed 212s | ETA ~7.2m
+  -> war helm, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek mar...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.82it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]
+
+  OK 160 done, 0 failed | 0.8 img/s | ~425s remaining
+
+[161/480] ares_blade/s5_blood_gem | elapsed 214s | ETA ~7.1m
+  -> blood gem, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ma...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.68it/s]100%|##########| 4/4 [00:00<00:00, 11.60it/s]
+[162/480] ares_blade/wild_ares | elapsed 215s | ETA ~7.1m
+  -> golden glowing WILD ares symbol, casino slot machine game icon, polished 24k gold, divine ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 12.15it/s]100%|##########| 4/4 [00:00<00:00, 12.10it/s]
+[163/480] neon_nights/s1_dice | elapsed 217s | ETA ~7.1m
+  -> dice, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk la...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.85it/s]100%|##########| 4/4 [00:00<00:00, 10.95it/s]100%|##########| 4/4 [00:00<00:00, 10.94it/s]
+[164/480] neon_nights/s2_cocktail | elapsed 218s | ETA ~7.1m
+  -> cocktail, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]
+[165/480] neon_nights/s3_sports_car | elapsed 219s | ETA ~7.0m
+  -> sports car, casino slot machine game icon, electric neon glow, holographic shimmer, cyberp...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.85it/s]100%|##########| 4/4 [00:00<00:00, 11.32it/s]100%|##########| 4/4 [00:00<00:00, 11.24it/s]
+[166/480] neon_nights/s4_cash_stack | elapsed 221s | ETA ~7.0m
+  -> cash stack, casino slot machine game icon, electric neon glow, holographic shimmer, cyberp...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.60it/s]100%|##########| 4/4 [00:00<00:00, 11.33it/s]100%|##########| 4/4 [00:00<00:00, 11.36it/s]
+[167/480] neon_nights/s5_vip_chip | elapsed 222s | ETA ~7.0m
+  -> vip chip, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.84it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]
+[168/480] neon_nights/wild_neon | elapsed 223s | ETA ~7.0m
+  -> golden glowing WILD neon symbol, casino slot machine game icon, electric neon glow, hologr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.79it/s]100%|##########| 4/4 [00:00<00:00, 11.00it/s]100%|##########| 4/4 [00:00<00:00, 10.97it/s]
+[169/480] viking_voyage/s1_axe | elapsed 225s | ETA ~7.0m
+  -> stone axe viking weapon, casino slot machine game icon, textured natural stone bronze, wil...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.97it/s] 75%|#######5  | 3/4 [00:00<00:00,  9.63it/s]100%|##########| 4/4 [00:00<00:00, 10.02it/s]
+[170/480] viking_voyage/s2_horn | elapsed 226s | ETA ~6.9m
+  -> ram horn Viking drinking horn, casino slot machine game icon, textured natural stone bronz...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.37it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]
+
+  OK 170 done, 0 failed | 0.8 img/s | ~413s remaining
+
+[171/480] viking_voyage/s3_rune | elapsed 228s | ETA ~6.9m
+  -> rune, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.53it/s]100%|##########| 4/4 [00:00<00:00, 12.33it/s]100%|##########| 4/4 [00:00<00:00, 12.20it/s]
+[172/480] viking_voyage/s4_longship | elapsed 229s | ETA ~6.9m
+  -> longship, casino slot machine game icon, textured natural stone bronze, wildlife earthy to...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]
+[173/480] viking_voyage/s5_odin_eye | elapsed 230s | ETA ~6.9m
+  -> odin eye, casino slot machine game icon, textured natural stone bronze, wildlife earthy to...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]
+[174/480] viking_voyage/wild_viking | elapsed 232s | ETA ~6.9m
+  -> golden glowing WILD viking symbol, casino slot machine game icon, textured natural stone b...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.70it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]100%|##########| 4/4 [00:00<00:00, 11.09it/s]
+[175/480] diamond_vault/s1_sapphire | elapsed 233s | ETA ~6.8m
+  -> sapphire, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]100%|##########| 4/4 [00:00<00:00, 11.25it/s]
+[176/480] diamond_vault/s2_ruby | elapsed 234s | ETA ~6.8m
+  -> ruby, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk la...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.67it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]
+[177/480] diamond_vault/s3_emerald_cut | elapsed 236s | ETA ~6.8m
+  -> emerald cut, casino slot machine game icon, electric neon glow, holographic shimmer, cyber...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.40it/s]100%|##########| 4/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.52it/s]
+[178/480] diamond_vault/s4_black_diamond | elapsed 237s | ETA ~6.8m
+  -> black diamond, casino slot machine game icon, electric neon glow, holographic shimmer, cyb...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 12.13it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+[179/480] diamond_vault/s5_crown_jewel | elapsed 238s | ETA ~6.7m
+  -> crown jewel, casino slot machine game icon, electric neon glow, holographic shimmer, cyber...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 12.40it/s]100%|##########| 4/4 [00:00<00:00, 12.30it/s]
+[180/480] diamond_vault/wild_vault | elapsed 240s | ETA ~6.7m
+  -> golden glowing WILD vault symbol, casino slot machine game icon, electric neon glow, holog...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 12.19it/s]100%|##########| 4/4 [00:00<00:00, 12.13it/s]
+
+  OK 180 done, 0 failed | 0.8 img/s | ~400s remaining
+
+[181/480] madame_destiny/s1_candle | elapsed 241s | ETA ~6.7m
+  -> candle, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.47it/s]100%|##########| 4/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.67it/s]
+[182/480] madame_destiny/s2_potion | elapsed 242s | ETA ~6.7m
+  -> potion, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.10it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]100%|##########| 4/4 [00:00<00:00, 11.63it/s]
+[183/480] madame_destiny/s3_crystal_ball | elapsed 244s | ETA ~6.7m
+  -> crystal ball, casino slot machine game icon, obsidian black, deep crimson, purple spectral...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+[184/480] madame_destiny/s4_tarot | elapsed 245s | ETA ~6.6m
+  -> tarot, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.92it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]
+[185/480] madame_destiny/s5_mystic_eye | elapsed 247s | ETA ~6.6m
+  -> mystic eye, casino slot machine game icon, obsidian black, deep crimson, purple spectral g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 11.87it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]
+[186/480] madame_destiny/wild_destiny | elapsed 248s | ETA ~6.6m
+  -> golden glowing WILD destiny symbol, casino slot machine game icon, obsidian black, deep cr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.42it/s]100%|##########| 4/4 [00:00<00:00, 11.87it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]
+[187/480] great_rhino/s1_flamingo | elapsed 249s | ETA ~6.6m
+  -> flamingo, casino slot machine game icon, textured natural stone bronze, wildlife earthy to...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.97it/s]100%|##########| 4/4 [00:00<00:00, 11.00it/s]100%|##########| 4/4 [00:00<00:00, 10.99it/s]
+[188/480] great_rhino/s2_crocodile | elapsed 251s | ETA ~6.5m
+  -> crocodile, casino slot machine game icon, textured natural stone bronze, wildlife earthy t...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.44it/s]100%|##########| 4/4 [00:00<00:00, 11.08it/s]100%|##########| 4/4 [00:00<00:00, 11.13it/s]
+[189/480] great_rhino/s3_gorilla | elapsed 252s | ETA ~6.5m
+  -> gorilla, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 12.31it/s]100%|##########| 4/4 [00:00<00:00, 12.24it/s]
+[190/480] great_rhino/s4_rhino | elapsed 253s | ETA ~6.5m
+  -> rhino, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]100%|##########| 4/4 [00:00<00:00, 11.42it/s]
+
+  OK 190 done, 0 failed | 0.8 img/s | ~387s remaining
+
+[191/480] great_rhino/s5_savanna_gem | elapsed 255s | ETA ~6.5m
+  -> savanna gem, casino slot machine game icon, textured natural stone bronze, wildlife earthy...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.94it/s]100%|##########| 4/4 [00:00<00:00, 11.39it/s]100%|##########| 4/4 [00:00<00:00, 11.31it/s]
+[192/480] great_rhino/wild_rhino | elapsed 256s | ETA ~6.5m
+  -> golden glowing WILD rhino symbol, casino slot machine game icon, textured natural stone br...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.99it/s]100%|##########| 4/4 [00:00<00:00, 11.97it/s]
+[193/480] bass_splash/s1_worm | elapsed 257s | ETA ~6.4m
+  -> worm, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope textur...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.39it/s]100%|##########| 4/4 [00:00<00:00, 11.43it/s]
+[194/480] bass_splash/s2_reel | elapsed 259s | ETA ~6.4m
+  -> reel, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope textur...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.71it/s]100%|##########| 4/4 [00:00<00:00, 11.06it/s]100%|##########| 4/4 [00:00<00:00, 11.15it/s]
+[195/480] bass_splash/s3_net | elapsed 260s | ETA ~6.4m
+  -> net, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope texture...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 11.42it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]
+[196/480] bass_splash/s4_marlin | elapsed 262s | ETA ~6.4m
+  -> marlin, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope text...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.05it/s]100%|##########| 4/4 [00:00<00:00, 11.36it/s]100%|##########| 4/4 [00:00<00:00, 11.30it/s]
+[197/480] bass_splash/s5_golden_lure | elapsed 263s | ETA ~6.4m
+  -> golden lure, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.58it/s]100%|##########| 4/4 [00:00<00:00, 10.41it/s]100%|##########| 4/4 [00:00<00:00, 10.43it/s]
+[198/480] bass_splash/wild_splash | elapsed 264s | ETA ~6.3m
+  -> golden glowing WILD splash symbol, casino slot machine game icon, ocean teal, weathered do...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.96it/s]100%|##########| 4/4 [00:00<00:00, 10.82it/s]100%|##########| 4/4 [00:00<00:00, 10.83it/s]
+[199/480] dragon_megafire/s1_coin_dragon | elapsed 266s | ETA ~6.3m
+  -> coin dragon, casino slot machine game icon, lacquered vermilion red, gold filigree, jade i...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.15it/s]100%|##########| 4/4 [00:00<00:00, 10.93it/s]100%|##########| 4/4 [00:00<00:00, 10.95it/s]
+[200/480] dragon_megafire/s2_scroll | elapsed 267s | ETA ~6.3m
+  -> scroll, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.75it/s]100%|##########| 4/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]
+
+  OK 200 done, 0 failed | 0.7 img/s | ~374s remaining
+
+[201/480] dragon_megafire/s3_pagoda | elapsed 269s | ETA ~6.3m
+  -> pagoda, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+[202/480] dragon_megafire/s4_fire_dragon | elapsed 270s | ETA ~6.2m
+  -> fire dragon, casino slot machine game icon, lacquered vermilion red, gold filigree, jade i...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.24it/s]100%|##########| 4/4 [00:00<00:00, 12.22it/s]100%|##########| 4/4 [00:00<00:00, 12.21it/s]
+[203/480] dragon_megafire/s5_imperial_seal | elapsed 271s | ETA ~6.2m
+  -> imperial seal, casino slot machine game icon, lacquered vermilion red, gold filigree, jade...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 12.23it/s]100%|##########| 4/4 [00:00<00:00, 12.12it/s]
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['masterpiece']
+[204/480] dragon_megafire/wild_megafire | elapsed 273s | ETA ~6.2m
+  -> golden glowing WILD megafire symbol, casino slot machine game icon, lacquered vermilion re...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]
+[205/480] esqueleto_fiesta/s1_guitar | elapsed 274s | ETA ~6.2m
+  -> guitar, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.86it/s]100%|##########| 4/4 [00:00<00:00, 10.97it/s]100%|##########| 4/4 [00:00<00:00, 10.95it/s]
+[206/480] esqueleto_fiesta/s2_trumpet | elapsed 275s | ETA ~6.2m
+  -> trumpet, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoot...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.76it/s]100%|##########| 4/4 [00:00<00:00, 10.84it/s]100%|##########| 4/4 [00:00<00:00, 10.83it/s]
+[207/480] esqueleto_fiesta/s3_skull_red | elapsed 277s | ETA ~6.1m
+  -> skull red, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.93it/s]100%|##########| 4/4 [00:00<00:00, 11.11it/s]100%|##########| 4/4 [00:00<00:00, 11.08it/s]
+[208/480] esqueleto_fiesta/s4_skull_gold | elapsed 278s | ETA ~6.1m
+  -> skull gold, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.00it/s]100%|##########| 4/4 [00:00<00:00, 11.61it/s]100%|##########| 4/4 [00:00<00:00, 11.65it/s]
+[209/480] esqueleto_fiesta/s5_sugar_skull | elapsed 279s | ETA ~6.1m
+  -> sugar skull, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.93it/s]100%|##########| 4/4 [00:00<00:00, 10.55it/s]100%|##########| 4/4 [00:00<00:00, 10.59it/s]
+[210/480] esqueleto_fiesta/wild_esqueleto | elapsed 281s | ETA ~6.1m
+  -> golden glowing WILD esqueleto symbol, casino slot machine game icon, vibrant pastel candy ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.89it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.94it/s]
+
+  OK 210 done, 0 failed | 0.7 img/s | ~361s remaining
+
+[211/480] wildfire_gold/s1_wanted_poster | elapsed 282s | ETA ~6.0m
+  -> wanted poster, casino slot machine game icon, aged brass patina, hand-engraved metal, sepi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.85it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]
+[212/480] wildfire_gold/s2_whiskey | elapsed 283s | ETA ~6.0m
+  -> whiskey, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.10it/s]100%|##########| 4/4 [00:00<00:00, 11.15it/s]
+[213/480] wildfire_gold/s3_dynamite | elapsed 285s | ETA ~6.0m
+  -> dynamite, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia woo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.60it/s]100%|##########| 4/4 [00:00<00:00, 11.62it/s]100%|##########| 4/4 [00:00<00:00, 11.62it/s]
+[214/480] wildfire_gold/s4_sheriff_badge | elapsed 286s | ETA ~6.0m
+  -> sheriff badge, casino slot machine game icon, aged brass patina, hand-engraved metal, sepi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 11.12it/s]100%|##########| 4/4 [00:00<00:00, 11.12it/s]
+[215/480] wildfire_gold/s5_gold_nugget | elapsed 288s | ETA ~6.0m
+  -> gold nugget, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.28it/s]100%|##########| 4/4 [00:00<00:00, 11.46it/s]100%|##########| 4/4 [00:00<00:00, 11.42it/s]
+[216/480] wildfire_gold/wild_wildfire | elapsed 289s | ETA ~5.9m
+  -> golden glowing WILD wildfire symbol, casino slot machine game icon, aged brass patina, han...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.25it/s]100%|##########| 4/4 [00:00<00:00, 12.47it/s]100%|##########| 4/4 [00:00<00:00, 12.44it/s]
+[217/480] five_lions/s1_drum | elapsed 290s | ETA ~5.9m
+  -> drum, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay, s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.05it/s]100%|##########| 4/4 [00:00<00:00, 11.12it/s]
+[218/480] five_lions/s2_firecracker | elapsed 292s | ETA ~5.9m
+  -> firecracker, casino slot machine game icon, lacquered vermilion red, gold filigree, jade i...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.92it/s]100%|##########| 4/4 [00:00<00:00, 11.82it/s]100%|##########| 4/4 [00:00<00:00, 11.67it/s]
+[219/480] five_lions/s3_lion_dance | elapsed 293s | ETA ~5.9m
+  -> lion dance, casino slot machine game icon, lacquered vermilion red, gold filigree, jade in...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.35it/s]100%|##########| 4/4 [00:00<00:00, 11.33it/s]
+[220/480] five_lions/s4_golden_lion | elapsed 294s | ETA ~5.8m
+  -> golden lion, casino slot machine game icon, lacquered vermilion red, gold filigree, jade i...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.85it/s]100%|##########| 4/4 [00:00<00:00, 10.62it/s]100%|##########| 4/4 [00:00<00:00, 10.62it/s]
+
+  OK 220 done, 0 failed | 0.7 img/s | ~348s remaining
+
+[221/480] five_lions/s5_fortune_coin | elapsed 296s | ETA ~5.8m
+  -> fortune coin, casino slot machine game icon, lacquered vermilion red, gold filigree, jade ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.99it/s]100%|##########| 4/4 [00:00<00:00, 10.96it/s]100%|##########| 4/4 [00:00<00:00, 10.95it/s]
+[222/480] five_lions/wild_lions | elapsed 297s | ETA ~5.8m
+  -> golden glowing WILD lions symbol, casino slot machine game icon, lacquered vermilion red, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.33it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]100%|##########| 4/4 [00:00<00:00, 11.17it/s]
+[223/480] chilli_heat/s1_pepper_green | elapsed 299s | ETA ~5.8m
+  -> pepper green, casino slot machine game icon, textured natural stone bronze, wildlife earth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.51it/s]100%|##########| 4/4 [00:00<00:00, 12.12it/s]100%|##########| 4/4 [00:00<00:00, 12.18it/s]
+[224/480] chilli_heat/s2_pepper_red | elapsed 300s | ETA ~5.8m
+  -> pepper red, casino slot machine game icon, textured natural stone bronze, wildlife earthy ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 11.11it/s]100%|##########| 4/4 [00:00<00:00, 11.13it/s]
+[225/480] chilli_heat/s3_chihuahua | elapsed 301s | ETA ~5.7m
+  -> chihuahua, casino slot machine game icon, textured natural stone bronze, wildlife earthy t...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.21it/s]100%|##########| 4/4 [00:00<00:00, 11.42it/s]100%|##########| 4/4 [00:00<00:00, 11.39it/s]
+[226/480] chilli_heat/s4_pinata | elapsed 303s | ETA ~5.7m
+  -> pinata, casino slot machine game icon, textured natural stone bronze, wildlife earthy tone...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.61it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]
+[227/480] chilli_heat/s5_money_chilli | elapsed 304s | ETA ~5.7m
+  -> money chilli, casino slot machine game icon, textured natural stone bronze, wildlife earth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.63it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]100%|##########| 4/4 [00:00<00:00, 12.17it/s]
+[228/480] chilli_heat/wild_heat | elapsed 305s | ETA ~5.7m
+  -> golden glowing WILD heat symbol, casino slot machine game icon, textured natural stone bro...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.28it/s]100%|##########| 4/4 [00:00<00:00, 11.69it/s]100%|##########| 4/4 [00:00<00:00, 11.61it/s]
+[229/480] tombstone_reload/s1_boots | elapsed 307s | ETA ~5.6m
+  -> boots, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.52it/s]100%|##########| 4/4 [00:00<00:00, 11.55it/s]
+[230/480] tombstone_reload/s2_revolver | elapsed 308s | ETA ~5.6m
+  -> revolver, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia woo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.63it/s]100%|##########| 4/4 [00:00<00:00, 10.35it/s]100%|##########| 4/4 [00:00<00:00, 10.39it/s]
+
+  OK 230 done, 0 failed | 0.7 img/s | ~335s remaining
+
+[231/480] tombstone_reload/s3_wanted | elapsed 309s | ETA ~5.6m
+  -> wanted, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.62it/s]100%|##########| 4/4 [00:00<00:00, 10.87it/s]100%|##########| 4/4 [00:00<00:00, 10.82it/s]
+[232/480] tombstone_reload/s4_outlaw | elapsed 311s | ETA ~5.6m
+  -> outlaw, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.93it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]
+[233/480] tombstone_reload/s5_bounty_skull | elapsed 312s | ETA ~5.6m
+  -> bounty skull, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.05it/s]100%|##########| 4/4 [00:00<00:00, 11.18it/s]100%|##########| 4/4 [00:00<00:00, 11.15it/s]
+[234/480] tombstone_reload/wild_tombstone | elapsed 314s | ETA ~5.5m
+  -> golden glowing WILD tombstone symbol, casino slot machine game icon, aged brass patina, ha...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.86it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]
+[235/480] mental_meltdown/s1_pill | elapsed 315s | ETA ~5.5m
+  -> pill, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk la...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.26it/s]100%|##########| 4/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+[236/480] mental_meltdown/s2_syringe | elapsed 316s | ETA ~5.5m
+  -> syringe, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.37it/s]100%|##########| 4/4 [00:00<00:00, 11.28it/s]100%|##########| 4/4 [00:00<00:00, 11.28it/s]
+[237/480] mental_meltdown/s3_straitjacket | elapsed 318s | ETA ~5.5m
+  -> straitjacket, casino slot machine game icon, electric neon glow, holographic shimmer, cybe...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.53it/s]100%|##########| 4/4 [00:00<00:00, 11.04it/s]100%|##########| 4/4 [00:00<00:00, 11.11it/s]
+[238/480] mental_meltdown/s4_electric | elapsed 319s | ETA ~5.5m
+  -> electric, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.13it/s]100%|##########| 4/4 [00:00<00:00, 10.80it/s]100%|##########| 4/4 [00:00<00:00, 10.84it/s]
+[239/480] mental_meltdown/s5_brain | elapsed 320s | ETA ~5.4m
+  -> brain, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.41it/s]100%|##########| 4/4 [00:00<00:00, 11.42it/s]
+[240/480] mental_meltdown/wild_mental | elapsed 322s | ETA ~5.4m
+  -> golden glowing WILD mental symbol, casino slot machine game icon, electric neon glow, holo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.43it/s]100%|##########| 4/4 [00:00<00:00, 12.39it/s]100%|##########| 4/4 [00:00<00:00, 12.38it/s]
+
+  OK 240 done, 0 failed | 0.7 img/s | ~322s remaining
+
+[241/480] san_quentin/s1_handcuffs | elapsed 323s | ETA ~5.4m
+  -> handcuffs, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.00it/s]100%|##########| 4/4 [00:00<00:00, 11.61it/s]100%|##########| 4/4 [00:00<00:00, 11.52it/s]
+[242/480] san_quentin/s2_key_ring | elapsed 324s | ETA ~5.4m
+  -> key ring, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia woo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 11.68it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]
+[243/480] san_quentin/s3_guard | elapsed 326s | ETA ~5.3m
+  -> guard, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.99it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]100%|##########| 4/4 [00:00<00:00, 11.87it/s]
+[244/480] san_quentin/s4_razor_wire | elapsed 327s | ETA ~5.3m
+  -> razor wire, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia w...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+[245/480] san_quentin/s5_freedom_gem | elapsed 329s | ETA ~5.3m
+  -> freedom gem, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.98it/s]100%|##########| 4/4 [00:00<00:00, 11.67it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]
+[246/480] san_quentin/wild_quentin | elapsed 330s | ETA ~5.3m
+  -> golden glowing WILD quentin symbol, casino slot machine game icon, aged brass patina, hand...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 10.97it/s]100%|##########| 4/4 [00:00<00:00, 11.04it/s]
+[247/480] nitro_street/s1_spray_can | elapsed 331s | ETA ~5.3m
+  -> spray can, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]
+[248/480] nitro_street/s2_boombox | elapsed 333s | ETA ~5.2m
+  -> boombox, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.01it/s]100%|##########| 4/4 [00:00<00:00, 11.66it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]
+[249/480] nitro_street/s3_skateboard | elapsed 334s | ETA ~5.2m
+  -> skateboard, casino slot machine game icon, electric neon glow, holographic shimmer, cyberp...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.28it/s]100%|##########| 4/4 [00:00<00:00, 11.41it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]
+[250/480] nitro_street/s4_bulldog | elapsed 335s | ETA ~5.2m
+  -> bulldog, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.72it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.80it/s]
+
+  OK 250 done, 0 failed | 0.7 img/s | ~308s remaining
+
+[251/480] nitro_street/s5_nitro_gem | elapsed 337s | ETA ~5.2m
+  -> nitro gem, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.75it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]
+[252/480] nitro_street/wild_nitro | elapsed 338s | ETA ~5.1m
+  -> golden glowing WILD nitro symbol, casino slot machine game icon, electric neon glow, holog...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]100%|##########| 4/4 [00:00<00:00, 11.80it/s]
+[253/480] wild_toro/s1_cape | elapsed 339s | ETA ~5.1m
+  -> cape, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.06it/s]100%|##########| 4/4 [00:00<00:00, 10.93it/s]100%|##########| 4/4 [00:00<00:00, 11.09it/s]
+[254/480] wild_toro/s2_rose | elapsed 341s | ETA ~5.1m
+  -> blood red rose with thorns, casino slot machine game icon, textured natural stone bronze, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]
+[255/480] wild_toro/s3_sword | elapsed 342s | ETA ~5.1m
+  -> sword, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.87it/s]100%|##########| 4/4 [00:00<00:00, 10.59it/s]100%|##########| 4/4 [00:00<00:00, 10.63it/s]
+[256/480] wild_toro/s4_matador | elapsed 343s | ETA ~5.1m
+  -> matador, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 12.10it/s]100%|##########| 4/4 [00:00<00:00, 12.05it/s]
+[257/480] wild_toro/s5_golden_horn | elapsed 345s | ETA ~5.0m
+  -> golden horn, casino slot machine game icon, textured natural stone bronze, wildlife earthy...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 12.35it/s]100%|##########| 4/4 [00:00<00:00, 12.25it/s]
+[258/480] wild_toro/wild_toro | elapsed 346s | ETA ~5.0m
+  -> golden glowing WILD toro symbol, casino slot machine game icon, textured natural stone bro...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.41it/s]100%|##########| 4/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 11.87it/s]
+[259/480] jammin_fruits/s1_strawberry | elapsed 347s | ETA ~5.0m
+  -> strawberry, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 12.49it/s]100%|##########| 4/4 [00:00<00:00, 12.38it/s]
+[260/480] jammin_fruits/s2_orange | elapsed 349s | ETA ~5.0m
+  -> orange, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]
+
+  OK 260 done, 0 failed | 0.7 img/s | ~295s remaining
+
+[261/480] jammin_fruits/s3_raspberry | elapsed 350s | ETA ~4.9m
+  -> raspberry, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.75it/s]100%|##########| 4/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 11.57it/s]
+[262/480] jammin_fruits/s4_plum_jar | elapsed 351s | ETA ~4.9m
+  -> plum jar, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00,  9.98it/s] 75%|#######5  | 3/4 [00:00<00:00,  9.90it/s]100%|##########| 4/4 [00:00<00:00, 10.29it/s]
+[263/480] jammin_fruits/s5_rainbow_fruit | elapsed 353s | ETA ~4.9m
+  -> rainbow fruit, casino slot machine game icon, vibrant pastel candy colors, glossy plastic,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.10it/s]100%|##########| 4/4 [00:00<00:00, 12.03it/s]100%|##########| 4/4 [00:00<00:00, 12.18it/s]
+[264/480] jammin_fruits/wild_jam | elapsed 354s | ETA ~4.9m
+  -> golden glowing WILD jam symbol, casino slot machine game icon, vibrant pastel candy colors...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]
+[265/480] big_bamboo/s1_bamboo_shoot | elapsed 356s | ETA ~4.8m
+  -> bamboo shoot, casino slot machine game icon, lacquered vermilion red, gold filigree, jade ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.96it/s]100%|##########| 4/4 [00:00<00:00, 11.93it/s]
+[266/480] big_bamboo/s2_panda | elapsed 357s | ETA ~4.8m
+  -> panda, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 12.25it/s]100%|##########| 4/4 [00:00<00:00, 12.10it/s]
+[267/480] big_bamboo/s3_temple_bell | elapsed 358s | ETA ~4.8m
+  -> temple bell, casino slot machine game icon, lacquered vermilion red, gold filigree, jade i...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]
+[268/480] big_bamboo/s4_jade_frog | elapsed 360s | ETA ~4.8m
+  -> jade frog, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 12.19it/s]100%|##########| 4/4 [00:00<00:00, 12.10it/s]
+[269/480] big_bamboo/s5_golden_bamboo | elapsed 361s | ETA ~4.8m
+  -> golden bamboo, casino slot machine game icon, lacquered vermilion red, gold filigree, jade...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.28it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]
+[270/480] big_bamboo/wild_bamboo | elapsed 362s | ETA ~4.7m
+  -> golden WILD bamboo WILD symbol, casino slot machine game icon, lacquered vermilion red, go...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.00it/s]100%|##########| 4/4 [00:00<00:00, 11.19it/s]100%|##########| 4/4 [00:00<00:00, 11.16it/s]
+
+  OK 270 done, 0 failed | 0.7 img/s | ~282s remaining
+
+[271/480] fat_rabbit/s1_carrot | elapsed 364s | ETA ~4.7m
+  -> carrot, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 10.94it/s]100%|##########| 4/4 [00:00<00:00, 10.98it/s]
+[272/480] fat_rabbit/s2_cabbage | elapsed 365s | ETA ~4.7m
+  -> cabbage, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoot...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.51it/s]100%|##########| 4/4 [00:00<00:00, 12.70it/s]100%|##########| 4/4 [00:00<00:00, 12.67it/s]
+[273/480] fat_rabbit/s3_turnip | elapsed 366s | ETA ~4.7m
+  -> turnip, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.87it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]
+[274/480] fat_rabbit/s4_fat_bunny | elapsed 368s | ETA ~4.6m
+  -> fat bunny, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.53it/s]100%|##########| 4/4 [00:00<00:00, 11.49it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+[275/480] fat_rabbit/s5_golden_carrot | elapsed 369s | ETA ~4.6m
+  -> golden carrot, casino slot machine game icon, vibrant pastel candy colors, glossy plastic,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 10.98it/s]100%|##########| 4/4 [00:00<00:00, 11.07it/s]
+[276/480] fat_rabbit/wild_rabbit | elapsed 371s | ETA ~4.6m
+  -> golden glowing WILD rabbit symbol, casino slot machine game icon, vibrant pastel candy col...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.82it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]100%|##########| 4/4 [00:00<00:00, 11.69it/s]
+[277/480] immortal_blood/s1_castle | elapsed 372s | ETA ~4.6m
+  -> castle, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.12it/s]100%|##########| 4/4 [00:00<00:00, 11.21it/s]100%|##########| 4/4 [00:00<00:00, 11.18it/s]
+[278/480] immortal_blood/s2_blood_rose | elapsed 373s | ETA ~4.6m
+  -> blood rose, casino slot machine game icon, obsidian black, deep crimson, purple spectral g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.17it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 11.94it/s]
+[279/480] immortal_blood/s3_wolf_moon | elapsed 375s | ETA ~4.5m
+  -> wolf moon, casino slot machine game icon, obsidian black, deep crimson, purple spectral gl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.53it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]
+[280/480] immortal_blood/s4_vampire_lady | elapsed 376s | ETA ~4.5m
+  -> vampire lady, casino slot machine game icon, obsidian black, deep crimson, purple spectral...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]100%|##########| 4/4 [00:00<00:00, 11.57it/s]
+
+  OK 280 done, 0 failed | 0.7 img/s | ~269s remaining
+
+[281/480] immortal_blood/s5_immortal_ring | elapsed 377s | ETA ~4.5m
+  -> immortal ring, casino slot machine game icon, obsidian black, deep crimson, purple spectra...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.61it/s]100%|##########| 4/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 12.20it/s]
+[282/480] immortal_blood/wild_immortal | elapsed 379s | ETA ~4.5m
+  -> golden glowing WILD immortal symbol, casino slot machine game icon, obsidian black, deep c...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.34it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+[283/480] mega_safari/s1_zebra | elapsed 380s | ETA ~4.4m
+  -> zebra, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.67it/s]100%|##########| 4/4 [00:00<00:00, 12.11it/s]100%|##########| 4/4 [00:00<00:00, 12.17it/s]
+[284/480] mega_safari/s2_giraffe | elapsed 381s | ETA ~4.4m
+  -> giraffe, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 12.55it/s]100%|##########| 4/4 [00:00<00:00, 12.50it/s]
+[285/480] mega_safari/s3_elephant | elapsed 383s | ETA ~4.4m
+  -> elephant, casino slot machine game icon, textured natural stone bronze, wildlife earthy to...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.59it/s]100%|##########| 4/4 [00:00<00:00, 12.67it/s]100%|##########| 4/4 [00:00<00:00, 12.65it/s]
+[286/480] mega_safari/s4_lion_king | elapsed 384s | ETA ~4.4m
+  -> lion king, casino slot machine game icon, textured natural stone bronze, wildlife earthy t...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.59it/s]100%|##########| 4/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]
+[287/480] mega_safari/s5_safari_diamond | elapsed 385s | ETA ~4.4m
+  -> safari diamond, casino slot machine game icon, textured natural stone bronze, wildlife ear...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.41it/s]100%|##########| 4/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]
+[288/480] mega_safari/wild_safari | elapsed 387s | ETA ~4.3m
+  -> golden glowing WILD safari symbol, casino slot machine game icon, textured natural stone b...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.32it/s]100%|##########| 4/4 [00:00<00:00, 11.35it/s]
+[289/480] lucha_mania/s1_mask_blue | elapsed 388s | ETA ~4.3m
+  -> mask blue, casino slot machine game icon, chrome mirror finish, polished steel, bright cas...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.06it/s]100%|##########| 4/4 [00:00<00:00, 12.37it/s]100%|##########| 4/4 [00:00<00:00, 12.31it/s]
+[290/480] lucha_mania/s2_mask_red | elapsed 389s | ETA ~4.3m
+  -> mask red, casino slot machine game icon, chrome mirror finish, polished steel, bright casi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.23it/s]100%|##########| 4/4 [00:00<00:00, 11.52it/s]100%|##########| 4/4 [00:00<00:00, 11.48it/s]
+
+  OK 290 done, 0 failed | 0.7 img/s | ~255s remaining
+
+[291/480] lucha_mania/s3_belt | elapsed 391s | ETA ~4.3m
+  -> belt, casino slot machine game icon, chrome mirror finish, polished steel, bright casino l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.91it/s]100%|##########| 4/4 [00:00<00:00, 12.26it/s]100%|##########| 4/4 [00:00<00:00, 12.19it/s]
+[292/480] lucha_mania/s4_luchador | elapsed 392s | ETA ~4.2m
+  -> luchador, casino slot machine game icon, chrome mirror finish, polished steel, bright casi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.12it/s]100%|##########| 4/4 [00:00<00:00, 11.49it/s]100%|##########| 4/4 [00:00<00:00, 11.43it/s]
+[293/480] lucha_mania/s5_championship | elapsed 393s | ETA ~4.2m
+  -> championship, casino slot machine game icon, chrome mirror finish, polished steel, bright ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.34it/s]100%|##########| 4/4 [00:00<00:00, 11.14it/s]100%|##########| 4/4 [00:00<00:00, 11.17it/s]
+[294/480] lucha_mania/wild_lucha | elapsed 395s | ETA ~4.2m
+  -> golden glowing WILD lucha symbol, casino slot machine game icon, chrome mirror finish, pol...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.47it/s]100%|##########| 4/4 [00:00<00:00, 11.99it/s]100%|##########| 4/4 [00:00<00:00, 12.06it/s]
+[295/480] extra_chilli/s1_jalapeno | elapsed 396s | ETA ~4.2m
+  -> jalapeno, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.09it/s]100%|##########| 4/4 [00:00<00:00, 11.44it/s]100%|##########| 4/4 [00:00<00:00, 11.38it/s]
+[296/480] extra_chilli/s2_habanero | elapsed 397s | ETA ~4.2m
+  -> habanero, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.76it/s]100%|##########| 4/4 [00:00<00:00, 12.70it/s]100%|##########| 4/4 [00:00<00:00, 12.71it/s]
+[297/480] extra_chilli/s3_ghost_pepper | elapsed 399s | ETA ~4.1m
+  -> ghost pepper, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.75it/s]100%|##########| 4/4 [00:00<00:00, 10.82it/s]100%|##########| 4/4 [00:00<00:00, 10.81it/s]
+[298/480] extra_chilli/s4_carolina_reaper | elapsed 400s | ETA ~4.1m
+  -> carolina reaper, casino slot machine game icon, vibrant pastel candy colors, glossy plasti...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.45it/s]100%|##########| 4/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]
+[299/480] extra_chilli/s5_fire_crystal | elapsed 402s | ETA ~4.1m
+  -> fire crystal, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.84it/s]100%|##########| 4/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+[300/480] extra_chilli/wild_extra | elapsed 403s | ETA ~4.1m
+  -> golden glowing WILD extra symbol, casino slot machine game icon, vibrant pastel candy colo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.37it/s]100%|##########| 4/4 [00:00<00:00, 11.43it/s]
+
+  OK 300 done, 0 failed | 0.7 img/s | ~242s remaining
+
+[301/480] wanted_dead/s1_colt | elapsed 404s | ETA ~4.0m
+  -> colt, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood gr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.87it/s]100%|##########| 4/4 [00:00<00:00, 10.89it/s]100%|##########| 4/4 [00:00<00:00, 10.89it/s]
+[302/480] wanted_dead/s2_train | elapsed 406s | ETA ~4.0m
+  -> train, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.67it/s]100%|##########| 4/4 [00:00<00:00, 12.12it/s]100%|##########| 4/4 [00:00<00:00, 12.20it/s]
+[303/480] wanted_dead/s3_gold_pan | elapsed 407s | ETA ~4.0m
+  -> gold pan, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia woo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.85it/s]100%|##########| 4/4 [00:00<00:00, 11.63it/s]100%|##########| 4/4 [00:00<00:00, 11.49it/s]
+[304/480] wanted_dead/s4_bandit | elapsed 408s | ETA ~4.0m
+  -> bandit, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.44it/s]100%|##########| 4/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]
+[305/480] wanted_dead/s5_wanted_star | elapsed 410s | ETA ~4.0m
+  -> wanted star, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.94it/s]100%|##########| 4/4 [00:00<00:00, 11.13it/s]100%|##########| 4/4 [00:00<00:00, 11.10it/s]
+[306/480] wanted_dead/wild_wanted | elapsed 411s | ETA ~3.9m
+  -> golden glowing WILD wanted symbol, casino slot machine game icon, aged brass patina, hand-...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.21it/s]100%|##########| 4/4 [00:00<00:00, 11.19it/s]100%|##########| 4/4 [00:00<00:00, 11.19it/s]
+[307/480] chaos_crew/s1_skully | elapsed 412s | ETA ~3.9m
+  -> skully, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.25it/s]100%|##########| 4/4 [00:00<00:00, 12.24it/s]100%|##########| 4/4 [00:00<00:00, 12.22it/s]
+[308/480] chaos_crew/s2_cranky | elapsed 414s | ETA ~3.9m
+  -> cranky, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]
+[309/480] chaos_crew/s3_graffiti | elapsed 415s | ETA ~3.9m
+  -> graffiti, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.68it/s]100%|##########| 4/4 [00:00<00:00, 12.40it/s]100%|##########| 4/4 [00:00<00:00, 12.42it/s]
+[310/480] chaos_crew/s4_bomb | elapsed 417s | ETA ~3.8m
+  -> bomb, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk la...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.11it/s]100%|##########| 4/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+
+  OK 310 done, 0 failed | 0.7 img/s | ~228s remaining
+
+[311/480] chaos_crew/s5_chaos_gem | elapsed 418s | ETA ~3.8m
+  -> chaos gem, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.34it/s]100%|##########| 4/4 [00:00<00:00, 10.71it/s]100%|##########| 4/4 [00:00<00:00, 10.80it/s]
+[312/480] chaos_crew/wild_chaos | elapsed 419s | ETA ~3.8m
+  -> golden glowing WILD chaos symbol, casino slot machine game icon, electric neon glow, holog...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 10.63it/s]100%|##########| 4/4 [00:00<00:00, 10.78it/s]
+[313/480] le_bandit/s1_baguette | elapsed 421s | ETA ~3.8m
+  -> baguette, casino slot machine game icon, obsidian black, deep crimson, purple spectral glo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.71it/s]100%|##########| 4/4 [00:00<00:00, 12.42it/s]100%|##########| 4/4 [00:00<00:00, 12.44it/s]
+[314/480] le_bandit/s2_wine | elapsed 422s | ETA ~3.8m
+  -> wine, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.27it/s]100%|##########| 4/4 [00:00<00:00, 12.46it/s]100%|##########| 4/4 [00:00<00:00, 12.43it/s]
+[315/480] le_bandit/s3_eiffel | elapsed 423s | ETA ~3.7m
+  -> eiffel, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.50it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.90it/s]100%|##########| 4/4 [00:00<00:00, 10.79it/s]
+[316/480] le_bandit/s4_raccoon | elapsed 425s | ETA ~3.7m
+  -> raccoon, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.24it/s]100%|##########| 4/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 11.73it/s]
+[317/480] le_bandit/s5_diamond_bag | elapsed 426s | ETA ~3.7m
+  -> diamond bag, casino slot machine game icon, obsidian black, deep crimson, purple spectral ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.67it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 11.84it/s]
+[318/480] le_bandit/wild_bandit | elapsed 427s | ETA ~3.7m
+  -> golden glowing WILD bandit symbol, casino slot machine game icon, obsidian black, deep cri...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.67it/s]100%|##########| 4/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]
+[319/480] dead_alive/s1_cowboy_boots | elapsed 429s | ETA ~3.6m
+  -> cowboy boots, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.68it/s]100%|##########| 4/4 [00:00<00:00, 10.73it/s]100%|##########| 4/4 [00:00<00:00, 10.72it/s]
+[320/480] dead_alive/s2_hat_western | elapsed 430s | ETA ~3.6m
+  -> hat western, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.40it/s]100%|##########| 4/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+
+  OK 320 done, 0 failed | 0.7 img/s | ~215s remaining
+
+[321/480] dead_alive/s3_gun_holster | elapsed 431s | ETA ~3.6m
+  -> gun holster, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.28it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]
+[322/480] dead_alive/s4_saloon | elapsed 433s | ETA ~3.6m
+  -> saloon, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.34it/s]100%|##########| 4/4 [00:00<00:00, 12.06it/s]100%|##########| 4/4 [00:00<00:00, 12.10it/s]
+[323/480] dead_alive/s5_sheriff_star | elapsed 434s | ETA ~3.6m
+  -> sheriff star, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 12.18it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+[324/480] dead_alive/wild_dead | elapsed 436s | ETA ~3.5m
+  -> golden glowing WILD dead symbol, casino slot machine game icon, aged brass patina, hand-en...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.97it/s]100%|##########| 4/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.59it/s]
+[325/480] mega_joker/s1_cherry_classic | elapsed 437s | ETA ~3.5m
+  -> cherry classic, casino slot machine game icon, chrome mirror finish, polished steel, brigh...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.28it/s]100%|##########| 4/4 [00:00<00:00, 11.30it/s]100%|##########| 4/4 [00:00<00:00, 11.44it/s]
+[326/480] mega_joker/s2_lemon_classic | elapsed 438s | ETA ~3.5m
+  -> lemon classic, casino slot machine game icon, chrome mirror finish, polished steel, bright...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]100%|##########| 4/4 [00:00<00:00, 11.55it/s]
+[327/480] mega_joker/s3_grape_classic | elapsed 440s | ETA ~3.5m
+  -> grape classic, casino slot machine game icon, chrome mirror finish, polished steel, bright...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.75it/s]100%|##########| 4/4 [00:00<00:00, 10.71it/s]100%|##########| 4/4 [00:00<00:00, 10.96it/s]
+[328/480] mega_joker/s4_bell_classic | elapsed 441s | ETA ~3.4m
+  -> bell classic, casino slot machine game icon, chrome mirror finish, polished steel, bright ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.67it/s]100%|##########| 4/4 [00:00<00:00, 11.23it/s]100%|##########| 4/4 [00:00<00:00, 11.29it/s]
+[329/480] mega_joker/s5_crown_classic | elapsed 442s | ETA ~3.4m
+  -> crown classic, casino slot machine game icon, chrome mirror finish, polished steel, bright...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 12.01it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]
+[330/480] mega_joker/wild_joker_mega | elapsed 444s | ETA ~3.4m
+  -> golden glowing WILD joker mega symbol, casino slot machine game icon, chrome mirror finish...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.75it/s]100%|##########| 4/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]
+
+  OK 330 done, 0 failed | 0.7 img/s | ~202s remaining
+
+[331/480] crown_fire/s1_torch | elapsed 445s | ETA ~3.4m
+  -> torch, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.44it/s]100%|##########| 4/4 [00:00<00:00, 12.00it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]
+[332/480] crown_fire/s2_brazier | elapsed 446s | ETA ~3.3m
+  -> brazier, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marb...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.25it/s]100%|##########| 4/4 [00:00<00:00, 11.27it/s]
+[333/480] crown_fire/s3_phoenix_feather | elapsed 448s | ETA ~3.3m
+  -> phoenix feather, casino slot machine game icon, polished 24k gold, divine glow, ancient Gr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.49it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]100%|##########| 4/4 [00:00<00:00, 11.14it/s]
+[334/480] crown_fire/s4_fire_crown | elapsed 449s | ETA ~3.3m
+  -> fire crown, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek m...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.99it/s]100%|##########| 4/4 [00:00<00:00, 11.93it/s]
+[335/480] crown_fire/s5_flame_gem | elapsed 450s | ETA ~3.3m
+  -> flame gem, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ma...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 12.00it/s]100%|##########| 4/4 [00:00<00:00, 11.93it/s]
+[336/480] crown_fire/wild_crown_fire | elapsed 452s | ETA ~3.3m
+  -> golden glowing WILD crown fire symbol, casino slot machine game icon, polished 24k gold, d...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]
+[337/480] olympus_dream/s1_hera | elapsed 453s | ETA ~3.2m
+  -> hera, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.54it/s]100%|##########| 4/4 [00:00<00:00, 12.45it/s]100%|##########| 4/4 [00:00<00:00, 12.44it/s]
+[338/480] olympus_dream/s2_athena | elapsed 454s | ETA ~3.2m
+  -> athena, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 12.08it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]
+[339/480] olympus_dream/s3_apollo | elapsed 456s | ETA ~3.2m
+  -> apollo, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.06it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]
+[340/480] olympus_dream/s4_ares_god | elapsed 457s | ETA ~3.2m
+  -> ares god, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek mar...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.71it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]
+
+  OK 340 done, 0 failed | 0.7 img/s | ~188s remaining
+
+[341/480] olympus_dream/s5_zeus_orb | elapsed 458s | ETA ~3.1m
+  -> zeus orb, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek mar...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 12.36it/s]100%|##########| 4/4 [00:00<00:00, 12.36it/s]
+[342/480] olympus_dream/wild_dream | elapsed 460s | ETA ~3.1m
+  -> golden glowing WILD dream symbol, casino slot machine game icon, polished 24k gold, divine...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 11.48it/s]100%|##########| 4/4 [00:00<00:00, 11.58it/s]
+[343/480] goldstorm_ultra/s1_gold_coin_storm | elapsed 461s | ETA ~3.1m
+  -> gold coin storm, casino slot machine game icon, textured natural stone bronze, wildlife ea...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.49it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+[344/480] goldstorm_ultra/s2_thunder_cloud | elapsed 462s | ETA ~3.1m
+  -> thunder cloud, casino slot machine game icon, textured natural stone bronze, wildlife eart...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.37it/s]100%|##########| 4/4 [00:00<00:00, 11.35it/s]100%|##########| 4/4 [00:00<00:00, 11.34it/s]
+[345/480] goldstorm_ultra/s3_storm_bolt | elapsed 464s | ETA ~3.1m
+  -> storm bolt, casino slot machine game icon, textured natural stone bronze, wildlife earthy ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.36it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]100%|##########| 4/4 [00:00<00:00, 11.99it/s]
+[346/480] goldstorm_ultra/s4_golden_eagle_storm | elapsed 465s | ETA ~3.0m
+  -> golden eagle storm, casino slot machine game icon, textured natural stone bronze, wildlife...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.44it/s]100%|##########| 4/4 [00:00<00:00, 12.93it/s]100%|##########| 4/4 [00:00<00:00, 12.85it/s]
+[347/480] goldstorm_ultra/s5_ultra_gem | elapsed 466s | ETA ~3.0m
+  -> ultra gem, casino slot machine game icon, textured natural stone bronze, wildlife earthy t...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.63it/s]100%|##########| 4/4 [00:00<00:00, 12.00it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]
+[348/480] goldstorm_ultra/wild_goldstorm | elapsed 468s | ETA ~3.0m
+  -> golden glowing WILD goldstorm symbol, casino slot machine game icon, textured natural ston...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.19it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.87it/s]
+[349/480] fire_hole/s1_pickaxe | elapsed 469s | ETA ~3.0m
+  -> pickaxe, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.01it/s]100%|##########| 4/4 [00:00<00:00, 12.06it/s]100%|##########| 4/4 [00:00<00:00, 12.05it/s]
+[350/480] fire_hole/s2_mine_cart | elapsed 470s | ETA ~2.9m
+  -> mine cart, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 11.84it/s]
+
+  OK 350 done, 0 failed | 0.7 img/s | ~175s remaining
+
+[351/480] fire_hole/s3_tnt | elapsed 472s | ETA ~2.9m
+  -> tnt, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood gra...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.36it/s]100%|##########| 4/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.46it/s]
+[352/480] fire_hole/s4_lantern_mine | elapsed 473s | ETA ~2.9m
+  -> lantern mine, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.42it/s]100%|##########| 4/4 [00:00<00:00, 12.12it/s]100%|##########| 4/4 [00:00<00:00, 12.16it/s]
+[353/480] fire_hole/s5_gold_vein | elapsed 474s | ETA ~2.9m
+  -> gold vein, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.99it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]
+[354/480] fire_hole/wild_xbomb | elapsed 476s | ETA ~2.9m
+  -> golden glowing WILD xbomb symbol, casino slot machine game icon, aged brass patina, hand-e...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.59it/s]100%|##########| 4/4 [00:00<00:00, 11.84it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]
+[355/480] merlin_power/s1_spell_book | elapsed 477s | ETA ~2.8m
+  -> spell book, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek m...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.21it/s]100%|##########| 4/4 [00:00<00:00, 11.97it/s]100%|##########| 4/4 [00:00<00:00, 12.00it/s]
+[356/480] merlin_power/s2_wand_crystal | elapsed 478s | ETA ~2.8m
+  -> wand crystal, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]100%|##########| 4/4 [00:00<00:00, 11.50it/s]
+[357/480] merlin_power/s3_cauldron | elapsed 480s | ETA ~2.8m
+  -> cauldron, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek mar...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.17it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]100%|##########| 4/4 [00:00<00:00, 12.06it/s]
+[358/480] merlin_power/s4_merlin_owl | elapsed 481s | ETA ~2.8m
+  -> merlin owl, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek m...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.84it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]
+[359/480] merlin_power/s5_arcane_orb | elapsed 482s | ETA ~2.7m
+  -> arcane orb, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek m...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.06it/s]100%|##########| 4/4 [00:00<00:00, 11.31it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]
+[360/480] merlin_power/wild_merlin | elapsed 484s | ETA ~2.7m
+  -> golden glowing WILD merlin symbol, casino slot machine game icon, polished 24k gold, divin...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.34it/s]100%|##########| 4/4 [00:00<00:00, 11.38it/s]100%|##########| 4/4 [00:00<00:00, 11.37it/s]
+
+  OK 360 done, 0 failed | 0.7 img/s | ~161s remaining
+
+[361/480] coin_strike/s1_cherry | elapsed 485s | ETA ~2.7m
+  -> shiny twin red cherries on a stem, casino slot machine game icon, chrome mirror finish, po...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.03it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]
+[362/480] coin_strike/s2_lemon | elapsed 486s | ETA ~2.7m
+  -> bright yellow lemon fruit, casino slot machine game icon, chrome mirror finish, polished s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 11.48it/s]
+[363/480] coin_strike/s3_bar | elapsed 488s | ETA ~2.6m
+  -> classic BAR slot symbol gold, casino slot machine game icon, chrome mirror finish, polishe...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.21it/s]100%|##########| 4/4 [00:00<00:00, 10.96it/s]100%|##########| 4/4 [00:00<00:00, 11.13it/s]
+[364/480] coin_strike/s4_bell | elapsed 489s | ETA ~2.6m
+  -> bell, casino slot machine game icon, chrome mirror finish, polished steel, bright casino l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.85it/s]100%|##########| 4/4 [00:00<00:00, 11.11it/s]100%|##########| 4/4 [00:00<00:00, 11.07it/s]
+[365/480] coin_strike/s5_seven | elapsed 490s | ETA ~2.6m
+  -> lucky red 7 seven number, casino slot machine game icon, chrome mirror finish, polished st...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.28it/s]100%|##########| 4/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+[366/480] coin_strike/wild_coin | elapsed 492s | ETA ~2.6m
+  -> golden glowing WILD coin symbol, casino slot machine game icon, chrome mirror finish, poli...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.09it/s]100%|##########| 4/4 [00:00<00:00, 11.23it/s]100%|##########| 4/4 [00:00<00:00, 11.21it/s]
+[367/480] gold_rush_frog/s1_pickaxe | elapsed 493s | ETA ~2.6m
+  -> pickaxe, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.20it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]100%|##########| 4/4 [00:00<00:00, 11.96it/s]
+[368/480] gold_rush_frog/s2_lantern | elapsed 494s | ETA ~2.5m
+  -> lantern, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.24it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]
+[369/480] gold_rush_frog/s3_dynamite | elapsed 496s | ETA ~2.5m
+  -> dynamite, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inla...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]
+[370/480] gold_rush_frog/s4_nugget | elapsed 497s | ETA ~2.5m
+  -> nugget, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.51it/s]100%|##########| 4/4 [00:00<00:00, 12.37it/s]100%|##########| 4/4 [00:00<00:00, 12.37it/s]
+
+  OK 370 done, 0 failed | 0.7 img/s | ~148s remaining
+
+[371/480] gold_rush_frog/s5_frog_gold | elapsed 498s | ETA ~2.5m
+  -> frog gold, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 10.83it/s]100%|##########| 4/4 [00:00<00:00, 10.91it/s]
+[372/480] gold_rush_frog/wild_frog | elapsed 500s | ETA ~2.4m
+  -> golden glowing WILD frog symbol, casino slot machine game icon, lacquered vermilion red, g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.81it/s]100%|##########| 4/4 [00:00<00:00, 11.34it/s]100%|##########| 4/4 [00:00<00:00, 11.26it/s]
+[373/480] snoop_dollars/s1_mic | elapsed 501s | ETA ~2.4m
+  -> mic, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk las...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.00it/s]100%|##########| 4/4 [00:00<00:00, 12.07it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]
+[374/480] snoop_dollars/s2_chain | elapsed 502s | ETA ~2.4m
+  -> chain, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.61it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]100%|##########| 4/4 [00:00<00:00, 11.80it/s]
+[375/480] snoop_dollars/s3_sneaker | elapsed 504s | ETA ~2.4m
+  -> sneaker, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.71it/s]100%|##########| 4/4 [00:00<00:00, 11.67it/s]
+[376/480] snoop_dollars/s4_boombox | elapsed 505s | ETA ~2.4m
+  -> boombox, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]100%|##########| 4/4 [00:00<00:00, 11.77it/s]
+[377/480] snoop_dollars/s5_crown_gold | elapsed 506s | ETA ~2.3m
+  -> crown gold, casino slot machine game icon, electric neon glow, holographic shimmer, cyberp...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.67it/s]100%|##########| 4/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]
+[378/480] snoop_dollars/wild_dollar | elapsed 508s | ETA ~2.3m
+  -> golden glowing WILD dollar symbol, casino slot machine game icon, electric neon glow, holo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.31it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]100%|##########| 4/4 [00:00<00:00, 12.13it/s]
+[379/480] gemhalla/s1_axe | elapsed 509s | ETA ~2.3m
+  -> stone axe viking weapon, casino slot machine game icon, textured natural stone bronze, wil...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.63it/s]100%|##########| 4/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]
+[380/480] gemhalla/s2_horn | elapsed 510s | ETA ~2.3m
+  -> ram horn Viking drinking horn, casino slot machine game icon, textured natural stone bronz...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.56it/s]100%|##########| 4/4 [00:00<00:00, 11.65it/s]100%|##########| 4/4 [00:00<00:00, 11.47it/s]
+
+  OK 380 done, 0 failed | 0.7 img/s | ~134s remaining
+
+[381/480] gemhalla/s3_beer | elapsed 512s | ETA ~2.2m
+  -> foamy Viking mead ale tankard, casino slot machine game icon, textured natural stone bronz...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.91it/s]100%|##########| 4/4 [00:00<00:00, 11.61it/s]100%|##########| 4/4 [00:00<00:00, 11.65it/s]
+[382/480] gemhalla/s4_helmet | elapsed 513s | ETA ~2.2m
+  -> Viking horned battle helmet, casino slot machine game icon, textured natural stone bronze,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.49it/s]100%|##########| 4/4 [00:00<00:00, 12.57it/s]100%|##########| 4/4 [00:00<00:00, 12.55it/s]
+[383/480] gemhalla/s5_shield_gem | elapsed 514s | ETA ~2.2m
+  -> round Viking shield with gemstone, casino slot machine game icon, textured natural stone b...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 11.58it/s]100%|##########| 4/4 [00:00<00:00, 11.59it/s]
+[384/480] gemhalla/wild_rune | elapsed 516s | ETA ~2.2m
+  -> golden WILD runic Viking emblem, casino slot machine game icon, textured natural stone bro...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.13it/s]100%|##########| 4/4 [00:00<00:00, 12.07it/s]100%|##########| 4/4 [00:00<00:00, 12.08it/s]
+[385/480] loki_loot/s1_hammer | elapsed 517s | ETA ~2.2m
+  -> hammer, casino slot machine game icon, textured natural stone bronze, wildlife earthy tone...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.59it/s]100%|##########| 4/4 [00:00<00:00, 11.56it/s]100%|##########| 4/4 [00:00<00:00, 11.57it/s]
+[386/480] loki_loot/s2_mask | elapsed 518s | ETA ~2.1m
+  -> mask, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.53it/s]100%|##########| 4/4 [00:00<00:00, 11.55it/s]
+[387/480] loki_loot/s3_staff | elapsed 520s | ETA ~2.1m
+  -> staff, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.27it/s]100%|##########| 4/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.63it/s]
+[388/480] loki_loot/s4_potion | elapsed 521s | ETA ~2.1m
+  -> potion, casino slot machine game icon, textured natural stone bronze, wildlife earthy tone...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.22it/s]100%|##########| 4/4 [00:00<00:00, 11.46it/s]100%|##########| 4/4 [00:00<00:00, 11.69it/s]
+[389/480] loki_loot/s5_loki_gold | elapsed 523s | ETA ~2.1m
+  -> loki gold, casino slot machine game icon, textured natural stone bronze, wildlife earthy t...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.70it/s]100%|##########| 4/4 [00:00<00:00, 10.98it/s]100%|##########| 4/4 [00:00<00:00, 10.92it/s]
+[390/480] loki_loot/wild_loki | elapsed 524s | ETA ~2.0m
+  -> golden glowing WILD loki symbol, casino slot machine game icon, textured natural stone bro...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.56it/s]100%|##########| 4/4 [00:00<00:00, 10.32it/s]100%|##########| 4/4 [00:00<00:00, 10.35it/s]
+
+  OK 390 done, 0 failed | 0.7 img/s | ~121s remaining
+
+[391/480] buffalo_extreme/s1_eagle | elapsed 525s | ETA ~2.0m
+  -> eagle, casino slot machine game icon, textured natural stone bronze, wildlife earthy tones...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.82it/s]
+[392/480] buffalo_extreme/s2_cougar | elapsed 527s | ETA ~2.0m
+  -> cougar, casino slot machine game icon, textured natural stone bronze, wildlife earthy tone...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]
+[393/480] buffalo_extreme/s3_wolf_hw | elapsed 528s | ETA ~2.0m
+  -> wolf hw, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.05it/s]100%|##########| 4/4 [00:00<00:00, 11.38it/s]100%|##########| 4/4 [00:00<00:00, 11.33it/s]
+[394/480] buffalo_extreme/s4_buffalo | elapsed 529s | ETA ~2.0m
+  -> buffalo, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.74it/s]100%|##########| 4/4 [00:00<00:00, 12.12it/s]100%|##########| 4/4 [00:00<00:00, 12.04it/s]
+[395/480] buffalo_extreme/s5_coin_gold | elapsed 531s | ETA ~1.9m
+  -> coin gold, casino slot machine game icon, textured natural stone bronze, wildlife earthy t...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.65it/s] 50%|#####     | 2/4 [00:00<00:00,  9.61it/s]100%|##########| 4/4 [00:00<00:00, 11.07it/s]100%|##########| 4/4 [00:00<00:00, 10.75it/s]
+[396/480] buffalo_extreme/wild_bison | elapsed 532s | ETA ~1.9m
+  -> golden glowing WILD bison symbol, casino slot machine game icon, textured natural stone br...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 11.29it/s]
+[397/480] pots_olympus/s1_trophy | elapsed 533s | ETA ~1.9m
+  -> trophy, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.50it/s]100%|##########| 4/4 [00:00<00:00, 11.54it/s]100%|##########| 4/4 [00:00<00:00, 11.52it/s]
+[398/480] pots_olympus/s2_apollo | elapsed 535s | ETA ~1.9m
+  -> apollo, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.87it/s]
+[399/480] pots_olympus/s3_poseidon | elapsed 536s | ETA ~1.8m
+  -> poseidon, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek mar...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.88it/s]100%|##########| 4/4 [00:00<00:00, 11.41it/s]100%|##########| 4/4 [00:00<00:00, 11.33it/s]
+[400/480] pots_olympus/s4_zeus | elapsed 537s | ETA ~1.8m
+  -> zeus, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.84it/s]100%|##########| 4/4 [00:00<00:00, 11.82it/s]
+
+  OK 400 done, 0 failed | 0.7 img/s | ~107s remaining
+
+[401/480] pots_olympus/s5_parthenon | elapsed 539s | ETA ~1.8m
+  -> parthenon, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ma...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.81it/s]100%|##########| 4/4 [00:00<00:00, 10.82it/s]100%|##########| 4/4 [00:00<00:00, 10.96it/s]
+[402/480] pots_olympus/wild_bolt | elapsed 540s | ETA ~1.8m
+  -> golden glowing WILD bolt symbol, casino slot machine game icon, polished 24k gold, divine ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.29it/s]100%|##########| 4/4 [00:00<00:00, 11.25it/s]100%|##########| 4/4 [00:00<00:00, 11.25it/s]
+[403/480] sweet_bonanza/s1_candy_heart | elapsed 541s | ETA ~1.8m
+  -> candy heart, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, s...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.53it/s]100%|##########| 4/4 [00:00<00:00, 11.17it/s]100%|##########| 4/4 [00:00<00:00, 11.07it/s]
+[404/480] sweet_bonanza/s2_star_candy | elapsed 543s | ETA ~1.7m
+  -> star candy, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.18it/s]100%|##########| 4/4 [00:00<00:00, 11.72it/s]100%|##########| 4/4 [00:00<00:00, 11.62it/s]
+[405/480] sweet_bonanza/s3_lollipop_swirl | elapsed 544s | ETA ~1.7m
+  -> lollipop swirl, casino slot machine game icon, vibrant pastel candy colors, glossy plastic...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.59it/s]100%|##########| 4/4 [00:00<00:00, 12.52it/s]100%|##########| 4/4 [00:00<00:00, 12.53it/s]
+[406/480] sweet_bonanza/s4_cotton_candy | elapsed 546s | ETA ~1.7m
+  -> cotton candy, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.71it/s]100%|##########| 4/4 [00:00<00:00, 11.98it/s]100%|##########| 4/4 [00:00<00:00, 11.92it/s]
+[407/480] sweet_bonanza/s5_bomb_candy | elapsed 547s | ETA ~1.7m
+  -> bomb candy, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 11.09it/s]100%|##########| 4/4 [00:00<00:00, 11.19it/s]
+[408/480] sweet_bonanza/wild_rainbow | elapsed 548s | ETA ~1.6m
+  -> golden glowing WILD rainbow symbol, casino slot machine game icon, vibrant pastel candy co...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.92it/s]100%|##########| 4/4 [00:00<00:00, 10.79it/s]100%|##########| 4/4 [00:00<00:00, 10.78it/s]
+[409/480] dog_house_mega/s1_bone | elapsed 550s | ETA ~1.6m
+  -> bone, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth s...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.97it/s] 75%|#######5  | 3/4 [00:00<00:00, 11.11it/s]100%|##########| 4/4 [00:00<00:00, 11.43it/s]
+[410/480] dog_house_mega/s2_collar | elapsed 551s | ETA ~1.6m
+  -> collar, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.45it/s]100%|##########| 4/4 [00:00<00:00, 11.15it/s]100%|##########| 4/4 [00:00<00:00, 11.04it/s]
+
+  OK 410 done, 0 failed | 0.7 img/s | ~94s remaining
+
+[411/480] dog_house_mega/s3_paw | elapsed 552s | ETA ~1.6m
+  -> paw, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth sh...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.21it/s]100%|##########| 4/4 [00:00<00:00, 10.80it/s]100%|##########| 4/4 [00:00<00:00, 10.85it/s]
+[412/480] dog_house_mega/s4_doberman | elapsed 554s | ETA ~1.5m
+  -> doberman, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.47it/s]100%|##########| 4/4 [00:00<00:00, 12.20it/s]100%|##########| 4/4 [00:00<00:00, 12.24it/s]
+[413/480] dog_house_mega/s5_bulldog | elapsed 555s | ETA ~1.5m
+  -> bulldog, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smoot...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 12.37it/s]100%|##########| 4/4 [00:00<00:00, 12.23it/s]
+[414/480] dog_house_mega/wild_doghouse | elapsed 556s | ETA ~1.5m
+  -> golden glowing WILD doghouse symbol, casino slot machine game icon, vibrant pastel candy c...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.71it/s]100%|##########| 4/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]
+[415/480] fruit_party/s1_strawberry | elapsed 558s | ETA ~1.5m
+  -> strawberry, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, sm...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.14it/s]100%|##########| 4/4 [00:00<00:00, 11.22it/s]100%|##########| 4/4 [00:00<00:00, 11.21it/s]
+[416/480] fruit_party/s2_orange | elapsed 559s | ETA ~1.5m
+  -> orange, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.77it/s]100%|##########| 4/4 [00:00<00:00, 11.60it/s]100%|##########| 4/4 [00:00<00:00, 11.59it/s]
+[417/480] fruit_party/s3_plum_p | elapsed 560s | ETA ~1.4m
+  -> plum p, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.61it/s]100%|##########| 4/4 [00:00<00:00, 11.44it/s]100%|##########| 4/4 [00:00<00:00, 11.28it/s]
+[418/480] fruit_party/s4_peach | elapsed 562s | ETA ~1.4m
+  -> peach, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smooth ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.58it/s]100%|##########| 4/4 [00:00<00:00, 12.97it/s]100%|##########| 4/4 [00:00<00:00, 13.06it/s]
+[419/480] fruit_party/s5_starfruit | elapsed 563s | ETA ~1.4m
+  -> starfruit, casino slot machine game icon, vibrant pastel candy colors, glossy plastic, smo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.34it/s]100%|##########| 4/4 [00:00<00:00, 10.95it/s]100%|##########| 4/4 [00:00<00:00, 10.99it/s]
+[420/480] fruit_party/wild_fruit | elapsed 565s | ETA ~1.4m
+  -> golden glowing WILD fruit symbol, casino slot machine game icon, vibrant pastel candy colo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.05it/s]100%|##########| 4/4 [00:00<00:00, 12.07it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]
+
+  OK 420 done, 0 failed | 0.7 img/s | ~81s remaining
+
+[421/480] reactoonz/s1_blob_green | elapsed 566s | ETA ~1.3m
+  -> blob green, casino slot machine game icon, electric neon glow, holographic shimmer, cyberp...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]
+[422/480] reactoonz/s2_blob_blue | elapsed 567s | ETA ~1.3m
+  -> blob blue, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.07it/s]100%|##########| 4/4 [00:00<00:00, 11.91it/s]100%|##########| 4/4 [00:00<00:00, 11.93it/s]
+[423/480] reactoonz/s3_blob_pink | elapsed 569s | ETA ~1.3m
+  -> blob pink, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.80it/s]100%|##########| 4/4 [00:00<00:00, 11.27it/s]100%|##########| 4/4 [00:00<00:00, 11.20it/s]
+[424/480] reactoonz/s4_blob_yellow | elapsed 570s | ETA ~1.3m
+  -> blob yellow, casino slot machine game icon, electric neon glow, holographic shimmer, cyber...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.15it/s]100%|##########| 4/4 [00:00<00:00, 11.30it/s]100%|##########| 4/4 [00:00<00:00, 11.27it/s]
+[425/480] reactoonz/s5_blob_red | elapsed 571s | ETA ~1.3m
+  -> blob red, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.06it/s]100%|##########| 4/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.49it/s]
+[426/480] reactoonz/wild_gargantoon | elapsed 573s | ETA ~1.2m
+  -> golden glowing WILD gargantoon symbol, casino slot machine game icon, electric neon glow, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.35it/s]100%|##########| 4/4 [00:00<00:00, 11.94it/s]100%|##########| 4/4 [00:00<00:00, 11.99it/s]
+[427/480] money_train/s1_dynamite_mt | elapsed 574s | ETA ~1.2m
+  -> dynamite mt, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.85it/s]100%|##########| 4/4 [00:00<00:00, 11.51it/s]100%|##########| 4/4 [00:00<00:00, 11.39it/s]
+[428/480] money_train/s2_pistol | elapsed 576s | ETA ~1.2m
+  -> pistol, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.12it/s]100%|##########| 4/4 [00:00<00:00, 11.21it/s]100%|##########| 4/4 [00:00<00:00, 11.18it/s]
+[429/480] money_train/s3_wanted_poster | elapsed 577s | ETA ~1.2m
+  -> wanted poster, casino slot machine game icon, aged brass patina, hand-engraved metal, sepi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 11.59it/s]100%|##########| 4/4 [00:00<00:00, 11.57it/s]
+[430/480] money_train/s4_sheriff | elapsed 578s | ETA ~1.1m
+  -> sheriff, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.48it/s]100%|##########| 4/4 [00:00<00:00, 12.32it/s]100%|##########| 4/4 [00:00<00:00, 12.34it/s]
+
+  OK 430 done, 0 failed | 0.7 img/s | ~67s remaining
+
+[431/480] money_train/s5_train | elapsed 580s | ETA ~1.1m
+  -> train, casino slot machine game icon, aged brass patina, hand-engraved metal, sepia wood g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.24it/s]100%|##########| 4/4 [00:00<00:00, 12.68it/s]100%|##########| 4/4 [00:00<00:00, 12.61it/s]
+[432/480] money_train/wild_locomotive | elapsed 581s | ETA ~1.1m
+  -> golden glowing WILD locomotive symbol, casino slot machine game icon, aged brass patina, h...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.17it/s]100%|##########| 4/4 [00:00<00:00, 13.07it/s]100%|##########| 4/4 [00:00<00:00, 13.09it/s]
+[433/480] razor_shark/s1_anchor | elapsed 582s | ETA ~1.1m
+  -> anchor, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope text...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.80it/s]100%|##########| 4/4 [00:00<00:00, 12.93it/s]100%|##########| 4/4 [00:00<00:00, 12.75it/s]
+[434/480] razor_shark/s2_diver | elapsed 584s | ETA ~1.1m
+  -> diver, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope textu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.18it/s]100%|##########| 4/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 11.75it/s]
+[435/480] razor_shark/s3_jellyfish | elapsed 585s | ETA ~1.0m
+  -> jellyfish, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope t...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.24it/s]100%|##########| 4/4 [00:00<00:00, 12.22it/s]100%|##########| 4/4 [00:00<00:00, 12.22it/s]
+[436/480] razor_shark/s4_shark_tooth | elapsed 586s | ETA ~1.0m
+  -> shark tooth, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.84it/s]100%|##########| 4/4 [00:00<00:00, 13.03it/s]100%|##########| 4/4 [00:00<00:00, 13.00it/s]
+[437/480] razor_shark/s5_shark | elapsed 588s | ETA ~1.0m
+  -> shark, casino slot machine game icon, ocean teal, weathered dock wood, nautical rope textu...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.71it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]100%|##########| 4/4 [00:00<00:00, 11.79it/s]
+[438/480] razor_shark/wild_shark | elapsed 589s | ETA ~1.0m
+  -> golden glowing WILD shark symbol, casino slot machine game icon, ocean teal, weathered doc...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.39it/s]100%|##########| 4/4 [00:00<00:00, 12.00it/s]100%|##########| 4/4 [00:00<00:00, 12.06it/s]
+[439/480] elvis_frog/s1_dice | elapsed 590s | ETA ~0.9m
+  -> dice, casino slot machine game icon, chrome mirror finish, polished steel, bright casino l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]100%|##########| 4/4 [00:00<00:00, 11.98it/s]
+[440/480] elvis_frog/s2_cocktail | elapsed 592s | ETA ~0.9m
+  -> cocktail, casino slot machine game icon, chrome mirror finish, polished steel, bright casi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.95it/s]100%|##########| 4/4 [00:00<00:00, 11.70it/s]100%|##########| 4/4 [00:00<00:00, 11.74it/s]
+
+  OK 440 done, 0 failed | 0.7 img/s | ~54s remaining
+
+[441/480] elvis_frog/s3_neon_sign | elapsed 593s | ETA ~0.9m
+  -> neon sign, casino slot machine game icon, chrome mirror finish, polished steel, bright cas...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.40it/s]100%|##########| 4/4 [00:00<00:00, 11.83it/s]100%|##########| 4/4 [00:00<00:00, 11.76it/s]
+[442/480] elvis_frog/s4_showgirl | elapsed 594s | ETA ~0.9m
+  -> showgirl, casino slot machine game icon, chrome mirror finish, polished steel, bright casi...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 11.58it/s]100%|##########| 4/4 [00:00<00:00, 11.59it/s]
+[443/480] elvis_frog/s5_frog_elvis | elapsed 596s | ETA ~0.9m
+  -> frog elvis, casino slot machine game icon, chrome mirror finish, polished steel, bright ca...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.12it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]100%|##########| 4/4 [00:00<00:00, 11.89it/s]
+[444/480] elvis_frog/wild_vegas | elapsed 597s | ETA ~0.8m
+  -> golden glowing WILD vegas symbol, casino slot machine game icon, chrome mirror finish, pol...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.78it/s]100%|##########| 4/4 [00:00<00:00, 12.07it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]
+[445/480] gems_bonanza/s1_emerald | elapsed 599s | ETA ~0.8m
+  -> emerald, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.10it/s]100%|##########| 4/4 [00:00<00:00, 11.73it/s]100%|##########| 4/4 [00:00<00:00, 11.63it/s]
+[446/480] gems_bonanza/s2_sapphire | elapsed 600s | ETA ~0.8m
+  -> sapphire, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpun...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.45it/s]100%|##########| 4/4 [00:00<00:00, 10.71it/s]100%|##########| 4/4 [00:00<00:00, 10.67it/s]
+[447/480] gems_bonanza/s3_ruby | elapsed 601s | ETA ~0.8m
+  -> ruby, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk la...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.96it/s]100%|##########| 4/4 [00:00<00:00, 12.50it/s]100%|##########| 4/4 [00:00<00:00, 12.57it/s]
+[448/480] gems_bonanza/s4_topaz | elapsed 603s | ETA ~0.7m
+  -> topaz, casino slot machine game icon, electric neon glow, holographic shimmer, cyberpunk l...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.63it/s]100%|##########| 4/4 [00:00<00:00, 12.14it/s]100%|##########| 4/4 [00:00<00:00, 12.21it/s]
+[449/480] gems_bonanza/s5_diamond_gem | elapsed 604s | ETA ~0.7m
+  -> diamond gem, casino slot machine game icon, electric neon glow, holographic shimmer, cyber...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 11.60it/s]100%|##########| 4/4 [00:00<00:00, 11.59it/s]
+[450/480] gems_bonanza/wild_prism | elapsed 605s | ETA ~0.7m
+  -> golden glowing WILD prism symbol, casino slot machine game icon, electric neon glow, holog...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.13it/s]100%|##########| 4/4 [00:00<00:00, 10.67it/s]100%|##########| 4/4 [00:00<00:00, 10.58it/s]
+
+  OK 450 done, 0 failed | 0.7 img/s | ~40s remaining
+
+[451/480] buffalo_mega/s1_prairie_flower | elapsed 607s | ETA ~0.7m
+  -> prairie flower, casino slot machine game icon, textured natural stone bronze, wildlife ear...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.85it/s]100%|##########| 4/4 [00:00<00:00, 12.14it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]
+[452/480] buffalo_mega/s2_coyote | elapsed 608s | ETA ~0.7m
+  -> coyote, casino slot machine game icon, textured natural stone bronze, wildlife earthy tone...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.18it/s]100%|##########| 4/4 [00:00<00:00, 11.20it/s]100%|##########| 4/4 [00:00<00:00, 11.20it/s]
+[453/480] buffalo_mega/s3_eagle_bk | elapsed 609s | ETA ~0.6m
+  -> eagle bk, casino slot machine game icon, textured natural stone bronze, wildlife earthy to...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.43it/s]100%|##########| 4/4 [00:00<00:00, 13.17it/s]100%|##########| 4/4 [00:00<00:00, 13.19it/s]
+[454/480] buffalo_mega/s4_mustang | elapsed 611s | ETA ~0.6m
+  -> mustang, casino slot machine game icon, textured natural stone bronze, wildlife earthy ton...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.99it/s]100%|##########| 4/4 [00:00<00:00, 11.01it/s]100%|##########| 4/4 [00:00<00:00, 11.01it/s]
+[455/480] buffalo_mega/s5_buffalo_king | elapsed 612s | ETA ~0.6m
+  -> buffalo king, casino slot machine game icon, textured natural stone bronze, wildlife earth...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.02it/s]100%|##########| 4/4 [00:00<00:00, 12.11it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]
+[456/480] buffalo_mega/wild_thunder | elapsed 613s | ETA ~0.6m
+  -> golden glowing WILD thunder symbol, casino slot machine game icon, textured natural stone ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.40it/s]100%|##########| 4/4 [00:00<00:00, 12.42it/s]100%|##########| 4/4 [00:00<00:00, 12.42it/s]
+[457/480] tome_madness/s1_tentacle | elapsed 615s | ETA ~0.5m
+  -> tentacle, casino slot machine game icon, obsidian black, deep crimson, purple spectral glo...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.52it/s]100%|##########| 4/4 [00:00<00:00, 12.44it/s]100%|##########| 4/4 [00:00<00:00, 12.45it/s]
+[458/480] tome_madness/s2_eye | elapsed 616s | ETA ~0.5m
+  -> eye, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, go...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.91it/s]100%|##########| 4/4 [00:00<00:00, 11.67it/s]100%|##########| 4/4 [00:00<00:00, 11.71it/s]
+[459/480] tome_madness/s3_tome | elapsed 617s | ETA ~0.5m
+  -> tome, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, g...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.19it/s]100%|##########| 4/4 [00:00<00:00, 10.81it/s]100%|##########| 4/4 [00:00<00:00, 10.86it/s]
+[460/480] tome_madness/s4_mask_eldritch | elapsed 619s | ETA ~0.5m
+  -> mask eldritch, casino slot machine game icon, obsidian black, deep crimson, purple spectra...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.91it/s]100%|##########| 4/4 [00:00<00:00, 11.99it/s]100%|##########| 4/4 [00:00<00:00, 11.81it/s]
+
+  OK 460 done, 0 failed | 0.7 img/s | ~27s remaining
+
+[461/480] tome_madness/s5_cthulhu | elapsed 620s | ETA ~0.4m
+  -> cthulhu, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.68it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]100%|##########| 4/4 [00:00<00:00, 11.85it/s]
+[462/480] tome_madness/wild_madness | elapsed 621s | ETA ~0.4m
+  -> golden glowing WILD madness symbol, casino slot machine game icon, obsidian black, deep cr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.88it/s]100%|##########| 4/4 [00:00<00:00, 12.07it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]
+[463/480] eternal_romance/s1_candle | elapsed 623s | ETA ~0.4m
+  -> candle, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow,...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.25it/s]100%|##########| 4/4 [00:00<00:00, 11.35it/s]100%|##########| 4/4 [00:00<00:00, 11.46it/s]
+[464/480] eternal_romance/s2_rose | elapsed 624s | ETA ~0.4m
+  -> blood red rose with thorns, casino slot machine game icon, obsidian black, deep crimson, p...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.25it/s]100%|##########| 4/4 [00:00<00:00, 12.07it/s]100%|##########| 4/4 [00:00<00:00, 12.10it/s]
+[465/480] eternal_romance/s3_amber | elapsed 625s | ETA ~0.4m
+  -> amber, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.82it/s]100%|##########| 4/4 [00:00<00:00, 11.15it/s]100%|##########| 4/4 [00:00<00:00, 11.10it/s]
+[466/480] eternal_romance/s4_michael | elapsed 627s | ETA ~0.3m
+  -> michael, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 13.44it/s]100%|##########| 4/4 [00:00<00:00, 11.97it/s]100%|##########| 4/4 [00:00<00:00, 12.17it/s]
+[467/480] eternal_romance/s5_sarah | elapsed 628s | ETA ~0.3m
+  -> sarah, casino slot machine game icon, obsidian black, deep crimson, purple spectral glow, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.38it/s]100%|##########| 4/4 [00:00<00:00, 11.96it/s]100%|##########| 4/4 [00:00<00:00, 11.86it/s]
+[468/480] eternal_romance/wild_vampire | elapsed 629s | ETA ~0.3m
+  -> golden glowing WILD vampire symbol, casino slot machine game icon, obsidian black, deep cr...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.91it/s]100%|##########| 4/4 [00:00<00:00, 12.74it/s]100%|##########| 4/4 [00:00<00:00, 12.61it/s]
+[469/480] coin_volcano/s1_obsidian | elapsed 631s | ETA ~0.3m
+  -> obsidian, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inla...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.63it/s]100%|##########| 4/4 [00:00<00:00, 12.09it/s]100%|##########| 4/4 [00:00<00:00, 12.02it/s]
+[470/480] coin_volcano/s2_lava_gem | elapsed 632s | ETA ~0.2m
+  -> lava gem, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inla...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.12it/s]100%|##########| 4/4 [00:00<00:00, 10.77it/s]100%|##########| 4/4 [00:00<00:00, 10.81it/s]
+
+  OK 470 done, 0 failed | 0.7 img/s | ~13s remaining
+
+[471/480] coin_volcano/s3_fire_ruby | elapsed 633s | ETA ~0.2m
+  -> fire ruby, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inl...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.68it/s] 50%|#####     | 2/4 [00:00<00:00,  9.16it/s] 75%|#######5  | 3/4 [00:00<00:00,  9.00it/s]100%|##########| 4/4 [00:00<00:00,  9.63it/s]
+[472/480] coin_volcano/s4_magma_coin | elapsed 635s | ETA ~0.2m
+  -> magma coin, casino slot machine game icon, lacquered vermilion red, gold filigree, jade in...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.57it/s]100%|##########| 4/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]
+[473/480] coin_volcano/s5_volcano | elapsed 636s | ETA ~0.2m
+  -> volcano, casino slot machine game icon, lacquered vermilion red, gold filigree, jade inlay...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.55it/s]100%|##########| 4/4 [00:00<00:00, 13.06it/s]100%|##########| 4/4 [00:00<00:00, 12.98it/s]
+[474/480] coin_volcano/wild_eruption | elapsed 638s | ETA ~0.2m
+  -> golden glowing WILD eruption symbol, casino slot machine game icon, lacquered vermilion re...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.64it/s]100%|##########| 4/4 [00:00<00:00, 11.58it/s]100%|##########| 4/4 [00:00<00:00, 11.59it/s]
+[475/480] power_crown/s1_scepter | elapsed 639s | ETA ~0.1m
+  -> scepter, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marb...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 10.45it/s]100%|##########| 4/4 [00:00<00:00, 11.32it/s]100%|##########| 4/4 [00:00<00:00, 11.17it/s]
+[476/480] power_crown/s2_orb | elapsed 640s | ETA ~0.1m
+  -> orb, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marble, ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 12.21it/s]100%|##########| 4/4 [00:00<00:00, 11.22it/s]100%|##########| 4/4 [00:00<00:00, 11.36it/s]
+[477/480] power_crown/s3_crown_jewel | elapsed 642s | ETA ~0.1m
+  -> crown jewel, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.43it/s]100%|##########| 4/4 [00:00<00:00, 12.00it/s]100%|##########| 4/4 [00:00<00:00, 11.90it/s]
+[478/480] power_crown/s4_throne | elapsed 643s | ETA ~0.1m
+  -> throne, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek marbl...
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|##5       | 1/4 [00:00<00:00,  9.54it/s] 75%|#######5  | 3/4 [00:00<00:00, 10.89it/s]100%|##########| 4/4 [00:00<00:00, 11.18it/s]
+[479/480] power_crown/s5_royal_crown | elapsed 644s | ETA ~0.0m
+  -> royal crown, casino slot machine game icon, polished 24k gold, divine glow, ancient Greek ...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.24it/s]100%|##########| 4/4 [00:00<00:00, 11.45it/s]100%|##########| 4/4 [00:00<00:00, 11.42it/s]
+[480/480] power_crown/wild_crown | elapsed 645s | ETA ~0.0m
+  -> golden glowing WILD crown symbol, casino slot machine game icon, polished 24k gold, divine...
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|#####     | 2/4 [00:00<00:00, 11.47it/s]100%|##########| 4/4 [00:00<00:00, 10.94it/s]100%|##########| 4/4 [00:00<00:00, 11.02it/s]
+
+  OK 480 done, 0 failed | 0.7 img/s | ~0s remaining
+
+
+============================================================
+Complete! 480 generated, 0 failed
+Total time: 10.8 minutes (1.3s per image)
+Output: C:\created games\Casino\assets\game_symbols
+============================================================
