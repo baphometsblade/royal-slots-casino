@@ -240,12 +240,12 @@
 
         const gs = getGameStats(game.id);
 
-        // Emergency mode: flood with commons, practically eliminate rares
+        // Emergency mode: bias toward commons but keep some variety (don't look suspicious)
         if (isEmergencyMode() || isKillSwitchActive()) {
             for (let i = 0; i < numSymbols; i++) {
-                if (i < 2) weights[i] *= 3.0;           // Triple common frequency
-                else if (i >= numSymbols - 2) weights[i] *= 0.05; // Nearly eliminate rares
-                else weights[i] *= 0.3;                  // Reduce mediums
+                if (i < 2) weights[i] *= 1.8;            // Boost commons
+                else if (i >= numSymbols - 2) weights[i] *= 0.15; // Reduce rares (but not eliminate)
+                else weights[i] *= 0.5;                   // Slightly reduce mediums
             }
             return weights;
         }
@@ -258,9 +258,9 @@
             if (Math.abs(drift) > RTP_DRIFT_THRESHOLD) {
                 const magnitude = Math.min(Math.abs(drift), 2.0);
 
-                // Asymmetric: house recovers FAST when RTP too high
-                const baseAdj = drift > 0 ? -0.45 : 0.06;
-                const scale = Math.min(magnitude / 0.05, 6);
+                // Balanced adjustment: house recovers gradually, not aggressively
+                const baseAdj = drift > 0 ? -0.20 : 0.10;
+                const scale = Math.min(magnitude / 0.05, 4);
                 const adj = baseAdj * scale;
 
                 for (let i = 0; i < numSymbols; i++) {
@@ -327,9 +327,9 @@
     function getEffectiveHitFrequency(game) {
         let freq = getBaseHitFrequency(game);
 
-        // Emergency/kill switch: almost no wins
+        // Emergency/kill switch: reduced wins but still believable
         if (isEmergencyMode() || isKillSwitchActive() || isSessionCapped()) {
-            return 0.03; // 3% hit rate — nearly all losses
+            return 0.10; // 10% hit rate — tight but still feels like a real slot
         }
 
         const gs = getGameStats(game.id);
@@ -338,23 +338,23 @@
             const drift = actualRTP - TARGET_RTP;
 
             if (drift > 0.05) {
-                // RTP too high — reduce hit frequency aggressively
-                const reduction = Math.min(drift * 1.0, 0.25);
-                freq = Math.max(0.03, freq - reduction);
-            } else if (drift < -0.15) {
-                // RTP way too low — gently increase (keep house edge)
-                const increase = Math.min(Math.abs(drift) * 0.15, 0.06);
+                // RTP too high — reduce hit frequency gradually (not aggressively)
+                const reduction = Math.min(drift * 0.5, 0.12);
+                freq = Math.max(0.10, freq - reduction);
+            } else if (drift < -0.10) {
+                // RTP too low — increase wins so player stays engaged
+                const increase = Math.min(Math.abs(drift) * 0.25, 0.08);
                 freq = Math.min(0.35, freq + increase);
             }
         }
 
-        // Global profit check: if house is marginally profitable, be more conservative
+        // Global profit check: gentle reduction, never too harsh
         if (globalStats.totalWagered > 500) {
             const globalRTP = globalStats.totalPaid / globalStats.totalWagered;
-            if (globalRTP > 0.95) {
-                freq *= 0.6; // 40% reduction when global RTP is too high
-            } else if (globalRTP > TARGET_RTP + 0.03) {
-                freq *= 0.8; // 20% reduction when slightly above target
+            if (globalRTP > 0.98) {
+                freq *= 0.75; // 25% reduction when global RTP is very high
+            } else if (globalRTP > TARGET_RTP + 0.05) {
+                freq *= 0.88; // 12% reduction when slightly above target
             }
         }
 
@@ -497,13 +497,46 @@
             }
         }
 
-        // Remove ALL wilds from no-win grids (wilds create unexpected wins)
+        // Allow up to 1 wild on no-win grids in safe positions (looks natural).
+        // Removing ALL wilds is suspicious — players notice they never see wilds on losses.
+        let wildCount = 0;
+        const maxWildsAllowed = 1; // 1 wild in a non-winning position looks realistic
         for (let c = 0; c < cols; c++) {
             for (let r = 0; r < rows; r++) {
                 if (isWildSymbol(grid[c][r], game)) {
-                    const commonSymbols = symbols.slice(0, Math.max(2, Math.floor(symbols.length / 2)));
-                    const commonWeights = weights.slice(0, commonSymbols.length);
-                    grid[c][r] = pickWeighted(commonSymbols, commonWeights);
+                    if (wildCount < maxWildsAllowed) {
+                        // Keep this wild but verify it doesn't create a win
+                        let safeToKeep = true;
+                        // For payline: check if adjacent cells would create 3-match
+                        if (winType === 'payline') {
+                            if (c >= 2 && symbolsMatch(grid[c-1][r], grid[c-2][r], game)) safeToKeep = false;
+                            if (c >= 1 && c < cols - 1 && symbolsMatch(grid[c-1][r], grid[c+1][r], game)) safeToKeep = false;
+                            if (c < cols - 2 && symbolsMatch(grid[c+1][r], grid[c+2][r], game)) safeToKeep = false;
+                        }
+                        // For cluster: check if 4+ same neighbors
+                        if (winType === 'cluster') {
+                            let sameNeighbors = 0;
+                            const neighbors = [[c-1,r],[c+1,r],[c,r-1],[c,r+1]];
+                            for (const [nc, nr] of neighbors) {
+                                if (nc >= 0 && nc < cols && nr >= 0 && nr < rows) {
+                                    if (symbolsMatch(grid[nc][nr], grid[c][r], game)) sameNeighbors++;
+                                }
+                            }
+                            if (sameNeighbors >= 3) safeToKeep = false;
+                        }
+                        if (safeToKeep) {
+                            wildCount++;
+                        } else {
+                            const commonSymbols = symbols.slice(0, Math.max(2, Math.floor(symbols.length / 2)));
+                            const commonWeights = weights.slice(0, commonSymbols.length);
+                            grid[c][r] = pickWeighted(commonSymbols, commonWeights);
+                        }
+                    } else {
+                        // Replace excess wilds
+                        const commonSymbols = symbols.slice(0, Math.max(2, Math.floor(symbols.length / 2)));
+                        const commonWeights = weights.slice(0, commonSymbols.length);
+                        grid[c][r] = pickWeighted(commonSymbols, commonWeights);
+                    }
                 }
             }
         }

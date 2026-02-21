@@ -103,7 +103,7 @@
                 <div class="hero-left">
                     <div class="hero-tags">
                         <span class="hero-tag tag-hot">LIMITED OFFER</span>
-                        <span class="hero-tag tag-games">60+ GAMES</span>
+                        <span class="hero-tag tag-games">80+ GAMES</span>
                     </div>
                     <h2 class="hero-title">
                         Welcome Package<br>
@@ -190,7 +190,7 @@
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="vertical-align:middle;margin-right:6px;color:var(--rg-primary-100)"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
                 All Slots
             </h3>
-            <span class="section-game-count" id="allGamesCount">60 games</span>
+            <span class="section-game-count" id="allGamesCount">80 games</span>
         </div>
         <div class="games-grid" id="allGames"></div>
     </div>
@@ -283,6 +283,42 @@
     <!-- Slot Machine Modal — Pragmatic Play Style -->
     <div class="modal" id="slotModal">
         <div class="modal-content slot-modal-fullscreen">
+
+            <!-- Feature Popup Overlay -->
+            <div id="slotFeaturePopup" class="feature-popup-overlay" style="display:none;">
+                <div class="feature-popup">
+                    <div class="feature-popup-header">
+                        <div class="feature-popup-logo" id="featurePopupLogo"></div>
+                        <h2 class="feature-popup-title" id="featurePopupTitle">Game Name</h2>
+                        <div class="feature-popup-provider" id="featurePopupProvider">Royal Games</div>
+                    </div>
+                    <div class="feature-popup-image" id="featurePopupImage">
+                        <!-- SDXL background image or fallback gradient -->
+                    </div>
+                    <div class="feature-popup-features" id="featurePopupFeatures">
+                        <!-- Dynamically built feature cards -->
+                    </div>
+                    <div class="feature-popup-stats" id="featurePopupStats">
+                        <div class="feature-stat">
+                            <div class="feature-stat-label">RTP</div>
+                            <div class="feature-stat-value" id="featureStatRTP">96.5%</div>
+                        </div>
+                        <div class="feature-stat">
+                            <div class="feature-stat-label">VOLATILITY</div>
+                            <div class="feature-stat-value" id="featureStatVolatility">High</div>
+                        </div>
+                        <div class="feature-stat">
+                            <div class="feature-stat-label">MAX WIN</div>
+                            <div class="feature-stat-value" id="featureStatMaxWin">150x</div>
+                        </div>
+                    </div>
+                    <button class="feature-popup-play-btn" id="featurePopupPlayBtn" onclick="dismissFeaturePopup()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                        PLAY NOW
+                    </button>
+                </div>
+            </div>
+
             <!-- Top Bar: Game Info + Close -->
             <div class="slot-top-bar">
                 <button class="slot-close-btn" onclick="closeSlot()" title="Back to lobby">&times;</button>

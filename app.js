@@ -206,9 +206,9 @@
         const REEL_STRIP_BUFFER = 12;
         const REEL_SPIN_PX_PER_SEC = 3000;
         const REEL_SPIN_PX_PER_SEC_TURBO = 5000;
-        const REEL_DECEL_DURATION = 600;
+        const REEL_DECEL_DURATION = 650;
         const REEL_BOUNCE_OVERSHOOT = 12;
-        const REEL_BOUNCE_DURATION = 200;
+        const REEL_BOUNCE_DURATION = 220;
         const REEL_CELL_DIMS = {
             '3x3': { h: 140, gap: 4 }, '5x3': { h: 100, gap: 3 },
             '5x4': { h: 85, gap: 3 }, '5x5': { h: 80, gap: 2 },
@@ -591,8 +591,18 @@
         const REEL_CELL_ANIMATION_CLASSES = [
             'reel-landing', 'reel-win-glow', 'reel-wild-glow',
             'reel-scatter-glow', 'reel-celebrating', 'reel-mega-win',
-            'reel-wild-expand'
+            'reel-wild-expand', 'reel-big-win-glow'
         ];
+
+        // Upgrade win cells to mega glow for big wins
+        function upgradeWinGlow(winAmount) {
+            if (winAmount >= currentBet * 10) {
+                document.querySelectorAll('.reel-win-glow').forEach(cell => {
+                    cell.classList.remove('reel-win-glow');
+                    cell.classList.add('reel-big-win-glow');
+                });
+            }
+        }
 
         function clearReelAnimations(cells) {
             cells.forEach(cell => {
@@ -666,8 +676,13 @@
                     data.animFrameId = null;
                 }
 
-                // Place final symbols in visible-zone cells
                 const rows = getGridRows(game);
+                const cellStep = data.cellH + data.cellGap;
+                const targetY = -(REEL_STRIP_BUFFER * cellStep);
+                const syms = game.symbols || SLOT_SYMBOLS;
+
+                // ── Natural landing: seed the strip so symbols "scroll into view" ──
+                // 1. Place final result symbols into the visible-zone cells
                 for (let r = 0; r < rows; r++) {
                     const cell = document.getElementById(`reel_${colIdx}_${r}`);
                     if (cell && finalColumn && finalColumn[r]) {
@@ -675,17 +690,38 @@
                     }
                 }
 
-                // Deceleration: smooth transition to target position
-                const targetY = -(REEL_STRIP_BUFFER * (data.cellH + data.cellGap));
+                // 2. Also fill surrounding buffer cells with contextual symbols
+                //    so the strip looks like a continuous reel
+                const allCells = data.stripEl.querySelectorAll('.reel-cell');
+                const visStart = REEL_STRIP_BUFFER;
+                // Fill 4 cells above visible zone (approaching symbols the player glimpses)
+                for (let i = Math.max(0, visStart - 4); i < visStart; i++) {
+                    if (allCells[i]) allCells[i].innerHTML = renderSymbol(syms[Math.floor(Math.random() * syms.length)]);
+                }
+                // Fill 4 cells below visible zone (just-passed symbols)
+                for (let i = visStart + rows; i < Math.min(allCells.length, visStart + rows + 4); i++) {
+                    if (allCells[i]) allCells[i].innerHTML = renderSymbol(syms[Math.floor(Math.random() * syms.length)]);
+                }
+
+                // 3. Position strip so visible zone is ~3 cells BELOW the viewport
+                //    (symbols still scrolling upward, approaching landing position)
+                const approachOffset = cellStep * 3;
+                data.stripEl.style.transition = 'none';
+                data.stripEl.style.transform = `translateY(${targetY - approachOffset}px)`;
+
+                // Force reflow so the "jump" position applies before transition starts
+                void data.stripEl.offsetHeight;
+
+                // 4. Remove blur/spinning classes — player now sees symbols clearly as they decelerate
                 data.stripEl.classList.remove('spinning');
-                data.stripEl.classList.add('decelerating');
                 data.colEl.classList.remove('spinning');
 
-                // Overshoot target slightly
+                // 5. Apply deceleration: smooth ease-out to overshoot position
+                data.stripEl.classList.add('decelerating');
                 const overshootY = targetY + REEL_BOUNCE_OVERSHOOT;
                 data.stripEl.style.transform = `translateY(${overshootY}px)`;
 
-                // After deceleration, bounce back
+                // 6. After deceleration finishes, do the settle-bounce
                 setTimeout(() => {
                     data.stripEl.classList.remove('decelerating');
                     data.stripEl.classList.add('bouncing');
@@ -1760,6 +1796,225 @@
             openSlot(pick.id);
         }
 
+        // ═══════════════════════════════════════════════════════
+        // ═══ Feature Popup System (Game Intro Screen) ═════════
+        // ═══════════════════════════════════════════════════════
+
+        // Feature info descriptions keyed by bonusType
+        const featureInfo = {
+            tumble: { icon: '💎', title: 'Tumbling Reels', desc: 'Winning symbols cascade away for consecutive wins!' },
+            avalanche: { icon: '🪨', title: 'Avalanche Reels', desc: 'Winning symbols shatter and new ones fall into place!' },
+            random_multiplier: { icon: '✨', title: 'Random Multipliers', desc: 'Multiplier symbols appear randomly to boost your wins!' },
+            zeus_multiplier: { icon: '⚡', title: 'Divine Multipliers', desc: 'God-like multipliers rain down for legendary payouts!' },
+            money_collect: { icon: '💰', title: 'Money Collect', desc: 'Wild symbol collects all coin values on the reels!' },
+            respin: { icon: '🔄', title: 'Respin Feature', desc: 'Matching pairs lock and remaining reels respin!' },
+            stacked_wilds: { icon: '🔥', title: 'Stacked Wilds', desc: 'Wild symbols stack to fill entire reels!' },
+            hold_and_win: { icon: '🎯', title: 'Hold & Win', desc: 'Lock coins in place and respin for jackpot prizes!' },
+            fisherman_collect: { icon: '🎣', title: 'Fisherman Collect', desc: 'Wild fisherman collects all cash fish values!' },
+            wheel_multiplier: { icon: '🎡', title: 'Wheel of Fortune', desc: 'Trigger the bonus wheel for massive multipliers!' },
+            expanding_symbol: { icon: '📖', title: 'Expanding Symbol', desc: 'A chosen symbol expands to fill entire reels in free spins!' },
+            expanding_wild_respin: { icon: '🌟', title: 'Expanding Wilds', desc: 'Wild symbols expand across the entire reel and trigger respins!' },
+            sticky_wilds: { icon: '🍯', title: 'Sticky Wilds', desc: 'Wilds stick in place for multiple spins!' },
+            progressive: { icon: '🏆', title: 'Progressive Jackpot', desc: 'Every spin feeds the growing jackpot prize pool!' },
+            mystery_symbols: { icon: '❓', title: 'Mystery Symbols', desc: 'Mystery symbols reveal matching icons for big combos!' },
+            cascading: { icon: '🌊', title: 'Cascading Wins', desc: 'Wins cascade into more wins with increasing multipliers!' },
+            nudge: { icon: '👆', title: 'Nudge Feature', desc: 'Reels nudge into winning positions for extra chances!' },
+            trail_bonus: { icon: '🗺️', title: 'Trail Bonus', desc: 'Advance along the trail to collect bigger prizes!' },
+            pick_bonus: { icon: '🎁', title: 'Pick Bonus', desc: 'Pick hidden prizes for instant rewards!' },
+            super_meter: { icon: '📊', title: 'Super Meter Mode', desc: 'Activate super mode for enhanced payouts!' },
+            lightning_respin: { icon: '⚡', title: 'Lightning Respins', desc: 'Lightning strikes lock high-value symbols in place!' },
+            mega_symbols: { icon: '🔮', title: 'Mega Symbols', desc: 'Giant symbols cover multiple positions for colossal wins!' }
+        };
+
+        // Derive RTP from game properties (simulated since not stored in game data)
+        function deriveGameRTP(game) {
+            const maxPayout = game.payouts.triple || 100;
+            if (maxPayout >= 200) return '96.8%';
+            if (maxPayout >= 100) return '96.5%';
+            if (maxPayout >= 70) return '96.2%';
+            return '95.8%';
+        }
+
+        // Derive volatility from game properties
+        function deriveGameVolatility(game) {
+            const maxPayout = game.payouts.triple || 100;
+            const hasMultipliers = game.tumbleMultipliers || game.zeusMultipliers || game.randomMultiplierRange || game.avalancheMultipliers;
+            if (maxPayout >= 200 || (hasMultipliers && maxPayout >= 100)) return 'Very High';
+            if (maxPayout >= 100 || hasMultipliers) return 'High';
+            if (maxPayout >= 60) return 'Medium';
+            return 'Low';
+        }
+
+        // Build the feature list for a game
+        function buildFeatureList(game) {
+            const features = [];
+
+            // 1. Primary bonus feature
+            if (game.bonusType && featureInfo[game.bonusType]) {
+                const info = featureInfo[game.bonusType];
+                let desc = info.desc;
+                // Enhance description with game-specific data
+                if (game.tumbleMultipliers) {
+                    const maxMult = Math.max(...game.tumbleMultipliers);
+                    desc = `Winning symbols cascade away! Multipliers climb up to ${maxMult}x!`;
+                }
+                if (game.zeusMultipliers) {
+                    const maxMult = Math.max(...game.zeusMultipliers);
+                    desc = `Divine multipliers rain down, reaching up to ${maxMult}x!`;
+                }
+                if (game.randomMultiplierRange) {
+                    const maxMult = Math.max(...game.randomMultiplierRange);
+                    desc = `Random multiplier symbols appear, boosting wins up to ${maxMult}x!`;
+                }
+                if (game.avalancheMultipliers) {
+                    const maxMult = Math.max(...game.avalancheMultipliers);
+                    desc = `Symbols shatter and cascade! Multipliers climb up to ${maxMult}x!`;
+                }
+                if (game.wheelMultipliers) {
+                    const maxMult = Math.max(...game.wheelMultipliers);
+                    desc = `Trigger the bonus wheel for multipliers up to ${maxMult}x!`;
+                }
+                features.push({ icon: info.icon, title: info.title, desc: desc });
+            }
+
+            // 2. Free Spins
+            if (game.freeSpinsCount && game.freeSpinsCount > 0) {
+                const retrigg = game.freeSpinsRetrigger ? ' Retriggerable!' : '';
+                features.push({
+                    icon: '🎰',
+                    title: 'Free Spins',
+                    desc: `Trigger ${game.freeSpinsCount} free spins with special features!${retrigg}`
+                });
+            }
+
+            // 3. Wild Symbol
+            if (game.wildSymbol) {
+                features.push({
+                    icon: '🃏',
+                    title: 'Wild Symbol',
+                    desc: 'Substitutes for all regular symbols to complete wins!'
+                });
+            }
+
+            // 4. Scatter Symbol
+            if (game.scatterSymbol && game.scatterSymbol !== game.wildSymbol) {
+                features.push({
+                    icon: '💫',
+                    title: 'Scatter Symbol',
+                    desc: 'Land 3+ scatters anywhere to trigger bonus features!'
+                });
+            }
+
+            // 5. Win type specific
+            if (game.winType === 'cluster' && game.clusterMin) {
+                features.push({
+                    icon: '🧩',
+                    title: 'Cluster Pays',
+                    desc: `Match ${game.clusterMin}+ connected symbols to win big!`
+                });
+            } else if (game.winType === 'payline') {
+                const cols = game.gridCols || 5;
+                const rows = game.gridRows || 3;
+                const paylines = cols * rows; // approximate
+                features.push({
+                    icon: '📐',
+                    title: 'Payline Wins',
+                    desc: `Match symbols across multiple paylines on the ${cols}x${rows} grid!`
+                });
+            } else if (game.winType === 'classic') {
+                features.push({
+                    icon: '🎲',
+                    title: 'Classic Wins',
+                    desc: 'Match symbols across the reels for classic slot payouts!'
+                });
+            }
+
+            // 6. Grid info
+            if (game.gridCols && game.gridRows) {
+                const gridSize = game.gridCols * game.gridRows;
+                if (gridSize >= 25) {
+                    features.push({
+                        icon: '📊',
+                        title: `${game.gridCols}x${game.gridRows} Grid`,
+                        desc: `Massive ${gridSize}-position grid for more ways to win!`
+                    });
+                }
+            }
+
+            // Limit to 5 features max
+            return features.slice(0, 5);
+        }
+
+        // Show the feature popup for a game
+        function showFeaturePopup(game) {
+            // Check sessionStorage — only show once per game per session
+            const storageKey = `featurePopupSeen_${game.id}`;
+            if (sessionStorage.getItem(storageKey)) return;
+
+            const overlay = document.getElementById('slotFeaturePopup');
+            if (!overlay) return;
+
+            // Mark as seen
+            sessionStorage.setItem(storageKey, '1');
+
+            // Set title and provider
+            document.getElementById('featurePopupTitle').textContent = game.name;
+            document.getElementById('featurePopupProvider').textContent = game.provider || 'Royal Games';
+
+            // Set logo icon from bonusType
+            const logoEl = document.getElementById('featurePopupLogo');
+            const bonusInfo = featureInfo[game.bonusType];
+            logoEl.textContent = bonusInfo ? bonusInfo.icon : '🎰';
+
+            // Set feature image (SDXL background or fallback gradient)
+            const imageEl = document.getElementById('featurePopupImage');
+            const bgImagePath = `assets/backgrounds/slots/${game.id}_bg.png`;
+            const testImg = new Image();
+            testImg.onload = () => {
+                imageEl.style.background = `url('${bgImagePath}') center/cover no-repeat`;
+            };
+            testImg.onerror = () => {
+                imageEl.style.background = game.bgGradient || 'linear-gradient(135deg, #1a0033 0%, #2d1b4e 100%)';
+            };
+            testImg.src = bgImagePath;
+            // Set gradient immediately as placeholder
+            imageEl.style.background = game.bgGradient || 'linear-gradient(135deg, #1a0033 0%, #2d1b4e 100%)';
+
+            // Build feature cards
+            const featuresContainer = document.getElementById('featurePopupFeatures');
+            const features = buildFeatureList(game);
+            featuresContainer.innerHTML = features.map(f => `
+                <div class="feature-card">
+                    <div class="feature-card-icon">${f.icon}</div>
+                    <div class="feature-card-text">
+                        <div class="feature-card-title">${f.title}</div>
+                        <div class="feature-card-desc">${f.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Set game stats
+            document.getElementById('featureStatRTP').textContent = deriveGameRTP(game);
+            document.getElementById('featureStatVolatility').textContent = deriveGameVolatility(game);
+            document.getElementById('featureStatMaxWin').textContent = (game.payouts.triple || 100) + 'x';
+
+            // Show with animation
+            overlay.classList.remove('dismissing');
+            overlay.style.display = 'flex';
+        }
+
+        // Dismiss the feature popup
+        function dismissFeaturePopup() {
+            const overlay = document.getElementById('slotFeaturePopup');
+            if (!overlay || overlay.style.display === 'none') return;
+
+            overlay.classList.add('dismissing');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.classList.remove('dismissing');
+            }, 350);
+        }
+
         function openSlot(gameId) {
             currentGame = games.find(g => g.id === gameId);
             if (!currentGame) return;
@@ -1889,6 +2144,11 @@
                 updateSlotWinDisplay(0);
                 refreshQaSymbolList();
                 lastMessage = { type: 'info', text: '' };
+
+                // Show feature popup (once per game per session)
+                if (currentGame) {
+                    showFeaturePopup(currentGame);
+                }
             });
         }
 
@@ -1906,6 +2166,9 @@
             // Close paytable if open
             const paytable = document.getElementById('paytablePanel');
             if (paytable) paytable.classList.remove('active');
+            // Immediately hide feature popup if still visible
+            const featurePopup = document.getElementById('slotFeaturePopup');
+            if (featurePopup) { featurePopup.style.display = 'none'; featurePopup.classList.remove('dismissing'); }
             document.getElementById('slotModal').classList.remove('active');
             currentGame = null;
             // Clean up reel strip animation loops
@@ -2120,7 +2383,7 @@
             if (winAmount > 0) {
                 balance = result.balance;
                 updateBalance();
-                showWinAnimation(winAmount);
+                showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 updateSlotWinDisplay(winAmount);
 
                 const message = details.message || `WIN! $${winAmount.toLocaleString()}!`;
@@ -2330,7 +2593,7 @@
                     } else {
                         playSound('win');
                     }
-                    showWinAnimation(winAmount);
+                    showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 } else {
                     message = 'No clusters. Try again.';
                     if (freeSpinsActive && (game.bonusType === 'tumble' || game.bonusType === 'avalanche')) {
@@ -2404,7 +2667,7 @@
                     } else {
                         playSound('win');
                     }
-                    showWinAnimation(winAmount);
+                    showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 } else {
                     message = 'No winning lines. Try again.';
                     playSound('lose');
@@ -2460,7 +2723,7 @@
                     } else {
                         playSound('win');
                     }
-                    showWinAnimation(winAmount);
+                    showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                     getAllCells().forEach(cell => cell.classList.add('reel-win-glow'));
 
                 } else {
@@ -2489,7 +2752,7 @@
                             message = `Nice win! Two symbols matched for $${winAmount.toLocaleString()}.${bonus.bonusText}`;
                         }
                         playSound('win');
-                        showWinAnimation(winAmount);
+                        showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                         doublePair.forEach(idx => {
                             const cell = document.getElementById(`reel_${idx}_0`);
                             if (cell) cell.classList.add('reel-win-glow');

@@ -658,7 +658,240 @@ const games = [
       bonusType: 'zeus_multiplier', freeSpinsCount: 12, freeSpinsRetrigger: true,
       zeusMultipliers: [2, 3, 5, 10, 25, 100],
       bonusDesc: "Merlin's Power: 6×5 grid — Arcane multiplier spells up to 100x!",
-      payouts: { triple: 115, double: 11, wildTriple: 175, scatterPay: 4, cluster5: 4, cluster8: 11, cluster12: 40, cluster15: 115 }, minBet: 15, maxBet: 1500, hot: false, jackpot: 0 }
+      payouts: { triple: 115, double: 11, wildTriple: 175, scatterPay: 4, cluster5: 4, cluster8: 11, cluster12: 40, cluster15: 115 }, minBet: 15, maxBet: 1500, hot: false, jackpot: 0 },
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ═══ NEW GAMES — 20 Bitstarz-Inspired Additions ═══════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // ═══ 61. Coin Strike Deluxe (based on Coin Strike: Hold and Win) — 3x3, Hold & Win ═══
+    { id: 'coin_strike', name: 'Coin Strike Deluxe', provider: 'Royal Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/coin_strike.png', bgGradient: 'linear-gradient(135deg, #ffd700 0%, #b8860b 100%)',
+      symbols: ['s1_cherry','s2_lemon','s3_bar','s4_bell','s5_seven','wild_coin'],
+      reelBg: 'linear-gradient(180deg, #2a1f00 0%, #0f0c00 100%)', accentColor: '#ffd700',
+      gridCols: 3, gridRows: 3, template: 'classic', winType: 'payline',
+      wildSymbol: 'wild_coin', scatterSymbol: 's5_seven',
+      bonusType: 'hold_and_win', freeSpinsCount: 0, holdAndWinRespins: 3,
+      jackpots: { mini: 25, minor: 100, major: 1000 },
+      bonusDesc: 'Coin Strike: Classic 3×3 — Land coins for Hold & Win! Jackpots up to 5,150x!',
+      payouts: { triple: 55, double: 8, wildTriple: 75, scatterPay: 3 }, minBet: 5, maxBet: 1000, hot: false, jackpot: 1 },
+
+    // ═══ 62. Fortune Frog Rush (based on Gold Rush Frog) — 6x5, Trueways/Scatter ═══
+    { id: 'gold_rush_frog', name: 'Fortune Frog Rush', provider: 'Royal Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gold_rush_frog.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #ffc107 100%)',
+      symbols: ['s1_pickaxe','s2_lantern','s3_dynamite','s4_nugget','s5_frog_gold','wild_frog'],
+      reelBg: 'linear-gradient(180deg, #1a2e0a 0%, #0a1205 100%)', accentColor: '#4caf50',
+      gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
+      wildSymbol: 'wild_frog', scatterSymbol: 's5_frog_gold',
+      bonusType: 'coin_respin', freeSpinsCount: 12, freeSpinsRetrigger: true,
+      coinRespinValues: [20, 100, 1000],
+      bonusDesc: 'Fortune Frog: 6×5 grid — Coin Re-Spin with up to 262,144 ways! Mega Jackpot 5,000x!',
+      payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 35, cluster15: 100 }, minBet: 10, maxBet: 1000, hot: true, jackpot: 1 },
+
+    // ═══ 63. Hip Hop Millions (based on Snoop Dogg Dollars) — 6x5, Cluster Cascade ═══
+    { id: 'snoop_dollars', name: 'Hip Hop Millions', provider: 'Royal Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/snoop_dollars.png', bgGradient: 'linear-gradient(135deg, #7b1fa2 0%, #ffd600 100%)',
+      symbols: ['s1_mic','s2_chain','s3_sneaker','s4_boombox','s5_crown_gold','wild_dollar'],
+      reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#7b1fa2',
+      gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 5,
+      wildSymbol: 'wild_dollar', scatterSymbol: 's5_crown_gold',
+      bonusType: 'tumble', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      tumbleMultipliers: [1, 2, 4, 6, 8, 10],
+      bonusDesc: 'Hip Hop Millions: 6×5 cluster cascade — Multiplier zones up to 10,000x! Digging bonus features!',
+      payouts: { triple: 120, double: 12, wildTriple: 180, scatterPay: 5, cluster5: 5, cluster8: 15, cluster12: 45, cluster15: 120 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
+
+    // ═══ 64. Valhalla Gems (based on Gemhalla) — 6x5, Cluster Cascade ═══
+    { id: 'gemhalla', name: 'Valhalla Gems', provider: 'Royal Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gemhalla.png', bgGradient: 'linear-gradient(135deg, #455a64 0%, #ffd54f 100%)',
+      symbols: ['s1_axe','s2_horn','s3_beer','s4_helmet','s5_shield_gem','wild_rune'],
+      reelBg: 'linear-gradient(180deg, #1a1f2e 0%, #0a0c12 100%)', accentColor: '#ffd54f',
+      gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
+      wildSymbol: 'wild_rune', scatterSymbol: 's5_shield_gem',
+      bonusType: 'tumble', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      tumbleMultipliers: [1, 2, 3, 5, 8, 15, 25],
+      bonusDesc: 'Valhalla Gems: 6×5 Norse cascade — Shield multipliers & Bonus Buy! 97% RTP, 5,000x max!',
+      payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 110 }, minBet: 10, maxBet: 1500, hot: true, jackpot: 0 },
+
+    // ═══ 65. Loki's Wild Loot (based on Loki Loot) — 5x5, Wild Collect ═══
+    { id: 'loki_loot', name: "Loki's Wild Loot", provider: 'Royal Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/loki_loot.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #c6ff00 100%)',
+      symbols: ['s1_hammer','s2_mask','s3_staff','s4_potion','s5_loki_gold','wild_loki'],
+      reelBg: 'linear-gradient(180deg, #0a1f0a 0%, #050c05 100%)', accentColor: '#c6ff00',
+      gridCols: 5, gridRows: 5, template: 'grid', winType: 'payline',
+      wildSymbol: 'wild_loki', scatterSymbol: 's5_loki_gold',
+      bonusType: 'wild_collect', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      wildCollectMultiplier: [2, 3, 5, 10],
+      bonusDesc: "Loki's Loot: 5×5 grid — Wild Collect mechanic! Wilds gather coin values! 97.2% RTP!",
+      payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 35, cluster15: 100 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 0 },
+
+    // ═══ 66. Buffalo Blitz Extreme (based on Buffalo Hold & Win Extreme) — 5x3, Hold & Win ═══
+    { id: 'buffalo_extreme', name: 'Buffalo Blitz Extreme', provider: 'Royal Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/buffalo_extreme.png', bgGradient: 'linear-gradient(135deg, #795548 0%, #ff9800 100%)',
+      symbols: ['s1_eagle','s2_cougar','s3_wolf_hw','s4_buffalo','s5_coin_gold','wild_bison'],
+      reelBg: 'linear-gradient(180deg, #2a1a0a 0%, #120a05 100%)', accentColor: '#ff9800',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_bison', scatterSymbol: 's5_coin_gold',
+      bonusType: 'hold_and_win', freeSpinsCount: 0, holdAndWinRespins: 3,
+      jackpots: { mini: 25, major: 100, grand: 1000 },
+      bonusDesc: 'Buffalo Blitz: 5×3 Hold & Win with 4 unlockable grids! Coin doubling & Grand Jackpot 4,000x!',
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 5, maxBet: 2000, hot: true, jackpot: 1 },
+
+    // ═══ 67. Pots of Zeus (based on 3 Pots of Olympus) — 5x3, Hold & Win ═══
+    { id: 'pots_olympus', name: 'Pots of Zeus', provider: 'Royal Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/pots_olympus.png', bgGradient: 'linear-gradient(135deg, #1565c0 0%, #ffd54f 100%)',
+      symbols: ['s1_trophy','s2_apollo','s3_poseidon','s4_zeus','s5_parthenon','wild_bolt'],
+      reelBg: 'linear-gradient(180deg, #0a1a3d 0%, #050a1a 100%)', accentColor: '#1565c0',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_bolt', scatterSymbol: 's5_parthenon',
+      bonusType: 'hold_and_win', freeSpinsCount: 0, holdAndWinRespins: 3,
+      jackpots: { mini: 20, minor: 40, major: 150, grand: 4000 },
+      bonusDesc: 'Pots of Zeus: 5×3 Hold & Win — 3 Coin Pot modifiers! Grand Jackpot 11,075x! Bonus Buy available!',
+      payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 1 },
+
+    // ═══ 68. Sweet Bonanza Blast (based on Sweet Bonanza) — 6x5, Scatter Tumble ═══
+    { id: 'sweet_bonanza', name: 'Sweet Bonanza Blast', provider: 'Royal Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/sweet_bonanza.png', bgGradient: 'linear-gradient(135deg, #e91e63 0%, #7c4dff 100%)',
+      symbols: ['s1_candy_heart','s2_star_candy','s3_lollipop_swirl','s4_cotton_candy','s5_bomb_candy','wild_rainbow'],
+      reelBg: 'linear-gradient(180deg, #2e0a2e 0%, #120512 100%)', accentColor: '#e91e63',
+      gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
+      wildSymbol: 'wild_rainbow', scatterSymbol: 's5_bomb_candy',
+      bonusType: 'random_multiplier', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      randomMultiplierRange: [2, 3, 5, 10, 25, 50, 100],
+      bonusDesc: 'Sweet Bonanza: 6×5 scatter tumble — Bomb multipliers up to 100x! 21,100x max win!',
+      payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 30, cluster15: 100 }, minBet: 10, maxBet: 2500, hot: true, jackpot: 0 },
+
+    // ═══ 69. Dog House Unleashed (based on Dog House Megaways) — 6x5, Megaways ═══
+    { id: 'dog_house_mega', name: 'Dog House Unleashed', provider: 'Royal Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/dog_house_mega.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #ff5722 100%)',
+      symbols: ['s1_bone','s2_collar','s3_paw','s4_doberman','s5_bulldog','wild_doghouse'],
+      reelBg: 'linear-gradient(180deg, #0a2e0a 0%, #051205 100%)', accentColor: '#4caf50',
+      gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
+      wildSymbol: 'wild_doghouse', scatterSymbol: 's5_bulldog',
+      bonusType: 'tumble', freeSpinsCount: 12, freeSpinsRetrigger: true,
+      tumbleMultipliers: [1, 2, 3, 5, 10],
+      wildMultiplierRange: [2, 3],
+      bonusDesc: 'Dog House Unleashed: 6×5 Megaways — Sticky Wild Multipliers (2x/3x)! 12,305x max!',
+      payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 35, cluster15: 110 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
+
+    // ═══ 70. Tropical Fruit Party (based on Fruit Party) — 7x7, Cluster Cascade ═══
+    { id: 'fruit_party', name: 'Tropical Fruit Party', provider: 'Royal Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/fruit_party.png', bgGradient: 'linear-gradient(135deg, #ff6f00 0%, #e040fb 100%)',
+      symbols: ['s1_strawberry','s2_orange','s3_plum_p','s4_peach','s5_starfruit','wild_fruit'],
+      reelBg: 'linear-gradient(180deg, #2e1a0a 0%, #120a05 100%)', accentColor: '#ff6f00',
+      gridCols: 7, gridRows: 7, template: 'grid', winType: 'cluster', clusterMin: 5,
+      wildSymbol: 'wild_fruit', scatterSymbol: 's5_starfruit',
+      bonusType: 'tumble', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      tumbleMultipliers: [1, 2, 4, 8, 16, 32, 64, 128, 256],
+      bonusDesc: 'Fruit Party: 7×7 cluster cascade — Multiplicative multipliers up to 256x! 5,000x max!',
+      payouts: { triple: 120, double: 12, wildTriple: 180, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 120 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
+
+    // ═══ 71. Alientonz (based on Reactoonz) — 7x7, Cluster Cascade ═══
+    { id: 'reactoonz', name: 'Alientonz', provider: 'Royal Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/reactoonz.png', bgGradient: 'linear-gradient(135deg, #6a1b9a 0%, #00e5ff 100%)',
+      symbols: ['s1_blob_green','s2_blob_blue','s3_blob_pink','s4_blob_yellow','s5_blob_red','wild_gargantoon'],
+      reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#00e5ff',
+      gridCols: 7, gridRows: 7, template: 'grid', winType: 'cluster', clusterMin: 5,
+      wildSymbol: 'wild_gargantoon', scatterSymbol: 's5_blob_red',
+      bonusType: 'tumble', freeSpinsCount: 0,
+      tumbleMultipliers: [1, 1, 2, 3, 5],
+      quantumFeatures: ['implosion', 'demolition', 'incision', 'alteration'],
+      bonusDesc: 'Alientonz: 7×7 alien cluster — Quantum Features: Implosion, Demolition, Gargantoon! 4,570x max!',
+      payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 30, cluster15: 100 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
+
+    // ═══ 72. Money Express 3 (based on Money Train 3) — 5x4, Hold & Win ═══
+    { id: 'money_train', name: 'Money Express 3', provider: 'Royal Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/money_train.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #ff6f00 100%)',
+      symbols: ['s1_dynamite_mt','s2_pistol','s3_wanted_poster','s4_sheriff','s5_train','wild_locomotive'],
+      reelBg: 'linear-gradient(180deg, #2a1a0a 0%, #120a05 100%)', accentColor: '#ff6f00',
+      gridCols: 5, gridRows: 4, template: 'extended', winType: 'payline',
+      wildSymbol: 'wild_locomotive', scatterSymbol: 's5_train',
+      bonusType: 'hold_and_win', freeSpinsCount: 0, holdAndWinRespins: 3,
+      jackpots: { mini: 25, major: 100, grand: 5000 },
+      persistentBoosters: ['collector', 'sniper', 'necromancer'],
+      bonusDesc: 'Money Express: 5×4 Hold & Win — Persistent boosters, grid expansion! 100,000x max win!',
+      payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4 }, minBet: 10, maxBet: 5000, hot: true, jackpot: 1 },
+
+    // ═══ 73. Depth Charge (based on Razor Shark) — 5x4, Mystery Stacks ═══
+    { id: 'razor_shark', name: 'Depth Charge', provider: 'Royal Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/razor_shark.png', bgGradient: 'linear-gradient(135deg, #006064 0%, #00bcd4 100%)',
+      symbols: ['s1_anchor','s2_diver','s3_jellyfish','s4_shark_tooth','s5_shark','wild_shark'],
+      reelBg: 'linear-gradient(180deg, #001a2e 0%, #000a12 100%)', accentColor: '#00bcd4',
+      gridCols: 5, gridRows: 4, template: 'extended', winType: 'payline',
+      wildSymbol: 'wild_shark', scatterSymbol: 's5_shark',
+      bonusType: 'mystery_stacks', freeSpinsCount: 8, freeSpinsRetrigger: true,
+      mysteryRevealMultipliers: [1, 2, 5, 10, 50, 2500],
+      bonusDesc: 'Depth Charge: 5×4 mystery stacks — Razor Reveal multipliers up to 2,500x! 50,000x max!',
+      payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4 }, minBet: 10, maxBet: 3000, hot: false, jackpot: 0 },
+
+    // ═══ 74. Vegas Frog Live (based on Elvis Frog in Vegas) — 5x3, Hold & Win ═══
+    { id: 'elvis_frog', name: 'Vegas Frog Live', provider: 'Royal Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/elvis_frog.png', bgGradient: 'linear-gradient(135deg, #d50000 0%, #ffd600 100%)',
+      symbols: ['s1_dice','s2_cocktail','s3_neon_sign','s4_showgirl','s5_frog_elvis','wild_vegas'],
+      reelBg: 'linear-gradient(180deg, #2a0a0a 0%, #120505 100%)', accentColor: '#d50000',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_vegas', scatterSymbol: 's5_frog_elvis',
+      bonusType: 'hold_and_win', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      holdAndWinRespins: 3,
+      jackpots: { mini: 30, major: 100, mega: 1000 },
+      bonusDesc: 'Vegas Frog: 5×3 Hold & Win — Jackpot coins (30x/100x/1000x)! Free spins + Gamble!',
+      payouts: { triple: 75, double: 8, wildTriple: 110, scatterPay: 3 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 1 },
+
+    // ═══ 75. Gem Vault Bonanza (based on Gems Bonanza) — 7x7, Cluster Cascade ═══
+    { id: 'gems_bonanza', name: 'Gem Vault Bonanza', provider: 'Royal Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gems_bonanza.png', bgGradient: 'linear-gradient(135deg, #283593 0%, #e040fb 100%)',
+      symbols: ['s1_emerald','s2_sapphire','s3_ruby','s4_topaz','s5_diamond_gem','wild_prism'],
+      reelBg: 'linear-gradient(180deg, #0a0a2e 0%, #050512 100%)', accentColor: '#e040fb',
+      gridCols: 7, gridRows: 7, template: 'grid', winType: 'cluster', clusterMin: 5,
+      wildSymbol: 'wild_prism', scatterSymbol: 's5_diamond_gem',
+      bonusType: 'tumble', freeSpinsCount: 12, freeSpinsRetrigger: true,
+      tumbleMultipliers: [1, 2, 3, 5, 10],
+      goldFeverProgressive: true,
+      bonusDesc: 'Gem Vault: 7×7 cluster cascade — Gold Fever progressive! 5 spin modifiers! 10,000x max!',
+      payouts: { triple: 130, double: 13, wildTriple: 195, scatterPay: 5, cluster5: 5, cluster8: 15, cluster12: 50, cluster15: 130 }, minBet: 10, maxBet: 3000, hot: true, jackpot: 0 },
+
+    // ═══ 76. Buffalo King Thunder (based on Buffalo King Megaways) — 6x5, Megaways Tumble ═══
+    { id: 'buffalo_mega', name: 'Buffalo King Thunder', provider: 'Royal Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/buffalo_mega.png', bgGradient: 'linear-gradient(135deg, #5d4037 0%, #ff6f00 100%)',
+      symbols: ['s1_prairie_flower','s2_coyote','s3_eagle_bk','s4_mustang','s5_buffalo_king','wild_thunder'],
+      reelBg: 'linear-gradient(180deg, #2a1f0a 0%, #120c05 100%)', accentColor: '#ff6f00',
+      gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
+      wildSymbol: 'wild_thunder', scatterSymbol: 's5_buffalo_king',
+      bonusType: 'tumble', freeSpinsCount: 15, freeSpinsRetrigger: true,
+      tumbleMultipliers: [1, 2, 3, 5, 10, 15],
+      wildMultiplierRange: [2, 3, 5],
+      bonusDesc: 'Buffalo King: 6×5 Megaways tumble — Wild multipliers (2x/3x/5x) multiply together! 5,000x max!',
+      payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 110 }, minBet: 10, maxBet: 3000, hot: false, jackpot: 0 },
+
+    // ═══ 77. Tome of Insanity (based on Tome of Madness) — 5x5, Cluster Cascade ═══
+    { id: 'tome_madness', name: 'Tome of Insanity', provider: 'Royal Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/tome_madness.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #7c4dff 100%)',
+      symbols: ['s1_tentacle','s2_eye','s3_tome','s4_mask_eldritch','s5_cthulhu','wild_madness'],
+      reelBg: 'linear-gradient(180deg, #0a1a0a 0%, #050a05 100%)', accentColor: '#7c4dff',
+      gridCols: 5, gridRows: 5, template: 'grid', winType: 'cluster', clusterMin: 4,
+      wildSymbol: 'wild_madness', scatterSymbol: 's5_cthulhu',
+      bonusType: 'tumble', freeSpinsCount: 10,
+      tumbleMultipliers: [1, 2, 3, 5, 10],
+      portalEffects: ['abyss', 'void'],
+      bonusDesc: 'Tome of Insanity: 5×5 Lovecraftian cluster — Portal effects: Abyss & Void! 2,000x max!',
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 30, cluster15: 80 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 0 },
+
+    // ═══ 78. Eternal Romance (based on Immortal Romance) — 5x3, 243 Ways ═══
+    { id: 'eternal_romance', name: 'Eternal Romance', provider: 'Royal Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/eternal_romance.png', bgGradient: 'linear-gradient(135deg, #311b92 0%, #c62828 100%)',
+      symbols: ['s1_candle','s2_rose','s3_amber','s4_michael','s5_sarah','wild_vampire'],
+      reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#c62828',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_vampire', scatterSymbol: 's5_sarah',
+      bonusType: 'chamber_spins', freeSpinsCount: 15, freeSpinsRetrigger: true,
+      chamberLevels: ['amber_10fs', 'troy_15fs', 'michael_20fs_5x', 'sarah_25fs_wild_reel'],
+      bonusDesc: 'Eternal Romance: 5×3 243 ways — Chamber of Spins with 4 characters! Wild Desire! 12,150x max!',
+      payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 5, maxBet: 3000, hot: false, jackpot: 0 },
+
+    // ═══ 79. Volcano Coins (based on Coin Volcano) — 5x3, Hold & Win ═══
+    { id: 'coin_volcano', name: 'Volcano Coins', provider: 'Royal Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/coin_volcano.png', bgGradient: 'linear-gradient(135deg, #bf360c 0%, #ff9800 100%)',
+      symbols: ['s1_obsidian','s2_lava_gem','s3_fire_ruby','s4_magma_coin','s5_volcano','wild_eruption'],
+      reelBg: 'linear-gradient(180deg, #2a0a00 0%, #120500 100%)', accentColor: '#ff9800',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_eruption', scatterSymbol: 's5_volcano',
+      bonusType: 'hold_and_win', freeSpinsCount: 8, freeSpinsRetrigger: true,
+      holdAndWinRespins: 3,
+      jackpots: { mini: 20, major: 100, grand: 2000 },
+      bonusDesc: 'Volcano Coins: 5×3 Hold & Win — Eruption bonus fills reels with coins! Grand Jackpot 2,000x!',
+      payouts: { triple: 75, double: 8, wildTriple: 110, scatterPay: 3 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 1 },
+
+    // ═══ 80. Crown of Power (based on Power Crown: Hold and Win) — 5x3, Hold & Win ═══
+    { id: 'power_crown', name: 'Crown of Power', provider: 'Royal Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/power_crown.png', bgGradient: 'linear-gradient(135deg, #4a148c 0%, #ffd700 100%)',
+      symbols: ['s1_scepter','s2_orb','s3_crown_jewel','s4_throne','s5_royal_crown','wild_crown'],
+      reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#ffd700',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_crown', scatterSymbol: 's5_royal_crown',
+      bonusType: 'hold_and_win', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      holdAndWinRespins: 3,
+      jackpots: { mini: 25, minor: 50, major: 200, grand: 3000 },
+      bonusDesc: 'Crown of Power: 5×3 Hold & Win — Royal coins with 4 jackpot tiers! Grand 3,000x!',
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 5, maxBet: 2000, hot: false, jackpot: 1 }
 ];
 // Export for Node.js (server), no-op in browser
 if (typeof module !== 'undefined' && module.exports) {
