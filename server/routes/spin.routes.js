@@ -11,6 +11,42 @@ const router = express.Router();
 // Rate limiting state per user
 const lastSpinTime = new Map();
 
+function applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount) {
+    if (cappedWinAmount >= uncappedWinAmount) return;
+
+    const moneyPattern = /\$\d[\d,]*(?:\.\d{1,2})?/;
+    const cappedText = `$${cappedWinAmount.toFixed(2)}`;
+    const uncappedText = `$${uncappedWinAmount.toFixed(2)}`;
+    const details = (spinResult.winDetails && typeof spinResult.winDetails === 'object')
+        ? { ...spinResult.winDetails }
+        : { type: 'win', message: '' };
+
+    if (typeof details.message === 'string' && details.message.length > 0) {
+        details.message = moneyPattern.test(details.message)
+            ? details.message.replace(moneyPattern, cappedText)
+            : `${details.message} ${cappedText}`;
+
+        if (!/capped/i.test(details.message)) {
+            details.message += ` (capped from ${uncappedText})`;
+        }
+    } else {
+        details.message = `WIN! ${cappedText} (capped from ${uncappedText}).`;
+    }
+
+    details.capped = true;
+    details.originalWinAmount = uncappedWinAmount;
+    details.cappedWinAmount = cappedWinAmount;
+    spinResult.winDetails = details;
+
+    if (spinResult.freeSpinState && typeof spinResult.freeSpinState.totalWin === 'number') {
+        const capDelta = uncappedWinAmount - cappedWinAmount;
+        if (capDelta > 0) {
+            const nextTotal = spinResult.freeSpinState.totalWin - capDelta;
+            spinResult.freeSpinState.totalWin = Math.max(0, Math.round(nextTotal * 100) / 100);
+        }
+    }
+}
+
 // POST /api/spin
 router.post('/', authenticate, (req, res) => {
     try {
@@ -71,7 +107,10 @@ router.post('/', authenticate, (req, res) => {
         const spinResult = gameEngine.resolveSpin(game, bet, gameStats, null, db);
 
         // ── Apply win cap (house protection with profit floor) ──
-        spinResult.winAmount = houseEdge.capWinAmount(spinResult.winAmount, bet, game, db);
+        const uncappedWinAmount = spinResult.winAmount;
+        const cappedWinAmount = houseEdge.capWinAmount(uncappedWinAmount, bet, game, db);
+        spinResult.winAmount = cappedWinAmount;
+        applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount);
 
         // ── Credit win ──
         let finalBalance = balanceAfterBet;

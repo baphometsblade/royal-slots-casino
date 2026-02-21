@@ -130,6 +130,63 @@ async function ensureQaPanelOpen(page) {
   }
 }
 
+async function waitForPageTransitionIdle(page, timeout = 10000) {
+  await page.waitForFunction(
+    () => {
+      const transition = document.getElementById("pageTransition");
+      return !transition || !transition.classList.contains("active");
+    },
+    { timeout }
+  );
+}
+
+async function dismissFeaturePopupIfVisible(page) {
+  const popupVisible = await page.evaluate(() => {
+    const overlay = document.getElementById("slotFeaturePopup");
+    if (!overlay) return false;
+    const style = window.getComputedStyle(overlay);
+    return style.display !== "none" && style.visibility !== "hidden" && style.pointerEvents !== "none";
+  });
+  if (!popupVisible) return;
+
+  const playButton = await page.$("#featurePopupPlayBtn");
+  if (playButton) {
+    await playButton.click({ timeout: 5000 });
+  } else {
+    await page.evaluate(() => {
+      if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
+      const overlay = document.getElementById("slotFeaturePopup");
+      if (overlay) overlay.style.display = "none";
+    });
+  }
+
+  await page.waitForFunction(
+    () => {
+      const overlay = document.getElementById("slotFeaturePopup");
+      if (!overlay) return true;
+      const style = window.getComputedStyle(overlay);
+      return style.display === "none" || style.visibility === "hidden" || style.pointerEvents === "none";
+    },
+    { timeout: 5000 }
+  );
+}
+
+async function clickSpinButton(page) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    await waitForPageTransitionIdle(page, 10000);
+    await dismissFeaturePopupIfVisible(page);
+    await waitForPageTransitionIdle(page, 5000);
+    try {
+      await page.click("#spinBtn", { timeout: 6000 });
+      return;
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+      await page.waitForTimeout(250);
+    }
+  }
+}
+
 async function run() {
   await ensureDir(OUTPUT_DIR);
 
@@ -251,7 +308,7 @@ async function run() {
       openSlot("fire_joker");
     });
     await page.waitForSelector("#slotModal.active", { timeout: 10000 });
-    await page.click("#spinBtn");
+    await clickSpinButton(page);
     await waitForState(page, (state) => !state.spinning && state.stats.totalSpins >= 1, 15000);
 
     const afterSpin = await readState(page);
