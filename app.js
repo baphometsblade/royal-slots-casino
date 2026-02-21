@@ -1886,6 +1886,9 @@
 
             addRecentlyPlayed(gameId);
 
+            // Set game-specific CSS theme
+            document.getElementById('slotModal').setAttribute('data-game-id', currentGame.id);
+
             showPageTransition(() => {
                 closeStatsModal();
                 document.getElementById('slotGameName').textContent = currentGame.name;

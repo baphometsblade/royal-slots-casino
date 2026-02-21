@@ -3824,6 +3824,390 @@
             color: #fff;
         }
 
+        /* ═══════════════════════════════════════════════════════════════════════════════════ */
+        /* GAME-SPECIFIC VISUAL THEMES - Unique UI for Each Slot Machine (All 60 Games)        */
+        /* ═══════════════════════════════════════════════════════════════════════════════════ */
+
+        /* ═══ CLUSTER GAMES (6x5 grids) - Ornate Borders with Cosmic/Divine Theming ═══ */
+
+        /* GAME 1: Candy Cascade 1000 (sugar_rush) */
+        .slot-modal-fullscreen[data-game-id="sugar_rush"] .reels-container {
+            border: 10px solid #ff6fd8;
+            background: linear-gradient(180deg, #3d1232 0%, #1a0a14 100%);
+            box-shadow: 0 0 50px rgba(255, 111, 216, 0.5), inset 0 0 80px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="sugar_rush"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 111, 216, 0.15) 0%, rgba(247, 165, 49, 0.15) 100%);
+            border: 2px solid rgba(255, 111, 216, 0.6);
+            box-shadow: inset 0 0 12px rgba(255, 111, 216, 0.25), 0 0 8px rgba(255, 111, 216, 0.2);
+        }
+
+        /* GAME 2: Fruit Fiesta Deluxe (lucky_777) */
+        .slot-modal-fullscreen[data-game-id="lucky_777"] .reels-container {
+            border: 10px solid #f093fb;
+            background: linear-gradient(180deg, #2e1435 0%, #160a18 100%);
+            box-shadow: 0 0 50px rgba(240, 147, 251, 0.4), inset 0 0 80px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="lucky_777"] .reel-cell {
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.15) 0%, rgba(245, 87, 108, 0.15) 100%);
+            border: 2px solid rgba(240, 147, 251, 0.5);
+            box-shadow: inset 0 0 12px rgba(240, 147, 251, 0.2), 0 0 8px rgba(240, 147, 251, 0.15);
+        }
+
+        /* GAME 3: Halls of Thunder (gates_olympus) */
+        .slot-modal-fullscreen[data-game-id="gates_olympus"] .reels-container {
+            border: 10px solid;
+            border-image: linear-gradient(135deg, #667eea, #f5c842) 1;
+            background: linear-gradient(180deg, #0f1a3d 0%, #060b1a 100%);
+            box-shadow: 0 0 60px rgba(102, 126, 234, 0.6), 0 0 40px rgba(245, 200, 66, 0.4), inset 0 0 80px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="gates_olympus"] .reel-cell {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(245, 200, 66, 0.1) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.7);
+            box-shadow: inset 0 0 12px rgba(245, 200, 66, 0.2), 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        /* GAME 4: Starlight Empress (starlight_princess) */
+        .slot-modal-fullscreen[data-game-id="starlight_princess"] .reels-container {
+            border: 10px solid #e040fb;
+            background: linear-gradient(180deg, #2a0a3d 0%, #0d041a 100%);
+            box-shadow: 0 0 60px rgba(224, 64, 251, 0.5), 0 0 40px rgba(77, 208, 225, 0.3), inset 0 0 80px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="starlight_princess"] .reel-cell {
+            background: linear-gradient(135deg, rgba(224, 64, 251, 0.15) 0%, rgba(77, 208, 225, 0.1) 100%);
+            border: 2px solid rgba(224, 64, 251, 0.6);
+            box-shadow: inset 0 0 12px rgba(224, 64, 251, 0.2), 0 0 8px rgba(77, 208, 225, 0.2);
+        }
+
+        /* GAME 5: Olympus Rising (olympus_rising) */
+        .slot-modal-fullscreen[data-game-id="olympus_rising"] .reels-container {
+            border: 10px solid;
+            border-image: linear-gradient(135deg, #5c6bc0, #ff8a65) 1;
+            background: linear-gradient(180deg, #0d1a40 0%, #060a1f 100%);
+            box-shadow: 0 0 60px rgba(92, 107, 192, 0.5), 0 0 40px rgba(255, 138, 101, 0.3), inset 0 0 80px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="olympus_rising"] .reel-cell {
+            background: linear-gradient(135deg, rgba(92, 107, 192, 0.15) 0%, rgba(255, 138, 101, 0.1) 100%);
+            border: 2px solid rgba(92, 107, 192, 0.7);
+            box-shadow: inset 0 0 12px rgba(255, 138, 101, 0.15), 0 0 10px rgba(92, 107, 192, 0.25);
+        }
+
+        /* GAME 6: Buffalo Stampede (buffalo_stampede) */
+        .slot-modal-fullscreen[data-game-id="buffalo_stampede"] .reels-container {
+            border: 10px solid #ff6f00;
+            background: linear-gradient(180deg, #2a1a08 0%, #140d04 100%);
+            box-shadow: 0 0 50px rgba(255, 111, 0, 0.4), inset 0 0 80px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="buffalo_stampede"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 111, 0, 0.15) 0%, rgba(215, 123, 83, 0.1) 100%);
+            border: 2px solid rgba(255, 111, 0, 0.5);
+            box-shadow: inset 0 0 12px rgba(255, 111, 0, 0.15), 0 0 8px rgba(255, 111, 0, 0.2);
+        }
+
+        /* ═══ CLASSIC PAYLINE GAMES (3x3, 5x3, 5x4) - Traditional Slot Machine Styling ═══ */
+
+        /* GAME 7: Salsa Spins (hot_chillies) - 3x3 */
+        .slot-modal-fullscreen[data-game-id="hot_chillies"] .reels-container {
+            border: 6px solid #f77f00;
+            background: linear-gradient(180deg, #3a1008 0%, #1a0804 100%);
+            box-shadow: 0 0 40px rgba(247, 127, 0, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="hot_chillies"] .reel-cell {
+            background: linear-gradient(135deg, rgba(247, 127, 0, 0.12) 0%, rgba(214, 40, 40, 0.1) 100%);
+            border: 1px solid rgba(247, 127, 0, 0.5);
+            box-shadow: inset 0 0 8px rgba(247, 127, 0, 0.12);
+        }
+
+        /* GAME 8: Inferno Jester (fire_joker) - 3x3 */
+        .slot-modal-fullscreen[data-game-id="fire_joker"] .reels-container {
+            border: 8px solid #ff0844;
+            background: linear-gradient(180deg, #2a0812 0%, #140408 100%);
+            box-shadow: 0 0 50px rgba(255, 8, 68, 0.5), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="fire_joker"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 8, 68, 0.2) 0%, rgba(255, 177, 153, 0.1) 100%);
+            border: 2px solid rgba(255, 8, 68, 0.6);
+            box-shadow: inset 0 0 10px rgba(255, 8, 68, 0.2), 0 0 6px rgba(255, 8, 68, 0.3);
+        }
+
+        /* GAME 9: Lucky Dragon (lucky_dragon) - 3x3 */
+        .slot-modal-fullscreen[data-game-id="lucky_dragon"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #c62828, #ffd600) 1;
+            background: linear-gradient(180deg, #1a0a1a 0%, #0a0505 100%);
+            box-shadow: 0 0 40px rgba(198, 40, 40, 0.4), 0 0 30px rgba(255, 214, 0, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="lucky_dragon"] .reel-cell {
+            background: linear-gradient(135deg, rgba(198, 40, 40, 0.15) 0%, rgba(255, 214, 0, 0.1) 100%);
+            border: 2px solid rgba(198, 40, 40, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 214, 0, 0.12);
+        }
+
+        /* GAME 10: Raging Bull (black_bull) - 5x4 */
+        .slot-modal-fullscreen[data-game-id="black_bull"] .reels-container {
+            border: 8px solid #e94560;
+            background: linear-gradient(180deg, #2a0a0a 0%, #120505 100%);
+            box-shadow: 0 0 40px rgba(233, 69, 96, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="black_bull"] .reel-cell {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.12) 0%, rgba(26, 26, 46, 0.2) 100%);
+            border: 1px solid rgba(233, 69, 96, 0.4);
+            box-shadow: inset 0 0 8px rgba(233, 69, 96, 0.1);
+        }
+
+        /* GAME 11: Blazing Fruits (super_hot) - 5x3 */
+        .slot-modal-fullscreen[data-game-id="super_hot"] .reels-container {
+            border: 8px solid #ffd200;
+            background: linear-gradient(180deg, #2a1a05 0%, #140d02 100%);
+            box-shadow: 0 0 50px rgba(255, 210, 0, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="super_hot"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 210, 0, 0.15) 0%, rgba(247, 151, 30, 0.1) 100%);
+            border: 2px solid rgba(255, 210, 0, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 210, 0, 0.15);
+        }
+
+        /* GAME 12: Alpha Pack (wolf_gold) - 5x3 */
+        .slot-modal-fullscreen[data-game-id="wolf_gold"] .reels-container {
+            border: 8px solid #d4a836;
+            background: linear-gradient(180deg, #261a08 0%, #110c04 100%);
+            box-shadow: 0 0 40px rgba(212, 168, 54, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="wolf_gold"] .reel-cell {
+            background: linear-gradient(135deg, rgba(212, 168, 54, 0.12) 0%, rgba(139, 105, 20, 0.1) 100%);
+            border: 1px solid rgba(212, 168, 54, 0.4);
+            box-shadow: inset 0 0 8px rgba(212, 168, 54, 0.1);
+        }
+
+        /* GAME 13: Reel Catch (big_bass) - 5x3 */
+        .slot-modal-fullscreen[data-game-id="big_bass"] .reels-container {
+            border: 8px solid #48cae4;
+            background: linear-gradient(180deg, #061a2a 0%, #030d15 100%);
+            box-shadow: 0 0 40px rgba(72, 202, 228, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="big_bass"] .reel-cell {
+            background: linear-gradient(135deg, rgba(72, 202, 228, 0.12) 0%, rgba(0, 119, 182, 0.1) 100%);
+            border: 1px solid rgba(72, 202, 228, 0.4);
+            box-shadow: inset 0 0 8px rgba(72, 202, 228, 0.1);
+        }
+
+        /* GAME 14: Tome of Ra (book_dead) - 5x3 */
+        .slot-modal-fullscreen[data-game-id="book_dead"] .reels-container {
+            border: 8px solid #c7a94e;
+            background: linear-gradient(180deg, #2a1a08 0%, #140d04 100%);
+            box-shadow: 0 0 40px rgba(199, 169, 78, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="book_dead"] .reel-cell {
+            background: linear-gradient(135deg, rgba(199, 169, 78, 0.12) 0%, rgba(107, 58, 10, 0.1) 100%);
+            border: 1px solid rgba(199, 169, 78, 0.4);
+            box-shadow: inset 0 0 8px rgba(199, 169, 78, 0.1);
+        }
+
+        /* GAME 15: Cosmic Gems (starburst_xxl) - 5x3 */
+        .slot-modal-fullscreen[data-game-id="starburst_xxl"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #a855f7, #06b6d4) 1;
+            background: linear-gradient(180deg, #1a0a2e 0%, #0a0514 100%);
+            box-shadow: 0 0 50px rgba(168, 85, 247, 0.4), 0 0 30px rgba(6, 182, 212, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="starburst_xxl"] .reel-cell {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid rgba(168, 85, 247, 0.5);
+            box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.15);
+        }
+
+        /* GAME 16: Temple Quest (gonzos_quest) - 5x3 */
+        .slot-modal-fullscreen[data-game-id="gonzos_quest"] .reels-container {
+            border: 8px solid #3cba92;
+            background: linear-gradient(180deg, #0a2a15 0%, #05140a 100%);
+            box-shadow: 0 0 40px rgba(60, 186, 146, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="gonzos_quest"] .reel-cell {
+            background: linear-gradient(135deg, rgba(60, 186, 146, 0.12) 0%, rgba(11, 163, 96, 0.1) 100%);
+            border: 1px solid rgba(60, 186, 146, 0.4);
+            box-shadow: inset 0 0 8px rgba(60, 186, 146, 0.1);
+        }
+
+        /* ═══ EGYPTIAN & MYTHOLOGY GAMES ═══ */
+
+        /* GAME 17: Pharaoh's Legacy (pharaoh_legacy) */
+        .slot-modal-fullscreen[data-game-id="pharaoh_legacy"] .reels-container {
+            border: 8px solid #d4a636;
+            background: linear-gradient(180deg, #2a1a08 0%, #140d04 100%);
+            box-shadow: 0 0 40px rgba(212, 166, 54, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="pharaoh_legacy"] .reel-cell {
+            background: linear-gradient(135deg, rgba(212, 166, 54, 0.12) 0%, rgba(141, 110, 99, 0.1) 100%);
+            border: 1px solid rgba(212, 166, 54, 0.4);
+            box-shadow: inset 0 0 8px rgba(212, 166, 54, 0.1);
+        }
+
+        /* GAME 18: Twin Helix (twin_helix) */
+        .slot-modal-fullscreen[data-game-id="twin_helix"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #e040fb, #00e5ff) 1;
+            background: linear-gradient(180deg, #1a0a2e 0%, #0a0514 100%);
+            box-shadow: 0 0 50px rgba(224, 64, 251, 0.4), 0 0 30px rgba(0, 229, 255, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="twin_helix"] .reel-cell {
+            background: linear-gradient(135deg, rgba(224, 64, 251, 0.15) 0%, rgba(0, 229, 255, 0.1) 100%);
+            border: 2px solid rgba(224, 64, 251, 0.5);
+            box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.12);
+        }
+
+        /* GAME 19: Quantum Burst (quantum_burst) */
+        .slot-modal-fullscreen[data-game-id="quantum_burst"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #6a1b9a, #00e5ff) 1;
+            background: linear-gradient(180deg, #1a0a2e 0%, #0a0514 100%);
+            box-shadow: 0 0 50px rgba(106, 27, 154, 0.4), 0 0 30px rgba(0, 229, 255, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="quantum_burst"] .reel-cell {
+            background: linear-gradient(135deg, rgba(106, 27, 154, 0.15) 0%, rgba(0, 229, 255, 0.1) 100%);
+            border: 2px solid rgba(106, 27, 154, 0.5);
+            box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.12);
+        }
+
+        /* GAME 20: Olympian Gods (olympian_gods) */
+        .slot-modal-fullscreen[data-game-id="olympian_gods"] .reels-container {
+            border: 8px solid #ffd54f;
+            background: linear-gradient(180deg, #2a1a08 0%, #140d04 100%);
+            box-shadow: 0 0 50px rgba(255, 213, 79, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="olympian_gods"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 213, 79, 0.15) 0%, rgba(230, 81, 0, 0.1) 100%);
+            border: 2px solid rgba(255, 213, 79, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 213, 79, 0.12);
+        }
+
+        /* GAME 21: Ares Blade (ares_blade) */
+        .slot-modal-fullscreen[data-game-id="ares_blade"] .reels-container {
+            border: 8px solid #b71c1c;
+            background: linear-gradient(180deg, #1a0505 0%, #0d0202 100%);
+            box-shadow: 0 0 40px rgba(183, 28, 28, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="ares_blade"] .reel-cell {
+            background: linear-gradient(135deg, rgba(183, 28, 28, 0.15) 0%, rgba(255, 111, 0, 0.1) 100%);
+            border: 2px solid rgba(183, 28, 28, 0.5);
+            box-shadow: inset 0 0 10px rgba(183, 28, 28, 0.12);
+        }
+
+        /* GAME 22: Viking Voyage (viking_voyage) */
+        .slot-modal-fullscreen[data-game-id="viking_voyage"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #00acc1, #ffd700) 1;
+            background: linear-gradient(180deg, #0d1a2e 0%, #060d15 100%);
+            box-shadow: 0 0 40px rgba(0, 172, 193, 0.3), 0 0 30px rgba(255, 215, 0, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="viking_voyage"] .reel-cell {
+            background: linear-gradient(135deg, rgba(0, 172, 193, 0.12) 0%, rgba(255, 215, 0, 0.1) 100%);
+            border: 1px solid rgba(0, 172, 193, 0.4);
+            box-shadow: inset 0 0 8px rgba(0, 172, 193, 0.1);
+        }
+
+        /* ═══ MODERN & SPECIAL THEME GAMES ═══ */
+
+        /* GAME 23: Neon Nights (neon_nights) */
+        .slot-modal-fullscreen[data-game-id="neon_nights"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #e91e63, #00bcd4) 1;
+            background: linear-gradient(180deg, #1a0a20 0%, #0a0510 100%);
+            box-shadow: 0 0 50px rgba(233, 30, 99, 0.4), 0 0 30px rgba(0, 188, 212, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="neon_nights"] .reel-cell {
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.15) 0%, rgba(0, 188, 212, 0.1) 100%);
+            border: 2px solid rgba(233, 30, 99, 0.5);
+            box-shadow: inset 0 0 10px rgba(0, 188, 212, 0.12);
+        }
+
+        /* GAME 24: Diamond Vault (diamond_vault) */
+        .slot-modal-fullscreen[data-game-id="diamond_vault"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #283593, #e0e0e0) 1;
+            background: linear-gradient(180deg, #0a0f2e 0%, #05080a 100%);
+            box-shadow: 0 0 40px rgba(40, 53, 147, 0.3), 0 0 30px rgba(224, 224, 224, 0.1), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="diamond_vault"] .reel-cell {
+            background: linear-gradient(135deg, rgba(40, 53, 147, 0.12) 0%, rgba(224, 224, 224, 0.08) 100%);
+            border: 1px solid rgba(40, 53, 147, 0.4);
+            box-shadow: inset 0 0 8px rgba(224, 224, 224, 0.08);
+        }
+
+        /* GAME 25: Golden Fortune (golden_fortune) */
+        .slot-modal-fullscreen[data-game-id="golden_fortune"] .reels-container {
+            border: 10px solid #ffd700;
+            background: linear-gradient(180deg, #2a2a0f 0%, #151505 100%);
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="golden_fortune"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.15);
+        }
+
+        /* ═══ NATURE & ANIMAL GAMES ═══ */
+
+        /* GAME 26: Puppy Palace (puppy_palace) */
+        .slot-modal-fullscreen[data-game-id="puppy_palace"] .reels-container {
+            border: 8px solid #4caf50;
+            background: linear-gradient(180deg, #0a2a0f 0%, #051408 100%);
+            box-shadow: 0 0 40px rgba(76, 175, 80, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="puppy_palace"] .reel-cell {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.12) 0%, rgba(129, 199, 132, 0.1) 100%);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            box-shadow: inset 0 0 8px rgba(76, 175, 80, 0.1);
+        }
+
+        /* GAME 27: Crimson Fang (crimson_fang) */
+        .slot-modal-fullscreen[data-game-id="crimson_fang"] .reels-container {
+            border: 8px solid #b71c1c;
+            background: linear-gradient(180deg, #1a0505 0%, #0d0202 100%);
+            box-shadow: 0 0 40px rgba(183, 28, 28, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="crimson_fang"] .reel-cell {
+            background: linear-gradient(135deg, rgba(183, 28, 28, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 2px solid rgba(183, 28, 28, 0.5);
+            box-shadow: inset 0 0 10px rgba(183, 28, 28, 0.12);
+        }
+
+        /* GAME 28: Pirate's Fortune (pirate_fortune) */
+        .slot-modal-fullscreen[data-game-id="pirate_fortune"] .reels-container {
+            border: 8px solid #0097a7;
+            background: linear-gradient(180deg, #0a1a2e 0%, #050d18 100%);
+            box-shadow: 0 0 40px rgba(0, 151, 167, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="pirate_fortune"] .reel-cell {
+            background: linear-gradient(135deg, rgba(0, 151, 167, 0.12) 0%, rgba(26, 35, 126, 0.1) 100%);
+            border: 1px solid rgba(0, 151, 167, 0.4);
+            box-shadow: inset 0 0 8px rgba(0, 151, 167, 0.1);
+        }
+
+        /* GAME 29: Great Rhino (great_rhino) */
+        .slot-modal-fullscreen[data-game-id="great_rhino"] .reels-container {
+            border: 8px solid #fdd835;
+            background: linear-gradient(180deg, #2a2a08 0%, #141408 100%);
+            box-shadow: 0 0 40px rgba(253, 216, 53, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="great_rhino"] .reel-cell {
+            background: linear-gradient(135deg, rgba(253, 216, 53, 0.12) 0%, rgba(51, 105, 30, 0.1) 100%);
+            border: 1px solid rgba(253, 216, 53, 0.4);
+            box-shadow: inset 0 0 8px rgba(253, 216, 53, 0.1);
+        }
+
+        /* GAME 30: Bass Splash (bass_splash) */
+        .slot-modal-fullscreen[data-game-id="bass_splash"] .reels-container {
+            border: 8px solid #26c6da;
+            background: linear-gradient(180deg, #061a2a 0%, #030d15 100%);
+            box-shadow: 0 0 40px rgba(38, 198, 218, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="bass_splash"] .reel-cell {
+            background: linear-gradient(135deg, rgba(38, 198, 218, 0.12) 0%, rgba(0, 96, 100, 0.1) 100%);
+            border: 1px solid rgba(38, 198, 218, 0.4);
+            box-shadow: inset 0 0 8px rgba(38, 198, 218, 0.1);
+        }
+        }
+
         .slot-top-info {
             display: flex;
             align-items: center;
@@ -4409,4 +4793,367 @@
     border-color: var(--rg-neutral-200);
     color: var(--rg-text-50);
 }
+
+        /* ═══ BATCH 2: ADDITIONAL 30 GAMES (31-60) ═══ */
+
+        /* GAME 31: Island Tiki (island_tiki) */
+        .slot-modal-fullscreen[data-game-id="island_tiki"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #00897b, #ffcc02) 1;
+            background: linear-gradient(180deg, #0a2a1a 0%, #051410 100%);
+            box-shadow: 0 0 40px rgba(0, 137, 123, 0.3), 0 0 30px rgba(255, 204, 2, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="island_tiki"] .reel-cell {
+            background: linear-gradient(135deg, rgba(0, 137, 123, 0.12) 0%, rgba(255, 204, 2, 0.1) 100%);
+            border: 1px solid rgba(0, 137, 123, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 204, 2, 0.08);
+        }
+
+        /* GAME 32: Sakura Princess (sakura_princess) */
+        .slot-modal-fullscreen[data-game-id="sakura_princess"] .reels-container {
+            border: 8px solid #f06292;
+            background: linear-gradient(180deg, #2a0a2a 0%, #150a15 100%);
+            box-shadow: 0 0 40px rgba(240, 98, 146, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="sakura_princess"] .reel-cell {
+            background: linear-gradient(135deg, rgba(240, 98, 146, 0.12) 0%, rgba(206, 147, 216, 0.1) 100%);
+            border: 1px solid rgba(240, 98, 146, 0.4);
+            box-shadow: inset 0 0 8px rgba(240, 98, 146, 0.1);
+        }
+
+        /* GAME 33: Dragon Megafire (dragon_megafire) */
+        .slot-modal-fullscreen[data-game-id="dragon_megafire"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #b71c1c, #ff8f00) 1;
+            background: linear-gradient(180deg, #2a0a0a 0%, #140505 100%);
+            box-shadow: 0 0 50px rgba(183, 28, 28, 0.4), 0 0 30px rgba(255, 143, 0, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="dragon_megafire"] .reel-cell {
+            background: linear-gradient(135deg, rgba(183, 28, 28, 0.15) 0%, rgba(255, 143, 0, 0.1) 100%);
+            border: 2px solid rgba(183, 28, 28, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 143, 0, 0.12);
+        }
+
+        /* GAME 34: Esqueleto Fiesta (esqueleto_fiesta) */
+        .slot-modal-fullscreen[data-game-id="esqueleto_fiesta"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #ff6f00, #e040fb) 1;
+            background: linear-gradient(180deg, #2a1a0a 0%, #140d05 100%);
+            box-shadow: 0 0 40px rgba(255, 111, 0, 0.3), 0 0 30px rgba(224, 64, 251, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="esqueleto_fiesta"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 111, 0, 0.12) 0%, rgba(224, 64, 251, 0.1) 100%);
+            border: 1px solid rgba(255, 111, 0, 0.4);
+            box-shadow: inset 0 0 8px rgba(224, 64, 251, 0.08);
+        }
+
+        /* GAME 35: Wildfire Gold (wildfire_gold) */
+        .slot-modal-fullscreen[data-game-id="wildfire_gold"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #d4a836, #ff6f00) 1;
+            background: linear-gradient(180deg, #2a1a08 0%, #140d04 100%);
+            box-shadow: 0 0 40px rgba(212, 168, 54, 0.3), 0 0 30px rgba(255, 111, 0, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="wildfire_gold"] .reel-cell {
+            background: linear-gradient(135deg, rgba(212, 168, 54, 0.12) 0%, rgba(255, 111, 0, 0.1) 100%);
+            border: 1px solid rgba(212, 168, 54, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 111, 0, 0.08);
+        }
+
+        /* GAME 36: Five Lions (five_lions) */
+        .slot-modal-fullscreen[data-game-id="five_lions"] .reels-container {
+            border: 10px solid;
+            border-image: linear-gradient(135deg, #c62828, #ffd600) 1;
+            background: linear-gradient(180deg, #1a0a0a 0%, #0a0505 100%);
+            box-shadow: 0 0 50px rgba(198, 40, 40, 0.4), 0 0 30px rgba(255, 214, 0, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="five_lions"] .reel-cell {
+            background: linear-gradient(135deg, rgba(198, 40, 40, 0.15) 0%, rgba(255, 214, 0, 0.1) 100%);
+            border: 2px solid rgba(198, 40, 40, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 214, 0, 0.12);
+        }
+
+        /* GAME 37: Chilli Heat (chilli_heat) */
+        .slot-modal-fullscreen[data-game-id="chilli_heat"] .reels-container {
+            border: 8px solid #ff6f00;
+            background: linear-gradient(180deg, #2a1008 0%, #1a0804 100%);
+            box-shadow: 0 0 40px rgba(255, 111, 0, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="chilli_heat"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 111, 0, 0.12) 0%, rgba(214, 40, 40, 0.1) 100%);
+            border: 1px solid rgba(255, 111, 0, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 111, 0, 0.1);
+        }
+
+        /* GAME 38: Tombstone Reload (tombstone_reload) */
+        .slot-modal-fullscreen[data-game-id="tombstone_reload"] .reels-container {
+            border: 8px solid #8b7355;
+            background: linear-gradient(180deg, #2a1a08 0%, #140d04 100%);
+            box-shadow: 0 0 40px rgba(139, 115, 85, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="tombstone_reload"] .reel-cell {
+            background: linear-gradient(135deg, rgba(139, 115, 85, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(139, 115, 85, 0.4);
+            box-shadow: inset 0 0 8px rgba(139, 115, 85, 0.1);
+        }
+
+        /* GAME 39: Mental Meltdown (mental_meltdown) */
+        .slot-modal-fullscreen[data-game-id="mental_meltdown"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #9c27b0, #ff5722) 1;
+            background: linear-gradient(180deg, #1a0a1a 0%, #0a0510 100%);
+            box-shadow: 0 0 50px rgba(156, 39, 176, 0.4), 0 0 30px rgba(255, 87, 34, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="mental_meltdown"] .reel-cell {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.15) 0%, rgba(255, 87, 34, 0.1) 100%);
+            border: 2px solid rgba(156, 39, 176, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 87, 34, 0.12);
+        }
+
+        /* GAME 40: San Quentin (san_quentin) */
+        .slot-modal-fullscreen[data-game-id="san_quentin"] .reels-container {
+            border: 8px solid #424242;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            box-shadow: 0 0 40px rgba(66, 66, 66, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="san_quentin"] .reel-cell {
+            background: linear-gradient(135deg, rgba(66, 66, 66, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(66, 66, 66, 0.4);
+            box-shadow: inset 0 0 8px rgba(66, 66, 66, 0.1);
+        }
+
+        /* GAME 41: Nitro Street (nitro_street) */
+        .slot-modal-fullscreen[data-game-id="nitro_street"] .reels-container {
+            border: 8px solid #ff5722;
+            background: linear-gradient(180deg, #2a0a05 0%, #140502 100%);
+            box-shadow: 0 0 40px rgba(255, 87, 34, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="nitro_street"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 87, 34, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(255, 87, 34, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 87, 34, 0.1);
+        }
+
+        /* GAME 42: Wild Toro (wild_toro) */
+        .slot-modal-fullscreen[data-game-id="wild_toro"] .reels-container {
+            border: 8px solid #c62828;
+            background: linear-gradient(180deg, #2a0a0a 0%, #140505 100%);
+            box-shadow: 0 0 40px rgba(198, 40, 40, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="wild_toro"] .reel-cell {
+            background: linear-gradient(135deg, rgba(198, 40, 40, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(198, 40, 40, 0.4);
+            box-shadow: inset 0 0 8px rgba(198, 40, 40, 0.1);
+        }
+
+        /* GAME 43: Jammin Fruits (jammin_fruits) */
+        .slot-modal-fullscreen[data-game-id="jammin_fruits"] .reels-container {
+            border: 8px solid #9c27b0;
+            background: linear-gradient(180deg, #2a0a2a 0%, #140514 100%);
+            box-shadow: 0 0 40px rgba(156, 39, 176, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="jammin_fruits"] .reel-cell {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(156, 39, 176, 0.4);
+            box-shadow: inset 0 0 8px rgba(156, 39, 176, 0.1);
+        }
+
+        /* GAME 44: Big Bamboo (big_bamboo) */
+        .slot-modal-fullscreen[data-game-id="big_bamboo"] .reels-container {
+            border: 8px solid #558b2f;
+            background: linear-gradient(180deg, #1a2a0a 0%, #0d1505 100%);
+            box-shadow: 0 0 40px rgba(85, 139, 47, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="big_bamboo"] .reel-cell {
+            background: linear-gradient(135deg, rgba(85, 139, 47, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(85, 139, 47, 0.4);
+            box-shadow: inset 0 0 8px rgba(85, 139, 47, 0.1);
+        }
+
+        /* GAME 45: Fat Rabbit (fat_rabbit) */
+        .slot-modal-fullscreen[data-game-id="fat_rabbit"] .reels-container {
+            border: 8px solid #ff8a50;
+            background: linear-gradient(180deg, #2a1a0a 0%, #140d05 100%);
+            box-shadow: 0 0 40px rgba(255, 138, 80, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="fat_rabbit"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 138, 80, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(255, 138, 80, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 138, 80, 0.1);
+        }
+
+        /* GAME 46: Immortal Blood (immortal_blood) */
+        .slot-modal-fullscreen[data-game-id="immortal_blood"] .reels-container {
+            border: 8px solid #8b0000;
+            background: linear-gradient(180deg, #1a0505 0%, #0a0202 100%);
+            box-shadow: 0 0 40px rgba(139, 0, 0, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="immortal_blood"] .reel-cell {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 2px solid rgba(139, 0, 0, 0.5);
+            box-shadow: inset 0 0 10px rgba(139, 0, 0, 0.12);
+        }
+
+        /* GAME 47: Mega Safari (mega_safari) */
+        .slot-modal-fullscreen[data-game-id="mega_safari"] .reels-container {
+            border: 8px solid #ffb300;
+            background: linear-gradient(180deg, #2a2008 0%, #141005 100%);
+            box-shadow: 0 0 40px rgba(255, 179, 0, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="mega_safari"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 179, 0, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(255, 179, 0, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 179, 0, 0.1);
+        }
+
+        /* GAME 48: Lucha Mania (lucha_mania) */
+        .slot-modal-fullscreen[data-game-id="lucha_mania"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #e91e63, #ff6f00) 1;
+            background: linear-gradient(180deg, #2a0a0a 0%, #140505 100%);
+            box-shadow: 0 0 40px rgba(233, 30, 99, 0.3), 0 0 30px rgba(255, 111, 0, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="lucha_mania"] .reel-cell {
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.12) 0%, rgba(255, 111, 0, 0.1) 100%);
+            border: 1px solid rgba(233, 30, 99, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 111, 0, 0.08);
+        }
+
+        /* GAME 49: Extra Chilli (extra_chilli) */
+        .slot-modal-fullscreen[data-game-id="extra_chilli"] .reels-container {
+            border: 8px solid #d62828;
+            background: linear-gradient(180deg, #3a1008 0%, #1a0804 100%);
+            box-shadow: 0 0 40px rgba(214, 40, 40, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="extra_chilli"] .reel-cell {
+            background: linear-gradient(135deg, rgba(214, 40, 40, 0.12) 0%, rgba(255, 111, 0, 0.1) 100%);
+            border: 1px solid rgba(214, 40, 40, 0.4);
+            box-shadow: inset 0 0 8px rgba(214, 40, 40, 0.1);
+        }
+
+        /* GAME 50: Wanted Dead (wanted_dead) */
+        .slot-modal-fullscreen[data-game-id="wanted_dead"] .reels-container {
+            border: 8px solid #8b4513;
+            background: linear-gradient(180deg, #2a1a08 0%, #140d04 100%);
+            box-shadow: 0 0 40px rgba(139, 69, 19, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="wanted_dead"] .reel-cell {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(139, 69, 19, 0.4);
+            box-shadow: inset 0 0 8px rgba(139, 69, 19, 0.1);
+        }
+
+        /* GAME 51: Chaos Crew (chaos_crew) */
+        .slot-modal-fullscreen[data-game-id="chaos_crew"] .reels-container {
+            border: 8px solid #ff5722;
+            background: linear-gradient(180deg, #2a1a0a 0%, #140d05 100%);
+            box-shadow: 0 0 40px rgba(255, 87, 34, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="chaos_crew"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 87, 34, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(255, 87, 34, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 87, 34, 0.1);
+        }
+
+        /* GAME 52: Le Bandit (le_bandit) */
+        .slot-modal-fullscreen[data-game-id="le_bandit"] .reels-container {
+            border: 8px solid #1976d2;
+            background: linear-gradient(180deg, #0a1a2e 0%, #050d18 100%);
+            box-shadow: 0 0 40px rgba(25, 118, 210, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="le_bandit"] .reel-cell {
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(25, 118, 210, 0.4);
+            box-shadow: inset 0 0 8px rgba(25, 118, 210, 0.1);
+        }
+
+        /* GAME 53: Dead Alive (dead_alive) */
+        .slot-modal-fullscreen[data-game-id="dead_alive"] .reels-container {
+            border: 8px solid #8b4513;
+            background: linear-gradient(180deg, #1a1a0a 0%, #0d0d05 100%);
+            box-shadow: 0 0 40px rgba(139, 69, 19, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="dead_alive"] .reel-cell {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(139, 69, 19, 0.4);
+            box-shadow: inset 0 0 8px rgba(139, 69, 19, 0.1);
+        }
+
+        /* GAME 54: Mega Joker (mega_joker) */
+        .slot-modal-fullscreen[data-game-id="mega_joker"] .reels-container {
+            border: 8px solid #ff6f00;
+            background: linear-gradient(180deg, #2a1a0a 0%, #140d05 100%);
+            box-shadow: 0 0 40px rgba(255, 111, 0, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="mega_joker"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 111, 0, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(255, 111, 0, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 111, 0, 0.1);
+        }
+
+        /* GAME 55: Crown Fire (crown_fire) */
+        .slot-modal-fullscreen[data-game-id="crown_fire"] .reels-container {
+            border: 8px solid;
+            border-image: linear-gradient(135deg, #ffd600, #b71c1c) 1;
+            background: linear-gradient(180deg, #2a0a0a 0%, #140505 100%);
+            box-shadow: 0 0 50px rgba(255, 214, 0, 0.4), 0 0 30px rgba(183, 28, 28, 0.2), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="crown_fire"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 214, 0, 0.15) 0%, rgba(183, 28, 28, 0.1) 100%);
+            border: 2px solid rgba(255, 214, 0, 0.5);
+            box-shadow: inset 0 0 10px rgba(183, 28, 28, 0.12);
+        }
+
+        /* GAME 56: Olympus Dream (olympus_dream) */
+        .slot-modal-fullscreen[data-game-id="olympus_dream"] .reels-container {
+            border: 8px solid #ffd700;
+            background: linear-gradient(180deg, #0d1a3d 0%, #060a20 100%);
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="olympus_dream"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.12);
+        }
+
+        /* GAME 57: Goldstorm Ultra (goldstorm_ultra) */
+        .slot-modal-fullscreen[data-game-id="goldstorm_ultra"] .reels-container {
+            border: 10px solid #ffb300;
+            background: linear-gradient(180deg, #2a2008 0%, #141005 100%);
+            box-shadow: 0 0 60px rgba(255, 179, 0, 0.4), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="goldstorm_ultra"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 179, 0, 0.15) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 2px solid rgba(255, 179, 0, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 179, 0, 0.12);
+        }
+
+        /* GAME 58: Fire Hole (fire_hole) */
+        .slot-modal-fullscreen[data-game-id="fire_hole"] .reels-container {
+            border: 8px solid #ff6f00;
+            background: linear-gradient(180deg, #2a1008 0%, #140504 100%);
+            box-shadow: 0 0 40px rgba(255, 111, 0, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="fire_hole"] .reel-cell {
+            background: linear-gradient(135deg, rgba(255, 111, 0, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(255, 111, 0, 0.4);
+            box-shadow: inset 0 0 8px rgba(255, 111, 0, 0.1);
+        }
+
+        /* GAME 59: Merlin Power (merlin_power) */
+        .slot-modal-fullscreen[data-game-id="merlin_power"] .reels-container {
+            border: 8px solid #7e57c2;
+            background: linear-gradient(180deg, #1a0a2e 0%, #0d051a 100%);
+            box-shadow: 0 0 40px rgba(126, 87, 194, 0.3), inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        .slot-modal-fullscreen[data-game-id="merlin_power"] .reel-cell {
+            background: linear-gradient(135deg, rgba(126, 87, 194, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(126, 87, 194, 0.4);
+            box-shadow: inset 0 0 8px rgba(126, 87, 194, 0.1);
+        }
+
+        /* ═══ DEFAULT FALLBACK (Game not specifically themed) ═══ */
+        .slot-modal-fullscreen[data-game-id]:not([data-game-id=""]) .reels-container {
+            border: 8px solid #667eea;
+        }
 
