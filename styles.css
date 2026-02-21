@@ -4797,6 +4797,224 @@
             .pp-win-content { padding: 20px 30px; }
         }
 
+        /* ═══ Ultra-Small Mobile (< 480px) ═══ */
+        @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+
+            .logo-text h1 {
+                font-size: 18px;
+            }
+
+            .balance-amount {
+                font-size: 16px;
+            }
+
+            .hero-title {
+                font-size: 24px;
+            }
+
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+            }
+
+            .reels[data-cols="3"] .reel-cell { width: 80px; height: 80px; }
+            .reels[data-cols="5"][data-rows="3"] .reel-cell { width: 60px; height: 54px; }
+            .reels[data-cols="5"][data-rows="4"] .reel-cell { width: 55px; height: 46px; }
+            .reels[data-cols="6"] .reel-cell { width: 50px; height: 42px; }
+            .reels[data-cols="7"] .reel-cell { width: 40px; height: 34px; }
+
+            .slot-spin-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 9px;
+            }
+        }
+
+        /* ═══ TOUCH DEVICE OPTIMIZATIONS ═══ */
+        @media (hover: none) and (pointer: coarse) {
+            /* Disable hover effects on touch devices */
+            .game-thumbnail:hover,
+            .btn:hover,
+            .slot-spin-btn:hover {
+                transform: none;
+            }
+
+            /* Increase touch target sizes (minimum 44x44px) */
+            .btn, button, .game-thumbnail {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 12px 16px;
+            }
+
+            .slot-spin-btn {
+                width: 56px;
+                height: 56px;
+            }
+
+            .slot-bet-btn {
+                width: 32px;
+                height: 32px;
+                min-width: 44px;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Add active state feedback instead of hover */
+            .btn:active,
+            button:active,
+            .game-thumbnail:active {
+                opacity: 0.8;
+                filter: brightness(0.95);
+            }
+
+            /* Larger spin buttons for better touch accuracy */
+            .slot-spin-btn {
+                font-size: 12px;
+                border-width: 3px;
+                box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3);
+            }
+
+            /* Improve touch feedback on reels */
+            .reel-cell {
+                border-width: 2px;
+            }
+
+            /* Disable text selection on interactive elements */
+            .btn, button, .game-thumbnail, .slot-spin-btn {
+                user-select: none;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+            }
+
+            /* Faster animations on mobile for better response */
+            .reel-scrolling {
+                animation-duration: 0.05s !important;
+            }
+
+            .reel-landing {
+                animation-duration: 0.5s !important;
+            }
+
+            /* Prevent zooming on input focus (iOS) */
+            input, select, textarea {
+                font-size: 16px;
+            }
+        }
+
+        /* ═══ LANDSCAPE ORIENTATION OPTIMIZATION ═══ */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .header {
+                height: 48px;
+                padding: 6px 12px;
+            }
+
+            .logo-text h1 {
+                font-size: 18px;
+            }
+
+            .balance-amount {
+                font-size: 14px;
+            }
+
+            .hero-banner {
+                padding: 12px 16px;
+                margin: 8px 0;
+            }
+
+            .hero-title {
+                font-size: 18px;
+            }
+
+            .games-section {
+                padding: 12px;
+            }
+
+            .slot-modal-fullscreen {
+                max-height: 90vh;
+            }
+
+            .reels-container {
+                max-height: 300px;
+            }
+
+            .reel-cell {
+                min-width: 40px;
+                min-height: 40px;
+            }
+
+            .slot-bottom-bar {
+                min-height: 44px;
+            }
+        }
+
+        /* ═══ PORTRAIT OPTIMIZATION FOR SMALL PHONES ═══ */
+        @media (max-width: 540px) and (min-aspect-ratio: 9/16) {
+            .main-content {
+                padding: 8px;
+            }
+
+            .games-section {
+                padding: 12px 8px;
+            }
+
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .game-card {
+                min-height: 160px;
+            }
+
+            .slot-modal-fullscreen {
+                border-radius: 16px 16px 0 0;
+                max-height: 85vh;
+            }
+
+            /* Stack control buttons vertically for easier access */
+            .slot-bottom-bar {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 8px 6px;
+            }
+
+            .slot-bar-section {
+                flex: 0 1 auto;
+                min-width: 40px;
+            }
+
+            /* Make spin button more prominent */
+            .slot-spin-btn {
+                flex: 0 0 60px;
+                order: 1;
+                margin: 0 auto;
+            }
+        }
+
+        /* ═══ SWIPE/GESTURE HINTS ═══ */
+        @media (max-width: 768px) {
+            /* Indicate swipe-able areas with visual cues */
+            .games-grid {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory;
+            }
+
+            .game-card {
+                scroll-snap-align: center;
+            }
+
+            /* Smooth scrolling on touch devices */
+            * {
+                -webkit-tap-highlight-color: rgba(251, 191, 36, 0.1);
+            }
+        }
+
 /* ═══════════════════════════════════════════════════════════════════
    AUTH MODAL
    ═══════════════════════════════════════════════════════════════════ */

@@ -3984,6 +3984,87 @@
             setTimeout(runAutoSpin, turboMode ? 400 : 800);
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // MOBILE TOUCH OPTIMIZATIONS
+        // ═══════════════════════════════════════════════════════════
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        function handleSwipe() {
+            const xDiff = touchEndX - touchStartX;
+            const yDiff = touchEndY - touchStartY;
+            const minSwipeDistance = 50;
+
+            // Check if it's a horizontal swipe (game navigation)
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                if (Math.abs(xDiff) > minSwipeDistance) {
+                    // Left swipe - could trigger "next games"
+                    // Right swipe - could trigger "previous games"
+                }
+            }
+            // Vertical swipe (scroll through sections)
+            else if (Math.abs(yDiff) > minSwipeDistance) {
+                // Can be used for smooth scrolling between sections
+            }
+        }
+
+        // Touch event handlers for better mobile responsiveness
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, { passive: true });
+
+        // Prevent double-tap zoom on buttons (but allow on content)
+        document.addEventListener('touchmove', (e) => {
+            const target = e.target;
+            if (target.classList.contains('btn') ||
+                target.classList.contains('slot-spin-btn') ||
+                target.id === 'spinBtn' ||
+                target.closest('.slot-bar-section')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Handle device orientation changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                // Recalculate reel sizes after orientation change
+                if (currentGame) {
+                    renderGrid(currentGrid, currentGame);
+                }
+            }, 100);
+        }, false);
+
+        // Optimize animations for reduced motion preference
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.setProperty('--animation-duration', '0.01s');
+            // Disable particle effects on low-motion devices
+            const style = document.createElement('style');
+            style.textContent = `
+                .particle { animation: none !important; }
+                .symbol-cascade { animation: none !important; }
+                .reel-scrolling { animation: none !important; }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Handle viewport meta tag for better mobile scaling
+        if (!document.querySelector('meta[name="viewport"]')) {
+            const viewport = document.createElement('meta');
+            viewport.name = 'viewport';
+            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover';
+            document.head.appendChild(viewport);
+        }
+
         // ===== Update init to include new systems =====
         async function initAllSystems() {
             loadXP();
