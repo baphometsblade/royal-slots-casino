@@ -13,8 +13,8 @@ Output:
   assets/ui/slot_chrome/<game_id>_chrome.png
 
 Examples:
-  py -3.10 scripts/reasset_slot_chrome.py --engine auto --force
-  py -3.10 scripts/reasset_slot_chrome.py --engine sdxl --games sugar_rush,gates_olympus
+  py -3.10 scripts/reasset_slot_chrome.py --engine auto --force --style-mode contrast
+  py -3.10 scripts/reasset_slot_chrome.py --engine sdxl --games sugar_rush,gates_olympus --style-mode balanced
 """
 
 from __future__ import annotations
@@ -50,30 +50,145 @@ def game_words(game_id: str) -> str:
     return game_id.replace("_", " ").strip()
 
 
-def themed_prompt(game_id: str, metadata: dict | None) -> str:
+def clamp(value: int, lo: int, hi: int) -> int:
+    return max(lo, min(hi, value))
+
+
+def parse_hex_color(value: str | None) -> tuple[int, int, int] | None:
+    if not value:
+        return None
+    clean = str(value).strip().lstrip("#")
+    if len(clean) != 6:
+        return None
+    try:
+        return (int(clean[0:2], 16), int(clean[2:4], 16), int(clean[4:6], 16))
+    except ValueError:
+        return None
+
+
+def rgb_to_hex(rgb: tuple[int, int, int]) -> str:
+    return "#{:02x}{:02x}{:02x}".format(clamp(rgb[0], 0, 255), clamp(rgb[1], 0, 255), clamp(rgb[2], 0, 255))
+
+
+def mix_rgb(a: tuple[int, int, int], b: tuple[int, int, int], ratio: float) -> tuple[int, int, int]:
+    t = max(0.0, min(1.0, ratio))
+    return (
+        int(a[0] + (b[0] - a[0]) * t),
+        int(a[1] + (b[1] - a[1]) * t),
+        int(a[2] + (b[2] - a[2]) * t),
+    )
+
+
+def style_phrase_for_tag(tag: str) -> str:
+    mapping = {
+        "HOT": "high-energy neon punch",
+        "NEW": "futuristic polished glow",
+        "POPULAR": "classic premium casino finish",
+        "JACKPOT": "opulent gold-rich luxury",
+    }
+    return mapping.get(tag.upper(), "dark premium casino tone")
+
+
+def style_phrase_for_template(template: str) -> str:
+    mapping = {
+        "grid": "dense cluster-grid framing",
+        "scatter": "wide scatter-reel flow",
+        "extended": "expanded reel-bank layout",
+        "classic": "vintage three-reel proportions",
+        "standard": "five-reel modern proportions",
+    }
+    return mapping.get(template.lower(), "modern slot layout")
+
+
+def style_phrase_for_bonus(bonus_type: str) -> str:
+    value = (bonus_type or "").lower()
+    checks = (
+        ("hold", "locked coin tension"),
+        ("tumble", "cascading impact rhythm"),
+        ("multiplier", "stacking multiplier drama"),
+        ("scatter", "scatter-trigger anticipation"),
+        ("respin", "respin surge momentum"),
+        ("wild", "wild-symbol burst energy"),
+        ("avalanche", "avalanche depth layering"),
+        ("money", "cash-collect intensity"),
+        ("wheel", "wheel-bonus spotlight"),
+    )
+    for key, phrase in checks:
+        if key in value:
+            return phrase
+    return "feature-driven slot atmosphere"
+
+
+def build_style_profile(game_id: str, metadata: dict | None, style_mode: str) -> dict:
+    seed = stable_hash(game_id)
+    tag = str((metadata or {}).get("tag") or "").upper()
+    template = str((metadata or {}).get("template") or "standard").lower()
+    accent = parse_hex_color((metadata or {}).get("accentColor"))
+    if accent is None:
+        accent = ((seed >> 16) & 0xFF, (seed >> 8) & 0xFF, seed & 0xFF)
+        accent = mix_rgb(accent, (180, 140, 220), 0.4)
+
+    base = {
+        "mode": style_mode,
+        "tag": tag,
+        "template": template,
+        "tagPhrase": style_phrase_for_tag(tag),
+        "templatePhrase": style_phrase_for_template(template),
+        "bonusPhrase": style_phrase_for_bonus(str((metadata or {}).get("bonusType") or "")),
+    }
+
+    if style_mode == "balanced":
+        tone = {"blur": 4.2, "color": 1.32, "contrast": 1.2, "brightness": 0.82, "edge_alpha": 140, "streak_alpha": 14}
+    else:
+        tone = {"blur": 4.8, "color": 1.5, "contrast": 1.36, "brightness": 0.76, "edge_alpha": 170, "streak_alpha": 24}
+
+    # Tag- and template-specific accents to avoid standardised look.
+    if tag == "JACKPOT":
+        accent = mix_rgb(accent, (255, 210, 85), 0.52)
+    elif tag == "HOT":
+        accent = mix_rgb(accent, (255, 72, 72), 0.24)
+    elif tag == "NEW":
+        accent = mix_rgb(accent, (102, 220, 255), 0.2)
+    elif tag == "POPULAR":
+        accent = mix_rgb(accent, (255, 180, 120), 0.15)
+
+    if template == "classic":
+        accent = mix_rgb(accent, (255, 235, 170), 0.22)
+    elif template == "grid":
+        accent = mix_rgb(accent, (115, 220, 255), 0.2)
+    elif template == "extended":
+        accent = mix_rgb(accent, (255, 130, 90), 0.12)
+
+    highlight = mix_rgb(accent, (255, 255, 255), 0.3)
+    shadow_tint = mix_rgb(accent, (6, 8, 14), 0.7)
+
+    return {
+        **base,
+        **tone,
+        "accentRgb": accent,
+        "accentHex": rgb_to_hex(accent),
+        "highlightRgb": highlight,
+        "shadowTintRgb": shadow_tint,
+    }
+
+
+def themed_prompt(game_id: str, metadata: dict | None, style_profile: dict) -> str:
     words = game_words(game_id)
     name = (metadata or {}).get("name") or words.title()
     provider = (metadata or {}).get("provider") or "Royal Games"
-    tag = (metadata or {}).get("tag") or ""
-    accent = (metadata or {}).get("accentColor") or ""
-    template = (metadata or {}).get("template") or "standard"
-    bonus_type = (metadata or {}).get("bonusType") or "feature"
     symbols = (metadata or {}).get("symbols") or []
     motif = str(symbols[0]).replace("_", " ") if symbols else words
-
-    tag_hint = f"{tag.lower()}, " if tag else ""
-    accent_hint = f"accent lighting around {accent}, " if accent else ""
-
     return (
-        f"{name} slot UI chrome strip, {provider}, {tag_hint}{template} layout, {bonus_type} vibe, "
-        f"{motif} motif, {accent_hint}metallic frame, luminous edge rails, premium casino texture, "
-        "high detail, no text, no logo"
+        f"{name} slot UI chrome strip, {provider}, {style_profile['tagPhrase']}, "
+        f"{style_profile['templatePhrase']}, {style_profile['bonusPhrase']}, "
+        f"{motif} motif, accent {style_profile['accentHex']}, embossed metallic trim, luminous edge rails, "
+        "high contrast, no text, no logo"
     )
 
 
 def themed_negative_prompt() -> str:
     return (
-        "text, logo, watermark, signature, people, face, blurry, low quality, artifacts"
+        "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts"
     )
 
 
@@ -92,45 +207,46 @@ def center_crop_to_aspect(img: Image.Image, out_w: int, out_h: int) -> Image.Ima
     return img.crop((0, top, src_w, top + new_h))
 
 
-def apply_tone(base: Image.Image) -> Image.Image:
-    toned = base.filter(ImageFilter.GaussianBlur(radius=4.5))
-    toned = ImageEnhance.Color(toned).enhance(1.35)
-    toned = ImageEnhance.Contrast(toned).enhance(1.24)
-    toned = ImageEnhance.Brightness(toned).enhance(0.8)
+def apply_tone(base: Image.Image, style_profile: dict) -> Image.Image:
+    toned = base.filter(ImageFilter.GaussianBlur(radius=float(style_profile.get("blur", 4.5))))
+    toned = ImageEnhance.Color(toned).enhance(float(style_profile.get("color", 1.35)))
+    toned = ImageEnhance.Contrast(toned).enhance(float(style_profile.get("contrast", 1.24)))
+    toned = ImageEnhance.Brightness(toned).enhance(float(style_profile.get("brightness", 0.8)))
     return toned
 
 
-def paint_overlays(img: Image.Image, seed: int) -> Image.Image:
+def paint_overlays(img: Image.Image, seed: int, style_profile: dict) -> Image.Image:
     rgba = img.convert("RGBA")
     w, h = rgba.size
     overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
+    accent = style_profile.get("accentRgb", (200, 160, 220))
+    highlight = style_profile.get("highlightRgb", (230, 220, 245))
+    shadow_tint = style_profile.get("shadowTintRgb", (8, 10, 16))
+    edge_alpha = int(style_profile.get("edge_alpha", 148))
+    streak_alpha = int(style_profile.get("streak_alpha", 16))
 
     # Edge darkening to keep controls readable in all themes.
     for y in range(h):
         edge_dist = min(y, h - 1 - y) / (h / 2)
         edge_strength = max(0.0, 1.0 - edge_dist)
-        alpha = int(148 * (edge_strength ** 1.25))
-        draw.line([(0, y), (w, y)], fill=(2, 4, 10, alpha))
+        alpha = int(edge_alpha * (edge_strength ** 1.22))
+        draw.line([(0, y), (w, y)], fill=(shadow_tint[0], shadow_tint[1], shadow_tint[2], alpha))
 
     # Deterministic metallic streaks per game.
     streak_count = 8 + (seed % 9)
-    base_alpha = 16 + (seed % 10)
     for i in range(streak_count):
         x = int((i + 0.5) * w / streak_count)
         wobble = ((seed >> (i % 16)) & 0xF) - 8
         x2 = max(0, min(w - 1, x + wobble * 6))
-        draw.line([(x, 0), (x2, h)], fill=(255, 255, 255, base_alpha), width=2)
+        color_mix = mix_rgb(highlight, accent, ((i + seed) % 5) / 8)
+        draw.line([(x, 0), (x2, h)], fill=(color_mix[0], color_mix[1], color_mix[2], streak_alpha), width=2)
 
     # Highlight rails.
-    accent = (
-        170 + (seed % 70),
-        120 + ((seed >> 8) % 80),
-        180 + ((seed >> 16) % 60),
-        92,
-    )
-    draw.rectangle((0, 0, w, 6), fill=accent)
-    draw.rectangle((0, h - 7, w, h), fill=accent)
+    rail_top = (*mix_rgb(highlight, accent, 0.35), 104)
+    rail_bottom = (*mix_rgb(highlight, accent, 0.62), 96)
+    draw.rectangle((0, 0, w, 6), fill=rail_top)
+    draw.rectangle((0, h - 7, w, h), fill=rail_bottom)
 
     composed = Image.alpha_composite(rgba, overlay)
     alpha_mask = Image.new("L", (w, h), 210)
@@ -138,10 +254,10 @@ def paint_overlays(img: Image.Image, seed: int) -> Image.Image:
     return composed
 
 
-def build_chrome_pillow(game_id: str, source: Path, out_path: Path) -> None:
+def build_chrome_pillow(game_id: str, source: Path, out_path: Path, style_profile: dict) -> None:
     with Image.open(source) as im:
         base = center_crop_to_aspect(im.convert("RGB"), *TARGET_SIZE).resize(TARGET_SIZE, Image.Resampling.LANCZOS)
-    result = paint_overlays(apply_tone(base), stable_hash(game_id))
+    result = paint_overlays(apply_tone(base, style_profile), stable_hash(game_id), style_profile)
     result.save(out_path, "PNG", optimize=True)
 
 
@@ -179,7 +295,8 @@ def build_chrome_sdxl(
     strength: float,
     steps: int,
     guidance: float,
-    metadata: dict | None,
+    prompt: str,
+    style_profile: dict,
 ) -> None:
     with Image.open(source) as im:
         parent = center_crop_to_aspect(im.convert("RGB"), *MODEL_IMAGE_SIZE).resize(
@@ -189,7 +306,7 @@ def build_chrome_sdxl(
     seed = stable_hash(game_id) ^ seed_base
     generator = torch_mod.Generator(device=device).manual_seed(seed)
     image = pipe(
-        prompt=themed_prompt(game_id, metadata),
+        prompt=prompt,
         negative_prompt=themed_negative_prompt(),
         image=parent,
         strength=strength,
@@ -199,7 +316,7 @@ def build_chrome_sdxl(
     ).images[0]
 
     fitted = center_crop_to_aspect(image.convert("RGB"), *TARGET_SIZE).resize(TARGET_SIZE, Image.Resampling.LANCZOS)
-    result = paint_overlays(apply_tone(fitted), stable_hash(game_id))
+    result = paint_overlays(apply_tone(fitted, style_profile), stable_hash(game_id), style_profile)
     result.save(out_path, "PNG", optimize=True)
 
 
@@ -269,6 +386,7 @@ def main() -> None:
     parser.add_argument("--steps", type=int, default=2)
     parser.add_argument("--guidance", type=float, default=0.0)
     parser.add_argument("--seed-base", type=int, default=7331)
+    parser.add_argument("--style-mode", choices=["contrast", "balanced"], default="contrast")
     parser.add_argument("--games", help="Comma-separated game IDs to process")
     parser.add_argument("--limit", type=int, default=0, help="Process at most N games (0 = all)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing chrome files")
@@ -319,8 +437,9 @@ def main() -> None:
     for idx, (game_id, bg_path) in enumerate(tasks, start=1):
         out_path = OUTPUT_DIR / f"{game_id}_chrome.png"
         metadata = metadata_by_id.get(game_id)
+        style_profile = build_style_profile(game_id, metadata, args.style_mode)
+        prompt = themed_prompt(game_id, metadata, style_profile)
         seed = stable_hash(game_id) ^ args.seed_base
-        prompt = themed_prompt(game_id, metadata)
         entry = {
             "gameId": game_id,
             "source": str(bg_path.relative_to(ROOT)).replace("\\", "/"),
@@ -344,6 +463,13 @@ def main() -> None:
                 "bonusType": (metadata or {}).get("bonusType"),
                 "accentColor": (metadata or {}).get("accentColor"),
             },
+            "styleProfile": {
+                "mode": style_profile["mode"],
+                "tagPhrase": style_profile["tagPhrase"],
+                "templatePhrase": style_profile["templatePhrase"],
+                "bonusPhrase": style_profile["bonusPhrase"],
+                "accentHex": style_profile["accentHex"],
+            },
         }
         if out_path.exists() and not args.force:
             skipped += 1
@@ -365,10 +491,11 @@ def main() -> None:
                     strength=args.strength,
                     steps=args.steps,
                     guidance=args.guidance,
-                    metadata=metadata,
+                    prompt=prompt,
+                    style_profile=style_profile,
                 )
             else:
-                build_chrome_pillow(game_id, bg_path, out_path)
+                build_chrome_pillow(game_id, bg_path, out_path, style_profile)
             generated += 1
             print(f"[{idx:03d}/{total:03d}] ok   {game_id}")
             entry["status"] = "generated"
@@ -402,6 +529,7 @@ def main() -> None:
                 "steps": args.steps,
                 "guidance": args.guidance,
                 "seedBase": args.seed_base,
+                "styleMode": args.style_mode,
                 "force": args.force,
                 "gamesFilter": sorted(game_filter) if game_filter else None,
                 "limit": args.limit,

@@ -6953,3 +6953,398 @@
     background: rgba(var(--accent-rgb, 255, 200, 50), 0.5);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   GAMBLE FEATURE
+═══════════════════════════════════════════════════════════════ */
+
+/* Gamble button in control bar */
+.slot-gamble-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border: 2px solid #c084fc;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 0 14px rgba(168,85,247,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.slot-gamble-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 22px rgba(168,85,247,0.7), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.slot-gamble-btn:active { transform: scale(0.97); }
+
+@keyframes gambleBtnPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Gamble overlay */
+.gamble-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    backdrop-filter: blur(6px);
+    animation: gambleOverlayIn 0.3s ease;
+}
+@keyframes gambleOverlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.gamble-modal {
+    background: linear-gradient(160deg, #1a0533 0%, #0d001f 60%, #110022 100%);
+    border: 2px solid rgba(168,85,247,0.5);
+    border-radius: 20px;
+    padding: 28px 32px;
+    width: min(480px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 60px rgba(168,85,247,0.3), 0 0 120px rgba(168,85,247,0.1);
+    animation: gambleModalIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    text-align: center;
+}
+@keyframes gambleModalIn {
+    from { transform: scale(0.7) translateY(30px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.gamble-header { margin-bottom: 16px; }
+.gamble-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    color: #e879f9;
+    text-shadow: 0 0 20px rgba(232,121,249,0.6);
+}
+.gamble-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+    letter-spacing: 0.06em;
+}
+
+.gamble-win-display {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 12px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+}
+.gamble-win-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.45);
+}
+.gamble-win-amount {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #fbbf24;
+    text-shadow: 0 0 16px rgba(251,191,36,0.5);
+}
+
+/* Card area */
+.gamble-card-area {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    perspective: 800px;
+}
+.gamble-card {
+    width: 110px;
+    height: 160px;
+    perspective: 800px;
+}
+.gamble-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.gamble-card-back,
+.gamble-card-front {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.gamble-card-back {
+    background: linear-gradient(135deg, #4c1d95, #7c3aed);
+}
+.card-back-pattern {
+    width: 80%;
+    height: 80%;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.05),
+        rgba(255,255,255,0.05) 4px,
+        transparent 4px,
+        transparent 12px
+    );
+}
+.gamble-card-front {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    transform: rotateY(180deg);
+    flex-direction: column;
+    gap: 4px;
+}
+.card-suit {
+    font-size: 3.5rem;
+    line-height: 1;
+}
+.card-color-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+/* Result message */
+.gamble-result {
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 10px 0;
+    animation: gambleResultPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes gambleResultPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+.gamble-result-win {
+    background: rgba(34,197,94,0.2);
+    border: 1px solid rgba(34,197,94,0.5);
+    color: #86efac;
+}
+.gamble-result-lose {
+    background: rgba(239,68,68,0.2);
+    border: 1px solid rgba(239,68,68,0.5);
+    color: #fca5a5;
+}
+
+/* Choice buttons */
+.gamble-choices {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 14px 0;
+}
+.gamble-or {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+.gamble-choice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 32px;
+    border-radius: 14px;
+    border: 2px solid transparent;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.choice-suit { font-size: 1.8rem; }
+.gamble-red {
+    background: linear-gradient(135deg, #7f1d1d, #dc2626);
+    border-color: #f87171;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(220,38,38,0.4);
+}
+.gamble-red:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 28px rgba(220,38,38,0.6); }
+.gamble-black {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    border-color: #475569;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(15,23,42,0.5);
+}
+.gamble-black:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 28px rgba(100,116,139,0.5); }
+.gamble-choice-btn:active { transform: scale(0.97); }
+
+/* Bottom actions */
+.gamble-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+}
+.gamble-collect-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #065f46, #059669);
+    border: 2px solid #34d399;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(5,150,105,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.gamble-collect-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(5,150,105,0.55); }
+.gamble-close-btn {
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.gamble-close-btn:hover { background: rgba(255,255,255,0.12); }
+
+/* History dots */
+.gamble-history {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+.gamble-history-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: help;
+}
+.dot-win { background: rgba(34,197,94,0.25); border: 1px solid #22c55e; color: #86efac; }
+.dot-lose { background: rgba(239,68,68,0.25); border: 1px solid #ef4444; color: #fca5a5; }
+
+/* ═══════════════════════════════════════════════════════════════
+   BIG WIN CELEBRATION OVERLAY
+═══════════════════════════════════════════════════════════════ */
+.bigwin-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 8500;
+    pointer-events: all;
+    background: rgba(0,0,0,0.6);
+    animation: bigwinFadeIn 0.3s ease;
+}
+@keyframes bigwinFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.bigwin-modal {
+    position: relative;
+    text-align: center;
+    padding: 50px 60px;
+    animation: bigwinModalPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    overflow: visible;
+}
+@keyframes bigwinModalPop {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.bigwin-label {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: #fbbf24;
+    text-shadow: 0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4);
+    animation: bigwinLabelPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes bigwinLabelPulse {
+    from { text-shadow: 0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4); transform: scale(1); }
+    to   { text-shadow: 0 0 50px rgba(251,191,36,1), 0 0 100px rgba(251,191,36,0.6); transform: scale(1.05); }
+}
+.bigwin-label.bigwin-mega { color: #a855f7; text-shadow: 0 0 30px rgba(168,85,247,0.8), 0 0 60px rgba(168,85,247,0.4); }
+.bigwin-label.bigwin-super { color: #06b6d4; text-shadow: 0 0 30px rgba(6,182,212,0.8), 0 0 60px rgba(6,182,212,0.4); }
+
+.bigwin-amount {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    animation: bigwinCountUp 1s cubic-bezier(0.2,0.8,0.3,1);
+}
+@keyframes bigwinCountUp {
+    from { transform: scale(0.5) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.bigwin-multiplier {
+    font-size: 1.4rem;
+    color: rgba(255,255,255,0.6);
+    margin-top: 4px;
+    letter-spacing: 0.1em;
+}
+
+.bigwin-collect {
+    margin-top: 28px;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #d97706, #fbbf24);
+    border: 3px solid #fde68a;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    color: #1c0a00;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(251,191,36,0.5);
+    animation: bigwinBtnPulse 1s ease-in-out infinite alternate;
+    transition: transform 0.15s;
+}
+.bigwin-collect:hover { transform: scale(1.05); }
+@keyframes bigwinBtnPulse {
+    from { box-shadow: 0 0 20px rgba(251,191,36,0.5); }
+    to   { box-shadow: 0 0 40px rgba(251,191,36,0.8); }
+}
+
+/* Coin rain */
+.bigwin-coins {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.bigwin-coin {
+    position: absolute;
+    top: -40px;
+    animation: coinFall linear forwards;
+}
+@keyframes coinFall {
+    0%   { top: -40px; transform: rotate(0deg) scale(0.5); opacity: 0; }
+    10%  { opacity: 1; transform: rotate(30deg) scale(1); }
+    90%  { opacity: 1; }
+    100% { top: 110%; transform: rotate(360deg) scale(0.8); opacity: 0; }
+}
+

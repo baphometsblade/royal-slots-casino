@@ -1,12 +1,12 @@
 {
-  "createdAt": "2026-02-21T17:11:03.442444+00:00",
-  "finishedAt": "2026-02-21T17:11:03.446444+00:00",
+  "createdAt": "2026-02-21T17:19:31.607474+00:00",
+  "finishedAt": "2026-02-21T17:21:52.527267+00:00",
   "root": "C:\\created games\\Casino",
   "engine": "sdxl",
   "taskCount": 80,
   "summary": {
-    "generated": 0,
-    "skipped": 80,
+    "generated": 80,
+    "skipped": 0,
     "failed": 0,
     "metadataCount": 80
   },
@@ -18,7 +18,8 @@
     "steps": 2,
     "guidance": 0.0,
     "seedBase": 7331,
-    "force": false,
+    "styleMode": "contrast",
+    "force": true,
     "gamesFilter": null,
     "limit": 0
   },
@@ -29,8 +30,8 @@
       "output": "assets/ui/slot_chrome/ares_blade_chrome.png",
       "engine": "sdxl",
       "seed": 896904056,
-      "prompt": "Ares Blade slot UI chrome strip, Royal Games, extended layout, expanding_wild_respin vibe, s1 dagger motif, accent lighting around #b71c1c, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Ares Blade slot UI chrome strip, Royal Games, dark premium casino tone, expanded reel-bank layout, respin surge momentum, s1 dagger motif, accent #bf2823, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -46,7 +47,14 @@
         "bonusType": "expanding_wild_respin",
         "accentColor": "#b71c1c"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#bf2823"
+      },
+      "status": "generated"
     },
     {
       "gameId": "bass_splash",
@@ -54,8 +62,8 @@
       "output": "assets/ui/slot_chrome/bass_splash_chrome.png",
       "engine": "sdxl",
       "seed": 1877395275,
-      "prompt": "Bass Splash Extreme slot UI chrome strip, Royal Games, new, standard layout, fisherman_collect vibe, s1 worm motif, accent lighting around #26c6da, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Bass Splash Extreme slot UI chrome strip, Royal Games, futuristic polished glow, five-reel modern proportions, feature-driven slot atmosphere, s1 worm motif, accent #32cae1, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -71,7 +79,14 @@
         "bonusType": "fisherman_collect",
         "accentColor": "#26c6da"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#32cae1"
+      },
+      "status": "generated"
     },
     {
       "gameId": "big_bamboo",
@@ -79,8 +94,8 @@
       "output": "assets/ui/slot_chrome/big_bamboo_chrome.png",
       "engine": "sdxl",
       "seed": 324966669,
-      "prompt": "Big Bamboo Fortune slot UI chrome strip, Royal Games, popular, extended layout, money_collect vibe, s1 bamboo shoot motif, accent lighting around #2e7d32, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Big Bamboo Fortune slot UI chrome strip, Royal Games, classic premium casino finish, expanded reel-bank layout, cash-collect intensity, s1 bamboo shoot motif, accent #62843f, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -96,7 +111,14 @@
         "bonusType": "money_collect",
         "accentColor": "#2e7d32"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "cash-collect intensity",
+        "accentHex": "#62843f"
+      },
+      "status": "generated"
     },
     {
       "gameId": "big_bass",
@@ -104,8 +126,8 @@
       "output": "assets/ui/slot_chrome/big_bass_chrome.png",
       "engine": "sdxl",
       "seed": 1532884890,
-      "prompt": "Reel Catch slot UI chrome strip, Royal Games, standard layout, fisherman_collect vibe, s1 hook motif, accent lighting around #48cae4, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Reel Catch slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, feature-driven slot atmosphere, s1 hook motif, accent #48cae4, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -121,7 +143,14 @@
         "bonusType": "fisherman_collect",
         "accentColor": "#48cae4"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#48cae4"
+      },
+      "status": "generated"
     },
     {
       "gameId": "black_bull",
@@ -129,8 +158,8 @@
       "output": "assets/ui/slot_chrome/black_bull_chrome.png",
       "engine": "sdxl",
       "seed": 1891173695,
-      "prompt": "Raging Bull slot UI chrome strip, Royal Games, extended layout, money_collect vibe, s1 horseshoe motif, accent lighting around #e94560, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Raging Bull slot UI chrome strip, Royal Games, dark premium casino tone, expanded reel-bank layout, cash-collect intensity, s1 horseshoe motif, accent #eb4c5f, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -146,7 +175,14 @@
         "bonusType": "money_collect",
         "accentColor": "#e94560"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "cash-collect intensity",
+        "accentHex": "#eb4c5f"
+      },
+      "status": "generated"
     },
     {
       "gameId": "book_dead",
@@ -154,8 +190,8 @@
       "output": "assets/ui/slot_chrome/book_dead_chrome.png",
       "engine": "sdxl",
       "seed": 157144356,
-      "prompt": "Tome of Ra slot UI chrome strip, Royal Games, popular, standard layout, expanding_symbol vibe, s1 ankh motif, accent lighting around #c7a94e, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Tome of Ra slot UI chrome strip, Royal Games, classic premium casino finish, five-reel modern proportions, feature-driven slot atmosphere, s1 ankh motif, accent #cfaa54, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -171,7 +207,14 @@
         "bonusType": "expanding_symbol",
         "accentColor": "#c7a94e"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#cfaa54"
+      },
+      "status": "generated"
     },
     {
       "gameId": "buffalo_extreme",
@@ -179,8 +222,8 @@
       "output": "assets/ui/slot_chrome/buffalo_extreme_chrome.png",
       "engine": "sdxl",
       "seed": 2115937482,
-      "prompt": "Buffalo Blitz Extreme slot UI chrome strip, Royal Games, hot, standard layout, hold_and_win vibe, s1 eagle motif, accent lighting around #ff9800, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Buffalo Blitz Extreme slot UI chrome strip, Royal Games, high-energy neon punch, five-reel modern proportions, locked coin tension, s1 eagle motif, accent #ff8411, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -196,7 +239,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ff9800"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#ff8411"
+      },
+      "status": "generated"
     },
     {
       "gameId": "buffalo_mega",
@@ -204,8 +254,8 @@
       "output": "assets/ui/slot_chrome/buffalo_mega_chrome.png",
       "engine": "sdxl",
       "seed": 1715340930,
-      "prompt": "Buffalo King Thunder slot UI chrome strip, Royal Games, popular, scatter layout, tumble vibe, s1 prairie flower motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Buffalo King Thunder slot UI chrome strip, Royal Games, classic premium casino finish, wide scatter-reel flow, cascading impact rhythm, s1 prairie flower motif, accent #ff7912, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -221,7 +271,14 @@
         "bonusType": "tumble",
         "accentColor": "#ff6f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#ff7912"
+      },
+      "status": "generated"
     },
     {
       "gameId": "buffalo_stampede",
@@ -229,8 +286,8 @@
       "output": "assets/ui/slot_chrome/buffalo_stampede_chrome.png",
       "engine": "sdxl",
       "seed": 4098427021,
-      "prompt": "Buffalo Stampede slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 cactus motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Buffalo Stampede slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, stacking multiplier drama, s1 cactus motif, accent #ff6511, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -246,7 +303,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#ff6f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#ff6511"
+      },
+      "status": "generated"
     },
     {
       "gameId": "chaos_crew",
@@ -254,8 +318,8 @@
       "output": "assets/ui/slot_chrome/chaos_crew_chrome.png",
       "engine": "sdxl",
       "seed": 2035306514,
-      "prompt": "Chaos Crew Rampage slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 skully motif, accent lighting around #e91e63, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Chaos Crew Rampage slot UI chrome strip, Royal Games, futuristic polished glow, dense cluster-grid framing, cascading impact rhythm, s1 skully motif, accent #bb629b, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -271,7 +335,14 @@
         "bonusType": "tumble",
         "accentColor": "#e91e63"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#bb629b"
+      },
+      "status": "generated"
     },
     {
       "gameId": "chilli_heat",
@@ -279,8 +350,8 @@
       "output": "assets/ui/slot_chrome/chilli_heat_chrome.png",
       "engine": "sdxl",
       "seed": 3052087708,
-      "prompt": "Chilli Heat Wave slot UI chrome strip, Royal Games, standard layout, hold_and_win vibe, s1 pepper green motif, accent lighting around #ff9800, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Chilli Heat Wave slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, locked coin tension, s1 pepper green motif, accent #ff9800, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -296,7 +367,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ff9800"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#ff9800"
+      },
+      "status": "generated"
     },
     {
       "gameId": "coin_strike",
@@ -304,8 +382,8 @@
       "output": "assets/ui/slot_chrome/coin_strike_chrome.png",
       "engine": "sdxl",
       "seed": 1673721360,
-      "prompt": "Coin Strike Deluxe slot UI chrome strip, Royal Games, new, classic layout, hold_and_win vibe, s1 cherry motif, accent lighting around #ffd700, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Coin Strike Deluxe slot UI chrome strip, Royal Games, futuristic polished glow, vintage three-reel proportions, locked coin tension, s1 cherry motif, accent #e6dc4d, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -321,7 +399,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ffd700"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "vintage three-reel proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#e6dc4d"
+      },
+      "status": "generated"
     },
     {
       "gameId": "coin_volcano",
@@ -329,8 +414,8 @@
       "output": "assets/ui/slot_chrome/coin_volcano_chrome.png",
       "engine": "sdxl",
       "seed": 1567747106,
-      "prompt": "Volcano Coins slot UI chrome strip, Royal Games, new, standard layout, hold_and_win vibe, s1 obsidian motif, accent lighting around #ff9800, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Volcano Coins slot UI chrome strip, Royal Games, futuristic polished glow, five-reel modern proportions, locked coin tension, s1 obsidian motif, accent #e0a533, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -346,7 +431,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ff9800"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#e0a533"
+      },
+      "status": "generated"
     },
     {
       "gameId": "crimson_fang",
@@ -354,8 +446,8 @@
       "output": "assets/ui/slot_chrome/crimson_fang_chrome.png",
       "engine": "sdxl",
       "seed": 323531202,
-      "prompt": "Crimson Fang slot UI chrome strip, Royal Games, standard layout, expanding_symbol vibe, s1 garlic motif, accent lighting around #b71c1c, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Crimson Fang slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, feature-driven slot atmosphere, s1 garlic motif, accent #b71c1c, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -371,7 +463,14 @@
         "bonusType": "expanding_symbol",
         "accentColor": "#b71c1c"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#b71c1c"
+      },
+      "status": "generated"
     },
     {
       "gameId": "crown_fire",
@@ -379,8 +478,8 @@
       "output": "assets/ui/slot_chrome/crown_fire_chrome.png",
       "engine": "sdxl",
       "seed": 3404873538,
-      "prompt": "Crown of Fire slot UI chrome strip, Royal Games, standard layout, hold_and_win vibe, s1 torch motif, accent lighting around #ffab00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Crown of Fire slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, locked coin tension, s1 torch motif, accent #ffab00, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -396,7 +495,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ffab00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#ffab00"
+      },
+      "status": "generated"
     },
     {
       "gameId": "dead_alive",
@@ -404,8 +510,8 @@
       "output": "assets/ui/slot_chrome/dead_alive_chrome.png",
       "engine": "sdxl",
       "seed": 2699655306,
-      "prompt": "Dead or Alive Reloaded slot UI chrome strip, Royal Games, popular, standard layout, stacked_wilds vibe, s1 cowboy boots motif, accent lighting around #d32f2f, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Dead or Alive Reloaded slot UI chrome strip, Royal Games, classic premium casino finish, five-reel modern proportions, wild-symbol burst energy, s1 cowboy boots motif, accent #d94239, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -421,7 +527,14 @@
         "bonusType": "stacked_wilds",
         "accentColor": "#d32f2f"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "wild-symbol burst energy",
+        "accentHex": "#d94239"
+      },
+      "status": "generated"
     },
     {
       "gameId": "diamond_vault",
@@ -429,8 +542,8 @@
       "output": "assets/ui/slot_chrome/diamond_vault_chrome.png",
       "engine": "sdxl",
       "seed": 66361295,
-      "prompt": "Diamond Vault slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 sapphire motif, accent lighting around #283593, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Diamond Vault slot UI chrome strip, Royal Games, opulent gold-rich luxury, five-reel modern proportions, locked coin tension, s1 sapphire motif, accent #978672, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -446,7 +559,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#283593"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "opulent gold-rich luxury",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#978672"
+      },
+      "status": "generated"
     },
     {
       "gameId": "dog_house_mega",
@@ -454,8 +574,8 @@
       "output": "assets/ui/slot_chrome/dog_house_mega_chrome.png",
       "engine": "sdxl",
       "seed": 3044830042,
-      "prompt": "Dog House Unleashed slot UI chrome strip, Royal Games, popular, scatter layout, tumble vibe, s1 bone motif, accent lighting around #4caf50, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Dog House Unleashed slot UI chrome strip, Royal Games, classic premium casino finish, wide scatter-reel flow, cascading impact rhythm, s1 bone motif, accent #66af56, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -471,7 +591,14 @@
         "bonusType": "tumble",
         "accentColor": "#4caf50"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#66af56"
+      },
+      "status": "generated"
     },
     {
       "gameId": "dragon_megafire",
@@ -479,8 +606,8 @@
       "output": "assets/ui/slot_chrome/dragon_megafire_chrome.png",
       "engine": "sdxl",
       "seed": 558267026,
-      "prompt": "Dragon Megafire slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 coin dragon motif, accent lighting around #ff8f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Dragon Megafire slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, stacking multiplier drama, s1 coin dragon motif, accent #ff7d11, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -496,7 +623,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#ff8f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#ff7d11"
+      },
+      "status": "generated"
     },
     {
       "gameId": "elvis_frog",
@@ -504,8 +638,8 @@
       "output": "assets/ui/slot_chrome/elvis_frog_chrome.png",
       "engine": "sdxl",
       "seed": 1715745458,
-      "prompt": "Vegas Frog Live slot UI chrome strip, Royal Games, popular, standard layout, hold_and_win vibe, s1 dice motif, accent lighting around #d50000, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Vegas Frog Live slot UI chrome strip, Royal Games, classic premium casino finish, five-reel modern proportions, locked coin tension, s1 dice motif, accent #db1b12, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -521,7 +655,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#d50000"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#db1b12"
+      },
+      "status": "generated"
     },
     {
       "gameId": "esqueleto_fiesta",
@@ -529,8 +670,8 @@
       "output": "assets/ui/slot_chrome/esqueleto_fiesta_chrome.png",
       "engine": "sdxl",
       "seed": 3609372488,
-      "prompt": "Esqueleto Fiesta slot UI chrome strip, Royal Games, new, standard layout, avalanche vibe, s1 guitar motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Esqueleto Fiesta slot UI chrome strip, Royal Games, futuristic polished glow, five-reel modern proportions, avalanche depth layering, s1 guitar motif, accent #e08433, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -546,7 +687,14 @@
         "bonusType": "avalanche",
         "accentColor": "#ff6f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "avalanche depth layering",
+        "accentHex": "#e08433"
+      },
+      "status": "generated"
     },
     {
       "gameId": "eternal_romance",
@@ -554,8 +702,8 @@
       "output": "assets/ui/slot_chrome/eternal_romance_chrome.png",
       "engine": "sdxl",
       "seed": 1465893603,
-      "prompt": "Eternal Romance slot UI chrome strip, Royal Games, popular, standard layout, chamber_spins vibe, s1 candle motif, accent lighting around #c62828, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Eternal Romance slot UI chrome strip, Royal Games, classic premium casino finish, five-reel modern proportions, feature-driven slot atmosphere, s1 candle motif, accent #ce3d34, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -571,7 +719,14 @@
         "bonusType": "chamber_spins",
         "accentColor": "#c62828"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#ce3d34"
+      },
+      "status": "generated"
     },
     {
       "gameId": "extra_chilli",
@@ -579,8 +734,8 @@
       "output": "assets/ui/slot_chrome/extra_chilli_chrome.png",
       "engine": "sdxl",
       "seed": 1291268920,
-      "prompt": "Extra Chilli Blaze slot UI chrome strip, Royal Games, hot, scatter layout, tumble vibe, s1 jalapeno motif, accent lighting around #ffd600, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Extra Chilli Blaze slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, cascading impact rhythm, s1 jalapeno motif, accent #ffb311, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -596,7 +751,14 @@
         "bonusType": "tumble",
         "accentColor": "#ffd600"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#ffb311"
+      },
+      "status": "generated"
     },
     {
       "gameId": "fat_rabbit",
@@ -604,8 +766,8 @@
       "output": "assets/ui/slot_chrome/fat_rabbit_chrome.png",
       "engine": "sdxl",
       "seed": 708817386,
-      "prompt": "Fat Rabbit Run slot UI chrome strip, Royal Games, scatter layout, tumble vibe, s1 carrot motif, accent lighting around #43a047, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Fat Rabbit Run slot UI chrome strip, Royal Games, dark premium casino tone, wide scatter-reel flow, cascading impact rhythm, s1 carrot motif, accent #43a047, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -621,7 +783,14 @@
         "bonusType": "tumble",
         "accentColor": "#43a047"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#43a047"
+      },
+      "status": "generated"
     },
     {
       "gameId": "fire_hole",
@@ -629,8 +798,8 @@
       "output": "assets/ui/slot_chrome/fire_hole_chrome.png",
       "engine": "sdxl",
       "seed": 3247853115,
-      "prompt": "Fire in the Hole XBomb slot UI chrome strip, Royal Games, hot, scatter layout, tumble vibe, s1 pickaxe motif, accent lighting around #f4511e, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Fire in the Hole XBomb slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, cascading impact rhythm, s1 pickaxe motif, accent #f64e28, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -646,7 +815,14 @@
         "bonusType": "tumble",
         "accentColor": "#f4511e"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#f64e28"
+      },
+      "status": "generated"
     },
     {
       "gameId": "fire_joker",
@@ -654,8 +830,8 @@
       "output": "assets/ui/slot_chrome/fire_joker_chrome.png",
       "engine": "sdxl",
       "seed": 3182580606,
-      "prompt": "Inferno Jester slot UI chrome strip, Royal Games, classic layout, wheel_multiplier vibe, s1 cherry motif, accent lighting around #ff0844, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Inferno Jester slot UI chrome strip, Royal Games, dark premium casino tone, vintage three-reel proportions, stacking multiplier drama, s1 cherry motif, accent #ff395a, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -671,7 +847,14 @@
         "bonusType": "wheel_multiplier",
         "accentColor": "#ff0844"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "vintage three-reel proportions",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#ff395a"
+      },
+      "status": "generated"
     },
     {
       "gameId": "five_lions",
@@ -679,8 +862,8 @@
       "output": "assets/ui/slot_chrome/five_lions_chrome.png",
       "engine": "sdxl",
       "seed": 3108517202,
-      "prompt": "Five Lions Fortune slot UI chrome strip, Royal Games, standard layout, hold_and_win vibe, s1 drum motif, accent lighting around #ffc107, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Five Lions Fortune slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, locked coin tension, s1 drum motif, accent #ffc107, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -696,7 +879,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ffc107"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#ffc107"
+      },
+      "status": "generated"
     },
     {
       "gameId": "fruit_party",
@@ -704,8 +894,8 @@
       "output": "assets/ui/slot_chrome/fruit_party_chrome.png",
       "engine": "sdxl",
       "seed": 2475066645,
-      "prompt": "Tropical Fruit Party slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 strawberry motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Tropical Fruit Party slot UI chrome strip, Royal Games, futuristic polished glow, dense cluster-grid framing, cascading impact rhythm, s1 strawberry motif, accent #ca955b, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -721,7 +911,14 @@
         "bonusType": "tumble",
         "accentColor": "#ff6f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#ca955b"
+      },
+      "status": "generated"
     },
     {
       "gameId": "gates_olympus",
@@ -729,8 +926,8 @@
       "output": "assets/ui/slot_chrome/gates_olympus_chrome.png",
       "engine": "sdxl",
       "seed": 3164221172,
-      "prompt": "Halls of Thunder slot UI chrome strip, Royal Games, popular, scatter layout, zeus_multiplier vibe, s1 chalice motif, accent lighting around #667eea, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Halls of Thunder slot UI chrome strip, Royal Games, classic premium casino finish, wide scatter-reel flow, stacking multiplier drama, s1 chalice motif, accent #7c86d8, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -746,7 +943,14 @@
         "bonusType": "zeus_multiplier",
         "accentColor": "#667eea"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#7c86d8"
+      },
+      "status": "generated"
     },
     {
       "gameId": "gemhalla",
@@ -754,8 +958,8 @@
       "output": "assets/ui/slot_chrome/gemhalla_chrome.png",
       "engine": "sdxl",
       "seed": 3673590417,
-      "prompt": "Valhalla Gems slot UI chrome strip, Royal Games, hot, scatter layout, tumble vibe, s1 axe motif, accent lighting around #ffd54f, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Valhalla Gems slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, cascading impact rhythm, s1 axe motif, accent #ffb34d, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -771,7 +975,14 @@
         "bonusType": "tumble",
         "accentColor": "#ffd54f"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#ffb34d"
+      },
+      "status": "generated"
     },
     {
       "gameId": "gems_bonanza",
@@ -779,8 +990,8 @@
       "output": "assets/ui/slot_chrome/gems_bonanza_chrome.png",
       "engine": "sdxl",
       "seed": 625548700,
-      "prompt": "Gem Vault Bonanza slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 emerald motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Gem Vault Bonanza slot UI chrome strip, Royal Games, high-energy neon punch, dense cluster-grid framing, cascading impact rhythm, s1 emerald motif, accent #cf60d9, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -796,7 +1007,14 @@
         "bonusType": "tumble",
         "accentColor": "#e040fb"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#cf60d9"
+      },
+      "status": "generated"
     },
     {
       "gameId": "gold_rush_frog",
@@ -804,8 +1022,8 @@
       "output": "assets/ui/slot_chrome/gold_rush_frog_chrome.png",
       "engine": "sdxl",
       "seed": 549239550,
-      "prompt": "Fortune Frog Rush slot UI chrome strip, Royal Games, hot, scatter layout, coin_respin vibe, s1 pickaxe motif, accent lighting around #4caf50, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Fortune Frog Rush slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, respin surge momentum, s1 pickaxe motif, accent #76964e, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -821,7 +1039,14 @@
         "bonusType": "coin_respin",
         "accentColor": "#4caf50"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#76964e"
+      },
+      "status": "generated"
     },
     {
       "gameId": "golden_fortune",
@@ -829,8 +1054,8 @@
       "output": "assets/ui/slot_chrome/golden_fortune_chrome.png",
       "engine": "sdxl",
       "seed": 4283954897,
-      "prompt": "Golden Fortune Wheel slot UI chrome strip, Royal Games, jackpot, standard layout, wheel_multiplier vibe, s1 champagne motif, accent lighting around #ffd700, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Golden Fortune Wheel slot UI chrome strip, Royal Games, opulent gold-rich luxury, five-reel modern proportions, stacking multiplier drama, s1 champagne motif, accent #ffd42c, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -846,7 +1071,14 @@
         "bonusType": "wheel_multiplier",
         "accentColor": "#ffd700"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "opulent gold-rich luxury",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#ffd42c"
+      },
+      "status": "generated"
     },
     {
       "gameId": "goldstorm_ultra",
@@ -854,8 +1086,8 @@
       "output": "assets/ui/slot_chrome/goldstorm_ultra_chrome.png",
       "engine": "sdxl",
       "seed": 784717090,
-      "prompt": "GoldStorm Ultra slot UI chrome strip, Royal Games, new, standard layout, random_multiplier vibe, s1 gold coin storm motif, accent lighting around #ffd600, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "GoldStorm Ultra slot UI chrome strip, Royal Games, futuristic polished glow, five-reel modern proportions, stacking multiplier drama, s1 gold coin storm motif, accent #e0d733, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -871,7 +1103,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#ffd600"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#e0d733"
+      },
+      "status": "generated"
     },
     {
       "gameId": "gonzos_quest",
@@ -879,8 +1118,8 @@
       "output": "assets/ui/slot_chrome/gonzos_quest_chrome.png",
       "engine": "sdxl",
       "seed": 1639698719,
-      "prompt": "Temple Quest slot UI chrome strip, Royal Games, standard layout, avalanche vibe, s1 stone face green motif, accent lighting around #3cba92, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Temple Quest slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, avalanche depth layering, s1 stone face green motif, accent #3cba92, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -896,7 +1135,14 @@
         "bonusType": "avalanche",
         "accentColor": "#3cba92"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "avalanche depth layering",
+        "accentHex": "#3cba92"
+      },
+      "status": "generated"
     },
     {
       "gameId": "great_rhino",
@@ -904,8 +1150,8 @@
       "output": "assets/ui/slot_chrome/great_rhino_chrome.png",
       "engine": "sdxl",
       "seed": 3519082660,
-      "prompt": "Great Rhino Rush slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 flamingo motif, accent lighting around #fdd835, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Great Rhino Rush slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, stacking multiplier drama, s1 flamingo motif, accent #fdb539, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -921,7 +1167,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#fdd835"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#fdb539"
+      },
+      "status": "generated"
     },
     {
       "gameId": "hot_chillies",
@@ -929,8 +1182,8 @@
       "output": "assets/ui/slot_chrome/hot_chillies_chrome.png",
       "engine": "sdxl",
       "seed": 3383099623,
-      "prompt": "Salsa Spins slot UI chrome strip, Royal Games, new, classic layout, respin vibe, s1 taco motif, accent lighting around #f77f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Salsa Spins slot UI chrome strip, Royal Games, futuristic polished glow, vintage three-reel proportions, respin surge momentum, s1 taco motif, accent #e2a44d, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -946,7 +1199,14 @@
         "bonusType": "respin",
         "accentColor": "#f77f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "vintage three-reel proportions",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#e2a44d"
+      },
+      "status": "generated"
     },
     {
       "gameId": "immortal_blood",
@@ -954,8 +1214,8 @@
       "output": "assets/ui/slot_chrome/immortal_blood_chrome.png",
       "engine": "sdxl",
       "seed": 4054156440,
-      "prompt": "Immortal Blood slot UI chrome strip, Royal Games, popular, standard layout, random_multiplier vibe, s1 castle motif, accent lighting around #c62828, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Immortal Blood slot UI chrome strip, Royal Games, classic premium casino finish, five-reel modern proportions, stacking multiplier drama, s1 castle motif, accent #ce3d34, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -971,7 +1231,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#c62828"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#ce3d34"
+      },
+      "status": "generated"
     },
     {
       "gameId": "island_tiki",
@@ -979,8 +1246,8 @@
       "output": "assets/ui/slot_chrome/island_tiki_chrome.png",
       "engine": "sdxl",
       "seed": 1947059565,
-      "prompt": "Island Tiki slot UI chrome strip, Royal Games, scatter layout, tumble vibe, s1 coconut motif, accent lighting around #00897b, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Island Tiki slot UI chrome strip, Royal Games, dark premium casino tone, wide scatter-reel flow, cascading impact rhythm, s1 coconut motif, accent #00897b, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -996,7 +1263,14 @@
         "bonusType": "tumble",
         "accentColor": "#00897b"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#00897b"
+      },
+      "status": "generated"
     },
     {
       "gameId": "jammin_fruits",
@@ -1004,8 +1278,8 @@
       "output": "assets/ui/slot_chrome/jammin_fruits_chrome.png",
       "engine": "sdxl",
       "seed": 2137223390,
-      "prompt": "Jammin' Fruits slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 strawberry motif, accent lighting around #7b1fa2, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Jammin' Fruits slot UI chrome strip, Royal Games, high-energy neon punch, dense cluster-grid framing, cascading impact rhythm, s1 strawberry motif, accent #924ca3, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1021,7 +1295,14 @@
         "bonusType": "tumble",
         "accentColor": "#7b1fa2"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#924ca3"
+      },
+      "status": "generated"
     },
     {
       "gameId": "le_bandit",
@@ -1029,8 +1310,8 @@
       "output": "assets/ui/slot_chrome/le_bandit_chrome.png",
       "engine": "sdxl",
       "seed": 3237481230,
-      "prompt": "Le Bandit Heist slot UI chrome strip, Royal Games, standard layout, money_collect vibe, s1 baguette motif, accent lighting around #b388ff, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Le Bandit Heist slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, cash-collect intensity, s1 baguette motif, accent #b388ff, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1046,7 +1327,14 @@
         "bonusType": "money_collect",
         "accentColor": "#b388ff"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "cash-collect intensity",
+        "accentHex": "#b388ff"
+      },
+      "status": "generated"
     },
     {
       "gameId": "loki_loot",
@@ -1054,8 +1342,8 @@
       "output": "assets/ui/slot_chrome/loki_loot_chrome.png",
       "engine": "sdxl",
       "seed": 611655552,
-      "prompt": "Loki's Wild Loot slot UI chrome strip, Royal Games, new, grid layout, wild_collect vibe, s1 hammer motif, accent lighting around #c6ff00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Loki's Wild Loot slot UI chrome strip, Royal Games, futuristic polished glow, dense cluster-grid framing, wild-symbol burst energy, s1 hammer motif, accent #a5f25b, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1071,7 +1359,14 @@
         "bonusType": "wild_collect",
         "accentColor": "#c6ff00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "wild-symbol burst energy",
+        "accentHex": "#a5f25b"
+      },
+      "status": "generated"
     },
     {
       "gameId": "lucha_mania",
@@ -1079,8 +1374,8 @@
       "output": "assets/ui/slot_chrome/lucha_mania_chrome.png",
       "engine": "sdxl",
       "seed": 1951394442,
-      "prompt": "Lucha Libre Mania slot UI chrome strip, Royal Games, standard layout, random_multiplier vibe, s1 mask blue motif, accent lighting around #f57f17, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Lucha Libre Mania slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, stacking multiplier drama, s1 mask blue motif, accent #f57f17, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1096,7 +1391,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#f57f17"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#f57f17"
+      },
+      "status": "generated"
     },
     {
       "gameId": "lucky_777",
@@ -1104,8 +1406,8 @@
       "output": "assets/ui/slot_chrome/lucky_777_chrome.png",
       "engine": "sdxl",
       "seed": 2602850620,
-      "prompt": "Fruit Fiesta Deluxe slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 banana motif, accent lighting around #f093fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Fruit Fiesta Deluxe slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, stacking multiplier drama, s1 banana motif, accent #f381d0, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1121,7 +1423,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#f093fb"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#f381d0"
+      },
+      "status": "generated"
     },
     {
       "gameId": "lucky_dragon",
@@ -1129,8 +1438,8 @@
       "output": "assets/ui/slot_chrome/lucky_dragon_chrome.png",
       "engine": "sdxl",
       "seed": 3390965572,
-      "prompt": "Lucky Dragon slot UI chrome strip, Royal Games, classic layout, respin vibe, s1 lantern motif, accent lighting around #c62828, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Lucky Dragon slot UI chrome strip, Royal Games, dark premium casino tone, vintage three-reel proportions, respin surge momentum, s1 lantern motif, accent #d25244, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1146,7 +1455,14 @@
         "bonusType": "respin",
         "accentColor": "#c62828"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "vintage three-reel proportions",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#d25244"
+      },
+      "status": "generated"
     },
     {
       "gameId": "madame_destiny",
@@ -1154,8 +1470,8 @@
       "output": "assets/ui/slot_chrome/madame_destiny_chrome.png",
       "engine": "sdxl",
       "seed": 2844940848,
-      "prompt": "Madame Destiny slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 candle motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Madame Destiny slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, stacking multiplier drama, s1 candle motif, accent #e741d0, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1171,7 +1487,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#e040fb"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#e741d0"
+      },
+      "status": "generated"
     },
     {
       "gameId": "mega_joker",
@@ -1179,8 +1502,8 @@
       "output": "assets/ui/slot_chrome/mega_joker_chrome.png",
       "engine": "sdxl",
       "seed": 3346462024,
-      "prompt": "Mega Joker Classic slot UI chrome strip, Royal Games, classic layout, wheel_multiplier vibe, s1 cherry classic motif, accent lighting around #ffc107, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Mega Joker Classic slot UI chrome strip, Royal Games, dark premium casino tone, vintage three-reel proportions, stacking multiplier drama, s1 cherry classic motif, accent #ffca2a, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1196,7 +1519,14 @@
         "bonusType": "wheel_multiplier",
         "accentColor": "#ffc107"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "vintage three-reel proportions",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#ffca2a"
+      },
+      "status": "generated"
     },
     {
       "gameId": "mega_safari",
@@ -1204,8 +1534,8 @@
       "output": "assets/ui/slot_chrome/mega_safari_chrome.png",
       "engine": "sdxl",
       "seed": 2817973631,
-      "prompt": "Mega Moolah Safari slot UI chrome strip, Royal Games, jackpot, standard layout, wheel_multiplier vibe, s1 zebra motif, accent lighting around #e65100, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Mega Moolah Safari slot UI chrome strip, Royal Games, opulent gold-rich luxury, five-reel modern proportions, stacking multiplier drama, s1 zebra motif, accent #f3942c, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1221,7 +1551,14 @@
         "bonusType": "wheel_multiplier",
         "accentColor": "#e65100"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "opulent gold-rich luxury",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#f3942c"
+      },
+      "status": "generated"
     },
     {
       "gameId": "mental_meltdown",
@@ -1229,8 +1566,8 @@
       "output": "assets/ui/slot_chrome/mental_meltdown_chrome.png",
       "engine": "sdxl",
       "seed": 1261432552,
-      "prompt": "Mental Meltdown slot UI chrome strip, Royal Games, new, extended layout, avalanche vibe, s1 pill motif, accent lighting around #76ff03, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Mental Meltdown slot UI chrome strip, Royal Games, futuristic polished glow, expanded reel-bank layout, avalanche depth layering, s1 pill motif, accent #82e939, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1246,7 +1583,14 @@
         "bonusType": "avalanche",
         "accentColor": "#76ff03"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "avalanche depth layering",
+        "accentHex": "#82e939"
+      },
+      "status": "generated"
     },
     {
       "gameId": "merlin_power",
@@ -1254,8 +1598,8 @@
       "output": "assets/ui/slot_chrome/merlin_power_chrome.png",
       "engine": "sdxl",
       "seed": 2158803347,
-      "prompt": "Merlin's Power slot UI chrome strip, Royal Games, popular, scatter layout, zeus_multiplier vibe, s1 spell book motif, accent lighting around #4a148c, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Merlin's Power slot UI chrome strip, Royal Games, classic premium casino finish, wide scatter-reel flow, stacking multiplier drama, s1 spell book motif, accent #652c89, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1271,7 +1615,14 @@
         "bonusType": "zeus_multiplier",
         "accentColor": "#4a148c"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#652c89"
+      },
+      "status": "generated"
     },
     {
       "gameId": "money_train",
@@ -1279,8 +1630,8 @@
       "output": "assets/ui/slot_chrome/money_train_chrome.png",
       "engine": "sdxl",
       "seed": 1574706273,
-      "prompt": "Money Express 3 slot UI chrome strip, Royal Games, hot, extended layout, hold_and_win vibe, s1 dynamite mt motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Money Express 3 slot UI chrome strip, Royal Games, high-energy neon punch, expanded reel-bank layout, locked coin tension, s1 dynamite mt motif, accent #ff6819, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1296,7 +1647,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ff6f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#ff6819"
+      },
+      "status": "generated"
     },
     {
       "gameId": "neon_nights",
@@ -1304,8 +1662,8 @@
       "output": "assets/ui/slot_chrome/neon_nights_chrome.png",
       "engine": "sdxl",
       "seed": 3267658874,
-      "prompt": "Neon Nights slot UI chrome strip, Royal Games, standard layout, expanding_wild_respin vibe, s1 dice motif, accent lighting around #e91e63, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Neon Nights slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, respin surge momentum, s1 dice motif, accent #e91e63, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1321,7 +1679,14 @@
         "bonusType": "expanding_wild_respin",
         "accentColor": "#e91e63"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#e91e63"
+      },
+      "status": "generated"
     },
     {
       "gameId": "nitro_street",
@@ -1329,8 +1694,8 @@
       "output": "assets/ui/slot_chrome/nitro_street_chrome.png",
       "engine": "sdxl",
       "seed": 1572420244,
-      "prompt": "Nitro Street slot UI chrome strip, Royal Games, extended layout, avalanche vibe, s1 spray can motif, accent lighting around #00e676, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Nitro Street slot UI chrome strip, Royal Games, dark premium casino tone, expanded reel-bank layout, avalanche depth layering, s1 spray can motif, accent #1eda72, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1346,7 +1711,14 @@
         "bonusType": "avalanche",
         "accentColor": "#00e676"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "avalanche depth layering",
+        "accentHex": "#1eda72"
+      },
+      "status": "generated"
     },
     {
       "gameId": "olympian_gods",
@@ -1354,8 +1726,8 @@
       "output": "assets/ui/slot_chrome/olympian_gods_chrome.png",
       "engine": "sdxl",
       "seed": 2474347441,
-      "prompt": "Olympian Gods slot UI chrome strip, Royal Games, popular, grid layout, tumble vibe, s1 harp motif, accent lighting around #e65100, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Olympian Gods slot UI chrome strip, Royal Games, classic premium casino finish, dense cluster-grid framing, cascading impact rhythm, s1 harp motif, accent #d17841, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1371,7 +1743,14 @@
         "bonusType": "tumble",
         "accentColor": "#e65100"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#d17841"
+      },
+      "status": "generated"
     },
     {
       "gameId": "olympus_dream",
@@ -1379,8 +1758,8 @@
       "output": "assets/ui/slot_chrome/olympus_dream_chrome.png",
       "engine": "sdxl",
       "seed": 3203196667,
-      "prompt": "Olympus Dream Drop slot UI chrome strip, Royal Games, jackpot, scatter layout, zeus_multiplier vibe, s1 hera motif, accent lighting around #1565c0, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Olympus Dream Drop slot UI chrome strip, Royal Games, opulent gold-rich luxury, wide scatter-reel flow, stacking multiplier drama, s1 hera motif, accent #8e9d88, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1396,7 +1775,14 @@
         "bonusType": "zeus_multiplier",
         "accentColor": "#1565c0"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "opulent gold-rich luxury",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#8e9d88"
+      },
+      "status": "generated"
     },
     {
       "gameId": "olympus_rising",
@@ -1404,8 +1790,8 @@
       "output": "assets/ui/slot_chrome/olympus_rising_chrome.png",
       "engine": "sdxl",
       "seed": 786818756,
-      "prompt": "Olympus Rising slot UI chrome strip, Royal Games, new, scatter layout, zeus_multiplier vibe, s1 trident motif, accent lighting around #5c6bc0, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Olympus Rising slot UI chrome strip, Royal Games, futuristic polished glow, wide scatter-reel flow, stacking multiplier drama, s1 trident motif, accent #5e81cc, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1421,7 +1807,14 @@
         "bonusType": "zeus_multiplier",
         "accentColor": "#5c6bc0"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#5e81cc"
+      },
+      "status": "generated"
     },
     {
       "gameId": "pharaoh_legacy",
@@ -1429,8 +1822,8 @@
       "output": "assets/ui/slot_chrome/pharaoh_legacy_chrome.png",
       "engine": "sdxl",
       "seed": 3087252671,
-      "prompt": "Pharaoh's Legacy slot UI chrome strip, Royal Games, popular, standard layout, expanding_symbol vibe, s1 hieroglyph motif, accent lighting around #d4a636, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Pharaoh's Legacy slot UI chrome strip, Royal Games, classic premium casino finish, five-reel modern proportions, feature-driven slot atmosphere, s1 hieroglyph motif, accent #daa83f, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1446,7 +1839,14 @@
         "bonusType": "expanding_symbol",
         "accentColor": "#d4a636"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#daa83f"
+      },
+      "status": "generated"
     },
     {
       "gameId": "pirate_fortune",
@@ -1454,8 +1854,8 @@
       "output": "assets/ui/slot_chrome/pirate_fortune_chrome.png",
       "engine": "sdxl",
       "seed": 2178654357,
-      "prompt": "Pirate's Fortune slot UI chrome strip, Royal Games, new, standard layout, money_collect vibe, s1 compass motif, accent lighting around #0097a7, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Pirate's Fortune slot UI chrome strip, Royal Games, futuristic polished glow, five-reel modern proportions, cash-collect intensity, s1 compass motif, accent #14a4b8, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1471,7 +1871,14 @@
         "bonusType": "money_collect",
         "accentColor": "#0097a7"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "cash-collect intensity",
+        "accentHex": "#14a4b8"
+      },
+      "status": "generated"
     },
     {
       "gameId": "pots_olympus",
@@ -1479,8 +1886,8 @@
       "output": "assets/ui/slot_chrome/pots_olympus_chrome.png",
       "engine": "sdxl",
       "seed": 2023744366,
-      "prompt": "Pots of Zeus slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 trophy motif, accent lighting around #1565c0, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Pots of Zeus slot UI chrome strip, Royal Games, opulent gold-rich luxury, five-reel modern proportions, locked coin tension, s1 trophy motif, accent #8e9d88, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1496,7 +1903,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#1565c0"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "opulent gold-rich luxury",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#8e9d88"
+      },
+      "status": "generated"
     },
     {
       "gameId": "power_crown",
@@ -1504,8 +1918,8 @@
       "output": "assets/ui/slot_chrome/power_crown_chrome.png",
       "engine": "sdxl",
       "seed": 4271089477,
-      "prompt": "Crown of Power slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 scepter motif, accent lighting around #ffd700, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Crown of Power slot UI chrome strip, Royal Games, opulent gold-rich luxury, five-reel modern proportions, locked coin tension, s1 scepter motif, accent #ffd42c, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1521,7 +1935,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#ffd700"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "opulent gold-rich luxury",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#ffd42c"
+      },
+      "status": "generated"
     },
     {
       "gameId": "puppy_palace",
@@ -1529,8 +1950,8 @@
       "output": "assets/ui/slot_chrome/puppy_palace_chrome.png",
       "engine": "sdxl",
       "seed": 1911154689,
-      "prompt": "Puppy Palace slot UI chrome strip, Royal Games, standard layout, stacked_wilds vibe, s1 bone motif, accent lighting around #4caf50, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Puppy Palace slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, wild-symbol burst energy, s1 bone motif, accent #4caf50, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1546,7 +1967,14 @@
         "bonusType": "stacked_wilds",
         "accentColor": "#4caf50"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "wild-symbol burst energy",
+        "accentHex": "#4caf50"
+      },
+      "status": "generated"
     },
     {
       "gameId": "quantum_burst",
@@ -1554,8 +1982,8 @@
       "output": "assets/ui/slot_chrome/quantum_burst_chrome.png",
       "engine": "sdxl",
       "seed": 3954630992,
-      "prompt": "Quantum Burst slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 atom motif, accent lighting around #6a1b9a, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Quantum Burst slot UI chrome strip, Royal Games, high-energy neon punch, dense cluster-grid framing, cascading impact rhythm, s1 atom motif, accent #87499e, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1571,7 +1999,14 @@
         "bonusType": "tumble",
         "accentColor": "#6a1b9a"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#87499e"
+      },
+      "status": "generated"
     },
     {
       "gameId": "razor_shark",
@@ -1579,8 +2014,8 @@
       "output": "assets/ui/slot_chrome/razor_shark_chrome.png",
       "engine": "sdxl",
       "seed": 768509334,
-      "prompt": "Depth Charge slot UI chrome strip, Royal Games, new, extended layout, mystery_stacks vibe, s1 anchor motif, accent lighting around #00bcd4, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Depth Charge slot UI chrome strip, Royal Games, futuristic polished glow, expanded reel-bank layout, feature-driven slot atmosphere, s1 anchor motif, accent #30bacc, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1596,7 +2031,14 @@
         "bonusType": "mystery_stacks",
         "accentColor": "#00bcd4"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#30bacc"
+      },
+      "status": "generated"
     },
     {
       "gameId": "reactoonz",
@@ -1604,8 +2046,8 @@
       "output": "assets/ui/slot_chrome/reactoonz_chrome.png",
       "engine": "sdxl",
       "seed": 4248790569,
-      "prompt": "Alientonz slot UI chrome strip, Royal Games, popular, grid layout, tumble vibe, s1 blob green motif, accent lighting around #00e5ff, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Alientonz slot UI chrome strip, Royal Games, classic premium casino finish, dense cluster-grid framing, cascading impact rhythm, s1 blob green motif, accent #35dcee, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1621,7 +2063,14 @@
         "bonusType": "tumble",
         "accentColor": "#00e5ff"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#35dcee"
+      },
+      "status": "generated"
     },
     {
       "gameId": "sakura_princess",
@@ -1629,8 +2078,8 @@
       "output": "assets/ui/slot_chrome/sakura_princess_chrome.png",
       "engine": "sdxl",
       "seed": 2872684429,
-      "prompt": "Sakura Princess slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 cherry blossom motif, accent lighting around #f06292, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Sakura Princess slot UI chrome strip, Royal Games, futuristic polished glow, dense cluster-grid framing, cascading impact rhythm, s1 cherry blossom motif, accent #c08db8, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1646,7 +2095,14 @@
         "bonusType": "tumble",
         "accentColor": "#f06292"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#c08db8"
+      },
+      "status": "generated"
     },
     {
       "gameId": "san_quentin",
@@ -1654,8 +2110,8 @@
       "output": "assets/ui/slot_chrome/san_quentin_chrome.png",
       "engine": "sdxl",
       "seed": 3731996805,
-      "prompt": "San Quentin Escape slot UI chrome strip, Royal Games, hot, extended layout, expanding_symbol vibe, s1 handcuffs motif, accent lighting around #ff3d00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "San Quentin Escape slot UI chrome strip, Royal Games, high-energy neon punch, expanded reel-bank layout, feature-driven slot atmosphere, s1 handcuffs motif, accent #ff4719, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1671,7 +2127,14 @@
         "bonusType": "expanding_symbol",
         "accentColor": "#ff3d00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "feature-driven slot atmosphere",
+        "accentHex": "#ff4719"
+      },
+      "status": "generated"
     },
     {
       "gameId": "snoop_dollars",
@@ -1679,8 +2142,8 @@
       "output": "assets/ui/slot_chrome/snoop_dollars_chrome.png",
       "engine": "sdxl",
       "seed": 2518483993,
-      "prompt": "Hip Hop Millions slot UI chrome strip, Royal Games, new, scatter layout, tumble vibe, s1 mic motif, accent lighting around #7b1fa2, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Hip Hop Millions slot UI chrome strip, Royal Games, futuristic polished glow, wide scatter-reel flow, cascading impact rhythm, s1 mic motif, accent #7644b4, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1696,7 +2159,14 @@
         "bonusType": "tumble",
         "accentColor": "#7b1fa2"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#7644b4"
+      },
+      "status": "generated"
     },
     {
       "gameId": "starburst_xxl",
@@ -1704,8 +2174,8 @@
       "output": "assets/ui/slot_chrome/starburst_xxl_chrome.png",
       "engine": "sdxl",
       "seed": 222950597,
-      "prompt": "Cosmic Gems slot UI chrome strip, Royal Games, new, standard layout, expanding_wild_respin vibe, s1 gem red motif, accent lighting around #a855f7, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Cosmic Gems slot UI chrome strip, Royal Games, futuristic polished glow, five-reel modern proportions, respin surge momentum, s1 gem red motif, accent #9a70f8, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1721,7 +2191,14 @@
         "bonusType": "expanding_wild_respin",
         "accentColor": "#a855f7"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#9a70f8"
+      },
+      "status": "generated"
     },
     {
       "gameId": "starlight_princess",
@@ -1729,8 +2206,8 @@
       "output": "assets/ui/slot_chrome/starlight_princess_chrome.png",
       "engine": "sdxl",
       "seed": 207328936,
-      "prompt": "Starlight Empress slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 crystal heart motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Starlight Empress slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, stacking multiplier drama, s1 crystal heart motif, accent #e741d0, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1746,7 +2223,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#e040fb"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#e741d0"
+      },
+      "status": "generated"
     },
     {
       "gameId": "sugar_rush",
@@ -1754,8 +2238,8 @@
       "output": "assets/ui/slot_chrome/sugar_rush_chrome.png",
       "engine": "sdxl",
       "seed": 2126787099,
-      "prompt": "Candy Cascade 1000 slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 lollipop motif, accent lighting around #ff6fd8, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Candy Cascade 1000 slot UI chrome strip, Royal Games, high-energy neon punch, dense cluster-grid framing, cascading impact rhythm, s1 lollipop motif, accent #e37cc3, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1771,7 +2255,14 @@
         "bonusType": "tumble",
         "accentColor": "#ff6fd8"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#e37cc3"
+      },
+      "status": "generated"
     },
     {
       "gameId": "super_hot",
@@ -1779,8 +2270,8 @@
       "output": "assets/ui/slot_chrome/super_hot_chrome.png",
       "engine": "sdxl",
       "seed": 37788667,
-      "prompt": "Blazing Fruits slot UI chrome strip, Royal Games, standard layout, stacked_wilds vibe, s1 cherry motif, accent lighting around #ffd200, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Blazing Fruits slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, wild-symbol burst energy, s1 cherry motif, accent #ffd200, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1796,7 +2287,14 @@
         "bonusType": "stacked_wilds",
         "accentColor": "#ffd200"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "wild-symbol burst energy",
+        "accentHex": "#ffd200"
+      },
+      "status": "generated"
     },
     {
       "gameId": "sweet_bonanza",
@@ -1804,8 +2302,8 @@
       "output": "assets/ui/slot_chrome/sweet_bonanza_chrome.png",
       "engine": "sdxl",
       "seed": 4225738138,
-      "prompt": "Sweet Bonanza Blast slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 candy heart motif, accent lighting around #e91e63, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Sweet Bonanza Blast slot UI chrome strip, Royal Games, high-energy neon punch, wide scatter-reel flow, stacking multiplier drama, s1 candy heart motif, accent #ee285c, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1821,7 +2319,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#e91e63"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "wide scatter-reel flow",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#ee285c"
+      },
+      "status": "generated"
     },
     {
       "gameId": "tombstone_reload",
@@ -1829,8 +2334,8 @@
       "output": "assets/ui/slot_chrome/tombstone_reload_chrome.png",
       "engine": "sdxl",
       "seed": 3199593919,
-      "prompt": "Tombstone Reloaded slot UI chrome strip, Royal Games, hot, extended layout, expanding_wild_respin vibe, s1 boots motif, accent lighting around #ff5722, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Tombstone Reloaded slot UI chrome strip, Royal Games, high-energy neon punch, expanded reel-bank layout, respin surge momentum, s1 boots motif, accent #ff5830, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1846,7 +2351,14 @@
         "bonusType": "expanding_wild_respin",
         "accentColor": "#ff5722"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#ff5830"
+      },
+      "status": "generated"
     },
     {
       "gameId": "tome_madness",
@@ -1854,8 +2366,8 @@
       "output": "assets/ui/slot_chrome/tome_madness_chrome.png",
       "engine": "sdxl",
       "seed": 540596791,
-      "prompt": "Tome of Insanity slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 tentacle motif, accent lighting around #7c4dff, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Tome of Insanity slot UI chrome strip, Royal Games, futuristic polished glow, dense cluster-grid framing, cascading impact rhythm, s1 tentacle motif, accent #7680ff, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1871,7 +2383,14 @@
         "bonusType": "tumble",
         "accentColor": "#7c4dff"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "futuristic polished glow",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "cascading impact rhythm",
+        "accentHex": "#7680ff"
+      },
+      "status": "generated"
     },
     {
       "gameId": "twin_helix",
@@ -1879,8 +2398,8 @@
       "output": "assets/ui/slot_chrome/twin_helix_chrome.png",
       "engine": "sdxl",
       "seed": 1209919903,
-      "prompt": "Twin Helix slot UI chrome strip, Royal Games, standard layout, stacked_wilds vibe, s1 cherry neon motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Twin Helix slot UI chrome strip, Royal Games, dark premium casino tone, five-reel modern proportions, wild-symbol burst energy, s1 cherry neon motif, accent #e040fb, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1896,7 +2415,14 @@
         "bonusType": "stacked_wilds",
         "accentColor": "#e040fb"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "wild-symbol burst energy",
+        "accentHex": "#e040fb"
+      },
+      "status": "generated"
     },
     {
       "gameId": "viking_voyage",
@@ -1904,8 +2430,8 @@
       "output": "assets/ui/slot_chrome/viking_voyage_chrome.png",
       "engine": "sdxl",
       "seed": 1414115510,
-      "prompt": "Viking Voyage slot UI chrome strip, Royal Games, popular, extended layout, stacked_wilds vibe, s1 axe motif, accent lighting around #00acc1, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Viking Voyage slot UI chrome strip, Royal Games, classic premium casino finish, expanded reel-bank layout, wild-symbol burst energy, s1 axe motif, accent #40a7aa, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1921,7 +2447,14 @@
         "bonusType": "stacked_wilds",
         "accentColor": "#00acc1"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "classic premium casino finish",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "wild-symbol burst energy",
+        "accentHex": "#40a7aa"
+      },
+      "status": "generated"
     },
     {
       "gameId": "wanted_dead",
@@ -1929,8 +2462,8 @@
       "output": "assets/ui/slot_chrome/wanted_dead_chrome.png",
       "engine": "sdxl",
       "seed": 545432950,
-      "prompt": "Wanted Dead or Rich slot UI chrome strip, Royal Games, hot, grid layout, random_multiplier vibe, s1 colt motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Wanted Dead or Rich slot UI chrome strip, Royal Games, high-energy neon punch, dense cluster-grid framing, stacking multiplier drama, s1 colt motif, accent #e37c40, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1946,7 +2479,14 @@
         "bonusType": "random_multiplier",
         "accentColor": "#ff6f00"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "high-energy neon punch",
+        "templatePhrase": "dense cluster-grid framing",
+        "bonusPhrase": "stacking multiplier drama",
+        "accentHex": "#e37c40"
+      },
+      "status": "generated"
     },
     {
       "gameId": "wild_toro",
@@ -1954,8 +2494,8 @@
       "output": "assets/ui/slot_chrome/wild_toro_chrome.png",
       "engine": "sdxl",
       "seed": 909556775,
-      "prompt": "Wild Toro Matador slot UI chrome strip, Royal Games, extended layout, expanding_wild_respin vibe, s1 cape motif, accent lighting around #f44336, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Wild Toro Matador slot UI chrome strip, Royal Games, dark premium casino tone, expanded reel-bank layout, respin surge momentum, s1 cape motif, accent #f54a3a, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1971,7 +2511,14 @@
         "bonusType": "expanding_wild_respin",
         "accentColor": "#f44336"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "respin surge momentum",
+        "accentHex": "#f54a3a"
+      },
+      "status": "generated"
     },
     {
       "gameId": "wildfire_gold",
@@ -1979,8 +2526,8 @@
       "output": "assets/ui/slot_chrome/wildfire_gold_chrome.png",
       "engine": "sdxl",
       "seed": 2220132787,
-      "prompt": "Wildfire Gold slot UI chrome strip, Royal Games, extended layout, stacked_wilds vibe, s1 wanted poster motif, accent lighting around #ffb300, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Wildfire Gold slot UI chrome strip, Royal Games, dark premium casino tone, expanded reel-bank layout, wild-symbol burst energy, s1 wanted poster motif, accent #ffad0a, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -1996,7 +2543,14 @@
         "bonusType": "stacked_wilds",
         "accentColor": "#ffb300"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "dark premium casino tone",
+        "templatePhrase": "expanded reel-bank layout",
+        "bonusPhrase": "wild-symbol burst energy",
+        "accentHex": "#ffad0a"
+      },
+      "status": "generated"
     },
     {
       "gameId": "wolf_gold",
@@ -2004,8 +2558,8 @@
       "output": "assets/ui/slot_chrome/wolf_gold_chrome.png",
       "engine": "sdxl",
       "seed": 3449262483,
-      "prompt": "Alpha Pack slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 feather motif, accent lighting around #d4a836, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
-      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "prompt": "Alpha Pack slot UI chrome strip, Royal Games, opulent gold-rich luxury, five-reel modern proportions, locked coin tension, s1 feather motif, accent #eabd46, embossed metallic trim, luminous edge rails, high contrast, no text, no logo",
+      "negativePrompt": "text, typography, letters, numbers, logo, watermark, signature, people, face, blurry, low quality, artifacts",
       "settings": {
         "modelId": "stabilityai/sdxl-turbo",
         "device": "cuda",
@@ -2021,7 +2575,14 @@
         "bonusType": "hold_and_win",
         "accentColor": "#d4a836"
       },
-      "status": "skipped"
+      "styleProfile": {
+        "mode": "contrast",
+        "tagPhrase": "opulent gold-rich luxury",
+        "templatePhrase": "five-reel modern proportions",
+        "bonusPhrase": "locked coin tension",
+        "accentHex": "#eabd46"
+      },
+      "status": "generated"
     }
   ]
 }

@@ -409,7 +409,69 @@
                     <div class="slot-bar-label">WIN</div>
                     <div class="slot-bar-value slot-win-value" id="slotWinDisplay">$0.00</div>
                 </div>
+
+                <!-- Gamble Button (shown after wins) -->
+                <button class="slot-gamble-btn" id="gambleBtn" onclick="openGamble()" style="display:none;" title="Gamble your win!">
+                    <span>🃏</span> GAMBLE
+                </button>
             </div>
+        </div>
+    </div>
+
+    <!-- ═══ Gamble Overlay ═══ -->
+    <div class="gamble-overlay" id="gambleOverlay" style="display:none;">
+        <div class="gamble-modal">
+            <div class="gamble-header">
+                <div class="gamble-title">🃏 GAMBLE</div>
+                <div class="gamble-subtitle">Double or Nothing — Round <span id="gambleRound">1</span>/5</div>
+            </div>
+            <div class="gamble-win-display">
+                <div class="gamble-win-label">CURRENT WIN</div>
+                <div class="gamble-win-amount" id="gambleWinAmount">$0</div>
+            </div>
+            <div class="gamble-card-area">
+                <div class="gamble-card" id="gambleCard">
+                    <div class="gamble-card-inner" id="gambleCardInner">
+                        <div class="gamble-card-back">
+                            <div class="card-back-pattern"></div>
+                        </div>
+                        <div class="gamble-card-front" id="gambleCardFront">
+                            <div class="card-suit" id="gambleCardSuit">♠</div>
+                            <div class="card-color-label" id="gambleColorLabel">BLACK</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="gamble-result" id="gambleResult" style="display:none;"></div>
+            <div class="gamble-choices" id="gambleChoices">
+                <button class="gamble-choice-btn gamble-red" onclick="makeGambleChoice('red')">
+                    <span class="choice-suit">♥</span>
+                    <span>RED</span>
+                </button>
+                <div class="gamble-or">OR</div>
+                <button class="gamble-choice-btn gamble-black" onclick="makeGambleChoice('black')">
+                    <span class="choice-suit">♠</span>
+                    <span>BLACK</span>
+                </button>
+            </div>
+            <div class="gamble-actions">
+                <button class="gamble-collect-btn" onclick="collectGamble()">
+                    💰 COLLECT $<span id="gambleCollectAmt">0</span>
+                </button>
+                <button class="gamble-close-btn" onclick="closeGamble(false)">✕ CLOSE</button>
+            </div>
+            <div class="gamble-history" id="gambleHistory"></div>
+        </div>
+    </div>
+
+    <!-- ═══ Big Win Celebration Overlay ═══ -->
+    <div class="bigwin-overlay" id="bigWinOverlay" style="display:none;">
+        <div class="bigwin-modal">
+            <div class="bigwin-coins" id="bigWinCoins"></div>
+            <div class="bigwin-label" id="bigWinLabel">BIG WIN!</div>
+            <div class="bigwin-amount" id="bigWinAmount">$0</div>
+            <div class="bigwin-multiplier" id="bigWinMultiplier">×0</div>
+            <button class="bigwin-collect" onclick="closeBigWin()">COLLECT!</button>
         </div>
     </div>
 

@@ -895,6 +895,185 @@
             });
         }
 
+        // ═══════════════════════════════════════════════════
+        // GAMBLE FEATURE
+        // ═══════════════════════════════════════════════════
+        let gambleState = { active: false, amount: 0, round: 0, maxRound: 5 };
+
+        function showGambleButton(amount) {
+            const btn = document.getElementById('gambleBtn');
+            if (btn) {
+                btn.style.display = 'flex';
+                btn.style.animation = 'gambleBtnPop 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+            }
+            gambleState.amount = amount;
+        }
+
+        function hideGambleButton() {
+            const btn = document.getElementById('gambleBtn');
+            if (btn) btn.style.display = 'none';
+        }
+
+        function openGamble() {
+            if (!gambleState.amount) return;
+            gambleState.active = true;
+            gambleState.round = 1;
+            updateGambleUI();
+            document.getElementById('gambleOverlay').style.display = 'flex';
+            document.getElementById('gambleHistory').innerHTML = '';
+            resetGambleCard();
+            hideGambleButton();
+        }
+
+        function updateGambleUI() {
+            document.getElementById('gambleRound').textContent = gambleState.round;
+            document.getElementById('gambleWinAmount').textContent = '$' + gambleState.amount.toLocaleString();
+            document.getElementById('gambleCollectAmt').textContent = gambleState.amount.toLocaleString();
+            document.getElementById('gambleResult').style.display = 'none';
+            document.getElementById('gambleChoices').style.display = 'flex';
+        }
+
+        function resetGambleCard() {
+            const inner = document.getElementById('gambleCardInner');
+            if (inner) {
+                inner.style.transition = 'none';
+                inner.style.transform = 'rotateY(0deg)';
+            }
+        }
+
+        function makeGambleChoice(playerChoice) {
+            if (!gambleState.active) return;
+            const choices = document.getElementById('gambleChoices');
+            if (choices) choices.style.display = 'none';
+
+            // Determine random card outcome
+            const suits = { red: ['♥','♦'], black: ['♠','♣'] };
+            const outcome = Math.random() < 0.5 ? 'red' : 'black';
+            const suitList = suits[outcome];
+            const suit = suitList[Math.floor(Math.random() * suitList.length)];
+            const win = (outcome === playerChoice);
+
+            // Flip card animation
+            const inner = document.getElementById('gambleCardInner');
+            const front = document.getElementById('gambleCardFront');
+            const suitEl = document.getElementById('gambleCardSuit');
+            const labelEl = document.getElementById('gambleColorLabel');
+
+            suitEl.textContent = suit;
+            labelEl.textContent = outcome.toUpperCase();
+            front.style.color = outcome === 'red' ? '#e74c3c' : '#1a1a2e';
+            front.style.background = outcome === 'red'
+                ? 'linear-gradient(135deg,#fff5f5,#ffe0e0)'
+                : 'linear-gradient(135deg,#f0f0f8,#e0e0f0)';
+
+            inner.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1)';
+            inner.style.transform = 'rotateY(180deg)';
+
+            setTimeout(() => {
+                const resultEl = document.getElementById('gambleResult');
+                resultEl.style.display = 'block';
+
+                // Add to history
+                const histEl = document.getElementById('gambleHistory');
+                const dot = document.createElement('span');
+                dot.className = 'gamble-history-dot ' + (win ? 'dot-win' : 'dot-lose');
+                dot.textContent = win ? '✓' : '✗';
+                dot.title = `Round ${gambleState.round}: ${playerChoice.toUpperCase()} vs ${outcome.toUpperCase()} — ${win ? 'WIN' : 'LOSE'}`;
+                histEl.appendChild(dot);
+
+                if (win) {
+                    gambleState.amount *= 2;
+                    resultEl.textContent = `✅ ${outcome.toUpperCase()}! WIN doubled → $${gambleState.amount.toLocaleString()}`;
+                    resultEl.className = 'gamble-result gamble-result-win';
+                    playSound('win');
+
+                    if (gambleState.round >= gambleState.maxRound) {
+                        setTimeout(() => collectGamble(), 1200);
+                    } else {
+                        gambleState.round++;
+                        setTimeout(() => {
+                            resetGambleCard();
+                            updateGambleUI();
+                        }, 1400);
+                    }
+                } else {
+                    // Lose: deduct the win amount that was already added to balance
+                    balance -= gambleState.amount;
+                    updateBalance();
+                    saveBalance();
+                    gambleState.amount = 0;
+                    resultEl.textContent = `❌ ${outcome.toUpperCase()}! You lose. Better luck next time!`;
+                    resultEl.className = 'gamble-result gamble-result-lose';
+                    playSound('lose');
+                    updateSlotWinDisplay(0);
+
+                    setTimeout(() => closeGamble(false), 1800);
+                }
+            }, 700);
+        }
+
+        function collectGamble() {
+            if (!gambleState.active) return;
+            // Balance already has the win — update display
+            updateSlotWinDisplay(gambleState.amount);
+            showMessage(`Collected $${gambleState.amount.toLocaleString()}!`, 'win');
+            closeGamble(true);
+        }
+
+        function closeGamble(collected) {
+            gambleState.active = false;
+            document.getElementById('gambleOverlay').style.display = 'none';
+            if (!collected) hideGambleButton();
+        }
+
+        // ═══════════════════════════════════════════════════
+        // BIG WIN CELEBRATION
+        // ═══════════════════════════════════════════════════
+        function showBigWinCelebration(amount) {
+            const multiplier = Math.round(amount / currentBet);
+            const overlay = document.getElementById('bigWinOverlay');
+            if (!overlay) return;
+
+            // Set label by multiplier tier
+            const label = document.getElementById('bigWinLabel');
+            if (multiplier >= 100) label.textContent = '🏆 MEGA WIN!';
+            else if (multiplier >= 50) label.textContent = '💎 SUPER WIN!';
+            else if (multiplier >= 20) label.textContent = '🔥 BIG WIN!';
+            else label.textContent = '⭐ NICE WIN!';
+
+            label.className = 'bigwin-label ' + (multiplier >= 50 ? 'bigwin-mega' : multiplier >= 20 ? 'bigwin-super' : '');
+
+            document.getElementById('bigWinAmount').textContent = '$' + amount.toLocaleString();
+            document.getElementById('bigWinMultiplier').textContent = '×' + multiplier;
+
+            // Spawn coin particles
+            const coinsEl = document.getElementById('bigWinCoins');
+            coinsEl.innerHTML = '';
+            const coinEmojis = ['🪙','💰','💎','⭐','🏅'];
+            for (let i = 0; i < 28; i++) {
+                const coin = document.createElement('div');
+                coin.className = 'bigwin-coin';
+                coin.textContent = coinEmojis[Math.floor(Math.random() * coinEmojis.length)];
+                coin.style.cssText = `
+                    left:${Math.random()*90+5}%;
+                    animation-delay:${Math.random()*1.5}s;
+                    animation-duration:${1.5+Math.random()*1.5}s;
+                    font-size:${18+Math.floor(Math.random()*20)}px;
+                `;
+                coinsEl.appendChild(coin);
+            }
+
+            overlay.style.display = 'flex';
+            playSound('bigwin');
+
+            // Auto-close after 5s
+            setTimeout(() => closeBigWin(), 5000);
+        }
+
+        function closeBigWin() {
+            document.getElementById('bigWinOverlay').style.display = 'none';
+        }
+
         function startReelScrolling(turbo) {
             const speed = turbo ? REEL_SPIN_PX_PER_SEC_TURBO : REEL_SPIN_PX_PER_SEC;
             const game = currentGame;
@@ -2611,6 +2790,10 @@
                 return;
             }
 
+            // Hide gamble button on new spin
+            hideGambleButton();
+            closeBigWin();
+
             // Reset per-spin bonus state
             respinCount = 0;
             expandingWildRespinsLeft = 0;
@@ -2762,8 +2945,19 @@
                     freeSpinsTotalWin += winAmount;
                     updateFreeSpinsDisplay();
                 }
+
+                // Show gamble button for wins >= 1x bet (not during free spins)
+                if (!freeSpinsActive && !autoSpinActive && winAmount >= currentBet) {
+                    showGambleButton(winAmount);
+                }
+
+                // Big win celebration for wins >= 10x bet
+                if (winAmount >= currentBet * 10 && !freeSpinsActive) {
+                    setTimeout(() => showBigWinCelebration(winAmount), 800);
+                }
             } else {
                 showMessage(details.message || 'No win. Try again.', 'lose');
+                hideGambleButton();
             }
             if (typeof awardXP === 'function') awardXP(5);
         }
@@ -3226,12 +3420,23 @@
                     freeSpinsTotalWin += winAmount;
                     updateFreeSpinsDisplay();
                 }
+
+                // Show gamble button for wins >= 1x bet (not during free spins / autoplay)
+                if (!freeSpinsActive && !autoSpinActive && winAmount >= currentBet) {
+                    showGambleButton(winAmount);
+                }
+
+                // Big win celebration for wins >= 10x bet
+                if (winAmount >= currentBet * 10 && !freeSpinsActive) {
+                    setTimeout(() => showBigWinCelebration(winAmount), 800);
+                }
             } else {
                 // Still record the loss for tracking
                 if (window.HouseEdge && winAmount === 0) {
                     // Already recorded above
                 }
                 showMessage(message, 'lose');
+                hideGambleButton();
             }
             if (typeof awardXP === 'function') awardXP(5);
 
