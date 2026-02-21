@@ -202,40 +202,120 @@
             return generateRandomGrid(game);
         }
 
-        // Build the reel DOM dynamically based on game's grid config
+        // ═══ Reel Strip Constants (inline since constants.js not loaded yet) ═══
+        const REEL_STRIP_BUFFER = 12;
+        const REEL_SPIN_PX_PER_SEC = 3000;
+        const REEL_SPIN_PX_PER_SEC_TURBO = 5000;
+        const REEL_DECEL_DURATION = 600;
+        const REEL_BOUNCE_OVERSHOOT = 12;
+        const REEL_BOUNCE_DURATION = 200;
+        const REEL_CELL_DIMS = {
+            '3x3': { h: 140, gap: 4 }, '5x3': { h: 100, gap: 3 },
+            '5x4': { h: 85, gap: 3 }, '5x5': { h: 80, gap: 2 },
+            '6x5': { h: 72, gap: 2 }, '7x7': { h: 58, gap: 2 }
+        };
+        const SLOT_TEMPLATES = ['classic', 'standard', 'extended', 'scatter', 'grid'];
+
+        // ═══ Reel Strip State ═══
+        let reelStripData = []; // Per-column: { stripEl, animFrameId, currentY, cellH, totalH, visibleH }
+
+        // Get cell dimensions for a game's grid config
+        function getCellDims(game) {
+            const key = `${getGridCols(game)}x${getGridRows(game)}`;
+            return REEL_CELL_DIMS[key] || { h: 80, gap: 2 };
+        }
+
+        // Get template for a game (from game def or derive from grid)
+        function getGameTemplate(game) {
+            if (game.template) return game.template;
+            const c = getGridCols(game), r = getGridRows(game);
+            if (c === 3 && r === 3) return 'classic';
+            if (c === 5 && r === 3) return 'standard';
+            if (c === 5 && r === 4) return 'extended';
+            if (c === 6 && r === 5) return 'scatter';
+            return 'grid';
+        }
+
+        // Build the reel DOM with rolling strip architecture
         function buildReelGrid(game) {
             const reelsContainer = document.getElementById('reels');
             if (!reelsContainer) return;
             reelsContainer.innerHTML = '';
+            reelStripData = [];
 
             const cols = getGridCols(game);
             const rows = getGridRows(game);
             const winType = getWinType(game);
+            const dims = getCellDims(game);
+            const syms = game.symbols || SLOT_SYMBOLS;
+            const totalStrip = REEL_STRIP_BUFFER + rows + REEL_STRIP_BUFFER;
 
             // Set CSS grid data attributes for styling
             reelsContainer.setAttribute('data-cols', cols);
             reelsContainer.setAttribute('data-rows', rows);
             reelsContainer.setAttribute('data-wintype', winType);
 
+            const visibleH = rows * dims.h + (rows - 1) * dims.gap;
+
             for (let c = 0; c < cols; c++) {
                 const reelCol = document.createElement('div');
                 reelCol.className = 'reel-column';
                 reelCol.id = `reelCol${c}`;
+                reelCol.style.height = visibleH + 'px';
+                reelCol.style.overflow = 'hidden';
 
-                for (let r = 0; r < rows; r++) {
+                const strip = document.createElement('div');
+                strip.className = 'reel-strip';
+                strip.id = `reelStrip${c}`;
+
+                for (let s = 0; s < totalStrip; s++) {
                     const cell = document.createElement('div');
                     cell.className = 'reel-cell';
-                    cell.id = `reel_${c}_${r}`;
-                    cell.setAttribute('data-col', c);
-                    cell.setAttribute('data-row', r);
-                    reelCol.appendChild(cell);
+                    cell.style.height = dims.h + 'px';
+                    cell.style.minHeight = dims.h + 'px';
+                    if (s > 0) cell.style.marginTop = dims.gap + 'px';
+
+                    // Mark visible-zone cells with proper IDs
+                    const visIdx = s - REEL_STRIP_BUFFER;
+                    if (visIdx >= 0 && visIdx < rows) {
+                        cell.id = `reel_${c}_${visIdx}`;
+                        cell.setAttribute('data-col', c);
+                        cell.setAttribute('data-row', visIdx);
+                    } else {
+                        cell.setAttribute('data-buffer', 'true');
+                    }
+
+                    // Fill with random symbol
+                    const sym = syms[Math.floor(Math.random() * syms.length)];
+                    cell.innerHTML = renderSymbol(sym);
+                    strip.appendChild(cell);
                 }
 
+                reelCol.appendChild(strip);
                 reelsContainer.appendChild(reelCol);
+
+                // Calculate initial Y to show visible zone
+                const initialY = -(REEL_STRIP_BUFFER * (dims.h + dims.gap));
+                strip.style.transform = `translateY(${initialY}px)`;
+
+                reelStripData.push({
+                    stripEl: strip,
+                    colEl: reelCol,
+                    animFrameId: null,
+                    currentY: initialY,
+                    targetY: initialY,
+                    cellH: dims.h,
+                    cellGap: dims.gap,
+                    totalCells: totalStrip,
+                    visibleRows: rows,
+                    visibleH: visibleH,
+                    totalH: totalStrip * (dims.h + dims.gap) - dims.gap,
+                    stopped: true
+                });
             }
         }
 
-        // Render entire grid to DOM
+        // Render entire grid to DOM (visible-zone cells only)
         function renderGrid(grid, game) {
             if (!grid) return;
             const cols = getGridCols(game);
@@ -248,6 +328,18 @@
                     }
                 }
             }
+        }
+
+        // Randomize buffer symbols in a strip (off-screen visual variety)
+        function randomizeStripBuffers(colIdx, game) {
+            const data = reelStripData[colIdx];
+            if (!data) return;
+            const syms = (game || currentGame).symbols || SLOT_SYMBOLS;
+            const cells = data.stripEl.querySelectorAll('.reel-cell[data-buffer]');
+            cells.forEach(cell => {
+                const sym = syms[Math.floor(Math.random() * syms.length)];
+                cell.innerHTML = renderSymbol(sym);
+            });
         }
 
         // Render single cell
@@ -509,9 +601,43 @@
         }
 
         function startReelScrolling(turbo) {
-            getAllCells().forEach(cell => {
-                REEL_CELL_ANIMATION_CLASSES.forEach(cls => cell.classList.remove(cls));
-                cell.classList.add(turbo ? 'reel-scrolling-turbo' : 'reel-scrolling');
+            const speed = turbo ? REEL_SPIN_PX_PER_SEC_TURBO : REEL_SPIN_PX_PER_SEC;
+            const game = currentGame;
+
+            reelStripData.forEach((data, colIdx) => {
+                data.stopped = false;
+                data.stripEl.classList.add('spinning');
+                data.stripEl.classList.remove('decelerating', 'bouncing');
+                data.colEl.classList.add('spinning');
+                data.colEl.classList.remove('stopped');
+
+                // Randomize buffers for visual variety
+                randomizeStripBuffers(colIdx, game);
+
+                let lastTime = performance.now();
+
+                function scrollFrame(timestamp) {
+                    if (data.stopped) return;
+
+                    const dt = (timestamp - lastTime) / 1000; // seconds
+                    lastTime = timestamp;
+
+                    // Move strip upward (negative Y)
+                    data.currentY -= speed * dt;
+
+                    // Wrap-around: when scrolled past bottom buffer, reset to top
+                    const wrapThreshold = -(data.totalH - data.visibleH);
+                    if (data.currentY < wrapThreshold) {
+                        // Reset to initial position and re-randomize buffers
+                        data.currentY = -(REEL_STRIP_BUFFER * (data.cellH + data.cellGap));
+                        randomizeStripBuffers(colIdx, game);
+                    }
+
+                    data.stripEl.style.transform = `translateY(${data.currentY}px)`;
+                    data.animFrameId = requestAnimationFrame(scrollFrame);
+                }
+
+                data.animFrameId = requestAnimationFrame(scrollFrame);
             });
         }
 
@@ -530,20 +656,59 @@
         }
 
         function animateReelStop(colIdx, finalColumn, spinInterval, cols, finalGrid, game, onComplete) {
-            const cells = document.querySelectorAll(`#reelCol${colIdx} .reel-cell`);
-            cells.forEach(cell => {
-                cell.classList.remove('reel-scrolling', 'reel-scrolling-turbo');
-                cell.classList.add('reel-landing');
-            });
-            updateSingleReel(colIdx, finalColumn);
+            const data = reelStripData[colIdx];
+
+            if (data) {
+                // Cancel the rAF scroll loop
+                data.stopped = true;
+                if (data.animFrameId) {
+                    cancelAnimationFrame(data.animFrameId);
+                    data.animFrameId = null;
+                }
+
+                // Place final symbols in visible-zone cells
+                const rows = getGridRows(game);
+                for (let r = 0; r < rows; r++) {
+                    const cell = document.getElementById(`reel_${colIdx}_${r}`);
+                    if (cell && finalColumn && finalColumn[r]) {
+                        cell.innerHTML = renderSymbol(finalColumn[r]);
+                    }
+                }
+
+                // Deceleration: smooth transition to target position
+                const targetY = -(REEL_STRIP_BUFFER * (data.cellH + data.cellGap));
+                data.stripEl.classList.remove('spinning');
+                data.stripEl.classList.add('decelerating');
+                data.colEl.classList.remove('spinning');
+
+                // Overshoot target slightly
+                const overshootY = targetY + REEL_BOUNCE_OVERSHOOT;
+                data.stripEl.style.transform = `translateY(${overshootY}px)`;
+
+                // After deceleration, bounce back
+                setTimeout(() => {
+                    data.stripEl.classList.remove('decelerating');
+                    data.stripEl.classList.add('bouncing');
+                    data.stripEl.style.transform = `translateY(${targetY}px)`;
+                    data.currentY = targetY;
+                    data.colEl.classList.add('stopped');
+
+                    // Clean up after bounce
+                    setTimeout(() => {
+                        data.stripEl.classList.remove('bouncing');
+                    }, REEL_BOUNCE_DURATION);
+                }, REEL_DECEL_DURATION);
+            }
+
             playSound('click');
 
+            // On last column: finalize
             if (colIdx === cols - 1) {
-                clearInterval(spinInterval);
+                if (spinInterval) clearInterval(spinInterval);
                 currentGrid = finalGrid;
                 currentReels = flattenGrid(finalGrid);
                 renderGrid(finalGrid, game);
-                setTimeout(onComplete, 300);
+                setTimeout(onComplete, REEL_DECEL_DURATION + REEL_BOUNCE_DURATION + 100);
             }
         }
 
@@ -1604,6 +1769,20 @@
             // Set game-specific CSS theme
             document.getElementById('slotModal').setAttribute('data-game-id', currentGame.id);
 
+            // Apply slot UI template
+            const modal = document.getElementById('slotModal');
+            SLOT_TEMPLATES.forEach(t => modal.classList.remove(`slot-template-${t}`));
+            const tmpl = getGameTemplate(currentGame);
+            modal.classList.add(`slot-template-${tmpl}`);
+
+            // Set CSS custom properties for accent color
+            const acHex = currentGame.accentColor || '#fbbf24';
+            modal.style.setProperty('--accent-color', acHex);
+            const rr = parseInt(acHex.slice(1,3), 16) || 0;
+            const gg = parseInt(acHex.slice(3,5), 16) || 0;
+            const bb = parseInt(acHex.slice(5,7), 16) || 0;
+            modal.style.setProperty('--accent-rgb', `${rr}, ${gg}, ${bb}`);
+
             showPageTransition(() => {
                 closeStatsModal();
                 document.getElementById('slotGameName').textContent = currentGame.name;
@@ -1729,6 +1908,15 @@
             if (paytable) paytable.classList.remove('active');
             document.getElementById('slotModal').classList.remove('active');
             currentGame = null;
+            // Clean up reel strip animation loops
+            reelStripData.forEach(data => {
+                data.stopped = true;
+                if (data.animFrameId) {
+                    cancelAnimationFrame(data.animFrameId);
+                    data.animFrameId = null;
+                }
+            });
+            reelStripData = [];
             // Clean up free spins UI
             hideFreeSpinsDisplay();
             freeSpinsActive = false;
@@ -1867,13 +2055,8 @@
             const spinGame = currentGame;
             const cols = getGridCols(spinGame);
 
-            // Start reel scrolling animation
+            // Start reel strip scrolling animation (real rolling)
             startReelScrolling(turboMode);
-
-            // Rapid random symbol cycling (visual only)
-            const spinInterval = setInterval(() => {
-                renderGrid(generateRandomGrid(spinGame), spinGame);
-            }, turboMode ? 40 : 70);
 
             // Generate spin result & deduct bet
             const finalGrid = generateSpinResult(spinGame);
@@ -1884,10 +2067,10 @@
             // Stagger stop times per column
             const stopDelays = calculateStopDelays(cols, turboMode, false);
 
-            // Stop each column one by one with a bounce
+            // Stop each column one by one with decel + bounce
             stopDelays.forEach((delay, colIdx) => {
                 setTimeout(() => {
-                    animateReelStop(colIdx, finalGrid[colIdx], spinInterval, cols, finalGrid, spinGame, () => {
+                    animateReelStop(colIdx, finalGrid[colIdx], null, cols, finalGrid, spinGame, () => {
                         checkWin(flattenGrid(finalGrid), spinGame);
                         spinning = false;
                         const ra = document.querySelector('.slot-reel-area');
@@ -2610,13 +2793,9 @@
             // Stagger stop times (free spin uses tighter timing)
             const stopDelays = calculateStopDelays(cols, turboMode, true);
 
-            const spinInterval = setInterval(() => {
-                renderGrid(generateRandomGrid(game), game);
-            }, turboMode ? 40 : 70);
-
             stopDelays.forEach((delay, colIdx) => {
                 setTimeout(() => {
-                    animateReelStop(colIdx, finalGrid[colIdx], spinInterval, cols, finalGrid, game, () => {
+                    animateReelStop(colIdx, finalGrid[colIdx], null, cols, finalGrid, game, () => {
                         checkWin(flattenGrid(finalGrid), game);
                         spinning = false;
                         const ra2 = document.querySelector('.slot-reel-area');
@@ -2656,32 +2835,57 @@
             if (spinning) return;
             spinning = true;
 
-            // Animate the column being respun
-            const cells = document.querySelectorAll(`#reelCol${reelIndex} .reel-cell`);
-            clearReelAnimations(Array.from(cells));
-            cells.forEach(cell => cell.classList.add('reel-scrolling'));
-
+            const data = reelStripData[reelIndex];
             const newSymbol = getRandomSymbol();
             const newSymbols = [...currentSymbols];
             newSymbols[reelIndex] = newSymbol;
-            // Update grid too
             if (currentGrid && currentGrid[reelIndex]) {
                 currentGrid[reelIndex][0] = newSymbol;
             }
 
-            setTimeout(() => {
-                cells.forEach(cell => {
-                    cell.classList.remove('reel-scrolling');
-                    cell.classList.add('reel-landing');
-                });
-                updateSingleReel(reelIndex, newSymbol);
-                playSound('click');
+            if (data) {
+                // Use strip scrolling for the respun column
+                data.stopped = false;
+                data.stripEl.classList.add('spinning');
+                data.colEl.classList.add('spinning');
+                randomizeStripBuffers(reelIndex, game);
+
+                const speed = REEL_SPIN_PX_PER_SEC;
+                let lastTime = performance.now();
+                function scrollFrame(ts) {
+                    if (data.stopped) return;
+                    const dt = (ts - lastTime) / 1000;
+                    lastTime = ts;
+                    data.currentY -= speed * dt;
+                    const wrapThreshold = -(data.totalH - data.visibleH);
+                    if (data.currentY < wrapThreshold) {
+                        data.currentY = -(REEL_STRIP_BUFFER * (data.cellH + data.cellGap));
+                        randomizeStripBuffers(reelIndex, game);
+                    }
+                    data.stripEl.style.transform = `translateY(${data.currentY}px)`;
+                    data.animFrameId = requestAnimationFrame(scrollFrame);
+                }
+                data.animFrameId = requestAnimationFrame(scrollFrame);
 
                 setTimeout(() => {
-                    spinning = false;
-                    checkWin(newSymbols, game);
-                }, 300);
-            }, 800);
+                    // Stop the strip for this column
+                    const rows = getGridRows(game);
+                    const finalCol = rows > 1 ? (currentGrid[reelIndex] || [newSymbol]) : [newSymbol];
+                    animateReelStop(reelIndex, finalCol, null, getGridCols(game), currentGrid, game, () => {});
+                    updateSingleReel(reelIndex, newSymbol);
+                    setTimeout(() => {
+                        spinning = false;
+                        checkWin(newSymbols, game);
+                    }, REEL_DECEL_DURATION + REEL_BOUNCE_DURATION + 100);
+                }, 800);
+            } else {
+                // Fallback for no strip data
+                setTimeout(() => {
+                    updateSingleReel(reelIndex, newSymbol);
+                    playSound('click');
+                    setTimeout(() => { spinning = false; checkWin(newSymbols, game); }, 300);
+                }, 800);
+            }
         }
 
         function triggerExpandingWildRespin(currentSymbols, game) {
@@ -2689,10 +2893,8 @@
             spinning = true;
 
             const cols = getGridCols(game);
-            // Find non-wild columns to respin
             const respinIndices = [];
             for (let c = 0; c < cols; c++) {
-                // Check if any cell in this column has a wild
                 let hasWildInCol = false;
                 if (currentGrid && currentGrid[c]) {
                     hasWildInCol = currentGrid[c].some(s => isWild(s, game));
@@ -2701,11 +2903,30 @@
                 }
                 if (!hasWildInCol) {
                     respinIndices.push(c);
-                    const cells = document.querySelectorAll(`#reelCol${c} .reel-cell`);
-                    cells.forEach(cell => {
-                        cell.classList.remove('reel-landing', 'reel-win-glow');
-                        cell.classList.add('reel-scrolling');
-                    });
+                    // Start strip scrolling for this column
+                    const data = reelStripData[c];
+                    if (data) {
+                        data.stopped = false;
+                        data.stripEl.classList.add('spinning');
+                        data.colEl.classList.add('spinning');
+                        randomizeStripBuffers(c, game);
+                        const speed = REEL_SPIN_PX_PER_SEC;
+                        let lastTime = performance.now();
+                        function scrollFrame(ts) {
+                            if (data.stopped) return;
+                            const dt = (ts - lastTime) / 1000;
+                            lastTime = ts;
+                            data.currentY -= speed * dt;
+                            const wrapThreshold = -(data.totalH - data.visibleH);
+                            if (data.currentY < wrapThreshold) {
+                                data.currentY = -(REEL_STRIP_BUFFER * (data.cellH + data.cellGap));
+                                randomizeStripBuffers(c, game);
+                            }
+                            data.stripEl.style.transform = `translateY(${data.currentY}px)`;
+                            data.animFrameId = requestAnimationFrame(scrollFrame);
+                        }
+                        data.animFrameId = requestAnimationFrame(scrollFrame);
+                    }
                 }
             }
 
@@ -2725,11 +2946,30 @@
 
             setTimeout(() => {
                 respinIndices.forEach(c => {
-                    const cells = document.querySelectorAll(`#reelCol${c} .reel-cell`);
-                    cells.forEach(cell => {
-                        cell.classList.remove('reel-scrolling');
-                        cell.classList.add('reel-landing');
-                    });
+                    const data = reelStripData[c];
+                    if (data) {
+                        // Place final symbols and stop with bounce
+                        const rows = getGridRows(game);
+                        for (let r = 0; r < rows; r++) {
+                            const cell = document.getElementById(`reel_${c}_${r}`);
+                            if (cell && newGrid[c][r]) cell.innerHTML = renderSymbol(newGrid[c][r]);
+                        }
+                        data.stopped = true;
+                        if (data.animFrameId) { cancelAnimationFrame(data.animFrameId); data.animFrameId = null; }
+                        const targetY = -(REEL_STRIP_BUFFER * (data.cellH + data.cellGap));
+                        data.stripEl.classList.remove('spinning');
+                        data.stripEl.classList.add('decelerating');
+                        data.colEl.classList.remove('spinning');
+                        data.stripEl.style.transform = `translateY(${targetY + REEL_BOUNCE_OVERSHOOT}px)`;
+                        setTimeout(() => {
+                            data.stripEl.classList.remove('decelerating');
+                            data.stripEl.classList.add('bouncing');
+                            data.stripEl.style.transform = `translateY(${targetY}px)`;
+                            data.currentY = targetY;
+                            data.colEl.classList.add('stopped');
+                            setTimeout(() => data.stripEl.classList.remove('bouncing'), REEL_BOUNCE_DURATION);
+                        }, REEL_DECEL_DURATION);
+                    }
                     updateSingleReel(c, newGrid[c]);
                 });
                 currentGrid = newGrid;
@@ -2739,7 +2979,7 @@
                 setTimeout(() => {
                     spinning = false;
                     checkWin(flattenGrid(newGrid), game);
-                }, 300);
+                }, REEL_DECEL_DURATION + REEL_BOUNCE_DURATION + 100);
             }, 800);
         }
 

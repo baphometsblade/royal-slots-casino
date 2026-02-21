@@ -653,7 +653,42 @@ const SLOT_SYMBOLS = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// 14. SEEDED RNG CONSTANTS
+// 14. REAL ROLLING REEL STRIP CONSTANTS
+// ─────────────────────────────────────────────────────────────
+
+/** Number of buffer symbols above and below the visible area per strip */
+const REEL_STRIP_BUFFER = 12;
+
+/** Pixels per second during normal spin scroll */
+const REEL_SPIN_PX_PER_SEC = 3000;
+
+/** Pixels per second during turbo spin scroll */
+const REEL_SPIN_PX_PER_SEC_TURBO = 5000;
+
+/** Duration of deceleration when stopping a reel (ms) */
+const REEL_DECEL_DURATION = 600;
+
+/** Overshoot bounce distance in pixels */
+const REEL_BOUNCE_OVERSHOOT = 12;
+
+/** Duration of bounce-back after overshoot (ms) */
+const REEL_BOUNCE_DURATION = 200;
+
+/** Cell dimensions lookup by grid config (height in px, gap in px) */
+const REEL_CELL_DIMS = {
+    '3x3': { h: 140, gap: 4 },
+    '5x3': { h: 100, gap: 3 },
+    '5x4': { h: 85,  gap: 3 },
+    '5x5': { h: 80,  gap: 2 },
+    '6x5': { h: 72,  gap: 2 },
+    '7x7': { h: 58,  gap: 2 }
+};
+
+/** Template class names for slot UI templates */
+const SLOT_TEMPLATES = ['classic', 'standard', 'extended', 'scatter', 'grid'];
+
+// ─────────────────────────────────────────────────────────────
+// 15-old. SEEDED RNG CONSTANTS
 // ─────────────────────────────────────────────────────────────
 
 /** FNV-1a hash offset basis */
