@@ -5752,3 +5752,340 @@
             border: 8px solid #667eea;
         }
 
+/* ═══════════════════════════════════════════════════════════════════ */
+/* PAYTABLE / GAME INFO PANEL                                        */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.slot-info-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 10px;
+}
+.slot-info-btn:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
+
+.paytable-panel {
+    position: absolute;
+    top: 0;
+    right: -380px;
+    width: 360px;
+    height: 100%;
+    background: linear-gradient(180deg, #1a0e2e 0%, #0d0618 100%);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    z-index: 100;
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: -8px 0 30px rgba(0,0,0,0.5);
+}
+.paytable-panel.active {
+    right: 0;
+}
+
+.paytable-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: sticky;
+    top: 0;
+    background: rgba(26, 14, 46, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1;
+}
+.paytable-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+.paytable-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.paytable-close:hover { color: #fff; }
+
+.paytable-body {
+    padding: 16px 20px;
+}
+
+.paytable-section {
+    margin-bottom: 20px;
+}
+.paytable-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--rg-accent, #10b981);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.paytable-grid-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.paytable-stat {
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+}
+.paytable-stat-label {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 4px;
+}
+.paytable-stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.paytable-symbols {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.paytable-symbol-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+.paytable-symbol-row:hover {
+    background: rgba(255,255,255,0.06);
+}
+.paytable-symbol-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.paytable-symbol-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.paytable-symbol-name {
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    flex: 1;
+}
+.paytable-symbol-name.wild-symbol {
+    color: #fbbf24;
+    font-weight: 600;
+}
+.paytable-symbol-name.scatter-symbol {
+    color: #a78bfa;
+    font-weight: 600;
+}
+.paytable-symbol-pay {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--rg-accent, #10b981);
+    text-align: right;
+}
+
+.paytable-bonus-desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--rg-accent, #10b981);
+}
+
+.paytable-rtp {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+}
+.paytable-rtp strong {
+    color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* SEARCH RESULT COUNT                                               */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.search-result-count {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--rg-accent, #10b981);
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: none;
+    letter-spacing: 0.5px;
+}
+.search-result-count.active {
+    display: inline-block;
+}
+.header-search {
+    position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* LOADING SHIMMER FOR GAME CARDS                                    */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.game-card-skeleton {
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+}
+.game-card-skeleton .skeleton-thumb {
+    aspect-ratio: 4/3;
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.08) 50%,
+        rgba(255,255,255,0.04) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+.game-card-skeleton .skeleton-text {
+    padding: 10px 12px;
+}
+.game-card-skeleton .skeleton-line {
+    height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.08) 50%,
+        rgba(255,255,255,0.04) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    margin-bottom: 6px;
+}
+.game-card-skeleton .skeleton-line:last-child {
+    width: 60%;
+    margin-bottom: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* WIN CELEBRATION SCREEN SHAKE                                      */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes screenShake {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-4px) rotate(-0.3deg); }
+    20% { transform: translateX(4px) rotate(0.3deg); }
+    30% { transform: translateX(-3px) rotate(-0.2deg); }
+    40% { transform: translateX(3px) rotate(0.2deg); }
+    50% { transform: translateX(-2px); }
+    60% { transform: translateX(2px); }
+    70% { transform: translateX(-1px); }
+    80% { transform: translateX(1px); }
+}
+
+.screen-shake {
+    animation: screenShake 0.5s ease-out;
+}
+
+@keyframes bigWinPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.slot-reel-area.big-win-pulse {
+    animation: bigWinPulse 0.6s ease-in-out 2;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* WIN AMOUNT COUNTER ANIMATION                                      */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes winCounter {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.win-amount-animated {
+    animation: winCounter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* KEYBOARD SHORTCUT HINTS                                           */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.kbd-hint {
+    display: inline-block;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-family: monospace;
+    color: rgba(255,255,255,0.4);
+    margin-left: 6px;
+    vertical-align: middle;
+    line-height: 1.6;
+}
+
+/* Tooltip for slot buttons */
+.slot-turbo-btn::after,
+.slot-auto-btn::after {
+    font-size: 9px;
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    color: rgba(255,255,255,0.25);
+    pointer-events: none;
+}
+.slot-turbo-btn { position: relative; }
+.slot-auto-btn { position: relative; }
+@media (min-width: 769px) {
+    .slot-turbo-btn::after { content: 'T'; }
+}
+

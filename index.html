@@ -63,6 +63,7 @@
             <div class="header-search">
                 <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="8.5" r="6"/><line x1="13" y1="13" x2="18" y2="18"/></svg>
                 <input type="text" id="gameSearchInput" placeholder="Search games..." oninput="searchGames(this.value)" autocomplete="off">
+                <span class="search-result-count" id="searchResultCount"></span>
             </div>
             <div class="header-actions">
                 <div class="balance-display">
@@ -291,10 +292,24 @@
                     <div class="game-tag tag-jackpot" id="slotGameTag" style="display:none;">JACKPOT</div>
                 </div>
                 <div class="slot-top-right">
+                    <button class="slot-info-btn" onclick="togglePaytable()" title="Game Info">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                    </button>
                     <div class="slot-payout">
                         <div class="payout-label">MAX WIN</div>
                         <div class="payout-value"><span id="slotMaxPayout">150</span>x</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Paytable / Game Info Panel (slide-in from right) -->
+            <div class="paytable-panel" id="paytablePanel">
+                <div class="paytable-header">
+                    <h3 class="paytable-title">Game Info</h3>
+                    <button class="paytable-close" onclick="togglePaytable()">&times;</button>
+                </div>
+                <div class="paytable-body" id="paytableBody">
+                    <!-- Populated by JS -->
                 </div>
             </div>
 

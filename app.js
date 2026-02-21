@@ -1237,6 +1237,210 @@
             if (typeof showToast === 'function') showToast('Settings reset to defaults', 'info');
         }
 
+        // ═══════════════════════════════════════════════════════
+        // PAYTABLE / GAME INFO PANEL
+        // ═══════════════════════════════════════════════════════
+
+        function togglePaytable() {
+            const panel = document.getElementById('paytablePanel');
+            if (!panel) return;
+            const isOpen = panel.classList.contains('active');
+            if (isOpen) {
+                panel.classList.remove('active');
+            } else {
+                renderPaytable();
+                panel.classList.add('active');
+            }
+            playSound('click');
+        }
+
+        function formatSymbolName(sym) {
+            // Turn 's1_lollipop' → 'Lollipop', 'wild_sugar' → 'Wild Sugar'
+            return sym.replace(/^s\d+_/, '').replace(/^wild_/, 'Wild ').replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function renderPaytable() {
+            const game = currentGame;
+            if (!game) return;
+            const body = document.getElementById('paytableBody');
+            if (!body) return;
+
+            const isMulti = game.gridRows && game.gridRows > 1;
+            const rtp = (94 + Math.random() * 2.5).toFixed(2); // Simulated RTP
+
+            // Grid info section
+            let html = `<div class="paytable-section">
+                <div class="paytable-section-title">Grid Layout</div>
+                <div class="paytable-grid-info">
+                    <div class="paytable-stat">
+                        <div class="paytable-stat-label">Grid</div>
+                        <div class="paytable-stat-value">${game.gridCols}×${game.gridRows || 1}</div>
+                    </div>
+                    <div class="paytable-stat">
+                        <div class="paytable-stat-label">Win Type</div>
+                        <div class="paytable-stat-value" style="font-size:13px;">${(game.winType || 'classic').toUpperCase()}</div>
+                    </div>
+                    <div class="paytable-stat">
+                        <div class="paytable-stat-label">Max Win</div>
+                        <div class="paytable-stat-value">${game.payouts.triple}x</div>
+                    </div>
+                    <div class="paytable-stat">
+                        <div class="paytable-stat-label">Bet Range</div>
+                        <div class="paytable-stat-value" style="font-size:13px;">$${game.minBet}-$${game.maxBet}</div>
+                    </div>
+                </div>
+            </div>`;
+
+            // Bonus mechanics
+            if (game.bonusDesc) {
+                html += `<div class="paytable-section">
+                    <div class="paytable-section-title">Bonus Feature</div>
+                    <div class="paytable-bonus-desc">${game.bonusDesc}</div>
+                </div>`;
+            }
+
+            // Symbols section
+            html += `<div class="paytable-section">
+                <div class="paytable-section-title">Symbols</div>
+                <div class="paytable-symbols">`;
+
+            if (game.symbols) {
+                game.symbols.forEach(sym => {
+                    const isWildSym = sym === game.wildSymbol;
+                    const isScatterSym = sym === game.scatterSymbol;
+                    const nameClass = isWildSym ? 'wild-symbol' : isScatterSym ? 'scatter-symbol' : '';
+                    const badge = isWildSym ? ' (WILD)' : isScatterSym ? ' (SCATTER)' : '';
+                    const imgPath = `assets/game_symbols/${game.id}/${sym}.png`;
+
+                    html += `<div class="paytable-symbol-row">
+                        <div class="paytable-symbol-icon">
+                            <img src="${imgPath}" alt="${sym}" onerror="this.style.display='none';this.parentElement.textContent='${sym.charAt(0).toUpperCase()}'">
+                        </div>
+                        <div class="paytable-symbol-name ${nameClass}">${formatSymbolName(sym)}${badge}</div>
+                        <div class="paytable-symbol-pay">${isWildSym ? 'Substitutes' : isScatterSym ? 'Triggers Bonus' : ''}</div>
+                    </div>`;
+                });
+            }
+            html += `</div></div>`;
+
+            // Payouts section
+            html += `<div class="paytable-section">
+                <div class="paytable-section-title">Payouts</div>
+                <div class="paytable-symbols">`;
+
+            const payoutEntries = Object.entries(game.payouts);
+            payoutEntries.forEach(([key, val]) => {
+                const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')
+                    .replace(/\b\w/g, c => c.toUpperCase());
+                html += `<div class="paytable-symbol-row">
+                    <div class="paytable-symbol-name">${label}</div>
+                    <div class="paytable-symbol-pay">${val}x</div>
+                </div>`;
+            });
+
+            html += `</div></div>`;
+
+            // RTP
+            html += `<div class="paytable-section">
+                <div class="paytable-rtp">RTP: <strong>${rtp}%</strong> &middot; Volatility: <strong>${game.payouts.triple >= 100 ? 'High' : game.payouts.triple >= 50 ? 'Medium' : 'Low'}</strong></div>
+            </div>`;
+
+            body.innerHTML = html;
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // KEYBOARD SHORTCUTS
+        // ═══════════════════════════════════════════════════════
+
+        document.addEventListener('keydown', function (e) {
+            // Don't trigger if typing in an input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            const slotModal = document.getElementById('slotModal');
+            const slotOpen = slotModal && slotModal.classList.contains('active');
+
+            switch (e.code) {
+                case 'Space':
+                case 'Enter':
+                    if (slotOpen && !spinning) {
+                        e.preventDefault();
+                        spin();
+                    }
+                    break;
+                case 'Escape':
+                    // Close topmost modal
+                    const paytable = document.getElementById('paytablePanel');
+                    if (paytable && paytable.classList.contains('active')) {
+                        togglePaytable();
+                    } else if (document.getElementById('settingsModal').classList.contains('active')) {
+                        closeSettingsModal();
+                    } else if (document.getElementById('statsModal').classList.contains('active')) {
+                        closeStatsModal();
+                    } else if (slotOpen) {
+                        closeSlot();
+                    }
+                    break;
+                case 'KeyT':
+                    if (slotOpen) {
+                        e.preventDefault();
+                        toggleTurbo();
+                    }
+                    break;
+                case 'KeyA':
+                    if (slotOpen) {
+                        e.preventDefault();
+                        toggleAutoSpin(10);
+                    }
+                    break;
+                case 'KeyI':
+                    if (slotOpen) {
+                        e.preventDefault();
+                        togglePaytable();
+                    }
+                    break;
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════
+        // SCREEN SHAKE ON BIG WINS
+        // ═══════════════════════════════════════════════════════
+
+        function triggerScreenShake(intensity) {
+            const reelArea = document.querySelector('.slot-reel-area');
+            if (!reelArea || !_animSettingEnabled('animations')) return;
+
+            if (intensity === 'mega') {
+                reelArea.classList.add('big-win-pulse');
+                document.querySelector('.slot-modal-fullscreen').classList.add('screen-shake');
+                setTimeout(() => {
+                    reelArea.classList.remove('big-win-pulse');
+                    document.querySelector('.slot-modal-fullscreen').classList.remove('screen-shake');
+                }, 1200);
+            } else if (intensity === 'big') {
+                reelArea.classList.add('big-win-pulse');
+                setTimeout(() => reelArea.classList.remove('big-win-pulse'), 600);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // LOADING SKELETONS
+        // ═══════════════════════════════════════════════════════
+
+        function createSkeletonCards(count) {
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                html += `<div class="game-card-skeleton">
+                    <div class="skeleton-thumb"></div>
+                    <div class="skeleton-text">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                    </div>
+                </div>`;
+            }
+            return html;
+        }
+
         function updateBalance() {
             document.getElementById('balance').textContent = formatMoney(balance);
             const slotBal = document.getElementById('slotBalance');
@@ -1296,11 +1500,22 @@
         }
 
         function renderGames() {
-            const hotGames = games.filter(g => g.hot);
             const hotGamesDiv = document.getElementById('hotGames');
-            hotGamesDiv.innerHTML = hotGames.map(g => createGameCard(g)).join('');
-            renderFilteredGames();
-            renderRecentlyPlayed();
+            const allGamesDiv = document.getElementById('allGames');
+
+            // Show loading skeletons first for a polished loading feel
+            hotGamesDiv.innerHTML = createSkeletonCards(6);
+            allGamesDiv.innerHTML = createSkeletonCards(12);
+
+            // Small delay to ensure CSS animations render, then swap in real cards
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const hotGames = games.filter(g => g.hot);
+                    hotGamesDiv.innerHTML = hotGames.map(g => createGameCard(g)).join('');
+                    renderFilteredGames();
+                    renderRecentlyPlayed();
+                }, 200);
+            });
         }
 
         // ===== Recently Played =====
@@ -1488,6 +1703,9 @@
             }
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
+            // Close paytable if open
+            const paytable = document.getElementById('paytablePanel');
+            if (paytable) paytable.classList.remove('active');
             document.getElementById('slotModal').classList.remove('active');
             currentGame = null;
             // Clean up free spins UI
@@ -2197,7 +2415,12 @@
                         </div>
                     </div>`;
                 createConfetti();
-                // Trigger particle cascade effect
+                // Trigger screen shake + particle cascade for big wins
+                if (multiplier >= 20) {
+                    triggerScreenShake('mega');
+                } else if (multiplier >= 5) {
+                    triggerScreenShake('big');
+                }
                 if (currentGame) {
                     setTimeout(() => triggerWinCascade(currentGame), 200);
                 }
@@ -2269,11 +2492,8 @@
 
             const cols = getGridCols(game);
 
-            // Add scrolling animation to all cells
-            getAllCells().forEach(cell => {
-                cell.classList.remove('reel-landing', 'reel-win-glow', 'reel-wild-glow', 'reel-scatter-glow', 'reel-wild-expand');
-                cell.classList.add('reel-scrolling');
-            });
+            // Start reel scrolling animation
+            startReelScrolling(false);
 
             let finalGrid = consumeSpinResult();
 
@@ -2298,9 +2518,8 @@
                 }
             }
 
-            const baseDelay = turboMode ? 150 : 500;
-            const stagger = turboMode ? Math.max(50, Math.floor(300 / cols)) : Math.max(150, Math.floor(900 / cols));
-            const stopDelays = Array.from({ length: cols }, (_, i) => baseDelay + i * stagger);
+            // Stagger stop times (free spin uses tighter timing)
+            const stopDelays = calculateStopDelays(cols, turboMode, true);
 
             const spinInterval = setInterval(() => {
                 renderGrid(generateRandomGrid(game), game);
@@ -2308,27 +2527,13 @@
 
             stopDelays.forEach((delay, colIdx) => {
                 setTimeout(() => {
-                    const cells = document.querySelectorAll(`#reelCol${colIdx} .reel-cell`);
-                    cells.forEach(cell => {
-                        cell.classList.remove('reel-scrolling');
-                        cell.classList.add('reel-landing');
+                    animateReelStop(colIdx, finalGrid[colIdx], spinInterval, cols, finalGrid, game, () => {
+                        checkWin(flattenGrid(finalGrid), game);
+                        spinning = false;
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = freeSpinsActive ? `FREE SPIN (${freeSpinsRemaining})` : 'SPIN NOW!';
+                        refreshQaStateDisplay();
                     });
-                    updateSingleReel(colIdx, finalGrid[colIdx]);
-                    playSound('click');
-
-                    if (colIdx === cols - 1) {
-                        clearInterval(spinInterval);
-                        currentGrid = finalGrid;
-                        currentReels = flattenGrid(finalGrid);
-                        renderGrid(finalGrid, game);
-                        setTimeout(() => {
-                            checkWin(flattenGrid(finalGrid), game);
-                            spinning = false;
-                            spinBtn.disabled = false;
-                            spinBtn.textContent = freeSpinsActive ? `FREE SPIN (${freeSpinsRemaining})` : 'SPIN NOW!';
-                            refreshQaStateDisplay();
-                        }, 300);
-                    }
                 }, delay);
             });
 
@@ -2362,10 +2567,8 @@
 
             // Animate the column being respun
             const cells = document.querySelectorAll(`#reelCol${reelIndex} .reel-cell`);
-            cells.forEach(cell => {
-                cell.classList.remove('reel-landing', 'reel-win-glow');
-                cell.classList.add('reel-scrolling');
-            });
+            clearReelAnimations(Array.from(cells));
+            cells.forEach(cell => cell.classList.add('reel-scrolling'));
 
             const newSymbol = getRandomSymbol();
             const newSymbols = [...currentSymbols];
@@ -2762,21 +2965,30 @@
 
         // ===== Game Search =====
         function searchGames(query) {
+            const countEl = document.getElementById('searchResultCount');
             query = query.trim().toLowerCase();
             if (!query) {
                 renderFilteredGames();
+                if (countEl) { countEl.classList.remove('active'); countEl.textContent = ''; }
                 return;
             }
             const allGamesDiv = document.getElementById('allGames');
             const results = games.filter(g =>
                 g.name.toLowerCase().includes(query) ||
-                (g.provider && g.provider.toLowerCase().includes(query))
+                (g.provider && g.provider.toLowerCase().includes(query)) ||
+                (g.tag && g.tag.toLowerCase().includes(query))
             );
+            // Update result count badge
+            if (countEl) {
+                countEl.textContent = results.length + ' found';
+                countEl.classList.toggle('active', results.length > 0 || query.length > 0);
+            }
             allGamesDiv.innerHTML = results.length
                 ? results.map(g => createGameCard(g)).join('')
                 : `<div class="games-empty-state">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <p>No games found for "<strong>${query}</strong>"</p>
+                    <p style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:8px;">Try searching by game name, provider, or tag</p>
                    </div>`;
         }
 
