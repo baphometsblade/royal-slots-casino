@@ -20,6 +20,7 @@ Examples:
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import subprocess
@@ -254,6 +255,11 @@ def iter_game_backgrounds(game_filter: set[str] | None) -> Iterable[tuple[str, P
         yield game_id, bg_path
 
 
+def write_manifest(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Reasset slot chrome textures from parent backgrounds.")
     parser.add_argument("--engine", choices=["auto", "sdxl", "pillow"], default="auto")
@@ -266,6 +272,12 @@ def main() -> None:
     parser.add_argument("--games", help="Comma-separated game IDs to process")
     parser.add_argument("--limit", type=int, default=0, help="Process at most N games (0 = all)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing chrome files")
+    parser.add_argument(
+        "--manifest",
+        default=str(OUTPUT_DIR / "manifest.json"),
+        help="Manifest output path (default: assets/ui/slot_chrome/manifest.json)",
+    )
+    parser.add_argument("--no-manifest", action="store_true", help="Disable manifest writing")
     args = parser.parse_args()
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -301,12 +313,43 @@ def main() -> None:
     skipped = 0
     failed = 0
     total = len(tasks)
+    started_at = datetime.now(timezone.utc)
+    entries: list[dict] = []
 
     for idx, (game_id, bg_path) in enumerate(tasks, start=1):
         out_path = OUTPUT_DIR / f"{game_id}_chrome.png"
+        metadata = metadata_by_id.get(game_id)
+        seed = stable_hash(game_id) ^ args.seed_base
+        prompt = themed_prompt(game_id, metadata)
+        entry = {
+            "gameId": game_id,
+            "source": str(bg_path.relative_to(ROOT)).replace("\\", "/"),
+            "output": str(out_path.relative_to(ROOT)).replace("\\", "/"),
+            "engine": engine,
+            "seed": seed,
+            "prompt": prompt,
+            "negativePrompt": themed_negative_prompt() if engine == "sdxl" else None,
+            "settings": {
+                "modelId": args.model_id if engine == "sdxl" else None,
+                "device": args.device if engine == "sdxl" else None,
+                "strength": args.strength if engine == "sdxl" else None,
+                "steps": args.steps if engine == "sdxl" else None,
+                "guidance": args.guidance if engine == "sdxl" else None,
+            },
+            "metadata": {
+                "name": (metadata or {}).get("name"),
+                "provider": (metadata or {}).get("provider"),
+                "tag": (metadata or {}).get("tag"),
+                "template": (metadata or {}).get("template"),
+                "bonusType": (metadata or {}).get("bonusType"),
+                "accentColor": (metadata or {}).get("accentColor"),
+            },
+        }
         if out_path.exists() and not args.force:
             skipped += 1
             print(f"[{idx:03d}/{total:03d}] skip {game_id}")
+            entry["status"] = "skipped"
+            entries.append(entry)
             continue
 
         try:
@@ -322,15 +365,51 @@ def main() -> None:
                     strength=args.strength,
                     steps=args.steps,
                     guidance=args.guidance,
-                    metadata=metadata_by_id.get(game_id),
+                    metadata=metadata,
                 )
             else:
                 build_chrome_pillow(game_id, bg_path, out_path)
             generated += 1
             print(f"[{idx:03d}/{total:03d}] ok   {game_id}")
+            entry["status"] = "generated"
+            entries.append(entry)
         except Exception as exc:
             failed += 1
             print(f"[{idx:03d}/{total:03d}] fail {game_id}: {exc}")
+            entry["status"] = "failed"
+            entry["error"] = str(exc)
+            entries.append(entry)
+
+    if not args.no_manifest:
+        manifest_path = Path(args.manifest)
+        manifest_payload = {
+            "createdAt": started_at.isoformat(),
+            "finishedAt": datetime.now(timezone.utc).isoformat(),
+            "root": str(ROOT),
+            "engine": engine,
+            "taskCount": total,
+            "summary": {
+                "generated": generated,
+                "skipped": skipped,
+                "failed": failed,
+                "metadataCount": len(metadata_by_id),
+            },
+            "settings": {
+                "requestedEngine": requested,
+                "modelId": args.model_id,
+                "device": args.device,
+                "strength": args.strength,
+                "steps": args.steps,
+                "guidance": args.guidance,
+                "seedBase": args.seed_base,
+                "force": args.force,
+                "gamesFilter": sorted(game_filter) if game_filter else None,
+                "limit": args.limit,
+            },
+            "entries": entries,
+        }
+        write_manifest(manifest_path, manifest_payload)
+        print(f"Manifest written: {manifest_path}")
 
     print(
         "Done. "

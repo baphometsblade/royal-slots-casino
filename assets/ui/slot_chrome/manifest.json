@@ -1,0 +1,2027 @@
+{
+  "createdAt": "2026-02-21T17:11:03.442444+00:00",
+  "finishedAt": "2026-02-21T17:11:03.446444+00:00",
+  "root": "C:\\created games\\Casino",
+  "engine": "sdxl",
+  "taskCount": 80,
+  "summary": {
+    "generated": 0,
+    "skipped": 80,
+    "failed": 0,
+    "metadataCount": 80
+  },
+  "settings": {
+    "requestedEngine": "sdxl",
+    "modelId": "stabilityai/sdxl-turbo",
+    "device": "cuda",
+    "strength": 0.58,
+    "steps": 2,
+    "guidance": 0.0,
+    "seedBase": 7331,
+    "force": false,
+    "gamesFilter": null,
+    "limit": 0
+  },
+  "entries": [
+    {
+      "gameId": "ares_blade",
+      "source": "assets/backgrounds/slots/ares_blade_bg.png",
+      "output": "assets/ui/slot_chrome/ares_blade_chrome.png",
+      "engine": "sdxl",
+      "seed": 896904056,
+      "prompt": "Ares Blade slot UI chrome strip, Royal Games, extended layout, expanding_wild_respin vibe, s1 dagger motif, accent lighting around #b71c1c, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Ares Blade",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "extended",
+        "bonusType": "expanding_wild_respin",
+        "accentColor": "#b71c1c"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "bass_splash",
+      "source": "assets/backgrounds/slots/bass_splash_bg.png",
+      "output": "assets/ui/slot_chrome/bass_splash_chrome.png",
+      "engine": "sdxl",
+      "seed": 1877395275,
+      "prompt": "Bass Splash Extreme slot UI chrome strip, Royal Games, new, standard layout, fisherman_collect vibe, s1 worm motif, accent lighting around #26c6da, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Bass Splash Extreme",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "standard",
+        "bonusType": "fisherman_collect",
+        "accentColor": "#26c6da"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "big_bamboo",
+      "source": "assets/backgrounds/slots/big_bamboo_bg.png",
+      "output": "assets/ui/slot_chrome/big_bamboo_chrome.png",
+      "engine": "sdxl",
+      "seed": 324966669,
+      "prompt": "Big Bamboo Fortune slot UI chrome strip, Royal Games, popular, extended layout, money_collect vibe, s1 bamboo shoot motif, accent lighting around #2e7d32, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Big Bamboo Fortune",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "extended",
+        "bonusType": "money_collect",
+        "accentColor": "#2e7d32"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "big_bass",
+      "source": "assets/backgrounds/slots/big_bass_bg.png",
+      "output": "assets/ui/slot_chrome/big_bass_chrome.png",
+      "engine": "sdxl",
+      "seed": 1532884890,
+      "prompt": "Reel Catch slot UI chrome strip, Royal Games, standard layout, fisherman_collect vibe, s1 hook motif, accent lighting around #48cae4, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Reel Catch",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "fisherman_collect",
+        "accentColor": "#48cae4"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "black_bull",
+      "source": "assets/backgrounds/slots/black_bull_bg.png",
+      "output": "assets/ui/slot_chrome/black_bull_chrome.png",
+      "engine": "sdxl",
+      "seed": 1891173695,
+      "prompt": "Raging Bull slot UI chrome strip, Royal Games, extended layout, money_collect vibe, s1 horseshoe motif, accent lighting around #e94560, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Raging Bull",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "extended",
+        "bonusType": "money_collect",
+        "accentColor": "#e94560"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "book_dead",
+      "source": "assets/backgrounds/slots/book_dead_bg.png",
+      "output": "assets/ui/slot_chrome/book_dead_chrome.png",
+      "engine": "sdxl",
+      "seed": 157144356,
+      "prompt": "Tome of Ra slot UI chrome strip, Royal Games, popular, standard layout, expanding_symbol vibe, s1 ankh motif, accent lighting around #c7a94e, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Tome of Ra",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "standard",
+        "bonusType": "expanding_symbol",
+        "accentColor": "#c7a94e"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "buffalo_extreme",
+      "source": "assets/backgrounds/slots/buffalo_extreme_bg.png",
+      "output": "assets/ui/slot_chrome/buffalo_extreme_chrome.png",
+      "engine": "sdxl",
+      "seed": 2115937482,
+      "prompt": "Buffalo Blitz Extreme slot UI chrome strip, Royal Games, hot, standard layout, hold_and_win vibe, s1 eagle motif, accent lighting around #ff9800, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Buffalo Blitz Extreme",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ff9800"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "buffalo_mega",
+      "source": "assets/backgrounds/slots/buffalo_mega_bg.png",
+      "output": "assets/ui/slot_chrome/buffalo_mega_chrome.png",
+      "engine": "sdxl",
+      "seed": 1715340930,
+      "prompt": "Buffalo King Thunder slot UI chrome strip, Royal Games, popular, scatter layout, tumble vibe, s1 prairie flower motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Buffalo King Thunder",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#ff6f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "buffalo_stampede",
+      "source": "assets/backgrounds/slots/buffalo_stampede_bg.png",
+      "output": "assets/ui/slot_chrome/buffalo_stampede_chrome.png",
+      "engine": "sdxl",
+      "seed": 4098427021,
+      "prompt": "Buffalo Stampede slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 cactus motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Buffalo Stampede",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "random_multiplier",
+        "accentColor": "#ff6f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "chaos_crew",
+      "source": "assets/backgrounds/slots/chaos_crew_bg.png",
+      "output": "assets/ui/slot_chrome/chaos_crew_chrome.png",
+      "engine": "sdxl",
+      "seed": 2035306514,
+      "prompt": "Chaos Crew Rampage slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 skully motif, accent lighting around #e91e63, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Chaos Crew Rampage",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#e91e63"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "chilli_heat",
+      "source": "assets/backgrounds/slots/chilli_heat_bg.png",
+      "output": "assets/ui/slot_chrome/chilli_heat_chrome.png",
+      "engine": "sdxl",
+      "seed": 3052087708,
+      "prompt": "Chilli Heat Wave slot UI chrome strip, Royal Games, standard layout, hold_and_win vibe, s1 pepper green motif, accent lighting around #ff9800, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Chilli Heat Wave",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ff9800"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "coin_strike",
+      "source": "assets/backgrounds/slots/coin_strike_bg.png",
+      "output": "assets/ui/slot_chrome/coin_strike_chrome.png",
+      "engine": "sdxl",
+      "seed": 1673721360,
+      "prompt": "Coin Strike Deluxe slot UI chrome strip, Royal Games, new, classic layout, hold_and_win vibe, s1 cherry motif, accent lighting around #ffd700, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Coin Strike Deluxe",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "classic",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ffd700"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "coin_volcano",
+      "source": "assets/backgrounds/slots/coin_volcano_bg.png",
+      "output": "assets/ui/slot_chrome/coin_volcano_chrome.png",
+      "engine": "sdxl",
+      "seed": 1567747106,
+      "prompt": "Volcano Coins slot UI chrome strip, Royal Games, new, standard layout, hold_and_win vibe, s1 obsidian motif, accent lighting around #ff9800, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Volcano Coins",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ff9800"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "crimson_fang",
+      "source": "assets/backgrounds/slots/crimson_fang_bg.png",
+      "output": "assets/ui/slot_chrome/crimson_fang_chrome.png",
+      "engine": "sdxl",
+      "seed": 323531202,
+      "prompt": "Crimson Fang slot UI chrome strip, Royal Games, standard layout, expanding_symbol vibe, s1 garlic motif, accent lighting around #b71c1c, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Crimson Fang",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "expanding_symbol",
+        "accentColor": "#b71c1c"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "crown_fire",
+      "source": "assets/backgrounds/slots/crown_fire_bg.png",
+      "output": "assets/ui/slot_chrome/crown_fire_chrome.png",
+      "engine": "sdxl",
+      "seed": 3404873538,
+      "prompt": "Crown of Fire slot UI chrome strip, Royal Games, standard layout, hold_and_win vibe, s1 torch motif, accent lighting around #ffab00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Crown of Fire",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ffab00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "dead_alive",
+      "source": "assets/backgrounds/slots/dead_alive_bg.png",
+      "output": "assets/ui/slot_chrome/dead_alive_chrome.png",
+      "engine": "sdxl",
+      "seed": 2699655306,
+      "prompt": "Dead or Alive Reloaded slot UI chrome strip, Royal Games, popular, standard layout, stacked_wilds vibe, s1 cowboy boots motif, accent lighting around #d32f2f, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Dead or Alive Reloaded",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "standard",
+        "bonusType": "stacked_wilds",
+        "accentColor": "#d32f2f"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "diamond_vault",
+      "source": "assets/backgrounds/slots/diamond_vault_bg.png",
+      "output": "assets/ui/slot_chrome/diamond_vault_chrome.png",
+      "engine": "sdxl",
+      "seed": 66361295,
+      "prompt": "Diamond Vault slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 sapphire motif, accent lighting around #283593, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Diamond Vault",
+        "provider": "Royal Games",
+        "tag": "JACKPOT",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#283593"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "dog_house_mega",
+      "source": "assets/backgrounds/slots/dog_house_mega_bg.png",
+      "output": "assets/ui/slot_chrome/dog_house_mega_chrome.png",
+      "engine": "sdxl",
+      "seed": 3044830042,
+      "prompt": "Dog House Unleashed slot UI chrome strip, Royal Games, popular, scatter layout, tumble vibe, s1 bone motif, accent lighting around #4caf50, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Dog House Unleashed",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#4caf50"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "dragon_megafire",
+      "source": "assets/backgrounds/slots/dragon_megafire_bg.png",
+      "output": "assets/ui/slot_chrome/dragon_megafire_chrome.png",
+      "engine": "sdxl",
+      "seed": 558267026,
+      "prompt": "Dragon Megafire slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 coin dragon motif, accent lighting around #ff8f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Dragon Megafire",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "random_multiplier",
+        "accentColor": "#ff8f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "elvis_frog",
+      "source": "assets/backgrounds/slots/elvis_frog_bg.png",
+      "output": "assets/ui/slot_chrome/elvis_frog_chrome.png",
+      "engine": "sdxl",
+      "seed": 1715745458,
+      "prompt": "Vegas Frog Live slot UI chrome strip, Royal Games, popular, standard layout, hold_and_win vibe, s1 dice motif, accent lighting around #d50000, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Vegas Frog Live",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#d50000"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "esqueleto_fiesta",
+      "source": "assets/backgrounds/slots/esqueleto_fiesta_bg.png",
+      "output": "assets/ui/slot_chrome/esqueleto_fiesta_chrome.png",
+      "engine": "sdxl",
+      "seed": 3609372488,
+      "prompt": "Esqueleto Fiesta slot UI chrome strip, Royal Games, new, standard layout, avalanche vibe, s1 guitar motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Esqueleto Fiesta",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "standard",
+        "bonusType": "avalanche",
+        "accentColor": "#ff6f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "eternal_romance",
+      "source": "assets/backgrounds/slots/eternal_romance_bg.png",
+      "output": "assets/ui/slot_chrome/eternal_romance_chrome.png",
+      "engine": "sdxl",
+      "seed": 1465893603,
+      "prompt": "Eternal Romance slot UI chrome strip, Royal Games, popular, standard layout, chamber_spins vibe, s1 candle motif, accent lighting around #c62828, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Eternal Romance",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "standard",
+        "bonusType": "chamber_spins",
+        "accentColor": "#c62828"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "extra_chilli",
+      "source": "assets/backgrounds/slots/extra_chilli_bg.png",
+      "output": "assets/ui/slot_chrome/extra_chilli_chrome.png",
+      "engine": "sdxl",
+      "seed": 1291268920,
+      "prompt": "Extra Chilli Blaze slot UI chrome strip, Royal Games, hot, scatter layout, tumble vibe, s1 jalapeno motif, accent lighting around #ffd600, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Extra Chilli Blaze",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#ffd600"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "fat_rabbit",
+      "source": "assets/backgrounds/slots/fat_rabbit_bg.png",
+      "output": "assets/ui/slot_chrome/fat_rabbit_chrome.png",
+      "engine": "sdxl",
+      "seed": 708817386,
+      "prompt": "Fat Rabbit Run slot UI chrome strip, Royal Games, scatter layout, tumble vibe, s1 carrot motif, accent lighting around #43a047, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Fat Rabbit Run",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#43a047"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "fire_hole",
+      "source": "assets/backgrounds/slots/fire_hole_bg.png",
+      "output": "assets/ui/slot_chrome/fire_hole_chrome.png",
+      "engine": "sdxl",
+      "seed": 3247853115,
+      "prompt": "Fire in the Hole XBomb slot UI chrome strip, Royal Games, hot, scatter layout, tumble vibe, s1 pickaxe motif, accent lighting around #f4511e, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Fire in the Hole XBomb",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#f4511e"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "fire_joker",
+      "source": "assets/backgrounds/slots/fire_joker_bg.png",
+      "output": "assets/ui/slot_chrome/fire_joker_chrome.png",
+      "engine": "sdxl",
+      "seed": 3182580606,
+      "prompt": "Inferno Jester slot UI chrome strip, Royal Games, classic layout, wheel_multiplier vibe, s1 cherry motif, accent lighting around #ff0844, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Inferno Jester",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "classic",
+        "bonusType": "wheel_multiplier",
+        "accentColor": "#ff0844"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "five_lions",
+      "source": "assets/backgrounds/slots/five_lions_bg.png",
+      "output": "assets/ui/slot_chrome/five_lions_chrome.png",
+      "engine": "sdxl",
+      "seed": 3108517202,
+      "prompt": "Five Lions Fortune slot UI chrome strip, Royal Games, standard layout, hold_and_win vibe, s1 drum motif, accent lighting around #ffc107, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Five Lions Fortune",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ffc107"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "fruit_party",
+      "source": "assets/backgrounds/slots/fruit_party_bg.png",
+      "output": "assets/ui/slot_chrome/fruit_party_chrome.png",
+      "engine": "sdxl",
+      "seed": 2475066645,
+      "prompt": "Tropical Fruit Party slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 strawberry motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Tropical Fruit Party",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#ff6f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "gates_olympus",
+      "source": "assets/backgrounds/slots/gates_olympus_bg.png",
+      "output": "assets/ui/slot_chrome/gates_olympus_chrome.png",
+      "engine": "sdxl",
+      "seed": 3164221172,
+      "prompt": "Halls of Thunder slot UI chrome strip, Royal Games, popular, scatter layout, zeus_multiplier vibe, s1 chalice motif, accent lighting around #667eea, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Halls of Thunder",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "scatter",
+        "bonusType": "zeus_multiplier",
+        "accentColor": "#667eea"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "gemhalla",
+      "source": "assets/backgrounds/slots/gemhalla_bg.png",
+      "output": "assets/ui/slot_chrome/gemhalla_chrome.png",
+      "engine": "sdxl",
+      "seed": 3673590417,
+      "prompt": "Valhalla Gems slot UI chrome strip, Royal Games, hot, scatter layout, tumble vibe, s1 axe motif, accent lighting around #ffd54f, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Valhalla Gems",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#ffd54f"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "gems_bonanza",
+      "source": "assets/backgrounds/slots/gems_bonanza_bg.png",
+      "output": "assets/ui/slot_chrome/gems_bonanza_chrome.png",
+      "engine": "sdxl",
+      "seed": 625548700,
+      "prompt": "Gem Vault Bonanza slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 emerald motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Gem Vault Bonanza",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#e040fb"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "gold_rush_frog",
+      "source": "assets/backgrounds/slots/gold_rush_frog_bg.png",
+      "output": "assets/ui/slot_chrome/gold_rush_frog_chrome.png",
+      "engine": "sdxl",
+      "seed": 549239550,
+      "prompt": "Fortune Frog Rush slot UI chrome strip, Royal Games, hot, scatter layout, coin_respin vibe, s1 pickaxe motif, accent lighting around #4caf50, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Fortune Frog Rush",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "coin_respin",
+        "accentColor": "#4caf50"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "golden_fortune",
+      "source": "assets/backgrounds/slots/golden_fortune_bg.png",
+      "output": "assets/ui/slot_chrome/golden_fortune_chrome.png",
+      "engine": "sdxl",
+      "seed": 4283954897,
+      "prompt": "Golden Fortune Wheel slot UI chrome strip, Royal Games, jackpot, standard layout, wheel_multiplier vibe, s1 champagne motif, accent lighting around #ffd700, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Golden Fortune Wheel",
+        "provider": "Royal Games",
+        "tag": "JACKPOT",
+        "template": "standard",
+        "bonusType": "wheel_multiplier",
+        "accentColor": "#ffd700"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "goldstorm_ultra",
+      "source": "assets/backgrounds/slots/goldstorm_ultra_bg.png",
+      "output": "assets/ui/slot_chrome/goldstorm_ultra_chrome.png",
+      "engine": "sdxl",
+      "seed": 784717090,
+      "prompt": "GoldStorm Ultra slot UI chrome strip, Royal Games, new, standard layout, random_multiplier vibe, s1 gold coin storm motif, accent lighting around #ffd600, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "GoldStorm Ultra",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "standard",
+        "bonusType": "random_multiplier",
+        "accentColor": "#ffd600"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "gonzos_quest",
+      "source": "assets/backgrounds/slots/gonzos_quest_bg.png",
+      "output": "assets/ui/slot_chrome/gonzos_quest_chrome.png",
+      "engine": "sdxl",
+      "seed": 1639698719,
+      "prompt": "Temple Quest slot UI chrome strip, Royal Games, standard layout, avalanche vibe, s1 stone face green motif, accent lighting around #3cba92, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Temple Quest",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "avalanche",
+        "accentColor": "#3cba92"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "great_rhino",
+      "source": "assets/backgrounds/slots/great_rhino_bg.png",
+      "output": "assets/ui/slot_chrome/great_rhino_chrome.png",
+      "engine": "sdxl",
+      "seed": 3519082660,
+      "prompt": "Great Rhino Rush slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 flamingo motif, accent lighting around #fdd835, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Great Rhino Rush",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "random_multiplier",
+        "accentColor": "#fdd835"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "hot_chillies",
+      "source": "assets/backgrounds/slots/hot_chillies_bg.png",
+      "output": "assets/ui/slot_chrome/hot_chillies_chrome.png",
+      "engine": "sdxl",
+      "seed": 3383099623,
+      "prompt": "Salsa Spins slot UI chrome strip, Royal Games, new, classic layout, respin vibe, s1 taco motif, accent lighting around #f77f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Salsa Spins",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "classic",
+        "bonusType": "respin",
+        "accentColor": "#f77f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "immortal_blood",
+      "source": "assets/backgrounds/slots/immortal_blood_bg.png",
+      "output": "assets/ui/slot_chrome/immortal_blood_chrome.png",
+      "engine": "sdxl",
+      "seed": 4054156440,
+      "prompt": "Immortal Blood slot UI chrome strip, Royal Games, popular, standard layout, random_multiplier vibe, s1 castle motif, accent lighting around #c62828, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Immortal Blood",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "standard",
+        "bonusType": "random_multiplier",
+        "accentColor": "#c62828"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "island_tiki",
+      "source": "assets/backgrounds/slots/island_tiki_bg.png",
+      "output": "assets/ui/slot_chrome/island_tiki_chrome.png",
+      "engine": "sdxl",
+      "seed": 1947059565,
+      "prompt": "Island Tiki slot UI chrome strip, Royal Games, scatter layout, tumble vibe, s1 coconut motif, accent lighting around #00897b, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Island Tiki",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#00897b"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "jammin_fruits",
+      "source": "assets/backgrounds/slots/jammin_fruits_bg.png",
+      "output": "assets/ui/slot_chrome/jammin_fruits_chrome.png",
+      "engine": "sdxl",
+      "seed": 2137223390,
+      "prompt": "Jammin' Fruits slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 strawberry motif, accent lighting around #7b1fa2, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Jammin' Fruits",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#7b1fa2"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "le_bandit",
+      "source": "assets/backgrounds/slots/le_bandit_bg.png",
+      "output": "assets/ui/slot_chrome/le_bandit_chrome.png",
+      "engine": "sdxl",
+      "seed": 3237481230,
+      "prompt": "Le Bandit Heist slot UI chrome strip, Royal Games, standard layout, money_collect vibe, s1 baguette motif, accent lighting around #b388ff, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Le Bandit Heist",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "money_collect",
+        "accentColor": "#b388ff"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "loki_loot",
+      "source": "assets/backgrounds/slots/loki_loot_bg.png",
+      "output": "assets/ui/slot_chrome/loki_loot_chrome.png",
+      "engine": "sdxl",
+      "seed": 611655552,
+      "prompt": "Loki's Wild Loot slot UI chrome strip, Royal Games, new, grid layout, wild_collect vibe, s1 hammer motif, accent lighting around #c6ff00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Loki's Wild Loot",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "grid",
+        "bonusType": "wild_collect",
+        "accentColor": "#c6ff00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "lucha_mania",
+      "source": "assets/backgrounds/slots/lucha_mania_bg.png",
+      "output": "assets/ui/slot_chrome/lucha_mania_chrome.png",
+      "engine": "sdxl",
+      "seed": 1951394442,
+      "prompt": "Lucha Libre Mania slot UI chrome strip, Royal Games, standard layout, random_multiplier vibe, s1 mask blue motif, accent lighting around #f57f17, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Lucha Libre Mania",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "random_multiplier",
+        "accentColor": "#f57f17"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "lucky_777",
+      "source": "assets/backgrounds/slots/lucky_777_bg.png",
+      "output": "assets/ui/slot_chrome/lucky_777_chrome.png",
+      "engine": "sdxl",
+      "seed": 2602850620,
+      "prompt": "Fruit Fiesta Deluxe slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 banana motif, accent lighting around #f093fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Fruit Fiesta Deluxe",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "random_multiplier",
+        "accentColor": "#f093fb"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "lucky_dragon",
+      "source": "assets/backgrounds/slots/lucky_dragon_bg.png",
+      "output": "assets/ui/slot_chrome/lucky_dragon_chrome.png",
+      "engine": "sdxl",
+      "seed": 3390965572,
+      "prompt": "Lucky Dragon slot UI chrome strip, Royal Games, classic layout, respin vibe, s1 lantern motif, accent lighting around #c62828, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Lucky Dragon",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "classic",
+        "bonusType": "respin",
+        "accentColor": "#c62828"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "madame_destiny",
+      "source": "assets/backgrounds/slots/madame_destiny_bg.png",
+      "output": "assets/ui/slot_chrome/madame_destiny_chrome.png",
+      "engine": "sdxl",
+      "seed": 2844940848,
+      "prompt": "Madame Destiny slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 candle motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Madame Destiny",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "random_multiplier",
+        "accentColor": "#e040fb"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "mega_joker",
+      "source": "assets/backgrounds/slots/mega_joker_bg.png",
+      "output": "assets/ui/slot_chrome/mega_joker_chrome.png",
+      "engine": "sdxl",
+      "seed": 3346462024,
+      "prompt": "Mega Joker Classic slot UI chrome strip, Royal Games, classic layout, wheel_multiplier vibe, s1 cherry classic motif, accent lighting around #ffc107, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Mega Joker Classic",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "classic",
+        "bonusType": "wheel_multiplier",
+        "accentColor": "#ffc107"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "mega_safari",
+      "source": "assets/backgrounds/slots/mega_safari_bg.png",
+      "output": "assets/ui/slot_chrome/mega_safari_chrome.png",
+      "engine": "sdxl",
+      "seed": 2817973631,
+      "prompt": "Mega Moolah Safari slot UI chrome strip, Royal Games, jackpot, standard layout, wheel_multiplier vibe, s1 zebra motif, accent lighting around #e65100, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Mega Moolah Safari",
+        "provider": "Royal Games",
+        "tag": "JACKPOT",
+        "template": "standard",
+        "bonusType": "wheel_multiplier",
+        "accentColor": "#e65100"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "mental_meltdown",
+      "source": "assets/backgrounds/slots/mental_meltdown_bg.png",
+      "output": "assets/ui/slot_chrome/mental_meltdown_chrome.png",
+      "engine": "sdxl",
+      "seed": 1261432552,
+      "prompt": "Mental Meltdown slot UI chrome strip, Royal Games, new, extended layout, avalanche vibe, s1 pill motif, accent lighting around #76ff03, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Mental Meltdown",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "extended",
+        "bonusType": "avalanche",
+        "accentColor": "#76ff03"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "merlin_power",
+      "source": "assets/backgrounds/slots/merlin_power_bg.png",
+      "output": "assets/ui/slot_chrome/merlin_power_chrome.png",
+      "engine": "sdxl",
+      "seed": 2158803347,
+      "prompt": "Merlin's Power slot UI chrome strip, Royal Games, popular, scatter layout, zeus_multiplier vibe, s1 spell book motif, accent lighting around #4a148c, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Merlin's Power",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "scatter",
+        "bonusType": "zeus_multiplier",
+        "accentColor": "#4a148c"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "money_train",
+      "source": "assets/backgrounds/slots/money_train_bg.png",
+      "output": "assets/ui/slot_chrome/money_train_chrome.png",
+      "engine": "sdxl",
+      "seed": 1574706273,
+      "prompt": "Money Express 3 slot UI chrome strip, Royal Games, hot, extended layout, hold_and_win vibe, s1 dynamite mt motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Money Express 3",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "extended",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ff6f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "neon_nights",
+      "source": "assets/backgrounds/slots/neon_nights_bg.png",
+      "output": "assets/ui/slot_chrome/neon_nights_chrome.png",
+      "engine": "sdxl",
+      "seed": 3267658874,
+      "prompt": "Neon Nights slot UI chrome strip, Royal Games, standard layout, expanding_wild_respin vibe, s1 dice motif, accent lighting around #e91e63, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Neon Nights",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "expanding_wild_respin",
+        "accentColor": "#e91e63"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "nitro_street",
+      "source": "assets/backgrounds/slots/nitro_street_bg.png",
+      "output": "assets/ui/slot_chrome/nitro_street_chrome.png",
+      "engine": "sdxl",
+      "seed": 1572420244,
+      "prompt": "Nitro Street slot UI chrome strip, Royal Games, extended layout, avalanche vibe, s1 spray can motif, accent lighting around #00e676, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Nitro Street",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "extended",
+        "bonusType": "avalanche",
+        "accentColor": "#00e676"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "olympian_gods",
+      "source": "assets/backgrounds/slots/olympian_gods_bg.png",
+      "output": "assets/ui/slot_chrome/olympian_gods_chrome.png",
+      "engine": "sdxl",
+      "seed": 2474347441,
+      "prompt": "Olympian Gods slot UI chrome strip, Royal Games, popular, grid layout, tumble vibe, s1 harp motif, accent lighting around #e65100, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Olympian Gods",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#e65100"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "olympus_dream",
+      "source": "assets/backgrounds/slots/olympus_dream_bg.png",
+      "output": "assets/ui/slot_chrome/olympus_dream_chrome.png",
+      "engine": "sdxl",
+      "seed": 3203196667,
+      "prompt": "Olympus Dream Drop slot UI chrome strip, Royal Games, jackpot, scatter layout, zeus_multiplier vibe, s1 hera motif, accent lighting around #1565c0, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Olympus Dream Drop",
+        "provider": "Royal Games",
+        "tag": "JACKPOT",
+        "template": "scatter",
+        "bonusType": "zeus_multiplier",
+        "accentColor": "#1565c0"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "olympus_rising",
+      "source": "assets/backgrounds/slots/olympus_rising_bg.png",
+      "output": "assets/ui/slot_chrome/olympus_rising_chrome.png",
+      "engine": "sdxl",
+      "seed": 786818756,
+      "prompt": "Olympus Rising slot UI chrome strip, Royal Games, new, scatter layout, zeus_multiplier vibe, s1 trident motif, accent lighting around #5c6bc0, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Olympus Rising",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "scatter",
+        "bonusType": "zeus_multiplier",
+        "accentColor": "#5c6bc0"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "pharaoh_legacy",
+      "source": "assets/backgrounds/slots/pharaoh_legacy_bg.png",
+      "output": "assets/ui/slot_chrome/pharaoh_legacy_chrome.png",
+      "engine": "sdxl",
+      "seed": 3087252671,
+      "prompt": "Pharaoh's Legacy slot UI chrome strip, Royal Games, popular, standard layout, expanding_symbol vibe, s1 hieroglyph motif, accent lighting around #d4a636, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Pharaoh's Legacy",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "standard",
+        "bonusType": "expanding_symbol",
+        "accentColor": "#d4a636"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "pirate_fortune",
+      "source": "assets/backgrounds/slots/pirate_fortune_bg.png",
+      "output": "assets/ui/slot_chrome/pirate_fortune_chrome.png",
+      "engine": "sdxl",
+      "seed": 2178654357,
+      "prompt": "Pirate's Fortune slot UI chrome strip, Royal Games, new, standard layout, money_collect vibe, s1 compass motif, accent lighting around #0097a7, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Pirate's Fortune",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "standard",
+        "bonusType": "money_collect",
+        "accentColor": "#0097a7"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "pots_olympus",
+      "source": "assets/backgrounds/slots/pots_olympus_bg.png",
+      "output": "assets/ui/slot_chrome/pots_olympus_chrome.png",
+      "engine": "sdxl",
+      "seed": 2023744366,
+      "prompt": "Pots of Zeus slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 trophy motif, accent lighting around #1565c0, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Pots of Zeus",
+        "provider": "Royal Games",
+        "tag": "JACKPOT",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#1565c0"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "power_crown",
+      "source": "assets/backgrounds/slots/power_crown_bg.png",
+      "output": "assets/ui/slot_chrome/power_crown_chrome.png",
+      "engine": "sdxl",
+      "seed": 4271089477,
+      "prompt": "Crown of Power slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 scepter motif, accent lighting around #ffd700, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Crown of Power",
+        "provider": "Royal Games",
+        "tag": "JACKPOT",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#ffd700"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "puppy_palace",
+      "source": "assets/backgrounds/slots/puppy_palace_bg.png",
+      "output": "assets/ui/slot_chrome/puppy_palace_chrome.png",
+      "engine": "sdxl",
+      "seed": 1911154689,
+      "prompt": "Puppy Palace slot UI chrome strip, Royal Games, standard layout, stacked_wilds vibe, s1 bone motif, accent lighting around #4caf50, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Puppy Palace",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "stacked_wilds",
+        "accentColor": "#4caf50"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "quantum_burst",
+      "source": "assets/backgrounds/slots/quantum_burst_bg.png",
+      "output": "assets/ui/slot_chrome/quantum_burst_chrome.png",
+      "engine": "sdxl",
+      "seed": 3954630992,
+      "prompt": "Quantum Burst slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 atom motif, accent lighting around #6a1b9a, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Quantum Burst",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#6a1b9a"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "razor_shark",
+      "source": "assets/backgrounds/slots/razor_shark_bg.png",
+      "output": "assets/ui/slot_chrome/razor_shark_chrome.png",
+      "engine": "sdxl",
+      "seed": 768509334,
+      "prompt": "Depth Charge slot UI chrome strip, Royal Games, new, extended layout, mystery_stacks vibe, s1 anchor motif, accent lighting around #00bcd4, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Depth Charge",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "extended",
+        "bonusType": "mystery_stacks",
+        "accentColor": "#00bcd4"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "reactoonz",
+      "source": "assets/backgrounds/slots/reactoonz_bg.png",
+      "output": "assets/ui/slot_chrome/reactoonz_chrome.png",
+      "engine": "sdxl",
+      "seed": 4248790569,
+      "prompt": "Alientonz slot UI chrome strip, Royal Games, popular, grid layout, tumble vibe, s1 blob green motif, accent lighting around #00e5ff, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Alientonz",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#00e5ff"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "sakura_princess",
+      "source": "assets/backgrounds/slots/sakura_princess_bg.png",
+      "output": "assets/ui/slot_chrome/sakura_princess_chrome.png",
+      "engine": "sdxl",
+      "seed": 2872684429,
+      "prompt": "Sakura Princess slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 cherry blossom motif, accent lighting around #f06292, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Sakura Princess",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#f06292"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "san_quentin",
+      "source": "assets/backgrounds/slots/san_quentin_bg.png",
+      "output": "assets/ui/slot_chrome/san_quentin_chrome.png",
+      "engine": "sdxl",
+      "seed": 3731996805,
+      "prompt": "San Quentin Escape slot UI chrome strip, Royal Games, hot, extended layout, expanding_symbol vibe, s1 handcuffs motif, accent lighting around #ff3d00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "San Quentin Escape",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "extended",
+        "bonusType": "expanding_symbol",
+        "accentColor": "#ff3d00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "snoop_dollars",
+      "source": "assets/backgrounds/slots/snoop_dollars_bg.png",
+      "output": "assets/ui/slot_chrome/snoop_dollars_chrome.png",
+      "engine": "sdxl",
+      "seed": 2518483993,
+      "prompt": "Hip Hop Millions slot UI chrome strip, Royal Games, new, scatter layout, tumble vibe, s1 mic motif, accent lighting around #7b1fa2, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Hip Hop Millions",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "scatter",
+        "bonusType": "tumble",
+        "accentColor": "#7b1fa2"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "starburst_xxl",
+      "source": "assets/backgrounds/slots/starburst_xxl_bg.png",
+      "output": "assets/ui/slot_chrome/starburst_xxl_chrome.png",
+      "engine": "sdxl",
+      "seed": 222950597,
+      "prompt": "Cosmic Gems slot UI chrome strip, Royal Games, new, standard layout, expanding_wild_respin vibe, s1 gem red motif, accent lighting around #a855f7, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Cosmic Gems",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "standard",
+        "bonusType": "expanding_wild_respin",
+        "accentColor": "#a855f7"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "starlight_princess",
+      "source": "assets/backgrounds/slots/starlight_princess_bg.png",
+      "output": "assets/ui/slot_chrome/starlight_princess_chrome.png",
+      "engine": "sdxl",
+      "seed": 207328936,
+      "prompt": "Starlight Empress slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 crystal heart motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Starlight Empress",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "random_multiplier",
+        "accentColor": "#e040fb"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "sugar_rush",
+      "source": "assets/backgrounds/slots/sugar_rush_bg.png",
+      "output": "assets/ui/slot_chrome/sugar_rush_chrome.png",
+      "engine": "sdxl",
+      "seed": 2126787099,
+      "prompt": "Candy Cascade 1000 slot UI chrome strip, Royal Games, hot, grid layout, tumble vibe, s1 lollipop motif, accent lighting around #ff6fd8, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Candy Cascade 1000",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#ff6fd8"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "super_hot",
+      "source": "assets/backgrounds/slots/super_hot_bg.png",
+      "output": "assets/ui/slot_chrome/super_hot_chrome.png",
+      "engine": "sdxl",
+      "seed": 37788667,
+      "prompt": "Blazing Fruits slot UI chrome strip, Royal Games, standard layout, stacked_wilds vibe, s1 cherry motif, accent lighting around #ffd200, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Blazing Fruits",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "stacked_wilds",
+        "accentColor": "#ffd200"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "sweet_bonanza",
+      "source": "assets/backgrounds/slots/sweet_bonanza_bg.png",
+      "output": "assets/ui/slot_chrome/sweet_bonanza_chrome.png",
+      "engine": "sdxl",
+      "seed": 4225738138,
+      "prompt": "Sweet Bonanza Blast slot UI chrome strip, Royal Games, hot, scatter layout, random_multiplier vibe, s1 candy heart motif, accent lighting around #e91e63, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Sweet Bonanza Blast",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "scatter",
+        "bonusType": "random_multiplier",
+        "accentColor": "#e91e63"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "tombstone_reload",
+      "source": "assets/backgrounds/slots/tombstone_reload_bg.png",
+      "output": "assets/ui/slot_chrome/tombstone_reload_chrome.png",
+      "engine": "sdxl",
+      "seed": 3199593919,
+      "prompt": "Tombstone Reloaded slot UI chrome strip, Royal Games, hot, extended layout, expanding_wild_respin vibe, s1 boots motif, accent lighting around #ff5722, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Tombstone Reloaded",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "extended",
+        "bonusType": "expanding_wild_respin",
+        "accentColor": "#ff5722"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "tome_madness",
+      "source": "assets/backgrounds/slots/tome_madness_bg.png",
+      "output": "assets/ui/slot_chrome/tome_madness_chrome.png",
+      "engine": "sdxl",
+      "seed": 540596791,
+      "prompt": "Tome of Insanity slot UI chrome strip, Royal Games, new, grid layout, tumble vibe, s1 tentacle motif, accent lighting around #7c4dff, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Tome of Insanity",
+        "provider": "Royal Games",
+        "tag": "NEW",
+        "template": "grid",
+        "bonusType": "tumble",
+        "accentColor": "#7c4dff"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "twin_helix",
+      "source": "assets/backgrounds/slots/twin_helix_bg.png",
+      "output": "assets/ui/slot_chrome/twin_helix_chrome.png",
+      "engine": "sdxl",
+      "seed": 1209919903,
+      "prompt": "Twin Helix slot UI chrome strip, Royal Games, standard layout, stacked_wilds vibe, s1 cherry neon motif, accent lighting around #e040fb, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Twin Helix",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "standard",
+        "bonusType": "stacked_wilds",
+        "accentColor": "#e040fb"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "viking_voyage",
+      "source": "assets/backgrounds/slots/viking_voyage_bg.png",
+      "output": "assets/ui/slot_chrome/viking_voyage_chrome.png",
+      "engine": "sdxl",
+      "seed": 1414115510,
+      "prompt": "Viking Voyage slot UI chrome strip, Royal Games, popular, extended layout, stacked_wilds vibe, s1 axe motif, accent lighting around #00acc1, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Viking Voyage",
+        "provider": "Royal Games",
+        "tag": "POPULAR",
+        "template": "extended",
+        "bonusType": "stacked_wilds",
+        "accentColor": "#00acc1"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "wanted_dead",
+      "source": "assets/backgrounds/slots/wanted_dead_bg.png",
+      "output": "assets/ui/slot_chrome/wanted_dead_chrome.png",
+      "engine": "sdxl",
+      "seed": 545432950,
+      "prompt": "Wanted Dead or Rich slot UI chrome strip, Royal Games, hot, grid layout, random_multiplier vibe, s1 colt motif, accent lighting around #ff6f00, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Wanted Dead or Rich",
+        "provider": "Royal Games",
+        "tag": "HOT",
+        "template": "grid",
+        "bonusType": "random_multiplier",
+        "accentColor": "#ff6f00"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "wild_toro",
+      "source": "assets/backgrounds/slots/wild_toro_bg.png",
+      "output": "assets/ui/slot_chrome/wild_toro_chrome.png",
+      "engine": "sdxl",
+      "seed": 909556775,
+      "prompt": "Wild Toro Matador slot UI chrome strip, Royal Games, extended layout, expanding_wild_respin vibe, s1 cape motif, accent lighting around #f44336, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Wild Toro Matador",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "extended",
+        "bonusType": "expanding_wild_respin",
+        "accentColor": "#f44336"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "wildfire_gold",
+      "source": "assets/backgrounds/slots/wildfire_gold_bg.png",
+      "output": "assets/ui/slot_chrome/wildfire_gold_chrome.png",
+      "engine": "sdxl",
+      "seed": 2220132787,
+      "prompt": "Wildfire Gold slot UI chrome strip, Royal Games, extended layout, stacked_wilds vibe, s1 wanted poster motif, accent lighting around #ffb300, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Wildfire Gold",
+        "provider": "Royal Games",
+        "tag": "",
+        "template": "extended",
+        "bonusType": "stacked_wilds",
+        "accentColor": "#ffb300"
+      },
+      "status": "skipped"
+    },
+    {
+      "gameId": "wolf_gold",
+      "source": "assets/backgrounds/slots/wolf_gold_bg.png",
+      "output": "assets/ui/slot_chrome/wolf_gold_chrome.png",
+      "engine": "sdxl",
+      "seed": 3449262483,
+      "prompt": "Alpha Pack slot UI chrome strip, Royal Games, jackpot, standard layout, hold_and_win vibe, s1 feather motif, accent lighting around #d4a836, metallic frame, luminous edge rails, premium casino texture, high detail, no text, no logo",
+      "negativePrompt": "text, logo, watermark, signature, people, face, blurry, low quality, artifacts",
+      "settings": {
+        "modelId": "stabilityai/sdxl-turbo",
+        "device": "cuda",
+        "strength": 0.58,
+        "steps": 2,
+        "guidance": 0.0
+      },
+      "metadata": {
+        "name": "Alpha Pack",
+        "provider": "Royal Games",
+        "tag": "JACKPOT",
+        "template": "standard",
+        "bonusType": "hold_and_win",
+        "accentColor": "#d4a836"
+      },
+      "status": "skipped"
+    }
+  ]
+}

@@ -470,3 +470,17 @@ Major 7-phase UI overhaul to make the casino look like a real premium online cas
 ### TODO / Suggestions
 - Optional: add a tiny launcher npm script (e.g. `qa:reasset`) for one-command SDXL chrome regeneration with preferred defaults.
 - Optional: if generation speed becomes a bottleneck, add a batched mode to keep pipeline warm across subsets (`--games`) during art iteration.
+
+## 2026-02-22 (SDXL manifest + run ergonomics)
+- Enhanced `scripts/reasset_slot_chrome.py` with reproducibility metadata output:
+  - Added manifest writing (default: `assets/ui/slot_chrome/manifest.json`).
+  - Manifest records per-game prompt, seed, engine, generation status, model/device/settings, source/output paths, and key slot metadata fields.
+  - Added flags: `--manifest <path>` and `--no-manifest`.
+- Added npm shortcuts in `package.json`:
+  - `npm run reasset:slot-chrome` (forced SDXL pass)
+  - `npm run reasset:slot-chrome:auto` (forced auto engine with SDXL fallback)
+- Ran non-destructive SDXL pass to validate manifest pipeline:
+  - `py -3.10 scripts/reasset_slot_chrome.py --engine sdxl`
+  - Result: 80 skipped (expected, no `--force`), manifest successfully written.
+- Regression check after tooling updates:
+  - `npm run qa:regression` passed.
