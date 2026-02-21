@@ -413,6 +413,114 @@
             return 'grid';
         }
 
+        function clamp01(value) {
+            return Math.max(0, Math.min(1, value));
+        }
+
+        function hexToRgb(hex) {
+            const clean = String(hex || '').replace('#', '');
+            if (clean.length !== 6) return { r: 251, g: 191, b: 36 };
+            return {
+                r: parseInt(clean.slice(0, 2), 16) || 0,
+                g: parseInt(clean.slice(2, 4), 16) || 0,
+                b: parseInt(clean.slice(4, 6), 16) || 0,
+            };
+        }
+
+        function mixRgb(a, b, ratio) {
+            const t = clamp01(ratio);
+            return {
+                r: Math.round(a.r + (b.r - a.r) * t),
+                g: Math.round(a.g + (b.g - a.g) * t),
+                b: Math.round(a.b + (b.b - a.b) * t),
+            };
+        }
+
+        function rgbCss(rgb, alpha = 1) {
+            return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+        }
+
+        function hashThemeSeed(text) {
+            let hash = 2166136261;
+            const input = String(text || '');
+            for (let i = 0; i < input.length; i++) {
+                hash ^= input.charCodeAt(i);
+                hash = Math.imul(hash, 16777619);
+            }
+            return hash >>> 0;
+        }
+
+        function buildSlotThemeVars(game) {
+            const accent = hexToRgb(game.accentColor || '#fbbf24');
+            const dark = { r: 7, g: 10, b: 18 };
+            const light = { r: 245, g: 248, b: 255 };
+            const seed = hashThemeSeed(game.id);
+            const variant = seed % 5;
+            const radius = 8 + (seed % 8);
+            const chromeBlend = 0.18 + ((seed >>> 3) % 30) / 100;
+            const panelStrength = 0.2 + ((seed >>> 5) % 30) / 100;
+            const fontPool = [
+                '"Trebuchet MS", "Segoe UI", sans-serif',
+                '"Verdana", "Segoe UI", sans-serif',
+                '"Tahoma", "Segoe UI", sans-serif',
+                '"Lucida Sans Unicode", "Segoe UI", sans-serif',
+                '"Gill Sans", "Trebuchet MS", sans-serif'
+            ];
+
+            const warm = mixRgb(accent, { r: 255, g: 180, b: 90 }, 0.35);
+            const cool = mixRgb(accent, { r: 110, g: 180, b: 255 }, 0.35);
+            const dimAccent = mixRgb(accent, dark, 0.6);
+            const punch = variant % 2 === 0 ? warm : cool;
+
+            return {
+                font: fontPool[seed % fontPool.length],
+                radius: `${radius}px`,
+                panelRadius: `${Math.max(10, radius + 2)}px`,
+                topBg: `linear-gradient(120deg, ${rgbCss(mixRgb(dark, accent, 0.38), 0.95)} 0%, ${rgbCss(mixRgb(dark, punch, 0.25), 0.92)} 48%, ${rgbCss(mixRgb(dimAccent, dark, 0.35), 0.95)} 100%)`,
+                bottomBg: `linear-gradient(145deg, ${rgbCss(mixRgb(dark, accent, 0.24), 0.94)} 0%, ${rgbCss(mixRgb(dark, punch, 0.2), 0.95)} 55%, ${rgbCss(mixRgb(dark, accent, 0.12), 0.96)} 100%)`,
+                panelBg: `linear-gradient(170deg, ${rgbCss(mixRgb(dark, accent, panelStrength), 0.55)} 0%, ${rgbCss(mixRgb(dark, dark, 0.65), 0.5)} 100%)`,
+                panelBorder: rgbCss(mixRgb(accent, light, 0.15), 0.42),
+                panelShadow: `0 0 30px ${rgbCss(mixRgb(accent, dark, 0.3), 0.35)}, inset 0 0 22px ${rgbCss(dark, 0.52)}`,
+                spinBg: `radial-gradient(circle at 34% 28%, ${rgbCss(mixRgb(accent, light, 0.3), 0.96)} 0%, ${rgbCss(mixRgb(accent, punch, 0.2), 0.95)} 46%, ${rgbCss(mixRgb(accent, dark, 0.5), 0.96)} 100%)`,
+                spinBorder: rgbCss(mixRgb(accent, light, 0.24), 0.9),
+                spinRing: rgbCss(mixRgb(accent, dark, 0.2), 0.28),
+                spinGlow: `0 0 24px ${rgbCss(accent, 0.45)}, 0 2px 14px rgba(0,0,0,0.55), inset 0 2px 4px rgba(255,255,255,0.22)`,
+                chromeBlend: `${chromeBlend}`,
+                stripeAngle: `${(seed % 150) + 15}deg`,
+            };
+        }
+
+        function applySlotThemeToModal(modal, game) {
+            if (!modal || !game) return;
+            const vars = buildSlotThemeVars(game);
+            modal.setAttribute('data-slot-theme', game.id);
+            modal.style.setProperty('--slot-ui-font', vars.font);
+            modal.style.setProperty('--slot-ui-radius', vars.radius);
+            modal.style.setProperty('--slot-panel-radius', vars.panelRadius);
+            modal.style.setProperty('--slot-top-bg', vars.topBg);
+            modal.style.setProperty('--slot-bottom-bg', vars.bottomBg);
+            modal.style.setProperty('--slot-panel-bg', vars.panelBg);
+            modal.style.setProperty('--slot-panel-border', vars.panelBorder);
+            modal.style.setProperty('--slot-panel-shadow', vars.panelShadow);
+            modal.style.setProperty('--slot-spin-bg', vars.spinBg);
+            modal.style.setProperty('--slot-spin-border', vars.spinBorder);
+            modal.style.setProperty('--slot-spin-ring', vars.spinRing);
+            modal.style.setProperty('--slot-spin-glow', vars.spinGlow);
+            modal.style.setProperty('--slot-chrome-blend', vars.chromeBlend);
+            modal.style.setProperty('--slot-stripe-angle', vars.stripeAngle);
+            modal.style.setProperty('--slot-chrome-image', 'none');
+
+            const chromeImagePath = `assets/ui/slot_chrome/${game.id}_chrome.png`;
+            const chromeProbe = new Image();
+            chromeProbe.onload = () => {
+                modal.style.setProperty('--slot-chrome-image', `url('${chromeImagePath}')`);
+            };
+            chromeProbe.onerror = () => {
+                modal.style.setProperty('--slot-chrome-image', 'none');
+            };
+            chromeProbe.src = chromeImagePath;
+        }
+
         // Build the reel DOM with rolling strip architecture
         function buildReelGrid(game) {
             const reelsContainer = document.getElementById('reels');
@@ -2206,6 +2314,7 @@
             SLOT_TEMPLATES.forEach(t => modal.classList.remove(`slot-template-${t}`));
             const tmpl = getGameTemplate(currentGame);
             modal.classList.add(`slot-template-${tmpl}`);
+            applySlotThemeToModal(modal, currentGame);
 
             // Set CSS custom properties for accent color
             const acHex = currentGame.accentColor || '#fbbf24';
@@ -2346,7 +2455,9 @@
             // Immediately hide feature popup if still visible
             const featurePopup = document.getElementById('slotFeaturePopup');
             if (featurePopup) { featurePopup.style.display = 'none'; featurePopup.classList.remove('dismissing'); }
-            document.getElementById('slotModal').classList.remove('active');
+            const slotModalEl = document.getElementById('slotModal');
+            slotModalEl.classList.remove('active');
+            slotModalEl.removeAttribute('data-slot-theme');
             currentGame = null;
             // Clean up reel strip animation loops
             reelStripData.forEach(data => {

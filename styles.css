@@ -4395,10 +4395,16 @@
             align-items: center;
             justify-content: space-between;
             padding: 6px 12px;
-            background: linear-gradient(180deg, #0a0a12 0%, #08080e 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            background-image: var(--slot-top-bg, linear-gradient(180deg, #0a0a12 0%, #08080e 100%)), var(--slot-chrome-image, none);
+            background-size: cover, cover;
+            background-position: center, center;
+            background-blend-mode: normal, soft-light;
+            border-bottom: 1px solid var(--slot-panel-border, rgba(255,255,255,0.04));
             flex-shrink: 0;
             min-height: 42px;
+            font-family: var(--slot-ui-font, "Trebuchet MS", "Segoe UI", sans-serif);
+            position: relative;
+            overflow: hidden;
         }
 
         .slot-close-btn {
@@ -4914,10 +4920,37 @@
             justify-content: center;
             gap: 10px;
             padding: 8px 16px;
-            background: linear-gradient(180deg, #111118 0%, #08080e 100%);
-            border-top: 1px solid rgba(255,255,255,0.06);
+            background-image: var(--slot-bottom-bg, linear-gradient(180deg, #111118 0%, #08080e 100%)), var(--slot-chrome-image, none);
+            background-size: cover, cover;
+            background-position: center, center;
+            background-blend-mode: normal, soft-light;
+            border-top: 1px solid var(--slot-panel-border, rgba(255,255,255,0.06));
             flex-shrink: 0;
             min-height: 72px;
+            font-family: var(--slot-ui-font, "Trebuchet MS", "Segoe UI", sans-serif);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-top-bar::after,
+        .slot-bottom-bar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                var(--slot-stripe-angle, 35deg),
+                rgba(255, 255, 255, 0.10) 0 3px,
+                transparent 3px 15px
+            );
+            mix-blend-mode: soft-light;
+            opacity: var(--slot-chrome-blend, 0.2);
+        }
+
+        .slot-top-bar > *,
+        .slot-bottom-bar > * {
+            position: relative;
+            z-index: 1;
         }
 
         .slot-bar-section {
@@ -4925,9 +4958,10 @@
             flex-direction: column;
             align-items: center;
             padding: 4px 14px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
+            background-image: var(--slot-panel-bg, rgba(255,255,255,0.03));
+            border-radius: var(--slot-ui-radius, 8px);
+            border: 1px solid var(--slot-panel-border, rgba(255,255,255,0.05));
+            box-shadow: var(--slot-panel-shadow, none);
         }
 
         .slot-bar-label {
@@ -4968,9 +5002,9 @@
         .slot-bet-btn {
             width: 32px;
             height: 32px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.05);
+            border-radius: var(--slot-ui-radius, 50%);
+            border: 1px solid var(--slot-panel-border, rgba(255,255,255,0.15));
+            background: var(--slot-panel-bg, rgba(255,255,255,0.05));
             color: #94a3b8;
             font-size: 18px;
             font-weight: 700;
@@ -4993,9 +5027,10 @@
             align-items: center;
             min-width: 70px;
             padding: 4px 10px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: var(--slot-panel-bg, rgba(255,255,255,0.03));
+            border-radius: var(--slot-ui-radius, 8px);
+            border: 1px solid var(--slot-panel-border, rgba(255,255,255,0.05));
+            box-shadow: var(--slot-panel-shadow, none);
         }
 
         .slot-bet-display .slot-bar-value {
@@ -5007,9 +5042,9 @@
         .slot-turbo-btn {
             width: 36px;
             height: 36px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.04);
+            border-radius: var(--slot-ui-radius, 50%);
+            border: 1px solid var(--slot-panel-border, rgba(255,255,255,0.12));
+            background: var(--slot-panel-bg, rgba(255,255,255,0.04));
             color: #555;
             cursor: pointer;
             display: flex;
@@ -5034,9 +5069,12 @@
         .slot-spin-btn {
             width: 68px;
             height: 68px;
-            border-radius: 50%;
-            border: 3px solid rgba(16, 185, 129, 0.8);
-            background: radial-gradient(circle at 40% 35%, #14d990, #10b981 40%, #059669 100%);
+            border-radius: var(--slot-ui-radius, 50%);
+            border: 3px solid var(--slot-spin-border, rgba(16, 185, 129, 0.8));
+            background-image: var(--slot-spin-bg, radial-gradient(circle at 40% 35%, #14d990, #10b981 40%, #059669 100%)), var(--slot-chrome-image, none);
+            background-size: cover, cover;
+            background-position: center, center;
+            background-blend-mode: normal, overlay;
             color: white;
             font-size: 13px;
             font-weight: 900;
@@ -5044,8 +5082,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px rgba(16,185,129,0.35), 0 2px 12px rgba(0,0,0,0.5),
-                        inset 0 2px 4px rgba(255,255,255,0.2);
+            box-shadow: var(--slot-spin-glow, 0 0 20px rgba(16,185,129,0.35), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2));
             transition: all 0.15s ease;
             position: relative;
             letter-spacing: 1px;
@@ -5058,7 +5095,7 @@
             position: absolute;
             inset: -6px;
             border-radius: 50%;
-            border: 2px solid rgba(16,185,129,0.15);
+            border: 2px solid var(--slot-spin-ring, rgba(16,185,129,0.15));
             pointer-events: none;
         }
 
