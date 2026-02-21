@@ -2493,6 +2493,18 @@
             SLOT_TEMPLATES.forEach(t => modal.classList.remove(`slot-template-${t}`));
             const tmpl = getGameTemplate(currentGame);
             modal.classList.add(`slot-template-${tmpl}`);
+
+            // Apply per-game chrome style (replicates parent slot visual chrome)
+            const CHROME_STYLES = ['candy','olympus','wild','egyptian','neon',
+                                   'western','oriental','joker','dark','fishing'];
+            CHROME_STYLES.forEach(c => modal.classList.remove(`slot-chrome-${c}`));
+            const chromeStyle = (typeof getGameChromeStyle === 'function')
+                ? getGameChromeStyle(currentGame) : 'wild';
+            modal.classList.add(`slot-chrome-${chromeStyle}`);
+
+            // Update buy bonus button visibility for this game
+            if (typeof updateBuyBonusBtn === 'function') updateBuyBonusBtn();
+
             applySlotThemeToModal(modal, currentGame);
 
             // Set CSS custom properties for accent color
@@ -4649,8 +4661,24 @@
                 setTimeout(waitForSpinThenContinue, 300);
                 return;
             }
+            // Check win/loss limits before next spin
+            if (checkAutoplayLimits()) return;
             // Small pause between spins for readability
             setTimeout(runAutoSpin, turboMode ? 400 : 800);
+        }
+
+        function checkAutoplayLimits() {
+            if (autoplayWinLimitAmount > 0 && (balance - autoplayStartBalance) >= autoplayWinLimitAmount) {
+                stopAutoSpin();
+                showMessage(`Autoplay stopped: Win limit +$${autoplayWinLimitAmount.toLocaleString()} reached!`, 'win');
+                return true;
+            }
+            if (autoplayLossLimitAmount > 0 && (autoplayStartBalance - balance) >= autoplayLossLimitAmount) {
+                stopAutoSpin();
+                showMessage(`Autoplay stopped: Loss limit $${autoplayLossLimitAmount.toLocaleString()} reached!`, 'lose');
+                return true;
+            }
+            return false;
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -4820,6 +4848,146 @@
                 toggleProfitMonitor();
             }
         });
+
+        // ═══════════════════════════════════════════════════════════
+        // GAME SEARCH
+        // ═══════════════════════════════════════════════════════════
+
+        function filterGamesBySearch(value) {
+            const clearBtn = document.getElementById('searchClearBtn');
+            if (clearBtn) clearBtn.style.display = value ? 'flex' : 'none';
+            searchGames(value);
+        }
+
+        function clearGameSearch() {
+            const input = document.getElementById('gameSearchInput');
+            if (input) { input.value = ''; input.focus(); }
+            const clearBtn = document.getElementById('searchClearBtn');
+            if (clearBtn) clearBtn.style.display = 'none';
+            searchGames('');
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // BUY BONUS
+        // ═══════════════════════════════════════════════════════════
+
+        function buyBonus() {
+            if (!currentGame) return;
+            const spinsCount = currentGame.freeSpinsCount || 0;
+            if (spinsCount <= 0) {
+                showMessage('No bonus feature available for this game', 'lose');
+                return;
+            }
+            const multiplier = 100;
+            const cost = currentBet * multiplier;
+            document.getElementById('buyBonusGameName').textContent = currentGame.name;
+            document.getElementById('buyBonusSpins').textContent = `${spinsCount} FREE SPINS`;
+            document.getElementById('buyBonusDesc').textContent = 'Instantly triggers the bonus round!';
+            document.getElementById('buyBonusCostValue').textContent = `$${cost.toLocaleString()}`;
+            document.getElementById('buyBonusOverlay').style.display = 'flex';
+        }
+
+        function confirmBuyBonus() {
+            if (!currentGame) return;
+            const cost = currentBet * 100;
+            if (balance < cost) {
+                showMessage('Insufficient balance to buy bonus!', 'lose');
+                closeBuyBonus();
+                return;
+            }
+            balance -= cost;
+            updateBalance();
+            closeBuyBonus();
+            triggerFreeSpins(currentGame, currentGame.freeSpinsCount || 10);
+            showMessage(`⚡ BONUS BOUGHT! ${currentGame.freeSpinsCount || 10} FREE SPINS TRIGGERED!`, 'win');
+        }
+
+        function closeBuyBonus() {
+            document.getElementById('buyBonusOverlay').style.display = 'none';
+        }
+
+        // Show/hide buy bonus button when a game is loaded
+        function updateBuyBonusBtn() {
+            const btn = document.getElementById('buyBonusBtn');
+            if (!btn) return;
+            const hasFreeSpins = currentGame && (currentGame.freeSpinsCount || 0) > 0;
+            btn.style.display = hasFreeSpins ? 'flex' : 'none';
+            if (hasFreeSpins) {
+                document.getElementById('buyBonusCost').textContent = `${100}x`;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // ENHANCED AUTOPLAY MODAL
+        // ═══════════════════════════════════════════════════════════
+
+        const AUTOPLAY_WIN_LIMITS  = [0, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+        const AUTOPLAY_LOSS_LIMITS = [0, 50, 100, 200, 500, 1000, 2000, 5000];
+
+        let autoplaySelectedCount  = 50;
+        let autoplayWinLimitIdx    = 0;
+        let autoplayLossLimitIdx   = 0;
+        let autoplayWinLimitAmount = 0;
+        let autoplayLossLimitAmount= 0;
+        let autoplayStartBalance   = 0;
+
+        function openAutoplayModal() {
+            if (autoSpinActive) {
+                stopAutoSpin();
+                return;
+            }
+            // Sync button highlights
+            document.querySelectorAll('.autoplay-spin-btn').forEach(btn => {
+                btn.classList.toggle('autoplay-spin-selected',
+                    parseInt(btn.dataset.count) === autoplaySelectedCount);
+            });
+            updateAutoplayLimitDisplay('win');
+            updateAutoplayLimitDisplay('loss');
+            document.getElementById('autoplayOverlay').style.display = 'flex';
+        }
+
+        function closeAutoplayModal() {
+            document.getElementById('autoplayOverlay').style.display = 'none';
+        }
+
+        function selectAutoplayCount(count) {
+            autoplaySelectedCount = count;
+            document.querySelectorAll('.autoplay-spin-btn').forEach(btn => {
+                btn.classList.toggle('autoplay-spin-selected',
+                    parseInt(btn.dataset.count) === count);
+            });
+        }
+
+        function adjustAutoplayLimit(type, dir) {
+            if (type === 'win') {
+                autoplayWinLimitIdx = Math.max(0, Math.min(AUTOPLAY_WIN_LIMITS.length - 1, autoplayWinLimitIdx + dir));
+                updateAutoplayLimitDisplay('win');
+            } else {
+                autoplayLossLimitIdx = Math.max(0, Math.min(AUTOPLAY_LOSS_LIMITS.length - 1, autoplayLossLimitIdx + dir));
+                updateAutoplayLimitDisplay('loss');
+            }
+        }
+
+        function updateAutoplayLimitDisplay(type) {
+            if (type === 'win') {
+                const val = AUTOPLAY_WIN_LIMITS[autoplayWinLimitIdx];
+                const el = document.getElementById('autoplayWinLimit');
+                if (el) el.textContent = val === 0 ? '$0 (No Limit)' : `$${val.toLocaleString()}`;
+            } else {
+                const val = AUTOPLAY_LOSS_LIMITS[autoplayLossLimitIdx];
+                const el = document.getElementById('autoplayLossLimit');
+                if (el) el.textContent = val === 0 ? '$0 (No Limit)' : `$${val.toLocaleString()}`;
+            }
+        }
+
+        function startEnhancedAutoplay() {
+            closeAutoplayModal();
+            // Capture limits before starting
+            autoplayWinLimitAmount  = AUTOPLAY_WIN_LIMITS[autoplayWinLimitIdx];
+            autoplayLossLimitAmount = AUTOPLAY_LOSS_LIMITS[autoplayLossLimitIdx];
+            autoplayStartBalance    = balance;
+            toggleAutoSpin(autoplaySelectedCount);
+        }
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', initAllSystems);

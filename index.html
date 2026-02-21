@@ -164,6 +164,13 @@
         </div>
         <div class="games-grid" id="hotGames"></div>
 
+        <!-- Search Bar -->
+        <div class="game-search-bar" id="gameSearchBar">
+            <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+            <input type="text" class="game-search-input" id="gameSearchInput" placeholder="Search 80+ games..." oninput="filterGamesBySearch(this.value)">
+            <button class="search-clear-btn" id="searchClearBtn" onclick="clearGameSearch()" style="display:none;">&times;</button>
+        </div>
+
         <!-- Filter Tabs -->
         <div class="filter-tabs" id="filterTabs">
             <button class="filter-tab filter-tab-active" data-filter="all" onclick="setFilter('all')">
@@ -328,6 +335,11 @@
                     <div class="game-tag tag-jackpot" id="slotGameTag" style="display:none;">JACKPOT</div>
                 </div>
                 <div class="slot-top-right">
+                    <button class="buy-bonus-btn" id="buyBonusBtn" onclick="buyBonus()" style="display:none;" title="Buy Free Spins">
+                        <span class="buy-bonus-icon">⚡</span>
+                        <span class="buy-bonus-text">BUY BONUS</span>
+                        <span class="buy-bonus-cost" id="buyBonusCost">50x</span>
+                    </button>
                     <button class="slot-info-btn" onclick="togglePaytable()" title="Game Info">
                         <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
                     </button>
@@ -399,7 +411,7 @@
                 </button>
 
                 <!-- Autoplay Button -->
-                <button class="slot-auto-btn" id="autoSpinBtn" onclick="toggleAutoSpin(10)">
+                <button class="slot-auto-btn" id="autoSpinBtn" onclick="openAutoplayModal()">
                     <span class="auto-btn-icon">&#x21bb;</span>
                     <span class="auto-btn-label">AUTO</span>
                 </button>
@@ -472,6 +484,86 @@
             <div class="bigwin-amount" id="bigWinAmount">$0</div>
             <div class="bigwin-multiplier" id="bigWinMultiplier">×0</div>
             <button class="bigwin-collect" onclick="closeBigWin()">COLLECT!</button>
+        </div>
+    </div>
+
+    <!-- ═══ Buy Bonus Confirmation Modal ═══ -->
+    <div class="buybonus-overlay" id="buyBonusOverlay" style="display:none;">
+        <div class="buybonus-modal">
+            <div class="buybonus-header">
+                <span class="buybonus-icon">⚡</span>
+                <div class="buybonus-title">BUY FREE SPINS</div>
+            </div>
+            <div class="buybonus-info">
+                <div class="buybonus-game" id="buyBonusGameName">Game Name</div>
+                <div class="buybonus-spins" id="buyBonusSpins">10 FREE SPINS</div>
+                <div class="buybonus-desc" id="buyBonusDesc">Instantly triggers the bonus round!</div>
+            </div>
+            <div class="buybonus-cost-display">
+                <div class="buybonus-cost-label">COST</div>
+                <div class="buybonus-cost-value" id="buyBonusCostValue">$500</div>
+            </div>
+            <div class="buybonus-actions">
+                <button class="buybonus-confirm" onclick="confirmBuyBonus()">⚡ BUY NOW</button>
+                <button class="buybonus-cancel" onclick="closeBuyBonus()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Enhanced Autoplay Modal ═══ -->
+    <div class="autoplay-modal-overlay" id="autoplayOverlay" style="display:none;">
+        <div class="autoplay-modal">
+            <div class="autoplay-modal-header">
+                <span>🎰</span> AUTO PLAY
+                <button class="autoplay-modal-close" onclick="closeAutoplayModal()">&times;</button>
+            </div>
+            <div class="autoplay-modal-body">
+                <div class="autoplay-section">
+                    <div class="autoplay-section-label">Number of Spins</div>
+                    <div class="autoplay-spin-options" id="autoplaySpinOptions">
+                        <button class="autoplay-spin-btn" data-count="10" onclick="selectAutoplayCount(10)">10</button>
+                        <button class="autoplay-spin-btn" data-count="25" onclick="selectAutoplayCount(25)">25</button>
+                        <button class="autoplay-spin-btn autoplay-spin-selected" data-count="50" onclick="selectAutoplayCount(50)">50</button>
+                        <button class="autoplay-spin-btn" data-count="100" onclick="selectAutoplayCount(100)">100</button>
+                        <button class="autoplay-spin-btn" data-count="250" onclick="selectAutoplayCount(250)">250</button>
+                        <button class="autoplay-spin-btn" data-count="999" onclick="selectAutoplayCount(999)">∞</button>
+                    </div>
+                </div>
+                <div class="autoplay-section">
+                    <div class="autoplay-section-label">Stop if single win exceeds</div>
+                    <div class="autoplay-limit-row">
+                        <button class="autoplay-limit-btn" onclick="adjustAutoplayLimit('win', -1)">−</button>
+                        <div class="autoplay-limit-value" id="autoplayWinLimit">$0 (No Limit)</div>
+                        <button class="autoplay-limit-btn" onclick="adjustAutoplayLimit('win', 1)">+</button>
+                    </div>
+                </div>
+                <div class="autoplay-section">
+                    <div class="autoplay-section-label">Stop if balance decreases by</div>
+                    <div class="autoplay-limit-row">
+                        <button class="autoplay-limit-btn" onclick="adjustAutoplayLimit('loss', -1)">−</button>
+                        <div class="autoplay-limit-value" id="autoplayLossLimit">$0 (No Limit)</div>
+                        <button class="autoplay-limit-btn" onclick="adjustAutoplayLimit('loss', 1)">+</button>
+                    </div>
+                </div>
+                <div class="autoplay-section">
+                    <div class="autoplay-section-label">Stop on</div>
+                    <div class="autoplay-toggle-row">
+                        <label class="autoplay-toggle">
+                            <input type="checkbox" id="autoplayStopOnBonus" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Free Spins Triggered</span>
+                        </label>
+                        <label class="autoplay-toggle">
+                            <input type="checkbox" id="autoplayStopOnBigWin">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Big Win (10x+ bet)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <button class="autoplay-start-btn" onclick="startEnhancedAutoplay()">
+                START AUTOPLAY
+            </button>
         </div>
     </div>
 
@@ -797,6 +889,7 @@
     <!-- constants.js exists but is not loaded yet — app.js still has duplicated
          const declarations that must be removed first to avoid SyntaxError -->
     <script src="shared/game-definitions.js"></script>
+    <script src="shared/chrome-styles.js"></script>
     <script src="house-edge-client.js"></script>
     <script src="sound-manager.js"></script>
     <script src="animations.js"></script>

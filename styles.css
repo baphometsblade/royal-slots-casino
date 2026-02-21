@@ -1682,6 +1682,403 @@
 
         /* ═══ END SLOT UI TEMPLATES ═══ */
 
+        /* ═══════════════════════════════════════════════════════════
+           PER-GAME CHROME STYLES  —  slot-chrome-{style}
+           Applied to #slotModal via JS based on GAME_CHROME_STYLES
+           Each style replicates the visual chrome of the parent slot.
+           Corner ornaments: 4 PNG images positioned in the corners of
+           .slot-reel-area using a full-bleed ::after overlay.
+           Frame strips: top/bottom PNG bars in .slot-reel-area.
+        ═══════════════════════════════════════════════════════════ */
+
+        /* Shared chrome overlay setup — corners + frame strips via CSS
+           background-image multi-layer on the reel area pseudo-element */
+        [class*="slot-chrome-"] .slot-reel-area {
+            position: relative;
+        }
+        [class*="slot-chrome-"] .slot-reel-area::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 8;
+            background-repeat: no-repeat, no-repeat, no-repeat, no-repeat,
+                               repeat-x,   repeat-x;
+            background-size:
+                72px 72px, 72px 72px, 72px 72px, 72px 72px,
+                auto 44px, auto 44px;
+            background-position:
+                top 0 left 0,
+                top 0 right 0,
+                bottom 0 left 0,
+                bottom 0 right 0,
+                top 0 left 0,
+                bottom 0 right 0;
+        }
+
+        /* ── 1. CANDY  (Sugar Rush / Sweet Bonanza) ───────────────── */
+        .slot-chrome-candy .reels-container {
+            border: 3px solid transparent;
+            border-radius: 20px;
+            box-shadow:
+                0 0 0 3px #ff6fd8,
+                0 0 0 6px #f7a531,
+                0 0 40px rgba(255,111,216,0.4),
+                0 0 80px rgba(247,165,49,0.2);
+            background: rgba(20, 5, 15, 0.85) !important;
+        }
+        .slot-chrome-candy .reel-cell {
+            border-radius: 10px !important;
+            border: 2px solid rgba(255,111,216,0.2) !important;
+            background: rgba(255,111,216,0.04) !important;
+        }
+        .slot-chrome-candy .slot-top-bar {
+            background: linear-gradient(90deg, rgba(255,111,216,0.15), rgba(247,165,49,0.15)) !important;
+            border-bottom: 2px solid rgba(255,111,216,0.5) !important;
+        }
+        .slot-chrome-candy .slot-bottom-bar {
+            background: linear-gradient(90deg, rgba(247,165,49,0.1), rgba(255,111,216,0.1)) !important;
+            border-top: 2px solid rgba(247,165,49,0.4) !important;
+        }
+        .slot-chrome-candy .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/candy/corner_tl.png'),
+                url('assets/chrome/candy/corner_tr.png'),
+                url('assets/chrome/candy/corner_bl.png'),
+                url('assets/chrome/candy/corner_br.png'),
+                url('assets/chrome/candy/frame_top.png'),
+                url('assets/chrome/candy/frame_bot.png');
+        }
+
+        /* ── 2. OLYMPUS  (Gates of Olympus family) ─────────────────── */
+        .slot-chrome-olympus .reels-container {
+            border: 4px solid #f5c842;
+            border-radius: 6px;
+            box-shadow:
+                0 0 0 1px rgba(245,200,66,0.3),
+                0 0 40px rgba(245,200,66,0.25),
+                inset 0 0 20px rgba(102,126,234,0.08);
+        }
+        .slot-chrome-olympus .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent 5%, rgba(245,200,66,0.35) 30%,
+                rgba(245,200,66,0.35) 70%, transparent 95%) !important;
+            width: 2px !important;
+        }
+        .slot-chrome-olympus .reel-cell {
+            border: 1px solid rgba(245,200,66,0.12) !important;
+            background: rgba(42,26,110,0.3) !important;
+        }
+        .slot-chrome-olympus .slot-top-bar {
+            background: linear-gradient(90deg, rgba(42,26,110,0.8), rgba(15,26,61,0.8)) !important;
+            border-bottom: 3px solid #f5c842 !important;
+        }
+        .slot-chrome-olympus .slot-bottom-bar {
+            border-top: 3px solid #f5c842 !important;
+        }
+        .slot-chrome-olympus .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/olympus/corner_tl.png'),
+                url('assets/chrome/olympus/corner_tr.png'),
+                url('assets/chrome/olympus/corner_bl.png'),
+                url('assets/chrome/olympus/corner_br.png'),
+                url('assets/chrome/olympus/frame_top.png'),
+                url('assets/chrome/olympus/frame_bot.png');
+        }
+
+        /* ── 3. WILD  (Wolf Gold / Buffalo / Rhino) ─────────────────── */
+        .slot-chrome-wild .reels-container {
+            border: 4px solid #8b7355;
+            border-radius: 8px;
+            box-shadow:
+                0 0 0 2px #4a3728,
+                0 0 30px rgba(139,115,85,0.2),
+                inset 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .slot-chrome-wild .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent, rgba(184,115,51,0.25), transparent) !important;
+            width: 2px !important;
+        }
+        .slot-chrome-wild .reel-cell {
+            border: 1px solid rgba(139,115,85,0.15) !important;
+            background: transparent !important;
+        }
+        .slot-chrome-wild .slot-top-bar {
+            background: linear-gradient(90deg, rgba(58,40,16,0.9), rgba(26,18,8,0.9)) !important;
+            border-bottom: 3px solid #8b7355 !important;
+        }
+        .slot-chrome-wild .slot-bottom-bar {
+            border-top: 3px solid #8b7355 !important;
+        }
+        .slot-chrome-wild .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/wild/corner_tl.png'),
+                url('assets/chrome/wild/corner_tr.png'),
+                url('assets/chrome/wild/corner_bl.png'),
+                url('assets/chrome/wild/corner_br.png'),
+                url('assets/chrome/wild/frame_top.png'),
+                url('assets/chrome/wild/frame_bot.png');
+        }
+
+        /* ── 4. EGYPTIAN  (Book of Dead / Gonzo's Quest) ────────────── */
+        .slot-chrome-egyptian .reels-container {
+            border: 4px solid #c7a94e;
+            border-radius: 4px;
+            box-shadow:
+                0 0 0 2px rgba(199,169,78,0.3),
+                0 0 50px rgba(199,169,78,0.2),
+                inset 0 0 30px rgba(0,0,0,0.4);
+        }
+        .slot-chrome-egyptian .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent 5%, rgba(199,169,78,0.4) 30%,
+                rgba(199,169,78,0.4) 70%, transparent 95%) !important;
+            width: 1px !important;
+        }
+        .slot-chrome-egyptian .reel-cell {
+            border: 1px solid rgba(199,169,78,0.15) !important;
+            background: rgba(26,16,6,0.6) !important;
+        }
+        .slot-chrome-egyptian .slot-top-bar {
+            background: linear-gradient(90deg, rgba(42,26,8,0.95), rgba(20,13,4,0.95)) !important;
+            border-bottom: 3px solid #c7a94e !important;
+        }
+        .slot-chrome-egyptian .slot-bottom-bar {
+            border-top: 3px solid #c7a94e !important;
+        }
+        .slot-chrome-egyptian .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/egyptian/corner_tl.png'),
+                url('assets/chrome/egyptian/corner_tr.png'),
+                url('assets/chrome/egyptian/corner_bl.png'),
+                url('assets/chrome/egyptian/corner_br.png'),
+                url('assets/chrome/egyptian/frame_top.png'),
+                url('assets/chrome/egyptian/frame_bot.png');
+        }
+
+        /* ── 5. NEON  (Starburst / Reactoonz / Nitro) ───────────────── */
+        .slot-chrome-neon .reels-container {
+            border: 3px solid #a855f7;
+            border-radius: 10px;
+            box-shadow:
+                0 0 0 1px rgba(168,85,247,0.3),
+                0 0 30px rgba(168,85,247,0.35),
+                0 0 60px rgba(6,182,212,0.15),
+                inset 0 0 20px rgba(168,85,247,0.05);
+        }
+        .slot-chrome-neon .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent, rgba(168,85,247,0.15), transparent) !important;
+            width: 1px !important;
+        }
+        .slot-chrome-neon .reel-cell {
+            border: 1px solid rgba(168,85,247,0.08) !important;
+            background: rgba(5,0,15,0.5) !important;
+        }
+        .slot-chrome-neon .slot-top-bar {
+            background: linear-gradient(90deg, rgba(5,0,15,0.95), rgba(10,0,30,0.95)) !important;
+            border-bottom: 2px solid #a855f7 !important;
+            box-shadow: 0 0 15px rgba(168,85,247,0.3) !important;
+        }
+        .slot-chrome-neon .slot-bottom-bar {
+            border-top: 2px solid #a855f7 !important;
+            box-shadow: 0 0 15px rgba(168,85,247,0.3) !important;
+        }
+        .slot-chrome-neon .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/neon/corner_tl.png'),
+                url('assets/chrome/neon/corner_tr.png'),
+                url('assets/chrome/neon/corner_bl.png'),
+                url('assets/chrome/neon/corner_br.png'),
+                url('assets/chrome/neon/frame_top.png'),
+                url('assets/chrome/neon/frame_bot.png');
+        }
+
+        /* ── 6. WESTERN  (Tombstone / Wanted / Money Train) ─────────── */
+        .slot-chrome-western .reels-container {
+            border: 5px solid #8b6914;
+            border-radius: 4px;
+            box-shadow:
+                0 0 0 2px #5c3d1e,
+                0 0 30px rgba(139,105,20,0.2),
+                inset 0 2px 10px rgba(0,0,0,0.6);
+        }
+        .slot-chrome-western .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent, rgba(139,105,20,0.3), transparent) !important;
+            width: 3px !important;
+        }
+        .slot-chrome-western .reel-cell {
+            border: 1px solid rgba(139,105,20,0.1) !important;
+            background: rgba(20,12,4,0.7) !important;
+        }
+        .slot-chrome-western .slot-top-bar {
+            background: linear-gradient(90deg, rgba(58,32,8,0.95), rgba(30,16,4,0.95)) !important;
+            border-bottom: 4px solid #8b6914 !important;
+        }
+        .slot-chrome-western .slot-bottom-bar {
+            border-top: 4px solid #8b6914 !important;
+        }
+        .slot-chrome-western .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/western/corner_tl.png'),
+                url('assets/chrome/western/corner_tr.png'),
+                url('assets/chrome/western/corner_bl.png'),
+                url('assets/chrome/western/corner_br.png'),
+                url('assets/chrome/western/frame_top.png'),
+                url('assets/chrome/western/frame_bot.png');
+        }
+
+        /* ── 7. ORIENTAL  (5 Lions / Dragon / Bamboo) ───────────────── */
+        .slot-chrome-oriental .reels-container {
+            border: 4px solid #c41e3a;
+            border-radius: 6px;
+            box-shadow:
+                0 0 0 2px rgba(196,30,58,0.4),
+                0 0 0 4px #ffd700,
+                0 0 40px rgba(196,30,58,0.25),
+                inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .slot-chrome-oriental .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent, rgba(255,215,0,0.4), transparent) !important;
+            width: 2px !important;
+        }
+        .slot-chrome-oriental .reel-cell {
+            border: 1px solid rgba(255,215,0,0.1) !important;
+            background: rgba(20,6,10,0.6) !important;
+        }
+        .slot-chrome-oriental .slot-top-bar {
+            background: linear-gradient(90deg, rgba(90,0,20,0.95), rgba(50,0,10,0.95)) !important;
+            border-bottom: 3px solid #ffd700 !important;
+        }
+        .slot-chrome-oriental .slot-bottom-bar {
+            border-top: 3px solid #ffd700 !important;
+        }
+        .slot-chrome-oriental .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/oriental/corner_tl.png'),
+                url('assets/chrome/oriental/corner_tr.png'),
+                url('assets/chrome/oriental/corner_bl.png'),
+                url('assets/chrome/oriental/corner_br.png'),
+                url('assets/chrome/oriental/frame_top.png'),
+                url('assets/chrome/oriental/frame_bot.png');
+        }
+
+        /* ── 8. JOKER  (Fire Joker / 100 Super Hot / Mega Joker) ────── */
+        .slot-chrome-joker .reels-container {
+            border: 5px solid #d0d0d0;
+            border-radius: 12px;
+            box-shadow:
+                0 0 0 2px #888,
+                0 0 0 5px #ff0844,
+                0 0 30px rgba(255,8,68,0.2),
+                inset 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .slot-chrome-joker .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent 5%, rgba(208,208,208,0.3) 30%,
+                rgba(208,208,208,0.3) 70%, transparent 95%) !important;
+            width: 3px !important;
+        }
+        .slot-chrome-joker .reel-cell {
+            border: 1px solid rgba(208,208,208,0.1) !important;
+            background: rgba(10,10,10,0.85) !important;
+            border-radius: 4px !important;
+        }
+        .slot-chrome-joker .slot-top-bar {
+            background: linear-gradient(90deg, #1a0008, #0a0004) !important;
+            border-bottom: 3px solid #ff0844 !important;
+            box-shadow: 0 0 20px rgba(255,8,68,0.2) !important;
+        }
+        .slot-chrome-joker .slot-bottom-bar {
+            border-top: 3px solid #d0d0d0 !important;
+        }
+        .slot-chrome-joker .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/joker/corner_tl.png'),
+                url('assets/chrome/joker/corner_tr.png'),
+                url('assets/chrome/joker/corner_bl.png'),
+                url('assets/chrome/joker/corner_br.png'),
+                url('assets/chrome/joker/frame_top.png'),
+                url('assets/chrome/joker/frame_bot.png');
+        }
+
+        /* ── 9. DARK  (Immortal Blood / Money Train / Madame Destiny) ─ */
+        .slot-chrome-dark .reels-container {
+            border: 4px solid #6b21a8;
+            border-radius: 8px;
+            box-shadow:
+                0 0 0 2px rgba(107,33,168,0.4),
+                0 0 0 4px #991b1b,
+                0 0 50px rgba(107,33,168,0.3),
+                inset 0 0 30px rgba(0,0,0,0.7);
+        }
+        .slot-chrome-dark .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent, rgba(107,33,168,0.3), transparent) !important;
+            width: 1px !important;
+        }
+        .slot-chrome-dark .reel-cell {
+            border: 1px solid rgba(107,33,168,0.1) !important;
+            background: rgba(5,0,8,0.8) !important;
+        }
+        .slot-chrome-dark .slot-top-bar {
+            background: linear-gradient(90deg, rgba(20,0,30,0.98), rgba(8,0,12,0.98)) !important;
+            border-bottom: 3px solid #991b1b !important;
+        }
+        .slot-chrome-dark .slot-bottom-bar {
+            border-top: 3px solid #6b21a8 !important;
+        }
+        .slot-chrome-dark .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/dark/corner_tl.png'),
+                url('assets/chrome/dark/corner_tr.png'),
+                url('assets/chrome/dark/corner_bl.png'),
+                url('assets/chrome/dark/corner_br.png'),
+                url('assets/chrome/dark/frame_top.png'),
+                url('assets/chrome/dark/frame_bot.png');
+        }
+
+        /* ── 10. FISHING  (Big Bass / Razor Shark) ──────────────────── */
+        .slot-chrome-fishing .reels-container {
+            border: 4px solid #0077b6;
+            border-radius: 10px;
+            box-shadow:
+                0 0 0 2px rgba(0,119,182,0.4),
+                0 0 0 4px #48cae4,
+                0 0 40px rgba(0,119,182,0.25),
+                inset 0 0 20px rgba(0,50,80,0.3);
+        }
+        .slot-chrome-fishing .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent, rgba(72,202,228,0.2), transparent) !important;
+            width: 2px !important;
+        }
+        .slot-chrome-fishing .reel-cell {
+            border: 1px solid rgba(0,119,182,0.15) !important;
+            background: rgba(3,13,21,0.7) !important;
+        }
+        .slot-chrome-fishing .slot-top-bar {
+            background: linear-gradient(90deg, rgba(6,26,42,0.95), rgba(3,13,21,0.95)) !important;
+            border-bottom: 3px solid #48cae4 !important;
+        }
+        .slot-chrome-fishing .slot-bottom-bar {
+            border-top: 3px solid #0077b6 !important;
+        }
+        .slot-chrome-fishing .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/fishing/corner_tl.png'),
+                url('assets/chrome/fishing/corner_tr.png'),
+                url('assets/chrome/fishing/corner_bl.png'),
+                url('assets/chrome/fishing/corner_br.png'),
+                url('assets/chrome/fishing/frame_top.png'),
+                url('assets/chrome/fishing/frame_bot.png');
+        }
+
+        /* ═══ END PER-GAME CHROME STYLES ═══ */
+
         /* ═══ VIBRANT WIN HIGHLIGHT SYSTEM ═══ */
 
         .reel-win-glow {
@@ -7347,4 +7744,414 @@
     90%  { opacity: 1; }
     100% { top: 110%; transform: rotate(360deg) scale(0.8); opacity: 0; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   GAME SEARCH BAR
+   ═══════════════════════════════════════════════════════════════════ */
+.game-search-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 0 14px;
+    gap: 10px;
+    margin: 0 0 12px;
+    height: 44px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.game-search-bar:focus-within {
+    border-color: rgba(251,191,36,0.5);
+    box-shadow: 0 0 0 2px rgba(251,191,36,0.1);
+}
+.search-icon {
+    width: 16px;
+    height: 16px;
+    color: rgba(255,255,255,0.35);
+    flex-shrink: 0;
+}
+.game-search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+}
+.game-search-input::placeholder { color: rgba(255,255,255,0.3); }
+.search-clear-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: color 0.15s, background 0.15s;
+}
+.search-clear-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BUY BONUS BUTTON (in slot top bar)
+   ═══════════════════════════════════════════════════════════════════ */
+.buy-bonus-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    border-radius: 8px;
+    color: #1a0a00;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 7px 11px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+    box-shadow: 0 2px 12px rgba(245,158,11,0.4);
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+.buy-bonus-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 20px rgba(245,158,11,0.55);
+    filter: brightness(1.08);
+}
+.buy-bonus-btn:active { transform: scale(0.97); }
+.buy-bonus-icon { font-size: 13px; }
+.buy-bonus-text { font-size: 10px; font-weight: 900; }
+.buy-bonus-cost {
+    background: rgba(0,0,0,0.25);
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BUY BONUS MODAL
+   ═══════════════════════════════════════════════════════════════════ */
+.buybonus-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99990;
+    backdrop-filter: blur(6px);
+}
+.buybonus-modal {
+    background: linear-gradient(160deg, #1c1208 0%, #0d0a04 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 20px;
+    padding: 32px 28px;
+    width: min(380px, 90vw);
+    box-shadow: 0 0 60px rgba(245,158,11,0.3), 0 24px 60px rgba(0,0,0,0.6);
+    text-align: center;
+    animation: buyBonusPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes buyBonusPop {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+.buybonus-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+.buybonus-icon { font-size: 36px; }
+.buybonus-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #f59e0b;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(245,158,11,0.6);
+}
+.buybonus-info {
+    background: rgba(245,158,11,0.07);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+}
+.buybonus-game {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+}
+.buybonus-spins {
+    font-size: 22px;
+    font-weight: 900;
+    color: #f59e0b;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.buybonus-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+}
+.buybonus-cost-display {
+    margin-bottom: 22px;
+}
+.buybonus-cost-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+.buybonus-cost-value {
+    font-size: 30px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255,255,255,0.3);
+}
+.buybonus-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.buybonus-confirm {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    border-radius: 10px;
+    color: #1a0a00;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 1px;
+    padding: 14px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.4);
+}
+.buybonus-confirm:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 28px rgba(245,158,11,0.55);
+}
+.buybonus-cancel {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.buybonus-cancel:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ENHANCED AUTOPLAY MODAL
+   ═══════════════════════════════════════════════════════════════════ */
+.autoplay-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99980;
+    backdrop-filter: blur(8px);
+}
+.autoplay-modal {
+    background: linear-gradient(160deg, #0f1922 0%, #080e14 100%);
+    border: 1.5px solid rgba(99,179,237,0.25);
+    border-radius: 20px;
+    width: min(420px, 92vw);
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(99,179,237,0.15), 0 24px 60px rgba(0,0,0,0.7);
+    animation: autoplaySlideIn 0.28s cubic-bezier(0.34,1.3,0.64,1);
+}
+@keyframes autoplaySlideIn {
+    from { transform: translateY(40px) scale(0.95); opacity: 0; }
+    to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+.autoplay-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 22px;
+    background: rgba(99,179,237,0.06);
+    border-bottom: 1px solid rgba(99,179,237,0.12);
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 1.5px;
+    color: #63b3ed;
+}
+.autoplay-modal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.15s;
+}
+.autoplay-modal-close:hover { color: #fff; }
+
+.autoplay-modal-body {
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.autoplay-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.autoplay-spin-options {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+}
+.autoplay-spin-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+}
+.autoplay-spin-btn:hover {
+    background: rgba(99,179,237,0.12);
+    border-color: rgba(99,179,237,0.35);
+    color: #fff;
+}
+.autoplay-spin-btn.autoplay-spin-selected {
+    background: rgba(99,179,237,0.18);
+    border-color: #63b3ed;
+    color: #63b3ed;
+    box-shadow: 0 0 12px rgba(99,179,237,0.2);
+}
+.autoplay-limit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.autoplay-limit-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+}
+.autoplay-limit-btn:hover {
+    background: rgba(99,179,237,0.12);
+    border-color: rgba(99,179,237,0.4);
+}
+.autoplay-limit-value {
+    flex: 1;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.autoplay-toggle-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.autoplay-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.15s;
+}
+.autoplay-toggle:hover { background: rgba(255,255,255,0.07); }
+.autoplay-toggle input[type="checkbox"] { display: none; }
+.toggle-slider {
+    width: 38px;
+    height: 20px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.toggle-slider::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+}
+.autoplay-toggle input:checked + .toggle-slider {
+    background: #63b3ed;
+}
+.autoplay-toggle input:checked + .toggle-slider::after {
+    transform: translateX(18px);
+}
+.toggle-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+}
+.autoplay-start-btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border: none;
+    border-top: 1px solid rgba(99,179,237,0.2);
+    color: #fff;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    padding: 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: filter 0.15s, transform 0.1s;
+    border-radius: 0 0 20px 20px;
+}
+.autoplay-start-btn:hover  { filter: brightness(1.1); }
+.autoplay-start-btn:active { transform: scale(0.99); }
 
