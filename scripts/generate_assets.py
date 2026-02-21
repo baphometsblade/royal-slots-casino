@@ -611,6 +611,78 @@ SYMBOL_PROMPTS = {
     },
 }
 
+# ─── Background prompts: game_id -> prompt ────────────────────────────────────
+# Each generates a 1920x1080 atmospheric background for the slot play area.
+# Key: dark center (reels go there), vivid themed imagery at edges.
+
+BG_SUFFIX = "slot machine background, wide landscape, dark center area for game reels, cinematic lighting, highly detailed, 4k quality, digital art"
+
+BG_PROMPTS = {
+    "sugar_rush":         f"candy fantasy land, cotton candy clouds, giant lollipop trees, gummy bear pathway, pink sugar crystal formations, sparkly candy wonderland, {BG_SUFFIX}",
+    "lucky_777":          f"colorful tropical fruit explosion, giant strawberries grapes bananas floating in pastel sky, candy and fruit paradise, pink clouds, sparkling sugar particles, {BG_SUFFIX}",
+    "gates_olympus":      f"Mount Olympus golden temple above clouds, Zeus throne room with lightning, marble columns, dramatic purple gold sky, divine golden light rays, epic Greek mythology scene, {BG_SUFFIX}",
+    "black_bull":         f"Spanish bullring arena at night, dramatic red and black atmosphere, gold coins scattered, dark moody arena with spotlights, Spanish architecture, {BG_SUFFIX}",
+    "hot_chillies":       f"Mexican fiesta scene, colorful chili peppers, maracas, festive papel picado banners, warm desert sunset, cantina style, {BG_SUFFIX}",
+    "super_hot":          f"classic retro slot machine background, burning flame border, neon glow fruit outlines, dark background with fire effects, retro casino atmosphere, {BG_SUFFIX}",
+    "wolf_gold":          f"wolf howling at full moon on mountain ridge, Native American totem poles, golden amber sunset, wilderness panorama, {BG_SUFFIX}",
+    "big_bass":           f"peaceful lake fishing scene, wooden dock, morning mist, bass fish jumping from water, fishing boat, blue water reflections, {BG_SUFFIX}",
+    "fire_joker":         f"dark circus tent interior with fire effects, jester face shadow, flames along edges, classic retro slot atmosphere, dramatic fire lighting, {BG_SUFFIX}",
+    "book_dead":          f"ancient Egyptian tomb interior, golden sarcophagus, hieroglyph covered walls, torchlit corridor, mystical golden glow, pharaoh treasures, {BG_SUFFIX}",
+    "starburst_xxl":      f"deep space cosmic nebula, colorful starburst gems floating, rainbow aurora, cosmic dust, dark void with brilliant colorful light explosions, {BG_SUFFIX}",
+    "gonzos_quest":       f"ancient Aztec temple in dense jungle, stone carved faces, golden treasure chamber entrance, waterfall, lush green foliage, mystical fog, {BG_SUFFIX}",
+    "starlight_princess": f"magical anime princess castle in starlit sky, pink and purple aurora, floating star crystals, magical sparkle particles, dreamy celestial atmosphere, {BG_SUFFIX}",
+    "olympus_rising":     f"underwater temple of Poseidon rising from ocean, marble pillars covered in coral, dramatic ocean waves, trident glowing, blue golden light, {BG_SUFFIX}",
+    "buffalo_stampede":   f"American buffalo herd on prairie at golden sunset, dust clouds, dramatic orange sky, western landscape, {BG_SUFFIX}",
+    "puppy_palace":       f"colorful dog kennel palace, cute puppy doghouse with bones and toys, green garden, warm cheerful atmosphere, cartoon style, {BG_SUFFIX}",
+    "crimson_fang":       f"gothic vampire castle at blood red moonlight, dark forest, bat silhouettes, fog rolling over graveyard, crimson red atmosphere, {BG_SUFFIX}",
+    "pirate_fortune":     f"pirate ship on stormy sea at sunset, treasure chest overflowing with gold, skull and crossbones flag, dramatic ocean waves, {BG_SUFFIX}",
+    "lucky_dragon":       f"Chinese temple with golden dragon, red lanterns, fireworks, festive Chinese New Year atmosphere, red and gold decorations, {BG_SUFFIX}",
+    "pharaoh_legacy":     f"Egyptian pyramids at sunset, golden pharaoh mask floating, sand dunes, ancient ruins, dramatic golden sky, {BG_SUFFIX}",
+    "quantum_burst":      f"quantum energy chamber, neon atom particles, electric blue plasma, sci-fi laboratory, pulsing energy grid, dark space with neon glow, {BG_SUFFIX}",
+    "olympian_gods":      f"Greek gods assembly on Mount Olympus, Zeus Poseidon Hades standing before grand temple, dramatic lightning sky, golden classical architecture, {BG_SUFFIX}",
+    "twin_helix":         f"retro futuristic neon corridor, DNA helix glowing, synthwave aesthetic, purple and cyan neon lights, sci-fi laboratory, {BG_SUFFIX}",
+    "golden_fortune":     f"luxury yacht on ocean at sunset, diamond champagne gold coins, VIP lifestyle, golden luxury atmosphere, {BG_SUFFIX}",
+    "island_tiki":        f"tropical Hawaiian beach with tiki totems, palm trees, ocean sunset, hibiscus flowers, tiki torches, warm tropical paradise, {BG_SUFFIX}",
+    "sakura_princess":    f"Japanese cherry blossom garden at moonlight, pagoda temple, floating sakura petals, pink and purple sky, serene moon reflection on water, {BG_SUFFIX}",
+    "ares_blade":         f"Spartan battlefield at dusk, war god silhouette with sword, shields and spears, dramatic red bronze sky, ancient Greek warfare, {BG_SUFFIX}",
+    "neon_nights":        f"1980s Miami Vice neon cityscape at night, palm trees, pink and cyan neon signs, sports car, synthwave sunset, {BG_SUFFIX}",
+    "viking_voyage":      f"Viking longship on stormy northern sea, dramatic lightning, Norse rune stones, northern lights, epic battle atmosphere, {BG_SUFFIX}",
+    "diamond_vault":      f"elegant vault door opening with diamonds pouring out, Greek Pegasus flying above, dark luxury atmosphere, golden and blue gems, {BG_SUFFIX}",
+    "madame_destiny":     f"fortune teller tent interior, crystal ball glowing purple, tarot cards floating, mystical purple mist, candles, mysterious atmosphere, {BG_SUFFIX}",
+    "great_rhino":        f"African savanna at golden hour, giant rhino silhouette, acacia trees, dramatic orange sunset sky, wildlife panorama, {BG_SUFFIX}",
+    "bass_splash":        f"dramatic fish jumping from water with huge splash, fishing boat on lake, blue sky, water droplets, energetic fishing scene, {BG_SUFFIX}",
+    "dragon_megafire":    f"giant Chinese fire dragon breathing flames, pagoda temple burning, red and gold fire, dramatic dark sky, floating golden coins, {BG_SUFFIX}",
+    "esqueleto_fiesta":   f"Day of the Dead celebration, colorful sugar skulls, marigold flowers, skeleton mariachi band, festive Mexican graveyard, {BG_SUFFIX}",
+    "wildfire_gold":      f"Wild West desert town at sunset, saloon with gold mining equipment, tumbleweeds, dramatic orange sky, cowboy silhouette, {BG_SUFFIX}",
+    "five_lions":         f"Chinese lion dance festival, five golden lions, red temple entrance, fireworks, lanterns, festive red and gold atmosphere, {BG_SUFFIX}",
+    "chilli_heat":        f"Mexican desert landscape with giant chili peppers, adobe village, warm sunset, fiesta decorations, {BG_SUFFIX}",
+    "tombstone_reload":   f"Wild West Tombstone ghost town, wanted poster on saloon wall, showdown at high noon, dusty dark atmosphere, {BG_SUFFIX}",
+    "mental_meltdown":    f"psychedelic brain explosion, surreal colorful melting reality, neon green electric sparks, chaotic abstract art, dark void center, {BG_SUFFIX}",
+    "san_quentin":        f"dark prison corridor, iron bars, gritty concrete walls, dramatic harsh lighting, escape route with light at end, {BG_SUFFIX}",
+    "nitro_street":       f"cyberpunk street racing scene, neon-lit underground tunnel, graffiti walls, nitrous flames, urban night, {BG_SUFFIX}",
+    "wild_toro":          f"Spanish bullfighting arena, red cape flowing, matador silhouette, dramatic red sunset, old Spanish architecture framing, {BG_SUFFIX}",
+    "jammin_fruits":      f"colorful DJ stage with fruit-shaped speakers, jam jar spotlights, music festival atmosphere, purple neon lights, dancing crowd silhouettes, {BG_SUFFIX}",
+    "big_bamboo":         f"lush bamboo forest with morning mist, panda bears, Asian temple hidden in bamboo, golden lanterns, peaceful mystical atmosphere, {BG_SUFFIX}",
+    "fat_rabbit":         f"lush vegetable garden with giant carrots and cabbages, rabbit burrow entrance, morning dew, warm sunshine, cartoon pastoral scene, {BG_SUFFIX}",
+    "immortal_blood":     f"gothic castle interior, stained glass windows with crimson light, vampire throne room, dark romantic atmosphere, blood red roses, {BG_SUFFIX}",
+    "mega_safari":        f"African safari sunset panorama, elephant lion giraffe silhouettes, dramatic orange red sky, acacia trees, savanna landscape, {BG_SUFFIX}",
+    "lucha_mania":        f"Mexican wrestling arena, colorful lucha libre masks hanging, dramatic ring lighting, crowd silhouettes, energetic atmosphere, {BG_SUFFIX}",
+    "extra_chilli":       f"Mexican food cart scene with giant chillies, burning peppers, food market fiesta, warm fiery colors, {BG_SUFFIX}",
+    "wanted_dead":        f"Wild West wanted poster nailed to weathered saloon door, old west town, dramatic sepia sunset, dust and gun smoke, {BG_SUFFIX}",
+    "chaos_crew":         f"punk street graffiti wall, spray paint art, skateboard ramps, urban chaos, colorful tags on dark walls, {BG_SUFFIX}",
+    "le_bandit":          f"Parisian night scene, Eiffel Tower illuminated, raccoon thief silhouette on rooftop, elegant noir atmosphere, moonlit city, {BG_SUFFIX}",
+    "dead_alive":         f"Wild West graveyard at sunset, gunslinger silhouette, dramatic orange sky, vultures, desert landscape, {BG_SUFFIX}",
+    "mega_joker":         f"classic retro casino interior, neon joker signs, vintage slot machines, red curtains, golden stage lights, circus carnival atmosphere, {BG_SUFFIX}",
+    "crown_fire":         f"burning royal crown on dark throne, fire and embers, dark regal chamber, dramatic flames, molten gold, {BG_SUFFIX}",
+    "olympus_dream":      f"dreamy ethereal cloud palace, soft golden temple floating in blue sky, angelic divine light, celestial peaceful atmosphere, {BG_SUFFIX}",
+    "goldstorm_ultra":    f"Norse Yggdrasil world tree in golden storm, lightning striking treasure, golden coins raining, dramatic thunderstorm, {BG_SUFFIX}",
+    "fire_hole":          f"underground mine shaft with TNT explosion, gold veins in rock walls, mine cart on rails, dramatic fire and debris, {BG_SUFFIX}",
+    "merlin_power":       f"Merlin wizard tower interior, magical spell books floating, glowing crystal staff, purple mystical energy, medieval castle library, {BG_SUFFIX}",
+}
+
+BG_DIR = CASINO_DIR / "assets" / "backgrounds" / "slots"
+
+
 # ─── Thumbnail prompts: game_id -> prompt ─────────────────────────────────────
 THUMB_PROMPTS = {
     "sugar_rush":         "slot game promotional thumbnail, candy land title screen, pink cotton candy clouds, giant lollipops, sugar rush title text, bright pastel colors, 3D rendered, high quality casino game art",
@@ -713,9 +785,52 @@ def generate_thumbnail(game_id: str, resume: bool):
     print(f"  [DONE] thumbnails/{game_id}.png")
 
 
+def postprocess_background(img: Image.Image) -> Image.Image:
+    """Apply radial vignette to darken center (where reels sit) and soften edges."""
+    from PIL import ImageFilter, ImageDraw, ImageEnhance
+    # Slight blur to reduce SDXL Turbo noise on large images
+    img = img.filter(ImageFilter.GaussianBlur(radius=1.2))
+    # Boost contrast slightly
+    img = ImageEnhance.Contrast(img).enhance(1.15)
+    # Apply vignette: darken the center region more so reels are readable
+    w, h = img.size
+    overlay = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    # Center dark ellipse (where the reels container sits)
+    cx, cy = w // 2, h // 2
+    for i in range(40):
+        alpha = int(180 * (1 - i / 40))  # Strong center darkening
+        rx = int(w * 0.25 + i * w * 0.012)
+        ry = int(h * 0.25 + i * h * 0.012)
+        draw.ellipse(
+            [cx - rx, cy - ry, cx + rx, cy + ry],
+            fill=(0, 0, 0, alpha)
+        )
+    img = img.convert('RGBA')
+    img = Image.alpha_composite(img, overlay)
+    return img.convert('RGB')
+
+
+def generate_background(game_id: str, resume: bool):
+    if game_id not in BG_PROMPTS:
+        print(f"  [SKIP] No background prompt for {game_id}")
+        return
+
+    out_path = BG_DIR / f"{game_id}_bg.png"
+    if resume and out_path.exists():
+        print(f"  [SKIP] backgrounds/slots/{game_id}_bg.png (exists)")
+        return
+
+    print(f"  [GEN]  backgrounds/slots/{game_id}_bg.png ...")
+    img = generate(BG_PROMPTS[game_id], width=1920, height=1080, steps=4)
+    img = postprocess_background(img)
+    save_image(img, out_path)
+    print(f"  [DONE] backgrounds/slots/{game_id}_bg.png")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate SDXL Turbo assets for Royal Slots Casino")
-    parser.add_argument("--mode", choices=["symbols", "thumbs", "all"], default="all",
+    parser.add_argument("--mode", choices=["symbols", "thumbs", "backgrounds", "all"], default="all",
                         help="What to generate (default: all)")
     parser.add_argument("--game", type=str, default=None,
                         help="Only generate assets for one game ID (e.g. sugar_rush)")
@@ -728,14 +843,15 @@ def main():
 
     # Validate game IDs
     for g in target_games:
-        if g not in SYMBOL_PROMPTS:
+        if g not in SYMBOL_PROMPTS and g not in BG_PROMPTS:
             print(f"ERROR: Unknown game ID '{g}'")
             print(f"Valid IDs: {all_games}")
             sys.exit(1)
 
     print(f"Mode: {args.mode} | Games: {len(target_games)} | Resume: {args.resume}")
-    print(f"Output symbols dir: {SYMBOLS_DIR}")
-    print(f"Output thumbs dir:  {THUMBS_DIR}")
+    print(f"Output symbols dir:      {SYMBOLS_DIR}")
+    print(f"Output thumbs dir:       {THUMBS_DIR}")
+    print(f"Output backgrounds dir:  {BG_DIR}")
     print()
 
     for game_id in target_games:
@@ -744,6 +860,8 @@ def main():
             generate_symbols(game_id, args.resume)
         if args.mode in ("thumbs", "all"):
             generate_thumbnail(game_id, args.resume)
+        if args.mode in ("backgrounds", "all"):
+            generate_background(game_id, args.resume)
         print()
 
     print("All done!")

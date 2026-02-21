@@ -4467,9 +4467,41 @@
             position: relative;
             overflow: hidden;
             padding: 8px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-size 0.5s ease;
+        }
+
+        /* Dark vignette overlay when a bg image is loaded — keeps reels readable */
+        .slot-reel-area.has-bg-image::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                ellipse 55% 65% at center,
+                rgba(0, 0, 0, 0.60) 0%,
+                rgba(0, 0, 0, 0.35) 55%,
+                rgba(0, 0, 0, 0.10) 100%
+            );
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Subtle zoom during spin for dynamic feel */
+        .slot-reel-area.has-bg-image.spinning-active {
+            background-size: 108%;
+        }
+
+        /* When SDXL bg image is loaded, make reels-container semi-transparent
+           so the themed background shows through around the edges */
+        .slot-reel-area.has-bg-image .reels-container {
+            background: rgba(8, 5, 12, 0.82) !important;
         }
 
         .slot-reel-area .reels-container {
+            position: relative;
+            z-index: 1;
             margin-bottom: 0;
             border-radius: 10px;
             padding: 4px;

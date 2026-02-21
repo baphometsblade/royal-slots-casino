@@ -1646,10 +1646,28 @@
             if (bottomBar) {
                 bottomBar.style.borderTopColor = accent + '44';
             }
-            // Set game bg gradient on reel area
+            // Set game background on reel area (prefer SDXL image, fallback to gradient)
             const reelArea = document.querySelector('.slot-reel-area');
-            if (reelArea && currentGame.bgGradient) {
-                reelArea.style.background = currentGame.bgGradient;
+            if (reelArea) {
+                const bgImagePath = `assets/backgrounds/slots/${currentGame.id}_bg.png`;
+                // Try loading the SDXL background image
+                const testImg = new Image();
+                testImg.onload = () => {
+                    reelArea.style.background = `url('${bgImagePath}') center/cover no-repeat`;
+                    reelArea.classList.add('has-bg-image');
+                };
+                testImg.onerror = () => {
+                    // Fallback to CSS gradient
+                    if (currentGame.bgGradient) {
+                        reelArea.style.background = currentGame.bgGradient;
+                    }
+                    reelArea.classList.remove('has-bg-image');
+                };
+                testImg.src = bgImagePath;
+                // Set gradient immediately as placeholder while image loads
+                if (currentGame.bgGradient) {
+                    reelArea.style.background = currentGame.bgGradient;
+                }
             }
             // Update slot bottom bar balance
             const slotBal = document.getElementById('slotBalance');
@@ -1835,6 +1853,9 @@
             playSound('spin');
             spinning = true;
             updateSlotWinDisplay(0);
+            // Add bg zoom effect during spin
+            const reelAreaSpin = document.querySelector('.slot-reel-area');
+            if (reelAreaSpin) reelAreaSpin.classList.add('spinning-active');
 
             const spinBtn = document.getElementById('spinBtn');
             spinBtn.disabled = true;
@@ -1869,6 +1890,8 @@
                     animateReelStop(colIdx, finalGrid[colIdx], spinInterval, cols, finalGrid, spinGame, () => {
                         checkWin(flattenGrid(finalGrid), spinGame);
                         spinning = false;
+                        const ra = document.querySelector('.slot-reel-area');
+                        if (ra) ra.classList.remove('spinning-active');
                         spinBtn.disabled = currentBet > balance;
                         spinBtn.textContent = '';
                         refreshBetControls();
@@ -2596,6 +2619,8 @@
                     animateReelStop(colIdx, finalGrid[colIdx], spinInterval, cols, finalGrid, game, () => {
                         checkWin(flattenGrid(finalGrid), game);
                         spinning = false;
+                        const ra2 = document.querySelector('.slot-reel-area');
+                        if (ra2) ra2.classList.remove('spinning-active');
                         spinBtn.disabled = false;
                         spinBtn.textContent = freeSpinsActive ? `FREE SPIN (${freeSpinsRemaining})` : 'SPIN NOW!';
                         refreshQaStateDisplay();
