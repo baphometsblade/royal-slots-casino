@@ -2421,7 +2421,9 @@
                     isBigWin = true;
                     const totalSize = clusters.reduce((sum, cl) => sum + cl.size, 0);
                     message = `CLUSTER WIN! ${clusterCount} cluster${clusterCount > 1 ? 's' : ''} (${totalSize} symbols) = $${winAmount.toLocaleString()}!`;
-                    if (winAmount >= currentBet * 20) {
+                    if (winAmount >= currentBet * 50) {
+                        playSound('megawin');
+                    } else if (winAmount >= currentBet * 20) {
                         playSound('bigwin');
                     } else {
                         playSound('win');
@@ -2482,7 +2484,9 @@
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
                     }
 
-                    if (winAmount >= currentBet * 20) {
+                    if (winAmount >= currentBet * 50) {
+                        playSound('megawin');
+                    } else if (winAmount >= currentBet * 20) {
                         playSound('bigwin');
                     } else {
                         playSound('win');
@@ -2490,6 +2494,7 @@
                     showWinAnimation(winAmount);
                 } else {
                     message = 'No winning lines. Try again.';
+                    playSound('lose');
                     if (freeSpinsActive && (game.bonusType === 'tumble' || game.bonusType === 'avalanche')) {
                         freeSpinsCascadeLevel = 0;
                     }
@@ -2591,14 +2596,14 @@
                 winAmount += scatterWin;
 
                 if (scatterCount >= fullScatterThreshold) {
+                    playSound('freespin');
                     triggerFreeSpins(game, game.freeSpinsCount);
                     message = `SCATTER BONUS! ${game.freeSpinsCount} FREE SPINS AWARDED! +$${scatterWin.toLocaleString()} scatter pay!`;
-                    playSound('bigwin');
                 } else {
                     const halfSpins = Math.max(3, Math.floor(game.freeSpinsCount / 2));
+                    playSound('freespin');
                     triggerFreeSpins(game, halfSpins);
                     message = `SCATTER! ${halfSpins} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
-                    playSound('bigwin');
                 }
             }
 
@@ -3206,54 +3211,170 @@
 
             try {
                 const audioContext = getAudioContext();
-                const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-
-                oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
+
+                const now = audioContext.currentTime;
 
                 switch(type) {
                     case 'spin':
-                        oscillator.frequency.value = 440;
-                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                        oscillator.start(audioContext.currentTime);
-                        oscillator.stop(audioContext.currentTime + 0.1);
-                        break;
-                    case 'win':
-                        oscillator.frequency.value = 880;
-                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                        oscillator.start(audioContext.currentTime);
-                        oscillator.stop(audioContext.currentTime + 0.3);
-                        break;
-                    case 'bigwin':
-                        // Chord for big wins
-                        [523, 659, 784].forEach((freq, i) => {
+                        // Classic spin start sound - rising pitch
+                        {
                             const osc = audioContext.createOscillator();
-                            const gain = audioContext.createGain();
-                            osc.connect(gain);
-                            gain.connect(audioContext.destination);
-                            osc.frequency.value = freq;
-                            gain.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.1);
-                            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5 + i * 0.1);
-                            osc.start(audioContext.currentTime + i * 0.1);
-                            osc.stop(audioContext.currentTime + 0.5 + i * 0.1);
-                        });
+                            osc.connect(gainNode);
+                            gainNode.gain.setValueAtTime(0.3, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                            osc.frequency.setValueAtTime(300, now);
+                            osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+                            osc.start(now);
+                            osc.stop(now + 0.15);
+                        }
                         break;
+
                     case 'click':
-                        oscillator.frequency.value = 800;
-                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
-                        oscillator.start(audioContext.currentTime);
-                        oscillator.stop(audioContext.currentTime + 0.05);
+                        // UI button click - short percussive sound
+                        {
+                            const osc = audioContext.createOscillator();
+                            osc.connect(gainNode);
+                            gainNode.gain.setValueAtTime(0.15, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                            osc.frequency.value = 1200;
+                            osc.start(now);
+                            osc.stop(now + 0.05);
+                        }
                         break;
+
+                    case 'win':
+                        // Regular win - ascending two notes
+                        {
+                            [523, 659].forEach((freq, i) => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.value = freq;
+                                gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3 + i * 0.1);
+                                osc.start(now + i * 0.1);
+                                osc.stop(now + 0.3 + i * 0.1);
+                            });
+                        }
+                        break;
+
+                    case 'bigwin':
+                        // Big win - triumphant chord with flourish
+                        {
+                            const freqs = [523, 659, 784, 988]; // C-E-G-B chord
+                            freqs.forEach((freq, i) => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.value = freq;
+                                gain.gain.setValueAtTime(0.15, now + i * 0.08);
+                                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8 + i * 0.08);
+                                osc.start(now + i * 0.08);
+                                osc.stop(now + 0.8 + i * 0.08);
+                            });
+                        }
+                        break;
+
+                    case 'megawin':
+                        // Mega win - dramatic ascending sweep with multiple flourishes
+                        {
+                            const sweepFreqs = [440, 554, 659, 784, 988, 1047]; // A-C#-E-G-B-C
+                            sweepFreqs.forEach((freq, i) => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.value = freq;
+                                gain.gain.setValueAtTime(0.1, now + i * 0.06);
+                                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.2 + i * 0.06);
+                                osc.start(now + i * 0.06);
+                                osc.stop(now + 1.2 + i * 0.06);
+                            });
+                        }
+                        break;
+
+                    case 'freespin':
+                        // Free spin activated - magical ascending three-note sequence
+                        {
+                            const freqs = [587, 659, 784]; // D-E-G
+                            freqs.forEach((freq, i) => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.value = freq;
+                                gain.gain.setValueAtTime(0.2, now + i * 0.15);
+                                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5 + i * 0.15);
+                                osc.start(now + i * 0.15);
+                                osc.stop(now + 0.5 + i * 0.15);
+                            });
+                        }
+                        break;
+
                     case 'toggle':
-                        oscillator.frequency.value = 600;
-                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                        oscillator.start(audioContext.currentTime);
-                        oscillator.stop(audioContext.currentTime + 0.1);
+                        // Sound toggle - neutral beep
+                        {
+                            const osc = audioContext.createOscillator();
+                            osc.connect(gainNode);
+                            gainNode.gain.setValueAtTime(0.15, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                            osc.frequency.value = 700;
+                            osc.start(now);
+                            osc.stop(now + 0.1);
+                        }
+                        break;
+
+                    case 'scatter':
+                        // Scatter symbol - magical glimmer sound
+                        {
+                            const osc = audioContext.createOscillator();
+                            osc.connect(gainNode);
+                            gainNode.gain.setValueAtTime(0.15, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                            osc.frequency.setValueAtTime(1200, now);
+                            osc.frequency.exponentialRampToValueAtTime(1800, now + 0.25);
+                            osc.start(now);
+                            osc.stop(now + 0.25);
+                        }
+                        break;
+
+                    case 'bonus':
+                        // Bonus feature triggered - celebratory sound
+                        {
+                            const freqs = [659, 784, 880]; // E-G-A
+                            freqs.forEach((freq, i) => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.value = freq;
+                                gain.gain.setValueAtTime(0.15, now + i * 0.12);
+                                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6 + i * 0.12);
+                                osc.start(now + i * 0.12);
+                                osc.stop(now + 0.6 + i * 0.12);
+                            });
+                        }
+                        break;
+
+                    case 'lose':
+                        // Lose/no win - descending two-note sequence
+                        {
+                            [440, 330].forEach((freq, i) => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.value = freq;
+                                gain.gain.setValueAtTime(0.1, now + i * 0.15);
+                                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25 + i * 0.15);
+                                osc.start(now + i * 0.15);
+                                osc.stop(now + 0.25 + i * 0.15);
+                            });
+                        }
                         break;
                 }
             } catch (e) {
