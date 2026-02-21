@@ -1,0 +1,22 @@
+{
+  "name": "royal-casino-server",
+  "version": "1.0.0",
+  "description": "Server-side casino with secure RNG, JWT auth, and house edge enforcement",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "qa:regression": "node scripts/qa_regression.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sql.js": "^1.10.2",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "playwright": "^1.58.2"
+  }
+}

@@ -1,0 +1,108 @@
+const express = require('express');
+const path = require('path');
+const helmet = require('helmet');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const config = require('./config');
+const { initDatabase } = require('./database');
+
+const app = express();
+
+// ─── Security Middleware ───
+app.use(helmet({
+    contentSecurityPolicy: false, // Allow inline scripts for the casino client
+}));
+app.use(cors());
+app.use(express.json());
+
+// Global rate limiter
+const globalLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 200, // 200 requests per minute
+    message: { error: 'Too many requests. Please slow down.' },
+});
+app.use('/api/', globalLimiter);
+
+// Stricter rate limit for auth endpoints
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // 20 attempts per 15 min
+    message: { error: 'Too many auth attempts. Try again later.' },
+});
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/login', authLimiter);
+
+// ─── API Routes ───
+const authRoutes = require('./routes/auth.routes');
+const spinRoutes = require('./routes/spin.routes');
+const balanceRoutes = require('./routes/balance.routes');
+const adminRoutes = require('./routes/admin.routes');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/spin', spinRoutes);
+app.use('/api/balance', balanceRoutes);
+app.use('/api/admin', adminRoutes);
+
+// ─── Game definitions endpoint (sanitized — no payout tables) ───
+const games = require('../shared/game-definitions');
+app.get('/api/games', (req, res) => {
+    const sanitized = games.map(g => ({
+        id: g.id,
+        name: g.name,
+        provider: g.provider,
+        tag: g.tag,
+        tagClass: g.tagClass,
+        thumbnail: g.thumbnail,
+        bgGradient: g.bgGradient,
+        symbols: g.symbols,
+        reelBg: g.reelBg,
+        accentColor: g.accentColor,
+        gridCols: g.gridCols,
+        gridRows: g.gridRows,
+        winType: g.winType,
+        clusterMin: g.clusterMin,
+        wildSymbol: g.wildSymbol,
+        scatterSymbol: g.scatterSymbol,
+        bonusType: g.bonusType,
+        bonusDesc: g.bonusDesc,
+        minBet: g.minBet,
+        maxBet: g.maxBet,
+        hot: g.hot,
+        jackpot: g.jackpot,
+        // NOTE: payouts, multiplier arrays, etc. are INTENTIONALLY EXCLUDED
+    }));
+    res.json({ games: sanitized });
+});
+
+// ─── Static Files ───
+// Serve the casino client from the project root
+app.use(express.static(path.join(__dirname, '..')));
+
+// Admin dashboard
+app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
+
+// SPA fallback — serve index.html for any unmatched route
+app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+// ─── Start Server ───
+async function start() {
+    await initDatabase();
+    app.listen(config.PORT, () => {
+        console.log(`\n${'='.repeat(50)}`);
+        console.log(`  Royal Casino Server running on port ${config.PORT}`);
+        console.log(`  Environment: ${config.NODE_ENV}`);
+        console.log(`  Open: http://localhost:${config.PORT}`);
+        console.log(`  Admin: http://localhost:${config.PORT}/admin`);
+        console.log(`${'='.repeat(50)}\n`);
+    });
+}
+
+start().catch(err => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+});

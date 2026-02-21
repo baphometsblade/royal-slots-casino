@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Slots Casino - Premium Edition</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition" id="pageTransition">
+        <div class="spinner"></div>
+    </div>
+    <!-- Animated Background -->
+    <div class="bg-orbs">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+    </div>
+
+    <!-- Promo Bar -->
+    <div class="promo-bar">
+        <div class="promo-marquee">
+            <div class="promo-marquee-inner">
+                <span class="promo-item">WELCOME BONUS: 100% UP TO $500 + 50 FREE SPINS</span>
+                <span class="promo-sep">&#x2022;</span>
+                <span class="promo-item">DAILY CASHBACK UP TO 15%</span>
+                <span class="promo-sep">&#x2022;</span>
+                <span class="promo-item">VIP REWARDS PROGRAM - EARN POINTS ON EVERY SPIN</span>
+                <span class="promo-sep">&#x2022;</span>
+                <span class="promo-item">NEW: MEGA JACKPOT NETWORK - $2.5M+ PRIZE POOL</span>
+                <span class="promo-sep">&#x2022;</span>
+                <span class="promo-item">WELCOME BONUS: 100% UP TO $500 + 50 FREE SPINS</span>
+                <span class="promo-sep">&#x2022;</span>
+                <span class="promo-item">DAILY CASHBACK UP TO 15%</span>
+                <span class="promo-sep">&#x2022;</span>
+                <span class="promo-item">VIP REWARDS PROGRAM - EARN POINTS ON EVERY SPIN</span>
+                <span class="promo-sep">&#x2022;</span>
+                <span class="promo-item">NEW: MEGA JACKPOT NETWORK - $2.5M+ PRIZE POOL</span>
+                <span class="promo-sep">&#x2022;</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <div class="crown">
+                        <div class="crown-base"></div>
+                        <div class="crown-body"></div>
+                        <div class="crown-jewel jewel1"></div>
+                        <div class="crown-jewel jewel2"></div>
+                        <div class="crown-jewel jewel3"></div>
+                    </div>
+                </div>
+                <div class="logo-text">
+                    <h1>ROYAL SLOTS</h1>
+                    <div class="subtitle">PREMIUM CASINO</div>
+                </div>
+            </div>
+            <div class="header-search">
+                <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="8.5" r="6"/><line x1="13" y1="13" x2="18" y2="18"/></svg>
+                <input type="text" id="gameSearchInput" placeholder="Search games..." oninput="searchGames(this.value)" autocomplete="off">
+            </div>
+            <div class="header-actions">
+                <div class="balance-display">
+                    <div class="balance-label">BALANCE</div>
+                    <div class="balance-amount">$<span id="balance">5000.00</span></div>
+                </div>
+                <!-- XP Display (Pass 3) -->
+                <div class="xp-level-display" id="xpDisplay">
+                    <div class="level-badge" id="levelBadge">1</div>
+                    <div class="xp-info">
+                        <div class="tier-label" id="tierLabel">BRONZE</div>
+                        <div class="xp-bar">
+                            <div class="xp-bar-fill" id="xpBarFill" style="width: 0%"></div>
+                            <div class="xp-bar-text" id="xpBarText">0 / 150 XP</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-deposit" onclick="addFunds()">
+                    DEPOSIT</button>
+                <button class="btn btn-user" id="soundToggle" onclick="toggleSound()" title="Toggle sound">&#x1F50A;</button>
+                <button class="btn btn-user btn-settings" onclick="openSettingsModal()" title="Settings">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+                </button>
+                <button class="btn btn-user" onclick="openStatsModal()" title="View player stats">
+                    STATS</button>
+                <button class="btn btn-user" id="authBtn" onclick="authToken ? logout() : showAuthModal()" title="Account">
+                    LOGIN</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <div class="hero-content">
+                <div class="hero-left">
+                    <div class="hero-tags">
+                        <span class="hero-tag tag-hot">LIMITED OFFER</span>
+                        <span class="hero-tag tag-games">60+ GAMES</span>
+                    </div>
+                    <h2 class="hero-title">
+                        Welcome Package<br>
+                        Up to <span class="hero-highlight">$2,500</span>
+                    </h2>
+                    <p class="hero-subtitle">
+                        + 150 Free Spins on your first 3 deposits
+                    </p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-play" onclick="playRandomHotGame()">PLAY NOW</button>
+                        <button class="btn btn-bonus-wheel" onclick="showBonusWheelModal()">BONUS WHEEL</button>
+                    </div>
+                </div>
+                <div class="hero-stats">
+                    <div class="stats-label">BIGGEST WIN TODAY</div>
+                    <div class="stats-value">$<span id="biggestWin">0</span></div>
+                    <div class="stats-info"><span id="recentWinsCount">12</span> wins in last hour</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jackpot Ticker -->
+        <div class="jackpot-ticker-bar" id="jackpotTicker">
+            <span class="jackpot-ticker-label">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M8 1l1.5 3h3l-2.4 1.8.9 3L8 7l-3 1.8.9-3L3.5 4h3z"/></svg>
+                JACKPOT
+            </span>
+            <span class="jackpot-ticker-amount">$<span id="jackpotAmount">1,247,836</span></span>
+            <span class="jackpot-ticker-sub">MEGA JACKPOT NETWORK</span>
+        </div>
+
+        <!-- Win Ticker (Pass 6) -->
+        <div class="win-ticker-bar" id="winTicker">
+            <span class="ticker-live-dot"></span>
+            <div class="ticker-content" id="tickerContent">
+                <span class="ticker-item">Welcome to Royal Slots Casino!</span>
+            </div>
+        </div>
+
+        <!-- Recently Played Section (hidden until games played) -->
+        <div id="recentlyPlayedSection" style="display:none">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" style="vertical-align:middle;margin-right:6px"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                    Recently Played
+                </h3>
+            </div>
+            <div class="recently-played-scroll" id="recentlyPlayedGames"></div>
+        </div>
+
+        <!-- Top Picks Section -->
+        <div class="section-header">
+            <h3 class="section-title">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="vertical-align:middle;margin-right:6px;color:var(--rg-yellow-300)"><path d="M10 18c-4.4 0-7-3.1-7-6.8 0-3.3 2.3-5.8 4-7.2.4-.3 1 0 .9.5-.3 1.5.3 3 1.6 3.8.2.1.5 0 .5-.2.2-1.5.9-3.4 2.5-4.8.3-.3.8-.1.9.3.5 1.8 1.8 3.2 2.8 4.4C17.7 10 18 11.6 18 12.5 18 15.5 15.3 18 10 18z"/></svg>
+                Top Picks
+            </h3>
+            <button class="section-see-all" onclick="setFilter('hot');document.getElementById('filterTabs').scrollIntoView({behavior:'smooth'})">See All →</button>
+        </div>
+        <div class="games-grid" id="hotGames"></div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" id="filterTabs">
+            <button class="filter-tab filter-tab-active" data-filter="all" onclick="setFilter('all')">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
+                All Games
+            </button>
+            <button class="filter-tab" data-filter="hot" onclick="setFilter('hot')">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 18c-4.4 0-7-3.1-7-6.8 0-3.3 2.3-5.8 4-7.2.4-.3 1 0 .9.5-.3 1.5.3 3 1.6 3.8.2.1.5 0 .5-.2.2-1.5.9-3.4 2.5-4.8.3-.3.8-.1.9.3.5 1.8 1.8 3.2 2.8 4.4C17.7 10 18 11.6 18 12.5 18 15.5 15.3 18 10 18z"/></svg>
+                Hot
+            </button>
+            <button class="filter-tab" data-filter="new" onclick="setFilter('new')">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 1l2.5 5.5L18 7.5l-4 4 1 5.5L10 14.5 4.5 17l1-5.5-4-4 5.5-1z"/></svg>
+                New
+            </button>
+            <button class="filter-tab" data-filter="jackpot" onclick="setFilter('jackpot')">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 1l1.5 3.5h3.7l-3 2.2 1.2 3.5L10 8l-3.4 2.2 1.2-3.5-3-2.2h3.7z"/><path d="M5 13h10v2H5z"/><path d="M6 16h8v2H6z"/></svg>
+                Jackpot
+            </button>
+        </div>
+
+        <!-- All Slots Section -->
+        <div class="section-header">
+            <h3 class="section-title" id="allSlotsTitle">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="vertical-align:middle;margin-right:6px;color:var(--rg-primary-100)"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
+                All Slots
+            </h3>
+            <span class="section-game-count" id="allGamesCount">60 games</span>
+        </div>
+        <div class="games-grid" id="allGames"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <!-- Provider Logos -->
+            <div class="footer-providers">
+                <span class="footer-provider-badge">Pragmatic Play</span>
+                <span class="footer-provider-badge">NetEnt</span>
+                <span class="footer-provider-badge">Play'n GO</span>
+                <span class="footer-provider-badge">Microgaming</span>
+                <span class="footer-provider-badge">Betsoft</span>
+                <span class="footer-provider-badge">Yggdrasil</span>
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h4>ROYAL SLOTS</h4>
+                    <p class="footer-about">Premium online casino experience with the best slot games and massive jackpots.</p>
+                    <!-- Responsible Gambling Badges -->
+                    <div class="footer-badges">
+                        <span class="footer-badge footer-badge-18">18+</span>
+                        <span class="footer-badge footer-badge-rg">PLAY SAFE</span>
+                        <span class="footer-badge footer-badge-demo">DEMO</span>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>GAMES</h4>
+                    <a href="#">Slot Machines</a>
+                    <a href="#">Jackpot Slots</a>
+                    <a href="#">New Releases</a>
+                </div>
+                <div class="footer-column">
+                    <h4>SUPPORT</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact Us</a>
+                    <a href="#">Responsible Gaming</a>
+                </div>
+                <div class="footer-column">
+                    <h4>LEGAL</h4>
+                    <a href="#">Terms &amp; Conditions</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Cookie Policy</a>
+                </div>
+            </div>
+            <!-- Payment Methods -->
+            <div class="footer-divider"></div>
+            <div class="footer-payments">
+                <span class="footer-payment-icon">VISA</span>
+                <span class="footer-payment-icon">MC</span>
+                <span class="footer-payment-icon">BTC</span>
+                <span class="footer-payment-icon">ETH</span>
+                <span class="footer-payment-icon">USDT</span>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Royal Slots Casino. All rights reserved. Play responsibly.</p>
+                <p class="footer-disclaimer">
+                    For entertainment purposes only. This is a demo application. No real money involved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <button class="mob-nav-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+            <span>Home</span>
+        </button>
+        <button class="mob-nav-btn" onclick="setFilter('hot')">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path d="M10 18c-4.4 0-7-3.1-7-6.8 0-3.3 2.3-5.8 4-7.2.4-.3 1 0 .9.5-.3 1.5.3 3 1.6 3.8.2.1.5 0 .5-.2.2-1.5.9-3.4 2.5-4.8.3-.3.8-.1.9.3.5 1.8 1.8 3.2 2.8 4.4C17.7 10 18 11.6 18 12.5 18 15.5 15.3 18 10 18z"/></svg>
+            <span>Hot</span>
+        </button>
+        <button class="mob-nav-btn mob-nav-play" onclick="playRandomHotGame()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><circle cx="10" cy="10" r="9" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none"/><polygon points="8,6 15,10 8,14"/></svg>
+            <span>Play</span>
+        </button>
+        <button class="mob-nav-btn" onclick="showBonusWheelModal()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path d="M10 1l2.5 5.5L18 7.5l-4 4 1 5.5L10 14.5 4.5 17l1-5.5-4-4 5.5-1z"/></svg>
+            <span>Bonus</span>
+        </button>
+        <button class="mob-nav-btn" onclick="openStatsModal()">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path d="M3 3h4v14H3zm5 4h4v10H8zm5-2h4v12h-4z"/></svg>
+            <span>Stats</span>
+        </button>
+    </nav>
+
+    <!-- Slot Machine Modal — Pragmatic Play Style -->
+    <div class="modal" id="slotModal">
+        <div class="modal-content slot-modal-fullscreen">
+            <!-- Top Bar: Game Info + Close -->
+            <div class="slot-top-bar">
+                <button class="slot-close-btn" onclick="closeSlot()" title="Back to lobby">&times;</button>
+                <div class="slot-top-info">
+                    <h2 class="slot-title" id="slotGameName">Sugar Rush 1000</h2>
+                    <div class="slot-provider" id="slotProvider">Royal Games</div>
+                    <div class="game-tag tag-jackpot" id="slotGameTag" style="display:none;">JACKPOT</div>
+                </div>
+                <div class="slot-top-right">
+                    <div class="slot-payout">
+                        <div class="payout-label">MAX WIN</div>
+                        <div class="payout-value"><span id="slotMaxPayout">150</span>x</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bonus Info Banner -->
+            <div class="slot-bonus-info" id="slotBonusInfo" style="display: none;"></div>
+
+            <!-- Main Reel Area -->
+            <div class="slot-reel-area">
+                <div class="reels-container">
+                    <div class="reels" id="reels">
+                        <!-- Dynamic reel grid built by JS based on game config -->
+                    </div>
+                </div>
+                <!-- Win Display Overlay -->
+                <div id="messageDisplay"></div>
+                <div id="winAnimation"></div>
+            </div>
+
+            <!-- Pragmatic Play Bottom Bar -->
+            <div class="slot-bottom-bar">
+                <!-- Left: Balance -->
+                <div class="slot-bar-section slot-bar-balance">
+                    <div class="slot-bar-label">BALANCE</div>
+                    <div class="slot-bar-value">$<span id="slotBalance">5000.00</span></div>
+                </div>
+
+                <!-- Bet Controls -->
+                <div class="slot-bar-section slot-bar-bet">
+                    <button class="slot-bet-btn" id="betDownBtn" onclick="adjustBet(-1)">&#8722;</button>
+                    <div class="slot-bet-display">
+                        <div class="slot-bar-label">BET</div>
+                        <div class="slot-bar-value">$<span id="betAmount">50</span></div>
+                    </div>
+                    <button class="slot-bet-btn" id="betUpBtn" onclick="adjustBet(1)">&#43;</button>
+                </div>
+                <input type="range" class="bet-range" id="betRange" min="50" max="5000" step="50" value="50" style="display:none;">
+                <span id="minBet" style="display:none;">50</span>
+                <span id="maxBet" style="display:none;">5000</span>
+
+                <!-- Turbo Toggle -->
+                <button class="slot-turbo-btn" id="turboBtn" onclick="toggleTurbo()" title="Turbo Spin">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z"/></svg>
+                </button>
+
+                <!-- SPIN Button (center, large) — Pragmatic Play style -->
+                <button class="slot-spin-btn" id="spinBtn" onclick="spin()">
+                    <svg class="spin-btn-icon" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span class="spin-btn-text" style="display:none;">SPIN</span>
+                </button>
+
+                <!-- Autoplay Button -->
+                <button class="slot-auto-btn" id="autoSpinBtn" onclick="toggleAutoSpin(10)">
+                    <span class="auto-btn-icon">&#x21bb;</span>
+                    <span class="auto-btn-label">AUTO</span>
+                </button>
+
+                <!-- Right: Total Win -->
+                <div class="slot-bar-section slot-bar-win">
+                    <div class="slot-bar-label">WIN</div>
+                    <div class="slot-bar-value slot-win-value" id="slotWinDisplay">$0.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <button class="btn back-btn" onclick="closeStatsModal()">Back</button>
+            <div class="stats-panel">
+                <h3>Player Statistics</h3>
+                <div class="stats-subtitle">Session values are saved in localStorage and restored on reload.</div>
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-card-label">TOTAL SPINS</div>
+                        <div class="stats-card-value" id="statsTotalSpins">0</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-card-label">TOTAL WAGERED</div>
+                        <div class="stats-card-value" id="statsTotalWagered">$0.00</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-card-label">TOTAL WON</div>
+                        <div class="stats-card-value" id="statsTotalWon">$0.00</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-card-label">BIGGEST WIN</div>
+                        <div class="stats-card-value" id="statsBiggestWin">$0.00</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-card-label">NET PROFIT</div>
+                        <div class="stats-card-value" id="statsNet">$0.00</div>
+                    </div>
+                </div>
+                <h4 style="margin-bottom: 10px;">Top Played Games</h4>
+                <ul class="stats-games-list" id="statsGamesList">
+                    <li class="stats-empty">No games played yet.</li>
+                </ul>
+
+                <h4 style="margin-bottom: 10px; margin-top: 24px;">Achievements</h4>
+                <div id="achievementsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px;">
+                    <!-- Achievements will be inserted here -->
+                </div>
+
+                <div class="qa-tools" id="qaTools">
+                    <div class="qa-tools-header">
+                        <div class="qa-tools-title">QA Tools</div>
+                        <button class="qa-toggle-btn" id="qaToggleBtn" onclick="toggleQaTools()">Show</button>
+                    </div>
+                    <div class="qa-tools-body" id="qaToolsBody">
+                        <div class="qa-row">
+                            <div class="qa-label">Seeded RNG</div>
+                            <div class="qa-row-group">
+                                <input class="qa-input" id="qaSeedInput" type="text" placeholder="e.g. qa-seed-001">
+                                <button class="qa-btn" onclick="applyQaSeed()">Apply Seed</button>
+                                <button class="qa-btn" onclick="clearQaSeed()">Clear Seed</button>
+                            </div>
+                        </div>
+                        <div class="qa-row">
+                            <div class="qa-label">Queue Outcome</div>
+                            <div class="qa-row-group">
+                                <select class="qa-select" id="qaOutcomeType">
+                                    <option value="triple">Triple Win</option>
+                                    <option value="double">Double Win</option>
+                                    <option value="loss">Loss</option>
+                                </select>
+                                <select class="qa-select" id="qaOutcomeSymbol">
+                                    <option value="">Auto Symbol</option>
+                                </select>
+                                <button class="qa-btn" onclick="queueQaOutcome(false)">Queue</button>
+                                <button class="qa-btn qa-btn-primary" onclick="queueQaOutcome(true)">Queue + Spin</button>
+                            </div>
+                        </div>
+                        <div class="qa-row">
+                            <div class="qa-label">Exact Reels (comma-separated)</div>
+                            <div class="qa-row-group">
+                                <input class="qa-input" id="qaExactReels" type="text" placeholder="diamond,cherry,seven">
+                                <button class="qa-btn" onclick="queueQaExactReels(false)">Queue</button>
+                                <button class="qa-btn qa-btn-primary" onclick="queueQaExactReels(true)">Queue + Spin</button>
+                            </div>
+                        </div>
+                        <div class="qa-row-group">
+                            <button class="qa-btn qa-btn-danger" onclick="resetQaSession()">Reset Balance + Stats</button>
+                            <button class="qa-btn" onclick="clearQaQueue()">Clear Queue</button>
+                        </div>
+                        <div class="qa-row-group qa-reset-options">
+                            <label class="qa-check">
+                                <input type="checkbox" id="qaResetClearSeed">
+                                <span>Clear deterministic seed on reset</span>
+                            </label>
+                        </div>
+                        <div class="qa-state-line" id="qaStateLine">seed=off | queued=0</div>
+                        <div class="qa-status" id="qaStatusLine"></div>
+                    </div>
+                </div>
+
+                <div class="shortcut-hint">Shortcuts: press <strong>F</strong> for fullscreen, <strong>Esc</strong> to close active modal.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Bonus Modal (Pass 4) -->
+    <div class="modal" id="dailyBonusModal">
+        <div class="modal-content">
+            <div class="daily-bonus-panel">
+                <h3>Daily Bonus</h3>
+                <div class="streak-counter">Current Streak: <span id="streakCount">0</span> days</div>
+                <div class="daily-calendar" id="dailyCalendar"></div>
+                <button class="btn daily-claim-btn" id="dailyClaimBtn" onclick="claimDailyBonus()">CLAIM BONUS</button>
+                <button class="btn daily-skip-btn" onclick="closeDailyBonusModal()">SKIP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bonus Wheel Modal (Pass 5) -->
+    <div class="modal" id="bonusWheelModal">
+        <div class="modal-content">
+            <div class="wheel-panel">
+                <h3>Bonus Wheel</h3>
+                <div class="wheel-wrapper">
+                    <div class="wheel-pointer"></div>
+                    <canvas id="wheelCanvas" width="300" height="300"></canvas>
+                </div>
+                <button class="btn wheel-spin-btn" id="wheelSpinBtn" onclick="spinBonusWheel()">SPIN THE WHEEL</button>
+                <button class="btn daily-skip-btn" onclick="closeBonusWheelModal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="modal" id="depositModal">
+        <div class="modal-content" style="display:flex; align-items:center; justify-content:center; min-height:60vh;">
+            <div class="deposit-panel">
+                <h3>Add Funds</h3>
+                <p class="deposit-subtitle">Select an amount to add to your balance</p>
+                <div class="deposit-grid">
+                    <button class="deposit-option" onclick="confirmDeposit(500)">
+                        <span class="deposit-amount">$500</span>
+                        <span class="deposit-label">Starter</span>
+                    </button>
+                    <button class="deposit-option" onclick="confirmDeposit(1000)">
+                        <span class="deposit-amount">$1,000</span>
+                        <span class="deposit-label">Popular</span>
+                    </button>
+                    <button class="deposit-option deposit-option-featured" onclick="confirmDeposit(2500)">
+                        <span class="deposit-badge">BEST VALUE</span>
+                        <span class="deposit-amount">$2,500</span>
+                        <span class="deposit-label">High Roller</span>
+                    </button>
+                    <button class="deposit-option" onclick="confirmDeposit(5000)">
+                        <span class="deposit-amount">$5,000</span>
+                        <span class="deposit-label">VIP</span>
+                    </button>
+                </div>
+                <button class="btn daily-skip-btn" onclick="closeDepositModal()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content" style="display:flex; align-items:center; justify-content:center; min-height:60vh;">
+            <div class="settings-panel">
+                <button class="auth-close-btn" onclick="closeSettingsModal()" title="Close">&times;</button>
+                <h3 class="settings-title">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20" style="vertical-align:middle;margin-right:8px">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                    </svg>
+                    Settings
+                </h3>
+
+                <!-- Sound Settings -->
+                <div class="settings-section">
+                    <div class="settings-section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/></svg>
+                        Audio
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Sound Effects</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingSoundEnabled" onchange="settingsToggleSound(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Volume</label>
+                        <div class="settings-slider-wrap">
+                            <input type="range" class="settings-slider" id="settingVolume" min="0" max="100" step="5" value="50" oninput="settingsSetVolume(this.value)">
+                            <span class="settings-slider-value" id="settingVolumeLabel">50%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Settings -->
+                <div class="settings-section">
+                    <div class="settings-section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+                        Visuals
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Particle Effects</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingParticles" checked onchange="settingsToggleParticles(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Win Animations</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingAnimations" checked onchange="settingsToggleAnimations(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Confetti on Big Wins</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingConfetti" checked onchange="settingsToggleConfetti(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Gameplay Settings -->
+                <div class="settings-section">
+                    <div class="settings-section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"/><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/></svg>
+                        Gameplay
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Turbo Mode Default</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingTurbo" onchange="settingsToggleTurbo(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Auto-Spin Speed</label>
+                        <div class="settings-slider-wrap">
+                            <input type="range" class="settings-slider" id="settingAutoSpeed" min="500" max="3000" step="250" value="1500" oninput="settingsSetAutoSpeed(this.value)">
+                            <span class="settings-slider-value" id="settingAutoSpeedLabel">1.5s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="settings-section settings-section-danger">
+                    <div class="settings-section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                        Data
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Reset all settings to defaults</label>
+                        <button class="settings-reset-btn" onclick="settingsResetAll()">RESET</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container (Pass 1) -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-content" style="display:flex; align-items:center; justify-content:center; min-height:60vh;">
+            <div class="auth-modal">
+                <button class="auth-close-btn" onclick="hideAuthModal()" title="Close">&times;</button>
+                <div class="auth-modal-header">
+                    <div class="auth-logo">
+                        <span class="auth-logo-crown">&#x1F451;</span>
+                        <span>ROYAL CASINO</span>
+                    </div>
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">LOGIN</button>
+                        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">REGISTER</button>
+                    </div>
+                </div>
+
+                <div id="authError" class="auth-error"></div>
+
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form">
+                    <div class="auth-field">
+                        <label>Username or Email</label>
+                        <input type="text" id="loginUsername" placeholder="Enter username or email" autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
+                    </div>
+                    <button class="auth-submit" id="loginBtn" onclick="handleLogin()">SIGN IN</button>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerForm" class="auth-form" style="display:none;">
+                    <div class="auth-field">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" placeholder="Choose a username (3-20 chars)" autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" placeholder="Enter your email" autocomplete="email">
+                    </div>
+                    <div class="auth-field">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" placeholder="Min 6 characters" autocomplete="new-password">
+                    </div>
+                    <div class="auth-field">
+                        <label>Confirm Password</label>
+                        <input type="password" id="regConfirm" placeholder="Confirm password" autocomplete="new-password">
+                    </div>
+                    <button class="auth-submit" id="registerBtn" onclick="handleRegister()">CREATE ACCOUNT</button>
+                </div>
+
+                <div class="auth-divider"><span>OR</span></div>
+                <button class="auth-guest-btn" onclick="hideAuthModal()">PLAY AS GUEST</button>
+
+                <div class="auth-footer">
+                    <p>Play responsibly. 18+ only.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- constants.js exists but is not loaded yet — app.js still has duplicated
+         const declarations that must be removed first to avoid SyntaxError -->
+    <script src="shared/game-definitions.js"></script>
+    <script src="sound-manager.js"></script>
+    <script src="animations.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Auth modal tab switching
+        function switchAuthTab(tab) {
+            document.getElementById('authError').textContent = '';
+            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+        }
+
+        async function handleLogin() {
+            const btn = document.getElementById('loginBtn');
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errEl = document.getElementById('authError');
+            errEl.textContent = '';
+            if (!username || !password) { errEl.textContent = 'Please enter username and password'; return; }
+            btn.disabled = true; btn.textContent = 'SIGNING IN...';
+            try {
+                await login(username, password);
+                document.getElementById('authBtn').textContent = currentUser.username.toUpperCase();
+            } catch (e) { errEl.textContent = e.message; }
+            btn.disabled = false; btn.textContent = 'SIGN IN';
+        }
+
+        async function handleRegister() {
+            const btn = document.getElementById('registerBtn');
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+            const errEl = document.getElementById('authError');
+            errEl.textContent = '';
+            if (!username || !email || !password) { errEl.textContent = 'All fields are required'; return; }
+            if (password !== confirm) { errEl.textContent = 'Passwords do not match'; return; }
+            if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters'; return; }
+            btn.disabled = true; btn.textContent = 'CREATING ACCOUNT...';
+            try {
+                await register(username, email, password);
+                document.getElementById('authBtn').textContent = currentUser.username.toUpperCase();
+            } catch (e) { errEl.textContent = e.message; }
+            btn.disabled = false; btn.textContent = 'CREATE ACCOUNT';
+        }
+
+        // Enter key support
+        document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+        document.getElementById('regConfirm').addEventListener('keydown', e => { if (e.key === 'Enter') handleRegister(); });
+
+        // Update auth button on load if already logged in
+        if (currentUser) {
+            document.getElementById('authBtn').textContent = currentUser.username.toUpperCase();
+        }
+    </script>
+</body>
+</html>

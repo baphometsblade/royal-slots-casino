@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Casino — Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f1a; color: #e2e8f0; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px 30px; border-bottom: 2px solid #fbbf24; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 24px; color: #fbbf24; }
+        .header .admin-info { color: #94a3b8; font-size: 14px; }
+        .login-container { max-width: 400px; margin: 100px auto; padding: 30px; background: #1a1a2e; border-radius: 12px; border: 1px solid #334155; }
+        .login-container h2 { text-align: center; color: #fbbf24; margin-bottom: 20px; }
+        .login-container input { width: 100%; padding: 12px; margin-bottom: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 14px; }
+        .login-container button { width: 100%; padding: 12px; background: #fbbf24; color: #0f0f1a; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; }
+        .login-container button:hover { background: #f59e0b; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        .stat-card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .value { font-size: 28px; font-weight: 700; color: #fbbf24; margin-top: 4px; }
+        .stat-card .value.green { color: #10b981; }
+        .stat-card .value.red { color: #ef4444; }
+        .section { background: #1a1a2e; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; overflow: hidden; }
+        .section h3 { padding: 16px 20px; border-bottom: 1px solid #334155; color: #fbbf24; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 16px; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #334155; }
+        td { padding: 10px 16px; font-size: 14px; border-bottom: 1px solid #1e293b; }
+        tr:hover { background: #16213e; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-admin { background: #fbbf24; color: #0f0f1a; }
+        .badge-banned { background: #ef4444; color: white; }
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn:hover { opacity: 0.85; }
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid #334155; margin-bottom: 20px; }
+        .tab { padding: 12px 24px; cursor: pointer; color: #94a3b8; font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab.active { color: #fbbf24; border-bottom-color: #fbbf24; }
+        .tab:hover { color: #e2e8f0; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #error { color: #ef4444; text-align: center; margin: 8px 0; font-size: 14px; }
+        .refresh-btn { padding: 8px 16px; background: #334155; color: #e2e8f0; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .refresh-btn:hover { background: #475569; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-container">
+    <h2>Admin Login</h2>
+    <div id="error"></div>
+    <input type="text" id="loginUser" placeholder="Username or Email">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button onclick="doLogin()">Login</button>
+</div>
+
+<div id="dashboard" style="display:none;">
+    <div class="header">
+        <h1>Royal Casino Admin</h1>
+        <div>
+            <span class="admin-info" id="adminName"></span>
+            <button class="refresh-btn" onclick="loadStats()" style="margin-left:12px;">Refresh</button>
+            <button class="refresh-btn" onclick="logout()" style="margin-left:8px;">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('games')">Game RTP</div>
+            <div class="tab" onclick="switchTab('users')">Users</div>
+            <div class="tab" onclick="switchTab('spins')">Recent Spins</div>
+        </div>
+
+        <div id="tab-games" class="tab-content active">
+            <div class="section">
+                <h3>Game Statistics & RTP</h3>
+                <table><thead><tr><th>Game</th><th>Spins</th><th>Wagered</th><th>Paid</th><th>RTP</th><th>House Profit</th></tr></thead><tbody id="gameStatsBody"></tbody></table>
+            </div>
+        </div>
+
+        <div id="tab-users" class="tab-content">
+            <div class="section">
+                <h3>Player Accounts</h3>
+                <table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Balance</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table>
+            </div>
+        </div>
+
+        <div id="tab-spins" class="tab-content">
+            <div class="section">
+                <h3>Recent Spin Activity</h3>
+                <table><thead><tr><th>ID</th><th>Player</th><th>Game</th><th>Bet</th><th>Win</th><th>Profit</th><th>Time</th></tr></thead><tbody id="spinsBody"></tbody></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let token = localStorage.getItem('adminToken');
+const API = '/api';
+
+if (token) { showDashboard(); }
+
+async function doLogin() {
+    const username = document.getElementById('loginUser').value;
+    const password = document.getElementById('loginPass').value;
+    document.getElementById('error').textContent = '';
+    try {
+        const res = await fetch(API + '/auth/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        if (!data.user.is_admin) throw new Error('Admin access required');
+        token = data.token;
+        localStorage.setItem('adminToken', token);
+        showDashboard();
+    } catch (e) { document.getElementById('error').textContent = e.message; }
+}
+
+function logout() { token = null; localStorage.removeItem('adminToken'); location.reload(); }
+
+async function apiFetch(url) {
+    const res = await fetch(API + url, { headers: { Authorization: 'Bearer ' + token } });
+    if (res.status === 401 || res.status === 403) { logout(); return null; }
+    return res.json();
+}
+
+async function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    const me = await apiFetch('/auth/me');
+    if (me) document.getElementById('adminName').textContent = me.user.username + ' (admin)';
+    loadStats();
+}
+
+async function loadStats() {
+    const data = await apiFetch('/admin/stats');
+    if (!data) return;
+    const o = data.overview;
+    document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card"><div class="label">Total Players</div><div class="value">${o.totalUsers}</div></div>
+        <div class="stat-card"><div class="label">Total Spins</div><div class="value">${o.totalSpins.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">Total Wagered</div><div class="value">$${o.totalWagered.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">Total Paid Out</div><div class="value">$${o.totalPaid.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">House Profit</div><div class="value ${o.houseProfit >= 0 ? 'green' : 'red'}">$${o.houseProfit.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">Overall RTP</div><div class="value">${o.overallRtp}</div></div>
+        <div class="stat-card"><div class="label">Total Deposits</div><div class="value green">$${o.totalDeposits.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">Total Withdrawals</div><div class="value red">$${o.totalWithdrawals.toLocaleString()}</div></div>
+    `;
+    document.getElementById('gameStatsBody').innerHTML = data.gameStats.map(g => {
+        const profit = g.total_wagered - g.total_paid;
+        return `<tr><td>${g.game_id}</td><td>${g.total_spins}</td><td>$${g.total_wagered.toLocaleString()}</td><td>$${g.total_paid.toLocaleString()}</td><td>${(g.actual_rtp * 100).toFixed(2)}%</td><td style="color:${profit >= 0 ? '#10b981' : '#ef4444'}">$${profit.toLocaleString()}</td></tr>`;
+    }).join('');
+    loadUsers();
+    loadSpins();
+}
+
+async function loadUsers() {
+    const data = await apiFetch('/admin/users');
+    if (!data) return;
+    document.getElementById('usersBody').innerHTML = data.users.map(u => `
+        <tr>
+            <td>${u.id}</td><td>${u.username} ${u.is_admin ? '<span class="badge badge-admin">ADMIN</span>' : ''}</td>
+            <td>${u.email}</td><td>$${u.balance.toLocaleString()}</td>
+            <td>${u.is_banned ? '<span class="badge badge-banned">BANNED</span>' : 'Active'}</td>
+            <td>${new Date(u.created_at).toLocaleDateString()}</td>
+            <td>${!u.is_admin ? (u.is_banned ? `<button class="btn btn-success" onclick="unbanUser(${u.id})">Unban</button>` : `<button class="btn btn-danger" onclick="banUser(${u.id})">Ban</button>`) : ''}</td>
+        </tr>
+    `).join('');
+}
+
+async function loadSpins() {
+    const data = await apiFetch('/admin/recent-spins');
+    if (!data) return;
+    document.getElementById('spinsBody').innerHTML = data.spins.map(s => {
+        const profit = s.bet_amount - s.win_amount;
+        return `<tr><td>${s.id}</td><td>${s.username}</td><td>${s.game_id}</td><td>$${s.bet_amount}</td><td>$${s.win_amount}</td><td style="color:${profit >= 0 ? '#10b981' : '#ef4444'}">$${profit.toFixed(2)}</td><td>${new Date(s.created_at).toLocaleString()}</td></tr>`;
+    }).join('');
+}
+
+async function banUser(id) {
+    await fetch(API + `/admin/user/${id}/ban`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    loadUsers();
+}
+async function unbanUser(id) {
+    await fetch(API + `/admin/user/${id}/unban`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    loadUsers();
+}
+
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>

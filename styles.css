@@ -5016,6 +5016,178 @@
         }
 
 /* ═══════════════════════════════════════════════════════════════════
+   SETTINGS PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+.settings-panel {
+    position: relative;
+    background: linear-gradient(145deg, #1a0a2e, #120820);
+    border-radius: 16px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 440px;
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.settings-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+}
+.settings-section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+}
+.settings-section-danger {
+    border-color: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.03);
+}
+.settings-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--rg-primary-100, #a78bfa);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.settings-section-danger .settings-section-title {
+    color: #f87171;
+}
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    gap: 12px;
+}
+.settings-row + .settings-row {
+    border-top: 1px solid rgba(255,255,255,0.04);
+}
+.settings-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    flex: 1;
+}
+/* Toggle switch */
+.settings-toggle {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.settings-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.settings-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    transition: background 0.25s;
+}
+.settings-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.25s;
+}
+.settings-toggle input:checked + .settings-toggle-slider {
+    background: var(--rg-accent, #10b981);
+}
+.settings-toggle input:checked + .settings-toggle-slider::before {
+    transform: translateX(18px);
+}
+/* Slider */
+.settings-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.settings-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 120px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+.settings-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--rg-accent, #10b981);
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.settings-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--rg-accent, #10b981);
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.settings-slider-value {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    min-width: 36px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+/* Reset button */
+.settings-reset-btn {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.settings-reset-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+/* Settings gear button */
+.btn-settings {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-settings svg {
+    transition: transform 0.3s;
+}
+.btn-settings:hover svg {
+    transform: rotate(90deg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    AUTH MODAL
    ═══════════════════════════════════════════════════════════════════ */
 .auth-modal {
