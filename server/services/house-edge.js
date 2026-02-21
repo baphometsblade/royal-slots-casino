@@ -228,8 +228,22 @@ function getEffectiveHitFrequency(game, gameStats) {
  * This is the "hit frequency gate" that real slots implement
  * via their virtual reel strip design.
  */
-function shouldAllowWin(game, gameStats) {
-    const hitFreq = getEffectiveHitFrequency(game, gameStats);
+function shouldAllowWin(game, gameStats, db) {
+    let hitFreq = getEffectiveHitFrequency(game, gameStats);
+
+    // Global profit floor check: if house is losing money, drastically reduce wins
+    if (db) {
+        const globalStats = db.get('SELECT SUM(bet_amount) as wagered, SUM(win_amount) as paid FROM spins');
+        if (globalStats && globalStats.wagered > 0) {
+            const globalRTP = (globalStats.paid || 0) / globalStats.wagered;
+            if (globalRTP > 1.0) {
+                hitFreq = 0.02; // Kill switch: 2% win rate until house recovers
+            } else if (globalRTP > 0.95) {
+                hitFreq *= 0.5; // 50% reduction when margin is thin
+            }
+        }
+    }
+
     return rng.randomFloat() < hitFreq;
 }
 
@@ -246,10 +260,28 @@ function shouldAllowWin(game, gameStats) {
  * - Sweet Bonanza: 21100x
  * - Fire Joker: 800x
  */
-function capWinAmount(winAmount, betAmount, game) {
-    const maxMultiplier = game.jackpot > 0 ? 2500 : 500;
-    const maxWin = betAmount * maxMultiplier;
-    return Math.min(winAmount, maxWin);
+function capWinAmount(winAmount, betAmount, game, db) {
+    // Layer 1: Per-spin maximum multiplier
+    const maxMultiplier = game.jackpot > 0
+        ? config.MAX_WIN_MULTIPLIER || 500
+        : Math.min(config.MAX_WIN_MULTIPLIER || 500, 200);
+    let capped = Math.min(winAmount, betAmount * maxMultiplier);
+
+    // Layer 2: Profit floor protection — if this win would push house into the red
+    if (db) {
+        const globalStats = db.get('SELECT SUM(bet_amount) as wagered, SUM(win_amount) as paid FROM spins');
+        if (globalStats && globalStats.wagered > 0) {
+            const currentProfit = (globalStats.wagered || 0) - (globalStats.paid || 0);
+            const projectedProfit = currentProfit - capped;
+            if (projectedProfit < (config.PROFIT_FLOOR || -500)) {
+                // Cap to preserve profit floor
+                const maxAllowed = Math.max(0, currentProfit - (config.PROFIT_FLOOR || -500));
+                capped = Math.min(capped, Math.max(betAmount * 0.1, maxAllowed));
+            }
+        }
+    }
+
+    return Math.round(capped * 100) / 100;
 }
 
 // ═══════════════════════════════════════════════════════════

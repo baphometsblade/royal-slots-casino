@@ -124,4 +124,65 @@ router.get('/recent-spins', (req, res) => {
     res.json({ spins });
 });
 
+// GET /api/admin/profit-status — Detailed profit analysis
+router.get('/profit-status', (req, res) => {
+    const config = require('../config');
+    const overall = db.get('SELECT COUNT(*) as spins, SUM(bet_amount) as wagered, SUM(win_amount) as paid FROM spins');
+    const wagered = overall ? overall.wagered || 0 : 0;
+    const paid = overall ? overall.paid || 0 : 0;
+    const profit = wagered - paid;
+    const rtp = wagered > 0 ? paid / wagered : 0;
+
+    // Per-game breakdown
+    const gameStats = db.all('SELECT * FROM game_stats ORDER BY total_wagered DESC');
+
+    // Hourly profit (last 24h)
+    const hourlyProfit = db.all(`
+        SELECT strftime('%Y-%m-%d %H:00', created_at) as hour,
+               SUM(bet_amount) as wagered, SUM(win_amount) as paid,
+               COUNT(*) as spins
+        FROM spins
+        WHERE created_at > datetime('now', '-24 hours')
+        GROUP BY hour ORDER BY hour
+    `);
+
+    // Top winners (potential threats to profitability)
+    const topWinners = db.all(`
+        SELECT u.username, SUM(s.win_amount - s.bet_amount) as net_win,
+               SUM(s.bet_amount) as wagered, SUM(s.win_amount) as paid,
+               COUNT(*) as spins
+        FROM spins s JOIN users u ON s.user_id = u.id
+        GROUP BY s.user_id
+        HAVING net_win > 0
+        ORDER BY net_win DESC LIMIT 10
+    `);
+
+    res.json({
+        summary: {
+            totalWagered: wagered,
+            totalPaid: paid,
+            houseProfit: profit,
+            currentRTP: (rtp * 100).toFixed(2) + '%',
+            targetRTP: (config.TARGET_RTP * 100).toFixed(0) + '%',
+            totalSpins: overall ? overall.spins : 0,
+            profitMargin: wagered > 0 ? ((1 - rtp) * 100).toFixed(2) + '%' : '0%',
+            isHealthy: profit >= 0 && rtp <= config.TARGET_RTP + 0.05,
+            emergencyMode: profit < (config.PROFIT_FLOOR || -500),
+        },
+        gameStats,
+        hourlyProfit,
+        topWinners,
+    });
+});
+
+// POST /api/admin/house-edge/config — Update house edge config
+router.post('/house-edge/config', (req, res) => {
+    const config = require('../config');
+    const { targetRTP, maxWinMultiplier, profitFloor } = req.body;
+    if (targetRTP !== undefined) config.TARGET_RTP = Math.max(0.5, Math.min(0.99, parseFloat(targetRTP)));
+    if (maxWinMultiplier !== undefined) config.MAX_WIN_MULTIPLIER = Math.max(10, Math.min(10000, parseInt(maxWinMultiplier)));
+    if (profitFloor !== undefined) config.PROFIT_FLOOR = parseFloat(profitFloor);
+    res.json({ message: 'Config updated', config: { TARGET_RTP: config.TARGET_RTP, MAX_WIN_MULTIPLIER: config.MAX_WIN_MULTIPLIER, PROFIT_FLOOR: config.PROFIT_FLOOR } });
+});
+
 module.exports = router;

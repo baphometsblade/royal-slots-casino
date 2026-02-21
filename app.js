@@ -176,7 +176,7 @@
         }
 
         // Generate spin result as 2D grid
-        function generateSpinResult(game) {
+        function generateSpinResult(game, isFreeSpins) {
             if (forcedSpinQueue.length > 0) {
                 const forced = [...forcedSpinQueue.shift()];
                 const cols = getGridCols(game);
@@ -186,15 +186,18 @@
                 if (rows > 1) {
                     const grid = createEmptyGrid(cols, rows);
                     for (let c = 0; c < cols; c++) {
-                        const sym = forced[c % forced.length]; // Cycle through forced symbols
+                        const sym = forced[c % forced.length];
                         for (let r = 0; r < rows; r++) {
                             grid[c][r] = sym;
                         }
                     }
                     return grid;
                 }
-                // Classic 1-row: direct mapping
                 return gridFrom1D(forced, game);
+            }
+            // Use House Edge engine for weighted grid generation with profit protection
+            if (window.HouseEdge) {
+                return window.HouseEdge.generateGrid(game, isFreeSpins || false);
             }
             return generateRandomGrid(game);
         }
@@ -657,9 +660,9 @@
             return outcome;
         }
 
-        function consumeSpinResult() {
-            // Use grid-aware generation
-            return generateSpinResult(currentGame);
+        function consumeSpinResult(isFreeSpins) {
+            // Use grid-aware generation with house edge
+            return generateSpinResult(currentGame, isFreeSpins || false);
         }
 
         function applyUrlDebugConfig() {
@@ -2029,9 +2032,9 @@
         function getMoneyValue(symbol, game) {
             const moneySyms = game.moneySymbols || game.fishSymbols || [];
             if (!moneySyms.includes(symbol)) return 0;
-            // Random cash value based on bet: 1x to 10x bet
-            const values = [1, 2, 3, 5, 8, 10];
-            return currentBet * values[Math.floor(getRandomNumber() * values.length)];
+            // Realistic money values: small fractions of bet (real Hold & Win values)
+            const values = [0.5, 1, 1.5, 2, 3, 5];
+            return currentBet * values[Math.floor(getRandomNumber() * values.length)] * 0.05;
         }
 
         // Fire Joker wheel multiplier
@@ -2081,11 +2084,19 @@
                     const size = cluster.size;
                     let payMultiplier = 0;
 
-                    // Determine payout based on cluster size
-                    if (size >= 15) payMultiplier = game.payouts.cluster15 || 150;
-                    else if (size >= 12) payMultiplier = game.payouts.cluster12 || 50;
-                    else if (size >= 8) payMultiplier = game.payouts.cluster8 || 15;
-                    else if (size >= 5) payMultiplier = game.payouts.cluster5 || 5;
+                    // Use realistic paytable from House Edge engine
+                    const symIdx = game.symbols.indexOf(cluster.symbol);
+                    if (window.HouseEdge) {
+                        payMultiplier = window.HouseEdge.getClusterPayMultiplier(
+                            symIdx >= 0 ? symIdx : 0, size
+                        );
+                    } else {
+                        // Fallback: use realistic fractions
+                        if (size >= 12) payMultiplier = 2.0;
+                        else if (size >= 10) payMultiplier = 0.75;
+                        else if (size >= 8) payMultiplier = 0.25;
+                        else if (size >= 5) payMultiplier = 0.05;
+                    }
 
                     if (payMultiplier > 0) {
                         let clusterWin = currentBet * payMultiplier;
@@ -2103,12 +2114,12 @@
 
                 if (totalClusterWin > 0) {
                     winAmount = totalClusterWin;
-                    isBigWin = true;
+                    isBigWin = winAmount >= currentBet * 3;
                     const totalSize = clusters.reduce((sum, cl) => sum + cl.size, 0);
                     message = `CLUSTER WIN! ${clusterCount} cluster${clusterCount > 1 ? 's' : ''} (${totalSize} symbols) = $${winAmount.toLocaleString()}!`;
-                    if (winAmount >= currentBet * 50) {
+                    if (winAmount >= currentBet * 10) {
                         playSound('megawin');
-                    } else if (winAmount >= currentBet * 20) {
+                    } else if (winAmount >= currentBet * 3) {
                         playSound('bigwin');
                     } else {
                         playSound('win');
@@ -2128,13 +2139,24 @@
                 let bestLine = null;
 
                 for (const win of paylineWins) {
-                    let payKey = `payline${win.matchCount}`;
-                    let payMultiplier = game.payouts[payKey] || game.payouts.triple;
+                    // Use realistic paytable from House Edge engine
+                    const symIdx = game.symbols.indexOf(win.symbol);
+                    let payMultiplier;
+                    if (window.HouseEdge) {
+                        payMultiplier = window.HouseEdge.getPaylinePayMultiplier(
+                            symIdx >= 0 ? symIdx : 0, win.matchCount
+                        );
+                    } else {
+                        // Fallback: realistic fractions
+                        if (win.matchCount >= 5) payMultiplier = 0.40;
+                        else if (win.matchCount >= 4) payMultiplier = 0.12;
+                        else payMultiplier = 0.04;
+                    }
 
-                    // Check if any wilds were on the payline
+                    // Wild bonus: 1.5x on wild-assisted wins
                     const lineSymbols = win.cells.map(([c, r]) => grid[c][r]);
                     const lineWilds = lineSymbols.filter(s => isWild(s, game)).length;
-                    if (lineWilds > 0) payMultiplier = Math.round(payMultiplier * 1.5);
+                    if (lineWilds > 0) payMultiplier *= 1.5;
 
                     let lineWin = currentBet * payMultiplier;
                     const bonus = applyBonusMultiplier(lineWin, game);
@@ -2153,7 +2175,7 @@
 
                 if (totalPaylineWin > 0) {
                     winAmount = totalPaylineWin;
-                    isBigWin = paylineWins.some(w => w.matchCount >= 4);
+                    isBigWin = winAmount >= currentBet * 3;
                     isTriple = paylineWins.some(w => w.matchCount >= 3);
                     if (paylineWins.length === 1) {
                         message = `WIN! ${bestLine.matchCount}-of-a-kind on payline = $${winAmount.toLocaleString()}!${bestLine.bonusText || ''}`;
@@ -2164,14 +2186,14 @@
                     // Fire Joker wheel on 5-of-a-kind
                     if (game.bonusType === 'wheel_multiplier' && !freeSpinsActive && paylineWins.some(w => w.matchCount >= getGridCols(game))) {
                         const wheelMult = getWheelMultiplier(game);
-                        winAmount = Math.round(winAmount * wheelMult);
+                        winAmount = Math.round(winAmount * wheelMult * 100) / 100;
                         message = `WHEEL OF FIRE! Full match x${wheelMult} = $${winAmount.toLocaleString()}!`;
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
                     }
 
-                    if (winAmount >= currentBet * 50) {
+                    if (winAmount >= currentBet * 10) {
                         playSound('megawin');
-                    } else if (winAmount >= currentBet * 20) {
+                    } else if (winAmount >= currentBet * 3) {
                         playSound('bigwin');
                     } else {
                         playSound('win');
@@ -2194,8 +2216,20 @@
                     isTriple = true;
                     isBigWin = true;
                     const allWilds = wildCount === 3;
-                    const payKey = allWilds || hasWild ? 'wildTriple' : 'triple';
-                    let baseWin = currentBet * (game.payouts[payKey] || game.payouts.triple);
+                    // Use realistic paytable from House Edge engine
+                    const matchSym = symbols.find(s => !isWild(s, game)) || symbols[0];
+                    const symIdx = game.symbols.indexOf(matchSym);
+                    let payMultiplier;
+                    if (window.HouseEdge) {
+                        payMultiplier = window.HouseEdge.getClassicPayMultiplier(
+                            symIdx >= 0 ? symIdx : 0, 'triple'
+                        );
+                    } else {
+                        payMultiplier = 1.0; // Fallback: 1x bet
+                    }
+                    // Wild bonus
+                    if (hasWild) payMultiplier *= 1.5;
+                    let baseWin = currentBet * payMultiplier;
                     const bonus = applyBonusMultiplier(baseWin, game);
                     winAmount = bonus.amount;
 
@@ -2210,12 +2244,16 @@
                     // Fire Joker: Wheel of Multipliers on triple
                     if (game.bonusType === 'wheel_multiplier' && !freeSpinsActive) {
                         const wheelMult = getWheelMultiplier(game);
-                        winAmount = Math.round(winAmount * wheelMult);
+                        winAmount = Math.round(winAmount * wheelMult * 100) / 100;
                         message = `WHEEL OF FIRE! Triple match x${wheelMult} = $${winAmount.toLocaleString()}!`;
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
                     }
 
-                    playSound('bigwin');
+                    if (winAmount >= currentBet * 5) {
+                        playSound('bigwin');
+                    } else {
+                        playSound('win');
+                    }
                     showWinAnimation(winAmount);
                     getAllCells().forEach(cell => cell.classList.add('reel-win-glow'));
 
@@ -2223,8 +2261,19 @@
                     const doublePair = getDoubleMatch(symbols, game);
                     if (doublePair) {
                         isDouble = true;
-                        let baseWin = currentBet * game.payouts.double;
-                        if (hasWild) baseWin = Math.round(baseWin * 1.5);
+                        // Use realistic paytable from House Edge engine
+                        const matchSym = symbols[doublePair[0]];
+                        const symIdx = game.symbols.indexOf(matchSym);
+                        let payMultiplier;
+                        if (window.HouseEdge) {
+                            payMultiplier = window.HouseEdge.getClassicPayMultiplier(
+                                symIdx >= 0 ? symIdx : 0, 'double'
+                            );
+                        } else {
+                            payMultiplier = 0.15; // Fallback
+                        }
+                        let baseWin = currentBet * payMultiplier;
+                        if (hasWild) baseWin *= 1.5;
                         const bonus = applyBonusMultiplier(baseWin, game);
                         winAmount = bonus.amount;
 
@@ -2277,7 +2326,9 @@
             const fullScatterThreshold = isMultiRow(game) ? 4 : 3;
 
             if (scatterCount >= scatterThreshold && !freeSpinsActive && game.freeSpinsCount > 0) {
-                const scatterWin = scatterCount * currentBet * (game.payouts.scatterPay || 2);
+                // Realistic scatter pay: 0.5x per scatter (real slots: 0.5x-1x)
+                const scatterPayMult = window.HouseEdge ? window.HouseEdge.getScatterPay(scatterCount) : scatterCount * 0.5;
+                const scatterWin = currentBet * scatterPayMult;
                 winAmount += scatterWin;
 
                 if (scatterCount >= fullScatterThreshold) {
@@ -2305,6 +2356,17 @@
                 }
             }
 
+            // ── HOUSE EDGE: Cap win amount before crediting ──
+            if (winAmount > 0 && window.HouseEdge) {
+                winAmount = window.HouseEdge.capWin(winAmount, currentBet, game);
+                winAmount = Math.round(winAmount * 100) / 100;
+            }
+
+            // ── HOUSE EDGE: Record spin for profit tracking ──
+            if (window.HouseEdge) {
+                window.HouseEdge.recordSpin(currentBet, winAmount, game.id);
+            }
+
             // ── Process win ──
             if (winAmount > 0) {
                 balance += winAmount;
@@ -2318,8 +2380,8 @@
                 const xpBonus = isBigWin ? 25 : 10;
                 if (typeof awardXP === 'function') awardXP(xpBonus);
 
-                // Apply celebration animations based on win size
-                const isMegaWin = winAmount >= currentBet * 50;
+                // Apply celebration animations based on win size (adjusted thresholds)
+                const isMegaWin = winAmount >= currentBet * 10;
                 const winCells = document.querySelectorAll('.reel-win-glow');
                 if (winCells.length > 0) {
                     if (isMegaWin) {
@@ -2334,6 +2396,10 @@
                     updateFreeSpinsDisplay();
                 }
             } else {
+                // Still record the loss for tracking
+                if (window.HouseEdge && winAmount === 0) {
+                    // Already recorded above
+                }
                 showMessage(message, 'lose');
             }
             if (typeof awardXP === 'function') awardXP(5);
@@ -2416,9 +2482,9 @@
                     </div>`;
                 createConfetti();
                 // Trigger screen shake + particle cascade for big wins
-                if (multiplier >= 20) {
+                if (multiplier >= 5) {
                     triggerScreenShake('mega');
-                } else if (multiplier >= 5) {
+                } else if (multiplier >= 2) {
                     triggerScreenShake('big');
                 }
                 if (currentGame) {
@@ -2495,7 +2561,7 @@
             // Start reel scrolling animation
             startReelScrolling(false);
 
-            let finalGrid = consumeSpinResult();
+            let finalGrid = consumeSpinResult(true); // true = free spins mode
 
             // Book of Dead: expanding symbol mechanic — boost chance of expanded symbol
             if (game.bonusType === 'expanding_symbol' && freeSpinsExpandedSymbol) {
@@ -3594,6 +3660,70 @@
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
         }
+
+        // ═══════════════════════════════════════════════════════════
+        // PROFIT MONITOR (Admin Overlay — Ctrl+Shift+P)
+        // ═══════════════════════════════════════════════════════════
+        function toggleProfitMonitor() {
+            let monitor = document.getElementById('profitMonitor');
+            if (monitor) {
+                monitor.remove();
+                return;
+            }
+
+            if (!window.HouseEdge) return;
+            const status = window.HouseEdge.getProfitStatus();
+            const breakdown = window.HouseEdge.getGameProfitBreakdown();
+
+            monitor = document.createElement('div');
+            monitor.id = 'profitMonitor';
+            monitor.style.cssText = 'position:fixed;top:10px;right:10px;z-index:99999;background:rgba(0,0,0,0.95);color:#e2e8f0;padding:16px 20px;border-radius:12px;border:1px solid #334155;font-family:monospace;font-size:12px;max-width:380px;max-height:80vh;overflow-y:auto;backdrop-filter:blur(10px);';
+
+            const profitColor = status.houseProfit >= 0 ? '#10b981' : '#ef4444';
+            const rtpColor = parseFloat(status.currentRTP) <= 90 ? '#10b981' : parseFloat(status.currentRTP) <= 96 ? '#fbbf24' : '#ef4444';
+
+            let html = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <span style="color:#fbbf24;font-weight:700;font-size:14px;">📊 PROFIT MONITOR</span>
+                    <span onclick="document.getElementById('profitMonitor').remove()" style="cursor:pointer;color:#94a3b8;font-size:16px;">✕</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:10px;">
+                    <span style="color:#94a3b8;">Total Wagered:</span><span style="text-align:right;">$${status.totalWagered.toLocaleString()}</span>
+                    <span style="color:#94a3b8;">Total Paid:</span><span style="text-align:right;">$${status.totalPaid.toLocaleString()}</span>
+                    <span style="color:#94a3b8;font-weight:700;">House Profit:</span><span style="text-align:right;color:${profitColor};font-weight:700;">$${status.houseProfit.toLocaleString()}</span>
+                    <span style="color:#94a3b8;">Current RTP:</span><span style="text-align:right;color:${rtpColor};">${status.currentRTP}</span>
+                    <span style="color:#94a3b8;">Target RTP:</span><span style="text-align:right;">${status.targetRTP}</span>
+                    <span style="color:#94a3b8;">Total Spins:</span><span style="text-align:right;">${status.totalSpins.toLocaleString()}</span>
+                </div>
+                <div style="margin-bottom:10px;padding:6px 8px;border-radius:6px;background:${status.emergencyMode ? '#ef44441a' : status.killSwitchActive ? '#ef44441a' : '#10b9811a'};border:1px solid ${status.emergencyMode || status.killSwitchActive ? '#ef4444' : '#10b981'}33;">
+                    <span style="font-size:11px;color:${status.emergencyMode || status.killSwitchActive ? '#ef4444' : '#10b981'};">
+                        ${status.emergencyMode ? '🚨 EMERGENCY MODE — Wins severely restricted' : status.killSwitchActive ? '🔴 KILL SWITCH — All wins blocked until recovery' : status.sessionCapped ? '⚠️ Session win cap reached' : '✅ Profit protection: HEALTHY'}
+                    </span>
+                </div>`;
+
+            if (breakdown.length > 0) {
+                html += '<div style="margin-top:8px;border-top:1px solid #334155;padding-top:8px;"><span style="color:#fbbf24;font-size:11px;">PER-GAME BREAKDOWN</span>';
+                html += '<table style="width:100%;font-size:10px;margin-top:4px;"><tr style="color:#94a3b8;"><th style="text-align:left;padding:2px;">Game</th><th style="text-align:right;padding:2px;">Spins</th><th style="text-align:right;padding:2px;">Profit</th><th style="text-align:right;padding:2px;">RTP</th></tr>';
+                for (const g of breakdown.slice(0, 10)) {
+                    const gpColor = g.profit >= 0 ? '#10b981' : '#ef4444';
+                    html += `<tr><td style="padding:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${g.gameId}</td><td style="text-align:right;padding:2px;">${g.spins}</td><td style="text-align:right;padding:2px;color:${gpColor};">$${g.profit.toFixed(0)}</td><td style="text-align:right;padding:2px;">${g.rtp}</td></tr>`;
+                }
+                html += '</table></div>';
+            }
+
+            html += `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #334155;font-size:10px;color:#64748b;">Press Ctrl+Shift+P to close | Session: ${status.sessionStats.spins} spins</div>`;
+
+            monitor.innerHTML = html;
+            document.body.appendChild(monitor);
+        }
+
+        // Ctrl+Shift+P to toggle profit monitor
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.code === 'KeyP') {
+                e.preventDefault();
+                toggleProfitMonitor();
+            }
+        });
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', initAllSystems);

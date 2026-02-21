@@ -68,10 +68,10 @@ router.post('/', authenticate, (req, res) => {
 
         // Check if user has active free spins (stored in session/memory)
         // For simplicity, free spins are resolved as part of the spin response
-        const spinResult = gameEngine.resolveSpin(game, bet, gameStats);
+        const spinResult = gameEngine.resolveSpin(game, bet, gameStats, null, db);
 
-        // ── Apply win cap (house protection) ──
-        spinResult.winAmount = houseEdge.capWinAmount(spinResult.winAmount, bet, game);
+        // ── Apply win cap (house protection with profit floor) ──
+        spinResult.winAmount = houseEdge.capWinAmount(spinResult.winAmount, bet, game, db);
 
         // ── Credit win ──
         let finalBalance = balanceAfterBet;
