@@ -1,7 +1,7 @@
 // Shared Game Definitions — used by both server and client
 const games = [
     // ═══ 1. Candy Cascade 1000 (based on Sugar Rush) — 7x7 Cluster Pays, Tumble ═══
-    { id: 'sugar_rush', name: 'Candy Cascade 1000', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/sugar_rush.png', bgGradient: 'linear-gradient(135deg, #ff6fd8 0%, #f7a531 100%)',
+    { id: 'sugar_rush', name: 'Candy Cascade 1000', provider: 'GoldenEdge Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/sugar_rush.png', bgGradient: 'linear-gradient(135deg, #ff6fd8 0%, #f7a531 100%)',
       symbols: ['s1_lollipop','s2_gummy_bear','s3_candy_cane','s4_cupcake','s5_diamond_candy','wild_sugar'],
       reelBg: 'linear-gradient(180deg, #3d1232 0%, #1a0a14 100%)', accentColor: '#ff6fd8',
       gridCols: 7, gridRows: 7, template: 'grid',winType: 'cluster', clusterMin: 5,
@@ -12,7 +12,7 @@ const games = [
       payouts: { triple: 150, double: 15, wildTriple: 200, scatterPay: 5, cluster5: 5, cluster8: 15, cluster12: 50, cluster15: 150 }, minBet: 10, maxBet: 5000, hot: true, jackpot: 0 },
 
     // ═══ 2. Fruit Fiesta Deluxe (based on Sweet Bonanza) — 6x5 Scatter Pays ═══
-    { id: 'lucky_777', name: 'Fruit Fiesta Deluxe', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/lucky_777.png', bgGradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    { id: 'lucky_777', name: 'Fruit Fiesta Deluxe', provider: 'GoldenEdge Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/lucky_777.png', bgGradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
       symbols: ['s1_banana','s2_grape','s3_apple','s4_watermelon','s5_heart_gem','wild_bonanza'],
       reelBg: 'linear-gradient(180deg, #2e1435 0%, #160a18 100%)', accentColor: '#f093fb',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -23,7 +23,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 30, cluster15: 100 }, minBet: 10, maxBet: 500, hot: true, jackpot: 0 },
 
     // ═══ 3. Halls of Thunder (based on Gates of Olympus) — 6x5 Scatter Pays ═══
-    { id: 'gates_olympus', name: 'Halls of Thunder', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/gates_olympus.png', bgGradient: 'linear-gradient(135deg, #667eea 0%, #f5c842 100%)',
+    { id: 'gates_olympus', name: 'Halls of Thunder', provider: 'Celestial Plays', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/gates_olympus.png', bgGradient: 'linear-gradient(135deg, #667eea 0%, #f5c842 100%)',
       symbols: ['s1_chalice','s2_ring','s3_hourglass','s4_crown','s5_lightning','wild_zeus'],
       reelBg: 'linear-gradient(180deg, #0f1a3d 0%, #060b1a 100%)', accentColor: '#667eea',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -34,7 +34,7 @@ const games = [
       payouts: { triple: 120, double: 12, wildTriple: 180, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 120 }, minBet: 20, maxBet: 2000, hot: true, jackpot: 0 },
 
     // ═══ 4. Raging Bull (based on Black Bull) — 5x4, 40 Paylines ═══
-    { id: 'black_bull', name: 'Raging Bull', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/black_bull.png', bgGradient: 'linear-gradient(135deg, #1a1a2e 0%, #e94560 100%)',
+    { id: 'black_bull', name: 'Raging Bull', provider: 'VaultX Gaming', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/black_bull.png', bgGradient: 'linear-gradient(135deg, #1a1a2e 0%, #e94560 100%)',
       symbols: ['s1_horseshoe','s2_coins','s3_money_bag','s4_gold_bar','s5_diamond','wild_bull'],
       reelBg: 'linear-gradient(180deg, #2a0a0a 0%, #120505 100%)', accentColor: '#e94560',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -45,7 +45,7 @@ const games = [
       payouts: { triple: 80, double: 9, wildTriple: 120, scatterPay: 3, payline3: 9, payline4: 40, payline5: 80 }, minBet: 10, maxBet: 750, hot: false, jackpot: 0 },
 
     // ═══ 5. Salsa Spins (based on 3 Hot Chillies) — Classic 3x3, Respin ═══
-    { id: 'hot_chillies', name: 'Salsa Spins', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/hot_chillies.png', bgGradient: 'linear-gradient(135deg, #d62828 0%, #f77f00 100%)',
+    { id: 'hot_chillies', name: 'Salsa Spins', provider: 'ArcadeForge', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/hot_chillies.png', bgGradient: 'linear-gradient(135deg, #d62828 0%, #f77f00 100%)',
       symbols: ['s1_taco','s2_maracas','s3_sombrero','s4_chilli','s5_hot_7','wild_chilli'],
       reelBg: 'linear-gradient(180deg, #3a1008 0%, #1a0804 100%)', accentColor: '#f77f00',
       gridCols: 3, gridRows: 3, template: 'classic',winType: 'classic',
@@ -56,7 +56,7 @@ const games = [
       payouts: { triple: 60, double: 7, wildTriple: 100, scatterPay: 2 }, minBet: 5, maxBet: 300, hot: false, jackpot: 0 },
 
     // ═══ 6. Blazing Fruits (based on 100 Super Hot) — 5x3 Paylines ═══
-    { id: 'super_hot', name: 'Blazing Fruits', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/super_hot.png', bgGradient: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+    { id: 'super_hot', name: 'Blazing Fruits', provider: 'ArcadeForge', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/super_hot.png', bgGradient: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
       symbols: ['s1_cherry','s2_lemon','s3_plum','s4_bell','s5_star','wild_hot'],
       reelBg: 'linear-gradient(180deg, #2a1a05 0%, #140d02 100%)', accentColor: '#ffd200',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -67,7 +67,7 @@ const games = [
       payouts: { triple: 75, double: 8, wildTriple: 110, scatterPay: 3, payline3: 8, payline4: 35, payline5: 75 }, minBet: 10, maxBet: 500, hot: true, jackpot: 0 },
 
     // ═══ 7. Alpha Pack (based on Wolf Gold) — 5x3, Hold & Win ═══
-    { id: 'wolf_gold', name: 'Alpha Pack', provider: 'Matrix Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/wolf_gold.png', bgGradient: 'linear-gradient(135deg, #8b6914 0%, #d4a836 100%)',
+    { id: 'wolf_gold', name: 'Alpha Pack', provider: 'IronReel Entertainment', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/wolf_gold.png', bgGradient: 'linear-gradient(135deg, #8b6914 0%, #d4a836 100%)',
       symbols: ['s1_feather','s2_paw','s3_eagle','s4_totem','s5_moon','wild_wolf'],
       reelBg: 'linear-gradient(180deg, #261a08 0%, #110c04 100%)', accentColor: '#d4a836',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -78,7 +78,7 @@ const games = [
       payouts: { triple: 200, double: 20, wildTriple: 300, scatterPay: 5, payline3: 20, payline4: 80, payline5: 200 }, minBet: 25, maxBet: 5000, hot: true, jackpot: 125840 },
 
     // ═══ 8. Reel Catch (based on Big Bass Bonanza) — 5x3, Fisherman Collect ═══
-    { id: 'big_bass', name: 'Reel Catch', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/big_bass.png', bgGradient: 'linear-gradient(135deg, #0077b6 0%, #48cae4 100%)',
+    { id: 'big_bass', name: 'Reel Catch', provider: 'VaultX Gaming', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/big_bass.png', bgGradient: 'linear-gradient(135deg, #0077b6 0%, #48cae4 100%)',
       symbols: ['s1_hook','s2_float','s3_tackle','s4_fish','s5_treasure','wild_bass'],
       reelBg: 'linear-gradient(180deg, #061a2a 0%, #030d15 100%)', accentColor: '#48cae4',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -89,7 +89,7 @@ const games = [
       payouts: { triple: 65, double: 7, wildTriple: 100, scatterPay: 3, payline3: 7, payline4: 30, payline5: 65 }, minBet: 10, maxBet: 400, hot: false, jackpot: 0 },
 
     // ═══ 9. Inferno Jester (based on Fire Joker) — Classic 3x3, Wheel ═══
-    { id: 'fire_joker', name: 'Inferno Jester', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/fire_joker.png', bgGradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
+    { id: 'fire_joker', name: 'Inferno Jester', provider: 'ArcadeForge', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/fire_joker.png', bgGradient: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
       symbols: ['s1_cherry','s2_lemon','s3_plum','s4_star','s5_seven','wild_joker'],
       reelBg: 'linear-gradient(180deg, #2a0812 0%, #140408 100%)', accentColor: '#ff0844',
       gridCols: 3, gridRows: 3, template: 'classic',winType: 'classic',
@@ -100,7 +100,7 @@ const games = [
       payouts: { triple: 55, double: 6, wildTriple: 80, scatterPay: 2 }, minBet: 5, maxBet: 200, hot: false, jackpot: 0 },
 
     // ═══ 10. Tome of Ra (based on Book of Dead) — 5x3, Expanding Symbol ═══
-    { id: 'book_dead', name: 'Tome of Ra', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/book_dead.png', bgGradient: 'linear-gradient(135deg, #6b3a0a 0%, #c7a94e 100%)',
+    { id: 'book_dead', name: 'Tome of Ra', provider: 'PhantomWorks', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/book_dead.png', bgGradient: 'linear-gradient(135deg, #6b3a0a 0%, #c7a94e 100%)',
       symbols: ['s1_ankh','s2_scarab','s3_eye','s4_pharaoh','s5_anubis','wild_book'],
       reelBg: 'linear-gradient(180deg, #2a1a08 0%, #140d04 100%)', accentColor: '#c7a94e',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -110,7 +110,7 @@ const games = [
       payouts: { triple: 90, double: 10, wildTriple: 140, scatterPay: 4, payline3: 10, payline4: 45, payline5: 90 }, minBet: 10, maxBet: 1000, hot: true, jackpot: 0 },
 
     // ═══ 11. Cosmic Gems (based on Starburst) — 5x3, Expanding Wilds ═══
-    { id: 'starburst_xxl', name: 'Cosmic Gems', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/starburst_xxl.png', bgGradient: 'linear-gradient(135deg, #a855f7 0%, #06b6d4 100%)',
+    { id: 'starburst_xxl', name: 'Cosmic Gems', provider: 'NovaSpin Studios', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/starburst_xxl.png', bgGradient: 'linear-gradient(135deg, #a855f7 0%, #06b6d4 100%)',
       symbols: ['s1_gem_red','s2_gem_blue','s3_gem_green','s4_gem_yellow','s5_gem_purple','wild_star'],
       reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0514 100%)', accentColor: '#a855f7',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -121,7 +121,7 @@ const games = [
       payouts: { triple: 110, double: 11, wildTriple: 170, scatterPay: 0, payline3: 11, payline4: 55, payline5: 110 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 12. Temple Quest (based on Gonzo's Quest) — 5x3, Avalanche ═══
-    { id: 'gonzos_quest', name: 'Temple Quest', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/gonzos_quest.png', bgGradient: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)',
+    { id: 'gonzos_quest', name: 'Temple Quest', provider: 'PhantomWorks', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/gonzos_quest.png', bgGradient: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)',
       symbols: ['s1_stone_face_green','s2_stone_face_blue','s3_stone_face_red','s4_emerald','s5_gold_mask','wild_gonzo'],
       reelBg: 'linear-gradient(180deg, #0a2a15 0%, #05140a 100%)', accentColor: '#3cba92',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -132,7 +132,7 @@ const games = [
       payouts: { triple: 70, double: 8, wildTriple: 110, scatterPay: 3, payline3: 8, payline4: 35, payline5: 70 }, minBet: 10, maxBet: 400, hot: false, jackpot: 0 },
 
     // ═══ 13. Starlight Empress (based on Starlight Princess) — 6x5, Scatter Pays ═══
-    { id: 'starlight_princess', name: 'Starlight Empress', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/starlight_princess.png', bgGradient: 'linear-gradient(135deg, #e040fb 0%, #4dd0e1 100%)',
+    { id: 'starlight_princess', name: 'Starlight Empress', provider: 'GoldenEdge Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/starlight_princess.png', bgGradient: 'linear-gradient(135deg, #e040fb 0%, #4dd0e1 100%)',
       symbols: ['s1_crystal_heart','s2_magic_wand','s3_tiara','s4_moon_orb','s5_star_crystal','wild_empress'],
       reelBg: 'linear-gradient(180deg, #2a0a3d 0%, #0d041a 100%)', accentColor: '#e040fb',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -143,7 +143,7 @@ const games = [
       payouts: { triple: 130, double: 13, wildTriple: 195, scatterPay: 4, cluster5: 4, cluster8: 13, cluster12: 45, cluster15: 130 }, minBet: 20, maxBet: 2000, hot: true, jackpot: 0 },
 
     // ═══ 14. Olympus Rising (based on Gates of Olympus 2) — 6x5, Scatter Pays ═══
-    { id: 'olympus_rising', name: 'Olympus Rising', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/olympus_rising.png', bgGradient: 'linear-gradient(135deg, #5c6bc0 0%, #ff8a65 100%)',
+    { id: 'olympus_rising', name: 'Olympus Rising', provider: 'Celestial Plays', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/olympus_rising.png', bgGradient: 'linear-gradient(135deg, #5c6bc0 0%, #ff8a65 100%)',
       symbols: ['s1_trident','s2_shield','s3_laurel','s4_thunderbolt','s5_olympus_gem','wild_poseidon'],
       reelBg: 'linear-gradient(180deg, #0d1a40 0%, #060a1f 100%)', accentColor: '#5c6bc0',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -154,7 +154,7 @@ const games = [
       payouts: { triple: 125, double: 12, wildTriple: 185, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 42, cluster15: 125 }, minBet: 20, maxBet: 2000, hot: false, jackpot: 0 },
 
     // ═══ 15. Buffalo Stampede (based on Buffalo King Megaways) — 6x5, Cluster ═══
-    { id: 'buffalo_stampede', name: 'Buffalo Stampede', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/buffalo_stampede.png', bgGradient: 'linear-gradient(135deg, #795548 0%, #ff6f00 100%)',
+    { id: 'buffalo_stampede', name: 'Buffalo Stampede', provider: 'IronReel Entertainment', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/buffalo_stampede.png', bgGradient: 'linear-gradient(135deg, #795548 0%, #ff6f00 100%)',
       symbols: ['s1_cactus','s2_horseshoe_gold','s3_cowboy_hat','s4_buffalo','s5_sunset_diamond','wild_stampede'],
       reelBg: 'linear-gradient(180deg, #2a1a08 0%, #140d04 100%)', accentColor: '#ff6f00',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -165,7 +165,7 @@ const games = [
       payouts: { triple: 115, double: 11, wildTriple: 175, scatterPay: 4, cluster5: 4, cluster8: 11, cluster12: 38, cluster15: 115 }, minBet: 15, maxBet: 1500, hot: true, jackpot: 0 },
 
     // ═══ 16. Puppy Palace (based on The Dog House) — 5x3, Sticky Wilds ═══
-    { id: 'puppy_palace', name: 'Puppy Palace', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/puppy_palace.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #81c784 100%)',
+    { id: 'puppy_palace', name: 'Puppy Palace', provider: 'GoldenEdge Gaming', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/puppy_palace.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #81c784 100%)',
       symbols: ['s1_bone','s2_collar','s3_paw_print','s4_puppy_face','s5_golden_bowl','wild_puppy'],
       reelBg: 'linear-gradient(180deg, #0a2a0f 0%, #051408 100%)', accentColor: '#4caf50',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -176,7 +176,7 @@ const games = [
       payouts: { triple: 85, double: 9, wildTriple: 130, scatterPay: 3, payline3: 9, payline4: 40, payline5: 85 }, minBet: 10, maxBet: 600, hot: false, jackpot: 0 },
 
     // ═══ 17. Crimson Fang (based on Blood Suckers) — 5x3, High RTP ═══
-    { id: 'crimson_fang', name: 'Crimson Fang', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/crimson_fang.png', bgGradient: 'linear-gradient(135deg, #4a0e0e 0%, #b71c1c 100%)',
+    { id: 'crimson_fang', name: 'Crimson Fang', provider: 'PhantomWorks', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/crimson_fang.png', bgGradient: 'linear-gradient(135deg, #4a0e0e 0%, #b71c1c 100%)',
       symbols: ['s1_garlic','s2_cross','s3_bat','s4_coffin','s5_vampire','wild_fang'],
       reelBg: 'linear-gradient(180deg, #1a0505 0%, #0d0202 100%)', accentColor: '#b71c1c',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -186,7 +186,7 @@ const games = [
       payouts: { triple: 70, double: 8, wildTriple: 105, scatterPay: 3, payline3: 8, payline4: 32, payline5: 70 }, minBet: 10, maxBet: 400, hot: false, jackpot: 0 },
 
     // ═══ 18. Pirate's Fortune (based on Treasure Wild) — 5x3, Money Collect ═══
-    { id: 'pirate_fortune', name: "Pirate's Fortune", provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/pirate_fortune.png', bgGradient: 'linear-gradient(135deg, #1a237e 0%, #0097a7 100%)',
+    { id: 'pirate_fortune', name: "Pirate's Fortune", provider: 'PhantomWorks', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/pirate_fortune.png', bgGradient: 'linear-gradient(135deg, #1a237e 0%, #0097a7 100%)',
       symbols: ['s1_compass','s2_anchor','s3_cannon','s4_treasure_map','s5_skull_key','wild_pirate'],
       reelBg: 'linear-gradient(180deg, #0a1a2e 0%, #050d18 100%)', accentColor: '#0097a7',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -197,7 +197,7 @@ const games = [
       payouts: { triple: 80, double: 9, wildTriple: 120, scatterPay: 3, payline3: 9, payline4: 38, payline5: 80 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 19. Lucky Dragon (based on Fortune Tiger) — 3x3, Classic ═══
-    { id: 'lucky_dragon', name: 'Lucky Dragon', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/lucky_dragon.png', bgGradient: 'linear-gradient(135deg, #c62828 0%, #ffd600 100%)',
+    { id: 'lucky_dragon', name: 'Lucky Dragon', provider: 'SolsticeFX', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/lucky_dragon.png', bgGradient: 'linear-gradient(135deg, #c62828 0%, #ffd600 100%)',
       symbols: ['s1_lantern','s2_fan','s3_koi','s4_jade','s5_dragon_pearl','wild_dragon'],
       reelBg: 'linear-gradient(180deg, #2a0808 0%, #140404 100%)', accentColor: '#c62828',
       gridCols: 3, gridRows: 3, template: 'classic',winType: 'classic',
@@ -208,7 +208,7 @@ const games = [
       payouts: { triple: 60, double: 7, wildTriple: 100, scatterPay: 2 }, minBet: 5, maxBet: 300, hot: false, jackpot: 0 },
 
     // ═══ 20. Pharaoh's Legacy (based on Legacy of Dead) — 5x3, Expanding Symbol ═══
-    { id: 'pharaoh_legacy', name: "Pharaoh's Legacy", provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/pharaoh_legacy.png', bgGradient: 'linear-gradient(135deg, #8d6e63 0%, #d4a636 100%)',
+    { id: 'pharaoh_legacy', name: "Pharaoh's Legacy", provider: 'PhantomWorks', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/pharaoh_legacy.png', bgGradient: 'linear-gradient(135deg, #8d6e63 0%, #d4a636 100%)',
       symbols: ['s1_hieroglyph','s2_sphinx','s3_pyramid','s4_golden_cobra','s5_pharaoh_mask','wild_papyrus'],
       reelBg: 'linear-gradient(180deg, #2a1c08 0%, #141004 100%)', accentColor: '#d4a636',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -218,7 +218,7 @@ const games = [
       payouts: { triple: 90, double: 10, wildTriple: 140, scatterPay: 4, payline3: 10, payline4: 45, payline5: 90 }, minBet: 10, maxBet: 800, hot: false, jackpot: 0 },
 
     // ═══ 21. Quantum Burst (based on Reactoonz) — 7x7, Cluster Pays ═══
-    { id: 'quantum_burst', name: 'Quantum Burst', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/quantum_burst.png', bgGradient: 'linear-gradient(135deg, #6a1b9a 0%, #00e5ff 100%)',
+    { id: 'quantum_burst', name: 'Quantum Burst', provider: 'NovaSpin Studios', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/quantum_burst.png', bgGradient: 'linear-gradient(135deg, #6a1b9a 0%, #00e5ff 100%)',
       symbols: ['s1_atom','s2_electron','s3_proton','s4_neutron','s5_plasma_orb','wild_quantum'],
       reelBg: 'linear-gradient(180deg, #1a0a30 0%, #0d0518 100%)', accentColor: '#6a1b9a',
       gridCols: 7, gridRows: 7, template: 'grid',winType: 'cluster', clusterMin: 5,
@@ -229,7 +229,7 @@ const games = [
       payouts: { triple: 160, double: 16, wildTriple: 240, scatterPay: 5, cluster5: 5, cluster8: 16, cluster12: 55, cluster15: 160 }, minBet: 10, maxBet: 3000, hot: true, jackpot: 0 },
 
     // ═══ 22. Olympian Gods (based on Rise of Olympus) — 5x5, Cluster ═══
-    { id: 'olympian_gods', name: 'Olympian Gods', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/olympian_gods.png', bgGradient: 'linear-gradient(135deg, #e65100 0%, #ffd54f 100%)',
+    { id: 'olympian_gods', name: 'Olympian Gods', provider: 'Celestial Plays', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/olympian_gods.png', bgGradient: 'linear-gradient(135deg, #e65100 0%, #ffd54f 100%)',
       symbols: ['s1_harp','s2_helmet','s3_pegasus','s4_olive_branch','s5_golden_apple','wild_olympian'],
       reelBg: 'linear-gradient(180deg, #2a1a05 0%, #140d02 100%)', accentColor: '#e65100',
       gridCols: 5, gridRows: 5, template: 'grid',winType: 'cluster', clusterMin: 5,
@@ -240,7 +240,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 35, cluster15: 100 }, minBet: 10, maxBet: 1000, hot: false, jackpot: 0 },
 
     // ═══ 23. Twin Helix (based on Twin Spin) — 5x3, Linked Reels ═══
-    { id: 'twin_helix', name: 'Twin Helix', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/twin_helix.png', bgGradient: 'linear-gradient(135deg, #212121 0%, #e040fb 100%)',
+    { id: 'twin_helix', name: 'Twin Helix', provider: 'NovaSpin Studios', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/twin_helix.png', bgGradient: 'linear-gradient(135deg, #212121 0%, #e040fb 100%)',
       symbols: ['s1_cherry_neon','s2_bar_neon','s3_bell_neon','s4_seven_neon','s5_diamond_neon','wild_helix'],
       reelBg: 'linear-gradient(180deg, #1a0a1a 0%, #0d050d 100%)', accentColor: '#e040fb',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -251,7 +251,7 @@ const games = [
       payouts: { triple: 85, double: 9, wildTriple: 125, scatterPay: 3, payline3: 9, payline4: 38, payline5: 85 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 24. Golden Fortune Wheel (based on Mega Fortune) — 5x3, Progressive ═══
-    { id: 'golden_fortune', name: 'Golden Fortune Wheel', provider: 'Matrix Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/golden_fortune.png', bgGradient: 'linear-gradient(135deg, #ffd700 0%, #212121 100%)',
+    { id: 'golden_fortune', name: 'Golden Fortune Wheel', provider: 'Celestial Plays', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/golden_fortune.png', bgGradient: 'linear-gradient(135deg, #ffd700 0%, #212121 100%)',
       symbols: ['s1_champagne','s2_yacht','s3_watch','s4_ring_gold','s5_limo','wild_fortune'],
       reelBg: 'linear-gradient(180deg, #2a2000 0%, #141000 100%)', accentColor: '#ffd700',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -262,7 +262,7 @@ const games = [
       payouts: { triple: 150, double: 15, wildTriple: 225, scatterPay: 5, payline3: 15, payline4: 65, payline5: 150 }, minBet: 25, maxBet: 5000, hot: true, jackpot: 287650 },
 
     // ═══ 25. Island Tiki (based on Aloha Cluster Pays) — 6x5, Cluster ═══
-    { id: 'island_tiki', name: 'Island Tiki', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/island_tiki.png', bgGradient: 'linear-gradient(135deg, #00897b 0%, #ffcc02 100%)',
+    { id: 'island_tiki', name: 'Island Tiki', provider: 'IronReel Entertainment', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/island_tiki.png', bgGradient: 'linear-gradient(135deg, #00897b 0%, #ffcc02 100%)',
       symbols: ['s1_coconut','s2_hibiscus','s3_ukulele','s4_tiki_mask','s5_golden_idol','wild_tiki'],
       reelBg: 'linear-gradient(180deg, #0a2a1a 0%, #05140d 100%)', accentColor: '#00897b',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -273,7 +273,7 @@ const games = [
       payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3, cluster5: 3, cluster8: 9, cluster12: 32, cluster15: 90 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 26. Sakura Princess (based on Moon Princess) — 5x5, Cluster ═══
-    { id: 'sakura_princess', name: 'Sakura Princess', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/sakura_princess.png', bgGradient: 'linear-gradient(135deg, #f06292 0%, #ce93d8 100%)',
+    { id: 'sakura_princess', name: 'Sakura Princess', provider: 'SolsticeFX', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/sakura_princess.png', bgGradient: 'linear-gradient(135deg, #f06292 0%, #ce93d8 100%)',
       symbols: ['s1_cherry_blossom','s2_origami','s3_katana','s4_moon_fan','s5_jade_dragon','wild_sakura'],
       reelBg: 'linear-gradient(180deg, #2a0a1a 0%, #14050d 100%)', accentColor: '#f06292',
       gridCols: 5, gridRows: 5, template: 'grid',winType: 'cluster', clusterMin: 5,
@@ -284,7 +284,7 @@ const games = [
       payouts: { triple: 95, double: 10, wildTriple: 145, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 33, cluster15: 95 }, minBet: 10, maxBet: 800, hot: false, jackpot: 0 },
 
     // ═══ 27. Ares Blade (based on Sword of Ares) — 5x4, Payline ═══
-    { id: 'ares_blade', name: 'Ares Blade', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/ares_blade.png', bgGradient: 'linear-gradient(135deg, #b71c1c 0%, #ff6f00 100%)',
+    { id: 'ares_blade', name: 'Ares Blade', provider: 'Celestial Plays', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/ares_blade.png', bgGradient: 'linear-gradient(135deg, #b71c1c 0%, #ff6f00 100%)',
       symbols: ['s1_dagger','s2_shield_war','s3_spear','s4_war_helm','s5_blood_gem','wild_ares'],
       reelBg: 'linear-gradient(180deg, #2a0a05 0%, #140502 100%)', accentColor: '#b71c1c',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -295,7 +295,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 0, payline3: 10, payline4: 45, payline5: 100 }, minBet: 10, maxBet: 800, hot: false, jackpot: 0 },
 
     // ═══ 28. Neon Nights (based on Hotline) — 5x3, Hotline Feature ═══
-    { id: 'neon_nights', name: 'Neon Nights', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/neon_nights.png', bgGradient: 'linear-gradient(135deg, #e91e63 0%, #00bcd4 100%)',
+    { id: 'neon_nights', name: 'Neon Nights', provider: 'NovaSpin Studios', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/neon_nights.png', bgGradient: 'linear-gradient(135deg, #e91e63 0%, #00bcd4 100%)',
       symbols: ['s1_dice','s2_cocktail','s3_sports_car','s4_cash_stack','s5_vip_chip','wild_neon'],
       reelBg: 'linear-gradient(180deg, #1a0a20 0%, #0d0510 100%)', accentColor: '#e91e63',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -306,7 +306,7 @@ const games = [
       payouts: { triple: 75, double: 8, wildTriple: 110, scatterPay: 0, payline3: 8, payline4: 33, payline5: 75 }, minBet: 10, maxBet: 400, hot: false, jackpot: 0 },
 
     // ═══ 29. Viking Voyage (based on Vikings Go Berzerk) — 5x4, Payline ═══
-    { id: 'viking_voyage', name: 'Viking Voyage', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/viking_voyage.png', bgGradient: 'linear-gradient(135deg, #37474f 0%, #00acc1 100%)',
+    { id: 'viking_voyage', name: 'Viking Voyage', provider: 'IronReel Entertainment', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/viking_voyage.png', bgGradient: 'linear-gradient(135deg, #37474f 0%, #00acc1 100%)',
       symbols: ['s1_axe','s2_horn','s3_rune','s4_longship','s5_odin_eye','wild_viking'],
       reelBg: 'linear-gradient(180deg, #0a1a2a 0%, #050d15 100%)', accentColor: '#00acc1',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -317,7 +317,7 @@ const games = [
       payouts: { triple: 95, double: 10, wildTriple: 145, scatterPay: 4, payline3: 10, payline4: 42, payline5: 95 }, minBet: 15, maxBet: 1000, hot: false, jackpot: 0 },
 
     // ═══ 30. Diamond Vault (based on Divine Fortune) — 5x3, Progressive Jackpot ═══
-    { id: 'diamond_vault', name: 'Diamond Vault', provider: 'Matrix Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/diamond_vault.png', bgGradient: 'linear-gradient(135deg, #283593 0%, #e0e0e0 100%)',
+    { id: 'diamond_vault', name: 'Diamond Vault', provider: 'NovaSpin Studios', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/diamond_vault.png', bgGradient: 'linear-gradient(135deg, #283593 0%, #e0e0e0 100%)',
       symbols: ['s1_sapphire','s2_ruby','s3_emerald_cut','s4_black_diamond','s5_crown_jewel','wild_vault'],
       reelBg: 'linear-gradient(180deg, #0a0a2a 0%, #050515 100%)', accentColor: '#283593',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -332,7 +332,7 @@ const games = [
     // ═══════════════════════════════════════════════════════════
 
     // ═══ 31. Madame Destiny (based on Madame Destiny Megaways) — 6x5, Cluster ═══
-    { id: 'madame_destiny', name: 'Madame Destiny', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/madame_destiny.png', bgGradient: 'linear-gradient(135deg, #4a148c 0%, #e040fb 100%)',
+    { id: 'madame_destiny', name: 'Madame Destiny', provider: 'PhantomWorks', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/madame_destiny.png', bgGradient: 'linear-gradient(135deg, #4a148c 0%, #e040fb 100%)',
       symbols: ['s1_candle','s2_potion','s3_crystal_ball','s4_tarot','s5_mystic_eye','wild_destiny'],
       reelBg: 'linear-gradient(180deg, #1a0530 0%, #0d0218 100%)', accentColor: '#e040fb',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -343,7 +343,7 @@ const games = [
       payouts: { triple: 120, double: 12, wildTriple: 180, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 120 }, minBet: 15, maxBet: 1500, hot: true, jackpot: 0 },
 
     // ═══ 32. Great Rhino Rush (based on Great Rhino Megaways) — 6x5, Cluster ═══
-    { id: 'great_rhino', name: 'Great Rhino Rush', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/great_rhino.png', bgGradient: 'linear-gradient(135deg, #33691e 0%, #fdd835 100%)',
+    { id: 'great_rhino', name: 'Great Rhino Rush', provider: 'IronReel Entertainment', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/great_rhino.png', bgGradient: 'linear-gradient(135deg, #33691e 0%, #fdd835 100%)',
       symbols: ['s1_flamingo','s2_crocodile','s3_gorilla','s4_rhino','s5_savanna_gem','wild_rhino'],
       reelBg: 'linear-gradient(180deg, #1a2a08 0%, #0d1404 100%)', accentColor: '#fdd835',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -354,7 +354,7 @@ const games = [
       payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 4, cluster5: 4, cluster8: 11, cluster12: 38, cluster15: 110 }, minBet: 15, maxBet: 1500, hot: true, jackpot: 0 },
 
     // ═══ 33. Bass Splash Extreme (based on Big Bass Splash) — 5x3, Fisherman ═══
-    { id: 'bass_splash', name: 'Bass Splash Extreme', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/bass_splash.png', bgGradient: 'linear-gradient(135deg, #006064 0%, #26c6da 100%)',
+    { id: 'bass_splash', name: 'Bass Splash Extreme', provider: 'VaultX Gaming', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/bass_splash.png', bgGradient: 'linear-gradient(135deg, #006064 0%, #26c6da 100%)',
       symbols: ['s1_worm','s2_reel','s3_net','s4_marlin','s5_golden_lure','wild_splash'],
       reelBg: 'linear-gradient(180deg, #041a20 0%, #020d10 100%)', accentColor: '#26c6da',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -365,7 +365,7 @@ const games = [
       payouts: { triple: 75, double: 8, wildTriple: 115, scatterPay: 3, payline3: 8, payline4: 35, payline5: 75 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 34. Dragon Megafire (based on Floating Dragon Megaways) — 6x5, Cluster ═══
-    { id: 'dragon_megafire', name: 'Dragon Megafire', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/dragon_megafire.png', bgGradient: 'linear-gradient(135deg, #b71c1c 0%, #ff8f00 100%)',
+    { id: 'dragon_megafire', name: 'Dragon Megafire', provider: 'SolsticeFX', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/dragon_megafire.png', bgGradient: 'linear-gradient(135deg, #b71c1c 0%, #ff8f00 100%)',
       symbols: ['s1_coin_dragon','s2_scroll','s3_pagoda','s4_fire_dragon','s5_imperial_seal','wild_megafire'],
       reelBg: 'linear-gradient(180deg, #2a0505 0%, #140202 100%)', accentColor: '#ff8f00',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -376,7 +376,7 @@ const games = [
       payouts: { triple: 130, double: 13, wildTriple: 195, scatterPay: 5, cluster5: 5, cluster8: 13, cluster12: 45, cluster15: 130 }, minBet: 20, maxBet: 2000, hot: true, jackpot: 0 },
 
     // ═══ 35. Esqueleto Fiesta (based on Esqueleto Explosivo) — 5x3, Avalanche ═══
-    { id: 'esqueleto_fiesta', name: 'Esqueleto Fiesta', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/esqueleto_fiesta.png', bgGradient: 'linear-gradient(135deg, #ff6f00 0%, #e040fb 100%)',
+    { id: 'esqueleto_fiesta', name: 'Esqueleto Fiesta', provider: 'GoldenEdge Gaming', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/esqueleto_fiesta.png', bgGradient: 'linear-gradient(135deg, #ff6f00 0%, #e040fb 100%)',
       symbols: ['s1_guitar','s2_trumpet','s3_skull_red','s4_skull_gold','s5_sugar_skull','wild_esqueleto'],
       reelBg: 'linear-gradient(180deg, #2a1005 0%, #140802 100%)', accentColor: '#ff6f00',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -387,7 +387,7 @@ const games = [
       payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3, payline3: 8, payline4: 35, payline5: 80 }, minBet: 10, maxBet: 400, hot: false, jackpot: 0 },
 
     // ═══ 36. Wildfire Gold (based on Wild West Gold) — 5x4, Sticky Wilds ═══
-    { id: 'wildfire_gold', name: 'Wildfire Gold', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/wildfire_gold.png', bgGradient: 'linear-gradient(135deg, #5d4037 0%, #ffb300 100%)',
+    { id: 'wildfire_gold', name: 'Wildfire Gold', provider: 'VaultX Gaming', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/wildfire_gold.png', bgGradient: 'linear-gradient(135deg, #5d4037 0%, #ffb300 100%)',
       symbols: ['s1_wanted_poster','s2_whiskey','s3_dynamite','s4_sheriff_badge','s5_gold_nugget','wild_wildfire'],
       reelBg: 'linear-gradient(180deg, #1a1208 0%, #0d0904 100%)', accentColor: '#ffb300',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -398,7 +398,7 @@ const games = [
       payouts: { triple: 95, double: 10, wildTriple: 140, scatterPay: 4, payline3: 10, payline4: 42, payline5: 95 }, minBet: 15, maxBet: 800, hot: false, jackpot: 0 },
 
     // ═══ 37. Five Lions Fortune (based on 5 Lions) — 5x3, Hold & Win ═══
-    { id: 'five_lions', name: 'Five Lions Fortune', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/five_lions.png', bgGradient: 'linear-gradient(135deg, #c62828 0%, #ffc107 100%)',
+    { id: 'five_lions', name: 'Five Lions Fortune', provider: 'SolsticeFX', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/five_lions.png', bgGradient: 'linear-gradient(135deg, #c62828 0%, #ffc107 100%)',
       symbols: ['s1_drum','s2_firecracker','s3_lion_dance','s4_golden_lion','s5_fortune_coin','wild_lions'],
       reelBg: 'linear-gradient(180deg, #2a0808 0%, #140404 100%)', accentColor: '#ffc107',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -409,7 +409,7 @@ const games = [
       payouts: { triple: 85, double: 9, wildTriple: 130, scatterPay: 3, payline3: 9, payline4: 38, payline5: 85 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 38. Chilli Heat Wave (based on Chilli Heat) — 5x3, Hold & Win ═══
-    { id: 'chilli_heat', name: 'Chilli Heat Wave', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/chilli_heat.png', bgGradient: 'linear-gradient(135deg, #d32f2f 0%, #ff9800 100%)',
+    { id: 'chilli_heat', name: 'Chilli Heat Wave', provider: 'IronReel Entertainment', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/chilli_heat.png', bgGradient: 'linear-gradient(135deg, #d32f2f 0%, #ff9800 100%)',
       symbols: ['s1_pepper_green','s2_pepper_red','s3_chihuahua','s4_pinata','s5_money_chilli','wild_heat'],
       reelBg: 'linear-gradient(180deg, #2a0a05 0%, #140502 100%)', accentColor: '#ff9800',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -420,7 +420,7 @@ const games = [
       payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3, payline3: 8, payline4: 35, payline5: 80 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 39. Tombstone Reloaded (based on Tombstone RIP) — 5x4, Expanding Wilds ═══
-    { id: 'tombstone_reload', name: 'Tombstone Reloaded', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/tombstone_reload.png', bgGradient: 'linear-gradient(135deg, #3e2723 0%, #ff5722 100%)',
+    { id: 'tombstone_reload', name: 'Tombstone Reloaded', provider: 'VaultX Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/tombstone_reload.png', bgGradient: 'linear-gradient(135deg, #3e2723 0%, #ff5722 100%)',
       symbols: ['s1_boots','s2_revolver','s3_wanted','s4_outlaw','s5_bounty_skull','wild_tombstone'],
       reelBg: 'linear-gradient(180deg, #1a0d05 0%, #0d0602 100%)', accentColor: '#ff5722',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -431,7 +431,7 @@ const games = [
       payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 0, payline3: 11, payline4: 48, payline5: 110 }, minBet: 15, maxBet: 1000, hot: true, jackpot: 0 },
 
     // ═══ 40. Mental Meltdown (based on Mental) — 5x4, Cluster ═══
-    { id: 'mental_meltdown', name: 'Mental Meltdown', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/mental_meltdown.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #76ff03 100%)',
+    { id: 'mental_meltdown', name: 'Mental Meltdown', provider: 'NovaSpin Studios', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/mental_meltdown.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #76ff03 100%)',
       symbols: ['s1_pill','s2_syringe','s3_straitjacket','s4_electric','s5_brain','wild_mental'],
       reelBg: 'linear-gradient(180deg, #0a1a08 0%, #050d04 100%)', accentColor: '#76ff03',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -442,7 +442,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4, payline3: 10, payline4: 45, payline5: 100 }, minBet: 15, maxBet: 1000, hot: false, jackpot: 0 },
 
     // ═══ 41. San Quentin Escape (based on San Quentin) — 5x4, Expanding ═══
-    { id: 'san_quentin', name: 'San Quentin Escape', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/san_quentin.png', bgGradient: 'linear-gradient(135deg, #455a64 0%, #ff3d00 100%)',
+    { id: 'san_quentin', name: 'San Quentin Escape', provider: 'VaultX Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/san_quentin.png', bgGradient: 'linear-gradient(135deg, #455a64 0%, #ff3d00 100%)',
       symbols: ['s1_handcuffs','s2_key_ring','s3_guard','s4_razor_wire','s5_freedom_gem','wild_quentin'],
       reelBg: 'linear-gradient(180deg, #0a1015 0%, #05080a 100%)', accentColor: '#ff3d00',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -452,7 +452,7 @@ const games = [
       payouts: { triple: 130, double: 13, wildTriple: 195, scatterPay: 5, payline3: 13, payline4: 55, payline5: 130 }, minBet: 20, maxBet: 2000, hot: true, jackpot: 0 },
 
     // ═══ 42. Nitro Street (based on Nitropolis) — 5x4, Avalanche ═══
-    { id: 'nitro_street', name: 'Nitro Street', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/nitro_street.png', bgGradient: 'linear-gradient(135deg, #1a237e 0%, #00e676 100%)',
+    { id: 'nitro_street', name: 'Nitro Street', provider: 'NovaSpin Studios', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/nitro_street.png', bgGradient: 'linear-gradient(135deg, #1a237e 0%, #00e676 100%)',
       symbols: ['s1_spray_can','s2_boombox','s3_skateboard','s4_bulldog','s5_nitro_gem','wild_nitro'],
       reelBg: 'linear-gradient(180deg, #0a0a2a 0%, #050515 100%)', accentColor: '#00e676',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -463,7 +463,7 @@ const games = [
       payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3, payline3: 9, payline4: 40, payline5: 90 }, minBet: 10, maxBet: 600, hot: false, jackpot: 0 },
 
     // ═══ 43. Wild Toro Matador (based on Wild Toro) — 5x4, Expanding Wilds ═══
-    { id: 'wild_toro', name: 'Wild Toro Matador', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/wild_toro.png', bgGradient: 'linear-gradient(135deg, #880e4f 0%, #f44336 100%)',
+    { id: 'wild_toro', name: 'Wild Toro Matador', provider: 'IronReel Entertainment', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/wild_toro.png', bgGradient: 'linear-gradient(135deg, #880e4f 0%, #f44336 100%)',
       symbols: ['s1_cape','s2_rose','s3_sword','s4_matador','s5_golden_horn','wild_toro'],
       reelBg: 'linear-gradient(180deg, #2a0510 0%, #140208 100%)', accentColor: '#f44336',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -474,7 +474,7 @@ const games = [
       payouts: { triple: 95, double: 10, wildTriple: 145, scatterPay: 0, payline3: 10, payline4: 42, payline5: 95 }, minBet: 10, maxBet: 600, hot: false, jackpot: 0 },
 
     // ═══ 44. Jammin' Fruits (based on Jammin' Jars) — 8x8, Cluster ═══
-    { id: 'jammin_fruits', name: "Jammin' Fruits", provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/jammin_fruits.png', bgGradient: 'linear-gradient(135deg, #7b1fa2 0%, #ff6d00 100%)',
+    { id: 'jammin_fruits', name: "Jammin' Fruits", provider: 'GoldenEdge Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/jammin_fruits.png', bgGradient: 'linear-gradient(135deg, #7b1fa2 0%, #ff6d00 100%)',
       symbols: ['s1_strawberry','s2_orange','s3_raspberry','s4_plum_jar','s5_rainbow_fruit','wild_jam'],
       reelBg: 'linear-gradient(180deg, #1a0530 0%, #0d0218 100%)', accentColor: '#7b1fa2',
       gridCols: 7, gridRows: 7, template: 'grid',winType: 'cluster', clusterMin: 5,
@@ -485,7 +485,7 @@ const games = [
       payouts: { triple: 140, double: 14, wildTriple: 210, scatterPay: 5, cluster5: 5, cluster8: 14, cluster12: 48, cluster15: 140 }, minBet: 10, maxBet: 2000, hot: true, jackpot: 0 },
 
     // ═══ 45. Big Bamboo Fortune (based on Big Bamboo) — 5x4, Money Collect ═══
-    { id: 'big_bamboo', name: 'Big Bamboo Fortune', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/big_bamboo.png', bgGradient: 'linear-gradient(135deg, #2e7d32 0%, #ffeb3b 100%)',
+    { id: 'big_bamboo', name: 'Big Bamboo Fortune', provider: 'SolsticeFX', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/big_bamboo.png', bgGradient: 'linear-gradient(135deg, #2e7d32 0%, #ffeb3b 100%)',
       symbols: ['s1_bamboo_shoot','s2_panda','s3_temple_bell','s4_jade_frog','s5_golden_bamboo','wild_bamboo'],
       reelBg: 'linear-gradient(180deg, #0a2a0a 0%, #05140a 100%)', accentColor: '#2e7d32',
       gridCols: 5, gridRows: 4, template: 'extended',winType: 'payline',
@@ -496,7 +496,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4, payline3: 10, payline4: 45, payline5: 100 }, minBet: 15, maxBet: 800, hot: false, jackpot: 0 },
 
     // ═══ 46. Fat Rabbit Run (based on Fat Rabbit) — 6x5, Tumble ═══
-    { id: 'fat_rabbit', name: 'Fat Rabbit Run', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/fat_rabbit.png', bgGradient: 'linear-gradient(135deg, #43a047 0%, #ffcc80 100%)',
+    { id: 'fat_rabbit', name: 'Fat Rabbit Run', provider: 'GoldenEdge Gaming', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/fat_rabbit.png', bgGradient: 'linear-gradient(135deg, #43a047 0%, #ffcc80 100%)',
       symbols: ['s1_carrot','s2_cabbage','s3_turnip','s4_fat_bunny','s5_golden_carrot','wild_rabbit'],
       reelBg: 'linear-gradient(180deg, #0a2a10 0%, #051408 100%)', accentColor: '#43a047',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -507,7 +507,7 @@ const games = [
       payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3, cluster5: 3, cluster8: 9, cluster12: 32, cluster15: 90 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 47. Immortal Blood (based on Immortal Romance) — 5x3, Random Features ═══
-    { id: 'immortal_blood', name: 'Immortal Blood', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/immortal_blood.png', bgGradient: 'linear-gradient(135deg, #311b92 0%, #c62828 100%)',
+    { id: 'immortal_blood', name: 'Immortal Blood', provider: 'PhantomWorks', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/immortal_blood.png', bgGradient: 'linear-gradient(135deg, #311b92 0%, #c62828 100%)',
       symbols: ['s1_castle','s2_blood_rose','s3_wolf_moon','s4_vampire_lady','s5_immortal_ring','wild_immortal'],
       reelBg: 'linear-gradient(180deg, #0a051a 0%, #05020d 100%)', accentColor: '#c62828',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -518,7 +518,7 @@ const games = [
       payouts: { triple: 90, double: 10, wildTriple: 140, scatterPay: 4, payline3: 10, payline4: 40, payline5: 90 }, minBet: 10, maxBet: 600, hot: false, jackpot: 0 },
 
     // ═══ 48. Mega Moolah Safari (based on Mega Moolah) — 5x3, Progressive Jackpot ═══
-    { id: 'mega_safari', name: 'Mega Moolah Safari', provider: 'Matrix Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/mega_safari.png', bgGradient: 'linear-gradient(135deg, #e65100 0%, #33691e 100%)',
+    { id: 'mega_safari', name: 'Mega Moolah Safari', provider: 'IronReel Entertainment', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/mega_safari.png', bgGradient: 'linear-gradient(135deg, #e65100 0%, #33691e 100%)',
       symbols: ['s1_zebra','s2_giraffe','s3_elephant','s4_lion_king','s5_safari_diamond','wild_safari'],
       reelBg: 'linear-gradient(180deg, #2a1a05 0%, #140d02 100%)', accentColor: '#e65100',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -529,7 +529,7 @@ const games = [
       payouts: { triple: 200, double: 20, wildTriple: 300, scatterPay: 5, payline3: 20, payline4: 80, payline5: 200 }, minBet: 25, maxBet: 5000, hot: true, jackpot: 456780 },
 
     // ═══ 49. Lucha Libre Mania (based on Lucha Maniacs) — 5x3, Random Features ═══
-    { id: 'lucha_mania', name: 'Lucha Libre Mania', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/lucha_mania.png', bgGradient: 'linear-gradient(135deg, #f57f17 0%, #00c853 100%)',
+    { id: 'lucha_mania', name: 'Lucha Libre Mania', provider: 'ArcadeForge', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/lucha_mania.png', bgGradient: 'linear-gradient(135deg, #f57f17 0%, #00c853 100%)',
       symbols: ['s1_mask_blue','s2_mask_red','s3_belt','s4_luchador','s5_championship','wild_lucha'],
       reelBg: 'linear-gradient(180deg, #2a1a00 0%, #140d00 100%)', accentColor: '#f57f17',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -540,7 +540,7 @@ const games = [
       payouts: { triple: 70, double: 7, wildTriple: 105, scatterPay: 3, payline3: 7, payline4: 30, payline5: 70 }, minBet: 10, maxBet: 400, hot: false, jackpot: 0 },
 
     // ═══ 50. Extra Chilli Blaze (based on Extra Chilli) — 6x5, Cluster ═══
-    { id: 'extra_chilli', name: 'Extra Chilli Blaze', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/extra_chilli.png', bgGradient: 'linear-gradient(135deg, #bf360c 0%, #ffd600 100%)',
+    { id: 'extra_chilli', name: 'Extra Chilli Blaze', provider: 'GoldenEdge Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/extra_chilli.png', bgGradient: 'linear-gradient(135deg, #bf360c 0%, #ffd600 100%)',
       symbols: ['s1_jalapeno','s2_habanero','s3_ghost_pepper','s4_carolina_reaper','s5_fire_crystal','wild_extra'],
       reelBg: 'linear-gradient(180deg, #2a0a02 0%, #140501 100%)', accentColor: '#ffd600',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -551,7 +551,7 @@ const games = [
       payouts: { triple: 125, double: 12, wildTriple: 185, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 42, cluster15: 125 }, minBet: 15, maxBet: 1500, hot: true, jackpot: 0 },
 
     // ═══ 51. Wanted Dead or Rich (based on Wanted Dead or a Wild) — 5x5, Cluster ═══
-    { id: 'wanted_dead', name: 'Wanted Dead or Rich', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/wanted_dead.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #ff6f00 100%)',
+    { id: 'wanted_dead', name: 'Wanted Dead or Rich', provider: 'VaultX Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/wanted_dead.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #ff6f00 100%)',
       symbols: ['s1_colt','s2_train','s3_gold_pan','s4_bandit','s5_wanted_star','wild_wanted'],
       reelBg: 'linear-gradient(180deg, #1a0d05 0%, #0d0602 100%)', accentColor: '#ff6f00',
       gridCols: 5, gridRows: 5, template: 'grid',winType: 'cluster', clusterMin: 5,
@@ -562,7 +562,7 @@ const games = [
       payouts: { triple: 135, double: 13, wildTriple: 200, scatterPay: 5, cluster5: 5, cluster8: 13, cluster12: 45, cluster15: 135 }, minBet: 20, maxBet: 2000, hot: true, jackpot: 0 },
 
     // ═══ 52. Chaos Crew Rampage (based on Chaos Crew 2) — 5x5, Cluster ═══
-    { id: 'chaos_crew', name: 'Chaos Crew Rampage', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/chaos_crew.png', bgGradient: 'linear-gradient(135deg, #e91e63 0%, #00bfa5 100%)',
+    { id: 'chaos_crew', name: 'Chaos Crew Rampage', provider: 'NovaSpin Studios', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/chaos_crew.png', bgGradient: 'linear-gradient(135deg, #e91e63 0%, #00bfa5 100%)',
       symbols: ['s1_skully','s2_cranky','s3_graffiti','s4_bomb','s5_chaos_gem','wild_chaos'],
       reelBg: 'linear-gradient(180deg, #2a0515 0%, #14020a 100%)', accentColor: '#e91e63',
       gridCols: 5, gridRows: 5, template: 'grid',winType: 'cluster', clusterMin: 5,
@@ -573,7 +573,7 @@ const games = [
       payouts: { triple: 140, double: 14, wildTriple: 210, scatterPay: 5, cluster5: 5, cluster8: 14, cluster12: 48, cluster15: 140 }, minBet: 15, maxBet: 1500, hot: false, jackpot: 0 },
 
     // ═══ 53. Le Bandit Heist (based on Le Bandit) — 5x3, Money Collect ═══
-    { id: 'le_bandit', name: 'Le Bandit Heist', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/le_bandit.png', bgGradient: 'linear-gradient(135deg, #1a237e 0%, #b388ff 100%)',
+    { id: 'le_bandit', name: 'Le Bandit Heist', provider: 'PhantomWorks', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/le_bandit.png', bgGradient: 'linear-gradient(135deg, #1a237e 0%, #b388ff 100%)',
       symbols: ['s1_baguette','s2_wine','s3_eiffel','s4_raccoon','s5_diamond_bag','wild_bandit'],
       reelBg: 'linear-gradient(180deg, #0a0a2a 0%, #050515 100%)', accentColor: '#b388ff',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -584,7 +584,7 @@ const games = [
       payouts: { triple: 75, double: 8, wildTriple: 115, scatterPay: 3, payline3: 8, payline4: 33, payline5: 75 }, minBet: 10, maxBet: 400, hot: false, jackpot: 0 },
 
     // ═══ 54. Dead or Alive Reloaded (based on Dead or Alive 2) — 5x3, Sticky Wilds ═══
-    { id: 'dead_alive', name: 'Dead or Alive Reloaded', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/dead_alive.png', bgGradient: 'linear-gradient(135deg, #795548 0%, #d32f2f 100%)',
+    { id: 'dead_alive', name: 'Dead or Alive Reloaded', provider: 'VaultX Gaming', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/dead_alive.png', bgGradient: 'linear-gradient(135deg, #795548 0%, #d32f2f 100%)',
       symbols: ['s1_cowboy_boots','s2_hat_western','s3_gun_holster','s4_saloon','s5_sheriff_star','wild_dead'],
       reelBg: 'linear-gradient(180deg, #1a1008 0%, #0d0804 100%)', accentColor: '#d32f2f',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -595,7 +595,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4, payline3: 10, payline4: 45, payline5: 100 }, minBet: 10, maxBet: 800, hot: false, jackpot: 0 },
 
     // ═══ 55. Mega Joker Classic (based on Mega Joker) — 3x3, Classic ═══
-    { id: 'mega_joker', name: 'Mega Joker Classic', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/mega_joker.png', bgGradient: 'linear-gradient(135deg, #f44336 0%, #ffc107 100%)',
+    { id: 'mega_joker', name: 'Mega Joker Classic', provider: 'ArcadeForge', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/mega_joker.png', bgGradient: 'linear-gradient(135deg, #f44336 0%, #ffc107 100%)',
       symbols: ['s1_cherry_classic','s2_lemon_classic','s3_grape_classic','s4_bell_classic','s5_crown_classic','wild_joker_mega'],
       reelBg: 'linear-gradient(180deg, #2a0808 0%, #140404 100%)', accentColor: '#ffc107',
       gridCols: 3, gridRows: 3, template: 'classic',winType: 'classic',
@@ -606,7 +606,7 @@ const games = [
       payouts: { triple: 100, double: 12, wildTriple: 150, scatterPay: 5 }, minBet: 5, maxBet: 200, hot: false, jackpot: 0 },
 
     // ═══ 56. Crown of Fire (based on Crown of Fire) — 5x3, Hold & Win ═══
-    { id: 'crown_fire', name: 'Crown of Fire', provider: 'Matrix Games', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/crown_fire.png', bgGradient: 'linear-gradient(135deg, #e65100 0%, #ffab00 100%)',
+    { id: 'crown_fire', name: 'Crown of Fire', provider: 'Celestial Plays', tag: '', tagClass: '', thumbnail: 'assets/thumbnails/crown_fire.png', bgGradient: 'linear-gradient(135deg, #e65100 0%, #ffab00 100%)',
       symbols: ['s1_torch','s2_brazier','s3_phoenix_feather','s4_fire_crown','s5_flame_gem','wild_crown_fire'],
       reelBg: 'linear-gradient(180deg, #2a1505 0%, #140a02 100%)', accentColor: '#ffab00',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -617,7 +617,7 @@ const games = [
       payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3, payline3: 8, payline4: 35, payline5: 80 }, minBet: 10, maxBet: 500, hot: false, jackpot: 0 },
 
     // ═══ 57. Olympus Dream Drop (based on Olympus 7's Dream Drop) — 6x5, Progressive ═══
-    { id: 'olympus_dream', name: 'Olympus Dream Drop', provider: 'Matrix Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/olympus_dream.png', bgGradient: 'linear-gradient(135deg, #1565c0 0%, #ffb74d 100%)',
+    { id: 'olympus_dream', name: 'Olympus Dream Drop', provider: 'Celestial Plays', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/olympus_dream.png', bgGradient: 'linear-gradient(135deg, #1565c0 0%, #ffb74d 100%)',
       symbols: ['s1_hera','s2_athena','s3_apollo','s4_ares_god','s5_zeus_orb','wild_dream'],
       reelBg: 'linear-gradient(180deg, #0a1530 0%, #050a18 100%)', accentColor: '#1565c0',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -628,7 +628,7 @@ const games = [
       payouts: { triple: 160, double: 16, wildTriple: 240, scatterPay: 5, cluster5: 5, cluster8: 16, cluster12: 55, cluster15: 160 }, minBet: 25, maxBet: 5000, hot: true, jackpot: 342890 },
 
     // ═══ 58. GoldStorm Ultra (based on Yggdrasil GoldStorm) — 5x3, Random Features ═══
-    { id: 'goldstorm_ultra', name: 'GoldStorm Ultra', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/goldstorm_ultra.png', bgGradient: 'linear-gradient(135deg, #ffd600 0%, #6a1b9a 100%)',
+    { id: 'goldstorm_ultra', name: 'GoldStorm Ultra', provider: 'IronReel Entertainment', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/goldstorm_ultra.png', bgGradient: 'linear-gradient(135deg, #ffd600 0%, #6a1b9a 100%)',
       symbols: ['s1_gold_coin_storm','s2_thunder_cloud','s3_storm_bolt','s4_golden_eagle_storm','s5_ultra_gem','wild_goldstorm'],
       reelBg: 'linear-gradient(180deg, #2a2000 0%, #141000 100%)', accentColor: '#ffd600',
       gridCols: 5, gridRows: 3, template: 'standard',winType: 'payline',
@@ -639,7 +639,7 @@ const games = [
       payouts: { triple: 85, double: 9, wildTriple: 130, scatterPay: 3, payline3: 9, payline4: 38, payline5: 85 }, minBet: 10, maxBet: 600, hot: false, jackpot: 0 },
 
     // ═══ 59. Fire in the Hole XBomb (based on Fire in the Hole) — 6x5, Cluster ═══
-    { id: 'fire_hole', name: 'Fire in the Hole XBomb', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/fire_hole.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #f4511e 100%)',
+    { id: 'fire_hole', name: 'Fire in the Hole XBomb', provider: 'VaultX Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/fire_hole.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #f4511e 100%)',
       symbols: ['s1_pickaxe','s2_mine_cart','s3_tnt','s4_lantern_mine','s5_gold_vein','wild_xbomb'],
       reelBg: 'linear-gradient(180deg, #1a0d05 0%, #0d0602 100%)', accentColor: '#f4511e',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -650,7 +650,7 @@ const games = [
       payouts: { triple: 150, double: 15, wildTriple: 225, scatterPay: 5, cluster5: 5, cluster8: 15, cluster12: 50, cluster15: 150 }, minBet: 20, maxBet: 2000, hot: true, jackpot: 0 },
 
     // ═══ 60. Merlin's Power (based on Power of Merlin Megaways) — 6x5, Cluster ═══
-    { id: 'merlin_power', name: "Merlin's Power", provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/merlin_power.png', bgGradient: 'linear-gradient(135deg, #4a148c 0%, #00e5ff 100%)',
+    { id: 'merlin_power', name: "Merlin's Power", provider: 'Celestial Plays', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/merlin_power.png', bgGradient: 'linear-gradient(135deg, #4a148c 0%, #00e5ff 100%)',
       symbols: ['s1_spell_book','s2_wand_crystal','s3_cauldron','s4_merlin_owl','s5_arcane_orb','wild_merlin'],
       reelBg: 'linear-gradient(180deg, #150530 0%, #0a0218 100%)', accentColor: '#4a148c',
       gridCols: 6, gridRows: 5, template: 'scatter',winType: 'cluster', clusterMin: 8,
@@ -665,7 +665,7 @@ const games = [
     // ═══════════════════════════════════════════════════════════════════════
 
     // ═══ 61. Coin Strike Deluxe (based on Coin Strike: Hold and Win) — 3x3, Hold & Win ═══
-    { id: 'coin_strike', name: 'Coin Strike Deluxe', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/coin_strike.png', bgGradient: 'linear-gradient(135deg, #ffd700 0%, #b8860b 100%)',
+    { id: 'coin_strike', name: 'Coin Strike Deluxe', provider: 'ArcadeForge', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/coin_strike.png', bgGradient: 'linear-gradient(135deg, #ffd700 0%, #b8860b 100%)',
       symbols: ['s1_cherry','s2_lemon','s3_bar','s4_bell','s5_seven','wild_coin'],
       reelBg: 'linear-gradient(180deg, #2a1f00 0%, #0f0c00 100%)', accentColor: '#ffd700',
       gridCols: 3, gridRows: 3, template: 'classic', winType: 'classic',
@@ -676,7 +676,7 @@ const games = [
       payouts: { triple: 55, double: 8, wildTriple: 75, scatterPay: 3 }, minBet: 5, maxBet: 1000, hot: false, jackpot: 1 },
 
     // ═══ 62. Fortune Frog Rush (based on Gold Rush Frog) — 6x5, Trueways/Scatter ═══
-    { id: 'gold_rush_frog', name: 'Fortune Frog Rush', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gold_rush_frog.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #ffc107 100%)',
+    { id: 'gold_rush_frog', name: 'Fortune Frog Rush', provider: 'SolsticeFX', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gold_rush_frog.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #ffc107 100%)',
       symbols: ['s1_pickaxe','s2_lantern','s3_dynamite','s4_nugget','s5_frog_gold','wild_frog'],
       reelBg: 'linear-gradient(180deg, #1a2e0a 0%, #0a1205 100%)', accentColor: '#4caf50',
       gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
@@ -687,7 +687,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 35, cluster15: 100 }, minBet: 10, maxBet: 1000, hot: true, jackpot: 1 },
 
     // ═══ 63. Hip Hop Millions (based on Snoop Dogg Dollars) — 6x5, Cluster Cascade ═══
-    { id: 'snoop_dollars', name: 'Hip Hop Millions', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/snoop_dollars.png', bgGradient: 'linear-gradient(135deg, #7b1fa2 0%, #ffd600 100%)',
+    { id: 'snoop_dollars', name: 'Hip Hop Millions', provider: 'NovaSpin Studios', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/snoop_dollars.png', bgGradient: 'linear-gradient(135deg, #7b1fa2 0%, #ffd600 100%)',
       symbols: ['s1_mic','s2_chain','s3_sneaker','s4_boombox','s5_crown_gold','wild_dollar'],
       reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#7b1fa2',
       gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 5,
@@ -698,7 +698,7 @@ const games = [
       payouts: { triple: 120, double: 12, wildTriple: 180, scatterPay: 5, cluster5: 5, cluster8: 15, cluster12: 45, cluster15: 120 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
 
     // ═══ 64. Valhalla Gems (based on Gemhalla) — 6x5, Cluster Cascade ═══
-    { id: 'gemhalla', name: 'Valhalla Gems', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gemhalla.png', bgGradient: 'linear-gradient(135deg, #455a64 0%, #ffd54f 100%)',
+    { id: 'gemhalla', name: 'Valhalla Gems', provider: 'IronReel Entertainment', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gemhalla.png', bgGradient: 'linear-gradient(135deg, #455a64 0%, #ffd54f 100%)',
       symbols: ['s1_axe','s2_horn','s3_beer','s4_helmet','s5_shield_gem','wild_rune'],
       reelBg: 'linear-gradient(180deg, #1a1f2e 0%, #0a0c12 100%)', accentColor: '#ffd54f',
       gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
@@ -709,7 +709,7 @@ const games = [
       payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 110 }, minBet: 10, maxBet: 1500, hot: true, jackpot: 0 },
 
     // ═══ 65. Loki's Wild Loot (based on Loki Loot) — 5x5, Wild Collect ═══
-    { id: 'loki_loot', name: "Loki's Wild Loot", provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/loki_loot.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #c6ff00 100%)',
+    { id: 'loki_loot', name: "Loki's Wild Loot", provider: 'IronReel Entertainment', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/loki_loot.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #c6ff00 100%)',
       symbols: ['s1_hammer','s2_mask','s3_staff','s4_potion','s5_loki_gold','wild_loki'],
       reelBg: 'linear-gradient(180deg, #0a1f0a 0%, #050c05 100%)', accentColor: '#c6ff00',
       gridCols: 5, gridRows: 5, template: 'grid', winType: 'cluster',
@@ -720,7 +720,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 35, cluster15: 100 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 0 },
 
     // ═══ 66. Buffalo Blitz Extreme (based on Buffalo Hold & Win Extreme) — 5x3, Hold & Win ═══
-    { id: 'buffalo_extreme', name: 'Buffalo Blitz Extreme', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/buffalo_extreme.png', bgGradient: 'linear-gradient(135deg, #795548 0%, #ff9800 100%)',
+    { id: 'buffalo_extreme', name: 'Buffalo Blitz Extreme', provider: 'IronReel Entertainment', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/buffalo_extreme.png', bgGradient: 'linear-gradient(135deg, #795548 0%, #ff9800 100%)',
       symbols: ['s1_eagle','s2_cougar','s3_wolf_hw','s4_buffalo','s5_coin_gold','wild_bison'],
       reelBg: 'linear-gradient(180deg, #2a1a0a 0%, #120a05 100%)', accentColor: '#ff9800',
       gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
@@ -731,7 +731,7 @@ const games = [
       payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 5, maxBet: 2000, hot: true, jackpot: 1 },
 
     // ═══ 67. Pots of Zeus (based on 3 Pots of Olympus) — 5x3, Hold & Win ═══
-    { id: 'pots_olympus', name: 'Pots of Zeus', provider: 'Matrix Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/pots_olympus.png', bgGradient: 'linear-gradient(135deg, #1565c0 0%, #ffd54f 100%)',
+    { id: 'pots_olympus', name: 'Pots of Zeus', provider: 'Celestial Plays', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/pots_olympus.png', bgGradient: 'linear-gradient(135deg, #1565c0 0%, #ffd54f 100%)',
       symbols: ['s1_trophy','s2_apollo','s3_poseidon','s4_zeus','s5_parthenon','wild_bolt'],
       reelBg: 'linear-gradient(180deg, #0a1a3d 0%, #050a1a 100%)', accentColor: '#1565c0',
       gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
@@ -742,7 +742,7 @@ const games = [
       payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 1 },
 
     // ═══ 68. Sweet Bonanza Blast (based on Sweet Bonanza) — 6x5, Scatter Tumble ═══
-    { id: 'sweet_bonanza', name: 'Sweet Bonanza Blast', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/sweet_bonanza.png', bgGradient: 'linear-gradient(135deg, #e91e63 0%, #7c4dff 100%)',
+    { id: 'sweet_bonanza', name: 'Sweet Bonanza Blast', provider: 'GoldenEdge Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/sweet_bonanza.png', bgGradient: 'linear-gradient(135deg, #e91e63 0%, #7c4dff 100%)',
       symbols: ['s1_candy_heart','s2_star_candy','s3_lollipop_swirl','s4_cotton_candy','s5_bomb_candy','wild_rainbow'],
       reelBg: 'linear-gradient(180deg, #2e0a2e 0%, #120512 100%)', accentColor: '#e91e63',
       gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
@@ -753,7 +753,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 30, cluster15: 100 }, minBet: 10, maxBet: 2500, hot: true, jackpot: 0 },
 
     // ═══ 69. Dog House Unleashed (based on Dog House Megaways) — 6x5, Megaways ═══
-    { id: 'dog_house_mega', name: 'Dog House Unleashed', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/dog_house_mega.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #ff5722 100%)',
+    { id: 'dog_house_mega', name: 'Dog House Unleashed', provider: 'GoldenEdge Gaming', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/dog_house_mega.png', bgGradient: 'linear-gradient(135deg, #4caf50 0%, #ff5722 100%)',
       symbols: ['s1_bone','s2_collar','s3_paw','s4_doberman','s5_bulldog','wild_doghouse'],
       reelBg: 'linear-gradient(180deg, #0a2e0a 0%, #051205 100%)', accentColor: '#4caf50',
       gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
@@ -765,7 +765,7 @@ const games = [
       payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 35, cluster15: 110 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
 
     // ═══ 70. Tropical Fruit Party (based on Fruit Party) — 7x7, Cluster Cascade ═══
-    { id: 'fruit_party', name: 'Tropical Fruit Party', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/fruit_party.png', bgGradient: 'linear-gradient(135deg, #ff6f00 0%, #e040fb 100%)',
+    { id: 'fruit_party', name: 'Tropical Fruit Party', provider: 'GoldenEdge Gaming', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/fruit_party.png', bgGradient: 'linear-gradient(135deg, #ff6f00 0%, #e040fb 100%)',
       symbols: ['s1_strawberry','s2_orange','s3_plum_p','s4_peach','s5_starfruit','wild_fruit'],
       reelBg: 'linear-gradient(180deg, #2e1a0a 0%, #120a05 100%)', accentColor: '#ff6f00',
       gridCols: 7, gridRows: 7, template: 'grid', winType: 'cluster', clusterMin: 5,
@@ -776,7 +776,7 @@ const games = [
       payouts: { triple: 120, double: 12, wildTriple: 180, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 120 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
 
     // ═══ 71. Alientonz (based on Reactoonz) — 7x7, Cluster Cascade ═══
-    { id: 'reactoonz', name: 'Alientonz', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/reactoonz.png', bgGradient: 'linear-gradient(135deg, #6a1b9a 0%, #00e5ff 100%)',
+    { id: 'reactoonz', name: 'Alientonz', provider: 'NovaSpin Studios', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/reactoonz.png', bgGradient: 'linear-gradient(135deg, #6a1b9a 0%, #00e5ff 100%)',
       symbols: ['s1_blob_green','s2_blob_blue','s3_blob_pink','s4_blob_yellow','s5_blob_red','wild_gargantoon'],
       reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#00e5ff',
       gridCols: 7, gridRows: 7, template: 'grid', winType: 'cluster', clusterMin: 5,
@@ -788,7 +788,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 30, cluster15: 100 }, minBet: 10, maxBet: 2000, hot: false, jackpot: 0 },
 
     // ═══ 72. Money Express 3 (based on Money Train 3) — 5x4, Hold & Win ═══
-    { id: 'money_train', name: 'Money Express 3', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/money_train.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #ff6f00 100%)',
+    { id: 'money_train', name: 'Money Express 3', provider: 'VaultX Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/money_train.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #ff6f00 100%)',
       symbols: ['s1_dynamite_mt','s2_pistol','s3_wanted_poster','s4_sheriff','s5_train','wild_locomotive'],
       reelBg: 'linear-gradient(180deg, #2a1a0a 0%, #120a05 100%)', accentColor: '#ff6f00',
       gridCols: 5, gridRows: 4, template: 'extended', winType: 'payline',
@@ -800,7 +800,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4 }, minBet: 10, maxBet: 5000, hot: true, jackpot: 1 },
 
     // ═══ 73. Depth Charge (based on Razor Shark) — 5x4, Mystery Stacks ═══
-    { id: 'razor_shark', name: 'Depth Charge', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/razor_shark.png', bgGradient: 'linear-gradient(135deg, #006064 0%, #00bcd4 100%)',
+    { id: 'razor_shark', name: 'Depth Charge', provider: 'VaultX Gaming', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/razor_shark.png', bgGradient: 'linear-gradient(135deg, #006064 0%, #00bcd4 100%)',
       symbols: ['s1_anchor','s2_diver','s3_jellyfish','s4_shark_tooth','s5_shark','wild_shark'],
       reelBg: 'linear-gradient(180deg, #001a2e 0%, #000a12 100%)', accentColor: '#00bcd4',
       gridCols: 5, gridRows: 4, template: 'extended', winType: 'payline',
@@ -811,7 +811,7 @@ const games = [
       payouts: { triple: 100, double: 10, wildTriple: 150, scatterPay: 4 }, minBet: 10, maxBet: 3000, hot: false, jackpot: 0 },
 
     // ═══ 74. Vegas Frog Live (based on Elvis Frog in Vegas) — 5x3, Hold & Win ═══
-    { id: 'elvis_frog', name: 'Vegas Frog Live', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/elvis_frog.png', bgGradient: 'linear-gradient(135deg, #d50000 0%, #ffd600 100%)',
+    { id: 'elvis_frog', name: 'Vegas Frog Live', provider: 'ArcadeForge', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/elvis_frog.png', bgGradient: 'linear-gradient(135deg, #d50000 0%, #ffd600 100%)',
       symbols: ['s1_dice','s2_cocktail','s3_neon_sign','s4_showgirl','s5_frog_elvis','wild_vegas'],
       reelBg: 'linear-gradient(180deg, #2a0a0a 0%, #120505 100%)', accentColor: '#d50000',
       gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
@@ -823,7 +823,7 @@ const games = [
       payouts: { triple: 75, double: 8, wildTriple: 110, scatterPay: 3 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 1 },
 
     // ═══ 75. Gem Vault Bonanza (based on Gems Bonanza) — 7x7, Cluster Cascade ═══
-    { id: 'gems_bonanza', name: 'Gem Vault Bonanza', provider: 'Matrix Games', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gems_bonanza.png', bgGradient: 'linear-gradient(135deg, #283593 0%, #e040fb 100%)',
+    { id: 'gems_bonanza', name: 'Gem Vault Bonanza', provider: 'NovaSpin Studios', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/gems_bonanza.png', bgGradient: 'linear-gradient(135deg, #283593 0%, #e040fb 100%)',
       symbols: ['s1_emerald','s2_sapphire','s3_ruby','s4_topaz','s5_diamond_gem','wild_prism'],
       reelBg: 'linear-gradient(180deg, #0a0a2e 0%, #050512 100%)', accentColor: '#e040fb',
       gridCols: 7, gridRows: 7, template: 'grid', winType: 'cluster', clusterMin: 5,
@@ -835,7 +835,7 @@ const games = [
       payouts: { triple: 130, double: 13, wildTriple: 195, scatterPay: 5, cluster5: 5, cluster8: 15, cluster12: 50, cluster15: 130 }, minBet: 10, maxBet: 3000, hot: true, jackpot: 0 },
 
     // ═══ 76. Buffalo King Thunder (based on Buffalo King Megaways) — 6x5, Megaways Tumble ═══
-    { id: 'buffalo_mega', name: 'Buffalo King Thunder', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/buffalo_mega.png', bgGradient: 'linear-gradient(135deg, #5d4037 0%, #ff6f00 100%)',
+    { id: 'buffalo_mega', name: 'Buffalo King Thunder', provider: 'IronReel Entertainment', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/buffalo_mega.png', bgGradient: 'linear-gradient(135deg, #5d4037 0%, #ff6f00 100%)',
       symbols: ['s1_prairie_flower','s2_coyote','s3_eagle_bk','s4_mustang','s5_buffalo_king','wild_thunder'],
       reelBg: 'linear-gradient(180deg, #2a1f0a 0%, #120c05 100%)', accentColor: '#ff6f00',
       gridCols: 6, gridRows: 5, template: 'scatter', winType: 'cluster', clusterMin: 8,
@@ -847,7 +847,7 @@ const games = [
       payouts: { triple: 110, double: 11, wildTriple: 165, scatterPay: 4, cluster5: 4, cluster8: 12, cluster12: 40, cluster15: 110 }, minBet: 10, maxBet: 3000, hot: false, jackpot: 0 },
 
     // ═══ 77. Tome of Insanity (based on Tome of Madness) — 5x5, Cluster Cascade ═══
-    { id: 'tome_madness', name: 'Tome of Insanity', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/tome_madness.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #7c4dff 100%)',
+    { id: 'tome_madness', name: 'Tome of Insanity', provider: 'PhantomWorks', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/tome_madness.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #7c4dff 100%)',
       symbols: ['s1_tentacle','s2_eye','s3_tome','s4_mask_eldritch','s5_cthulhu','wild_madness'],
       reelBg: 'linear-gradient(180deg, #0a1a0a 0%, #050a05 100%)', accentColor: '#7c4dff',
       gridCols: 5, gridRows: 5, template: 'grid', winType: 'cluster', clusterMin: 4,
@@ -859,7 +859,7 @@ const games = [
       payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3, cluster5: 3, cluster8: 10, cluster12: 30, cluster15: 80 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 0 },
 
     // ═══ 78. Eternal Romance (based on Immortal Romance) — 5x3, 243 Ways ═══
-    { id: 'eternal_romance', name: 'Eternal Romance', provider: 'Matrix Games', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/eternal_romance.png', bgGradient: 'linear-gradient(135deg, #311b92 0%, #c62828 100%)',
+    { id: 'eternal_romance', name: 'Eternal Romance', provider: 'PhantomWorks', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/eternal_romance.png', bgGradient: 'linear-gradient(135deg, #311b92 0%, #c62828 100%)',
       symbols: ['s1_candle','s2_rose','s3_amber','s4_michael','s5_sarah','wild_vampire'],
       reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#c62828',
       gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
@@ -870,7 +870,7 @@ const games = [
       payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 5, maxBet: 3000, hot: false, jackpot: 0 },
 
     // ═══ 79. Volcano Coins (based on Coin Volcano) — 5x3, Hold & Win ═══
-    { id: 'coin_volcano', name: 'Volcano Coins', provider: 'Matrix Games', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/coin_volcano.png', bgGradient: 'linear-gradient(135deg, #bf360c 0%, #ff9800 100%)',
+    { id: 'coin_volcano', name: 'Volcano Coins', provider: 'SolsticeFX', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/coin_volcano.png', bgGradient: 'linear-gradient(135deg, #bf360c 0%, #ff9800 100%)',
       symbols: ['s1_obsidian','s2_lava_gem','s3_fire_ruby','s4_magma_coin','s5_volcano','wild_eruption'],
       reelBg: 'linear-gradient(180deg, #2a0a00 0%, #120500 100%)', accentColor: '#ff9800',
       gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
@@ -882,7 +882,7 @@ const games = [
       payouts: { triple: 75, double: 8, wildTriple: 110, scatterPay: 3 }, minBet: 5, maxBet: 1500, hot: false, jackpot: 1 },
 
     // ═══ 80. Crown of Power (based on Power Crown: Hold and Win) — 5x3, Hold & Win ═══
-    { id: 'power_crown', name: 'Crown of Power', provider: 'Matrix Games', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/power_crown.png', bgGradient: 'linear-gradient(135deg, #4a148c 0%, #ffd700 100%)',
+    { id: 'power_crown', name: 'Crown of Power', provider: 'Celestial Plays', tag: 'JACKPOT', tagClass: 'tag-jackpot', thumbnail: 'assets/thumbnails/power_crown.png', bgGradient: 'linear-gradient(135deg, #4a148c 0%, #ffd700 100%)',
       symbols: ['s1_scepter','s2_orb','s3_crown_jewel','s4_throne','s5_royal_crown','wild_crown'],
       reelBg: 'linear-gradient(180deg, #1a0a2e 0%, #0a0512 100%)', accentColor: '#ffd700',
       gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',

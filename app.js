@@ -3840,35 +3840,70 @@
         // ═══ Free Spins UI ═══
 
         function showFreeSpinsOverlay(game, count) {
-            let overlay = document.getElementById('freeSpinsOverlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'freeSpinsOverlay';
-                overlay.className = 'free-spins-overlay';
-                document.querySelector('.slot-body')?.appendChild(overlay);
+            const modal = document.querySelector('.slot-modal-fullscreen');
+            const accent = game.accentColor || '#fbbf24';
+
+            // Step 1: Flash scatter cells gold
+            getAllCells().forEach(cell => {
+                const img = cell.querySelector('img');
+                if (img && img.src && game.scatterSymbol && img.src.includes(game.scatterSymbol)) {
+                    cell.classList.add('fs-scatter-pop');
+                    setTimeout(() => cell.classList.remove('fs-scatter-pop'), 800);
+                }
+            });
+
+            // Step 2: Screen flash (immediate)
+            if (modal) {
+                modal.classList.add('fs-screen-flash');
+                setTimeout(() => modal.classList.remove('fs-screen-flash'), 700);
             }
 
-            const bonusName = game.bonusDesc ? game.bonusDesc.split(':')[0] : 'FREE SPINS';
-            overlay.innerHTML = `
-                <div class="free-spins-intro" style="border-color: ${game.accentColor}">
-                    <div class="fs-intro-title" style="color: ${game.accentColor}">${bonusName}</div>
-                    <div class="fs-intro-count">${count} FREE SPINS</div>
-                    <div class="fs-intro-desc">${game.bonusDesc || ''}</div>
-                </div>
-            `;
-            overlay.classList.add('active');
-
-            // Auto-dismiss after 2.5s and start first free spin
+            // Step 3: Screen shake after the flash peak
             setTimeout(() => {
-                overlay.classList.remove('active');
-                showFreeSpinsHUD(game);
-                // Start first free spin
+                if (modal) {
+                    modal.classList.add('fs-shake');
+                    setTimeout(() => modal.classList.remove('fs-shake'), 550);
+                }
+            }, 250);
+
+            // Step 4: Show overlay after intro sequence
+            setTimeout(() => {
+                let overlay = document.getElementById('freeSpinsOverlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'freeSpinsOverlay';
+                    overlay.className = 'free-spins-overlay';
+                    document.querySelector('.slot-modal-fullscreen')?.appendChild(overlay);
+                }
+
+                const bonusName = game.bonusDesc ? game.bonusDesc.split(':')[0] : 'FREE SPINS';
+                // Build conic-gradient starburst rays using accent color
+                const rayGradient = `conic-gradient(from 0deg, transparent 0deg, ${accent}22 8deg, transparent 16deg, ${accent}18 24deg, transparent 32deg, ${accent}22 40deg, transparent 48deg, ${accent}18 56deg, transparent 64deg, ${accent}22 72deg, transparent 80deg, ${accent}18 88deg, transparent 96deg, ${accent}22 104deg, transparent 112deg, ${accent}18 120deg, transparent 128deg, ${accent}22 136deg, transparent 144deg, ${accent}18 152deg, transparent 160deg, ${accent}22 168deg, transparent 176deg, ${accent}18 184deg, transparent 192deg, ${accent}22 200deg, transparent 208deg, ${accent}18 216deg, transparent 224deg, ${accent}22 232deg, transparent 240deg, ${accent}18 248deg, transparent 256deg, ${accent}22 264deg, transparent 272deg, ${accent}18 280deg, transparent 288deg, ${accent}22 296deg, transparent 304deg, ${accent}18 312deg, transparent 320deg, ${accent}22 328deg, transparent 336deg, ${accent}18 344deg, transparent 352deg)`;
+
+                overlay.innerHTML = `
+                    <div class="free-spins-intro" style="border-color: ${accent}; box-shadow: 0 0 80px ${accent}80, 0 0 200px ${accent}28, inset 0 0 40px ${accent}0d">
+                        <div class="fs-rays" style="background: ${rayGradient}"></div>
+                        <div class="fs-intro-banner" style="color: ${accent}">⭐ &nbsp; BONUS TRIGGERED &nbsp; ⭐</div>
+                        <div class="fs-intro-title" style="color: ${accent}; text-shadow: 0 0 30px ${accent}, 0 0 60px ${accent}80">${bonusName}</div>
+                        <div class="fs-intro-count" style="text-shadow: 0 0 40px ${accent}cc, 0 0 80px ${accent}55">${count}</div>
+                        <div class="fs-intro-sublabel">Free Spins</div>
+                        <div class="fs-intro-desc">${game.bonusDesc || ''}</div>
+                        <div class="fs-intro-tap">— tap to start —</div>
+                    </div>
+                `;
+                overlay.classList.add('active');
+
+                // Auto-dismiss after 3.5s and start first free spin
                 setTimeout(() => {
-                    if (freeSpinsActive && currentGame && !spinning) {
-                        freeSpinSpin(game);
-                    }
-                }, 500);
-            }, 2500);
+                    overlay.classList.remove('active');
+                    showFreeSpinsHUD(game);
+                    setTimeout(() => {
+                        if (freeSpinsActive && currentGame && !spinning) {
+                            freeSpinSpin(game);
+                        }
+                    }, 500);
+                }, 3500);
+            }, 700);
         }
 
         function showFreeSpinsHUD(game) {
@@ -3877,7 +3912,7 @@
                 hud = document.createElement('div');
                 hud.id = 'freeSpinsHUD';
                 hud.className = 'free-spins-hud';
-                document.querySelector('.slot-body')?.prepend(hud);
+                (document.querySelector('.slot-reel-area') || document.querySelector('.slot-modal-fullscreen'))?.insertAdjacentElement('beforebegin', hud);
             }
             hud.style.borderColor = game.accentColor;
             hud.style.display = 'flex';
@@ -3927,7 +3962,7 @@
                 overlay = document.createElement('div');
                 overlay.id = 'freeSpinsOverlay';
                 overlay.className = 'free-spins-overlay';
-                document.querySelector('.slot-body')?.appendChild(overlay);
+                document.querySelector('.slot-modal-fullscreen')?.appendChild(overlay);
             }
 
             overlay.innerHTML = `

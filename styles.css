@@ -1701,16 +1701,20 @@
         /* ═══ END SLOT UI TEMPLATES ═══ */
 
         /* ═══════════════════════════════════════════════════════════
-           PER-GAME CHROME STYLES  —  slot-chrome-{style}
+           PER-PROVIDER CHROME STYLES  —  slot-chrome-{provider}
            Applied to #slotModal via JS based on GAME_CHROME_STYLES
-           Each style replicates the visual chrome of the parent slot.
-           Corner ornaments: 4 PNG images positioned in the corners of
-           .slot-reel-area using a full-bleed ::after overlay.
-           Frame strips: top/bottom PNG bars in .slot-reel-area.
+           8 fictional provider brands — each a distinct visual identity:
+             novaspin     — NovaSpin Studios     (sci-fi electric cyan)
+             celestial    — Celestial Plays      (Greek gold columns)
+             ironreel     — IronReel Ent.        (earthy copper/stone)
+             goldenedge   — GoldenEdge Gaming    (candy pastel pink)
+             vaultx       — VaultX Gaming        (dark steel heist)
+             solstice     — SolsticeFX           (red lacquer, gold filigree)
+             phantomworks — PhantomWorks         (gothic purple, blood-red)
+             arcadeforge  — ArcadeForge          (chrome ring, retro pub)
         ═══════════════════════════════════════════════════════════ */
 
-        /* Shared chrome overlay setup — corners + frame strips via CSS
-           background-image multi-layer on the reel area pseudo-element */
+        /* Shared chrome overlay setup */
         [class*="slot-chrome-"] .slot-reel-area {
             position: relative;
         }
@@ -1733,177 +1737,100 @@
                 top 0 left 0,
                 bottom 0 right 0;
         }
-
-        /* ── 1. CANDY  (Sugar Rush / Sweet Bonanza) ───────────────── */
-        .slot-chrome-candy .reels-container {
-            border: 3px solid transparent;
-            border-radius: 20px;
-            box-shadow:
-                0 0 0 3px #ff6fd8,
-                0 0 0 6px #f7a531,
-                0 0 40px rgba(255,111,216,0.4),
-                0 0 80px rgba(247,165,49,0.2);
-            background: rgba(20, 5, 15, 0.85) !important;
-        }
-        .slot-chrome-candy .reel-cell {
-            border-radius: 10px !important;
-            border: 2px solid rgba(255,111,216,0.2) !important;
-            background: rgba(255,111,216,0.04) !important;
-        }
-        .slot-chrome-candy .slot-top-bar {
-            background: linear-gradient(90deg, rgba(255,111,216,0.15), rgba(247,165,49,0.15)) !important;
-            border-bottom: 2px solid rgba(255,111,216,0.5) !important;
-        }
-        .slot-chrome-candy .slot-bottom-bar {
-            background: linear-gradient(90deg, rgba(247,165,49,0.1), rgba(255,111,216,0.1)) !important;
-            border-top: 2px solid rgba(247,165,49,0.4) !important;
-        }
-        .slot-chrome-candy .slot-reel-area::after {
-            background-image:
-                url('assets/chrome/candy/corner_tl.png'),
-                url('assets/chrome/candy/corner_tr.png'),
-                url('assets/chrome/candy/corner_bl.png'),
-                url('assets/chrome/candy/corner_br.png'),
-                url('assets/chrome/candy/frame_top.png'),
-                url('assets/chrome/candy/frame_bot.png');
+        /* Shared ambient overlay for provider animations */
+        [class*="slot-chrome-"] .slot-reel-area::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
         }
 
-        /* ── 2. OLYMPUS  (Gates of Olympus family) ─────────────────── */
-        .slot-chrome-olympus .reels-container {
-            border: 4px solid #f5c842;
+        /* Per-provider reel area atmospheric gradients (behind the reels) */
+        .slot-chrome-novaspin .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 50%, rgba(0,60,120,0.25) 0%, rgba(0,6,16,0.4) 70%);
+        }
+        .slot-chrome-celestial .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 30%, rgba(42,26,110,0.35) 0%, rgba(6,10,30,0.4) 70%);
+        }
+        .slot-chrome-ironreel .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 70%, rgba(58,30,8,0.3) 0%, rgba(10,6,2,0.4) 70%);
+        }
+        .slot-chrome-goldenedge .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 50%, rgba(60,0,30,0.3) 0%, rgba(14,4,10,0.4) 70%);
+        }
+        .slot-chrome-vaultx .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 50%, rgba(30,20,4,0.35) 0%, rgba(8,6,2,0.4) 70%);
+        }
+        .slot-chrome-solstice .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 50%, rgba(60,0,10,0.3) 0%, rgba(10,2,4,0.4) 70%);
+        }
+        .slot-chrome-phantomworks .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 100%, rgba(30,0,50,0.4) 0%, rgba(2,0,6,0.4) 70%);
+        }
+        .slot-chrome-arcadeforge .slot-reel-area {
+            background: radial-gradient(ellipse at 50% 50%, rgba(20,0,6,0.35) 0%, rgba(4,0,2,0.4) 70%);
+        }
+
+        /* ── 1. NOVASPIN STUDIOS  (Starburst / Reactoonz / Neon family) ── */
+        @keyframes novaSpinPulse {
+            0%, 100% { opacity: 0.04; }
+            50%       { opacity: 0.12; }
+        }
+        .slot-chrome-novaspin {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #00f5ff, #00a8e8 40%, #0066cc 100%);
+            --slot-spin-border: rgba(0,212,255,0.9);
+            --slot-spin-ring: rgba(0,212,255,0.2);
+            --slot-spin-glow: 0 0 25px rgba(0,212,255,0.5), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2);
+            --slot-panel-bg: rgba(0,20,40,0.6);
+            --slot-panel-border: rgba(0,212,255,0.15);
+            --slot-panel-shadow: 0 0 8px rgba(0,212,255,0.1);
+            --slot-ui-radius: 4px;
+            --slot-stripe-angle: 90deg;
+            --slot-chrome-blend: 0.08;
+        }
+        .slot-chrome-novaspin .reels-container {
+            border: 2px solid #00d4ff;
             border-radius: 6px;
             box-shadow:
-                0 0 0 1px rgba(245,200,66,0.3),
-                0 0 40px rgba(245,200,66,0.25),
-                inset 0 0 20px rgba(102,126,234,0.08);
+                0 0 0 1px rgba(0,212,255,0.2),
+                0 0 30px rgba(0,212,255,0.25),
+                0 0 60px rgba(0,128,255,0.1),
+                inset 0 0 20px rgba(0,20,40,0.5);
         }
-        .slot-chrome-olympus .reel-column:not(:last-child)::after {
+        .slot-chrome-novaspin .reel-column:not(:last-child)::after {
             background: linear-gradient(180deg,
-                transparent 5%, rgba(245,200,66,0.35) 30%,
-                rgba(245,200,66,0.35) 70%, transparent 95%) !important;
-            width: 2px !important;
-        }
-        .slot-chrome-olympus .reel-cell {
-            border: 1px solid rgba(245,200,66,0.12) !important;
-            background: rgba(42,26,110,0.3) !important;
-        }
-        .slot-chrome-olympus .slot-top-bar {
-            background: linear-gradient(90deg, rgba(42,26,110,0.8), rgba(15,26,61,0.8)) !important;
-            border-bottom: 3px solid #f5c842 !important;
-        }
-        .slot-chrome-olympus .slot-bottom-bar {
-            border-top: 3px solid #f5c842 !important;
-        }
-        .slot-chrome-olympus .slot-reel-area::after {
-            background-image:
-                url('assets/chrome/olympus/corner_tl.png'),
-                url('assets/chrome/olympus/corner_tr.png'),
-                url('assets/chrome/olympus/corner_bl.png'),
-                url('assets/chrome/olympus/corner_br.png'),
-                url('assets/chrome/olympus/frame_top.png'),
-                url('assets/chrome/olympus/frame_bot.png');
-        }
-
-        /* ── 3. WILD  (Wolf Gold / Buffalo / Rhino) ─────────────────── */
-        .slot-chrome-wild .reels-container {
-            border: 4px solid #8b7355;
-            border-radius: 8px;
-            box-shadow:
-                0 0 0 2px #4a3728,
-                0 0 30px rgba(139,115,85,0.2),
-                inset 0 2px 8px rgba(0,0,0,0.5);
-        }
-        .slot-chrome-wild .reel-column:not(:last-child)::after {
-            background: linear-gradient(180deg,
-                transparent, rgba(184,115,51,0.25), transparent) !important;
-            width: 2px !important;
-        }
-        .slot-chrome-wild .reel-cell {
-            border: 1px solid rgba(139,115,85,0.15) !important;
-            background: transparent !important;
-        }
-        .slot-chrome-wild .slot-top-bar {
-            background: linear-gradient(90deg, rgba(58,40,16,0.9), rgba(26,18,8,0.9)) !important;
-            border-bottom: 3px solid #8b7355 !important;
-        }
-        .slot-chrome-wild .slot-bottom-bar {
-            border-top: 3px solid #8b7355 !important;
-        }
-        .slot-chrome-wild .slot-reel-area::after {
-            background-image:
-                url('assets/chrome/wild/corner_tl.png'),
-                url('assets/chrome/wild/corner_tr.png'),
-                url('assets/chrome/wild/corner_bl.png'),
-                url('assets/chrome/wild/corner_br.png'),
-                url('assets/chrome/wild/frame_top.png'),
-                url('assets/chrome/wild/frame_bot.png');
-        }
-
-        /* ── 4. EGYPTIAN  (Book of Dead / Gonzo's Quest) ────────────── */
-        .slot-chrome-egyptian .reels-container {
-            border: 4px solid #c7a94e;
-            border-radius: 4px;
-            box-shadow:
-                0 0 0 2px rgba(199,169,78,0.3),
-                0 0 50px rgba(199,169,78,0.2),
-                inset 0 0 30px rgba(0,0,0,0.4);
-        }
-        .slot-chrome-egyptian .reel-column:not(:last-child)::after {
-            background: linear-gradient(180deg,
-                transparent 5%, rgba(199,169,78,0.4) 30%,
-                rgba(199,169,78,0.4) 70%, transparent 95%) !important;
+                transparent 5%, rgba(0,212,255,0.2) 30%,
+                rgba(0,212,255,0.2) 70%, transparent 95%) !important;
             width: 1px !important;
         }
-        .slot-chrome-egyptian .reel-cell {
-            border: 1px solid rgba(199,169,78,0.15) !important;
-            background: rgba(26,16,6,0.6) !important;
+        .slot-chrome-novaspin .reel-cell {
+            border: 1px solid rgba(0,212,255,0.06) !important;
+            background: rgba(0,8,20,0.4) !important;
         }
-        .slot-chrome-egyptian .slot-top-bar {
-            background: linear-gradient(90deg, rgba(42,26,8,0.95), rgba(20,13,4,0.95)) !important;
-            border-bottom: 3px solid #c7a94e !important;
+        .slot-chrome-novaspin .slot-top-bar {
+            background: linear-gradient(90deg, rgba(0,12,28,0.98), rgba(0,6,16,0.98)) !important;
+            border-bottom: 2px solid #00d4ff !important;
+            box-shadow: 0 0 20px rgba(0,212,255,0.2) !important;
         }
-        .slot-chrome-egyptian .slot-bottom-bar {
-            border-top: 3px solid #c7a94e !important;
+        .slot-chrome-novaspin .slot-bottom-bar {
+            border-top: 2px solid #00d4ff !important;
+            box-shadow: 0 0 20px rgba(0,212,255,0.15) !important;
         }
-        .slot-chrome-egyptian .slot-reel-area::after {
-            background-image:
-                url('assets/chrome/egyptian/corner_tl.png'),
-                url('assets/chrome/egyptian/corner_tr.png'),
-                url('assets/chrome/egyptian/corner_bl.png'),
-                url('assets/chrome/egyptian/corner_br.png'),
-                url('assets/chrome/egyptian/frame_top.png'),
-                url('assets/chrome/egyptian/frame_bot.png');
+        .slot-chrome-novaspin .slot-bar-label { color: rgba(0,212,255,0.5) !important; }
+        .slot-chrome-novaspin .slot-bar-value { color: #00e5ff !important; }
+        .slot-chrome-novaspin .slot-provider { color: #00d4ff !important; }
+        .slot-chrome-novaspin .slot-reel-area::before {
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 2px,
+                rgba(0,212,255,0.012) 2px,
+                rgba(0,212,255,0.012) 4px
+            );
+            animation: novaSpinPulse 3s ease-in-out infinite;
         }
-
-        /* ── 5. NEON  (Starburst / Reactoonz / Nitro) ───────────────── */
-        .slot-chrome-neon .reels-container {
-            border: 3px solid #a855f7;
-            border-radius: 10px;
-            box-shadow:
-                0 0 0 1px rgba(168,85,247,0.3),
-                0 0 30px rgba(168,85,247,0.35),
-                0 0 60px rgba(6,182,212,0.15),
-                inset 0 0 20px rgba(168,85,247,0.05);
-        }
-        .slot-chrome-neon .reel-column:not(:last-child)::after {
-            background: linear-gradient(180deg,
-                transparent, rgba(168,85,247,0.15), transparent) !important;
-            width: 1px !important;
-        }
-        .slot-chrome-neon .reel-cell {
-            border: 1px solid rgba(168,85,247,0.08) !important;
-            background: rgba(5,0,15,0.5) !important;
-        }
-        .slot-chrome-neon .slot-top-bar {
-            background: linear-gradient(90deg, rgba(5,0,15,0.95), rgba(10,0,30,0.95)) !important;
-            border-bottom: 2px solid #a855f7 !important;
-            box-shadow: 0 0 15px rgba(168,85,247,0.3) !important;
-        }
-        .slot-chrome-neon .slot-bottom-bar {
-            border-top: 2px solid #a855f7 !important;
-            box-shadow: 0 0 15px rgba(168,85,247,0.3) !important;
-        }
-        .slot-chrome-neon .slot-reel-area::after {
+        .slot-chrome-novaspin .slot-reel-area::after {
             background-image:
                 url('assets/chrome/neon/corner_tl.png'),
                 url('assets/chrome/neon/corner_tr.png'),
@@ -1913,32 +1840,243 @@
                 url('assets/chrome/neon/frame_bot.png');
         }
 
-        /* ── 6. WESTERN  (Tombstone / Wanted / Money Train) ─────────── */
-        .slot-chrome-western .reels-container {
-            border: 5px solid #8b6914;
+        /* ── 2. CELESTIAL PLAYS  (Gates of Olympus / Crown family) ── */
+        @keyframes celestialFloat {
+            0%, 100% { opacity: 0.05; }
+            50%       { opacity: 0.13; }
+        }
+        .slot-chrome-celestial {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #ffe566, #f5c842 40%, #c8960c 100%);
+            --slot-spin-border: rgba(245,200,66,0.9);
+            --slot-spin-ring: rgba(245,200,66,0.2);
+            --slot-spin-glow: 0 0 25px rgba(245,200,66,0.4), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3);
+            --slot-panel-bg: rgba(42,26,110,0.35);
+            --slot-panel-border: rgba(245,200,66,0.15);
+            --slot-panel-shadow: 0 0 8px rgba(245,200,66,0.1);
+            --slot-ui-radius: 6px;
+            --slot-stripe-angle: 45deg;
+            --slot-chrome-blend: 0.12;
+        }
+        .slot-chrome-celestial .reels-container {
+            border: 4px solid #f5c842;
+            border-radius: 6px;
+            box-shadow:
+                0 0 0 1px rgba(245,200,66,0.3),
+                0 0 40px rgba(245,200,66,0.25),
+                inset 0 0 20px rgba(102,126,234,0.08);
+        }
+        .slot-chrome-celestial .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent 5%, rgba(245,200,66,0.35) 30%,
+                rgba(245,200,66,0.35) 70%, transparent 95%) !important;
+            width: 2px !important;
+        }
+        .slot-chrome-celestial .reel-cell {
+            border: 1px solid rgba(245,200,66,0.12) !important;
+            background: rgba(42,26,110,0.3) !important;
+        }
+        .slot-chrome-celestial .slot-top-bar {
+            background: linear-gradient(90deg, rgba(42,26,110,0.85), rgba(15,26,61,0.85)) !important;
+            border-bottom: 3px solid #f5c842 !important;
+        }
+        .slot-chrome-celestial .slot-bottom-bar {
+            border-top: 3px solid #f5c842 !important;
+        }
+        .slot-chrome-celestial .slot-bar-label { color: rgba(245,200,66,0.5) !important; }
+        .slot-chrome-celestial .slot-bar-value { color: #ffe566 !important; }
+        .slot-chrome-celestial .slot-provider { color: #f5c842 !important; }
+        .slot-chrome-celestial .slot-reel-area::before {
+            background: radial-gradient(ellipse at 50% 110%, rgba(245,200,66,0.08) 0%, transparent 60%);
+            animation: celestialFloat 4s ease-in-out infinite;
+        }
+        .slot-chrome-celestial .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/olympus/corner_tl.png'),
+                url('assets/chrome/olympus/corner_tr.png'),
+                url('assets/chrome/olympus/corner_bl.png'),
+                url('assets/chrome/olympus/corner_br.png'),
+                url('assets/chrome/olympus/frame_top.png'),
+                url('assets/chrome/olympus/frame_bot.png');
+        }
+
+        /* ── 3. IRONREEL ENTERTAINMENT  (Wolf Gold / Buffalo / Rhino family) ── */
+        @keyframes ironreelGrain {
+            0%, 100% { opacity: 0.03; }
+            33%       { opacity: 0.07; }
+            66%       { opacity: 0.04; }
+        }
+        .slot-chrome-ironreel {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #d97706, #b45309 40%, #78350f 100%);
+            --slot-spin-border: rgba(180,83,9,0.9);
+            --slot-spin-ring: rgba(180,83,9,0.2);
+            --slot-spin-glow: 0 0 20px rgba(180,83,9,0.35), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,220,150,0.15);
+            --slot-panel-bg: rgba(40,22,8,0.5);
+            --slot-panel-border: rgba(139,115,85,0.2);
+            --slot-panel-shadow: 0 0 6px rgba(139,115,85,0.08);
+            --slot-ui-radius: 8px;
+            --slot-stripe-angle: 35deg;
+            --slot-chrome-blend: 0.18;
+        }
+        .slot-chrome-ironreel .reels-container {
+            border: 4px solid #8b7355;
+            border-radius: 8px;
+            box-shadow:
+                0 0 0 2px #4a3728,
+                0 0 30px rgba(139,115,85,0.2),
+                inset 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .slot-chrome-ironreel .reel-column:not(:last-child)::after {
+            background: linear-gradient(180deg,
+                transparent, rgba(184,115,51,0.25), transparent) !important;
+            width: 2px !important;
+        }
+        .slot-chrome-ironreel .reel-cell {
+            border: 1px solid rgba(139,115,85,0.15) !important;
+            background: transparent !important;
+        }
+        .slot-chrome-ironreel .slot-top-bar {
+            background: linear-gradient(90deg, rgba(58,40,16,0.9), rgba(26,18,8,0.9)) !important;
+            border-bottom: 3px solid #8b7355 !important;
+        }
+        .slot-chrome-ironreel .slot-bottom-bar {
+            border-top: 3px solid #8b7355 !important;
+        }
+        .slot-chrome-ironreel .slot-bar-label { color: rgba(139,115,85,0.6) !important; }
+        .slot-chrome-ironreel .slot-bar-value { color: #d4a96a !important; }
+        .slot-chrome-ironreel .slot-provider { color: #b45309 !important; }
+        .slot-chrome-ironreel .slot-reel-area::before {
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+            animation: ironreelGrain 0.8s steps(1) infinite;
+        }
+        .slot-chrome-ironreel .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/wild/corner_tl.png'),
+                url('assets/chrome/wild/corner_tr.png'),
+                url('assets/chrome/wild/corner_bl.png'),
+                url('assets/chrome/wild/corner_br.png'),
+                url('assets/chrome/wild/frame_top.png'),
+                url('assets/chrome/wild/frame_bot.png');
+        }
+
+        /* ── 4. GOLDENEDGE GAMING  (Sugar Rush / Sweet Bonanza / Candy family) ── */
+        @keyframes goldenEdgePop {
+            0%, 100% {
+                box-shadow: 0 0 0 3px #ff6fd8, 0 0 0 6px #f7a531,
+                            0 0 40px rgba(255,111,216,0.3), 0 0 80px rgba(247,165,49,0.15);
+            }
+            50% {
+                box-shadow: 0 0 0 3px #f7a531, 0 0 0 6px #ff6fd8,
+                            0 0 60px rgba(255,111,216,0.5), 0 0 100px rgba(247,165,49,0.2);
+            }
+        }
+        .slot-chrome-goldenedge {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #ff8fe0, #ff6fd8 40%, #e040a8 100%);
+            --slot-spin-border: rgba(255,111,216,0.9);
+            --slot-spin-ring: rgba(255,111,216,0.2);
+            --slot-spin-glow: 0 0 25px rgba(255,111,216,0.5), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3);
+            --slot-panel-bg: rgba(255,111,216,0.06);
+            --slot-panel-border: rgba(255,111,216,0.15);
+            --slot-panel-shadow: 0 0 8px rgba(255,111,216,0.08);
+            --slot-ui-radius: 12px;
+            --slot-stripe-angle: 30deg;
+            --slot-chrome-blend: 0.15;
+        }
+        .slot-chrome-goldenedge .reels-container {
+            border: 3px solid transparent;
+            border-radius: 20px;
+            animation: goldenEdgePop 3s ease-in-out infinite;
+            background: rgba(20,5,15,0.85) !important;
+        }
+        .slot-chrome-goldenedge .reel-cell {
+            border-radius: 10px !important;
+            border: 2px solid rgba(255,111,216,0.12) !important;
+            background: rgba(255,111,216,0.03) !important;
+        }
+        .slot-chrome-goldenedge .slot-top-bar {
+            background: linear-gradient(90deg, rgba(255,111,216,0.12), rgba(247,165,49,0.12)) !important;
+            border-bottom: 2px solid rgba(255,111,216,0.5) !important;
+        }
+        .slot-chrome-goldenedge .slot-bottom-bar {
+            background: linear-gradient(90deg, rgba(247,165,49,0.08), rgba(255,111,216,0.08)) !important;
+            border-top: 2px solid rgba(247,165,49,0.4) !important;
+        }
+        .slot-chrome-goldenedge .slot-bar-label { color: rgba(255,111,216,0.6) !important; }
+        .slot-chrome-goldenedge .slot-bar-value { color: #ffb3e8 !important; }
+        .slot-chrome-goldenedge .slot-provider { color: #ff6fd8 !important; }
+        .slot-chrome-goldenedge .slot-reel-area::before {
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(255,111,216,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 100%, rgba(247,165,49,0.06) 0%, transparent 60%);
+        }
+        .slot-chrome-goldenedge .slot-reel-area::after {
+            background-image:
+                url('assets/chrome/candy/corner_tl.png'),
+                url('assets/chrome/candy/corner_tr.png'),
+                url('assets/chrome/candy/corner_bl.png'),
+                url('assets/chrome/candy/corner_br.png'),
+                url('assets/chrome/candy/frame_top.png'),
+                url('assets/chrome/candy/frame_bot.png');
+        }
+
+        /* ── 5. VAULTX GAMING  (Tombstone / Wanted / Money Train / Big Bass family) ── */
+        @keyframes vaultxHum {
+            0%, 19%, 22%, 79%, 82%, 100% { opacity: 0.0; }
+            20%, 21%                      { opacity: 0.06; }
+            80%, 81%                      { opacity: 0.04; }
+        }
+        .slot-chrome-vaultx {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #9ca3af, #6b7280 40%, #374151 100%);
+            --slot-spin-border: rgba(107,114,128,0.9);
+            --slot-spin-ring: rgba(139,105,20,0.3);
+            --slot-spin-glow: 0 0 15px rgba(139,105,20,0.3), 0 2px 12px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.1);
+            --slot-panel-bg: rgba(20,14,4,0.6);
+            --slot-panel-border: rgba(107,114,128,0.2);
+            --slot-panel-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+            --slot-ui-radius: 4px;
+            --slot-stripe-angle: 45deg;
+            --slot-chrome-blend: 0.25;
+        }
+        .slot-chrome-vaultx .reels-container {
+            border: 5px solid #6b6b6b;
             border-radius: 4px;
             box-shadow:
-                0 0 0 2px #5c3d1e,
-                0 0 30px rgba(139,105,20,0.2),
+                0 0 0 2px #2d2d2d,
+                0 0 0 4px #8b6914,
+                0 0 30px rgba(0,0,0,0.5),
                 inset 0 2px 10px rgba(0,0,0,0.6);
         }
-        .slot-chrome-western .reel-column:not(:last-child)::after {
+        .slot-chrome-vaultx .reel-column:not(:last-child)::after {
             background: linear-gradient(180deg,
                 transparent, rgba(139,105,20,0.3), transparent) !important;
             width: 3px !important;
         }
-        .slot-chrome-western .reel-cell {
-            border: 1px solid rgba(139,105,20,0.1) !important;
-            background: rgba(20,12,4,0.7) !important;
+        .slot-chrome-vaultx .reel-cell {
+            border: 1px solid rgba(107,114,128,0.1) !important;
+            background: rgba(10,8,4,0.8) !important;
         }
-        .slot-chrome-western .slot-top-bar {
-            background: linear-gradient(90deg, rgba(58,32,8,0.95), rgba(30,16,4,0.95)) !important;
-            border-bottom: 4px solid #8b6914 !important;
+        .slot-chrome-vaultx .slot-top-bar {
+            background: linear-gradient(90deg, rgba(26,16,6,0.98), rgba(14,10,4,0.98)) !important;
+            border-bottom: 4px solid #6b6b6b !important;
+            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.5) !important;
         }
-        .slot-chrome-western .slot-bottom-bar {
-            border-top: 4px solid #8b6914 !important;
+        .slot-chrome-vaultx .slot-bottom-bar {
+            border-top: 4px solid #6b6b6b !important;
         }
-        .slot-chrome-western .slot-reel-area::after {
+        .slot-chrome-vaultx .slot-bar-label { color: rgba(107,114,128,0.7) !important; }
+        .slot-chrome-vaultx .slot-bar-value { color: #9ca3af !important; }
+        .slot-chrome-vaultx .slot-provider { color: #8b6914 !important; }
+        .slot-chrome-vaultx .slot-reel-area::before {
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                transparent 30px,
+                rgba(0,0,0,0.08) 30px,
+                rgba(0,0,0,0.08) 31px
+            );
+            animation: vaultxHum 6s ease-in-out infinite;
+        }
+        .slot-chrome-vaultx .slot-reel-area::after {
             background-image:
                 url('assets/chrome/western/corner_tl.png'),
                 url('assets/chrome/western/corner_tr.png'),
@@ -1948,8 +2086,24 @@
                 url('assets/chrome/western/frame_bot.png');
         }
 
-        /* ── 7. ORIENTAL  (5 Lions / Dragon / Bamboo) ───────────────── */
-        .slot-chrome-oriental .reels-container {
+        /* ── 6. SOLSTICEFX  (5 Lions / Dragon / Bamboo / Oriental family) ── */
+        @keyframes solsticeGlow {
+            0%, 100% { opacity: 0.06; }
+            50%       { opacity: 0.14; }
+        }
+        .slot-chrome-solstice {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #ffd700, #f5b800 40%, #c8960c 100%);
+            --slot-spin-border: rgba(255,215,0,0.9);
+            --slot-spin-ring: rgba(255,215,0,0.2);
+            --slot-spin-glow: 0 0 25px rgba(255,215,0,0.4), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3);
+            --slot-panel-bg: rgba(90,0,20,0.35);
+            --slot-panel-border: rgba(255,215,0,0.15);
+            --slot-panel-shadow: 0 0 6px rgba(255,215,0,0.08);
+            --slot-ui-radius: 6px;
+            --slot-stripe-angle: 30deg;
+            --slot-chrome-blend: 0.12;
+        }
+        .slot-chrome-solstice .reels-container {
             border: 4px solid #c41e3a;
             border-radius: 6px;
             box-shadow:
@@ -1958,23 +2112,32 @@
                 0 0 40px rgba(196,30,58,0.25),
                 inset 0 0 20px rgba(0,0,0,0.5);
         }
-        .slot-chrome-oriental .reel-column:not(:last-child)::after {
+        .slot-chrome-solstice .reel-column:not(:last-child)::after {
             background: linear-gradient(180deg,
                 transparent, rgba(255,215,0,0.4), transparent) !important;
             width: 2px !important;
         }
-        .slot-chrome-oriental .reel-cell {
+        .slot-chrome-solstice .reel-cell {
             border: 1px solid rgba(255,215,0,0.1) !important;
             background: rgba(20,6,10,0.6) !important;
         }
-        .slot-chrome-oriental .slot-top-bar {
+        .slot-chrome-solstice .slot-top-bar {
             background: linear-gradient(90deg, rgba(90,0,20,0.95), rgba(50,0,10,0.95)) !important;
             border-bottom: 3px solid #ffd700 !important;
         }
-        .slot-chrome-oriental .slot-bottom-bar {
+        .slot-chrome-solstice .slot-bottom-bar {
             border-top: 3px solid #ffd700 !important;
         }
-        .slot-chrome-oriental .slot-reel-area::after {
+        .slot-chrome-solstice .slot-bar-label { color: rgba(255,215,0,0.5) !important; }
+        .slot-chrome-solstice .slot-bar-value { color: #ffd700 !important; }
+        .slot-chrome-solstice .slot-provider { color: #c41e3a !important; }
+        .slot-chrome-solstice .slot-reel-area::before {
+            background:
+                radial-gradient(ellipse at 0% 50%, rgba(196,30,58,0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 100% 50%, rgba(196,30,58,0.08) 0%, transparent 40%);
+            animation: solsticeGlow 3s ease-in-out infinite;
+        }
+        .slot-chrome-solstice .slot-reel-area::after {
             background-image:
                 url('assets/chrome/oriental/corner_tl.png'),
                 url('assets/chrome/oriental/corner_tr.png'),
@@ -1984,47 +2147,25 @@
                 url('assets/chrome/oriental/frame_bot.png');
         }
 
-        /* ── 8. JOKER  (Fire Joker / 100 Super Hot / Mega Joker) ────── */
-        .slot-chrome-joker .reels-container {
-            border: 5px solid #d0d0d0;
-            border-radius: 12px;
-            box-shadow:
-                0 0 0 2px #888,
-                0 0 0 5px #ff0844,
-                0 0 30px rgba(255,8,68,0.2),
-                inset 0 2px 8px rgba(0,0,0,0.5);
+        /* ── 7. PHANTOMWORKS  (Dark / Gothic / Egyptian family) ── */
+        @keyframes phantomMist {
+            0%, 100% { opacity: 0.0; }
+            30%       { opacity: 0.10; }
+            60%       { opacity: 0.06; }
         }
-        .slot-chrome-joker .reel-column:not(:last-child)::after {
-            background: linear-gradient(180deg,
-                transparent 5%, rgba(208,208,208,0.3) 30%,
-                rgba(208,208,208,0.3) 70%, transparent 95%) !important;
-            width: 3px !important;
+        .slot-chrome-phantomworks {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #9333ea, #7c3aed 40%, #4c1d95 100%);
+            --slot-spin-border: rgba(107,33,168,0.9);
+            --slot-spin-ring: rgba(107,33,168,0.25);
+            --slot-spin-glow: 0 0 25px rgba(107,33,168,0.5), 0 2px 12px rgba(0,0,0,0.6), inset 0 2px 4px rgba(200,150,255,0.15);
+            --slot-panel-bg: rgba(20,0,30,0.5);
+            --slot-panel-border: rgba(107,33,168,0.15);
+            --slot-panel-shadow: 0 0 8px rgba(107,33,168,0.1);
+            --slot-ui-radius: 4px;
+            --slot-stripe-angle: 135deg;
+            --slot-chrome-blend: 0.1;
         }
-        .slot-chrome-joker .reel-cell {
-            border: 1px solid rgba(208,208,208,0.1) !important;
-            background: rgba(10,10,10,0.85) !important;
-            border-radius: 4px !important;
-        }
-        .slot-chrome-joker .slot-top-bar {
-            background: linear-gradient(90deg, #1a0008, #0a0004) !important;
-            border-bottom: 3px solid #ff0844 !important;
-            box-shadow: 0 0 20px rgba(255,8,68,0.2) !important;
-        }
-        .slot-chrome-joker .slot-bottom-bar {
-            border-top: 3px solid #d0d0d0 !important;
-        }
-        .slot-chrome-joker .slot-reel-area::after {
-            background-image:
-                url('assets/chrome/joker/corner_tl.png'),
-                url('assets/chrome/joker/corner_tr.png'),
-                url('assets/chrome/joker/corner_bl.png'),
-                url('assets/chrome/joker/corner_br.png'),
-                url('assets/chrome/joker/frame_top.png'),
-                url('assets/chrome/joker/frame_bot.png');
-        }
-
-        /* ── 9. DARK  (Immortal Blood / Money Train / Madame Destiny) ─ */
-        .slot-chrome-dark .reels-container {
+        .slot-chrome-phantomworks .reels-container {
             border: 4px solid #6b21a8;
             border-radius: 8px;
             box-shadow:
@@ -2033,23 +2174,34 @@
                 0 0 50px rgba(107,33,168,0.3),
                 inset 0 0 30px rgba(0,0,0,0.7);
         }
-        .slot-chrome-dark .reel-column:not(:last-child)::after {
+        .slot-chrome-phantomworks .reel-column:not(:last-child)::after {
             background: linear-gradient(180deg,
                 transparent, rgba(107,33,168,0.3), transparent) !important;
             width: 1px !important;
         }
-        .slot-chrome-dark .reel-cell {
+        .slot-chrome-phantomworks .reel-cell {
             border: 1px solid rgba(107,33,168,0.1) !important;
             background: rgba(5,0,8,0.8) !important;
         }
-        .slot-chrome-dark .slot-top-bar {
+        .slot-chrome-phantomworks .slot-top-bar {
             background: linear-gradient(90deg, rgba(20,0,30,0.98), rgba(8,0,12,0.98)) !important;
             border-bottom: 3px solid #991b1b !important;
+            box-shadow: 0 0 15px rgba(107,33,168,0.2) !important;
         }
-        .slot-chrome-dark .slot-bottom-bar {
+        .slot-chrome-phantomworks .slot-bottom-bar {
             border-top: 3px solid #6b21a8 !important;
+            box-shadow: 0 0 15px rgba(107,33,168,0.15) !important;
         }
-        .slot-chrome-dark .slot-reel-area::after {
+        .slot-chrome-phantomworks .slot-bar-label { color: rgba(107,33,168,0.7) !important; }
+        .slot-chrome-phantomworks .slot-bar-value { color: #c084fc !important; }
+        .slot-chrome-phantomworks .slot-provider { color: #9333ea !important; }
+        .slot-chrome-phantomworks .slot-reel-area::before {
+            background:
+                radial-gradient(ellipse at 50% 100%, rgba(107,33,168,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse at 50% 0%, rgba(153,27,27,0.08) 0%, transparent 50%);
+            animation: phantomMist 5s ease-in-out infinite;
+        }
+        .slot-chrome-phantomworks .slot-reel-area::after {
             background-image:
                 url('assets/chrome/dark/corner_tl.png'),
                 url('assets/chrome/dark/corner_tr.png'),
@@ -2059,43 +2211,75 @@
                 url('assets/chrome/dark/frame_bot.png');
         }
 
-        /* ── 10. FISHING  (Big Bass / Razor Shark) ──────────────────── */
-        .slot-chrome-fishing .reels-container {
-            border: 4px solid #0077b6;
-            border-radius: 10px;
+        /* ── 8. ARCADEFORGE  (Fire Joker / Mega Joker / Classic family) ── */
+        @keyframes arcadeBlink {
+            0%, 88%, 92%, 100% { opacity: 1;    }
+            89%, 91%           { opacity: 0.85; }
+        }
+        .slot-chrome-arcadeforge {
+            --slot-spin-bg: radial-gradient(circle at 40% 35%, #f0f0f0, #d0d0d0 40%, #888 100%);
+            --slot-spin-border: rgba(208,208,208,0.9);
+            --slot-spin-ring: rgba(255,8,68,0.25);
+            --slot-spin-glow: 0 0 20px rgba(255,8,68,0.25), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4);
+            --slot-panel-bg: rgba(10,10,10,0.7);
+            --slot-panel-border: rgba(208,208,208,0.12);
+            --slot-panel-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+            --slot-ui-radius: 12px;
+            --slot-stripe-angle: 35deg;
+            --slot-chrome-blend: 0.22;
+        }
+        .slot-chrome-arcadeforge .reels-container {
+            border: 5px solid #d0d0d0;
+            border-radius: 12px;
             box-shadow:
-                0 0 0 2px rgba(0,119,182,0.4),
-                0 0 0 4px #48cae4,
-                0 0 40px rgba(0,119,182,0.25),
-                inset 0 0 20px rgba(0,50,80,0.3);
+                0 0 0 2px #888,
+                0 0 0 5px #ff0844,
+                0 0 30px rgba(255,8,68,0.2),
+                inset 0 2px 8px rgba(0,0,0,0.5);
         }
-        .slot-chrome-fishing .reel-column:not(:last-child)::after {
+        .slot-chrome-arcadeforge .reel-column:not(:last-child)::after {
             background: linear-gradient(180deg,
-                transparent, rgba(72,202,228,0.2), transparent) !important;
-            width: 2px !important;
+                transparent 5%, rgba(208,208,208,0.3) 30%,
+                rgba(208,208,208,0.3) 70%, transparent 95%) !important;
+            width: 3px !important;
         }
-        .slot-chrome-fishing .reel-cell {
-            border: 1px solid rgba(0,119,182,0.15) !important;
-            background: rgba(3,13,21,0.7) !important;
+        .slot-chrome-arcadeforge .reel-cell {
+            border: 1px solid rgba(208,208,208,0.1) !important;
+            background: rgba(10,10,10,0.85) !important;
+            border-radius: 4px !important;
         }
-        .slot-chrome-fishing .slot-top-bar {
-            background: linear-gradient(90deg, rgba(6,26,42,0.95), rgba(3,13,21,0.95)) !important;
-            border-bottom: 3px solid #48cae4 !important;
+        .slot-chrome-arcadeforge .slot-top-bar {
+            background: linear-gradient(90deg, #1a0008, #0a0004) !important;
+            border-bottom: 3px solid #ff0844 !important;
+            box-shadow: 0 0 20px rgba(255,8,68,0.2) !important;
         }
-        .slot-chrome-fishing .slot-bottom-bar {
-            border-top: 3px solid #0077b6 !important;
+        .slot-chrome-arcadeforge .slot-bottom-bar {
+            border-top: 3px solid #d0d0d0 !important;
         }
-        .slot-chrome-fishing .slot-reel-area::after {
+        .slot-chrome-arcadeforge .slot-bar-label { color: rgba(208,208,208,0.5) !important; }
+        .slot-chrome-arcadeforge .slot-bar-value { color: #f0f0f0 !important; }
+        .slot-chrome-arcadeforge .slot-provider { color: #ff0844 !important; }
+        .slot-chrome-arcadeforge .slot-reel-area::before {
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 3px,
+                rgba(0,0,0,0.08) 3px,
+                rgba(0,0,0,0.08) 4px
+            );
+            animation: arcadeBlink 8s ease-in-out infinite;
+        }
+        .slot-chrome-arcadeforge .slot-reel-area::after {
             background-image:
-                url('assets/chrome/fishing/corner_tl.png'),
-                url('assets/chrome/fishing/corner_tr.png'),
-                url('assets/chrome/fishing/corner_bl.png'),
-                url('assets/chrome/fishing/corner_br.png'),
-                url('assets/chrome/fishing/frame_top.png'),
-                url('assets/chrome/fishing/frame_bot.png');
+                url('assets/chrome/joker/corner_tl.png'),
+                url('assets/chrome/joker/corner_tr.png'),
+                url('assets/chrome/joker/corner_bl.png'),
+                url('assets/chrome/joker/corner_br.png'),
+                url('assets/chrome/joker/frame_top.png'),
+                url('assets/chrome/joker/frame_bot.png');
         }
 
-        /* ═══ END PER-GAME CHROME STYLES ═══ */
+        /* ═══ END PER-PROVIDER CHROME STYLES ═══ */
 
         /* ═══ VIBRANT WIN HIGHLIGHT SYSTEM ═══ */
 
@@ -2367,73 +2551,177 @@
         }
 
         /* ═══ Free Spins Overlay ═══ */
+        /* ─── DRAMATIC FREE SPINS TRIGGER ANIMATIONS ─── */
+        @keyframes fsScreenFlash {
+            0%   { filter: brightness(1); }
+            12%  { filter: brightness(5) saturate(0.2); }
+            25%  { filter: brightness(2.5) saturate(1.8) hue-rotate(20deg); }
+            55%  { filter: brightness(1.6); }
+            100% { filter: brightness(1); }
+        }
+        @keyframes fsModalShake {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            10%  { transform: translateX(-10px) rotate(-0.8deg); }
+            20%  { transform: translateX(10px)  rotate(0.8deg); }
+            30%  { transform: translateX(-7px)  rotate(-0.5deg); }
+            40%  { transform: translateX(7px)   rotate(0.5deg); }
+            55%  { transform: translateX(-4px); }
+            70%  { transform: translateX(4px); }
+            85%  { transform: translateX(-2px); }
+        }
+        @keyframes fsScatterPop {
+            0%   { transform: scale(1);   filter: brightness(1); }
+            25%  { transform: scale(1.5); filter: brightness(4) drop-shadow(0 0 24px #fbbf24); }
+            60%  { transform: scale(1.3); filter: brightness(2.5) drop-shadow(0 0 16px #fbbf24); }
+            100% { transform: scale(1.35); filter: brightness(3) drop-shadow(0 0 20px #fbbf24); }
+        }
+        @keyframes fsRayBurst {
+            0%   { transform: scale(0.3) rotate(0deg);   opacity: 0; }
+            15%  { opacity: 0.9; }
+            70%  { opacity: 0.5; }
+            100% { transform: scale(2.2) rotate(200deg); opacity: 0; }
+        }
+        @keyframes fsBackdropStrobe {
+            0%   { background: rgba(255,255,255,0.7); }
+            20%  { background: rgba(251,191,36,0.35); }
+            100% { background: rgba(0,0,0,0.9); }
+        }
+        @keyframes fsIntroAppear {
+            0%   { transform: scale(0.3) rotate(-8deg) translateY(40px); opacity: 0; }
+            60%  { transform: scale(1.06) rotate(1deg) translateY(-6px); opacity: 1; }
+            80%  { transform: scale(0.97) rotate(-0.5deg) translateY(2px); }
+            100% { transform: scale(1) rotate(0deg) translateY(0); opacity: 1; }
+        }
+        @keyframes fsCountPulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.1); }
+        }
+        @keyframes fsBannerSlide {
+            0%   { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0);     opacity: 1; }
+        }
+        @keyframes fsTapBlink {
+            0%, 100% { opacity: 0.5; }
+            50%       { opacity: 1; }
+        }
+
+        /* Triggered via JS: flash & shake classes on the modal */
+        .slot-modal-fullscreen.fs-screen-flash {
+            animation: fsScreenFlash 0.7s ease-out;
+        }
+        .slot-modal-fullscreen.fs-shake {
+            animation: fsModalShake 0.55s cubic-bezier(.36,.07,.19,.97);
+        }
+        /* Scatter cells pop gold */
+        .reel-cell.fs-scatter-pop img {
+            animation: fsScatterPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
         .free-spins-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10000;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.35s ease;
         }
 
         .free-spins-overlay.active {
             opacity: 1;
             pointer-events: auto;
+            animation: fsBackdropStrobe 0.5s ease-out forwards;
+        }
+
+        /* Starburst ray burst behind the panel */
+        .fs-rays {
+            position: absolute;
+            inset: -80px;
+            border-radius: 50%;
+            animation: fsRayBurst 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .free-spins-intro {
+            position: relative;
             text-align: center;
             padding: 48px 64px;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(0, 0, 0, 0.98));
+            background: linear-gradient(160deg, rgba(8, 16, 36, 0.98), rgba(2, 4, 10, 0.99));
             border: 3px solid #fbbf24;
             border-radius: 24px;
-            box-shadow: 0 0 60px rgba(251, 191, 36, 0.4), 0 0 120px rgba(251, 191, 36, 0.15);
-            animation: fsIntroAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            max-width: 500px;
+            box-shadow:
+                0 0 80px rgba(251,191,36,0.5),
+                0 0 200px rgba(251,191,36,0.15),
+                inset 0 0 40px rgba(251,191,36,0.05);
+            animation: fsIntroAppear 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            max-width: 520px;
+            z-index: 1;
+            overflow: visible;
         }
 
-        @keyframes fsIntroAppear {
-            0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        .fs-intro-banner {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #fbbf24;
+            margin-bottom: 10px;
+            animation: fsBannerSlide 0.4s 0.2s ease-out both;
+            opacity: 0.85;
         }
 
         .fs-intro-title {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
             text-transform: uppercase;
             color: #fbbf24;
-            margin-bottom: 12px;
-            text-shadow: 0 0 20px currentColor;
-            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
+            letter-spacing: 3px;
+            line-height: 1.1;
         }
 
         .fs-intro-count {
-            font-size: 56px;
+            font-size: 88px;
             font-weight: 900;
             color: #ffffff;
-            text-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
-            margin-bottom: 16px;
-            animation: fsCountPulse 1s ease-in-out infinite;
+            text-shadow: 0 0 40px rgba(251,191,36,0.8), 0 0 80px rgba(251,191,36,0.3);
+            line-height: 1;
+            margin: 8px 0 16px;
+            animation: fsCountPulse 0.8s ease-in-out infinite;
+            letter-spacing: -2px;
         }
 
-        @keyframes fsCountPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
+        .fs-intro-sublabel {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 20px;
         }
 
         .fs-intro-desc {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
             line-height: 1.5;
             max-width: 400px;
-            margin: 0 auto;
+            margin: 0 auto 20px;
+        }
+
+        .fs-intro-tap {
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            animation: fsTapBlink 1.2s ease-in-out infinite;
         }
 
         .fs-summary {
@@ -2451,55 +2739,66 @@
         }
 
         /* ═══ Free Spins HUD ═══ */
+        @keyframes hudGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(251,191,36,0.25), inset 0 0 20px rgba(251,191,36,0.04); }
+            50%       { box-shadow: 0 0 35px rgba(251,191,36,0.55), inset 0 0 30px rgba(251,191,36,0.08); }
+        }
+        @keyframes hudSlideIn {
+            0%   { transform: translateY(-100%); opacity: 0; }
+            100% { transform: translateY(0);     opacity: 1; }
+        }
+
         .free-spins-hud {
             display: none;
             justify-content: space-around;
             align-items: center;
-            padding: 12px 20px;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(0, 0, 0, 0.9));
-            border: 2px solid #fbbf24;
-            border-radius: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
-            animation: hudGlow 2s ease-in-out infinite;
-        }
-
-        @keyframes hudGlow {
-            0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.2); }
-            50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.5); }
+            padding: 10px 24px;
+            background: linear-gradient(135deg, rgba(6,10,26,0.97), rgba(0,0,0,0.98));
+            border-bottom: 3px solid #fbbf24;
+            flex-shrink: 0;
+            animation: hudGlow 2s ease-in-out infinite, hudSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            position: relative;
+            z-index: 100;
         }
 
         .fs-hud-spins,
         .fs-hud-win,
         .fs-hud-mult {
             text-align: center;
-            padding: 4px 16px;
+            padding: 4px 20px;
+            border-right: 1px solid rgba(255,255,255,0.08);
         }
+        .fs-hud-spins:last-child,
+        .fs-hud-win:last-child,
+        .fs-hud-mult:last-child { border-right: none; }
 
         .fs-hud-label {
             display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.5);
+            font-size: 10px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.4);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             margin-bottom: 2px;
         }
 
         .fs-hud-value {
             display: block;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: 900;
             color: #fbbf24;
+            text-shadow: 0 0 15px rgba(251,191,36,0.5);
         }
 
         .fs-hud-win-value {
             color: #10b981;
+            text-shadow: 0 0 15px rgba(16,185,129,0.5);
         }
 
         .fs-hud-mult .fs-hud-value {
             color: #f472b6;
-            font-size: 16px;
+            font-size: 18px;
+            text-shadow: 0 0 12px rgba(244,114,182,0.5);
         }
 
         /* ═══ Bonus Effect Animation ═══ */
@@ -4798,6 +5097,11 @@
            PRAGMATIC PLAY-STYLE SLOT UI — Full-screen layout with bottom bar
            ═══════════════════════════════════════════════════════════════════ */
 
+        @keyframes slotModalEnter {
+            0%   { opacity: 0; transform: scale(1.04); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
         .slot-modal-fullscreen {
             display: flex !important;
             flex-direction: column;
@@ -4807,6 +5111,7 @@
             border-radius: 0 !important;
             overflow: hidden;
             background: #000 !important;
+            animation: slotModalEnter 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) both;
         }
 
         /* Top Bar — Slim Pragmatic Play style */
@@ -5251,9 +5556,17 @@
         }
 
         .slot-top-info .slot-provider {
-            font-size: 11px;
-            color: #475569;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #475569; /* overridden per provider */
             margin: 0;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid currentColor;
+            border-radius: 3px;
+            padding: 2px 7px;
+            opacity: 0.85;
         }
 
         .slot-top-right {
@@ -5527,10 +5840,18 @@
         }
 
         .slot-spin-btn:disabled {
-            opacity: 0.4;
+            opacity: 0.55;
             cursor: not-allowed;
             transform: none;
-            filter: grayscale(0.3);
+            filter: grayscale(0.2);
+        }
+        /* Pulsing outer ring while reels are spinning */
+        @keyframes spinBtnRingPulse {
+            0%, 100% { transform: scale(1);   opacity: 0.15; }
+            50%       { transform: scale(1.3); opacity: 0.4;  }
+        }
+        .slot-spin-btn:disabled::before {
+            animation: spinBtnRingPulse 0.7s ease-in-out infinite !important;
         }
 
         .slot-spin-btn:active:not(:disabled) {
