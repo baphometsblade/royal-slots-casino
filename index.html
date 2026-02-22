@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Royal Slots Casino - Premium Edition</title>
+    <title>Matrix Spins - Premium Slots</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,12 +11,8 @@
     <div class="page-transition" id="pageTransition">
         <div class="spinner"></div>
     </div>
-    <!-- Animated Background -->
-    <div class="bg-orbs">
-        <div class="orb orb1"></div>
-        <div class="orb orb2"></div>
-        <div class="orb orb3"></div>
-    </div>
+    <!-- Matrix Rain Background Canvas -->
+    <canvas id="matrixCanvas"></canvas>
 
     <!-- Promo Bar -->
     <div class="promo-bar">
@@ -47,17 +43,14 @@
         <div class="header-content">
             <div class="logo-section">
                 <div class="logo-icon">
-                    <div class="crown">
-                        <div class="crown-base"></div>
-                        <div class="crown-body"></div>
-                        <div class="crown-jewel jewel1"></div>
-                        <div class="crown-jewel jewel2"></div>
-                        <div class="crown-jewel jewel3"></div>
+                    <div class="matrix-logo-icon">
+                        <span class="mli-char">M</span>
+                        <span class="mli-char">S</span>
                     </div>
                 </div>
                 <div class="logo-text">
-                    <h1>ROYAL SLOTS</h1>
-                    <div class="subtitle">PREMIUM CASINO</div>
+                    <h1>MATRIX SPINS</h1>
+                    <div class="subtitle">PREMIUM SLOTS</div>
                 </div>
             </div>
             <div class="header-search">
@@ -139,7 +132,7 @@
         <div class="win-ticker-bar" id="winTicker">
             <span class="ticker-live-dot"></span>
             <div class="ticker-content" id="tickerContent">
-                <span class="ticker-item">Welcome to Royal Slots Casino!</span>
+                <span class="ticker-item">Welcome to Matrix Spins!</span>
             </div>
         </div>
 
@@ -217,8 +210,8 @@
             <div class="footer-divider"></div>
             <div class="footer-grid">
                 <div class="footer-column">
-                    <h4>ROYAL SLOTS</h4>
-                    <p class="footer-about">Premium online casino experience with the best slot games and massive jackpots.</p>
+                    <h4>MATRIX SPINS</h4>
+                    <p class="footer-about">Enter the Matrix. Premium slots experience with 80+ games and massive jackpots.</p>
                     <!-- Responsible Gambling Badges -->
                     <div class="footer-badges">
                         <span class="footer-badge footer-badge-18">18+</span>
@@ -255,7 +248,7 @@
                 <span class="footer-payment-icon">USDT</span>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Royal Slots Casino. All rights reserved. Play responsibly.</p>
+                <p>&copy; 2026 Matrix Spins. All rights reserved. Play responsibly.</p>
                 <p class="footer-disclaimer">
                     For entertainment purposes only. This is a demo application. No real money involved.
                 </p>
@@ -894,6 +887,70 @@
     <script src="sound-manager.js"></script>
     <script src="animations.js"></script>
     <script src="app.js"></script>
+
+    <!-- Matrix Rain Canvas Animation -->
+    <script>
+    (function() {
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx    = canvas.getContext('2d');
+
+        // Katakana + Latin + digits — classic Matrix alphabet
+        const CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*+=?/\\|<>';
+        const FONT_SIZE = 14;
+        let columns, drops, speeds, brightness;
+
+        function resize() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+            columns    = Math.floor(canvas.width / FONT_SIZE);
+            drops      = Array.from({ length: columns }, () => Math.random() * -50);
+            speeds     = Array.from({ length: columns }, () => 0.3 + Math.random() * 0.7);
+            brightness = Array.from({ length: columns }, () => Math.floor(Math.random() * 100 + 100));
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        function draw() {
+            // Semi-transparent black wipe creates the fade trail
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.055)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = FONT_SIZE + 'px "Courier New", monospace';
+
+            for (let i = 0; i < columns; i++) {
+                const ch   = CHARS[Math.floor(Math.random() * CHARS.length)];
+                const y    = drops[i] * FONT_SIZE;
+                const x    = i * FONT_SIZE;
+
+                // Leading character: bright white/pale-green flash
+                if (drops[i] > 0 && Math.random() < 0.04) {
+                    ctx.fillStyle = '#e0ffe0';
+                } else {
+                    // Main column colour — varying shades of matrix green
+                    const g = brightness[i];
+                    ctx.fillStyle = `rgba(0, ${g}, 20, 0.85)`;
+                }
+
+                if (y > 0 && y < canvas.height) {
+                    ctx.fillText(ch, x, y);
+                }
+
+                drops[i] += speeds[i];
+
+                // Randomly reset column to top
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i]      = 0;
+                    speeds[i]     = 0.3 + Math.random() * 0.7;
+                    brightness[i] = Math.floor(Math.random() * 100 + 100);
+                }
+            }
+        }
+
+        // ~24 fps — subtle enough not to distract
+        setInterval(draw, 42);
+    })();
+    </script>
+
     <script>
         // Auth modal tab switching
         function switchAuthTab(tab) {

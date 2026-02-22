@@ -2429,7 +2429,7 @@
 
             // Set title and provider
             document.getElementById('featurePopupTitle').textContent = game.name;
-            document.getElementById('featurePopupProvider').textContent = game.provider || 'Royal Games';
+            document.getElementById('featurePopupProvider').textContent = game.provider || 'Matrix Games';
 
             // Set logo icon from bonusType
             const logoEl = document.getElementById('featurePopupLogo');

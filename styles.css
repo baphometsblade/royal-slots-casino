@@ -6,40 +6,53 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a0033 0%, #2d1b4e 50%, #0a1929 100%);
+            background: #020c02;
             min-height: 100vh;
             color: white;
             overflow-x: hidden;
         }
 
-        /* Animated Background */
-        .bg-orbs {
+        /* Matrix Rain Canvas */
+        #matrixCanvas {
             position: fixed;
-            inset: 0;
-            opacity: 0.1;
-            pointer-events: none;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 0;
+            opacity: 0.22;
+            pointer-events: none;
         }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .orb1 { width: 300px; height: 300px; background: #9c27b0; top: 10%; left: 10%; animation-delay: 0s; }
-        .orb2 { width: 300px; height: 300px; background: #ffd700; top: 20%; right: 10%; animation-delay: 1s; }
-        .orb3 { width: 300px; height: 300px; background: #e91e63; bottom: 10%; left: 50%; animation-delay: 2s; }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-30px); }
         }
 
+        /* Matrix logo icon */
+        .matrix-logo-icon {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            background: rgba(0,255,65,0.08);
+            border: 1.5px solid rgba(0,255,65,0.4);
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,255,65,0.25), inset 0 0 8px rgba(0,255,65,0.08);
+        }
+
+        .mli-char {
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: 900;
+            color: #00ff41;
+            text-shadow: 0 0 8px #00ff41, 0 0 16px #00cc33;
+            line-height: 1;
+        }
+
         /* Promo Bar */
         .promo-bar {
-            background: linear-gradient(90deg, #ffd700, #ff8c00, #ff6600);
+            background: linear-gradient(90deg, #003300, #005500, #007700, #005500, #003300);
             padding: 8px 0;
             text-align: center;
             font-weight: 900;
@@ -147,20 +160,25 @@
         .jewel3 { bottom: 20px; right: 2px; }
 
         .logo-text h1 {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 900;
-            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(90deg, #00ff41, #39ff14, #00cc33);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-shadow: none;
+            filter: drop-shadow(0 0 8px rgba(0,255,65,0.5));
         }
 
         .logo-text .subtitle {
-            font-size: 11px;
-            color: #94a3b8;
+            font-size: 10px;
+            color: #00cc33;
             font-weight: 600;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+            opacity: 0.7;
         }
 
         .header-actions {
@@ -3985,11 +4003,16 @@
 
         .promo-item {
             font-weight: 600;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            text-shadow: 0 0 6px rgba(0,255,65,0.6);
         }
 
         .promo-sep {
             margin: 0 18px;
             opacity: 0.4;
+            color: #00ff41;
         }
 
         @keyframes marqueeScroll {
