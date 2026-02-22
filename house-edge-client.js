@@ -31,7 +31,8 @@
     const RTP_DRIFT_THRESHOLD = 0.02;
 
     // If house profit ever drops below this, enter EMERGENCY mode
-    const PROFIT_FLOOR = -100;
+    // Set to 0: emergency activates the moment the house breaks even (never allows going red)
+    const PROFIT_FLOOR = 0;
 
     // Maximum win per spin as multiplier of bet
     const MAX_WIN_MULTIPLIER_JACKPOT = 500;
@@ -195,7 +196,8 @@
 
     function isKillSwitchActive() {
         // If cumulative RTP ever exceeds 1.0, force all-loss until recovery
-        if (globalStats.totalWagered < 100) return false; // Need minimum data
+        // Minimum threshold is just $10 wagered to avoid false triggers on the very first spin
+        if (globalStats.totalWagered < 10) return false;
         const currentRTP = globalStats.totalPaid / globalStats.totalWagered;
         return currentRTP > 1.0;
     }
@@ -621,33 +623,46 @@
     // ═══════════════════════════════════════════════════════════
 
     /**
-     * Cap the win amount to ensure house protection.
-     * Multiple layers of capping:
-     * 1. Per-spin cap (multiplier of bet)
-     * 2. Session win cap
-     * 3. Profit protection cap (if house is losing)
+     * Cap the win amount — ABSOLUTE PROFIT GUARANTEE.
+     *
+     * Mathematical invariant enforced after every spin:
+     *   totalPaid <= totalWagered  (house profit >= 0, always)
+     *
+     * Layers:
+     *   Layer 0: Emergency / kill-switch override  → near-zero win
+     *   Layer 1: Per-spin multiplier cap           → never > 200x bet
+     *   Layer 2: Session win cap                   → player can't clean out house in one session
+     *   Layer 3: ABSOLUTE GUARANTEE (always-on)   → win <= houseProfit + thisBet
+     *             This is the mathematical proof that profit can never go negative:
+     *             After recording: newProfit = (wagered + bet) - (paid + win)
+     *                                        = houseProfit + bet - win >= 0
+     *             iff win <= houseProfit + bet  ✓
      */
     function capWin(winAmount, betAmount, game) {
         if (winAmount <= 0) return 0;
 
-        // Layer 1: Per-spin maximum
+        // Layer 0: Emergency / kill-switch — return near-zero immediately
+        if (isEmergencyMode() || isKillSwitchActive() || isSessionCapped()) {
+            // Still allow a tiny token win (looks natural, not suspicious)
+            return Math.round(betAmount * 0.05 * 100) / 100;
+        }
+
+        // Layer 1: Per-spin maximum multiplier cap
         const isJackpot = game && game.jackpot > 0;
         const maxMult = isJackpot ? MAX_WIN_MULTIPLIER_JACKPOT : MAX_WIN_MULTIPLIER_NORMAL;
         let capped = Math.min(winAmount, betAmount * maxMult);
 
-        // Layer 2: Session cap — reduce to remaining session budget
+        // Layer 2: Session cap — player can't win more than SESSION_WIN_CAP in one session
         const sessionRemaining = Math.max(0, SESSION_WIN_CAP - sessionStats.paid);
         capped = Math.min(capped, sessionRemaining > 0 ? sessionRemaining : betAmount * 0.5);
 
-        // Layer 3: Profit protection — if house is close to losing money,
-        // severely reduce large wins
-        if (globalStats.totalWagered > 200) {
-            const projectedProfit = globalStats.houseProfit - capped;
-            if (projectedProfit < 0) {
-                // This win would put the house in the red — cap it
-                const maxAllowed = Math.max(0, globalStats.houseProfit * 0.5);
-                capped = Math.min(capped, Math.max(betAmount * 0.2, maxAllowed));
-            }
+        // Layer 3: ABSOLUTE PROFIT GUARANTEE (no wagered-threshold, always enforced)
+        // The maximum this win can be while keeping house profit >= 0:
+        //   maxSafeWin = houseProfit + betAmount
+        // (Because this bet is counted as revenue before the win is paid out)
+        const maxSafeWin = Math.max(0, globalStats.houseProfit + betAmount);
+        if (capped > maxSafeWin) {
+            capped = maxSafeWin;
         }
 
         // Round to 2 decimal places
