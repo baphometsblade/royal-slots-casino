@@ -848,6 +848,7 @@
         ];
 
         let currentFilter = 'all';
+        let currentProviderFilter = 'all';
         let balance = DEFAULT_BALANCE;
         let currentGame = null;
         let spinning = false;
@@ -2242,12 +2243,21 @@
             const jackpotBadge = isJackpot
                 ? `<div class="game-jackpot-badge"><svg viewBox="0 0 12 12" fill="currentColor" width="9" height="9" style="margin-right:3px"><path d="M6 1l1 2.5h2.5l-2 1.5.8 2.5L6 6.2l-2.3 1.3.8-2.5-2-1.5H5z"/></svg>JACKPOT</div>`
                 : '';
+            const vol = deriveGameVolatility(game);
+            const volClass = vol === 'Very High' ? 'vol-very-high' : vol === 'High' ? 'vol-high' : vol === 'Medium' ? 'vol-medium' : 'vol-low';
+            const volDots = vol === 'Very High' ? 4 : vol === 'High' ? 3 : vol === 'Medium' ? 2 : 1;
+            const dotsHtml = Array.from({length: 4}, (_, i) =>
+                `<span class="vol-dot${i < volDots ? ' vol-dot-filled' : ''}"></span>`
+            ).join('');
             return `
                 <div class="game-card" onclick="openSlot('${game.id}')">
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
                         ${topTag}
                         ${jackpotBadge}
+                        <div class="game-vol-badge ${volClass}" title="Volatility: ${vol}">
+                            ${dotsHtml}
+                        </div>
                         <div class="game-hover-overlay">
                             <svg class="game-play-svg" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" fill="rgba(23,145,99,0.9)" stroke="rgba(86,210,160,0.6)" stroke-width="2"/><polygon points="19,14 19,34 35,24" fill="#fff"/></svg>
                         </div>
@@ -3524,16 +3534,28 @@
             }
 
             if (winTier) {
-                // Pragmatic Play style full-screen big win overlay
+                // Big win overlay with animated counter
                 winDiv.innerHTML = `
                     <div class="pp-win-overlay ${tierClass}">
                         <div class="pp-win-burst"></div>
                         <div class="pp-win-content">
                             <div class="pp-win-tier">${winTier}</div>
-                            <div class="pp-win-amount">$${amount.toLocaleString()}</div>
+                            <div class="pp-win-amount" id="ppWinAmount">$0</div>
                             <div class="pp-win-multiplier">${multiplier.toFixed(1)}x</div>
                         </div>
                     </div>`;
+                // Animated counter — count up to final amount
+                const amtEl = document.getElementById('ppWinAmount');
+                if (amtEl) {
+                    const dur = Math.min(2500, 800 + multiplier * 30);
+                    const t0 = performance.now();
+                    (function tick(now) {
+                        const p = Math.min((now - t0) / dur, 1);
+                        const eased = 1 - Math.pow(1 - p, 2.5);
+                        amtEl.textContent = '$' + (eased * amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        if (p < 1) requestAnimationFrame(tick);
+                    })(performance.now());
+                }
                 createConfetti();
                 // Trigger screen shake + particle cascade for big wins
                 if (multiplier >= 5) {
@@ -3965,11 +3987,17 @@
                 document.querySelector('.slot-modal-fullscreen')?.appendChild(overlay);
             }
 
+            const accent = game.accentColor || '#fbbf24';
             overlay.innerHTML = `
-                <div class="free-spins-intro fs-summary" style="border-color: ${game.accentColor}">
-                    <div class="fs-intro-title" style="color: ${game.accentColor}">FREE SPINS COMPLETE!</div>
-                    <div class="fs-summary-total">$${totalWin.toLocaleString()}</div>
-                    <div class="fs-intro-desc">Total bonus winnings added to your balance</div>
+                <div class="fs-summary-card" style="--fs-accent: ${accent}">
+                    <div class="fs-summary-rays"></div>
+                    <div class="fs-summary-label">FREE SPINS COMPLETE!</div>
+                    <div class="fs-summary-subtitle">Bonus Round Winnings</div>
+                    <div class="fs-summary-amount" id="fsSummaryAmount">$0.00</div>
+                    <div class="fs-summary-subtext">${totalWin > 0 ? 'Added to your balance' : 'Better luck next time!'}</div>
+                    <button class="fs-summary-close-btn" onclick="document.getElementById('freeSpinsOverlay').classList.remove('active')">
+                        COLLECT &amp; CONTINUE
+                    </button>
                 </div>
             `;
             overlay.classList.add('active');
@@ -3977,11 +4005,25 @@
             if (totalWin > 0) {
                 createConfetti();
                 playSound('bigwin');
+                // Animated counter
+                const el = document.getElementById('fsSummaryAmount');
+                let start = 0;
+                const duration = 2000;
+                const startTime = performance.now();
+                function tick(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                    const val = eased * totalWin;
+                    if (el) el.textContent = '$' + val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    if (progress < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
             }
 
             setTimeout(() => {
                 overlay.classList.remove('active');
-            }, 3500);
+            }, 5000);
         }
 
         // showBonusEffect() and showPageTransition() moved to animations.js
@@ -4146,12 +4188,25 @@
         }
 
         function getFilteredGames(filter) {
+            let list;
             switch (filter) {
-                case 'hot':      return games.filter(g => g.hot);
-                case 'new':      return games.filter(g => g.tag === 'NEW');
-                case 'jackpot':  return games.filter(g => g.tag === 'JACKPOT' || g.tag === 'MEGA');
-                default:         return games;
+                case 'hot':      list = games.filter(g => g.hot); break;
+                case 'new':      list = games.filter(g => g.tag === 'NEW'); break;
+                case 'jackpot':  list = games.filter(g => g.tag === 'JACKPOT' || g.tag === 'MEGA'); break;
+                default:         list = games;
             }
+            if (currentProviderFilter !== 'all') {
+                list = list.filter(g => g.provider === currentProviderFilter);
+            }
+            return list;
+        }
+
+        function setProviderFilter(provider) {
+            currentProviderFilter = provider;
+            document.querySelectorAll('.provider-chip').forEach(chip => {
+                chip.classList.toggle('provider-chip-active', chip.dataset.provider === provider);
+            });
+            renderFilteredGames();
         }
 
         function renderFilteredGames() {

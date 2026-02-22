@@ -486,6 +486,32 @@
             text-overflow: ellipsis;
         }
 
+        /* Volatility badge — bottom-left of thumbnail */
+        .game-vol-badge {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            background: rgba(0,0,0,0.6);
+            border-radius: 4px;
+            padding: 3px 5px;
+            backdrop-filter: blur(4px);
+        }
+
+        .vol-dot {
+            width: 5px;
+            height: 9px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .vol-low .vol-dot-filled    { background: #4ade80; }
+        .vol-medium .vol-dot-filled { background: #fbbf24; }
+        .vol-high .vol-dot-filled   { background: #f97316; }
+        .vol-very-high .vol-dot-filled { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.7); }
+
         .game-hover-overlay {
             position: absolute;
             inset: 0;
@@ -2724,18 +2750,114 @@
             animation: fsTapBlink 1.2s ease-in-out infinite;
         }
 
-        .fs-summary {
-            border-color: #10b981 !important;
-            box-shadow: 0 0 60px rgba(16, 185, 129, 0.4), 0 0 120px rgba(16, 185, 129, 0.15) !important;
+        /* ═══ Free Spins Summary Card ═══ */
+        @keyframes fsSummaryCardIn {
+            0%   { transform: scale(0.5) translateY(60px); opacity: 0; }
+            65%  { transform: scale(1.05) translateY(-8px); opacity: 1; }
+            82%  { transform: scale(0.98) translateY(3px); }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        @keyframes fsSummaryRays {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes fsSummaryAmount {
+            0%   { transform: scale(0.8); opacity: 0.5; }
+            50%  { transform: scale(1.08); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
-        .fs-summary-total {
-            font-size: 64px;
+        .fs-summary-card {
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            background: linear-gradient(160deg, rgba(10,8,30,0.97), rgba(5,10,20,0.99));
+            border: 2px solid var(--fs-accent, #fbbf24);
+            border-radius: 20px;
+            padding: 36px 40px 32px;
+            width: min(420px, 90vw);
+            box-shadow:
+                0 0 0 1px rgba(0,0,0,0.5),
+                0 0 50px rgba(251,191,36,0.25),
+                0 0 120px rgba(251,191,36,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+            animation: fsSummaryCardIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        .fs-summary-rays {
+            position: absolute;
+            inset: -60px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg, rgba(251,191,36,0.06) 20deg, transparent 40deg,
+                transparent 60deg, rgba(251,191,36,0.04) 80deg, transparent 100deg,
+                transparent 120deg, rgba(251,191,36,0.06) 140deg, transparent 160deg,
+                transparent 180deg, rgba(251,191,36,0.04) 200deg, transparent 220deg,
+                transparent 240deg, rgba(251,191,36,0.06) 260deg, transparent 280deg,
+                transparent 300deg, rgba(251,191,36,0.04) 320deg, transparent 340deg,
+                transparent 360deg
+            );
+            animation: fsSummaryRays 12s linear infinite;
+            pointer-events: none;
+        }
+
+        .fs-summary-label {
+            position: relative;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--fs-accent, #fbbf24);
+            margin-bottom: 4px;
+        }
+
+        .fs-summary-subtitle {
+            position: relative;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .fs-summary-amount {
+            position: relative;
+            font-size: clamp(48px, 10vw, 72px);
             font-weight: 900;
-            color: #10b981;
-            text-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
-            margin: 16px 0;
-            animation: fsCountPulse 1s ease-in-out infinite;
+            color: #fff;
+            text-shadow:
+                0 0 20px var(--fs-accent, #fbbf24),
+                0 0 50px rgba(251,191,36,0.3);
+            line-height: 1;
+            margin-bottom: 12px;
+            animation: fsSummaryAmount 0.5s ease-out 0.4s both;
+        }
+
+        .fs-summary-subtext {
+            position: relative;
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 28px;
+        }
+
+        .fs-summary-close-btn {
+            position: relative;
+            background: linear-gradient(135deg, var(--fs-accent, #fbbf24), #f59e0b);
+            color: #000;
+            border: none;
+            border-radius: 999px;
+            padding: 13px 36px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 4px 20px rgba(251,191,36,0.4);
+        }
+
+        .fs-summary-close-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 6px 30px rgba(251,191,36,0.55);
         }
 
         /* ═══ Free Spins HUD ═══ */
@@ -3906,6 +4028,46 @@
 
         .filter-tab-active .filter-count {
             background: rgba(0,0,0,0.2);
+        }
+
+        /* Provider filter chips */
+        .provider-filter-row {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .provider-chip {
+            padding: 5px 13px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: var(--rg-text-muted, #8a8a8a);
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .provider-chip:hover {
+            border-color: rgba(255,255,255,0.25);
+            color: var(--rg-text-100, #e2e8f0);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .provider-chip-active {
+            background: rgba(251,191,36,0.15);
+            border-color: rgba(251,191,36,0.5);
+            color: #fbbf24;
+        }
+
+        .provider-chip-active:hover {
+            background: rgba(251,191,36,0.2);
+            border-color: rgba(251,191,36,0.7);
+            color: #fde68a;
         }
 
         .games-empty-state {
