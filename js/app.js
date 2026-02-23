@@ -150,6 +150,7 @@
 
             // New systems
             updateXPDisplay();
+            renderVipBadge();
             startWinTicker();
             updateAuthButton();
             await syncServerSession();
@@ -162,6 +163,9 @@
             if (!dailyBonusState.claimedToday && !suppressBonus) {
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
+
+            // Promotional engagement engine
+            if (typeof initPromoEngine === 'function') initPromoEngine();
         }
 
 

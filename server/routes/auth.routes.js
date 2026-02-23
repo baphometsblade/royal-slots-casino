@@ -83,6 +83,15 @@ router.post('/login', (req, res) => {
 
         const user = db.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, username]);
 
+        // Check account lockout BEFORE bcrypt (saves CPU and prevents timing leaks)
+        if (user) {
+            const lockRecord = failedLogins.get(user.id);
+            if (lockRecord && lockRecord.lockedUntil > Date.now()) {
+                const minutesLeft = Math.ceil((lockRecord.lockedUntil - Date.now()) / 60000);
+                return res.status(429).json({ error: `Account temporarily locked. Try again in ${minutesLeft} minutes.` });
+            }
+        }
+
         // Always run bcrypt comparison (constant-time — prevents user enumeration via timing)
         const hashToCompare = user ? user.password_hash : DUMMY_HASH;
         const passwordValid = bcrypt.compareSync(password, hashToCompare);
@@ -103,13 +112,6 @@ router.post('/login', (req, res) => {
 
         if (user.is_banned) {
             return res.status(403).json({ error: 'Account has been banned' });
-        }
-
-        // Check account lockout
-        const lockRecord = failedLogins.get(user.id);
-        if (lockRecord && lockRecord.lockedUntil > Date.now()) {
-            const minutesLeft = Math.ceil((lockRecord.lockedUntil - Date.now()) / 60000);
-            return res.status(429).json({ error: `Account temporarily locked. Try again in ${minutesLeft} minutes.` });
         }
 
         // Successful login — clear failed attempts

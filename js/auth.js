@@ -200,6 +200,7 @@
                 updateAuthButton();
                 hideAuthModal();
                 showToast(`Welcome back, ${response.user.username}!`, 'success');
+                if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
                 return;
             } catch (error) {
                 serverError = error;
@@ -213,6 +214,7 @@
             updateAuthButton();
             hideAuthModal();
             showToast(`Welcome back, ${user.username}!`, 'success');
+            if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
         }
 
 
@@ -231,6 +233,7 @@
                 updateAuthButton();
                 hideAuthModal();
                 showToast(`Welcome, ${response.user.username}! Your account has been created.`, 'success');
+                if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
                 return;
             } catch (error) {
                 serverError = error;
@@ -244,6 +247,7 @@
             updateAuthButton();
             hideAuthModal();
             showToast(`Welcome, ${username}! Your account has been created.`, 'success');
+            if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
         }
 
 
@@ -284,8 +288,47 @@
             // Clear form fields and errors on close
             const errEl = document.getElementById('authError');
             if (errEl) errEl.textContent = '';
-            ['loginUsername', 'loginPassword', 'regUsername', 'regEmail', 'regPassword', 'regConfirm'].forEach(id => {
+            ['loginUsername', 'loginPassword', 'regUsername', 'regEmail', 'regPassword', 'regConfirm', 'forgotEmail'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
+            // Reset to login form
+            showForgotPassword(false);
+        }
+
+
+        function showForgotPassword(show) {
+            const loginForm = document.getElementById('loginForm');
+            const forgotForm = document.getElementById('forgotPasswordForm');
+            if (show === false || show === undefined && forgotForm && forgotForm.style.display !== 'none') {
+                // Show login, hide forgot
+                if (loginForm) loginForm.style.display = '';
+                if (forgotForm) forgotForm.style.display = 'none';
+            } else {
+                // Show forgot, hide login
+                if (loginForm) loginForm.style.display = 'none';
+                if (forgotForm) forgotForm.style.display = '';
+            }
+        }
+
+
+        async function handleForgotPassword() {
+            const email = (document.getElementById('forgotEmail')?.value || '').trim();
+            const errEl = document.getElementById('authError');
+            if (!email) {
+                if (errEl) errEl.textContent = 'Please enter your email address.';
+                return;
+            }
+            try {
+                await apiRequest('/api/user/forgot-password', {
+                    method: 'POST',
+                    body: { email }
+                });
+                showToast('If an account with that email exists, a reset link has been sent.', 'success');
+                showForgotPassword(false);
+            } catch (err) {
+                // Always show generic success to prevent email enumeration
+                showToast('If an account with that email exists, a reset link has been sent.', 'success');
+                showForgotPassword(false);
+            }
         }

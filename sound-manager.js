@@ -35,44 +35,116 @@
     // ── Provider SFX Themes ───────────────────────────────────────────────
     var PROVIDER_SFX_THEMES = {
         novaspin: {
-            spin:   { waveType: 'sine',     freqs: [800, 1200, 1600],          dur: 0.10, spacing: 0.035 },
-            win:    { waveType: 'sine',     freqs: [880, 1108, 1318],          dur: 0.18, spacing: 0.06  },
-            bigwin: { waveType: 'sine',     freqs: [880, 1108, 1318, 1760],    dur: 0.35, spacing: 0.055 },
+            // Sci-fi electronic — sawtooth/square waves, high frequencies, rapid arpeggios
+            spin:     { waveType: 'sine',     freqs: [800, 1200, 1600],              dur: 0.10, spacing: 0.035 },
+            win:      { waveType: 'sine',     freqs: [880, 1108, 1318],              dur: 0.18, spacing: 0.06  },
+            bigwin:   { waveType: 'sine',     freqs: [880, 1108, 1318, 1760],        dur: 0.35, spacing: 0.055 },
+            ambient:  { waveType: 'sawtooth', freq: 110,  filterFreq: 800,  filterQ: 5, gain: 0.08, type: 'drone' },
+            scatter:  { waveType: 'square',   freqs: [1600, 2000, 2400, 1800],       dur: 0.12, spacing: 0.03  },
+            megawin:  { waveType: 'sawtooth', freqs: [880, 1108, 1318, 1760, 2200, 2640], dur: 0.30, spacing: 0.045 },
+            jackpot:  { waveType: 'square',   freqs: [880, 1108, 1318, 1760, 2200, 2640, 3300], dur: 0.40, spacing: 0.05 },
+            nearmiss: { waveType: 'sawtooth', freqs: [440, 415],                     dur: 0.35 },
+            hover:    { waveType: 'square',   freq: 2400,                            dur: 0.025 },
+            count:    { waveType: 'square',   freq: 1800,                            dur: 0.02  },
+            reelstop: { waveType: 'sawtooth', freq: 180,                             dur: 0.06  },
         },
         celestial: {
-            spin:   { waveType: 'sine',     freqs: [523, 659, 784],            dur: 0.18, spacing: 0.07  },
-            win:    { waveType: 'sine',     freqs: [523, 659, 784, 1047],      dur: 0.38, spacing: 0.09  },
-            bigwin: { waveType: 'sine',     freqs: [523, 659, 784, 988, 1047], dur: 0.55, spacing: 0.09  },
+            // Heavenly/orchestral — sine/triangle waves, harmonic intervals, slow arpeggios
+            spin:     { waveType: 'sine',     freqs: [523, 659, 784],                dur: 0.18, spacing: 0.07  },
+            win:      { waveType: 'sine',     freqs: [523, 659, 784, 1047],          dur: 0.38, spacing: 0.09  },
+            bigwin:   { waveType: 'sine',     freqs: [523, 659, 784, 988, 1047],     dur: 0.55, spacing: 0.09  },
+            ambient:  { waveType: 'sine',     freq: 174,  filterFreq: 600,  filterQ: 2, gain: 0.06, type: 'drone' },
+            scatter:  { waveType: 'sine',     freqs: [1047, 1318, 1568, 2093],       dur: 0.25, spacing: 0.10  },
+            megawin:  { waveType: 'sine',     freqs: [523, 659, 784, 988, 1047, 1318, 1568], dur: 0.50, spacing: 0.08 },
+            jackpot:  { waveType: 'sine',     freqs: [523, 659, 784, 988, 1047, 1318, 1568, 2093], dur: 0.60, spacing: 0.09 },
+            nearmiss: { waveType: 'triangle', freqs: [392, 370],                     dur: 0.50 },
+            hover:    { waveType: 'sine',     freq: 1568,                            dur: 0.04  },
+            count:    { waveType: 'sine',     freq: 1047,                            dur: 0.03  },
+            reelstop: { waveType: 'triangle', freq: 220,                             dur: 0.08  },
         },
         ironreel: {
-            spin:   { waveType: 'triangle', freqs: [220, 277, 330],            dur: 0.18, spacing: 0.06  },
-            win:    { waveType: 'triangle', freqs: [220, 330, 440],            dur: 0.35, spacing: 0.09  },
-            bigwin: { waveType: 'triangle', freqs: [110, 165, 220, 330],       dur: 0.55, spacing: 0.09  },
+            // Industrial/earthy — square waves, low frequencies, staccato
+            spin:     { waveType: 'triangle', freqs: [220, 277, 330],                dur: 0.18, spacing: 0.06  },
+            win:      { waveType: 'triangle', freqs: [220, 330, 440],                dur: 0.35, spacing: 0.09  },
+            bigwin:   { waveType: 'triangle', freqs: [110, 165, 220, 330],           dur: 0.55, spacing: 0.09  },
+            ambient:  { waveType: 'square',   freq: 55,   filterFreq: 300,  filterQ: 8, gain: 0.05, type: 'drone' },
+            scatter:  { waveType: 'square',   freqs: [330, 440, 330, 550],           dur: 0.10, spacing: 0.05  },
+            megawin:  { waveType: 'square',   freqs: [110, 165, 220, 330, 440, 550], dur: 0.45, spacing: 0.07  },
+            jackpot:  { waveType: 'square',   freqs: [110, 165, 220, 330, 440, 550, 660], dur: 0.55, spacing: 0.08 },
+            nearmiss: { waveType: 'square',   freqs: [165, 155],                     dur: 0.30 },
+            hover:    { waveType: 'square',   freq: 660,                             dur: 0.02  },
+            count:    { waveType: 'square',   freq: 440,                             dur: 0.02  },
+            reelstop: { waveType: 'square',   freq: 80,                              dur: 0.07  },
         },
         goldenedge: {
-            spin:   { waveType: 'sine',     freqs: [1046, 1318, 1568],          dur: 0.08, spacing: 0.04  },
-            win:    { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093],    dur: 0.22, spacing: 0.06  },
-            bigwin: { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093, 2637], dur: 0.40, spacing: 0.055 },
+            // Luxe/elegant — sine waves, warm frequencies, smooth legato
+            spin:     { waveType: 'sine',     freqs: [1046, 1318, 1568],             dur: 0.08, spacing: 0.04  },
+            win:      { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093],       dur: 0.22, spacing: 0.06  },
+            bigwin:   { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093, 2637], dur: 0.40, spacing: 0.055 },
+            ambient:  { waveType: 'sine',     freq: 220,  filterFreq: 1200, filterQ: 1, gain: 0.06, type: 'drone' },
+            scatter:  { waveType: 'sine',     freqs: [1568, 2093, 2637, 3136],       dur: 0.20, spacing: 0.08  },
+            megawin:  { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093, 2637, 3136], dur: 0.45, spacing: 0.06 },
+            jackpot:  { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093, 2637, 3136, 3951], dur: 0.55, spacing: 0.065 },
+            nearmiss: { waveType: 'sine',     freqs: [523, 494],                     dur: 0.45 },
+            hover:    { waveType: 'sine',     freq: 2093,                            dur: 0.035 },
+            count:    { waveType: 'sine',     freq: 1568,                            dur: 0.025 },
+            reelstop: { waveType: 'sine',     freq: 262,                             dur: 0.09  },
         },
         vaultx: {
-            spin:   { waveType: 'sawtooth', freqs: [110, 165],                 dur: 0.14, spacing: 0.07  },
-            win:    { waveType: 'sawtooth', freqs: [165, 220, 277],            dur: 0.28, spacing: 0.07  },
-            bigwin: { waveType: 'sawtooth', freqs: [110, 165, 220, 277],       dur: 0.45, spacing: 0.07  },
+            // Techy/tense — sawtooth waves, minor intervals, staccato clicks
+            spin:     { waveType: 'sawtooth', freqs: [110, 165],                     dur: 0.14, spacing: 0.07  },
+            win:      { waveType: 'sawtooth', freqs: [165, 220, 277],                dur: 0.28, spacing: 0.07  },
+            bigwin:   { waveType: 'sawtooth', freqs: [110, 165, 220, 277],           dur: 0.45, spacing: 0.07  },
+            ambient:  { waveType: 'sawtooth', freq: 73,   filterFreq: 400,  filterQ: 10, gain: 0.04, type: 'drone' },
+            scatter:  { waveType: 'sawtooth', freqs: [277, 330, 415, 277],           dur: 0.10, spacing: 0.04  },
+            megawin:  { waveType: 'sawtooth', freqs: [110, 165, 220, 277, 330, 415], dur: 0.38, spacing: 0.06  },
+            jackpot:  { waveType: 'sawtooth', freqs: [110, 165, 220, 277, 330, 415, 554], dur: 0.50, spacing: 0.065 },
+            nearmiss: { waveType: 'sawtooth', freqs: [220, 208],                     dur: 0.30 },
+            hover:    { waveType: 'sawtooth', freq: 880,                             dur: 0.02  },
+            count:    { waveType: 'sawtooth', freq: 554,                             dur: 0.018 },
+            reelstop: { waveType: 'sawtooth', freq: 95,                              dur: 0.05  },
         },
         solstice: {
-            spin:   { waveType: 'sine',     freqs: [293, 329, 392],            dur: 0.22, spacing: 0.09  },
-            win:    { waveType: 'sine',     freqs: [293, 349, 440, 587],       dur: 0.45, spacing: 0.11  },
-            bigwin: { waveType: 'sine',     freqs: [220, 293, 349, 440, 587],  dur: 0.65, spacing: 0.11  },
+            // Eastern/mystical — triangle waves, pentatonic scale, medium tempo
+            spin:     { waveType: 'sine',     freqs: [293, 329, 392],                dur: 0.22, spacing: 0.09  },
+            win:      { waveType: 'sine',     freqs: [293, 349, 440, 587],           dur: 0.45, spacing: 0.11  },
+            bigwin:   { waveType: 'sine',     freqs: [220, 293, 349, 440, 587],      dur: 0.65, spacing: 0.11  },
+            ambient:  { waveType: 'triangle', freq: 146,  filterFreq: 500,  filterQ: 3, gain: 0.06, type: 'drone' },
+            scatter:  { waveType: 'triangle', freqs: [587, 659, 784, 880],           dur: 0.18, spacing: 0.09  },
+            megawin:  { waveType: 'triangle', freqs: [293, 349, 440, 587, 659, 880], dur: 0.55, spacing: 0.09  },
+            jackpot:  { waveType: 'triangle', freqs: [220, 293, 349, 440, 587, 659, 880], dur: 0.70, spacing: 0.10 },
+            nearmiss: { waveType: 'triangle', freqs: [349, 330],                     dur: 0.40 },
+            hover:    { waveType: 'triangle', freq: 880,                             dur: 0.035 },
+            count:    { waveType: 'triangle', freq: 659,                             dur: 0.025 },
+            reelstop: { waveType: 'triangle', freq: 165,                             dur: 0.08  },
         },
         phantomworks: {
-            spin:   { waveType: 'square',   freqs: [233, 277],                 dur: 0.16, spacing: 0.08  },
-            win:    { waveType: 'square',   freqs: [233, 277, 311],            dur: 0.32, spacing: 0.08  },
-            bigwin: { waveType: 'square',   freqs: [185, 233, 277, 311],       dur: 0.50, spacing: 0.08  },
+            // Gothic/eerie — sawtooth waves, dissonant intervals, slow with reverb
+            spin:     { waveType: 'square',   freqs: [233, 277],                     dur: 0.16, spacing: 0.08  },
+            win:      { waveType: 'square',   freqs: [233, 277, 311],                dur: 0.32, spacing: 0.08  },
+            bigwin:   { waveType: 'square',   freqs: [185, 233, 277, 311],           dur: 0.50, spacing: 0.08  },
+            ambient:  { waveType: 'sawtooth', freq: 82,   filterFreq: 350,  filterQ: 7, gain: 0.05, type: 'drone' },
+            scatter:  { waveType: 'sawtooth', freqs: [311, 370, 415, 466],           dur: 0.22, spacing: 0.10  },
+            megawin:  { waveType: 'sawtooth', freqs: [185, 233, 277, 311, 370, 466], dur: 0.55, spacing: 0.09  },
+            jackpot:  { waveType: 'sawtooth', freqs: [185, 233, 277, 311, 370, 466, 554], dur: 0.65, spacing: 0.095 },
+            nearmiss: { waveType: 'sawtooth', freqs: [277, 262],                     dur: 0.50 },
+            hover:    { waveType: 'square',   freq: 622,                             dur: 0.03  },
+            count:    { waveType: 'square',   freq: 466,                             dur: 0.025 },
+            reelstop: { waveType: 'sawtooth', freq: 100,                             dur: 0.10  },
         },
         arcadeforge: {
-            spin:   { waveType: 'square',   freqs: [440, 660],                 dur: 0.07, spacing: 0.04  },
-            win:    { waveType: 'square',   freqs: [440, 554, 660, 880],       dur: 0.16, spacing: 0.045 },
-            bigwin: { waveType: 'square',   freqs: [440, 554, 660, 880, 1108], dur: 0.28, spacing: 0.045 },
+            // Retro 8-bit — square waves, classic game frequencies, fast bleeps
+            spin:     { waveType: 'square',   freqs: [440, 660],                     dur: 0.07, spacing: 0.04  },
+            win:      { waveType: 'square',   freqs: [440, 554, 660, 880],           dur: 0.16, spacing: 0.045 },
+            bigwin:   { waveType: 'square',   freqs: [440, 554, 660, 880, 1108],     dur: 0.28, spacing: 0.045 },
+            ambient:  { waveType: 'square',   freq: 110,  filterFreq: 500,  filterQ: 4, gain: 0.04, type: 'drone' },
+            scatter:  { waveType: 'square',   freqs: [1320, 1760, 2200, 1320],       dur: 0.06, spacing: 0.03  },
+            megawin:  { waveType: 'square',   freqs: [440, 554, 660, 880, 1108, 1320], dur: 0.22, spacing: 0.04 },
+            jackpot:  { waveType: 'square',   freqs: [440, 554, 660, 880, 1108, 1320, 1760], dur: 0.30, spacing: 0.04 },
+            nearmiss: { waveType: 'square',   freqs: [330, 311],                     dur: 0.20 },
+            hover:    { waveType: 'square',   freq: 1760,                            dur: 0.02  },
+            count:    { waveType: 'square',   freq: 1320,                            dur: 0.015 },
+            reelstop: { waveType: 'square',   freq: 150,                             dur: 0.04  },
         },
     };
 
@@ -307,6 +379,354 @@
         localStorage.setItem('casinoSoundVolume', soundVolume);
     }
 
+    // ── Ambient Drone State ─────────────────────────────────────────────
+    var ambientNodes = null; // { osc, filter, gain, ctx } — active drone chain
+    var ambientFadeTimer = null;
+
+    // ── Dynamic Music Layer State ─────────────────────────────────────
+    var dynamicLayers = [];       // array of { osc, filter, gain } per active layer
+    var currentLayerIndex = -1;   // currently active layer (-1 = none)
+
+    // ── Helper: resolve provider key ──────────────────────────────────
+    function resolveProviderKey(providerKey) {
+        if (providerKey && PROVIDER_SFX_THEMES[providerKey]) return providerKey;
+        // Fallback: try to derive from currentGame via getGameChromeStyle
+        if (typeof currentGame !== 'undefined' && currentGame && typeof getGameChromeStyle === 'function') {
+            var key = getGameChromeStyle(currentGame);
+            if (PROVIDER_SFX_THEMES[key]) return key;
+        }
+        return '';
+    }
+
+    // ── Helper: safe appSettings access ───────────────────────────────
+    function getAppSettings() {
+        return (typeof appSettings !== 'undefined' && appSettings) ? appSettings : {};
+    }
+
+    // ── Start Ambient Drone ───────────────────────────────────────────
+    function startAmbient(providerKey) {
+        var settings = getAppSettings();
+        if (settings.ambientMusic === false) return;
+        if (!soundEnabled) return;
+
+        // Stop any existing ambient first
+        stopAmbient();
+
+        var key = resolveProviderKey(providerKey);
+        if (!key) return;
+        var theme = PROVIDER_SFX_THEMES[key];
+        if (!theme || !theme.ambient) return;
+        var profile = theme.ambient;
+
+        try {
+            var ctx = getAudioContext();
+            var osc = ctx.createOscillator();
+            var filter = ctx.createBiquadFilter();
+            var gainNode = ctx.createGain();
+
+            osc.type = profile.waveType || 'sine';
+            osc.frequency.value = profile.freq || 110;
+
+            filter.type = 'lowpass';
+            filter.frequency.value = profile.filterFreq || 600;
+            filter.Q.value = profile.filterQ || 3;
+
+            var targetGain = (profile.gain || SOUND_AMBIENT_VOLUME) * soundVolume;
+            gainNode.gain.setValueAtTime(0, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(targetGain, ctx.currentTime + 1.5);
+
+            osc.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+
+            ambientNodes = { osc: osc, filter: filter, gain: gainNode, ctx: ctx };
+        } catch (e) { /* ignore audio errors */ }
+    }
+
+    // ── Stop Ambient Drone ────────────────────────────────────────────
+    function stopAmbient() {
+        if (ambientFadeTimer) { clearTimeout(ambientFadeTimer); ambientFadeTimer = null; }
+        if (!ambientNodes) return;
+        try {
+            var ctx = ambientNodes.ctx;
+            var g = ambientNodes.gain;
+            var o = ambientNodes.osc;
+            g.gain.setValueAtTime(g.gain.value, ctx.currentTime);
+            g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
+            ambientFadeTimer = setTimeout(function () {
+                try { o.stop(); } catch (e) { /* already stopped */ }
+                ambientNodes = null;
+                ambientFadeTimer = null;
+            }, 900);
+        } catch (e) { ambientNodes = null; }
+    }
+
+    // ── Dynamic Music Layer System ────────────────────────────────────
+    // Layers: 0 = ambient only, 1 = +rhythmic pulse, 2 = +excitement,
+    //         3 = bonus theme, 4 = full fanfare
+    var LAYER_CONFIGS = [
+        // Layer 0: ambient drone only (handled by startAmbient)
+        null,
+        // Layer 1: rhythmic low pulse
+        { waveType: 'triangle', freq: 110, filterFreq: 300, filterQ: 6, gain: 0.06, lfoFreq: 2.0  },
+        // Layer 2: excitement — mid-range warble
+        { waveType: 'sawtooth', freq: 220, filterFreq: 800, filterQ: 4, gain: 0.05, lfoFreq: 4.0  },
+        // Layer 3: bonus theme — bright accent
+        { waveType: 'sine',     freq: 440, filterFreq: 1500, filterQ: 2, gain: 0.07, lfoFreq: 6.0  },
+        // Layer 4: full fanfare — rich harmonic
+        { waveType: 'square',   freq: 330, filterFreq: 2000, filterQ: 3, gain: 0.06, lfoFreq: 8.0  },
+    ];
+
+    function playDynamicLayer(layerIndex) {
+        var settings = getAppSettings();
+        if (settings.ambientMusic === false) return;
+        if (!soundEnabled) return;
+        if (layerIndex < 0 || layerIndex > 4) return;
+        if (layerIndex === currentLayerIndex) return;
+
+        // Fade out layers above the target index
+        while (dynamicLayers.length > layerIndex) {
+            var removed = dynamicLayers.pop();
+            if (removed) {
+                try {
+                    removed.gain.gain.setValueAtTime(removed.gain.gain.value, removed.ctx.currentTime);
+                    removed.gain.gain.linearRampToValueAtTime(0, removed.ctx.currentTime + 0.5);
+                    (function (o) {
+                        setTimeout(function () { try { o.stop(); } catch (e) {} }, 600);
+                    })(removed.osc);
+                } catch (e) { /* ignore */ }
+            }
+        }
+
+        // Add layers up to the target index
+        try {
+            var ctx = getAudioContext();
+            for (var i = dynamicLayers.length; i <= layerIndex; i++) {
+                var cfg = LAYER_CONFIGS[i];
+                if (!cfg) { dynamicLayers.push(null); continue; }
+
+                var osc = ctx.createOscillator();
+                var filter = ctx.createBiquadFilter();
+                var gainNode = ctx.createGain();
+                var lfo = ctx.createOscillator();
+                var lfoGain = ctx.createGain();
+
+                osc.type = cfg.waveType;
+                osc.frequency.value = cfg.freq;
+
+                filter.type = 'lowpass';
+                filter.frequency.value = cfg.filterFreq;
+                filter.Q.value = cfg.filterQ;
+
+                var targetGain = (cfg.gain || 0.05) * soundVolume;
+                gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(targetGain, ctx.currentTime + 0.6);
+
+                // LFO for rhythmic modulation
+                lfo.type = 'sine';
+                lfo.frequency.value = cfg.lfoFreq || 2.0;
+                lfoGain.gain.value = targetGain * 0.5;
+                lfo.connect(lfoGain);
+                lfoGain.connect(gainNode.gain);
+
+                osc.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                lfo.start(ctx.currentTime);
+
+                dynamicLayers.push({ osc: osc, filter: filter, gain: gainNode, lfo: lfo, lfoGain: lfoGain, ctx: ctx });
+            }
+        } catch (e) { /* ignore audio errors */ }
+
+        currentLayerIndex = layerIndex;
+    }
+
+    // ── Play Sound Event by Name ──────────────────────────────────────
+    function playSoundEvent(eventName, providerKey) {
+        if (!soundEnabled) return;
+        var settings = getAppSettings();
+
+        // Gate by settings category
+        var winEvents = { scatter: 1, megawin: 1, jackpot: 1, nearmiss: 1 };
+        var uiEvents  = { hover: 1, count: 1, reelstop: 1 };
+
+        if (winEvents[eventName] && settings.winSounds === false) return;
+        if (uiEvents[eventName] && settings.uiSounds === false) return;
+
+        var key = resolveProviderKey(providerKey);
+        var theme = key ? PROVIDER_SFX_THEMES[key] : null;
+        var profile = theme ? theme[eventName] : null;
+
+        if (!profile) {
+            // Fallback to generic playSound for recognized event names
+            if (typeof playSound === 'function') playSound(eventName);
+            return;
+        }
+
+        try {
+            var ctx = getAudioContext();
+            var now = ctx.currentTime;
+
+            if (profile.freqs) {
+                // Multi-note arpeggio/sequence
+                profile.freqs.forEach(function (freq, i) {
+                    var osc  = ctx.createOscillator();
+                    var gain = ctx.createGain();
+                    osc.type = profile.waveType || 'sine';
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = freq;
+
+                    var volume = 0.18 * soundVolume;
+                    var t = now + i * (profile.spacing || 0.06);
+                    gain.gain.setValueAtTime(volume, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, t + (profile.dur || 0.2));
+                    osc.start(t);
+                    osc.stop(t + (profile.dur || 0.2) + 0.02);
+                });
+            } else if (profile.freq) {
+                // Single note
+                var osc  = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = profile.waveType || 'sine';
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = profile.freq;
+
+                var volume = 0.15 * soundVolume;
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + (profile.dur || 0.05));
+                osc.start(now);
+                osc.stop(now + (profile.dur || 0.05) + 0.01);
+            }
+        } catch (e) { /* ignore audio errors */ }
+    }
+
+    // ── Near-Miss Tension Sound ───────────────────────────────────────
+    function playNearMiss(providerKey) {
+        if (!soundEnabled) return;
+        var settings = getAppSettings();
+        if (settings.winSounds === false) return;
+
+        var key = resolveProviderKey(providerKey);
+        var theme = key ? PROVIDER_SFX_THEMES[key] : null;
+        var profile = (theme && theme.nearmiss) ? theme.nearmiss : { waveType: 'sine', freqs: [440, 415], dur: 0.35 };
+
+        try {
+            var ctx = getAudioContext();
+            var now = ctx.currentTime;
+
+            if (profile.freqs && profile.freqs.length >= 2) {
+                // Two-note dissonant slide for tension
+                var osc  = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = profile.waveType || 'sine';
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                var dur = profile.dur || 0.35;
+                var volume = 0.12 * soundVolume;
+                osc.frequency.setValueAtTime(profile.freqs[0], now);
+                osc.frequency.linearRampToValueAtTime(profile.freqs[1], now + dur);
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + dur);
+                osc.start(now);
+                osc.stop(now + dur + 0.02);
+            }
+        } catch (e) { /* ignore audio errors */ }
+    }
+
+    // ── Balance Counter Tick ──────────────────────────────────────────
+    function playCounterTick(speed) {
+        if (!soundEnabled) return;
+        var settings = getAppSettings();
+        if (settings.uiSounds === false) return;
+
+        try {
+            var ctx = getAudioContext();
+            var now = ctx.currentTime;
+
+            // Speed factor: 0-1, higher = shorter/higher tick
+            var s = Math.max(0, Math.min(1, speed || 0.5));
+            var freq = 800 + s * 1200;  // 800-2000 Hz range
+            var dur  = 0.03 - s * 0.015; // 0.03 - 0.015s range
+
+            var osc  = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'square';
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = freq;
+
+            var volume = 0.08 * soundVolume;
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + dur);
+            osc.start(now);
+            osc.stop(now + dur + 0.005);
+        } catch (e) { /* ignore audio errors */ }
+    }
+
+    // ── Button Hover Micro-Sound ──────────────────────────────────────
+    function playHoverSound() {
+        if (!soundEnabled) return;
+        var settings = getAppSettings();
+        if (settings.uiSounds === false) return;
+
+        try {
+            var ctx = getAudioContext();
+            var now = ctx.currentTime;
+
+            var osc  = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 1800;
+
+            var volume = 0.06 * soundVolume;
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.025);
+            osc.start(now);
+            osc.stop(now + 0.035);
+        } catch (e) { /* ignore audio errors */ }
+    }
+
+    // ── Reel Stop Thud ────────────────────────────────────────────────
+    function playReelStop(columnIndex, providerKey) {
+        if (!soundEnabled) return;
+        var settings = getAppSettings();
+        if (settings.uiSounds === false) return;
+
+        var key = resolveProviderKey(providerKey);
+        var theme = key ? PROVIDER_SFX_THEMES[key] : null;
+        var profile = (theme && theme.reelstop) ? theme.reelstop : { waveType: 'triangle', freq: 150, dur: 0.06 };
+
+        try {
+            var ctx = getAudioContext();
+            var now = ctx.currentTime;
+
+            // Slightly different pitch per column: higher columns get slightly higher pitch
+            var col = (typeof columnIndex === 'number') ? columnIndex : 0;
+            var pitchOffset = col * 15; // 15 Hz per column step
+
+            var osc  = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = profile.waveType || 'triangle';
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = (profile.freq || 150) + pitchOffset;
+
+            var dur = profile.dur || 0.06;
+            var volume = 0.14 * soundVolume;
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + dur);
+            osc.start(now);
+            osc.stop(now + dur + 0.01);
+        } catch (e) { /* ignore audio errors */ }
+    }
+
     // ── Expose as globals (backward compatible) ─────────────────────────
     window.getAudioContext   = getAudioContext;
     window.playSound         = playSound;
@@ -317,12 +737,22 @@
 
     // ── Also expose via SoundManager namespace ──────────────────────────
     window.SoundManager = {
-        getAudioContext:   getAudioContext,
-        playSound:         playSound,
-        toggleSound:       toggleSound,
-        updateSoundButton: updateSoundButton,
-        setSoundVolume:    setSoundVolume,
-        playProviderSound:   playProviderSound,
+        getAudioContext:    getAudioContext,
+        playSound:          playSound,
+        toggleSound:        toggleSound,
+        updateSoundButton:  updateSoundButton,
+        setSoundVolume:     setSoundVolume,
+        playProviderSound:  playProviderSound,
+
+        // Phase 4: Enhanced sound system
+        startAmbient:       startAmbient,
+        stopAmbient:        stopAmbient,
+        playDynamicLayer:   playDynamicLayer,
+        playSoundEvent:     playSoundEvent,
+        playNearMiss:       playNearMiss,
+        playCounterTick:    playCounterTick,
+        playHoverSound:     playHoverSound,
+        playReelStop:       playReelStop,
 
         /** Read-only accessors for current state */
         get soundEnabled() { return soundEnabled; },

@@ -212,10 +212,11 @@ router.post('/forgot-password', (req, res) => {
         );
 
         // In production this token would be emailed — for dev we return it directly
-        res.json({
-            message: 'If that email is registered, a reset token has been generated',
-            token, // DEV ONLY — remove in production
-        });
+        const response = { message: 'If that email is registered, a reset token has been generated' };
+        if (process.env.NODE_ENV !== 'production') {
+            response.token = token;
+        }
+        res.json(response);
     } catch (err) {
         console.error('[User] Forgot password error:', err);
         res.status(500).json({ error: 'Failed to process password reset request' });

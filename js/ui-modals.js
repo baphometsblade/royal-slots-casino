@@ -168,6 +168,14 @@
             document.getElementById('settingTurbo').checked = appSettings.turboDefault;
             document.getElementById('settingAutoSpeed').value = appSettings.autoSpinSpeed;
             document.getElementById('settingAutoSpeedLabel').textContent = (appSettings.autoSpinSpeed / 1000).toFixed(1) + 's';
+            const qualitySelect = document.getElementById('settingAnimationQuality');
+            if (qualitySelect) qualitySelect.value = appSettings.animationQuality || 'ultra';
+            const ambientCheck = document.getElementById('settingAmbientMusic');
+            if (ambientCheck) ambientCheck.checked = appSettings.ambientMusic !== false;
+            const winSoundsCheck = document.getElementById('settingWinSounds');
+            if (winSoundsCheck) winSoundsCheck.checked = appSettings.winSounds !== false;
+            const uiSoundsCheck = document.getElementById('settingUiSounds');
+            if (uiSoundsCheck) uiSoundsCheck.checked = appSettings.uiSounds !== false;
             modal.classList.add('active');
             playSound('click');
         }
@@ -241,6 +249,24 @@
             // Refresh the panel UI
             openSettingsModal();
             if (typeof showToast === 'function') showToast('Settings reset to defaults', 'info');
+        }
+
+
+        function settingsSetAnimationQuality(val) {
+            appSettings.animationQuality = val;
+            saveSettings();
+        }
+        function settingsToggleAmbientMusic(enabled) {
+            appSettings.ambientMusic = enabled;
+            saveSettings();
+        }
+        function settingsToggleWinSounds(enabled) {
+            appSettings.winSounds = enabled;
+            saveSettings();
+        }
+        function settingsToggleUiSounds(enabled) {
+            appSettings.uiSounds = enabled;
+            saveSettings();
         }
 
 

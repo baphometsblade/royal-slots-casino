@@ -273,6 +273,55 @@
         </div>
     </footer>
 
+    <!-- Casino Footer -->
+    <footer class="casino-footer" id="casinoFooter">
+        <div class="footer-content">
+            <div class="footer-section footer-brand">
+                <div class="footer-logo">MATRIX SPINS</div>
+                <p class="footer-tagline">Premium Online Slots Entertainment</p>
+                <div class="footer-payment-icons">
+                    <span title="Visa">VISA</span>
+                    <span title="Mastercard">MC</span>
+                    <span title="PayID">PayID</span>
+                    <span title="Bank Transfer">Bank</span>
+                    <span title="Bitcoin">BTC</span>
+                    <span title="Ethereum">ETH</span>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="#" onclick="event.preventDefault(); showBonusWheelModal()">Bonus Wheel</a>
+                <a href="#" onclick="event.preventDefault(); openStatsModal()">My Stats</a>
+                <a href="#" onclick="event.preventDefault(); currentUser ? showWalletModal() : showAuthModal()">Deposit</a>
+                <a href="#" onclick="event.preventDefault(); if(typeof showVipModal==='function') showVipModal(); else showToast('VIP coming soon!','info')">VIP Club</a>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <a href="#" onclick="event.preventDefault(); showToast('Live chat coming soon!','info')">Live Chat</a>
+                <a href="mailto:support@matrixspins.com">Email Support</a>
+                <a href="#" onclick="event.preventDefault(); showToast('FAQ page coming soon!','info')">FAQ</a>
+                <a href="#" onclick="event.preventDefault(); currentUser ? showProfileModal() : showAuthModal()">My Account</a>
+            </div>
+            <div class="footer-section">
+                <h4>Responsible Gambling</h4>
+                <a href="#" onclick="event.preventDefault(); if(currentUser && typeof showProfileModal==='function'){showProfileModal();setTimeout(()=>switchProfileTab('limits'),300)} else showToast('Please log in first','info')">Set Deposit Limits</a>
+                <a href="#" onclick="event.preventDefault(); if(currentUser && typeof showProfileModal==='function'){showProfileModal();setTimeout(()=>switchProfileTab('limits'),300)} else showToast('Please log in first','info')">Self-Exclusion</a>
+                <a href="https://www.gambleaware.org" target="_blank" rel="noopener">BeGambleAware.org</a>
+                <a href="https://www.ncpgambling.org" target="_blank" rel="noopener">NCPG Helpline</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-legal">
+                <span>18+ | Play Responsibly | Gambling can be addictive</span>
+                <span class="footer-legal-sep">|</span>
+                <a href="#" onclick="event.preventDefault(); showToast('Terms of Service - Coming soon','info')">Terms of Service</a>
+                <span class="footer-legal-sep">|</span>
+                <a href="#" onclick="event.preventDefault(); showToast('Privacy Policy - Coming soon','info')">Privacy Policy</a>
+            </div>
+            <p class="footer-copyright">&copy; 2024-2026 Matrix Spins. All rights reserved. This is a social gaming platform.</p>
+        </div>
+    </footer>
+
     <!-- Mobile Bottom Nav -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
         <button class="mob-nav-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
@@ -773,6 +822,45 @@
                             <span class="settings-slider-value" id="settingVolumeLabel">50%</span>
                         </div>
                     </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Ambient Music</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingAmbientMusic" checked onchange="settingsToggleAmbientMusic(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Win Sounds</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingWinSounds" checked onchange="settingsToggleWinSounds(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">UI Sounds</label>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="settingUiSounds" checked onchange="settingsToggleUiSounds(this.checked)">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Animation Quality -->
+                <div class="settings-section">
+                    <div class="settings-section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zm7-2a1 1 0 01.707.293l.707.707.707-.707a1 1 0 111.414 1.414l-.707.707.707.707a1 1 0 01-1.414 1.414L13 13.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707-.707-.707A1 1 0 0112 10z"/></svg>
+                        Animation Quality
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Quality Preset</label>
+                        <select id="settingAnimationQuality" class="settings-select" onchange="settingsSetAnimationQuality(this.value)">
+                            <option value="ultra">Ultra (All Effects)</option>
+                            <option value="high">High (Reduced Particles)</option>
+                            <option value="medium">Medium (No 3D/Shake)</option>
+                            <option value="low">Low (Static Only)</option>
+                            <option value="off">Off (Accessibility)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Visual Settings -->
@@ -903,6 +991,22 @@
                         <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
                     </div>
                     <button class="auth-submit" id="loginBtn" onclick="handleLogin()">SIGN IN</button>
+                    <div class="auth-forgot-link">
+                        <a href="#" onclick="event.preventDefault(); showForgotPassword()">Forgot password?</a>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div id="forgotPasswordForm" class="auth-form" style="display:none;">
+                    <p class="auth-forgot-desc">Enter your email and we'll send you a reset link.</p>
+                    <div class="auth-field">
+                        <label>Email Address</label>
+                        <input type="email" id="forgotEmail" placeholder="Enter your registered email" autocomplete="email">
+                    </div>
+                    <button class="auth-submit" onclick="handleForgotPassword()">SEND RESET LINK</button>
+                    <div class="auth-forgot-link">
+                        <a href="#" onclick="event.preventDefault(); showForgotPassword(false)">Back to login</a>
+                    </div>
                 </div>
 
                 <!-- Register Form -->
@@ -943,6 +1047,7 @@
     <script src="sound-manager.js"></script>
     <script src="animations.js"></script>
     <script src="js/globals.js"></script>
+    <script src="js/particle-engine.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/spin-engine.js"></script>
     <script src="js/win-logic.js"></script>
@@ -951,6 +1056,8 @@
     <script src="js/ui-modals.js"></script>
     <script src="js/ui-wallet.js"></script>
     <script src="js/ui-profile.js"></script>
+    <script src="js/ui-vip.js"></script>
+    <script src="js/ui-promos.js"></script>
     <script src="js/qa-tools.js"></script>
     <script src="js/app.js"></script>
 

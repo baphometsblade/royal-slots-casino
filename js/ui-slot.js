@@ -5,7 +5,39 @@
 
         // Build symbol image HTML for any game symbol
         function getSymbolHtml(symbolName, gameId) {
-            return `<img class="reel-symbol-img" src="assets/game_symbols/${gameId}/${symbolName}.png" alt="${symbolName}" draggable="false" onerror="this.style.display='none'">`;
+            var useAnimated = window.appSettings &&
+                window.appSettings.animationQuality !== 'low' &&
+                window.appSettings.animationQuality !== 'off';
+
+            if (useAnimated) {
+                return '<img class="reel-symbol-img reel-symbol-animated" ' +
+                    'src="assets/game_symbols/' + gameId + '/' + symbolName + '.webp" ' +
+                    'alt="' + symbolName + '" draggable="false" ' +
+                    'onerror="this.src=\'assets/game_symbols/' + gameId + '/' + symbolName + '.png\'; this.classList.remove(\'reel-symbol-animated\'); this.onerror=null;">';
+            }
+            return '<img class="reel-symbol-img" src="assets/game_symbols/' + gameId + '/' + symbolName + '.png" alt="' + symbolName + '" draggable="false" onerror="this.style.display=\'none\'">';
+        }
+
+
+        /** Preload animated WebP assets for the current game */
+        function preloadAnimatedAssets(game) {
+            if (!game) return;
+            var quality = (window.appSettings && window.appSettings.animationQuality) || 'ultra';
+            if (quality === 'low' || quality === 'off') return;
+
+            // Preload animated symbols
+            if (game.symbols) {
+                game.symbols.forEach(function(sym) {
+                    var img = new Image();
+                    img.src = 'assets/game_symbols/' + game.id + '/' + sym + '.webp';
+                });
+            }
+
+            // Preload animated background
+            if (quality !== 'low') {
+                var bgImg = new Image();
+                bgImg.src = 'assets/backgrounds/slots/' + game.id + '_bg.webp';
+            }
         }
 
 
@@ -828,6 +860,8 @@
             currentGame = games.find(g => g.id === gameId);
             if (!currentGame) return;
 
+            preloadAnimatedAssets(currentGame);
+
             addRecentlyPlayed(gameId);
 
             // Set game-specific CSS theme
@@ -902,24 +936,53 @@
             if (bottomBar) {
                 bottomBar.style.borderTopColor = accent + '44';
             }
-            // Set game background on reel area (prefer SDXL image, fallback to gradient)
-            const reelArea = document.querySelector('.slot-reel-area');
+            // Set game background on reel area (prefer animated WebP, fallback to SDXL PNG, then gradient)
+            var reelArea = document.querySelector('.slot-reel-area');
             if (reelArea) {
-                const bgImagePath = `assets/backgrounds/slots/${currentGame.id}_bg.png`;
-                // Try loading the SDXL background image
-                const testImg = new Image();
-                testImg.onload = () => {
-                    reelArea.style.background = `url('${bgImagePath}') center/cover no-repeat`;
-                    reelArea.classList.add('has-bg-image');
-                };
-                testImg.onerror = () => {
-                    // Fallback to CSS gradient
-                    if (currentGame.bgGradient) {
-                        reelArea.style.background = currentGame.bgGradient;
-                    }
-                    reelArea.classList.remove('has-bg-image');
-                };
-                testImg.src = bgImagePath;
+                var bgQuality = (window.appSettings && window.appSettings.animationQuality) || 'ultra';
+                var bgUseAnimated = bgQuality === 'ultra' || bgQuality === 'high' || bgQuality === 'medium';
+                var bgAnimPath = 'assets/backgrounds/slots/' + currentGame.id + '_bg.webp';
+                var bgStaticPath = 'assets/backgrounds/slots/' + currentGame.id + '_bg.png';
+
+                if (bgUseAnimated) {
+                    var testBgImg = new Image();
+                    testBgImg.onload = function() {
+                        reelArea.style.background = 'url(' + bgAnimPath + ') center/cover no-repeat';
+                        reelArea.classList.add('has-bg-image');
+                    };
+                    testBgImg.onerror = function() {
+                        // Fallback to static PNG
+                        var fallbackImg = new Image();
+                        fallbackImg.onload = function() {
+                            reelArea.style.background = 'url(' + bgStaticPath + ') center/cover no-repeat';
+                            reelArea.classList.add('has-bg-image');
+                        };
+                        fallbackImg.onerror = function() {
+                            // Fallback to CSS gradient
+                            if (currentGame && currentGame.bgGradient) {
+                                reelArea.style.background = currentGame.bgGradient;
+                            }
+                            reelArea.classList.remove('has-bg-image');
+                        };
+                        fallbackImg.src = bgStaticPath;
+                    };
+                    testBgImg.src = bgAnimPath;
+                } else {
+                    // Low/off quality: use static PNG only
+                    var testImg = new Image();
+                    testImg.onload = function() {
+                        reelArea.style.background = 'url(' + bgStaticPath + ') center/cover no-repeat';
+                        reelArea.classList.add('has-bg-image');
+                    };
+                    testImg.onerror = function() {
+                        // Fallback to CSS gradient
+                        if (currentGame && currentGame.bgGradient) {
+                            reelArea.style.background = currentGame.bgGradient;
+                        }
+                        reelArea.classList.remove('has-bg-image');
+                    };
+                    testImg.src = bgStaticPath;
+                }
                 // Set gradient immediately as placeholder while image loads
                 if (currentGame.bgGradient) {
                     reelArea.style.background = currentGame.bgGradient;
@@ -1004,6 +1067,20 @@
                 if (currentGame) {
                     showFeaturePopup(currentGame);
                 }
+                // Start ambient visual effects
+                if (typeof startAmbientParticles === 'function') {
+                    var providerKey = typeof getGameChromeStyle === 'function' ? getGameChromeStyle(currentGame) : 'ironreel';
+                    startAmbientParticles(providerKey);
+                }
+                // Start ambient sound
+                if (typeof SoundManager !== 'undefined' && SoundManager.startAmbient) {
+                    var soundProvider = typeof getGameChromeStyle === 'function' ? getGameChromeStyle(currentGame) : 'ironreel';
+                    SoundManager.startAmbient(soundProvider);
+                }
+                // Add ambient breath to reel area
+                var reelGridEl = document.querySelector('.reel-grid');
+                if (reelGridEl) reelGridEl.classList.add('reel-ambient-breath');
+
                 // Start idle spin invitation timer
                 resetIdleTimer();
             });
@@ -1055,6 +1132,10 @@
             if (_reelResizeHandler) { window.removeEventListener('resize', _reelResizeHandler); window.removeEventListener('orientationchange', _reelResizeHandler); if (window.visualViewport) window.visualViewport.removeEventListener('resize', _reelResizeHandler); _reelResizeHandler = null; }
             const spinBtnClose = document.getElementById('spinBtn');
             if (spinBtnClose) spinBtnClose.classList.remove('spin-btn-idle-pulse');
+            // Stop ambient effects
+            if (typeof stopAmbientParticles === 'function') stopAmbientParticles();
+            if (typeof SoundManager !== 'undefined' && SoundManager.stopAmbient) SoundManager.stopAmbient();
+            if (typeof destroyParticleEngine === 'function') destroyParticleEngine();
         }
 
 
@@ -1614,6 +1695,15 @@
                 detectAndShowNearMiss(grid, game);
             }
             if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
+
+            // Promo engagement triggers
+            if (typeof checkPromoTriggers === "function") {
+                checkPromoTriggers("spin_result", {
+                    won: winAmount > 0,
+                    winAmount: winAmount,
+                    betAmount: currentBet
+                });
+            }
         }
 
 
@@ -2623,6 +2713,18 @@
                     data.stripEl.style.transform = `translateY(${targetY}px)`;
                     data.currentY = targetY;
                     data.colEl.classList.add('stopped');
+
+                    // Add 3D landing tilt if quality supports it
+                    var landQuality = (window.appSettings && window.appSettings.animationQuality) || 'ultra';
+                    if (landQuality === 'ultra' || landQuality === 'high') {
+                        for (var lr = 0; lr < rows; lr++) {
+                            var landCell = document.getElementById('reel_' + colIdx + '_' + lr);
+                            if (landCell) {
+                                landCell.classList.add('reel-landing-tilt');
+                                (function(c) { setTimeout(function() { c.classList.remove('reel-landing-tilt'); }, 500); })(landCell);
+                            }
+                        }
+                    }
 
                     // Clean up after bounce
                     setTimeout(() => {

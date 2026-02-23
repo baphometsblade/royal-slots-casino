@@ -191,6 +191,66 @@ const ORIENTATION_CHANGE_DELAY = 100;
 const DEFAULT_AUTO_SPIN_DELAY = 700;
 
 // ─────────────────────────────────────────────────────────────
+// 2b. VISUAL OVERHAUL: QUALITY TIERS & EFFECTS
+// ─────────────────────────────────────────────────────────────
+
+// === Visual Overhaul: Quality Tiers ===
+const QUALITY_ULTRA = 'ultra';
+const QUALITY_HIGH = 'high';
+const QUALITY_MEDIUM = 'medium';
+const QUALITY_LOW = 'low';
+const QUALITY_OFF = 'off';
+const QUALITY_TIERS = [QUALITY_ULTRA, QUALITY_HIGH, QUALITY_MEDIUM, QUALITY_LOW, QUALITY_OFF];
+
+// Particle budgets per quality tier
+const PARTICLES_MAX_ULTRA = 300;
+const PARTICLES_MAX_HIGH = 100;
+const PARTICLES_MAX_MEDIUM = 50;
+const PARTICLES_MAX_LOW = 0;
+
+// Ambient particle count
+const AMBIENT_PARTICLES_ULTRA = 5;
+const AMBIENT_PARTICLES_HIGH = 3;
+const AMBIENT_PARTICLES_MEDIUM = 0;
+
+// 3D depth effect values (px/deg)
+const DEPTH_WIN_FORWARD = 30;
+const DEPTH_LOSE_BACK = -10;
+const DEPTH_LANDING_TILT = -3;
+const DEPTH_PERSPECTIVE = 1000;
+
+// Screen shake intensities
+const SHAKE_EPIC_INTENSITY = 4;
+const SHAKE_MEGA_INTENSITY = 8;
+const SHAKE_JACKPOT_INTENSITY = 12;
+const SHAKE_EPIC_DURATION = 1500;
+const SHAKE_MEGA_DURATION = 2000;
+const SHAKE_JACKPOT_DURATION = 3000;
+
+// Cinematic win sequence timing (ms)
+const CINEMATIC_PAUSE = 500;
+const CINEMATIC_VIGNETTE_FADE = 300;
+const CINEMATIC_LINE_ILLUMINATE = 400;
+const CINEMATIC_SYMBOL_POP = 300;
+const CINEMATIC_TEXT_SLAM = 300;
+const CINEMATIC_PARTICLE_BURST = 500;
+const CINEMATIC_COUNTER_ROLL = 2000;
+const CINEMATIC_CONFETTI_DURATION = 3000;
+const CINEMATIC_FADE_BACK = 500;
+
+// Sound levels
+const SOUND_AMBIENT_VOLUME = 0.08;
+const SOUND_SFX_VOLUME = 0.5;
+const SOUND_WIN_VOLUME = 0.7;
+const SOUND_BIGWIN_VOLUME = 0.9;
+
+// Win dramatic effect thresholds (multiplier)
+const WIN_DRAMATIC_THRESHOLD = 10;
+const WIN_EPIC_THRESHOLD = 25;
+const WIN_MEGA_THRESHOLD = 50;
+const WIN_JACKPOT_THRESHOLD = 100;
+
+// ─────────────────────────────────────────────────────────────
 // 3. GAME LIMITS & THRESHOLDS
 // ─────────────────────────────────────────────────────────────
 
@@ -753,3 +813,87 @@ const WHEEL_BORDER_OFFSET = 4;
 
 /** Wheel center border stroke width (px) */
 const WHEEL_CENTER_STROKE_WIDTH = 3;
+
+// ─────────────────────────────────────────────────────────────
+// 16. VIP / LOYALTY REWARDS SYSTEM
+// ─────────────────────────────────────────────────────────────
+
+/** localStorage key for VIP state (weekly reload claim, cashback history) */
+const STORAGE_KEY_VIP = 'casinoVIP';
+
+/**
+ * VIP tier definitions ordered by wagering threshold.
+ * Each tier defines: name, min/max wagered, cashback %, weekly reload %,
+ * color theme, and a list of benefit descriptions.
+ */
+const VIP_TIERS = [
+    {
+        id: 'bronze',
+        name: 'Bronze',
+        minWagered: 0,
+        maxWagered: 999,
+        cashbackPct: 0.5,
+        weeklyReloadPct: 0,
+        color: '#CD7F32',
+        colorDark: '#8B5523',
+        icon: '\u{1F949}',
+        benefits: ['0.5% cashback on losses', 'Access to all standard games']
+    },
+    {
+        id: 'silver',
+        name: 'Silver',
+        minWagered: 1000,
+        maxWagered: 4999,
+        cashbackPct: 1.0,
+        weeklyReloadPct: 10,
+        color: '#C0C0C0',
+        colorDark: '#808080',
+        icon: '\u{1F948}',
+        benefits: ['1% cashback on losses', '10% weekly reload bonus', 'Priority email support']
+    },
+    {
+        id: 'gold',
+        name: 'Gold',
+        minWagered: 5000,
+        maxWagered: 19999,
+        cashbackPct: 1.5,
+        weeklyReloadPct: 15,
+        color: '#FFD700',
+        colorDark: '#B8860B',
+        icon: '\u{1F947}',
+        benefits: ['1.5% cashback on losses', '15% weekly reload bonus', 'Birthday bonus', 'Dedicated account manager']
+    },
+    {
+        id: 'platinum',
+        name: 'Platinum',
+        minWagered: 20000,
+        maxWagered: 49999,
+        cashbackPct: 2.0,
+        weeklyReloadPct: 20,
+        color: '#E5E4E2',
+        colorDark: '#A9A9A9',
+        icon: '\u{1F48E}',
+        benefits: ['2% cashback on losses', '20% weekly reload bonus', 'Dedicated VIP host', 'Monthly cashback boost', 'Higher withdrawal limits']
+    },
+    {
+        id: 'diamond',
+        name: 'Diamond',
+        minWagered: 50000,
+        maxWagered: Infinity,
+        cashbackPct: 3.0,
+        weeklyReloadPct: 25,
+        color: '#B9F2FF',
+        colorDark: '#5BC0DE',
+        icon: '\u{1F451}',
+        benefits: ['3% cashback on losses', '25% weekly reload bonus', 'Exclusive games access', 'Priority withdrawals', 'Personal VIP concierge', 'Invitations to VIP events']
+    }
+];
+
+/** Weekly reload bonus cooldown (ms) — 7 days */
+const VIP_WEEKLY_RELOAD_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Weekly reload max bonus cap ($) */
+const VIP_WEEKLY_RELOAD_MAX_BONUS = 5000;
+
+/** Weekly reload base amount the percentage applies to */
+const VIP_WEEKLY_RELOAD_BASE = 1000;

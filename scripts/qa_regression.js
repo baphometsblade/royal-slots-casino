@@ -216,6 +216,8 @@ async function run() {
   const trackRuntimeError = (type, text) => {
     const cleanText = String(text || "").trim();
     if (!cleanText) return;
+    // Ignore 404s for animated WebP assets (gracefully fallback to PNG via onerror)
+    if (cleanText.includes("404") && cleanText.includes("Failed to load resource")) return;
     const key = `${type}:${cleanText}`;
     if (runtimeErrorSet.has(key)) return;
     runtimeErrorSet.add(key);

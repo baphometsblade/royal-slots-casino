@@ -64,7 +64,8 @@
             'reel-landing', 'reel-win-glow', 'reel-wild-glow',
             'reel-scatter-glow', 'reel-celebrating', 'reel-mega-win',
             'reel-wild-expand', 'reel-big-win-glow',
-            'reel-near-miss', 'reel-win-entrance'
+            'reel-near-miss', 'reel-win-entrance',
+            'reel-3d-pop', 'reel-3d-recede'
         ];
 
         // ═══════════════════════════════════════════════════
@@ -96,7 +97,11 @@
             animations: true,
             confetti: true,
             turboDefault: false,
-            autoSpinSpeed: 1500
+            autoSpinSpeed: 1500,
+            animationQuality: 'ultra',
+            ambientMusic: true,
+            winSounds: true,
+            uiSounds: true
         };
 
         // ===== XP / Level System =====
