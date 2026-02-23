@@ -183,13 +183,15 @@ router.get('/profit-status', async (req, res) => {
         `);
 
         // Top winners (potential threats to profitability)
+        // NOTE: GROUP BY includes u.username for PG compat (strict non-aggregated column rule).
+        // HAVING repeats the expression (PG disallows SELECT aliases in HAVING).
         const topWinners = await db.all(`
             SELECT u.username, SUM(s.win_amount - s.bet_amount) as net_win,
                    SUM(s.bet_amount) as wagered, SUM(s.win_amount) as paid,
                    COUNT(*) as spins
             FROM spins s JOIN users u ON s.user_id = u.id
-            GROUP BY s.user_id
-            HAVING net_win > 0
+            GROUP BY s.user_id, u.username
+            HAVING SUM(s.win_amount - s.bet_amount) > 0
             ORDER BY net_win DESC LIMIT 10
         `);
 

@@ -101,10 +101,16 @@ class PgBackend {
         if (params === undefined) params = [];
         var pgSQL = adaptSQL(sql);
 
-        // For INSERTs, append RETURNING id (unless already present)
-        if (/^\s*INSERT/i.test(pgSQL) && !/RETURNING\s/i.test(pgSQL)) {
-            // Remove trailing semicolons/whitespace, append RETURNING id
-            pgSQL = pgSQL.replace(/\s*;?\s*$/, '') + ' RETURNING id';
+        // For plain INSERTs (no ON CONFLICT DO UPDATE), append RETURNING *
+        // so we can extract `id` if the table has one. Tables without an `id`
+        // column (game_stats, session_win_caps, user_verification, user_limits)
+        // still succeed — we just get null for lastInsertRowid.
+        // Skip for upserts (ON CONFLICT DO UPDATE) which may not insert a row.
+        var isInsert = /^\s*INSERT/i.test(pgSQL);
+        var hasReturning = /RETURNING\s/i.test(pgSQL);
+        var isUpsert = /ON\s+CONFLICT.*DO\s+UPDATE/i.test(pgSQL);
+        if (isInsert && !hasReturning && !isUpsert) {
+            pgSQL = pgSQL.replace(/\s*;?\s*$/, '') + ' RETURNING *';
         }
 
         var result = await this.pool.query(pgSQL, params);
