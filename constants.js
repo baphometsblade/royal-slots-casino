@@ -620,7 +620,14 @@ const TICKER_NAMES = [
     'LuckyAce', 'JackpotKing', 'SlotMaster', 'BigWinner',
     'CasinoQueen', 'DiamondDan', 'GoldenStar', 'RoyalFlush',
     'MegaSpinner', 'FortuneHunter', 'VelvetRoller', 'NeonNight',
-    'CherryBomb77', 'WildCard', 'HighStakes'
+    'CherryBomb77', 'WildCard', 'HighStakes', 'SpinQueen99',
+    'CashBlitz', 'PhantomBet', 'ReelChaser', 'TurboSpin',
+    'GoldRush22', 'MysticRoller', 'InfernoBets', 'AceOfSlots',
+    'ThunderSpin', 'BlazeRunner', 'CosmicWin', 'NovaBet',
+    'ShadowAces', 'VegasViper', 'LunarStrike', 'DiamondDiva',
+    'StarDust88', 'CryptoSpins', 'IronReeler', 'PlatinumPlay',
+    'NightOwl7', 'FrostBite99', 'NebulaKing', 'RubyRoyal',
+    'SilverFox21', 'EchoSlots', 'PixelBet', 'ZenSpinner'
 ];
 
 // ─────────────────────────────────────────────────────────────

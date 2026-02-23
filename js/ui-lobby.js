@@ -302,8 +302,18 @@
         }
 
 
+        // Track recently used names so the same player doesn't appear back-to-back
+        let _tickerRecentNames = [];
+
         function generateTickerMessage() {
-            const name = TICKER_NAMES[Math.floor(Math.random() * TICKER_NAMES.length)];
+            // Pick a name that wasn't used in the last 5 messages
+            let name;
+            const avoidSet = new Set(_tickerRecentNames.slice(-5));
+            const available = TICKER_NAMES.filter(n => !avoidSet.has(n));
+            name = (available.length ? available : TICKER_NAMES)[Math.floor(Math.random() * (available.length || TICKER_NAMES.length))];
+            _tickerRecentNames.push(name);
+            if (_tickerRecentNames.length > 10) _tickerRecentNames.shift();
+
             const game = games[Math.floor(Math.random() * games.length)];
             const multiplier = Math.floor(Math.random() * game.payouts.triple) + game.payouts.double;
             const bet = game.minBet + Math.floor(Math.random() * (game.maxBet - game.minBet) / game.minBet) * game.minBet;
@@ -319,13 +329,16 @@
             // Clear any existing ticker interval to prevent leaks on re-init
             if (tickerInterval) clearInterval(tickerInterval);
 
-            // Initial messages
+            // Build initial messages
             let messages = [];
             for (let i = 0; i < TICKER_INITIAL_MESSAGE_COUNT; i++) {
                 messages.push(generateTickerMessage());
             }
+
+            // Render two identical copies side-by-side for seamless loop
             renderTickerContent(messages);
 
+            // Periodically swap in new messages (update both copies in sync)
             tickerInterval = setInterval(() => {
                 messages.push(generateTickerMessage());
                 if (messages.length > TICKER_MAX_MESSAGES) messages.shift();
@@ -337,9 +350,24 @@
         function renderTickerContent(messages) {
             const content = document.getElementById('tickerContent');
             if (!content) return;
-            content.innerHTML = messages.map(m =>
+
+            const sep = '<span class="ticker-sep">\u00B7</span>';
+            const itemsHtml = messages.map(m =>
                 `<span class="ticker-item">${m}</span>`
-            ).join('');
+            ).join(sep);
+
+            // Duplicate the block so the CSS translate loop is seamless:
+            // when the first copy scrolls fully left, the second copy is
+            // in exactly the same position the first started.
+            content.innerHTML =
+                `<span class="ticker-half">${itemsHtml}${sep}</span>` +
+                `<span class="ticker-half">${itemsHtml}${sep}</span>`;
+
+            // Restart the animation cleanly so there's no mid-scroll jump
+            content.style.animation = 'none';
+            // Force reflow then re-apply
+            void content.offsetWidth;
+            content.style.animation = '';
         }
 
 

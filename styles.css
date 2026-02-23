@@ -5643,11 +5643,22 @@
 
         /* ===== Ticker Animation ===== */
         .ticker-content {
-            animation: tickerScroll 20s linear infinite;
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            white-space: nowrap;
+            animation: tickerScroll 30s linear infinite;
+        }
+
+        .ticker-half {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
         @keyframes tickerScroll {
-            0% { transform: translateX(0); }
+            0%   { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
 

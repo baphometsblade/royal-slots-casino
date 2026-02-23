@@ -277,7 +277,7 @@
             <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
             <span>Home</span>
         </button>
-        <button class="mob-nav-btn" onclick="setFilter('hot')">
+        <button class="mob-nav-btn" onclick="setFilter('hot'); document.getElementById('filterTabs').scrollIntoView({behavior:'smooth'})">
             <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path d="M10 18c-4.4 0-7-3.1-7-6.8 0-3.3 2.3-5.8 4-7.2.4-.3 1 0 .9.5-.3 1.5.3 3 1.6 3.8.2.1.5 0 .5-.2.2-1.5.9-3.4 2.5-4.8.3-.3.8-.1.9.3.5 1.8 1.8 3.2 2.8 4.4C17.7 10 18 11.6 18 12.5 18 15.5 15.3 18 10 18z"/></svg>
             <span>Hot</span>
         </button>
