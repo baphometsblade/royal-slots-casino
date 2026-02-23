@@ -60,11 +60,11 @@
 
 
         function hashThemeSeed(text) {
-            let hash = 2166136261;
+            let hash = FNV_OFFSET_BASIS;
             const input = String(text || '');
             for (let i = 0; i < input.length; i++) {
                 hash ^= input.charCodeAt(i);
-                hash = Math.imul(hash, 16777619);
+                hash = Math.imul(hash, FNV_PRIME);
             }
             return hash >>> 0;
         }
