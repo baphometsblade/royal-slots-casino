@@ -114,6 +114,35 @@ On failure: `errors.json` + `failure-shot.png` appear there.
 | `autoSpin=1` | Trigger one automatic spin |
 | `noBonus=1` | Suppress daily bonus modal |
 
+## Environment Setup
+
+Create `.env` in the project root (optional — defaults work for local dev):
+
+```bash
+PORT=3000
+JWT_SECRET=dev-secret-change-in-production
+ADMIN_PASSWORD=admin123changeme
+NODE_ENV=development
+DB_PATH=./casino.db
+```
+
+- `casino.db` is **auto-created** on first `npm start` if it doesn't exist (sql.js in-process SQLite).
+- `casino.db` is gitignored — never commit it.
+- No `.env` file is required for local dev; all values have safe defaults.
+
+## Admin Panel
+
+Static HTML panel at `admin/index.html` — open via browser after starting the server.
+Calls `GET /api/admin/stats` (requires admin JWT). Admin password set via `ADMIN_PASSWORD` env var.
+
+## Gotchas
+
+- **Dual auth (silent fallback):** The app prefers server JWT auth but silently falls back to localStorage-only mode when the server is unreachable. Both modes are transparent to the user.
+- **Port confusion:** `QUICK_START.md` references port 4173 (old static-file workflow). The real app runs on port 3000 via `npm start`. Always use `http://localhost:3000`.
+- **House edge is server-enforced:** 88% RTP, $50k session win cap, 500x max win multiplier — all in `server/config.js`. Client-side win calculations are for display only; server has final say.
+- **QA regression uses its own base URL:** The Playwright suite hits `http://localhost:3000` via the preview server — always run `npm start` (or `preview_start`) before `npm run qa:regression`.
+- **`appSettings` is not lazy:** It must be populated before any modal opens. `loadSettings()` is called as the first line of `initBase()`. Do not call modal-open functions before `initBase()` runs.
+
 ## Asset Generation
 
 AI-generated game assets via Python scripts in `scripts/`:
