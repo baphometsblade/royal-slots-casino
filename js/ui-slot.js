@@ -3,8 +3,6 @@
 // ═══════════════════════════════════════════════════════
 
 
-        // ═══ END LOCAL AUTH SYSTEM ═══
-
         // Build symbol image HTML for any game symbol
         function getSymbolHtml(symbolName, gameId) {
             return `<img class="reel-symbol-img" src="assets/game_symbols/${gameId}/${symbolName}.png" alt="${symbolName}" draggable="false" onerror="this.style.display='none'">`;
@@ -1211,7 +1209,7 @@
                 saveStats();
                 updateStatsSummary();
 
-                if (typeof awardXP === 'function') awardXP(winAmount >= currentBet * 10 ? 25 : 10);
+                if (typeof awardXP === 'function') awardXP(winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN);
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -1231,7 +1229,7 @@
                 showMessage(details.message || 'No win. Try again.', 'lose');
                 hideGambleButton();
             }
-            if (typeof awardXP === 'function') awardXP(5);
+            if (typeof awardXP === 'function') awardXP(XP_AWARD_PER_SPIN);
         }
 
 
@@ -1249,16 +1247,16 @@
             // Determine win tier (like Pragmatic Play)
             let winTier = '';
             let tierClass = '';
-            if (multiplier >= 50) {
+            if (multiplier >= WIN_TIER_EPIC_THRESHOLD) {
                 winTier = 'EPIC WIN';
                 tierClass = 'win-tier-epic';
-            } else if (multiplier >= 20) {
+            } else if (multiplier >= WIN_TIER_MEGA_THRESHOLD) {
                 winTier = 'MEGA WIN';
                 tierClass = 'win-tier-mega';
-            } else if (multiplier >= 10) {
+            } else if (multiplier >= WIN_TIER_BIG_THRESHOLD) {
                 winTier = 'BIG WIN';
                 tierClass = 'win-tier-big';
-            } else if (multiplier >= 5) {
+            } else if (multiplier >= WIN_TIER_GREAT_THRESHOLD) {
                 winTier = 'GREAT WIN';
                 tierClass = 'win-tier-great';
             }
@@ -1288,7 +1286,7 @@
                 }
                 createConfetti();
                 // Trigger screen shake + particle cascade for big wins
-                if (multiplier >= 5) {
+                if (multiplier >= WIN_TIER_GREAT_THRESHOLD) {
                     triggerScreenShake('mega');
                 } else if (multiplier >= 2) {
                     triggerScreenShake('big');
@@ -2041,12 +2039,12 @@
 
             // Set label by multiplier tier
             const label = document.getElementById('bigWinLabel');
-            if (multiplier >= 100) label.textContent = '🏆 MEGA WIN!';
-            else if (multiplier >= 50) label.textContent = '💎 SUPER WIN!';
-            else if (multiplier >= 20) label.textContent = '🔥 BIG WIN!';
+            if (multiplier >= WIN_TIER_EPIC_THRESHOLD * 2) label.textContent = '🏆 MEGA WIN!';
+            else if (multiplier >= WIN_TIER_EPIC_THRESHOLD)  label.textContent = '💎 SUPER WIN!';
+            else if (multiplier >= WIN_TIER_MEGA_THRESHOLD)  label.textContent = '🔥 BIG WIN!';
             else label.textContent = '⭐ NICE WIN!';
 
-            label.className = 'bigwin-label ' + (multiplier >= 50 ? 'bigwin-mega' : multiplier >= 20 ? 'bigwin-super' : '');
+            label.className = 'bigwin-label ' + (multiplier >= WIN_TIER_EPIC_THRESHOLD ? 'bigwin-mega' : multiplier >= WIN_TIER_MEGA_THRESHOLD ? 'bigwin-super' : '');
 
             document.getElementById('bigWinAmount').textContent = '$' + amount.toLocaleString();
             document.getElementById('bigWinMultiplier').textContent = '×' + multiplier;

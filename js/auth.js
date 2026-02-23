@@ -18,22 +18,22 @@
 
         function clearAuthSession() {
             authToken = null;
-            localStorage.removeItem('casinoToken');
+            localStorage.removeItem(STORAGE_KEY_TOKEN);
             currentUser = null;
-            localStorage.removeItem('casinoUser');
+            localStorage.removeItem(STORAGE_KEY_USER);
         }
 
 
         function applyAuthSession(token, user) {
             authToken = token;
-            localStorage.setItem('casinoToken', token);
+            localStorage.setItem(STORAGE_KEY_TOKEN, token);
             currentUser = user ? {
                 id: user.id,
                 username: user.username,
                 email: user.email,
                 is_admin: Boolean(user.is_admin),
             } : null;
-            localStorage.setItem('casinoUser', JSON.stringify(currentUser));
+            localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
 
             const userBalance = Number(user?.balance);
             if (Number.isFinite(userBalance)) {
@@ -107,7 +107,7 @@
                         email: me.user.email,
                         is_admin: Boolean(me.user.is_admin),
                     };
-                    localStorage.setItem('casinoUser', JSON.stringify(currentUser));
+                    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
                 }
 
                 const balanceRes = await apiRequest('/api/balance', { requireAuth: true });
@@ -130,7 +130,7 @@
 
 
         function loginWithLocalFallback(username, password) {
-            const users = JSON.parse(localStorage.getItem('casinoUsers') || '{}');
+            const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '{}');
             const user = users[username.toLowerCase()];
             if (!user) throw new Error('User not found. Please register first.');
             if (user.password !== password) throw new Error('Incorrect password.');
@@ -145,14 +145,14 @@
 
 
         function registerWithLocalFallback(username, email, password) {
-            const users = JSON.parse(localStorage.getItem('casinoUsers') || '{}');
+            const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '{}');
             const key = username.toLowerCase();
             if (users[key]) throw new Error('Username already taken.');
-            if (username.length < 3 || username.length > 20) throw new Error('Username must be 3-20 characters.');
+            if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) throw new Error(`Username must be ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} characters.`);
             if (password.length < 6) throw new Error('Password must be at least 6 characters.');
 
             users[key] = { username, email, password };
-            localStorage.setItem('casinoUsers', JSON.stringify(users));
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
             applyAuthSession(`${LOCAL_TOKEN_PREFIX}${Date.now()}`, {
                 username,
                 email,

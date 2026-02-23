@@ -5,13 +5,13 @@
         // ═══════════════════════════════════════════════════════
         // ═══ LOCAL AUTH SYSTEM (localStorage-based, no server) ═══
         // ═══════════════════════════════════════════════════════
-        let authToken = localStorage.getItem('casinoToken');
+        let authToken = localStorage.getItem(STORAGE_KEY_TOKEN);
         let currentUser = null;
         const LOCAL_TOKEN_PREFIX = 'local-';
 
         // Restore user from localStorage on load
         (function restoreUser() {
-            const savedUser = localStorage.getItem('casinoUser');
+            const savedUser = localStorage.getItem(STORAGE_KEY_USER);
             if (savedUser) {
                 try { currentUser = JSON.parse(savedUser); } catch (e) {}
             }
@@ -31,12 +31,6 @@
             watermelon: `<img class="reel-symbol-img" src="assets/ui/sym_watermelon.png" alt="Watermelon" draggable="false">`,
             lemon: `<img class="reel-symbol-img" src="assets/ui/sym_lemon.png" alt="Lemon" draggable="false">`
         };
-        // State
-        const STORAGE_KEYS = {
-            balance: 'casinoBalance',
-            stats: 'casinoStats'
-        };
-
         // DEFAULT_BALANCE, DEFAULT_STATS, SLOT_SYMBOLS, ACHIEVEMENTS — from constants.js
 
         let currentFilter = 'all';
@@ -89,7 +83,7 @@
         // MAX_RECENTLY_PLAYED — from constants.js
 
         // ===== Jackpot Ticker =====
-        let jackpotValue = 1247836 + Math.floor(Math.random() * 50000);
+        let jackpotValue = JACKPOT_TICKER_BASE_VALUE + Math.floor(Math.random() * JACKPOT_TICKER_RANDOM_RANGE);
 
         // ═══════════════════════════════════════════════════════
         // SETTINGS PANEL
@@ -215,22 +209,22 @@
 
         function hashSeed(seedValue) {
             const seedText = String(seedValue ?? '').trim();
-            let hash = 2166136261;
+            let hash = FNV_OFFSET_BASIS;
             for (let i = 0; i < seedText.length; i++) {
                 hash ^= seedText.charCodeAt(i);
-                hash = Math.imul(hash, 16777619);
+                hash = Math.imul(hash, FNV_PRIME);
             }
             return hash >>> 0;
         }
 
         function createSeededRandom(seedValue) {
-            let state = hashSeed(seedValue) || 0x9e3779b9;
+            let state = hashSeed(seedValue) || DEFAULT_SEED_STATE;
             return () => {
-                state = (state + 0x6d2b79f5) >>> 0;
+                state = (state + SEED_STEP_INCREMENT) >>> 0;
                 let t = state;
                 t = Math.imul(t ^ (t >>> 15), t | 1);
                 t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+                return ((t ^ (t >>> 14)) >>> 0) / UINT32_MAX_PLUS_ONE;
             };
         }
 

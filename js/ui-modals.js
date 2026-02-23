@@ -142,7 +142,7 @@
 
 
         function loadSettings() {
-            const saved = localStorage.getItem('casinoSettings');
+            const saved = localStorage.getItem(STORAGE_KEY_SETTINGS);
             if (saved) {
                 try { return Object.assign({}, settingsDefaults, JSON.parse(saved)); }
                 catch (e) { return { ...settingsDefaults }; }
@@ -152,7 +152,7 @@
 
 
         function saveSettings() {
-            localStorage.setItem('casinoSettings', JSON.stringify(appSettings));
+            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(appSettings));
         }
 
 
@@ -265,7 +265,7 @@
 
 
         function getXPForLevel(level) {
-            return Math.floor(100 * Math.pow(1.25, level - 1));
+            return Math.floor(BASE_XP_PER_LEVEL * Math.pow(XP_LEVEL_GROWTH_RATE, level - 1));
         }
 
 
@@ -486,7 +486,7 @@
             const last = new Date(wheelState.lastSpin);
             const now = new Date();
             const diffHours = (now - last) / (1000 * 60 * 60);
-            return diffHours >= 4;
+            return diffHours >= BONUS_WHEEL_COOLDOWN_HOURS;
         }
 
 

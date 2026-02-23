@@ -156,7 +156,7 @@
                     }
                 }
 
-                if (matchCount >= 3) {
+                if (matchCount >= PAYLINE_MIN_MATCH_COUNT) {
                     wins.push({
                         lineIndex: lineIdx,
                         line,
@@ -505,8 +505,8 @@
 
             // ── Scatter detection — grid-aware ──
             const scatterCount = grid ? countSymbolInGrid(grid, game.scatterSymbol || '') : countScatters(symbols, game);
-            const scatterThreshold = isMultiRow(game) ? 3 : 2; // Multi-row needs 3+ scatters
-            const fullScatterThreshold = isMultiRow(game) ? 4 : 3;
+            const scatterThreshold     = isMultiRow(game) ? SCATTER_THRESHOLD_MULTI_ROW      : SCATTER_THRESHOLD_CLASSIC;
+            const fullScatterThreshold = isMultiRow(game) ? FULL_SCATTER_THRESHOLD_MULTI_ROW : FULL_SCATTER_THRESHOLD_CLASSIC;
 
             if (scatterCount >= scatterThreshold && !freeSpinsActive && game.freeSpinsCount > 0) {
                 // Realistic scatter pay: 0.5x per scatter (real slots: 0.5x-1x)
@@ -560,7 +560,7 @@
                 saveStats();
                 updateStatsSummary();
                 showMessage(message, 'win');
-                const xpBonus = isBigWin ? 25 : 10;
+                const xpBonus = isBigWin ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN;
                 if (typeof awardXP === 'function') awardXP(xpBonus);
 
                 // Apply celebration animations based on win size (adjusted thresholds)
@@ -596,7 +596,7 @@
                 showMessage(message, 'lose');
                 hideGambleButton();
             }
-            if (typeof awardXP === 'function') awardXP(5);
+            if (typeof awardXP === 'function') awardXP(XP_AWARD_PER_SPIN);
 
             // ── Hot Chillies Respin (classic 3-reel only) ──
             if (winType === 'classic' && !freeSpinsActive && isDouble && !isTriple && game.bonusType === 'respin' && respinCount < (game.maxRespins || 3)) {

@@ -486,6 +486,9 @@ const STORAGE_KEY_DAILY_BONUS = 'casinoDailyBonus';
 /** Bonus wheel last-spin timestamp (JSON) */
 const STORAGE_KEY_BONUS_WHEEL = 'casinoBonusWheel';
 
+/** User settings (JSON) */
+const STORAGE_KEY_SETTINGS = 'casinoSettings';
+
 // ─────────────────────────────────────────────────────────────
 // 8. ACHIEVEMENT DEFINITIONS
 // ─────────────────────────────────────────────────────────────

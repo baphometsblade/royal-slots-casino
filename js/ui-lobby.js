@@ -114,9 +114,9 @@
             const el = document.getElementById('jackpotAmount');
             if (!el) return;
             setInterval(() => {
-                jackpotValue += Math.floor(Math.random() * 47 + 3);
+                jackpotValue += Math.floor(Math.random() * (JACKPOT_TICKER_INCREMENT_MAX - JACKPOT_TICKER_INCREMENT_MIN + 1) + JACKPOT_TICKER_INCREMENT_MIN);
                 el.textContent = jackpotValue.toLocaleString();
-            }, 800);
+            }, JACKPOT_TICKER_INTERVAL);
         }
 
 
@@ -285,16 +285,16 @@
 
             // Initial messages
             let messages = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < TICKER_INITIAL_MESSAGE_COUNT; i++) {
                 messages.push(generateTickerMessage());
             }
             renderTickerContent(messages);
 
             tickerInterval = setInterval(() => {
                 messages.push(generateTickerMessage());
-                if (messages.length > 8) messages.shift();
+                if (messages.length > TICKER_MAX_MESSAGES) messages.shift();
                 renderTickerContent(messages);
-            }, 4000);
+            }, WIN_TICKER_INTERVAL);
         }
 
 

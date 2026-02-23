@@ -5,6 +5,7 @@
 
         // Initialize (base — called by initAllSystems)
         function initBase() {
+            appSettings = loadSettings();
             loadState();
             renderGames();
             updateBalance();
@@ -18,10 +19,10 @@
 
 
         function loadState() {
-            const savedBalance = localStorage.getItem('casinoBalance');
+            const savedBalance = localStorage.getItem(STORAGE_KEY_BALANCE);
             if (savedBalance !== null) balance = parseFloat(savedBalance);
 
-            const savedStats = localStorage.getItem('casinoStats');
+            const savedStats = localStorage.getItem(STORAGE_KEY_STATS);
             if (savedStats) {
                 try {
                     const parsed = JSON.parse(savedStats);
@@ -37,12 +38,12 @@
 
 
         function saveBalance() {
-            localStorage.setItem('casinoBalance', balance.toString());
+            localStorage.setItem(STORAGE_KEY_BALANCE, balance.toString());
         }
 
 
         function saveStats() {
-            localStorage.setItem('casinoStats', JSON.stringify(stats));
+            localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(stats));
         }
 
 
@@ -125,17 +126,16 @@
         function handleSwipe() {
             const xDiff = touchEndX - touchStartX;
             const yDiff = touchEndY - touchStartY;
-            const minSwipeDistance = 50;
 
             // Check if it's a horizontal swipe (game navigation)
             if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                if (Math.abs(xDiff) > minSwipeDistance) {
+                if (Math.abs(xDiff) > MIN_SWIPE_DISTANCE) {
                     // Left swipe - could trigger "next games"
                     // Right swipe - could trigger "previous games"
                 }
             }
             // Vertical swipe (scroll through sections)
-            else if (Math.abs(yDiff) > minSwipeDistance) {
+            else if (Math.abs(yDiff) > MIN_SWIPE_DISTANCE) {
                 // Can be used for smooth scrolling between sections
             }
         }
