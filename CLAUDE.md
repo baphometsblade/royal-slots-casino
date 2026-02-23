@@ -189,6 +189,16 @@ The app supports two database backends, selected automatically at startup:
 Route files write SQLite-dialect SQL; the query adapter (`server/db/query-adapter.js`)
 translates `datetime('now')`, `strftime()`, `?` params, etc. to PostgreSQL equivalents at runtime.
 
+### PostgreSQL Gotchas (pg-backend.js)
+
+Type parsers are registered at module load to keep SQLite/PG parity:
+- `NUMERIC(15,2)` → `parseFloat` (OID 1700) — without this, money columns return strings
+- `TIMESTAMPTZ` → raw string passthrough (OID 1184) — without this, dates return JS Date objects
+- `BIGINT` → `parseInt` (OID 20) — `COUNT(*)` returns bigint strings in PG
+
+**All async route handlers MUST have try/catch.** Express 4 does not catch rejected promises —
+an uncaught `await db.get()` error becomes an unhandled rejection (server crash risk).
+
 ### Deployment (Render.com)
 
 `render.yaml` provisions a free PostgreSQL database and links it via `DATABASE_URL`.
