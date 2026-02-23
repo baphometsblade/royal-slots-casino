@@ -125,9 +125,11 @@
                 ? `background-image: url('${game.thumbnail}'); background-size: cover; background-position: center;`
                 : `background: ${game.bgGradient};`;
             const isJackpot = game.tag === 'JACKPOT' || game.tagClass === 'tag-jackpot';
+            const isHot  = game.tag === 'HOT'  || game.tagClass === 'tag-hot';
+            const isNew  = game.tag === 'NEW'  || game.tagClass === 'tag-new';
             // Non-jackpot tags go top-right; jackpot gets its own bottom badge
             const topTag = (!isJackpot && game.tag)
-                ? `<div class="game-tag ${game.tagClass}">${game.tag}</div>`
+                ? `<div class="game-tag ${game.tagClass}${isHot ? ' tag-hot-flame' : ''}${isNew ? ' tag-new-glow' : ''}">${game.tag}</div>`
                 : '';
             const jackpotBadge = isJackpot
                 ? `<div class="game-jackpot-badge"><svg viewBox="0 0 12 12" fill="currentColor" width="9" height="9" style="margin-right:3px"><path d="M6 1l1 2.5h2.5l-2 1.5.8 2.5L6 6.2l-2.3 1.3.8-2.5-2-1.5H5z"/></svg>JACKPOT</div>`
@@ -138,8 +140,25 @@
             const dotsHtml = Array.from({length: 4}, (_, i) =>
                 `<span class="vol-dot${i < volDots ? ' vol-dot-filled' : ''}"></span>`
             ).join('');
+            // Build hover overlay bonus pill
+            const featureIconMap = {
+                tumble: '⬇️', avalanche: '🪨', random_multiplier: '✨', zeus_multiplier: '⚡',
+                money_collect: '💰', respin: '🔄', stacked_wilds: '🔥', hold_and_win: '🎯',
+                fisherman_collect: '🎣', wheel_multiplier: '🎡', expanding_symbol: '📖',
+                expanding_wild_respin: '🌟', sticky_wilds: '🍯', progressive: '🏆',
+                mystery_symbols: '❓', cascading: '🌊', nudge: '👆', trail_bonus: '🗺️',
+                pick_bonus: '🎁', super_meter: '📊', lightning_respin: '⚡', mega_symbols: '🔮'
+            };
+            const bonusIcon = (game.bonusType && featureIconMap[game.bonusType]) || '🎰';
+            const gridLabel = (game.gridCols && game.gridRows) ? `${game.gridCols}×${game.gridRows}` : '';
+            const fsLabel  = game.freeSpinsCount ? `${game.freeSpinsCount} FS` : '';
+            const metaPills = [gridLabel, fsLabel].filter(Boolean)
+                .map(t => `<span class="game-hover-pill">${t}</span>`).join('');
+            const shortDesc = game.bonusDesc
+                ? `<div class="game-hover-desc">${bonusIcon} ${game.bonusDesc.split(':').pop().trim().slice(0,60)}${game.bonusDesc.length > 70 ? '…' : ''}</div>`
+                : '';
             return `
-                <div class="game-card" onclick="openSlot('${game.id}')">
+                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')">
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
                         ${topTag}
@@ -149,6 +168,8 @@
                         </div>
                         <div class="game-hover-overlay">
                             <svg class="game-play-svg" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" fill="rgba(23,145,99,0.9)" stroke="rgba(86,210,160,0.6)" stroke-width="2"/><polygon points="19,14 19,34 35,24" fill="#fff"/></svg>
+                            ${metaPills ? `<div class="game-hover-pills">${metaPills}</div>` : ''}
+                            ${shortDesc}
                         </div>
                     </div>
                     <div class="game-info">

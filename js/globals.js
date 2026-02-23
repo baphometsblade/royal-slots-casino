@@ -139,6 +139,9 @@
         // ═══ Turbo spin mode ═══
         let turboMode = false;
 
+        // ═══ Idle spin invitation timer ═══
+        let _idleInviteTimer = null;
+
         // ═══════════════════════════════════════════════════════════
         // ENHANCED AUTOPLAY MODAL
         // ═══════════════════════════════════════════════════════════

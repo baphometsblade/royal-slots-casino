@@ -457,9 +457,28 @@
             letter-spacing: 0.3px;
         }
 
-        .tag-jackpot { background: #ef4444; animation: pulse 1.5s infinite; }
-        .tag-hot { background: #bc3146; }
+        @keyframes tagJackpotShimmer {
+            0%, 100% { background-position: 0% 50%; box-shadow: 0 0 8px rgba(239,68,68,0.6); }
+            50%       { background-position: 100% 50%; box-shadow: 0 0 14px rgba(251,191,36,0.8); }
+        }
+        @keyframes tagHotFlame {
+            0%, 100% { box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+            50%       { box-shadow: 0 0 12px rgba(251,115,22,0.9), 0 0 4px rgba(253,186,116,0.5); }
+        }
+        @keyframes tagNewGlow {
+            0%, 100% { box-shadow: 0 0 4px rgba(16,185,129,0.4); }
+            50%       { box-shadow: 0 0 10px rgba(52,211,153,0.8); }
+        }
+        .tag-jackpot {
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #ef4444);
+            background-size: 200% 100%;
+            animation: tagJackpotShimmer 2s ease-in-out infinite;
+            color: #fff;
+        }
+        .tag-hot { background: linear-gradient(135deg, #bc3146, #e84a1f); }
+        .tag-hot.tag-hot-flame { animation: tagHotFlame 1.2s ease-in-out infinite; }
         .tag-new { background: #10b981; }
+        .tag-new.tag-new-glow { animation: tagNewGlow 1.8s ease-in-out infinite; }
         .tag-vip { background: #8b5cf6; }
         .tag-popular { background: var(--rg-yellow-300, #f59e0b); color: #101010; }
 
@@ -515,15 +534,16 @@
         .game-hover-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(2px);
+            background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.65) 100%);
+            backdrop-filter: blur(3px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             opacity: 0;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.22s ease;
+            padding: 8px;
         }
 
         .game-card:hover .game-hover-overlay {
@@ -542,7 +562,7 @@
         }
 
         .game-card:hover .game-play-svg {
-            transform: scale(1.1);
+            transform: scale(1.12);
         }
 
         .game-hover-provider {
@@ -552,11 +572,59 @@
             letter-spacing: 0.5px;
         }
 
+        /* Hover meta pills */
+        .game-hover-pills {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .game-hover-pill {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.9);
+            letter-spacing: 0.3px;
+        }
+        /* Hover bonus description */
+        .game-hover-desc {
+            font-size: 10px;
+            color: rgba(255,255,255,0.75);
+            text-align: center;
+            line-height: 1.3;
+            max-width: 90%;
+            letter-spacing: 0.2px;
+        }
+        /* Hot card subtle red rim */
+        .game-card-hot {
+            box-shadow: 0 0 0 1px rgba(188,49,70,0.3);
+        }
+        .game-card-hot:hover {
+            border-color: #ef4444 !important;
+            box-shadow: 0 8px 24px rgba(239,68,68,0.25), 0 4px 12px rgba(0,0,0,0.3) !important;
+        }
+        /* Jackpot card golden rim */
+        .game-card-jackpot {
+            box-shadow: 0 0 0 1px rgba(245,158,11,0.3);
+        }
+        .game-card-jackpot:hover {
+            border-color: #f59e0b !important;
+            box-shadow: 0 8px 24px rgba(245,158,11,0.3), 0 4px 12px rgba(0,0,0,0.3) !important;
+        }
+
+        @keyframes jackpotBadgeShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50%       { background-position: 100% 50%; }
+        }
         .game-jackpot-badge {
             position: absolute;
             bottom: 8px;
             left: 8px;
-            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            background: linear-gradient(90deg, #f59e0b, #ef4444, #fbbf24, #f59e0b);
+            background-size: 300% 100%;
             color: #fff;
             font-size: 9px;
             font-weight: 800;
@@ -565,6 +633,30 @@
             letter-spacing: 0.5px;
             z-index: 10;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            animation: jackpotBadgeShimmer 2.5s ease-in-out infinite;
+            box-shadow: 0 0 6px rgba(245,158,11,0.5);
+        }
+
+        /* Thumbnail shimmer sweep on hover */
+        .game-thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%);
+            transform: skewX(-20deg);
+            transition: none;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .game-card:hover .game-thumbnail::before {
+            animation: thumbShimmer 0.55s ease-out forwards;
+        }
+        @keyframes thumbShimmer {
+            0%   { left: -120%; }
+            100% { left: 140%; }
         }
 
         /* HD CSS Assets - Diamond */
@@ -9555,3 +9647,24 @@
     font-family: "Courier New", Courier, monospace !important;
 }
 /* ═══ END PER-PROVIDER BOTTOM BAR v2 ═══════════════════════════════════ */
+
+
+/* ═══ Reel Anticipation ═══ */
+.reel-anticipation {
+    animation: anticipationShake 0.18s ease-in-out 3;
+    box-shadow: inset 0 0 0 2px rgba(255,215,0,0.7), 0 0 20px rgba(255,215,0,0.4) !important;
+}
+@keyframes anticipationShake {
+    0%, 100% { transform: translateX(0); }
+    25%       { transform: translateX(-3px); }
+    75%       { transform: translateX(3px); }
+}
+
+/* ═══ Idle Spin Invitation ═══ */
+@keyframes idleSpinPulse {
+    0%, 100% { box-shadow: var(--slot-spin-glow, 0 0 20px rgba(255,165,0,0.4)); transform: scale(1); }
+    50%       { box-shadow: 0 0 0 8px rgba(255,165,0,0.15), 0 0 30px rgba(255,165,0,0.6); transform: scale(1.04); }
+}
+.spin-btn-idle-pulse {
+    animation: idleSpinPulse 1.4s ease-in-out infinite !important;
+}

@@ -783,6 +783,31 @@
         }
 
 
+        // ═══ Reel Anticipation ═══
+        function checkAnticipation(colIdx, grid) {
+            if (colIdx < 1 || !grid || !currentGame) return false;
+            const rows = currentGame.gridRows || 3;
+            const midRow = Math.floor(rows / 2);
+            const sym0 = grid[0] && grid[0][midRow];
+            const sym1 = grid[1] && grid[1][midRow];
+            if (!sym0 || !sym1) return false;
+            const wild0 = isWild ? isWild(sym0, currentGame) : false;
+            const wild1 = isWild ? isWild(sym1, currentGame) : false;
+            return sym0 === sym1 || wild0 || wild1;
+        }
+
+        // ═══ Idle Spin Invitation ═══
+        function resetIdleTimer() {
+            if (_idleInviteTimer) clearTimeout(_idleInviteTimer);
+            _idleInviteTimer = null;
+            const sBtn = document.getElementById('spinBtn');
+            if (sBtn) sBtn.classList.remove('spin-btn-idle-pulse');
+            _idleInviteTimer = setTimeout(function() {
+                const btn = document.getElementById('spinBtn');
+                if (btn && !spinning) btn.classList.add('spin-btn-idle-pulse');
+            }, 12000);
+        }
+
         function openSlot(gameId) {
             currentGame = games.find(g => g.id === gameId);
             if (!currentGame) return;
@@ -951,6 +976,8 @@
                 if (currentGame) {
                     showFeaturePopup(currentGame);
                 }
+                // Start idle spin invitation timer
+                resetIdleTimer();
             });
         }
 
@@ -993,6 +1020,11 @@
             hideFreeSpinsDisplay();
             freeSpinsActive = false;
             freeSpinsRemaining = 0;
+            // Clean up idle invite timer
+            if (_idleInviteTimer) clearTimeout(_idleInviteTimer);
+            _idleInviteTimer = null;
+            const spinBtnClose = document.getElementById('spinBtn');
+            if (spinBtnClose) spinBtnClose.classList.remove('spin-btn-idle-pulse');
         }
 
 
@@ -1191,6 +1223,7 @@
 
             playProviderSound('spin', currentGame);
             spinning = true;
+            resetIdleTimer(); // reset idle pulse at spin start
             updateSlotWinDisplay(0);
             // Add bg zoom effect during spin
             const reelAreaSpin = document.querySelector('.slot-reel-area');
@@ -1254,6 +1287,15 @@
             // Stop each column one by one with decel + bounce
             stopDelays.forEach((delay, colIdx) => {
                 setTimeout(() => {
+                    // Trigger reel anticipation on last reel(s) when 2 matching middle symbols seen
+                    if (!turboMode && colIdx === cols - 1 && checkAnticipation(colIdx, finalGrid)) {
+                        const colEl = document.getElementById('reelCol' + colIdx);
+                        if (colEl) {
+                            colEl.classList.add('reel-anticipation');
+                            setTimeout(function() { colEl.classList.remove('reel-anticipation'); }, 700);
+                        }
+                        if (typeof playSound === 'function') playSound('scatter');
+                    }
                     animateReelStop(colIdx, finalGrid[colIdx], null, cols, finalGrid, spinGame, () => {
                         if (serverResult) {
                             displayServerWinResult(serverResult, spinGame);
@@ -1261,6 +1303,7 @@
                             checkWin(flattenGrid(finalGrid), spinGame);
                         }
                         spinning = false;
+                        resetIdleTimer(); // restart idle pulse after spin
                         const ra = document.querySelector('.slot-reel-area');
                         if (ra) ra.classList.remove('spinning-active');
                         spinBtn.disabled = currentBet > balance;
@@ -1583,6 +1626,7 @@
             if (!freeSpinsActive || spinning || !currentGame) return;
 
             spinning = true;
+            resetIdleTimer(); // reset idle pulse at free spin start
             const spinBtn = document.getElementById('spinBtn');
             spinBtn.disabled = true;
             spinBtn.textContent = 'FREE SPIN...';
@@ -1623,6 +1667,7 @@
                     animateReelStop(colIdx, finalGrid[colIdx], null, cols, finalGrid, game, () => {
                         checkWin(flattenGrid(finalGrid), game);
                         spinning = false;
+                        resetIdleTimer(); // restart idle pulse after free spin
                         const ra2 = document.querySelector('.slot-reel-area');
                         if (ra2) ra2.classList.remove('spinning-active');
                         spinBtn.disabled = false;
