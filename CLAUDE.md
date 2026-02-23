@@ -11,6 +11,7 @@ Single-page app (`index.html`) served by an Express/Node server on port 3000.
 ```bash
 npm start          # production server (port 3000)
 npm run dev        # same — node server/index.js
+npm run test:adapter   # query adapter unit tests (fast, no server needed)
 npm run qa:regression  # Playwright smoke suite (must pass before committing)
 ```
 
@@ -199,10 +200,16 @@ Type parsers are registered at module load to keep SQLite/PG parity:
 **All async route handlers MUST have try/catch.** Express 4 does not catch rejected promises —
 an uncaught `await db.get()` error becomes an unhandled rejection (server crash risk).
 
+**Write PG-compatible SQL.** The query adapter handles syntax only. You must avoid:
+- SELECT aliases in `HAVING` (repeat the expression instead)
+- Non-aggregated columns missing from `GROUP BY` (PG is strict)
+- Assuming tables have an `id` column (some use `user_id` or `game_id` as PK)
+
 ### Deployment (Render.com)
 
 `render.yaml` provisions a free PostgreSQL database and links it via `DATABASE_URL`.
 Push to main and Render auto-deploys. No ephemeral filesystem dependency.
+`GET /api/health` — database ping + uptime, used by Render's `healthCheckPath`.
 
 ## Environment Setup
 
@@ -241,6 +248,7 @@ Calls `GET /api/admin/stats` (requires admin JWT). Admin password set via `ADMIN
 - **`typeof` guards for cross-file constants:** Code in files loaded early may reference constants from `constants.js`. Use `typeof X !== 'undefined' ? X : fallback` to tolerate load-order edge cases.
 - **CSS class name collisions:** `styles.css` is ~10k lines. Always search for existing class names before adding new ones (e.g., `.reel-win-entrance` already existed when Phase 2 tried to add it).
 - **QA filters asset 404s:** The QA regression script ignores `404 + "Failed to load resource"` errors since animated WebP assets load optimistically with PNG fallback.
+- **Production safety guards:** `server/index.js` refuses to start in `NODE_ENV=production` if `JWT_SECRET` or `ADMIN_PASSWORD` are still default values. Set both in `.env` or environment.
 
 ## Asset Generation
 
