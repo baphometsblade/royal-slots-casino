@@ -1147,32 +1147,103 @@
             }
             _winCounterRaf = requestAnimationFrame(tick);
         }
-        // Show payline path overlays for winning rows
+        // Payline colours — cycle through for multiple simultaneous wins
+        const PAYLINE_COLORS = [
+            '#34d399', '#f472b6', '#60a5fa', '#fbbf24',
+            '#a78bfa', '#fb923c', '#2dd4bf', '#f87171'
+        ];
+
+        // Draw SVG lines through winning cell centres
         function showPaylinePaths() {
-            const reel_area = document.querySelector('.slot-reel-area');
-            if (!reel_area) return;
-            const winCells = Array.from(document.querySelectorAll('.reel-win-glow, .reel-big-win-glow'));
-            if (!winCells.length) return;
-            const rowMap = {};
-            winCells.forEach(function(cell) {
-                const m = cell.id && cell.id.match(/^reel_(\d+)_(\d+)$/);
-                if (!m) return;
-                const row = parseInt(m[2]);
-                if (!rowMap[row]) rowMap[row] = [];
-                rowMap[row].push(cell);
+            var reelArea = document.querySelector('.slot-reel-area');
+            if (!reelArea) return;
+            if (!_lastWinLines || !_lastWinLines.length) return;
+
+            // Remove any previous SVG overlay
+            var old = reelArea.querySelector('.payline-svg');
+            if (old) old.remove();
+
+            var areaRect = reelArea.getBoundingClientRect();
+
+            var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'payline-svg');
+            svg.setAttribute('viewBox', '0 0 ' + areaRect.width + ' ' + areaRect.height);
+
+            // Blur filter for glow
+            var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            var filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+            filter.setAttribute('id', 'plBlur');
+            var blur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
+            blur.setAttribute('stdDeviation', '4');
+            filter.appendChild(blur);
+            defs.appendChild(filter);
+            svg.appendChild(defs);
+
+            _lastWinLines.forEach(function(winLine, idx) {
+                var cells = winLine.cells;
+                if (!cells || cells.length < 2) return;
+
+                var color = PAYLINE_COLORS[idx % PAYLINE_COLORS.length];
+                var points = [];
+
+                for (var i = 0; i < cells.length; i++) {
+                    var cellEl = document.getElementById('reel_' + cells[i][0] + '_' + cells[i][1]);
+                    if (!cellEl) continue;
+                    var cr = cellEl.getBoundingClientRect();
+                    points.push({
+                        x: cr.left + cr.width / 2 - areaRect.left,
+                        y: cr.top + cr.height / 2 - areaRect.top
+                    });
+                }
+                if (points.length < 2) return;
+
+                // Build path string
+                var d = 'M' + points[0].x + ',' + points[0].y;
+                for (var j = 1; j < points.length; j++) {
+                    d += ' L' + points[j].x + ',' + points[j].y;
+                }
+
+                // Glow layer (wide, blurred)
+                var glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                glow.setAttribute('d', d);
+                glow.setAttribute('stroke', color);
+                glow.setAttribute('stroke-width', '10');
+                glow.setAttribute('fill', 'none');
+                glow.setAttribute('stroke-linecap', 'round');
+                glow.setAttribute('stroke-linejoin', 'round');
+                glow.setAttribute('opacity', '0.35');
+                glow.setAttribute('filter', 'url(#plBlur)');
+                svg.appendChild(glow);
+
+                // Main crisp line
+                var line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                line.setAttribute('d', d);
+                line.setAttribute('stroke', color);
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('fill', 'none');
+                line.setAttribute('stroke-linecap', 'round');
+                line.setAttribute('stroke-linejoin', 'round');
+                line.setAttribute('opacity', '0.9');
+                svg.appendChild(line);
+
+                // Dots at each cell centre
+                for (var p = 0; p < points.length; p++) {
+                    var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    dot.setAttribute('cx', points[p].x);
+                    dot.setAttribute('cy', points[p].y);
+                    dot.setAttribute('r', '5');
+                    dot.setAttribute('fill', color);
+                    dot.setAttribute('stroke', '#fff');
+                    dot.setAttribute('stroke-width', '1.5');
+                    dot.setAttribute('opacity', '0.9');
+                    svg.appendChild(dot);
+                }
             });
-            const areaRect = reel_area.getBoundingClientRect();
-            Object.keys(rowMap).forEach(function(row) {
-                const cells = rowMap[row];
-                if (cells.length < 2) return;
-                const cellRect = cells[0].getBoundingClientRect();
-                const topInArea = cellRect.top - areaRect.top + cellRect.height / 2 - 2;
-                const pathEl = document.createElement('div');
-                pathEl.className = 'payline-path';
-                pathEl.style.top = topInArea + 'px';
-                reel_area.appendChild(pathEl);
-                setTimeout(function() { if (pathEl.parentNode) pathEl.parentNode.removeChild(pathEl); }, 2300);
-            });
+
+            reelArea.appendChild(svg);
+
+            // Auto-remove after CSS fade-out completes (2.8s)
+            setTimeout(function() { if (svg.parentNode) svg.remove(); }, 3000);
         }
 
 

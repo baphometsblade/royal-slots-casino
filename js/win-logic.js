@@ -236,6 +236,9 @@
             let message = '';
             let isTriple = false;
             let isDouble = false;
+
+            // Reset win lines for SVG visualiser
+            _lastWinLines = [];
             let isBigWin = false;
 
             // Clear all cell highlights
@@ -351,6 +354,9 @@
                         if (cell) cell.classList.add('reel-win-glow');
                     });
 
+                    // Store for SVG payline visualiser
+                    _lastWinLines.push({ cells: win.cells, lineIndex: win.lineIndex });
+
                     if (!bestLine || bonus.amount > bestLine.amount) {
                         bestLine = { ...win, amount: bonus.amount, bonusText: bonus.bonusText };
                     }
@@ -439,6 +445,9 @@
                     }
                     showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                     getAllCells().forEach(cell => cell.classList.add('reel-win-glow'));
+                    // Classic 3-reel triple: line through all 3 cells on row 0
+                    const cols3 = getGridCols(game);
+                    _lastWinLines.push({ cells: Array.from({length: cols3}, (_, c) => [c, 0]), lineIndex: 0 });
 
                 } else {
                     const doublePair = getDoubleMatch(symbols, game);
@@ -471,6 +480,8 @@
                             const cell = document.getElementById(`reel_${idx}_0`);
                             if (cell) cell.classList.add('reel-win-glow');
                         });
+                        // Classic double: line through the 2 matched cells
+                        _lastWinLines.push({ cells: doublePair.map(idx => [idx, 0]), lineIndex: 0 });
                     } else {
                         message = 'No match. Try again.';
                         if (freeSpinsActive && (game.bonusType === 'tumble' || game.bonusType === 'avalanche')) {

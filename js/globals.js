@@ -143,6 +143,7 @@
         // ═══ Idle spin invitation timer ═══
         let _idleInviteTimer = null;
         let _reelResizeHandler = null; // debounced resize listener for rescaleReelGridToFit
+        let _lastWinLines = [];       // [{cells:[[col,row],...], color}] for SVG payline visualiser
 
         // ═══════════════════════════════════════════════════════════
         // ENHANCED AUTOPLAY MODAL

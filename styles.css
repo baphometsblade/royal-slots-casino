@@ -9226,22 +9226,22 @@
 }
 
 /* ═══ Payline Path Visualizer ═══ */
-.payline-path {
+/* SVG payline win-line visualiser */
+.payline-svg {
     position: absolute;
-    left: 5%;
-    width: 90%;
-    height: 4px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, transparent 0%, rgba(52,211,153,0.9) 15%, rgba(52,211,153,0.9) 85%, transparent 100%);
-    box-shadow: 0 0 8px rgba(52,211,153,0.8), 0 0 16px rgba(52,211,153,0.5);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     z-index: 20;
-    animation: paylineFadeOut 2.2s ease-in-out forwards;
+    animation: paylineSvgFade 2.8s ease-in-out forwards;
 }
-@keyframes paylineFadeOut {
-    0%   { opacity: 0; transform: scaleX(0); }
-    15%  { opacity: 1; transform: scaleX(1); }
-    75%  { opacity: 1; }
+
+@keyframes paylineSvgFade {
+    0%   { opacity: 0; }
+    8%   { opacity: 1; }
+    72%  { opacity: 1; }
     100% { opacity: 0; }
 }
 
