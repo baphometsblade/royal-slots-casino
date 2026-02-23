@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "node server/index.js",
+    "test:adapter": "node scripts/test_query_adapter.js",
     "qa:regression": "node scripts/qa_regression.js",
     "reasset:slot-chrome": "py -3.10 scripts/reasset_slot_chrome.py --engine sdxl --force --style-mode contrast",
     "reasset:slot-chrome:auto": "py -3.10 scripts/reasset_slot_chrome.py --engine auto --force --style-mode contrast",

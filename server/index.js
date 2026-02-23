@@ -36,6 +36,17 @@ const authLimiter = rateLimit({
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/login', authLimiter);
 
+// ─── Health Check (used by Render / load balancers) ───
+app.get('/api/health', async (req, res) => {
+    try {
+        const db = require('./database');
+        await db.get('SELECT 1');
+        res.json({ status: 'ok', uptime: process.uptime() });
+    } catch (err) {
+        res.status(503).json({ status: 'error', message: err.message });
+    }
+});
+
 // ─── API Routes ───
 const authRoutes = require('./routes/auth.routes');
 const spinRoutes = require('./routes/spin.routes');
