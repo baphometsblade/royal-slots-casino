@@ -32,6 +32,75 @@
     }
 
     // ── Play Sound ──────────────────────────────────────────────────────
+    // ── Provider SFX Themes ───────────────────────────────────────────────
+    var PROVIDER_SFX_THEMES = {
+        novaspin: {
+            spin:   { waveType: 'sine',     freqs: [800, 1200, 1600],          dur: 0.10, spacing: 0.035 },
+            win:    { waveType: 'sine',     freqs: [880, 1108, 1318],          dur: 0.18, spacing: 0.06  },
+            bigwin: { waveType: 'sine',     freqs: [880, 1108, 1318, 1760],    dur: 0.35, spacing: 0.055 },
+        },
+        celestial: {
+            spin:   { waveType: 'sine',     freqs: [523, 659, 784],            dur: 0.18, spacing: 0.07  },
+            win:    { waveType: 'sine',     freqs: [523, 659, 784, 1047],      dur: 0.38, spacing: 0.09  },
+            bigwin: { waveType: 'sine',     freqs: [523, 659, 784, 988, 1047], dur: 0.55, spacing: 0.09  },
+        },
+        ironreel: {
+            spin:   { waveType: 'triangle', freqs: [220, 277, 330],            dur: 0.18, spacing: 0.06  },
+            win:    { waveType: 'triangle', freqs: [220, 330, 440],            dur: 0.35, spacing: 0.09  },
+            bigwin: { waveType: 'triangle', freqs: [110, 165, 220, 330],       dur: 0.55, spacing: 0.09  },
+        },
+        goldenedge: {
+            spin:   { waveType: 'sine',     freqs: [1046, 1318, 1568],          dur: 0.08, spacing: 0.04  },
+            win:    { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093],    dur: 0.22, spacing: 0.06  },
+            bigwin: { waveType: 'sine',     freqs: [1047, 1319, 1568, 2093, 2637], dur: 0.40, spacing: 0.055 },
+        },
+        vaultx: {
+            spin:   { waveType: 'sawtooth', freqs: [110, 165],                 dur: 0.14, spacing: 0.07  },
+            win:    { waveType: 'sawtooth', freqs: [165, 220, 277],            dur: 0.28, spacing: 0.07  },
+            bigwin: { waveType: 'sawtooth', freqs: [110, 165, 220, 277],       dur: 0.45, spacing: 0.07  },
+        },
+        solstice: {
+            spin:   { waveType: 'sine',     freqs: [293, 329, 392],            dur: 0.22, spacing: 0.09  },
+            win:    { waveType: 'sine',     freqs: [293, 349, 440, 587],       dur: 0.45, spacing: 0.11  },
+            bigwin: { waveType: 'sine',     freqs: [220, 293, 349, 440, 587],  dur: 0.65, spacing: 0.11  },
+        },
+        phantomworks: {
+            spin:   { waveType: 'square',   freqs: [233, 277],                 dur: 0.16, spacing: 0.08  },
+            win:    { waveType: 'square',   freqs: [233, 277, 311],            dur: 0.32, spacing: 0.08  },
+            bigwin: { waveType: 'square',   freqs: [185, 233, 277, 311],       dur: 0.50, spacing: 0.08  },
+        },
+        arcadeforge: {
+            spin:   { waveType: 'square',   freqs: [440, 660],                 dur: 0.07, spacing: 0.04  },
+            win:    { waveType: 'square',   freqs: [440, 554, 660, 880],       dur: 0.16, spacing: 0.045 },
+            bigwin: { waveType: 'square',   freqs: [440, 554, 660, 880, 1108], dur: 0.28, spacing: 0.045 },
+        },
+    };
+
+    function playProviderSound(soundType, game) {
+        var key   = (typeof getGameChromeStyle === 'function' && game) ? getGameChromeStyle(game) : '';
+        var theme = PROVIDER_SFX_THEMES[key];
+        if (!theme || !theme[soundType]) { playSound(soundType); return; }
+        if (!soundEnabled) return;
+        try {
+            var audioContext = getAudioContext();
+            var profile = theme[soundType];
+            var now = audioContext.currentTime;
+            profile.freqs.forEach(function(freq, i) {
+                var osc  = audioContext.createOscillator();
+                var gain = audioContext.createGain();
+                osc.type = profile.waveType;
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = freq;
+                var t = now + i * profile.spacing;
+                gain.gain.setValueAtTime(0.18 * soundVolume, t);
+                gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, t + profile.dur);
+                osc.start(t);
+                osc.stop(t + profile.dur + 0.02);
+            });
+        } catch(e) { /* ignore audio errors in headless environments */ }
+    }
+
     function playSound(type) {
         if (!soundEnabled) return;
 
@@ -241,6 +310,7 @@
     // ── Expose as globals (backward compatible) ─────────────────────────
     window.getAudioContext   = getAudioContext;
     window.playSound         = playSound;
+    window.playProviderSound = playProviderSound;
     window.toggleSound       = toggleSound;
     window.updateSoundButton = updateSoundButton;
     window.setSoundVolume    = setSoundVolume;
@@ -252,6 +322,7 @@
         toggleSound:       toggleSound,
         updateSoundButton: updateSoundButton,
         setSoundVolume:    setSoundVolume,
+        playProviderSound:   playProviderSound,
 
         /** Read-only accessors for current state */
         get soundEnabled() { return soundEnabled; },

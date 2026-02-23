@@ -13,6 +13,25 @@ function _animSettingEnabled(key) {
 }
 
 // ───────────────────────────────────────────────────────
+// Provider Animation Themes
+// ───────────────────────────────────────────────────────
+var PROVIDER_ANIM_THEMES = {
+    novaspin:     { particles: ['⚡','🌌','💫','🔬','🚀'], color: '#00e5ff', glow: '#00e5ff44' },
+    celestial:    { particles: ['🏛️','⚡','👑','🌟','💎'], color: '#ffd700', glow: '#ffd70044' },
+    ironreel:     { particles: ['🌿','🍀','🌲','🍃','🌱'], color: '#22c55e', glow: '#22c55e44' },
+    goldenedge:   { particles: ['🍭','💎','🌸','🍬','✨'], color: '#f472b6', glow: '#f472b644' },
+    vaultx:       { particles: ['💰','🔑','💣','🤠','⚙️'], color: '#d97706', glow: '#d9770644' },
+    solstice:     { particles: ['🏮','🎋','🔱','🌸','🐉'], color: '#ef4444', glow: '#ef444444' },
+    phantomworks: { particles: ['💀','🕷️','🌑','🦇','💜'], color: '#a855f7', glow: '#a855f744' },
+    arcadeforge:  { particles: ['👾','🕹️','⭐','🎮','🔴'], color: '#06b6d4', glow: '#06b6d444' },
+};
+
+function getProviderAnimTheme(game) {
+    var key = (typeof getGameChromeStyle === 'function') ? getGameChromeStyle(game) : '';
+    return PROVIDER_ANIM_THEMES[key] || { particles: ['✨','⭐','💫','✦','💰'], color: '#fbbf24', glow: '#fbbf2444' };
+}
+
+// ───────────────────────────────────────────────────────
 // Confetti Effect
 // ───────────────────────────────────────────────────────
 
@@ -39,20 +58,26 @@ function createConfetti() {
 // Particle Effects & Symbol Cascade System
 // ───────────────────────────────────────────────────────
 
-function createParticles(x, y, count = 8, type = 'gold') {
+function createParticles(x, y, count, type, symbolOverride) {
+    count = (count === undefined) ? 8 : count;
+    type  = type  || 'gold';
     if (!_animSettingEnabled('particles')) return;
 
-    const symbols = ['✨', '⭐', '💫', '✦', '💰'];
-    for (let i = 0; i < count; i++) {
-        const particle = document.createElement('div');
-        particle.className = `particle ${type}`;
-        particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-        particle.style.left = x + 'px';
-        particle.style.top = y + 'px';
+    var defaultSymbols = ['✨', '⭐', '💫', '✦', '💰'];
+    var pool = symbolOverride || defaultSymbols;
+    for (var i = 0; i < count; i++) {
+        var particle = document.createElement('div');
+        particle.className = 'particle ' + type;
+        particle.textContent = pool[Math.floor(Math.random() * pool.length)];
+        particle.style.left  = x + 'px';
+        particle.style.top   = y + 'px';
         particle.style.setProperty('--tx', (Math.random() - 0.5) * 100 + 'px');
-        particle.style.color = type === 'gold' ? '#fbbf24' : type === 'green' ? '#10b981' : '#a855f7';
+        particle.style.color = type === 'gold'   ? '#fbbf24'
+                             : type === 'green'  ? '#10b981'
+                             : type === 'purple' ? '#a855f7'
+                             : '#fbbf24';
         document.body.appendChild(particle);
-        setTimeout(() => particle.remove(), 1500);
+        setTimeout(function(p){ return function(){ p.remove(); }; }(particle), 1500);
     }
 }
 
@@ -76,20 +101,21 @@ function applySymbolCascade(cells, highlightColor = 'gold') {
 function triggerWinCascade(game) {
     if (!_animSettingEnabled('animations')) return;
 
-    const winCells = document.querySelectorAll('.reel-win-glow');
-    const cells = Array.from(winCells);
+    var winCells = document.querySelectorAll('.reel-win-glow');
+    var cells    = Array.from(winCells);
+    var theme    = getProviderAnimTheme(game);
 
-    // Determine highlight color based on game theme
-    let highlightColor = 'gold';
-    if (game.accentColor && game.accentColor.includes('10b981')) highlightColor = 'green';
-    if (game.accentColor && game.accentColor.includes('a855f7')) highlightColor = 'purple';
+    // Apply themed glow colour to winning cells
+    cells.forEach(function(cell) {
+        cell.style.boxShadow   = '0 0 18px 4px ' + theme.glow + ', 0 0 6px 2px ' + theme.color + '88';
+        cell.style.borderColor = theme.color;
+    });
 
-    applySymbolCascade(cells, highlightColor);
+    applySymbolCascade(cells, 'gold');
 
-    // Create burst particles from center of screen
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    createParticles(centerX, centerY, 15, 'sparkle');
+    var centerX = window.innerWidth  / 2;
+    var centerY = window.innerHeight / 2;
+    createParticles(centerX, centerY, 15, 'sparkle', theme.particles);
 }
 
 // ───────────────────────────────────────────────────────

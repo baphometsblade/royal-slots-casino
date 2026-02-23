@@ -123,6 +123,9 @@
 
         let tickerInterval = null;
 
+        // ===== Slot Jackpot Banner Ticker =====
+        let _slotJackpotTickInterval = null;
+
         // ===== Auto-Spin =====
         let autoSpinActive = false;
         let autoSpinCount = 0;

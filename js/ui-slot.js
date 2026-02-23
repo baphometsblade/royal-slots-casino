@@ -430,7 +430,7 @@
                     gambleState.amount *= 2;
                     resultEl.textContent = `✅ ${outcome.toUpperCase()}! WIN doubled → $${gambleState.amount.toLocaleString()}`;
                     resultEl.className = 'gamble-result gamble-result-win';
-                    playSound('win');
+                    playProviderSound('win', currentGame);
 
                     if (gambleState.round >= gambleState.maxRound) {
                         setTimeout(() => collectGamble(), 1200);
@@ -929,6 +929,24 @@
                 refreshQaSymbolList();
                 lastMessage = { type: 'info', text: '' };
 
+                // ── Live Jackpot Banner ──
+                const jackpotBannerEl = document.getElementById('slotJackpotBanner');
+                const jackpotValueEl  = document.getElementById('slotJackpotValue');
+                if (jackpotBannerEl) {
+                    const isJackpotGame = currentGame && (currentGame.jackpot || currentGame.tag === 'JACKPOT' || currentGame.tag === 'MEGA');
+                    if (isJackpotGame) {
+                        if (jackpotValueEl) jackpotValueEl.textContent = '$' + jackpotValue.toLocaleString();
+                        jackpotBannerEl.style.display = '';
+                        if (_slotJackpotTickInterval) clearInterval(_slotJackpotTickInterval);
+                        _slotJackpotTickInterval = setInterval(function() {
+                            jackpotValue += Math.floor(Math.random() * (JACKPOT_TICKER_INCREMENT_MAX - JACKPOT_TICKER_INCREMENT_MIN + 1) + JACKPOT_TICKER_INCREMENT_MIN);
+                            if (jackpotValueEl) jackpotValueEl.textContent = '$' + jackpotValue.toLocaleString();
+                        }, JACKPOT_TICKER_INTERVAL);
+                    } else {
+                        jackpotBannerEl.style.display = 'none';
+                    }
+                }
+
                 // Show feature popup (once per game per session)
                 if (currentGame) {
                     showFeaturePopup(currentGame);
@@ -948,6 +966,10 @@
             }
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
+            // Stop jackpot banner ticker and hide banner
+            if (_slotJackpotTickInterval) { clearInterval(_slotJackpotTickInterval); _slotJackpotTickInterval = null; }
+            const jackpotBannerClose = document.getElementById('slotJackpotBanner');
+            if (jackpotBannerClose) jackpotBannerClose.style.display = 'none';
             // Close paytable if open
             const paytable = document.getElementById('paytablePanel');
             if (paytable) paytable.classList.remove('active');
@@ -1121,7 +1143,7 @@
             respinCount = 0;
             expandingWildRespinsLeft = 0;
 
-            playSound('spin');
+            playProviderSound('spin', currentGame);
             spinning = true;
             updateSlotWinDisplay(0);
             // Add bg zoom effect during spin
@@ -1252,9 +1274,9 @@
 
                 const message = details.message || `WIN! $${winAmount.toLocaleString()}!`;
                 if (winAmount >= currentBet * 20) {
-                    playSound('bigwin');
+                    playProviderSound('bigwin', currentGame);
                 } else {
-                    playSound('win');
+                    playProviderSound('win', currentGame);
                 }
                 showMessage(message, 'win');
 
@@ -1462,7 +1484,7 @@
                 }, delay);
             });
 
-            playSound('spin');
+            playProviderSound('spin', currentGame);
         }
 
 
@@ -1797,7 +1819,7 @@
 
             if (totalWin > 0) {
                 createConfetti();
-                playSound('bigwin');
+                playProviderSound('bigwin', currentGame);
                 // Animated counter
                 const el = document.getElementById('fsSummaryAmount');
                 let start = 0;
@@ -2121,7 +2143,7 @@
             }
 
             overlay.style.display = 'flex';
-            playSound('bigwin');
+            playProviderSound('bigwin', currentGame);
 
             // Auto-close after 5s
             setTimeout(() => closeBigWin(), 5000);
