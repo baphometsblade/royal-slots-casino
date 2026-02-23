@@ -72,6 +72,15 @@ async function initDatabase() {
         )
     `);
 
+    db.run(`
+        CREATE TABLE IF NOT EXISTS session_win_caps (
+            user_id INTEGER PRIMARY KEY,
+            total_wins REAL DEFAULT 0,
+            session_start TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    `);
+
     // Create indexes
     db.run(`CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id)`);
     db.run(`CREATE INDEX IF NOT EXISTS idx_spins_user ON spins(user_id)`);

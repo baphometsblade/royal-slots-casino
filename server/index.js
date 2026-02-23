@@ -17,7 +17,7 @@ const corsOrigin = config.NODE_ENV === 'production'
     ? (process.env.ALLOWED_ORIGIN || false)
     : true;
 app.use(cors({ origin: corsOrigin }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Global rate limiter
 const globalLimiter = rateLimit({

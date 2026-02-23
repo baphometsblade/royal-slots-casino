@@ -7,6 +7,14 @@ const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Dummy hash for constant-time auth when user not found (prevents timing attacks)
+const DUMMY_HASH = bcrypt.hashSync('dummy-password-never-matches', 12);
+
+// Failed login tracking for account lockout
+const failedLogins = new Map(); // userId -> { count, lockedUntil }
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 // POST /api/auth/register
 router.post('/register', (req, res) => {
     try {
@@ -74,7 +82,22 @@ router.post('/login', (req, res) => {
         }
 
         const user = db.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, username]);
-        if (!user) {
+
+        // Always run bcrypt comparison (constant-time — prevents user enumeration via timing)
+        const hashToCompare = user ? user.password_hash : DUMMY_HASH;
+        const passwordValid = bcrypt.compareSync(password, hashToCompare);
+
+        if (!user || !passwordValid) {
+            // Track failed attempts for real users
+            if (user) {
+                const record = failedLogins.get(user.id) || { count: 0, lockedUntil: 0 };
+                record.count += 1;
+                if (record.count >= MAX_FAILED_ATTEMPTS) {
+                    record.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+                    record.count = 0;
+                }
+                failedLogins.set(user.id, record);
+            }
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
@@ -82,9 +105,15 @@ router.post('/login', (req, res) => {
             return res.status(403).json({ error: 'Account has been banned' });
         }
 
-        if (!bcrypt.compareSync(password, user.password_hash)) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+        // Check account lockout
+        const lockRecord = failedLogins.get(user.id);
+        if (lockRecord && lockRecord.lockedUntil > Date.now()) {
+            const minutesLeft = Math.ceil((lockRecord.lockedUntil - Date.now()) / 60000);
+            return res.status(429).json({ error: `Account temporarily locked. Try again in ${minutesLeft} minutes.` });
         }
+
+        // Successful login — clear failed attempts
+        failedLogins.delete(user.id);
 
         const token = jwt.sign({ userId: user.id }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRES_IN });
 

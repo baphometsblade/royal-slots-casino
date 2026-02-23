@@ -11,8 +11,8 @@ const router = express.Router();
 // Rate limiting state per user
 const lastSpinTime = new Map();
 const freeSpinStateByUser = new Map();
-// Cumulative session wins per user (resets on server restart — by design)
-const sessionWinByUser = new Map();
+// Session win cap duration — caps reset after 24 hours
+const SESSION_CAP_DURATION_HOURS = 24;
 
 function applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount) {
     if (cappedWinAmount >= uncappedWinAmount) return;
@@ -132,15 +132,32 @@ router.post('/', authenticate, (req, res) => {
         spinResult.winAmount = cappedWinAmount;
         applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount);
 
-        // ── Enforce session win cap ($50k cumulative ceiling) ──
-        const sessionWins   = sessionWinByUser.get(userId) || 0;
+        // ── Enforce session win cap ($50k cumulative ceiling, persisted to DB) ──
+        const capRow = db.get('SELECT total_wins, session_start FROM session_win_caps WHERE user_id = ?', [userId]);
+        let sessionWins = 0;
+        if (capRow) {
+            const sessionAge = (Date.now() - new Date(capRow.session_start + 'Z').getTime()) / 3600000;
+            if (sessionAge < SESSION_CAP_DURATION_HOURS) {
+                sessionWins = capRow.total_wins;
+            } else {
+                // Session expired — reset
+                db.run("UPDATE session_win_caps SET total_wins = 0, session_start = datetime('now') WHERE user_id = ?", [userId]);
+            }
+        }
         const remaining     = Math.max(0, config.SESSION_WIN_CAP - sessionWins);
         const sessionCapped = Math.min(spinResult.winAmount, remaining);
         if (sessionCapped < spinResult.winAmount) {
             applyWinCapMetadata(spinResult, spinResult.winAmount, sessionCapped);
             spinResult.winAmount = sessionCapped;
         }
-        sessionWinByUser.set(userId, sessionWins + sessionCapped);
+        if (sessionCapped > 0) {
+            db.run(
+                `INSERT INTO session_win_caps (user_id, total_wins, session_start)
+                 VALUES (?, ?, datetime('now'))
+                 ON CONFLICT(user_id) DO UPDATE SET total_wins = total_wins + ?`,
+                [userId, sessionCapped, sessionCapped]
+            );
+        }
 
         // Persist/clear active free-spin runtime state for this user
         if (spinResult.freeSpinState && spinResult.freeSpinState.active && spinResult.freeSpinState.remaining > 0) {
