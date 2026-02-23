@@ -169,6 +169,8 @@
         // KEYBOARD SHORTCUTS
         // ═══════════════════════════════════════════════════════
 
+        window.addEventListener('DOMContentLoaded', initAllSystems);
+
         document.addEventListener('keydown', function (e) {
             // Don't trigger if typing in an input
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
