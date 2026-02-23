@@ -11,7 +11,7 @@ function authenticate(req, res, next) {
 
     const token = authHeader.slice(7);
     try {
-        const payload = jwt.verify(token, config.JWT_SECRET);
+        const payload = jwt.verify(token, config.JWT_SECRET, { algorithms: ['HS256'] });
         const user = db.get('SELECT id, username, email, balance, is_admin, is_banned FROM users WHERE id = ?', [payload.userId]);
         if (!user) {
             return res.status(401).json({ error: 'User not found' });
