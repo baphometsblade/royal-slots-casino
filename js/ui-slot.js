@@ -258,8 +258,9 @@
 
             const availH = areaH - containerInsets;
 
-            // Clamp to designed size; minimum 44px so symbols stay readable
-            const scaledCellH    = Math.min(dims.h, Math.max(44, Math.floor((availH - (rows - 1) * gap) / rows)));
+            // Clamp to designed size; minimum 36px so symbols stay readable on small mobiles
+            const minCellH = window.innerHeight < 600 ? 36 : 44;
+            const scaledCellH    = Math.min(dims.h, Math.max(minCellH, Math.floor((availH - (rows - 1) * gap) / rows)));
             const scaledVisibleH = rows * scaledCellH + (rows - 1) * gap;
 
             for (let i = 0; i < reelStripData.length; i++) {
@@ -973,6 +974,8 @@
                     }, 120);
                 };
                 window.addEventListener('resize', _reelResizeHandler);
+                window.addEventListener('orientationchange', _reelResizeHandler);
+                if (window.visualViewport) window.visualViewport.addEventListener('resize', _reelResizeHandler);
                 document.getElementById('messageDisplay').innerHTML = '';
                 document.getElementById('winAnimation').innerHTML = '';
                 updateSlotWinDisplay(0);
@@ -1049,7 +1052,7 @@
             if (_idleInviteTimer) clearTimeout(_idleInviteTimer);
             _idleInviteTimer = null;
             // Clean up reel resize listener
-            if (_reelResizeHandler) { window.removeEventListener('resize', _reelResizeHandler); _reelResizeHandler = null; }
+            if (_reelResizeHandler) { window.removeEventListener('resize', _reelResizeHandler); window.removeEventListener('orientationchange', _reelResizeHandler); if (window.visualViewport) window.visualViewport.removeEventListener('resize', _reelResizeHandler); _reelResizeHandler = null; }
             const spinBtnClose = document.getElementById('spinBtn');
             if (spinBtnClose) spinBtnClose.classList.remove('spin-btn-idle-pulse');
         }

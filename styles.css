@@ -5660,11 +5660,22 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
+        /* Reset the parent .modal wrapper so the fullscreen slot isn't clipped
+           by the 22-40px modal padding that other modals (stats, settings) need. */
+        #slotModal.active {
+            padding: 0;
+            overflow: hidden;
+        }
+
         .slot-modal-fullscreen {
             display: flex !important;
             flex-direction: column;
+            width: 100%;
+            max-width: none;            /* override .modal-content max-width: 1200px */
             height: 100vh;
+            height: 100dvh;             /* Dynamic viewport height — accounts for mobile browser chrome */
             max-height: 100vh;
+            max-height: 100dvh;
             padding: 0 !important;
             border-radius: 0 !important;
             overflow: hidden;
@@ -6551,6 +6562,10 @@
 
             .slot-top-info .slot-title {
                 font-size: 14px;
+            }
+
+            .slot-reel-area {
+                padding: 4px;
             }
 
             .slot-reel-area .reels-container {
