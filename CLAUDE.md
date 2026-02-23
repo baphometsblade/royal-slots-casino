@@ -50,15 +50,20 @@ available to all files loaded after it. `constants.js` must always be first.
 
 ### Server-side (`server/`)
 
-Express app — JWT auth, SQLite via sql.js, house-edge enforcement, rate limiting.
+Express app — JWT auth, dual-backend database (SQLite/PostgreSQL), house-edge enforcement, rate limiting.
 
 ```
-server/index.js       ← entry point, middleware, route wiring
-server/config.js      ← env config
-server/database.js    ← sql.js init + schema
-server/routes/        ← auth, spin, user routes
-server/services/      ← business logic
-server/middleware/    ← JWT verify, rate limit helpers
+server/index.js            ← entry point, middleware, route wiring, graceful shutdown
+server/config.js           ← env config (DATABASE_URL selects backend)
+server/database.js         ← unified async facade — run/get/all/saveToFile
+server/db/sqlite-backend.js ← SQLite backend (sql.js, file-based)
+server/db/pg-backend.js    ← PostgreSQL backend (pg Pool, connection pooling)
+server/db/query-adapter.js ← translates SQLite SQL → PostgreSQL at runtime
+server/db/schema-sqlite.js ← SQLite DDL (11 tables)
+server/db/schema-pg.js     ← PostgreSQL DDL (SERIAL, NUMERIC, TIMESTAMPTZ)
+server/routes/             ← auth, spin, user, admin, balance, payment routes
+server/services/           ← house-edge, game-engine, RNG
+server/middleware/         ← JWT verify, rate limit helpers
 ```
 
 ## Key Conventions
@@ -167,6 +172,28 @@ Automations live in `.claude/` (tracked in git; only `settings.local.json` is gi
 `claude mcp add` cannot run inside a Claude Code session (nested sessions are blocked).
 Edit `.mcp.json` directly instead.
 
+## Database Backends
+
+The app supports two database backends, selected automatically at startup:
+
+| | SQLite (default) | PostgreSQL |
+|---|---|---|
+| **When** | `DATABASE_URL` not set | `DATABASE_URL` set |
+| **Dependency** | `sql.js` (in-process) | `pg` (connection pool) |
+| **Persistence** | `casino.db` file | Server-managed |
+| **Use case** | Local dev, zero setup | Production, cloud deploy |
+
+`npm start` without `DATABASE_URL` works exactly as before (SQLite).
+
+**All database calls are async** (`await db.run()`, `await db.get()`, `await db.all()`).
+Route files write SQLite-dialect SQL; the query adapter (`server/db/query-adapter.js`)
+translates `datetime('now')`, `strftime()`, `?` params, etc. to PostgreSQL equivalents at runtime.
+
+### Deployment (Render.com)
+
+`render.yaml` provisions a free PostgreSQL database and links it via `DATABASE_URL`.
+Push to main and Render auto-deploys. No ephemeral filesystem dependency.
+
 ## Environment Setup
 
 Create `.env` in the project root (optional — defaults work for local dev):
@@ -177,11 +204,13 @@ JWT_SECRET=dev-secret-change-in-production
 ADMIN_PASSWORD=admin123changeme
 NODE_ENV=development
 DB_PATH=./casino.db
+# DATABASE_URL=postgresql://user:password@localhost:5432/matrix_spins
 ```
 
 - `casino.db` is **auto-created** on first `npm start` if it doesn't exist (sql.js in-process SQLite).
 - `casino.db` is gitignored — never commit it.
 - No `.env` file is required for local dev; all values have safe defaults.
+- Set `DATABASE_URL` to use PostgreSQL instead of SQLite.
 
 ## Admin Panel
 

@@ -1,0 +1,155 @@
+/**
+ * PostgreSQL schema DDL — translated from the SQLite originals.
+ *
+ * Key differences:
+ *   AUTOINCREMENT  → SERIAL
+ *   REAL (money)   → NUMERIC(15,2)
+ *   datetime('now') → NOW()
+ *   INTEGER bool   → INTEGER (kept for compat — PG supports it fine)
+ */
+
+'use strict';
+
+const TABLES = [
+    `CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        balance NUMERIC(15,2) DEFAULT 0,
+        is_admin INTEGER DEFAULT 0,
+        is_banned INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        type TEXT NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
+        balance_before NUMERIC(15,2) NOT NULL,
+        balance_after NUMERIC(15,2) NOT NULL,
+        reference TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS spins (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        game_id TEXT NOT NULL,
+        bet_amount NUMERIC(15,2) NOT NULL,
+        result_grid TEXT NOT NULL,
+        win_amount NUMERIC(15,2) NOT NULL,
+        rng_seed TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS game_stats (
+        game_id TEXT PRIMARY KEY,
+        total_spins INTEGER DEFAULT 0,
+        total_wagered NUMERIC(15,2) DEFAULT 0,
+        total_paid NUMERIC(15,2) DEFAULT 0,
+        actual_rtp REAL DEFAULT 0
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS session_win_caps (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id),
+        total_wins NUMERIC(15,2) DEFAULT 0,
+        session_start TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS payment_methods (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        type TEXT NOT NULL,
+        label TEXT NOT NULL,
+        details_encrypted TEXT,
+        is_default INTEGER DEFAULT 0,
+        is_verified INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS deposits (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        amount NUMERIC(15,2) NOT NULL,
+        currency TEXT DEFAULT 'AUD',
+        payment_method_id INTEGER REFERENCES payment_methods(id),
+        payment_type TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        reference TEXT,
+        external_ref TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        completed_at TIMESTAMPTZ
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS withdrawals (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        amount NUMERIC(15,2) NOT NULL,
+        currency TEXT DEFAULT 'AUD',
+        payment_method_id INTEGER REFERENCES payment_methods(id),
+        payment_type TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        admin_note TEXT,
+        reference TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        processed_at TIMESTAMPTZ
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        token TEXT UNIQUE NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        used INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS user_verification (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id),
+        status TEXT DEFAULT 'unverified',
+        document_type TEXT,
+        submitted_at TIMESTAMPTZ,
+        verified_at TIMESTAMPTZ,
+        notes TEXT
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS user_limits (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id),
+        daily_deposit_limit NUMERIC(15,2),
+        weekly_deposit_limit NUMERIC(15,2),
+        monthly_deposit_limit NUMERIC(15,2),
+        daily_loss_limit NUMERIC(15,2),
+        session_time_limit INTEGER,
+        self_excluded_until TIMESTAMPTZ,
+        cooling_off_until TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+];
+
+const INDEXES = [
+    `CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_spins_user ON spins(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_spins_game ON spins(game_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_deposits_user ON deposits(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_withdrawals_user ON withdrawals(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_payment_methods_user ON payment_methods(user_id)`,
+];
+
+/** Extra columns added via migrations (column name → PG definition). */
+const USER_MIGRATIONS = [
+    ['display_name', 'TEXT'],
+    ['avatar_url', 'TEXT'],
+    ['phone', 'TEXT'],
+    ['date_of_birth', 'TEXT'],
+    ['country', 'TEXT'],
+    ['currency', "TEXT DEFAULT 'AUD'"],
+    ['email_verified', 'INTEGER DEFAULT 0'],
+    ['phone_verified', 'INTEGER DEFAULT 0'],
+    ['kyc_status', "TEXT DEFAULT 'unverified'"],
+    ['updated_at', 'TIMESTAMPTZ'],
+];
+
+module.exports = { TABLES, INDEXES, USER_MIGRATIONS };

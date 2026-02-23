@@ -7,6 +7,7 @@ module.exports = {
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123changeme',
     NODE_ENV: process.env.NODE_ENV || 'development',
     DB_PATH: process.env.DB_PATH || './casino.db',
+    DATABASE_URL: process.env.DATABASE_URL || null,
 
     // Game limits
     MAX_SPINS_PER_SECOND: 2,

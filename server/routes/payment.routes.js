@@ -23,16 +23,16 @@ function maskBankAccount(accountNumber) {
     return '***' + digits.slice(-4);
 }
 
-function ensureUserLimitsRow(userId) {
-    const existing = db.get('SELECT user_id FROM user_limits WHERE user_id = ?', [userId]);
+async function ensureUserLimitsRow(userId) {
+    const existing = await db.get('SELECT user_id FROM user_limits WHERE user_id = ?', [userId]);
     if (!existing) {
-        db.run('INSERT INTO user_limits (user_id) VALUES (?)', [userId]);
+        await db.run('INSERT INTO user_limits (user_id) VALUES (?)', [userId]);
     }
 }
 
 // ─── Check self-exclusion / cooling-off status ───
-function checkExclusion(userId) {
-    const limits = db.get(
+async function checkExclusion(userId) {
+    const limits = await db.get(
         'SELECT self_excluded_until, cooling_off_until FROM user_limits WHERE user_id = ?',
         [userId]
     );
@@ -49,8 +49,8 @@ function checkExclusion(userId) {
 }
 
 // ─── Check deposit limits ───
-function checkDepositLimits(userId, amount) {
-    const limits = db.get(
+async function checkDepositLimits(userId, amount) {
+    const limits = await db.get(
         'SELECT daily_deposit_limit, weekly_deposit_limit, monthly_deposit_limit FROM user_limits WHERE user_id = ?',
         [userId]
     );
@@ -61,7 +61,7 @@ function checkDepositLimits(userId, amount) {
     if (limits.daily_deposit_limit !== null) {
         const dayStart = new Date(now);
         dayStart.setHours(0, 0, 0, 0);
-        const daily = db.get(
+        const daily = await db.get(
             "SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE user_id = ? AND status = 'completed' AND created_at >= ?",
             [userId, dayStart.toISOString()]
         );
@@ -73,7 +73,7 @@ function checkDepositLimits(userId, amount) {
     if (limits.weekly_deposit_limit !== null) {
         const weekStart = new Date(now);
         weekStart.setDate(weekStart.getDate() - 7);
-        const weekly = db.get(
+        const weekly = await db.get(
             "SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE user_id = ? AND status = 'completed' AND created_at >= ?",
             [userId, weekStart.toISOString()]
         );
@@ -85,7 +85,7 @@ function checkDepositLimits(userId, amount) {
     if (limits.monthly_deposit_limit !== null) {
         const monthStart = new Date(now);
         monthStart.setDate(monthStart.getDate() - 30);
-        const monthly = db.get(
+        const monthly = await db.get(
             "SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE user_id = ? AND status = 'completed' AND created_at >= ?",
             [userId, monthStart.toISOString()]
         );
@@ -102,9 +102,9 @@ function checkDepositLimits(userId, amount) {
 // ═══════════════════════════════════════════════════
 
 // GET /api/payments/methods — list user's saved payment methods
-router.get('/methods', authenticate, (req, res) => {
+router.get('/methods', authenticate, async (req, res) => {
     try {
-        const methods = db.all(
+        const methods = await db.all(
             'SELECT id, type, label, details_encrypted, is_default, is_verified, created_at FROM payment_methods WHERE user_id = ? ORDER BY is_default DESC, created_at DESC',
             [req.user.id]
         );
@@ -116,7 +116,7 @@ router.get('/methods', authenticate, (req, res) => {
 });
 
 // POST /api/payments/methods — add a new payment method
-router.post('/methods', authenticate, (req, res) => {
+router.post('/methods', authenticate, async (req, res) => {
     try {
         const { type, label, details } = req.body;
 
@@ -173,13 +173,13 @@ router.post('/methods', authenticate, (req, res) => {
         }
 
         // Check if this is the first method — auto-set as default
-        const existingCount = db.get(
+        const existingCount = await db.get(
             'SELECT COUNT(*) as count FROM payment_methods WHERE user_id = ?',
             [req.user.id]
         );
         const isDefault = existingCount.count === 0 ? 1 : 0;
 
-        const result = db.run(
+        const result = await db.run(
             'INSERT INTO payment_methods (user_id, type, label, details_encrypted, is_default) VALUES (?, ?, ?, ?, ?)',
             [req.user.id, type, label, JSON.stringify(storedDetails), isDefault]
         );
@@ -202,14 +202,14 @@ router.post('/methods', authenticate, (req, res) => {
 });
 
 // DELETE /api/payments/methods/:id — remove a payment method
-router.delete('/methods/:id', authenticate, (req, res) => {
+router.delete('/methods/:id', authenticate, async (req, res) => {
     try {
         const methodId = parseInt(req.params.id);
         if (isNaN(methodId)) {
             return res.status(400).json({ error: 'Invalid method ID' });
         }
 
-        const method = db.get(
+        const method = await db.get(
             'SELECT id, is_default FROM payment_methods WHERE id = ? AND user_id = ?',
             [methodId, req.user.id]
         );
@@ -217,16 +217,16 @@ router.delete('/methods/:id', authenticate, (req, res) => {
             return res.status(404).json({ error: 'Payment method not found' });
         }
 
-        db.run('DELETE FROM payment_methods WHERE id = ? AND user_id = ?', [methodId, req.user.id]);
+        await db.run('DELETE FROM payment_methods WHERE id = ? AND user_id = ?', [methodId, req.user.id]);
 
         // If we deleted the default, promote the next one
         if (method.is_default) {
-            const next = db.get(
+            const next = await db.get(
                 'SELECT id FROM payment_methods WHERE user_id = ? ORDER BY created_at ASC LIMIT 1',
                 [req.user.id]
             );
             if (next) {
-                db.run('UPDATE payment_methods SET is_default = 1 WHERE id = ?', [next.id]);
+                await db.run('UPDATE payment_methods SET is_default = 1 WHERE id = ?', [next.id]);
             }
         }
 
@@ -238,14 +238,14 @@ router.delete('/methods/:id', authenticate, (req, res) => {
 });
 
 // PUT /api/payments/methods/:id/default — set as default payment method
-router.put('/methods/:id/default', authenticate, (req, res) => {
+router.put('/methods/:id/default', authenticate, async (req, res) => {
     try {
         const methodId = parseInt(req.params.id);
         if (isNaN(methodId)) {
             return res.status(400).json({ error: 'Invalid method ID' });
         }
 
-        const method = db.get(
+        const method = await db.get(
             'SELECT id FROM payment_methods WHERE id = ? AND user_id = ?',
             [methodId, req.user.id]
         );
@@ -254,8 +254,8 @@ router.put('/methods/:id/default', authenticate, (req, res) => {
         }
 
         // Clear all defaults for this user, then set the new one
-        db.run('UPDATE payment_methods SET is_default = 0 WHERE user_id = ?', [req.user.id]);
-        db.run('UPDATE payment_methods SET is_default = 1 WHERE id = ? AND user_id = ?', [methodId, req.user.id]);
+        await db.run('UPDATE payment_methods SET is_default = 0 WHERE user_id = ?', [req.user.id]);
+        await db.run('UPDATE payment_methods SET is_default = 1 WHERE id = ? AND user_id = ?', [methodId, req.user.id]);
 
         res.json({ message: 'Default payment method updated' });
     } catch (err) {
@@ -269,7 +269,7 @@ router.put('/methods/:id/default', authenticate, (req, res) => {
 // ═══════════════════════════════════════════════════
 
 // POST /api/payments/deposit — create and auto-complete a deposit
-router.post('/deposit', authenticate, (req, res) => {
+router.post('/deposit', authenticate, async (req, res) => {
     try {
         const { amount, paymentType, paymentMethodId } = req.body;
         const deposit = parseFloat(amount);
@@ -292,21 +292,21 @@ router.post('/deposit', authenticate, (req, res) => {
         }
 
         // Check self-exclusion
-        const exclusion = checkExclusion(req.user.id);
+        const exclusion = await checkExclusion(req.user.id);
         if (exclusion) {
             return res.status(403).json({ error: exclusion });
         }
 
         // Check deposit limits
-        ensureUserLimitsRow(req.user.id);
-        const limitError = checkDepositLimits(req.user.id, deposit);
+        await ensureUserLimitsRow(req.user.id);
+        const limitError = await checkDepositLimits(req.user.id, deposit);
         if (limitError) {
             return res.status(400).json({ error: limitError });
         }
 
         // Validate payment method ownership if provided
         if (paymentMethodId) {
-            const pm = db.get(
+            const pm = await db.get(
                 'SELECT id FROM payment_methods WHERE id = ? AND user_id = ?',
                 [paymentMethodId, req.user.id]
             );
@@ -318,14 +318,14 @@ router.post('/deposit', authenticate, (req, res) => {
         const reference = generateReference('DEP');
 
         // Create deposit record as pending
-        const depositResult = db.run(
+        const depositResult = await db.run(
             'INSERT INTO deposits (user_id, amount, currency, payment_method_id, payment_type, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [req.user.id, deposit, config.CURRENCY, paymentMethodId || null, paymentType, 'pending', reference]
         );
         const depositId = depositResult.lastInsertRowid;
 
         // Auto-complete: in a real system, the payment processor callback would do this
-        const user = db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -333,14 +333,14 @@ router.post('/deposit', authenticate, (req, res) => {
         const balanceBefore = user.balance;
         const balanceAfter = balanceBefore + deposit;
 
-        db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
 
-        db.run(
+        await db.run(
             "UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?",
             [depositId]
         );
 
-        db.run(
+        await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
             [req.user.id, 'deposit', deposit, balanceBefore, balanceAfter, reference]
         );
@@ -363,10 +363,10 @@ router.post('/deposit', authenticate, (req, res) => {
 });
 
 // GET /api/payments/deposits — list user's deposit history
-router.get('/deposits', authenticate, (req, res) => {
+router.get('/deposits', authenticate, async (req, res) => {
     try {
         const limit = Math.min(parseInt(req.query.limit) || 50, 200);
-        const deposits = db.all(
+        const deposits = await db.all(
             'SELECT id, amount, currency, payment_type, status, reference, external_ref, created_at, completed_at FROM deposits WHERE user_id = ? ORDER BY id DESC LIMIT ?',
             [req.user.id, limit]
         );
@@ -382,7 +382,7 @@ router.get('/deposits', authenticate, (req, res) => {
 // ═══════════════════════════════════════════════════
 
 // POST /api/payments/withdraw — create a withdrawal request
-router.post('/withdraw', authenticate, (req, res) => {
+router.post('/withdraw', authenticate, async (req, res) => {
     try {
         const { amount, paymentType, paymentMethodId } = req.body;
         const withdrawal = parseFloat(amount);
@@ -405,12 +405,12 @@ router.post('/withdraw', authenticate, (req, res) => {
         }
 
         // Check self-exclusion
-        const exclusion = checkExclusion(req.user.id);
+        const exclusion = await checkExclusion(req.user.id);
         if (exclusion) {
             return res.status(403).json({ error: exclusion });
         }
 
-        const user = db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -421,7 +421,7 @@ router.post('/withdraw', authenticate, (req, res) => {
 
         // Validate payment method ownership if provided
         if (paymentMethodId) {
-            const pm = db.get(
+            const pm = await db.get(
                 'SELECT id FROM payment_methods WHERE id = ? AND user_id = ?',
                 [paymentMethodId, req.user.id]
             );
@@ -435,17 +435,17 @@ router.post('/withdraw', authenticate, (req, res) => {
         const balanceAfter = balanceBefore - withdrawal;
 
         // Deduct balance immediately
-        db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
 
         // Create withdrawal record as pending (awaits admin processing)
-        const wdResult = db.run(
+        const wdResult = await db.run(
             'INSERT INTO withdrawals (user_id, amount, currency, payment_method_id, payment_type, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [req.user.id, withdrawal, config.CURRENCY, paymentMethodId || null, paymentType, 'pending', reference]
         );
         const withdrawalId = wdResult.lastInsertRowid;
 
         // Log transaction
-        db.run(
+        await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
             [req.user.id, 'withdrawal', -withdrawal, balanceBefore, balanceAfter, reference]
         );
@@ -469,10 +469,10 @@ router.post('/withdraw', authenticate, (req, res) => {
 });
 
 // GET /api/payments/withdrawals — list user's withdrawal history
-router.get('/withdrawals', authenticate, (req, res) => {
+router.get('/withdrawals', authenticate, async (req, res) => {
     try {
         const limit = Math.min(parseInt(req.query.limit) || 50, 200);
-        const withdrawals = db.all(
+        const withdrawals = await db.all(
             'SELECT id, amount, currency, payment_type, status, admin_note, reference, created_at, processed_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT ?',
             [req.user.id, limit]
         );
@@ -484,14 +484,14 @@ router.get('/withdrawals', authenticate, (req, res) => {
 });
 
 // POST /api/payments/withdraw/:id/cancel — cancel a pending withdrawal
-router.post('/withdraw/:id/cancel', authenticate, (req, res) => {
+router.post('/withdraw/:id/cancel', authenticate, async (req, res) => {
     try {
         const withdrawalId = parseInt(req.params.id);
         if (isNaN(withdrawalId)) {
             return res.status(400).json({ error: 'Invalid withdrawal ID' });
         }
 
-        const wd = db.get(
+        const wd = await db.get(
             'SELECT id, amount, status FROM withdrawals WHERE id = ? AND user_id = ?',
             [withdrawalId, req.user.id]
         );
@@ -503,7 +503,7 @@ router.post('/withdraw/:id/cancel', authenticate, (req, res) => {
         }
 
         // Refund the balance
-        const user = db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -511,14 +511,14 @@ router.post('/withdraw/:id/cancel', authenticate, (req, res) => {
         const balanceBefore = user.balance;
         const balanceAfter = balanceBefore + wd.amount;
 
-        db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
 
-        db.run(
+        await db.run(
             "UPDATE withdrawals SET status = 'cancelled', processed_at = datetime('now'), admin_note = 'Cancelled by user' WHERE id = ?",
             [withdrawalId]
         );
 
-        db.run(
+        await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
             [req.user.id, 'withdrawal_cancel', wd.amount, balanceBefore, balanceAfter, `WDR-CANCEL-${withdrawalId}`]
         );
@@ -538,10 +538,10 @@ router.post('/withdraw/:id/cancel', authenticate, (req, res) => {
 // ═══════════════════════════════════════════════════
 
 // GET /api/payments/limits — get user's current limits
-router.get('/limits', authenticate, (req, res) => {
+router.get('/limits', authenticate, async (req, res) => {
     try {
-        ensureUserLimitsRow(req.user.id);
-        const limits = db.get(
+        await ensureUserLimitsRow(req.user.id);
+        const limits = await db.get(
             'SELECT daily_deposit_limit, weekly_deposit_limit, monthly_deposit_limit, daily_loss_limit, session_time_limit, self_excluded_until, cooling_off_until FROM user_limits WHERE user_id = ?',
             [req.user.id]
         );
@@ -553,7 +553,7 @@ router.get('/limits', authenticate, (req, res) => {
 });
 
 // PUT /api/payments/limits — update deposit/loss/time limits
-router.put('/limits', authenticate, (req, res) => {
+router.put('/limits', authenticate, async (req, res) => {
     try {
         const {
             daily_deposit_limit,
@@ -563,9 +563,9 @@ router.put('/limits', authenticate, (req, res) => {
             session_time_limit
         } = req.body;
 
-        ensureUserLimitsRow(req.user.id);
+        await ensureUserLimitsRow(req.user.id);
 
-        const current = db.get(
+        const current = await db.get(
             'SELECT daily_deposit_limit, weekly_deposit_limit, monthly_deposit_limit, daily_loss_limit, session_time_limit FROM user_limits WHERE user_id = ?',
             [req.user.id]
         );
@@ -614,14 +614,14 @@ router.put('/limits', authenticate, (req, res) => {
         if (Object.keys(updates).length > 0) {
             const setClauses = Object.keys(updates).map(k => `${k} = ?`).join(', ');
             const values = Object.values(updates);
-            db.run(
+            await db.run(
                 `UPDATE user_limits SET ${setClauses}, updated_at = datetime('now') WHERE user_id = ?`,
                 [...values, req.user.id]
             );
         }
 
         // Fetch the updated limits
-        const updated = db.get(
+        const updated = await db.get(
             'SELECT daily_deposit_limit, weekly_deposit_limit, monthly_deposit_limit, daily_loss_limit, session_time_limit, self_excluded_until, cooling_off_until FROM user_limits WHERE user_id = ?',
             [req.user.id]
         );
@@ -644,7 +644,7 @@ router.put('/limits', authenticate, (req, res) => {
 });
 
 // POST /api/payments/self-exclude — self-exclude for a specified period
-router.post('/self-exclude', authenticate, (req, res) => {
+router.post('/self-exclude', authenticate, async (req, res) => {
     try {
         const { hours } = req.body;
         const period = parseInt(hours);
@@ -655,11 +655,11 @@ router.post('/self-exclude', authenticate, (req, res) => {
             });
         }
 
-        ensureUserLimitsRow(req.user.id);
+        await ensureUserLimitsRow(req.user.id);
 
         const excludedUntil = new Date(Date.now() + period * 60 * 60 * 1000).toISOString();
 
-        db.run(
+        await db.run(
             "UPDATE user_limits SET self_excluded_until = ?, updated_at = datetime('now') WHERE user_id = ?",
             [excludedUntil, req.user.id]
         );

@@ -423,7 +423,7 @@ function getWheelMultiplier(game) {
  * @param {Object} freeSpinState - {active, remaining, multiplier, cascadeLevel}
  * @returns {Object} { grid, winAmount, winDetails, freeSpinState, scatterTriggered }
  */
-function resolveSpin(game, betAmount, gameStats, freeSpinState = null, db = null) {
+async function resolveSpin(game, betAmount, gameStats, freeSpinState = null, db = null) {
     if (!freeSpinState) {
         freeSpinState = { active: false, remaining: 0, multiplier: 1, cascadeLevel: 0, totalWin: 0 };
     }
@@ -435,8 +435,8 @@ function resolveSpin(game, betAmount, gameStats, freeSpinState = null, db = null
     // Determine if this spin is allowed to produce a win.
     // Free spins have a higher but still controlled chance
     const allowWin = freeSpinState.active
-        ? houseEdge.shouldAllowWin(game, gameStats, db) || Math.random() < 0.35
-        : houseEdge.shouldAllowWin(game, gameStats, db);
+        ? (await houseEdge.shouldAllowWin(game, gameStats, db)) || Math.random() < 0.35
+        : await houseEdge.shouldAllowWin(game, gameStats, db);
 
     // Generate appropriate grid
     const grid = allowWin

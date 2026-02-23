@@ -12,5 +12,13 @@ services:
         generateValue: true
       - key: ADMIN_PASSWORD
         generateValue: true
-      - key: DB_PATH
-        value: /tmp/casino.db
+      - key: DATABASE_URL
+        fromDatabase:
+          name: matrix-spins-db
+          property: connectionString
+
+databases:
+  - name: matrix-spins-db
+    plan: free
+    databaseName: matrix_spins
+    user: matrix_spins

@@ -126,3 +126,29 @@ start().catch(err => {
     console.error('Failed to start server:', err);
     process.exit(1);
 });
+
+// ─── Graceful Shutdown ───
+// Drain the database connection pool (PostgreSQL) or save file (SQLite) on exit
+process.on('SIGTERM', async () => {
+    console.log('[Server] SIGTERM received, shutting down gracefully…');
+    try {
+        const { getBackend } = require('./database');
+        const backend = getBackend();
+        if (backend && typeof backend.close === 'function') {
+            await backend.close();
+        }
+    } catch (e) { /* backend not initialized yet */ }
+    process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+    console.log('[Server] SIGINT received, shutting down…');
+    try {
+        const { getBackend } = require('./database');
+        const backend = getBackend();
+        if (backend && typeof backend.close === 'function') {
+            await backend.close();
+        }
+    } catch (e) { /* backend not initialized yet */ }
+    process.exit(0);
+});

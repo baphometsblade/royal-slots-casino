@@ -56,7 +56,7 @@ function applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount) {
 }
 
 // POST /api/spin
-router.post('/', authenticate, (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
         const { gameId, betAmount } = req.body;
         const userId = req.user.id;
@@ -91,7 +91,7 @@ router.post('/', authenticate, (req, res) => {
         lastSpinTime.set(userId, now);
 
         // ── Check balance (fresh from DB) ──
-        const currentUser = db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+        const currentUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
         if (!currentUser) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -111,29 +111,29 @@ router.post('/', authenticate, (req, res) => {
         let balanceAfterBet = balanceBefore;
         if (!usedFreeSpin) {
             balanceAfterBet = balanceBefore - bet;
-            db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfterBet, userId]);
+            await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfterBet, userId]);
 
             // Log bet transaction
-            db.run(
+            await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
                 [userId, 'bet', -bet, balanceBefore, balanceAfterBet, `spin:${gameId}`]
             );
         }
 
         // ── Resolve spin (server-side RNG + win calc) ──
-        const gameStats = houseEdge.getGameStats(db, gameId);
+        const gameStats = await houseEdge.getGameStats(db, gameId);
 
         // Check if user has active free spins (stored in memory per user)
-        const spinResult = gameEngine.resolveSpin(game, bet, gameStats, existingFreeSpinState, db);
+        const spinResult = await gameEngine.resolveSpin(game, bet, gameStats, existingFreeSpinState, db);
 
         // ── Apply per-spin win cap (house protection with profit floor) ──
         const uncappedWinAmount = spinResult.winAmount;
-        const cappedWinAmount = houseEdge.capWinAmount(uncappedWinAmount, bet, game, db);
+        const cappedWinAmount = await houseEdge.capWinAmount(uncappedWinAmount, bet, game, db);
         spinResult.winAmount = cappedWinAmount;
         applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount);
 
         // ── Enforce session win cap ($50k cumulative ceiling, persisted to DB) ──
-        const capRow = db.get('SELECT total_wins, session_start FROM session_win_caps WHERE user_id = ?', [userId]);
+        const capRow = await db.get('SELECT total_wins, session_start FROM session_win_caps WHERE user_id = ?', [userId]);
         let sessionWins = 0;
         if (capRow) {
             const sessionAge = (Date.now() - new Date(capRow.session_start + 'Z').getTime()) / 3600000;
@@ -141,7 +141,7 @@ router.post('/', authenticate, (req, res) => {
                 sessionWins = capRow.total_wins;
             } else {
                 // Session expired — reset
-                db.run("UPDATE session_win_caps SET total_wins = 0, session_start = datetime('now') WHERE user_id = ?", [userId]);
+                await db.run("UPDATE session_win_caps SET total_wins = 0, session_start = datetime('now') WHERE user_id = ?", [userId]);
             }
         }
         const remaining     = Math.max(0, config.SESSION_WIN_CAP - sessionWins);
@@ -151,7 +151,7 @@ router.post('/', authenticate, (req, res) => {
             spinResult.winAmount = sessionCapped;
         }
         if (sessionCapped > 0) {
-            db.run(
+            await db.run(
                 `INSERT INTO session_win_caps (user_id, total_wins, session_start)
                  VALUES (?, ?, datetime('now'))
                  ON CONFLICT(user_id) DO UPDATE SET total_wins = total_wins + ?`,
@@ -170,22 +170,22 @@ router.post('/', authenticate, (req, res) => {
         let finalBalance = balanceAfterBet;
         if (spinResult.winAmount > 0) {
             finalBalance = balanceAfterBet + spinResult.winAmount;
-            db.run('UPDATE users SET balance = ? WHERE id = ?', [finalBalance, userId]);
+            await db.run('UPDATE users SET balance = ? WHERE id = ?', [finalBalance, userId]);
 
-            db.run(
+            await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
                 [userId, 'win', spinResult.winAmount, balanceAfterBet, finalBalance, `spin:${gameId}`]
             );
         }
 
         // ── Log spin ──
-        db.run(
+        await db.run(
             'INSERT INTO spins (user_id, game_id, bet_amount, result_grid, win_amount, rng_seed) VALUES (?, ?, ?, ?, ?, ?)',
             [userId, gameId, usedFreeSpin ? 0 : bet, JSON.stringify(spinResult.grid), spinResult.winAmount, spinResult.seed]
         );
 
         // ── Update game stats (house edge tracking) ──
-        houseEdge.updateGameStats(db, gameId, usedFreeSpin ? 0 : bet, spinResult.winAmount);
+        await houseEdge.updateGameStats(db, gameId, usedFreeSpin ? 0 : bet, spinResult.winAmount);
 
         // ── Response ──
         res.json({

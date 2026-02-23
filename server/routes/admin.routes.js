@@ -8,12 +8,12 @@ const router = express.Router();
 router.use(authenticate, requireAdmin);
 
 // GET /api/admin/stats — Casino-wide statistics
-router.get('/stats', (req, res) => {
-    const users = db.get('SELECT COUNT(*) as count, SUM(balance) as totalBalance FROM users');
-    const spins = db.get('SELECT COUNT(*) as count, SUM(bet_amount) as totalWagered, SUM(win_amount) as totalPaid FROM spins');
-    const deposits = db.get("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'deposit'");
-    const withdrawals = db.get("SELECT COALESCE(ABS(SUM(amount)), 0) as total FROM transactions WHERE type = 'withdrawal'");
-    const gameStats = db.all('SELECT * FROM game_stats ORDER BY total_spins DESC');
+router.get('/stats', async (req, res) => {
+    const users = await db.get('SELECT COUNT(*) as count, SUM(balance) as totalBalance FROM users');
+    const spins = await db.get('SELECT COUNT(*) as count, SUM(bet_amount) as totalWagered, SUM(win_amount) as totalPaid FROM spins');
+    const deposits = await db.get("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'deposit'");
+    const withdrawals = await db.get("SELECT COALESCE(ABS(SUM(amount)), 0) as total FROM transactions WHERE type = 'withdrawal'");
+    const gameStats = await db.all('SELECT * FROM game_stats ORDER BY total_spins DESC');
 
     const totalWagered = spins ? spins.totalWagered || 0 : 0;
     const totalPaid = spins ? spins.totalPaid || 0 : 0;
@@ -37,35 +37,35 @@ router.get('/stats', (req, res) => {
 });
 
 // GET /api/admin/users — User list
-router.get('/users', (req, res) => {
+router.get('/users', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 50, 500);
     const offset = parseInt(req.query.offset) || 0;
 
-    const users = db.all(
+    const users = await db.all(
         'SELECT id, username, email, balance, is_admin, is_banned, created_at FROM users ORDER BY id DESC LIMIT ? OFFSET ?',
         [limit, offset]
     );
-    const total = db.get('SELECT COUNT(*) as count FROM users');
+    const total = await db.get('SELECT COUNT(*) as count FROM users');
 
     res.json({ users, total: total ? total.count : 0 });
 });
 
 // GET /api/admin/user/:id — User details with transactions
-router.get('/user/:id', (req, res) => {
+router.get('/user/:id', async (req, res) => {
     const userId = parseInt(req.params.id);
-    const user = db.get('SELECT id, username, email, balance, is_admin, is_banned, created_at FROM users WHERE id = ?', [userId]);
+    const user = await db.get('SELECT id, username, email, balance, is_admin, is_banned, created_at FROM users WHERE id = ?', [userId]);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const transactions = db.all(
+    const transactions = await db.all(
         'SELECT * FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT 100',
         [userId]
     );
-    const spinHistory = db.all(
+    const spinHistory = await db.all(
         'SELECT id, game_id, bet_amount, win_amount, created_at FROM spins WHERE user_id = ? ORDER BY id DESC LIMIT 50',
         [userId]
     );
 
-    const spinStats = db.get(
+    const spinStats = await db.get(
         'SELECT COUNT(*) as totalSpins, SUM(bet_amount) as totalWagered, SUM(win_amount) as totalWon FROM spins WHERE user_id = ?',
         [userId]
     );
@@ -74,21 +74,21 @@ router.get('/user/:id', (req, res) => {
 });
 
 // POST /api/admin/user/:id/ban
-router.post('/user/:id/ban', (req, res) => {
+router.post('/user/:id/ban', async (req, res) => {
     const userId = parseInt(req.params.id);
-    db.run('UPDATE users SET is_banned = 1 WHERE id = ?', [userId]);
+    await db.run('UPDATE users SET is_banned = 1 WHERE id = ?', [userId]);
     res.json({ message: 'User banned' });
 });
 
 // POST /api/admin/user/:id/unban
-router.post('/user/:id/unban', (req, res) => {
+router.post('/user/:id/unban', async (req, res) => {
     const userId = parseInt(req.params.id);
-    db.run('UPDATE users SET is_banned = 0 WHERE id = ?', [userId]);
+    await db.run('UPDATE users SET is_banned = 0 WHERE id = ?', [userId]);
     res.json({ message: 'User unbanned' });
 });
 
 // POST /api/admin/user/:id/adjust-balance
-router.post('/user/:id/adjust-balance', (req, res) => {
+router.post('/user/:id/adjust-balance', async (req, res) => {
     const userId = parseInt(req.params.id);
     const { amount, reason } = req.body;
     const adjustment = parseFloat(amount);
@@ -97,14 +97,14 @@ router.post('/user/:id/adjust-balance', (req, res) => {
         return res.status(400).json({ error: 'Invalid amount' });
     }
 
-    const user = db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    const user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const balanceBefore = user.balance;
     const balanceAfter = Math.max(0, balanceBefore + adjustment);
 
-    db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, userId]);
-    db.run(
+    await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, userId]);
+    await db.run(
         'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
         [userId, 'admin_adjustment', adjustment, balanceBefore, balanceAfter, reason || 'Admin adjustment']
     );
@@ -113,9 +113,9 @@ router.post('/user/:id/adjust-balance', (req, res) => {
 });
 
 // GET /api/admin/recent-spins
-router.get('/recent-spins', (req, res) => {
+router.get('/recent-spins', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
-    const spins = db.all(
+    const spins = await db.all(
         `SELECT s.id, s.game_id, s.bet_amount, s.win_amount, s.created_at, u.username
          FROM spins s JOIN users u ON s.user_id = u.id
          ORDER BY s.id DESC LIMIT ?`,
@@ -125,19 +125,19 @@ router.get('/recent-spins', (req, res) => {
 });
 
 // GET /api/admin/profit-status — Detailed profit analysis
-router.get('/profit-status', (req, res) => {
+router.get('/profit-status', async (req, res) => {
     const config = require('../config');
-    const overall = db.get('SELECT COUNT(*) as spins, SUM(bet_amount) as wagered, SUM(win_amount) as paid FROM spins');
+    const overall = await db.get('SELECT COUNT(*) as spins, SUM(bet_amount) as wagered, SUM(win_amount) as paid FROM spins');
     const wagered = overall ? overall.wagered || 0 : 0;
     const paid = overall ? overall.paid || 0 : 0;
     const profit = wagered - paid;
     const rtp = wagered > 0 ? paid / wagered : 0;
 
     // Per-game breakdown
-    const gameStats = db.all('SELECT * FROM game_stats ORDER BY total_wagered DESC');
+    const gameStats = await db.all('SELECT * FROM game_stats ORDER BY total_wagered DESC');
 
     // Hourly profit (last 24h)
-    const hourlyProfit = db.all(`
+    const hourlyProfit = await db.all(`
         SELECT strftime('%Y-%m-%d %H:00', created_at) as hour,
                SUM(bet_amount) as wagered, SUM(win_amount) as paid,
                COUNT(*) as spins
@@ -147,7 +147,7 @@ router.get('/profit-status', (req, res) => {
     `);
 
     // Top winners (potential threats to profitability)
-    const topWinners = db.all(`
+    const topWinners = await db.all(`
         SELECT u.username, SUM(s.win_amount - s.bet_amount) as net_win,
                SUM(s.bet_amount) as wagered, SUM(s.win_amount) as paid,
                COUNT(*) as spins
@@ -176,7 +176,7 @@ router.get('/profit-status', (req, res) => {
 });
 
 // POST /api/admin/house-edge/config — Update house edge config
-router.post('/house-edge/config', (req, res) => {
+router.post('/house-edge/config', async (req, res) => {
     const config = require('../config');
     const { targetRTP, maxWinMultiplier, profitFloor } = req.body;
     if (targetRTP !== undefined) config.TARGET_RTP = Math.max(0.5, Math.min(0.99, parseFloat(targetRTP)));

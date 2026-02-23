@@ -16,7 +16,7 @@ const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 // POST /api/auth/register
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
@@ -37,7 +37,7 @@ router.post('/register', (req, res) => {
         }
 
         // Check existing
-        const existingUser = db.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email]);
+        const existingUser = await db.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email]);
         if (existingUser) {
             return res.status(409).json({ error: 'Username or email already taken' });
         }
@@ -45,7 +45,7 @@ router.post('/register', (req, res) => {
         const passwordHash = bcrypt.hashSync(password, 12);
         const startBalance = config.DEFAULT_BALANCE;
 
-        const result = db.run(
+        const result = await db.run(
             'INSERT INTO users (username, email, password_hash, balance) VALUES (?, ?, ?, ?)',
             [username, email, passwordHash, startBalance]
         );
@@ -54,7 +54,7 @@ router.post('/register', (req, res) => {
 
         // Log initial balance transaction if > 0
         if (startBalance > 0) {
-            db.run(
+            await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
                 [userId, 'bonus', startBalance, 0, startBalance, 'Welcome bonus']
             );
@@ -73,7 +73,7 @@ router.post('/register', (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -81,7 +81,7 @@ router.post('/login', (req, res) => {
             return res.status(400).json({ error: 'Username and password are required' });
         }
 
-        const user = db.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, username]);
+        const user = await db.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, username]);
 
         // Check account lockout BEFORE bcrypt (saves CPU and prevents timing leaks)
         if (user) {
