@@ -19,8 +19,13 @@
         }
 
 
-        /** Preload animated WebP assets for the current game */
+        /** Preload animated WebP assets for the current game (with lifecycle management) */
+        var _preloadCache = [];  // Track active preload images for cancellation
         function preloadAnimatedAssets(game) {
+            // Cancel any in-flight preloads from a previous game
+            _preloadCache.forEach(function(img) { img.src = ''; });
+            _preloadCache = [];
+
             if (!game) return;
             var quality = (window.appSettings && window.appSettings.animationQuality) || 'ultra';
             if (quality === 'low' || quality === 'off') return;
@@ -30,6 +35,7 @@
                 game.symbols.forEach(function(sym) {
                     var img = new Image();
                     img.src = 'assets/game_symbols/' + game.id + '/' + sym + '.webp';
+                    _preloadCache.push(img);
                 });
             }
 
@@ -37,6 +43,7 @@
             if (quality !== 'low') {
                 var bgImg = new Image();
                 bgImg.src = 'assets/backgrounds/slots/' + game.id + '_bg.webp';
+                _preloadCache.push(bgImg);
             }
         }
 

@@ -456,6 +456,7 @@
             g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
             ambientFadeTimer = setTimeout(function () {
                 try { o.stop(); } catch (e) { /* already stopped */ }
+                try { o.disconnect(); g.disconnect(); ambientNodes.filter.disconnect(); } catch (e2) {}
                 ambientNodes = null;
                 ambientFadeTimer = null;
             }, 900);
@@ -492,9 +493,13 @@
                 try {
                     removed.gain.gain.setValueAtTime(removed.gain.gain.value, removed.ctx.currentTime);
                     removed.gain.gain.linearRampToValueAtTime(0, removed.ctx.currentTime + 0.5);
-                    (function (o) {
-                        setTimeout(function () { try { o.stop(); } catch (e) {} }, 600);
-                    })(removed.osc);
+                    (function (r) {
+                        setTimeout(function () {
+                            try { r.osc.stop(); } catch (e) {}
+                            try { if (r.lfo) r.lfo.stop(); } catch (e) {}
+                            try { r.osc.disconnect(); r.gain.disconnect(); r.filter.disconnect(); if (r.lfo) r.lfo.disconnect(); if (r.lfoGain) r.lfoGain.disconnect(); } catch (e) {}
+                        }, 600);
+                    })(removed);
                 } catch (e) { /* ignore */ }
             }
         }

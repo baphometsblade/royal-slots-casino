@@ -216,7 +216,10 @@ async function run() {
   const trackRuntimeError = (type, text) => {
     const cleanText = String(text || "").trim();
     if (!cleanText) return;
-    // Ignore 404s for animated WebP assets (gracefully fallback to PNG via onerror)
+    // Ignore 404 "Failed to load resource" errors — these come from animated WebP
+    // assets that don't exist yet (ui-slot.js loads .webp with .png onerror fallback).
+    // Browser console.error text doesn't include the URL, so we can't filter by path.
+    // Script/CSS 404s would cause other visible test failures, so this is safe.
     if (cleanText.includes("404") && cleanText.includes("Failed to load resource")) return;
     const key = `${type}:${cleanText}`;
     if (runtimeErrorSet.has(key)) return;

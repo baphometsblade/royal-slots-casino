@@ -25,17 +25,22 @@ Script load order matters — dependencies flow top to bottom:
 ```
 constants.js              ← all named constants, no dependencies
 shared/game-definitions.js ← 80+ game configs (GAMES array)
-shared/chrome-styles.js   ← per-game CSS theme data
+shared/chrome-styles.js   ← per-game CSS theme data + PROVIDER_FULL_THEMES
 house-edge-client.js      ← client RNG helper
-sound-manager.js          ← Web Audio synth
-animations.js             ← particle/confetti helpers
+sound-manager.js          ← Web Audio synth + provider soundscapes
+animations.js             ← particle/confetti helpers + cinematic win sequences
 js/globals.js             ← shared mutable state + utility functions
+js/particle-engine.js     ← canvas particle system (provider-themed)
 js/auth.js                ← login/register/session
 js/spin-engine.js         ← grid generation, symbol helpers, RNG queue
 js/win-logic.js           ← win evaluation, scatter/bonus dispatch
 js/ui-lobby.js            ← lobby render, game filters, win ticker
-js/ui-slot.js             ← reel UI, spin animation, slot lifecycle (~2200 lines)
+js/ui-slot.js             ← reel UI, spin animation, slot lifecycle (~2500 lines)
 js/ui-modals.js           ← settings, stats, XP, daily bonus, bonus wheel
+js/ui-wallet.js           ← wallet/cashier UI
+js/ui-profile.js          ← profile management
+js/ui-vip.js              ← VIP system UI
+js/ui-promos.js           ← promotions UI
 js/qa-tools.js            ← QA panel, deterministic seed, forced outcomes
 js/app.js                 ← bootstrap (initAllSystems via DOMContentLoaded), keyboard shortcuts
 ```
@@ -65,6 +70,12 @@ All magic numbers live in `constants.js`. **Never** hardcode:
 - XP awards → use `XP_AWARD_PER_SPIN / XP_AWARD_BIG_WIN / XP_AWARD_REGULAR_WIN`
 - Timing values → use the named timing constants
 - RNG algorithm constants → `FNV_OFFSET_BASIS`, `FNV_PRIME`, `DEFAULT_SEED_STATE`, etc.
+- Quality tiers → `QUALITY_ULTRA/HIGH/MEDIUM/LOW/OFF`, `QUALITY_TIERS`
+- Particle budgets → `PARTICLES_MAX_ULTRA/HIGH/MEDIUM/LOW`
+- 3D depth → `DEPTH_WIN_FORWARD`, `DEPTH_LOSE_BACK`, `DEPTH_PERSPECTIVE`
+- Screen shake → `SHAKE_EPIC/MEGA/JACKPOT_INTENSITY` and `_DURATION`
+- Cinematic timing → `CINEMATIC_PAUSE` through `CINEMATIC_FADE_BACK`
+- Win thresholds → `WIN_DRAMATIC/EPIC/MEGA/JACKPOT_THRESHOLD`
 
 ### State
 All shared mutable state lives in `js/globals.js`:
@@ -72,6 +83,31 @@ All shared mutable state lives in `js/globals.js`:
 
 `appSettings` is initialised by calling `loadSettings()` in `initBase()` — it is **not**
 lazy; it must be populated before any modal opens.
+
+### Adding a New Setting
+Three coordinated edits required:
+1. Default value in `settingsDefaults` object in `js/globals.js`
+2. Handler function + sync logic in `openSettingsModal()` in `js/ui-modals.js`
+3. HTML control in the settings modal section of `index.html`
+`settingsResetAll()` inherits new defaults automatically via `{ ...settingsDefaults }`.
+
+### Visual Effects & Quality Tiers
+`appSettings.animationQuality` (`'ultra'`/`'high'`/`'medium'`/`'low'`/`'off'`) controls all
+visual effects globally. Always gate expensive effects behind quality checks:
+```js
+const q = appSettings.animationQuality;
+if (q === 'ultra' || q === 'high') { /* 3D depth, landing tilt, full particles */ }
+```
+
+Key subsystems:
+- **Particle engine** (`js/particle-engine.js`): `initParticleEngine()`, `burstParticles()`,
+  `startAmbientParticles()`, `triggerWinParticles()`, `destroyParticleEngine()`
+- **Sound system** (`sound-manager.js`): `SoundManager.startAmbient()`, `.stopAmbient()`,
+  `.playSoundEvent()`, `.playNearMiss()`, `.playCounterTick()`, `.playReelStop()`
+- **Cinematic wins** (`animations.js`): `triggerCinematicWinSequence()` orchestrates
+  vignette → 3D pop → shake → text slam → particles → counter roll
+- **Provider themes** (`shared/chrome-styles.js`): `PROVIDER_FULL_THEMES` has unified
+  visual/particle/sound/ambient/animation config; `getProviderFullTheme(game)` resolves it
 
 ### Storage Key Aliases
 Some modules use short aliases for convenience — these are defined in `globals.js` and
@@ -162,6 +198,10 @@ Calls `GET /api/admin/stats` (requires admin JWT). Admin password set via `ADMIN
 - **Slot testing requires auth:** `openSlot()` silently no-ops when `currentUser === null`. The preview browser always starts unauthenticated. Use `npm run qa:regression` — it is the only reliable way to verify slot behaviour without a real login.
 - **Modal layout timing:** `classList.add('active')` does not immediately settle flex layout or CSS transitions. Use `requestAnimationFrame(() => requestAnimationFrame(() => fn()))` (double-RAF) for any DOM measurement that depends on a freshly activated modal.
 - **Reel animation state:** `reelStripData[]` in `globals.js` stores live per-column animation state (`cellH`, `visibleH`, `totalH`, `currentY`, `targetY`, `stripEl`). Any runtime resize of reel cells must update all six fields in sync or the spin animation drifts. `REEL_CELL_DIMS` (constants.js) and `REEL_STRIP_BUFFER` are the canonical sizing constants.
+- **Multi-agent file contention:** When dispatching parallel agents, never assign two agents to edit the same file. Changes can be silently lost. Serialize edits to shared files (especially `index.html`, `styles.css`).
+- **`typeof` guards for cross-file constants:** Code in files loaded early may reference constants from `constants.js`. Use `typeof X !== 'undefined' ? X : fallback` to tolerate load-order edge cases.
+- **CSS class name collisions:** `styles.css` is ~10k lines. Always search for existing class names before adding new ones (e.g., `.reel-win-entrance` already existed when Phase 2 tried to add it).
+- **QA filters asset 404s:** The QA regression script ignores `404 + "Failed to load resource"` errors since animated WebP assets load optimistically with PNG fallback.
 
 ## Asset Generation
 
@@ -171,6 +211,14 @@ npm run reasset:slot-chrome          # SDXL, high contrast
 npm run reasset:slot-chrome:auto     # auto engine
 npm run reasset:slot-chrome:balanced # balanced style
 ```
+
+Animated WebP generation (requires ComfyUI + AnimateDiff running locally):
+```bash
+python scripts/generate_animated_symbols.py --dry-run     # preview symbol categories
+python scripts/generate_animated_backgrounds.py --dry-run  # preview background themes
+```
+Symbols: 15fps, 1.5s loop, ≤150KB. Backgrounds: 10fps, 3s loop, ≤400KB.
+`ui-slot.js` loads `.webp` first with automatic `.png` fallback via `onerror`.
 
 Requires Python 3.10 + configured AI image backend.
 

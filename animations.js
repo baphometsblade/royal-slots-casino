@@ -419,9 +419,13 @@ function triggerCinematicWinSequence(winMultiplier, winAmount, game, winningCell
     setTimeout(function() {
         // Canvas particles if available
         if (typeof triggerWinParticles === 'function') {
-            var rect = (winningCells[0] || document.querySelector('.reel-grid')).getBoundingClientRect();
-            var cx = rect.left + rect.width / 2;
-            var cy = rect.top + rect.height / 2;
+            var el = winningCells[0] || document.querySelector('.reel-grid');
+            var rect = el.getBoundingClientRect();
+            // Convert viewport coords to container-relative for particle canvas
+            var container = document.querySelector('.reel-grid') || el.parentElement;
+            var cRect = container.getBoundingClientRect();
+            var cx = (rect.left + rect.width / 2) - cRect.left;
+            var cy = (rect.top + rect.height / 2) - cRect.top;
             triggerWinParticles(cx, cy, winMultiplier, providerKey);
         }
         // Also trigger legacy confetti
