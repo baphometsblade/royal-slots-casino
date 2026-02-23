@@ -223,6 +223,57 @@
         }
 
 
+        // Rescale reel cells to fit the actual available height of .reels-container.
+        // Called via requestAnimationFrame after the slot modal becomes active so that
+        // CSS layout (flex squeeze, max-height media queries, etc.) has been applied.
+        function rescaleReelGridToFit(game) {
+            if (!reelStripData || !reelStripData.length) return;
+            const container = document.querySelector('.reels-container');
+            if (!container) return;
+
+            const rows = getGridRows(game);
+            const dims = getCellDims(game);
+            const gap  = dims.gap;
+
+            // Measure inner height after padding (clientHeight includes padding)
+            const cs      = window.getComputedStyle(container);
+            const availH  = container.clientHeight
+                          - (parseFloat(cs.paddingTop)    || 0)
+                          - (parseFloat(cs.paddingBottom) || 0);
+
+            // Scale cells down to fit; never scale UP beyond the designed size
+            const scaledCellH    = Math.min(dims.h, Math.max(40, Math.floor((availH - (rows - 1) * gap) / rows)));
+            const scaledVisibleH = rows * scaledCellH + (rows - 1) * gap;
+
+            // No-op when already within designed bounds
+            if (scaledCellH >= dims.h) return;
+
+            for (let i = 0; i < reelStripData.length; i++) {
+                const rd = reelStripData[i];
+
+                // Resize the visible column window
+                rd.colEl.style.height = scaledVisibleH + 'px';
+
+                // Resize every cell in the strip (buffer + visible rows)
+                rd.stripEl.querySelectorAll('.reel-cell').forEach(cell => {
+                    cell.style.height    = scaledCellH + 'px';
+                    cell.style.minHeight = scaledCellH + 'px';
+                });
+
+                // Recalculate strip Y so the visible zone stays centred
+                const newInitialY = -(REEL_STRIP_BUFFER * (scaledCellH + gap));
+                const newTotalH   = rd.totalCells * (scaledCellH + gap) - gap;
+
+                rd.cellH    = scaledCellH;
+                rd.visibleH = scaledVisibleH;
+                rd.totalH   = newTotalH;
+                rd.currentY = newInitialY;
+                rd.targetY  = newInitialY;
+                rd.stripEl.style.transform = `translateY(${newInitialY}px)`;
+            }
+        }
+
+
         // Render entire grid to DOM (visible-zone cells only)
         function renderGrid(grid, game) {
             if (!grid) return;
@@ -869,6 +920,9 @@
             freeSpinsRemaining = 0;
 
                 document.getElementById('slotModal').classList.add('active');
+                // Wait two animation frames so flex layout + CSS transitions settle,
+                // then rescale reel cells to fit whatever height the container was given.
+                requestAnimationFrame(() => requestAnimationFrame(() => rescaleReelGridToFit(currentGame)));
                 document.getElementById('messageDisplay').innerHTML = '';
                 document.getElementById('winAnimation').innerHTML = '';
                 updateSlotWinDisplay(0);

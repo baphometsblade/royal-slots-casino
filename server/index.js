@@ -12,7 +12,11 @@ const app = express();
 app.use(helmet({
     contentSecurityPolicy: false, // Allow inline scripts for the casino client
 }));
-app.use(cors());
+// In production restrict CORS to the declared origin; open in development
+const corsOrigin = config.NODE_ENV === 'production'
+    ? (process.env.ALLOWED_ORIGIN || false)
+    : true;
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
 // Global rate limiter
@@ -91,6 +95,18 @@ app.get('*', (req, res) => {
 
 // ─── Start Server ───
 async function start() {
+    // Production safety checks — refuse to start with insecure defaults
+    if (config.NODE_ENV === 'production') {
+        if (config.JWT_SECRET === 'dev-secret-change-in-production') {
+            console.error('[Security] FATAL: JWT_SECRET is the default dev value. Set JWT_SECRET in .env before running in production.');
+            process.exit(1);
+        }
+        if (config.ADMIN_PASSWORD === 'admin123changeme') {
+            console.error('[Security] FATAL: ADMIN_PASSWORD is the default dev value. Set ADMIN_PASSWORD in .env before running in production.');
+            process.exit(1);
+        }
+    }
+
     await initDatabase();
     app.listen(config.PORT, () => {
         console.log(`\n${'='.repeat(50)}`);

@@ -129,11 +129,34 @@
         }
 
 
-        function loginWithLocalFallback(username, password) {
+        // Hash a password with SHA-256 via Web Crypto (returns hex string).
+        async function hashPassword(password) {
+            const encoded = new TextEncoder().encode(password);
+            const buf = await crypto.subtle.digest('SHA-256', encoded);
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+
+        async function loginWithLocalFallback(username, password) {
             const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '{}');
-            const user = users[username.toLowerCase()];
+            const key = username.toLowerCase();
+            const user = users[key];
             if (!user) throw new Error('User not found. Please register first.');
-            if (user.password !== password) throw new Error('Incorrect password.');
+
+            const hashed = await hashPassword(password);
+
+            // Accept hashed match; also migrate legacy plaintext entries on the fly
+            const isHashedMatch   = user.passwordHash && user.passwordHash === hashed;
+            const isLegacyMatch   = !user.passwordHash && user.password === password;
+            if (!isHashedMatch && !isLegacyMatch) throw new Error('Incorrect password.');
+
+            if (isLegacyMatch) {
+                // Upgrade to hashed storage and remove plaintext
+                user.passwordHash = hashed;
+                delete user.password;
+                users[key] = user;
+                localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+            }
 
             applyAuthSession(`${LOCAL_TOKEN_PREFIX}${Date.now()}`, {
                 username: user.username,
@@ -144,14 +167,15 @@
         }
 
 
-        function registerWithLocalFallback(username, email, password) {
+        async function registerWithLocalFallback(username, email, password) {
             const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '{}');
             const key = username.toLowerCase();
             if (users[key]) throw new Error('Username already taken.');
             if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) throw new Error(`Username must be ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} characters.`);
             if (password.length < 6) throw new Error('Password must be at least 6 characters.');
 
-            users[key] = { username, email, password };
+            const passwordHash = await hashPassword(password);
+            users[key] = { username, email, passwordHash };
             localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
             applyAuthSession(`${LOCAL_TOKEN_PREFIX}${Date.now()}`, {
                 username,
@@ -185,7 +209,7 @@
                 throw serverError;
             }
 
-            const user = loginWithLocalFallback(username, password);
+            const user = await loginWithLocalFallback(username, password);
             updateAuthButton();
             hideAuthModal();
             showToast(`Welcome back, ${user.username}!`, 'success');
@@ -216,7 +240,7 @@
                 throw serverError;
             }
 
-            registerWithLocalFallback(username, email, password);
+            await registerWithLocalFallback(username, email, password);
             updateAuthButton();
             hideAuthModal();
             showToast(`Welcome, ${username}! Your account has been created.`, 'success');

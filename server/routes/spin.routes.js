@@ -11,6 +11,8 @@ const router = express.Router();
 // Rate limiting state per user
 const lastSpinTime = new Map();
 const freeSpinStateByUser = new Map();
+// Cumulative session wins per user (resets on server restart — by design)
+const sessionWinByUser = new Map();
 
 function applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount) {
     if (cappedWinAmount >= uncappedWinAmount) return;
@@ -124,11 +126,21 @@ router.post('/', authenticate, (req, res) => {
         // Check if user has active free spins (stored in memory per user)
         const spinResult = gameEngine.resolveSpin(game, bet, gameStats, existingFreeSpinState, db);
 
-        // ── Apply win cap (house protection with profit floor) ──
+        // ── Apply per-spin win cap (house protection with profit floor) ──
         const uncappedWinAmount = spinResult.winAmount;
         const cappedWinAmount = houseEdge.capWinAmount(uncappedWinAmount, bet, game, db);
         spinResult.winAmount = cappedWinAmount;
         applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount);
+
+        // ── Enforce session win cap ($50k cumulative ceiling) ──
+        const sessionWins   = sessionWinByUser.get(userId) || 0;
+        const remaining     = Math.max(0, config.SESSION_WIN_CAP - sessionWins);
+        const sessionCapped = Math.min(spinResult.winAmount, remaining);
+        if (sessionCapped < spinResult.winAmount) {
+            applyWinCapMetadata(spinResult, spinResult.winAmount, sessionCapped);
+            spinResult.winAmount = sessionCapped;
+        }
+        sessionWinByUser.set(userId, sessionWins + sessionCapped);
 
         // Persist/clear active free-spin runtime state for this user
         if (spinResult.freeSpinState && spinResult.freeSpinState.active && spinResult.freeSpinState.remaining > 0) {
