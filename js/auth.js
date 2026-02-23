@@ -255,14 +255,17 @@
 
 
         function updateAuthButton() {
+            const label = document.getElementById('authBtnLabel');
             const btn = document.getElementById('authBtn');
             if (!btn) return;
             if (currentUser) {
-                btn.textContent = currentUser.username.toUpperCase();
-                btn.title = 'Click to logout';
+                if (label) label.textContent = currentUser.username.toUpperCase();
+                btn.title = 'View profile';
+                btn.onclick = () => showProfileModal();
             } else {
-                btn.textContent = 'LOGIN';
+                if (label) label.textContent = 'LOGIN';
                 btn.title = 'Click to login';
+                btn.onclick = () => showAuthModal();
             }
         }
 

@@ -245,7 +245,13 @@
 
 
         function addFunds() {
-            document.getElementById('depositModal').classList.add('active');
+            if (typeof showWalletModal === 'function' && currentUser) {
+                showWalletModal();
+            } else {
+                // Fallback to old deposit modal if wallet not loaded or not logged in
+                const dm = document.getElementById('depositModal');
+                if (dm) dm.classList.add('active');
+            }
         }
 
 

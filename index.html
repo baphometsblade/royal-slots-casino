@@ -74,16 +74,18 @@
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-deposit" onclick="addFunds()">
-                    DEPOSIT</button>
+                <button class="btn btn-deposit" onclick="currentUser ? showWalletModal() : showAuthModal()">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+                    WALLET</button>
                 <button class="btn btn-user" id="soundToggle" onclick="toggleSound()" title="Toggle sound" aria-label="Toggle sound">&#x1F50A;</button>
                 <button class="btn btn-user btn-settings" onclick="openSettingsModal()" title="Settings" aria-label="Settings">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
                 </button>
                 <button class="btn btn-user" onclick="openStatsModal()" title="View player stats">
                     STATS</button>
-                <button class="btn btn-user" id="authBtn" onclick="authToken ? logout() : showAuthModal()" title="Account">
-                    LOGIN</button>
+                <button class="btn btn-user btn-profile" id="authBtn" onclick="currentUser ? showProfileModal() : showAuthModal()" title="Account">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                    <span id="authBtnLabel">LOGIN</span></button>
             </div>
         </div>
     </header>
@@ -842,6 +844,36 @@
     <!-- Toast Container (Pass 1) -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <!-- Wallet / Cashier Modal -->
+    <div class="modal" id="walletModal">
+        <div class="modal-content wallet-modal-content">
+            <div class="wallet-modal">
+                <button class="modal-close-btn" onclick="hideWalletModal()" title="Close">&times;</button>
+                <div class="wallet-header">
+                    <h2 class="wallet-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                        CASHIER
+                    </h2>
+                    <div class="wallet-balance-display">
+                        <span class="wallet-balance-label">Available Balance</span>
+                        <span class="wallet-balance-amount">$<span id="walletBalance">0.00</span></span>
+                    </div>
+                </div>
+                <div class="wallet-tabs">
+                    <button class="wallet-tab active" onclick="switchWalletTab('deposit')">DEPOSIT</button>
+                    <button class="wallet-tab" onclick="switchWalletTab('withdraw')">WITHDRAW</button>
+                    <button class="wallet-tab" onclick="switchWalletTab('methods')">METHODS</button>
+                    <button class="wallet-tab" onclick="switchWalletTab('history')">HISTORY</button>
+                </div>
+                <div id="walletContent" class="wallet-content">
+                    <!-- Dynamic content rendered by ui-wallet.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile modal injected dynamically by js/ui-profile.js -->
+
     <!-- Auth Modal -->
     <div class="modal" id="authModal">
         <div class="modal-content" style="display:flex; align-items:center; justify-content:center; min-height:60vh;">
@@ -917,6 +949,8 @@
     <script src="js/ui-lobby.js"></script>
     <script src="js/ui-slot.js"></script>
     <script src="js/ui-modals.js"></script>
+    <script src="js/ui-wallet.js"></script>
+    <script src="js/ui-profile.js"></script>
     <script src="js/qa-tools.js"></script>
     <script src="js/app.js"></script>
 

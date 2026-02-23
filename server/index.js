@@ -41,11 +41,15 @@ const authRoutes = require('./routes/auth.routes');
 const spinRoutes = require('./routes/spin.routes');
 const balanceRoutes = require('./routes/balance.routes');
 const adminRoutes = require('./routes/admin.routes');
+const userRoutes = require('./routes/user.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/spin', spinRoutes);
 app.use('/api/balance', balanceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // ─── Game definitions endpoint (sanitized — no payout tables) ───
 const games = require('../shared/game-definitions');

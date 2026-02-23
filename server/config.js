@@ -21,4 +21,22 @@ module.exports = {
     MAX_WIN_MULTIPLIER: 500,       // No single spin can win more than 500x bet
     PROFIT_FLOOR: -500,            // Emergency mode if house is down $500+
     SESSION_WIN_CAP: 50000,        // Player can't win more than $50k per session
+
+    // Payment configuration
+    CURRENCY: 'AUD',
+    MIN_DEPOSIT: 10,
+    MAX_DEPOSIT: 100000,
+    MIN_WITHDRAWAL: 20,
+    MAX_WITHDRAWAL: 50000,
+    WITHDRAWAL_PROCESSING_DAYS: 3,
+    PAYMENT_METHODS: ['visa', 'mastercard', 'payid', 'bank_transfer', 'crypto_btc', 'crypto_eth', 'crypto_usdt'],
+
+    // Password reset
+    PASSWORD_RESET_EXPIRY_HOURS: 1,
+    PASSWORD_RESET_MAX_ACTIVE: 3,
+
+    // Responsible gambling defaults
+    DEFAULT_DAILY_DEPOSIT_LIMIT: null,   // No limit by default
+    DEFAULT_SESSION_TIME_LIMIT: null,    // No limit by default
+    COOLING_OFF_PERIODS: [24, 48, 72, 168, 720], // Hours: 1d, 2d, 3d, 1w, 30d
 };
