@@ -8,8 +8,23 @@
 
 'use strict';
 
-const { Pool } = require('pg');
+const pg = require('pg');
+const { Pool } = pg;
 const { adaptSQL } = require('./query-adapter');
+
+// ── pg type parsers ──────────────────────────────────────────────
+// PostgreSQL NUMERIC columns (OID 1700) are returned as strings by
+// default because JS floats can't represent all NUMERIC values exactly.
+// Our money columns are NUMERIC(15,2) — parseFloat is safe and avoids
+// "5000.00" + 100 → "5000.00100" string-concatenation bugs.
+pg.types.setTypeParser(1700, parseFloat);                 // NUMERIC → number
+
+// TIMESTAMPTZ (OID 1184) is returned as a JS Date object by default.
+// Our code expects ISO-8601 strings (same as SQLite's text format).
+pg.types.setTypeParser(1184, function (val) { return val; }); // TIMESTAMPTZ → string
+
+// BIGINT (OID 20) — COUNT(*) returns bigint in PostgreSQL.
+pg.types.setTypeParser(20, function (val) { return parseInt(val, 10); });
 
 class PgBackend {
     constructor(connectionString) {

@@ -6,8 +6,13 @@ const router = express.Router();
 
 // GET /api/balance
 router.get('/', authenticate, async (req, res) => {
-    const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-    res.json({ balance: user ? user.balance : 0 });
+    try {
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        res.json({ balance: user ? user.balance : 0 });
+    } catch (err) {
+        console.error('[Balance] Get balance error:', err);
+        res.status(500).json({ error: 'Failed to get balance' });
+    }
 });
 
 // POST /api/deposit
@@ -83,12 +88,17 @@ router.post('/withdraw', authenticate, async (req, res) => {
 
 // GET /api/transactions
 router.get('/transactions', authenticate, async (req, res) => {
-    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
-    const rows = await db.all(
-        'SELECT id, type, amount, balance_before, balance_after, reference, created_at FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT ?',
-        [req.user.id, limit]
-    );
-    res.json({ transactions: rows });
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+        const rows = await db.all(
+            'SELECT id, type, amount, balance_before, balance_after, reference, created_at FROM transactions WHERE user_id = ? ORDER BY id DESC LIMIT ?',
+            [req.user.id, limit]
+        );
+        res.json({ transactions: rows });
+    } catch (err) {
+        console.error('[Balance] Transactions error:', err);
+        res.status(500).json({ error: 'Failed to load transactions' });
+    }
 });
 
 module.exports = router;
