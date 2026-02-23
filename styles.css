@@ -9047,3 +9047,511 @@
     box-shadow: 0 4px 30px rgba(255, 50, 0, 0.7), 0 0 0 2px rgba(255,215,0,0.3);
     animation: streakFadeUp 2.5s ease-in-out forwards;
 }
+
+/* ═══ Payline Path Visualizer ═══ */
+.payline-path {
+    position: absolute;
+    left: 5%;
+    width: 90%;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgba(52,211,153,0.9) 15%, rgba(52,211,153,0.9) 85%, transparent 100%);
+    box-shadow: 0 0 8px rgba(52,211,153,0.8), 0 0 16px rgba(52,211,153,0.5);
+    pointer-events: none;
+    z-index: 20;
+    animation: paylineFadeOut 2.2s ease-in-out forwards;
+}
+@keyframes paylineFadeOut {
+    0%   { opacity: 0; transform: scaleX(0); }
+    15%  { opacity: 1; transform: scaleX(1); }
+    75%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PER-PROVIDER BOTTOM BAR v2  —  Dramatic distinct styling per studio
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. NOVASPIN  (Cyber HUD) ──────────────────────────────────────── */
+.slot-chrome-novaspin .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(0,8,20,0.97) 0%, rgba(0,4,12,0.99) 100%) !important;
+    border-top: 1px solid rgba(0,212,255,0.35) !important;
+    box-shadow: 0 -1px 0 rgba(0,212,255,0.08), inset 0 1px 0 rgba(0,212,255,0.06) !important;
+    font-family: "Courier New", Courier, monospace;
+    gap: 2px !important;
+}
+.slot-chrome-novaspin .slot-bar-section {
+    border: 1px solid rgba(0,212,255,0.12) !important;
+    border-radius: 2px !important;
+    background: rgba(0,212,255,0.04) !important;
+    padding: 5px 10px !important;
+}
+.slot-chrome-novaspin .slot-bar-label {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 9px !important;
+    letter-spacing: 3px !important;
+    color: rgba(0,212,255,0.45) !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-novaspin .slot-bar-value {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #00e5ff !important;
+    text-shadow: 0 0 8px rgba(0,229,255,0.7), 0 0 16px rgba(0,229,255,0.3) !important;
+    letter-spacing: 1px !important;
+}
+.slot-chrome-novaspin .slot-bet-btn {
+    background: rgba(0,8,20,0.9) !important;
+    border: 1px solid rgba(0,212,255,0.35) !important;
+    border-radius: 2px !important;
+    color: #00e5ff !important;
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    width: 28px !important;
+    height: 28px !important;
+    box-shadow: 0 0 6px rgba(0,212,255,0.2) !important;
+    text-shadow: 0 0 6px rgba(0,229,255,0.6) !important;
+}
+.slot-chrome-novaspin .slot-bet-btn:hover {
+    background: rgba(0,212,255,0.12) !important;
+    box-shadow: 0 0 12px rgba(0,212,255,0.5) !important;
+}
+.slot-chrome-novaspin .slot-auto-btn,
+.slot-chrome-novaspin .slot-turbo-btn {
+    font-family: "Courier New", Courier, monospace !important;
+    border-radius: 2px !important;
+    border: 1px solid rgba(0,212,255,0.3) !important;
+    background: rgba(0,212,255,0.07) !important;
+    color: rgba(0,212,255,0.8) !important;
+    letter-spacing: 1px !important;
+    font-size: 10px !important;
+}
+.slot-chrome-novaspin .slot-win-value {
+    color: #00ffcc !important;
+    text-shadow: 0 0 10px rgba(0,255,204,0.8) !important;
+}
+
+/* ── 2. CELESTIAL  (Opulent Olympus Gold) ──────────────────────────── */
+.slot-chrome-celestial .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(20,10,55,0.98) 0%, rgba(10,5,30,0.99) 100%) !important;
+    border-top: 2px solid rgba(245,200,66,0.5) !important;
+    box-shadow: 0 -4px 20px rgba(245,200,66,0.08) !important;
+}
+.slot-chrome-celestial .slot-bar-section {
+    border: 1px solid rgba(245,200,66,0.15) !important;
+    border-radius: 6px !important;
+    background: rgba(245,200,66,0.04) !important;
+    padding: 6px 14px !important;
+}
+.slot-chrome-celestial .slot-bar-label {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 9px !important;
+    letter-spacing: 3px !important;
+    color: rgba(245,200,66,0.55) !important;
+    text-transform: uppercase !important;
+    font-style: italic !important;
+}
+.slot-chrome-celestial .slot-bar-value {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    color: #ffe566 !important;
+    text-shadow: 0 0 12px rgba(245,200,66,0.6), 0 1px 3px rgba(0,0,0,0.8) !important;
+}
+.slot-chrome-celestial .slot-bet-btn {
+    background: radial-gradient(circle at 40% 35%, #ffe566, #f5c842 50%, #a0720a 100%) !important;
+    border: 2px solid rgba(255,229,102,0.7) !important;
+    border-radius: 50% !important;
+    color: #3a1c00 !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    width: 34px !important;
+    height: 34px !important;
+    box-shadow: 0 2px 8px rgba(245,200,66,0.5), 0 1px 0 rgba(255,255,255,0.3) inset !important;
+    text-shadow: none !important;
+}
+.slot-chrome-celestial .slot-bet-btn:hover {
+    box-shadow: 0 3px 16px rgba(245,200,66,0.8), 0 1px 0 rgba(255,255,255,0.4) inset !important;
+    transform: scale(1.08) !important;
+}
+.slot-chrome-celestial .slot-auto-btn,
+.slot-chrome-celestial .slot-turbo-btn {
+    border-radius: 20px !important;
+    border: 1px solid rgba(245,200,66,0.4) !important;
+    background: rgba(245,200,66,0.1) !important;
+    color: #f5c842 !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-style: italic !important;
+}
+.slot-chrome-celestial .slot-win-value {
+    color: #ffe566 !important;
+    text-shadow: 0 0 14px rgba(255,229,102,0.7), 0 0 4px rgba(255,200,0,0.5) !important;
+}
+
+/* ── 3. IRONREEL  (Frontier Brass) ─────────────────────────────────── */
+.slot-chrome-ironreel .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(25,14,6,0.98) 0%, rgba(15,8,3,0.99) 100%) !important;
+    border-top: 2px solid rgba(180,120,50,0.5) !important;
+    box-shadow: 0 -2px 12px rgba(180,120,50,0.1) !important;
+}
+.slot-chrome-ironreel .slot-bar-section {
+    border: 1px solid rgba(180,120,50,0.2) !important;
+    border-radius: 3px !important;
+    background: rgba(180,120,50,0.05) !important;
+    padding: 5px 12px !important;
+}
+.slot-chrome-ironreel .slot-bar-label {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 8px !important;
+    letter-spacing: 2.5px !important;
+    color: rgba(180,120,50,0.55) !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-ironreel .slot-bar-value {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #d4a96a !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.7), 0 0 8px rgba(212,169,106,0.3) !important;
+}
+.slot-chrome-ironreel .slot-bet-btn {
+    background: radial-gradient(circle at 40% 30%, #d4a96a, #b07830 50%, #6b4a18 100%) !important;
+    border: 2px solid rgba(212,169,106,0.6) !important;
+    border-radius: 50% !important;
+    color: #1a0e00 !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    width: 34px !important;
+    height: 34px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,220,150,0.25) inset !important;
+}
+.slot-chrome-ironreel .slot-bet-btn:hover {
+    box-shadow: 0 3px 12px rgba(212,169,106,0.6), 0 1px 0 rgba(255,220,150,0.35) inset !important;
+    transform: scale(1.06) !important;
+}
+.slot-chrome-ironreel .slot-auto-btn,
+.slot-chrome-ironreel .slot-turbo-btn {
+    border-radius: 3px !important;
+    border: 1px solid rgba(180,120,50,0.35) !important;
+    background: rgba(180,120,50,0.08) !important;
+    color: #d4a96a !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+}
+.slot-chrome-ironreel .slot-win-value {
+    color: #ffc86e !important;
+    text-shadow: 0 0 10px rgba(255,180,80,0.6) !important;
+}
+
+/* ── 4. GOLDENEDGE  (Candy Bubbly) ─────────────────────────────────── */
+@keyframes goldenSpinPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,111,216,0.7), 0 0 0 0 rgba(255,160,100,0.4); }
+    50%  { box-shadow: 0 0 0 6px rgba(255,111,216,0.0), 0 0 0 12px rgba(255,160,100,0.0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,111,216,0.0), 0 0 0 0 rgba(255,160,100,0.0); }
+}
+.slot-chrome-goldenedge .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(45,10,55,0.98) 0%, rgba(30,5,40,0.99) 100%) !important;
+    border-top: 2px solid rgba(255,111,216,0.4) !important;
+    box-shadow: 0 -4px 18px rgba(255,111,216,0.08) !important;
+}
+.slot-chrome-goldenedge .slot-bar-section {
+    border: 1px solid rgba(255,111,216,0.2) !important;
+    border-radius: 14px !important;
+    background: rgba(255,111,216,0.06) !important;
+    padding: 6px 16px !important;
+}
+.slot-chrome-goldenedge .slot-bar-label {
+    font-size: 9px !important;
+    letter-spacing: 2px !important;
+    color: rgba(255,180,240,0.6) !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-goldenedge .slot-bar-value {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #ffb3e8 !important;
+    text-shadow: 0 0 10px rgba(255,111,216,0.6), 0 0 3px rgba(255,180,240,0.4) !important;
+}
+.slot-chrome-goldenedge .slot-bet-btn {
+    background: linear-gradient(135deg, #ff6fd8, #ff9a5c) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    width: 34px !important;
+    height: 34px !important;
+    box-shadow: 0 3px 10px rgba(255,111,216,0.5), 0 1px 0 rgba(255,255,255,0.3) inset !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+.slot-chrome-goldenedge .slot-bet-btn:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 16px rgba(255,111,216,0.7) !important;
+}
+.slot-chrome-goldenedge .slot-auto-btn,
+.slot-chrome-goldenedge .slot-turbo-btn {
+    border-radius: 20px !important;
+    border: 1px solid rgba(255,111,216,0.4) !important;
+    background: linear-gradient(135deg, rgba(255,111,216,0.15), rgba(255,154,92,0.1)) !important;
+    color: #ffb3e8 !important;
+}
+.slot-chrome-goldenedge .slot-win-value {
+    color: #ff6fd8 !important;
+    text-shadow: 0 0 12px rgba(255,111,216,0.8), 0 0 4px rgba(255,180,240,0.5) !important;
+}
+.slot-chrome-goldenedge .slot-spin-btn {
+    animation: goldenSpinPulse 2s ease-out infinite !important;
+}
+
+/* ── 5. VAULTX  (Military Steel) ───────────────────────────────────── */
+.slot-chrome-vaultx .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(18,22,24,0.99) 0%, rgba(10,13,14,1) 100%) !important;
+    border-top: 2px solid rgba(80,90,90,0.6) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    font-family: "Courier New", Courier, monospace;
+}
+.slot-chrome-vaultx .slot-bar-section {
+    border: 1px solid rgba(80,90,90,0.3) !important;
+    border-radius: 0 !important;
+    background: rgba(255,255,255,0.03) !important;
+    padding: 5px 12px !important;
+}
+.slot-chrome-vaultx .slot-bar-label {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 9px !important;
+    letter-spacing: 3px !important;
+    color: rgba(120,130,130,0.7) !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-vaultx .slot-bar-value {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #9ca3af !important;
+    text-shadow: none !important;
+    letter-spacing: 1px !important;
+}
+.slot-chrome-vaultx .slot-bet-btn {
+    background: linear-gradient(180deg, #3d4448 0%, #262b2d 50%, #1a1e20 100%) !important;
+    border: 1px solid rgba(100,110,110,0.5) !important;
+    border-radius: 0 !important;
+    color: #9ca3af !important;
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    width: 28px !important;
+    height: 28px !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 2px 4px rgba(0,0,0,0.5) !important;
+}
+.slot-chrome-vaultx .slot-bet-btn:hover {
+    background: linear-gradient(180deg, #4a5055 0%, #333a3d 50%, #232829 100%) !important;
+    color: #c5c9cc !important;
+}
+.slot-chrome-vaultx .slot-auto-btn,
+.slot-chrome-vaultx .slot-turbo-btn {
+    font-family: "Courier New", Courier, monospace !important;
+    border-radius: 0 !important;
+    border: 1px solid rgba(80,90,90,0.45) !important;
+    background: rgba(255,255,255,0.04) !important;
+    color: #7a8080 !important;
+    letter-spacing: 1px !important;
+    font-size: 10px !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-vaultx .slot-win-value {
+    color: #a3b880 !important;
+    text-shadow: none !important;
+}
+
+/* ── 6. SOLSTICE  (Red Lacquer) ─────────────────────────────────────── */
+.slot-chrome-solstice .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(35,5,5,0.99) 0%, rgba(20,2,2,1) 100%) !important;
+    border-top: 2px solid rgba(220,40,40,0.5) !important;
+    box-shadow: 0 -3px 14px rgba(220,40,40,0.08), inset 0 1px 0 rgba(255,215,0,0.1) !important;
+}
+.slot-chrome-solstice .slot-bar-section {
+    border: 1px solid rgba(220,40,40,0.2) !important;
+    border-radius: 3px !important;
+    background: rgba(220,40,40,0.05) !important;
+    padding: 5px 12px !important;
+}
+.slot-chrome-solstice .slot-bar-label {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 9px !important;
+    letter-spacing: 2.5px !important;
+    color: rgba(255,215,0,0.55) !important;
+    text-transform: uppercase !important;
+    font-style: italic !important;
+}
+.slot-chrome-solstice .slot-bar-value {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255,215,0,0.5), 0 1px 3px rgba(0,0,0,0.7) !important;
+}
+.slot-chrome-solstice .slot-bet-btn {
+    background: linear-gradient(180deg, #e03030 0%, #b01818 50%, #6a0a0a 100%) !important;
+    border: 1px solid rgba(255,215,0,0.5) !important;
+    border-radius: 3px !important;
+    color: #ffd700 !important;
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    width: 30px !important;
+    height: 30px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,215,0,0.2) inset !important;
+    text-shadow: 0 0 6px rgba(255,215,0,0.5) !important;
+}
+.slot-chrome-solstice .slot-bet-btn:hover {
+    background: linear-gradient(180deg, #ee4040 0%, #c02020 50%, #7a1010 100%) !important;
+    box-shadow: 0 3px 12px rgba(220,40,40,0.5), 0 0 6px rgba(255,215,0,0.3) !important;
+}
+.slot-chrome-solstice .slot-auto-btn,
+.slot-chrome-solstice .slot-turbo-btn {
+    border-radius: 3px !important;
+    border: 1px solid rgba(220,40,40,0.4) !important;
+    background: rgba(220,40,40,0.1) !important;
+    color: #ffd700 !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-style: italic !important;
+}
+.slot-chrome-solstice .slot-win-value {
+    color: #ffd700 !important;
+    text-shadow: 0 0 14px rgba(255,215,0,0.7), 0 0 4px rgba(255,215,0,0.4) !important;
+}
+
+/* ── 7. PHANTOMWORKS  (Gothic Horror) ───────────────────────────────── */
+.slot-chrome-phantomworks .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(12,5,18,0.99) 0%, rgba(6,2,10,1) 100%) !important;
+    border-top: 1px solid rgba(150,30,180,0.4) !important;
+    box-shadow: 0 -2px 12px rgba(120,20,150,0.1), inset 0 1px 0 rgba(180,0,60,0.1) !important;
+}
+.slot-chrome-phantomworks .slot-bar-section {
+    border: 1px solid rgba(150,30,180,0.15) !important;
+    border-radius: 2px !important;
+    background: rgba(80,0,100,0.07) !important;
+    padding: 5px 12px !important;
+}
+.slot-chrome-phantomworks .slot-bar-label {
+    font-size: 9px !important;
+    letter-spacing: 2px !important;
+    color: rgba(200,0,60,0.65) !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-phantomworks .slot-bar-value {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #c084fc !important;
+    text-shadow: 0 0 8px rgba(192,132,252,0.5), 0 0 2px rgba(150,30,180,0.4) !important;
+}
+.slot-chrome-phantomworks .slot-bet-btn {
+    background: linear-gradient(180deg, rgba(80,0,100,0.6) 0%, rgba(30,0,40,0.8) 100%) !important;
+    border: 1px solid rgba(200,0,60,0.5) !important;
+    border-radius: 2px !important;
+    color: #c084fc !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    width: 28px !important;
+    height: 28px !important;
+    box-shadow: 0 0 6px rgba(200,0,60,0.3), inset 0 1px 0 rgba(150,30,180,0.15) !important;
+    text-shadow: 0 0 5px rgba(192,132,252,0.5) !important;
+}
+.slot-chrome-phantomworks .slot-bet-btn:hover {
+    background: linear-gradient(180deg, rgba(120,0,150,0.7) 0%, rgba(50,0,60,0.9) 100%) !important;
+    box-shadow: 0 0 12px rgba(200,0,60,0.5), 0 0 4px rgba(150,30,180,0.4) !important;
+}
+.slot-chrome-phantomworks .slot-auto-btn,
+.slot-chrome-phantomworks .slot-turbo-btn {
+    border-radius: 2px !important;
+    border: 1px solid rgba(150,30,180,0.3) !important;
+    background: rgba(80,0,100,0.1) !important;
+    color: rgba(192,132,252,0.7) !important;
+    letter-spacing: 0.5px !important;
+}
+.slot-chrome-phantomworks .slot-win-value {
+    color: #ff4488 !important;
+    text-shadow: 0 0 10px rgba(255,68,136,0.6), 0 0 4px rgba(200,0,60,0.4) !important;
+}
+
+/* ── 8. ARCADEFORGE  (Retro Arcade Cabinet) ─────────────────────────── */
+@keyframes arcadeFlicker {
+    0%, 95%, 100% { opacity: 1; }
+    96%            { opacity: 0.88; }
+    97%            { opacity: 1; }
+    98%            { opacity: 0.92; }
+}
+.slot-chrome-arcadeforge .slot-bottom-bar {
+    background: linear-gradient(180deg, rgba(0,8,14,0.99) 0%, rgba(0,4,8,1) 100%) !important;
+    border-top: 3px solid rgba(60,220,255,0.5) !important;
+    box-shadow: 0 -2px 0 rgba(60,220,255,0.2), inset 0 1px 0 rgba(60,220,255,0.08) !important;
+    animation: arcadeFlicker 6s linear infinite;
+}
+.slot-chrome-arcadeforge .slot-bar-section {
+    border: 1px solid rgba(60,220,255,0.15) !important;
+    border-radius: 0 !important;
+    background: rgba(0,0,0,0.5) !important;
+    padding: 4px 12px !important;
+}
+.slot-chrome-arcadeforge .slot-bar-label {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 8px !important;
+    letter-spacing: 3px !important;
+    color: rgba(60,220,255,0.5) !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-arcadeforge .slot-bar-value {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #f0f0f0 !important;
+    text-shadow: 0 0 4px rgba(240,240,240,0.5), 0 0 8px rgba(60,220,255,0.3) !important;
+    letter-spacing: 1px !important;
+}
+.slot-chrome-arcadeforge .slot-bet-btn {
+    background: linear-gradient(180deg, #3a3a3a 0%, #222 50%, #111 100%) !important;
+    border: 2px solid rgba(60,220,255,0.4) !important;
+    border-radius: 3px !important;
+    color: #3cdcff !important;
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    width: 28px !important;
+    height: 28px !important;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.7), 0 0 6px rgba(60,220,255,0.2) !important;
+    text-shadow: 0 0 5px rgba(60,220,255,0.6) !important;
+}
+.slot-chrome-arcadeforge .slot-bet-btn:active {
+    transform: translateY(2px) !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.7), 0 0 4px rgba(60,220,255,0.2) !important;
+}
+.slot-chrome-arcadeforge .slot-auto-btn,
+.slot-chrome-arcadeforge .slot-turbo-btn {
+    font-family: "Courier New", Courier, monospace !important;
+    border-radius: 0 !important;
+    border: 1px solid rgba(60,220,255,0.3) !important;
+    background: rgba(0,0,0,0.6) !important;
+    color: rgba(60,220,255,0.7) !important;
+    letter-spacing: 1px !important;
+    font-size: 9px !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-arcadeforge .slot-spin-btn {
+    background: radial-gradient(circle at 40% 30%, #ff4444, #cc0000 50%, #880000 100%) !important;
+    border: 3px solid rgba(255,80,80,0.6) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 0 #440000, 0 0 18px rgba(255,50,50,0.5) !important;
+    font-family: "Courier New", Courier, monospace !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+}
+.slot-chrome-arcadeforge .slot-spin-btn:active {
+    transform: translateY(4px) !important;
+    box-shadow: 0 0 0 #440000, 0 0 10px rgba(255,50,50,0.4) !important;
+}
+.slot-chrome-arcadeforge .slot-win-value {
+    color: #ffe83c !important;
+    text-shadow: 0 0 8px rgba(255,232,60,0.7), 0 0 2px rgba(255,200,0,0.5) !important;
+    font-family: "Courier New", Courier, monospace !important;
+}
+/* ═══ END PER-PROVIDER BOTTOM BAR v2 ═══════════════════════════════════ */

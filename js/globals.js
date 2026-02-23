@@ -129,6 +129,7 @@
 
         // ===== Slot Jackpot Banner Ticker =====
         let _slotJackpotTickInterval = null;
+        let _winCounterRaf = null;  // win amount counter animation RAF handle
 
         // ===== Auto-Spin =====
         let autoSpinActive = false;

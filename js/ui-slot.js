@@ -1041,16 +1041,62 @@
         function updateSlotWinDisplay(amount) {
             const el = document.getElementById('slotWinDisplay');
             if (!el) return;
-            if (amount > 0) {
-                el.textContent = '$' + formatMoney(amount);
-                el.style.color = '#10b981';
-                el.style.textShadow = '0 0 12px rgba(16,185,129,0.6)';
-            } else {
+            if (amount <= 0) {
                 el.textContent = '$0.00';
                 el.style.color = '#64748b';
                 el.style.textShadow = 'none';
+                return;
             }
+            // Apply win styling immediately
+            el.style.color = '#10b981';
+            el.style.textShadow = '0 0 12px rgba(16,185,129,0.6)';
+            // Cancel any running counter
+            if (_winCounterRaf) { cancelAnimationFrame(_winCounterRaf); _winCounterRaf = null; }
+            const start = performance.now();
+            const duration = Math.min(1200, 300 + amount * 0.15);
+            function tick(now) {
+                const elapsed = now - start;
+                const progress = Math.min(1, elapsed / duration);
+                const eased = 1 - Math.pow(1 - progress, 5);
+                const current = amount * eased;
+                el.textContent = '$' + current.toFixed(2);
+                if (progress < 1) {
+                    _winCounterRaf = requestAnimationFrame(tick);
+                } else {
+                    el.textContent = '$' + amount.toFixed(2);
+                    _winCounterRaf = null;
+                }
+            }
+            _winCounterRaf = requestAnimationFrame(tick);
         }
+        // Show payline path overlays for winning rows
+        function showPaylinePaths() {
+            const reel_area = document.querySelector('.slot-reel-area');
+            if (!reel_area) return;
+            const winCells = Array.from(document.querySelectorAll('.reel-win-glow, .reel-big-win-glow'));
+            if (!winCells.length) return;
+            const rowMap = {};
+            winCells.forEach(function(cell) {
+                const m = cell.id && cell.id.match(/^reel_(\d+)_(\d+)$/);
+                if (!m) return;
+                const row = parseInt(m[2]);
+                if (!rowMap[row]) rowMap[row] = [];
+                rowMap[row].push(cell);
+            });
+            const areaRect = reel_area.getBoundingClientRect();
+            Object.keys(rowMap).forEach(function(row) {
+                const cells = rowMap[row];
+                if (cells.length < 2) return;
+                const cellRect = cells[0].getBoundingClientRect();
+                const topInArea = cellRect.top - areaRect.top + cellRect.height / 2 - 2;
+                const pathEl = document.createElement('div');
+                pathEl.className = 'payline-path';
+                pathEl.style.top = topInArea + 'px';
+                reel_area.appendChild(pathEl);
+                setTimeout(function() { if (pathEl.parentNode) pathEl.parentNode.removeChild(pathEl); }, 2300);
+            });
+        }
+
 
 
         function renderSymbol(symbol) {
@@ -1351,6 +1397,7 @@
                 updateBalance();
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
+                setTimeout(showPaylinePaths, 300);
                 updateSlotWinDisplay(winAmount);
 
                 // Win entrance animation on highlighted cells
