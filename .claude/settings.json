@@ -1,0 +1,26 @@
+{
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"C:\\created games\\Casino\\.claude\\hooks\\pre-commit-qa.js\"",
+                        "description": "Run QA regression before every git commit"
+                    }
+                ]
+            },
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"C:\\created games\\Casino\\.claude\\hooks\\block-dotenv.js\"",
+                        "description": "Block direct edits to .env secrets file"
+                    }
+                ]
+            }
+        ]
+    }
+}

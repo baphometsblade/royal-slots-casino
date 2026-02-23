@@ -13,7 +13,9 @@ pnpm-debug.log*
 *.db
 
 # IDE & tool config
-.claude/
+# Track .claude/ automation files (hooks, agents, skills, settings.json)
+# but keep personal permission overrides private
+.claude/settings.local.json
 .serena/
 .playwright-mcp/
 
