@@ -527,7 +527,7 @@
             }
 
             // ── Scatter retrigger during free spins (capped to prevent runaway) ──
-            const MAX_FREE_SPINS = 50;
+            // MAX_FREE_SPINS — from constants.js
             if (scatterCount >= scatterThreshold && freeSpinsActive && game.freeSpinsRetrigger && freeSpinsRemaining < MAX_FREE_SPINS) {
                 const extraSpins = scatterCount >= fullScatterThreshold ? game.freeSpinsCount : Math.max(2, Math.floor(game.freeSpinsCount / 3));
                 const capped = Math.min(extraSpins, MAX_FREE_SPINS - freeSpinsRemaining);

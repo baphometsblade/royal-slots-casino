@@ -37,28 +37,7 @@
             stats: 'casinoStats'
         };
 
-        const DEFAULT_BALANCE = 5000;
-        const DEFAULT_STATS = {
-            totalSpins: 0,
-            totalWagered: 0,
-            totalWon: 0,
-            biggestWin: 0,
-            gamesPlayed: {},
-            achievements: []
-        };
-        // Legacy global symbols (for QA/forced-spin compatibility)
-        const SLOT_SYMBOLS = ['diamond', 'cherry', 'seven', 'crown', 'star', 'bell', 'coin', 'bar', 'clover', 'watermelon'];
-
-        const ACHIEVEMENTS = [
-            { id: 'first_spin', name: 'First Spin', desc: 'Make your first spin', icon: '\u{1F3B0}', requirement: (stats) => stats.totalSpins >= 1 },
-            { id: 'big_spender', name: 'Big Spender', desc: 'Wager $10,000 total', icon: '\u{1F4B0}', requirement: (stats) => stats.totalWagered >= 10000 },
-            { id: 'lucky_7', name: 'Lucky 7', desc: 'Win 7 times', icon: '\u{1F340}', requirement: (stats) => stats.totalWon > stats.totalWagered && Object.values(stats.gamesPlayed).reduce((a,b) => a+b, 0) >= 7 },
-            { id: 'high_roller', name: 'High Roller', desc: 'Win $5,000 in one spin', icon: '\u{1F451}', requirement: (stats) => stats.biggestWin >= 5000 },
-            { id: 'slot_master', name: 'Slot Master', desc: 'Play 100 spins', icon: '\u2B50', requirement: (stats) => stats.totalSpins >= 100 },
-            { id: 'millionaire', name: 'Millionaire', desc: 'Win $50,000 total', icon: '\u{1F48E}', requirement: (stats) => stats.totalWon >= 50000 },
-            { id: 'game_explorer', name: 'Game Explorer', desc: 'Play 10 different games', icon: '\u{1F5FA}\uFE0F', requirement: (stats) => Object.keys(stats.gamesPlayed || {}).length >= 10 },
-            { id: 'jackpot_hunter', name: 'Jackpot Hunter', desc: 'Win $25,000 in one spin', icon: '\u{1F3AF}', requirement: (stats) => stats.biggestWin >= 25000 }
-        ];
+        // DEFAULT_BALANCE, DEFAULT_STATS, SLOT_SYMBOLS, ACHIEVEMENTS — from constants.js
 
         let currentFilter = 'all';
         let currentProviderFilter = 'all';
@@ -98,26 +77,16 @@
         // ═══════════════════════════════════════════════════
         let gambleState = { active: false, amount: 0, round: 0, maxRound: 5 };
 
-        // ═══ Reel Strip Constants (inline since constants.js not loaded yet) ═══
-        const REEL_STRIP_BUFFER = 12;
-        const REEL_SPIN_PX_PER_SEC = 3000;
-        const REEL_SPIN_PX_PER_SEC_TURBO = 5000;
-        const REEL_DECEL_DURATION = 650;
-        const REEL_BOUNCE_OVERSHOOT = 12;
-        const REEL_BOUNCE_DURATION = 220;
-        const REEL_CELL_DIMS = {
-            '3x3': { h: 140, gap: 4 }, '5x3': { h: 100, gap: 3 },
-            '5x4': { h: 85, gap: 3 }, '5x5': { h: 80, gap: 2 },
-            '6x5': { h: 72, gap: 2 }, '7x7': { h: 58, gap: 2 }
-        };
-        const SLOT_TEMPLATES = ['classic', 'standard', 'extended', 'scatter', 'grid'];
+        // REEL_STRIP_BUFFER, REEL_SPIN_PX_PER_SEC, REEL_SPIN_PX_PER_SEC_TURBO,
+        // REEL_DECEL_DURATION, REEL_BOUNCE_OVERSHOOT, REEL_BOUNCE_DURATION,
+        // REEL_CELL_DIMS, SLOT_TEMPLATES — from constants.js
 
         // ═══ Reel Strip State ═══
         let reelStripData = []; // Per-column: { stripEl, animFrameId, currentY, cellH, totalH, visibleH }
 
         // ===== Recently Played =====
-        const RECENTLY_PLAYED_KEY = 'casinoRecentlyPlayed';
-        const MAX_RECENTLY_PLAYED = 10;
+        const RECENTLY_PLAYED_KEY = STORAGE_KEY_RECENTLY_PLAYED;
+        // MAX_RECENTLY_PLAYED — from constants.js
 
         // ===== Jackpot Ticker =====
         let jackpotValue = 1247836 + Math.floor(Math.random() * 50000);
@@ -136,58 +105,27 @@
         };
 
         // ===== XP / Level System =====
-        const XP_TIERS = [
-            { name: 'BRONZE', color: '#cd7f32', minLevel: 1 },
-            { name: 'SILVER', color: '#c0c0c0', minLevel: 5 },
-            { name: 'GOLD', color: '#ffd700', minLevel: 10 },
-            { name: 'PLATINUM', color: '#e5e4e2', minLevel: 20 },
-            { name: 'DIAMOND', color: '#b9f2ff', minLevel: 35 },
-            { name: 'LEGEND', color: '#ff4500', minLevel: 50 }
-        ];
-
-        const XP_STORAGE_KEY = 'casinoXP';
+        // XP_TIERS — from constants.js
+        const XP_STORAGE_KEY = STORAGE_KEY_XP;
 
         let playerXP = 0;
         let playerLevel = 1;
 
         // ===== Daily Bonus System =====
-        const DAILY_BONUS_KEY = 'casinoDailyBonus';
-        const DAILY_REWARDS = [
-            { amount: 500, xp: 25 },
-            { amount: 750, xp: 35 },
-            { amount: 1000, xp: 50 },
-            { amount: 1500, xp: 75 },
-            { amount: 2000, xp: 100 },
-            { amount: 3000, xp: 150 },
-            { amount: 5000, xp: 250 }
-        ];
+        const DAILY_BONUS_KEY = STORAGE_KEY_DAILY_BONUS;
+        // DAILY_REWARDS — from constants.js
 
         let dailyBonusState = { streak: 0, lastClaim: null, claimedToday: false };
 
         // ===== Bonus Wheel =====
-        const WHEEL_SEGMENTS = [
-            { label: '$100', value: 100, color: '#ef4444', xp: 10 },
-            { label: '$250', value: 250, color: '#3b82f6', xp: 20 },
-            { label: '$500', value: 500, color: '#10b981', xp: 30 },
-            { label: '$1000', value: 1000, color: '#f59e0b', xp: 50 },
-            { label: '$2500', value: 2500, color: '#8b5cf6', xp: 75 },
-            { label: '$100', value: 100, color: '#ec4899', xp: 10 },
-            { label: '$250', value: 250, color: '#06b6d4', xp: 20 },
-            { label: '$5000', value: 5000, color: '#ffd700', xp: 150 }
-        ];
-
-        const WHEEL_STORAGE_KEY = 'casinoBonusWheel';
+        // WHEEL_SEGMENTS — from constants.js
+        const WHEEL_STORAGE_KEY = STORAGE_KEY_BONUS_WHEEL;
         let wheelSpinning = false;
         let wheelAngle = 0;
         let wheelState = { lastSpin: null };
 
         // ===== Win Ticker =====
-        const TICKER_NAMES = [
-            'LuckyAce', 'JackpotKing', 'SlotMaster', 'BigWinner',
-            'CasinoQueen', 'DiamondDan', 'GoldenStar', 'RoyalFlush',
-            'MegaSpinner', 'FortuneHunter', 'VelvetRoller', 'NeonNight',
-            'CherryBomb77', 'WildCard', 'HighStakes'
-        ];
+        // TICKER_NAMES — from constants.js
 
         let tickerInterval = null;
 

@@ -666,13 +666,13 @@ const REEL_SPIN_PX_PER_SEC = 3000;
 const REEL_SPIN_PX_PER_SEC_TURBO = 5000;
 
 /** Duration of deceleration when stopping a reel (ms) */
-const REEL_DECEL_DURATION = 600;
+const REEL_DECEL_DURATION = 650;
 
 /** Overshoot bounce distance in pixels */
 const REEL_BOUNCE_OVERSHOOT = 12;
 
 /** Duration of bounce-back after overshoot (ms) */
-const REEL_BOUNCE_DURATION = 200;
+const REEL_BOUNCE_DURATION = 220;
 
 /** Cell dimensions lookup by grid config (height in px, gap in px) */
 const REEL_CELL_DIMS = {
