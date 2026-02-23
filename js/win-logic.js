@@ -205,7 +205,7 @@
                 if (multiplier > 1) showBonusEffect(`CASCADE ${multiplier}x!`, game.accentColor);
             }
 
-            return { amount: Math.round(baseWin * multiplier), multiplier, bonusText };
+            return { amount: Math.round(baseWin * multiplier * 100) / 100, multiplier, bonusText };
         }
 
 

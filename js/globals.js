@@ -38,7 +38,7 @@
         let balance = DEFAULT_BALANCE;
         let currentGame = null;
         let spinning = false;
-        let currentBet = 50;
+        let currentBet = DEFAULT_BET;
         let currentReels = ['diamond', 'diamond', 'diamond'];
         // 2D grid: currentGrid[col][row] — outer array = columns (reels), inner = rows
         let currentGrid = null;
@@ -130,6 +130,7 @@
         // ===== Slot Jackpot Banner Ticker =====
         let _slotJackpotTickInterval = null;
         let _winCounterRaf = null;  // win amount counter animation RAF handle
+        let _bigWinCloseTimer = null; // big win overlay auto-dismiss timer
 
         // ===== Auto-Spin =====
         let autoSpinActive = false;
@@ -141,6 +142,7 @@
 
         // ═══ Idle spin invitation timer ═══
         let _idleInviteTimer = null;
+        let _reelResizeHandler = null; // debounced resize listener for rescaleReelGridToFit
 
         // ═══════════════════════════════════════════════════════════
         // ENHANCED AUTOPLAY MODAL

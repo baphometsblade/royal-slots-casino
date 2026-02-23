@@ -223,11 +223,13 @@
         }
 
 
-        // Rescale reel cells to fit the actual available height of .reels-container.
-        // Called via requestAnimationFrame after the slot modal becomes active so that
-        // CSS layout (flex squeeze, max-height media queries, etc.) has been applied.
+        // Rescale reel cells to fit the actual available height of .slot-reel-area.
+        // Measures from the REEL AREA parent (not the container, which may already be
+        // flex-shrunk and give a misleadingly small number).
+        // Called on open (double-RAF) and on window resize (debounced).
         function rescaleReelGridToFit(game) {
             if (!reelStripData || !reelStripData.length) return;
+            if (spinning) return;  // never rescale mid-spin
             const container = document.querySelector('.reels-container');
             if (!container) return;
 
@@ -235,21 +237,34 @@
             const dims = getCellDims(game);
             const gap  = dims.gap;
 
-            // Measure inner height after padding (clientHeight includes padding)
-            const cs      = window.getComputedStyle(container);
-            const availH  = container.clientHeight
-                          - (parseFloat(cs.paddingTop)    || 0)
-                          - (parseFloat(cs.paddingBottom) || 0);
+            // Measure from .slot-reel-area (the actual bounding box), not the
+            // container — the container may already be flex-shrunk to a smaller
+            // height than the reel columns inside it.
+            const reelArea = document.querySelector('.slot-reel-area');
+            if (!reelArea) return;
 
-            // Scale cells down to fit; never scale UP beyond the designed size
-            const scaledCellH    = Math.min(dims.h, Math.max(40, Math.floor((availH - (rows - 1) * gap) / rows)));
+            const areaCS = window.getComputedStyle(reelArea);
+            const cCS    = window.getComputedStyle(container);
+
+            const areaH = reelArea.clientHeight
+                        - (parseFloat(areaCS.paddingTop)    || 0)
+                        - (parseFloat(areaCS.paddingBottom) || 0);
+
+            // Subtract container padding + border from both sides
+            const containerInsets = (parseFloat(cCS.paddingTop)        || 0)
+                                  + (parseFloat(cCS.paddingBottom)      || 0)
+                                  + (parseFloat(cCS.borderTopWidth)     || 0)
+                                  + (parseFloat(cCS.borderBottomWidth)  || 0);
+
+            const availH = areaH - containerInsets;
+
+            // Clamp to designed size; minimum 44px so symbols stay readable
+            const scaledCellH    = Math.min(dims.h, Math.max(44, Math.floor((availH - (rows - 1) * gap) / rows)));
             const scaledVisibleH = rows * scaledCellH + (rows - 1) * gap;
-
-            // No-op when already within designed bounds
-            if (scaledCellH >= dims.h) return;
 
             for (let i = 0; i < reelStripData.length; i++) {
                 const rd = reelStripData[i];
+                if (rd.cellH === scaledCellH) continue;  // already correct — skip
 
                 // Resize the visible column window
                 rd.colEl.style.height = scaledVisibleH + 'px';
@@ -948,6 +963,16 @@
                 // Wait two animation frames so flex layout + CSS transitions settle,
                 // then rescale reel cells to fit whatever height the container was given.
                 requestAnimationFrame(() => requestAnimationFrame(() => rescaleReelGridToFit(currentGame)));
+                // Wire a debounced resize listener so reels rescale if the window is resized
+                if (_reelResizeHandler) window.removeEventListener('resize', _reelResizeHandler);
+                let _reelResizeDebounce = null;
+                _reelResizeHandler = function() {
+                    clearTimeout(_reelResizeDebounce);
+                    _reelResizeDebounce = setTimeout(function() {
+                        if (currentGame) rescaleReelGridToFit(currentGame);
+                    }, 120);
+                };
+                window.addEventListener('resize', _reelResizeHandler);
                 document.getElementById('messageDisplay').innerHTML = '';
                 document.getElementById('winAnimation').innerHTML = '';
                 updateSlotWinDisplay(0);
@@ -1023,13 +1048,19 @@
             // Clean up idle invite timer
             if (_idleInviteTimer) clearTimeout(_idleInviteTimer);
             _idleInviteTimer = null;
+            // Clean up reel resize listener
+            if (_reelResizeHandler) { window.removeEventListener('resize', _reelResizeHandler); _reelResizeHandler = null; }
             const spinBtnClose = document.getElementById('spinBtn');
             if (spinBtnClose) spinBtnClose.classList.remove('spin-btn-idle-pulse');
         }
 
 
         function updateBetDisplay() {
-            document.getElementById('betAmount').textContent = currentBet;
+            // Show as integer if whole number, otherwise 2 decimal places
+            const display = Number.isInteger(currentBet)
+                ? String(currentBet)
+                : currentBet.toFixed(2);
+            document.getElementById('betAmount').textContent = display;
         }
 
 
@@ -1037,11 +1068,13 @@
             if (!currentGame) return;
             const bounds = getBetBounds();
             if (!bounds) return;
-
-            const midpoint = bounds.minBet + Math.floor((bounds.maxBet - bounds.minBet) / (2 * currentGame.minBet)) * currentGame.minBet;
-            const presets = [bounds.minBet, Math.max(bounds.minBet, midpoint), bounds.maxBet];
-            currentBet = presets[index] ?? bounds.minBet;
-            document.getElementById('betRange').value = currentBet;
+            const validSteps = BET_STEPS.filter(v => v >= bounds.minBet - 0.001 && v <= bounds.maxBet + 0.001);
+            if (validSteps.length === 0) return;
+            const midIdx = Math.floor((validSteps.length - 1) / 2);
+            const presets = [validSteps[0], validSteps[midIdx], validSteps[validSteps.length - 1]];
+            currentBet = presets[Math.min(index, 2)] ?? bounds.minBet;
+            const betRange = document.getElementById('betRange');
+            if (betRange) betRange.value = validSteps.findIndex(v => Math.abs(v - currentBet) < 0.001);
             updateBetDisplay();
         }
 
@@ -1051,13 +1084,23 @@
             if (!currentGame || spinning) return;
             const bounds = getBetBounds();
             if (!bounds) return;
-            const step = currentGame.minBet;
-            const newBet = currentBet + direction * step;
-            if (newBet >= bounds.minBet && newBet <= bounds.maxBet) {
-                currentBet = newBet;
-                document.getElementById('betRange').value = currentBet;
-                updateBetDisplay();
+            // Build the valid step list for the current game/balance
+            const validSteps = BET_STEPS.filter(v => v >= bounds.minBet - 0.001 && v <= bounds.maxBet + 0.001);
+            if (validSteps.length === 0) return;
+            // Find current position (float-safe)
+            let idx = validSteps.findIndex(v => Math.abs(v - currentBet) < 0.001);
+            if (idx === -1) {
+                // Snap to nearest step before navigating
+                idx = validSteps.reduce((best, v, i) =>
+                    Math.abs(v - currentBet) < Math.abs(validSteps[best] - currentBet) ? i : best, 0);
             }
+            const newIdx = Math.max(0, Math.min(validSteps.length - 1, idx + direction));
+            currentBet = validSteps[newIdx];
+            const betRange = document.getElementById('betRange');
+            if (betRange) betRange.value = newIdx;
+            updateBetDisplay();
+            const spinBtn = document.getElementById('spinBtn');
+            if (spinBtn) spinBtn.disabled = spinning || currentBet > balance;
         }
 
         function toggleTurbo() {
@@ -2306,44 +2349,80 @@
             const overlay = document.getElementById('bigWinOverlay');
             if (!overlay) return;
 
-            // Set label by multiplier tier
+            // Determine tier
+            const isMega  = multiplier >= WIN_TIER_EPIC_THRESHOLD * 2;
+            const isSuper = !isMega  && multiplier >= WIN_TIER_EPIC_THRESHOLD;
+            const isBig   = !isSuper && multiplier >= WIN_TIER_MEGA_THRESHOLD;
+            const tierClass = isMega ? 'bigwin-tier-mega' : isSuper ? 'bigwin-tier-super' : isBig ? 'bigwin-tier-big' : 'bigwin-tier-nice';
+
+            // Label
             const label = document.getElementById('bigWinLabel');
-            if (multiplier >= WIN_TIER_EPIC_THRESHOLD * 2) label.textContent = '🏆 MEGA WIN!';
-            else if (multiplier >= WIN_TIER_EPIC_THRESHOLD)  label.textContent = '💎 SUPER WIN!';
-            else if (multiplier >= WIN_TIER_MEGA_THRESHOLD)  label.textContent = '🔥 BIG WIN!';
-            else label.textContent = '⭐ NICE WIN!';
+            if (isMega)       { label.textContent = '🏆 MEGA WIN!';  }
+            else if (isSuper) { label.textContent = '💎 SUPER WIN!'; }
+            else if (isBig)   { label.textContent = '🔥 BIG WIN!';   }
+            else              { label.textContent = '⭐ NICE WIN!';   }
+            label.className = 'bigwin-label ' + tierClass;
 
-            label.className = 'bigwin-label ' + (multiplier >= WIN_TIER_EPIC_THRESHOLD ? 'bigwin-mega' : multiplier >= WIN_TIER_MEGA_THRESHOLD ? 'bigwin-super' : '');
+            // Overlay tier class for CSS theming
+            overlay.className = 'bigwin-overlay ' + tierClass;
 
-            document.getElementById('bigWinAmount').textContent = '$' + amount.toLocaleString();
+            // Multiplier
             document.getElementById('bigWinMultiplier').textContent = '×' + multiplier;
 
-            // Spawn coin particles
+            // Animated amount counter
+            const amountEl = document.getElementById('bigWinAmount');
+            amountEl.textContent = '$0';
+            if (_winCounterRaf) cancelAnimationFrame(_winCounterRaf);
+            const duration = Math.min(2000, 500 + amount * 0.06);
+            const startTime = performance.now();
+            function animateOverlayAmount(now) {
+                const t = Math.min(1, (now - startTime) / duration);
+                const ease = 1 - Math.pow(1 - t, 4);
+                amountEl.textContent = '$' + Math.round(ease * amount).toLocaleString();
+                if (t < 1) { _winCounterRaf = requestAnimationFrame(animateOverlayAmount); }
+                else { amountEl.textContent = '$' + amount.toLocaleString(); _winCounterRaf = null; }
+            }
+            _winCounterRaf = requestAnimationFrame(animateOverlayAmount);
+
+            // Provider-themed particle emojis
+            const defaultCoins = ['🪙','💰','💎','⭐','🏅'];
+            let coinPool = defaultCoins;
+            if (typeof getProviderAnimTheme === 'function' && currentGame) {
+                const theme = getProviderAnimTheme(currentGame);
+                if (theme && theme.particles && theme.particles.length) {
+                    coinPool = theme.particles.concat(defaultCoins);
+                }
+            }
+            const particleCount = isMega ? 50 : isSuper ? 38 : 28;
             const coinsEl = document.getElementById('bigWinCoins');
             coinsEl.innerHTML = '';
-            const coinEmojis = ['🪙','💰','💎','⭐','🏅'];
-            for (let i = 0; i < 28; i++) {
+            for (let i = 0; i < particleCount; i++) {
                 const coin = document.createElement('div');
                 coin.className = 'bigwin-coin';
-                coin.textContent = coinEmojis[Math.floor(Math.random() * coinEmojis.length)];
-                coin.style.cssText = `
-                    left:${Math.random()*90+5}%;
-                    animation-delay:${Math.random()*1.5}s;
-                    animation-duration:${1.5+Math.random()*1.5}s;
-                    font-size:${18+Math.floor(Math.random()*20)}px;
-                `;
+                coin.textContent = coinPool[Math.floor(Math.random() * coinPool.length)];
+                coin.style.cssText = `left:${Math.random()*92+4}%;animation-delay:${Math.random()*2}s;animation-duration:${1.8+Math.random()*2}s;font-size:${16+Math.floor(Math.random()*22)}px;`;
                 coinsEl.appendChild(coin);
             }
 
-            overlay.style.display = 'flex';
-            playProviderSound('bigwin', currentGame);
+            // Brief screen flash
+            const flash = document.createElement('div');
+            flash.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0.22;pointer-events:none;z-index:8499;transition:opacity 0.35s;';
+            document.body.appendChild(flash);
+            setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 350); }, 60);
 
-            // Auto-close after 5s
-            setTimeout(() => closeBigWin(), 5000);
+            overlay.style.display = 'flex';
+            playProviderSound(isMega ? 'megawin' : 'bigwin', currentGame);
+
+            // Auto-close after tier-dependent delay
+            if (_bigWinCloseTimer) clearTimeout(_bigWinCloseTimer);
+            _bigWinCloseTimer = setTimeout(() => closeBigWin(), isMega ? 7000 : isSuper ? 6000 : 5000);
         }
 
         function closeBigWin() {
-            document.getElementById('bigWinOverlay').style.display = 'none';
+            if (_bigWinCloseTimer) { clearTimeout(_bigWinCloseTimer); _bigWinCloseTimer = null; }
+            if (_winCounterRaf)    { cancelAnimationFrame(_winCounterRaf); _winCounterRaf = null; }
+            const overlay = document.getElementById('bigWinOverlay');
+            if (overlay) overlay.style.display = 'none';
         }
 
         function startReelScrolling(turbo) {

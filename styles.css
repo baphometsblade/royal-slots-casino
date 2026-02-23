@@ -6192,7 +6192,12 @@
 
         .slot-reel-area .reels-container {
             position: relative;
-            z-index: 1;
+            /* z-index 9 lifts reels above the chrome ::after frame overlay (z-index 8)
+               so provider frame strips never obscure the top/bottom symbol rows */
+            z-index: 9;
+            /* flex-shrink 0 prevents the flex column parent from squashing the container
+               below its content height; rescaleReelGridToFit handles sizing explicitly */
+            flex-shrink: 0;
             margin-bottom: 0;
             border-radius: 10px;
             padding: 4px;
@@ -8545,6 +8550,39 @@
 /* ═══════════════════════════════════════════════════════════════
    BIG WIN CELEBRATION OVERLAY
 ═══════════════════════════════════════════════════════════════ */
+/* ── Big Win Overlay — tiered, provider-aware ──────────────────────── */
+@keyframes bigwinFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes bigwinRays {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+@keyframes bigwinModalPop {
+    0%   { transform: scale(0.35) rotate(-4deg); opacity: 0; }
+    60%  { transform: scale(1.06) rotate(1deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes bigwinLabelPulse {
+    from { transform: scale(1); filter: brightness(1); }
+    to   { transform: scale(1.06); filter: brightness(1.25); }
+}
+@keyframes bigwinBtnPulse {
+    from { box-shadow: 0 0 20px rgba(251,191,36,0.5); }
+    to   { box-shadow: 0 0 40px rgba(251,191,36,0.9), 0 0 0 4px rgba(251,191,36,0.15); }
+}
+@keyframes coinFall {
+    0%   { top: -50px; transform: rotate(0deg) scale(0.4); opacity: 0; }
+    8%   { opacity: 1; transform: rotate(20deg) scale(1); }
+    88%  { opacity: 0.9; }
+    100% { top: 115%; transform: rotate(400deg) scale(0.7); opacity: 0; }
+}
+@keyframes bigwinCountUp {
+    from { transform: scale(0.6) translateY(16px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
 .bigwin-overlay {
     position: fixed;
     inset: 0;
@@ -8553,98 +8591,119 @@
     justify-content: center;
     z-index: 8500;
     pointer-events: all;
-    background: rgba(0,0,0,0.6);
-    animation: bigwinFadeIn 0.3s ease;
+    background: radial-gradient(ellipse at 50% 40%, rgba(40,20,0,0.7) 0%, rgba(0,0,0,0.75) 100%);
+    animation: bigwinFadeIn 0.25s ease;
+    cursor: pointer;
 }
-@keyframes bigwinFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
+/* Tier-specific overlay backgrounds */
+.bigwin-overlay.bigwin-tier-big   { background: radial-gradient(ellipse at 50% 40%, rgba(60,30,0,0.75) 0%, rgba(0,0,0,0.78) 100%); }
+.bigwin-overlay.bigwin-tier-super { background: radial-gradient(ellipse at 50% 40%, rgba(0,40,70,0.78) 0%, rgba(0,0,0,0.82) 100%); }
+.bigwin-overlay.bigwin-tier-mega  { background: radial-gradient(ellipse at 50% 40%, rgba(50,0,80,0.82) 0%, rgba(0,0,0,0.88) 100%); }
 
 .bigwin-modal {
     position: relative;
     text-align: center;
-    padding: 50px 60px;
-    animation: bigwinModalPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    padding: 50px 70px;
+    animation: bigwinModalPop 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
     overflow: visible;
 }
-@keyframes bigwinModalPop {
-    from { transform: scale(0.4); opacity: 0; }
-    to   { transform: scale(1); opacity: 1; }
+/* Rotating light rays behind the modal */
+.bigwin-modal::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 600px;
+    height: 600px;
+    transform: translate(-50%, -50%);
+    background: conic-gradient(
+        rgba(251,191,36,0.06) 0deg,  transparent 20deg,
+        rgba(251,191,36,0.06) 40deg, transparent 60deg,
+        rgba(251,191,36,0.06) 80deg, transparent 100deg,
+        rgba(251,191,36,0.06) 120deg,transparent 140deg,
+        rgba(251,191,36,0.06) 160deg,transparent 180deg,
+        rgba(251,191,36,0.06) 200deg,transparent 220deg,
+        rgba(251,191,36,0.06) 240deg,transparent 260deg,
+        rgba(251,191,36,0.06) 280deg,transparent 300deg,
+        rgba(251,191,36,0.06) 320deg,transparent 340deg,
+        rgba(251,191,36,0.06) 360deg
+    );
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    animation: bigwinRays 8s linear infinite;
 }
+.bigwin-tier-super .bigwin-modal::before { filter: hue-rotate(200deg); }
+.bigwin-tier-mega  .bigwin-modal::before { filter: hue-rotate(280deg); animation-duration: 5s; }
 
 .bigwin-label {
-    font-size: 3rem;
+    font-size: 3.2rem;
     font-weight: 900;
     letter-spacing: 0.08em;
     color: #fbbf24;
-    text-shadow: 0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4);
-    animation: bigwinLabelPulse 0.8s ease-in-out infinite alternate;
+    text-shadow: 0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4), 0 4px 8px rgba(0,0,0,0.6);
+    animation: bigwinLabelPulse 0.7s ease-in-out infinite alternate;
+    display: block;
+    margin-bottom: 6px;
 }
-@keyframes bigwinLabelPulse {
-    from { text-shadow: 0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4); transform: scale(1); }
-    to   { text-shadow: 0 0 50px rgba(251,191,36,1), 0 0 100px rgba(251,191,36,0.6); transform: scale(1.05); }
-}
-.bigwin-label.bigwin-mega { color: #a855f7; text-shadow: 0 0 30px rgba(168,85,247,0.8), 0 0 60px rgba(168,85,247,0.4); }
-.bigwin-label.bigwin-super { color: #06b6d4; text-shadow: 0 0 30px rgba(6,182,212,0.8), 0 0 60px rgba(6,182,212,0.4); }
+/* Tier label colours */
+.bigwin-label.bigwin-tier-big   { color: #fb923c; text-shadow: 0 0 30px rgba(251,146,60,0.9), 0 0 60px rgba(251,146,60,0.4), 0 4px 8px rgba(0,0,0,0.6); }
+.bigwin-label.bigwin-tier-super { color: #38bdf8; text-shadow: 0 0 30px rgba(56,189,248,0.9), 0 0 60px rgba(56,189,248,0.4), 0 4px 8px rgba(0,0,0,0.6); font-size: 3.5rem; }
+.bigwin-label.bigwin-tier-mega  { color: #d946ef; text-shadow: 0 0 40px rgba(217,70,239,1), 0 0 80px rgba(217,70,239,0.5), 0 4px 8px rgba(0,0,0,0.6); font-size: 4rem; letter-spacing: 0.12em; }
 
 .bigwin-amount {
-    font-size: 4rem;
+    font-size: 4.5rem;
     font-weight: 900;
     color: #fff;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.8);
-    animation: bigwinCountUp 1s cubic-bezier(0.2,0.8,0.3,1);
+    text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.15);
+    animation: bigwinCountUp 0.7s cubic-bezier(0.2,0.8,0.3,1) both;
+    line-height: 1;
 }
-@keyframes bigwinCountUp {
-    from { transform: scale(0.5) translateY(20px); opacity: 0; }
-    to   { transform: scale(1) translateY(0); opacity: 1; }
-}
+.bigwin-tier-super .bigwin-amount { font-size: 5rem; color: #e0f2fe; }
+.bigwin-tier-mega  .bigwin-amount { font-size: 5.5rem; color: #fae8ff; text-shadow: 0 4px 30px rgba(0,0,0,0.9), 0 0 40px rgba(217,70,239,0.3); }
 
 .bigwin-multiplier {
-    font-size: 1.4rem;
-    color: rgba(255,255,255,0.6);
-    margin-top: 4px;
-    letter-spacing: 0.1em;
+    font-size: 1.5rem;
+    color: rgba(255,255,255,0.55);
+    margin-top: 6px;
+    letter-spacing: 0.12em;
+    font-weight: 700;
 }
+.bigwin-tier-super .bigwin-multiplier { color: rgba(56,189,248,0.7); }
+.bigwin-tier-mega  .bigwin-multiplier { color: rgba(217,70,239,0.7); }
 
 .bigwin-collect {
-    margin-top: 28px;
-    padding: 14px 40px;
+    margin-top: 30px;
+    padding: 14px 44px;
     background: linear-gradient(135deg, #d97706, #fbbf24);
     border: 3px solid #fde68a;
     border-radius: 50px;
     font-size: 1.1rem;
     font-weight: 900;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     color: #1c0a00;
     cursor: pointer;
     box-shadow: 0 0 30px rgba(251,191,36,0.5);
-    animation: bigwinBtnPulse 1s ease-in-out infinite alternate;
+    animation: bigwinBtnPulse 0.9s ease-in-out infinite alternate;
     transition: transform 0.15s;
+    text-transform: uppercase;
 }
-.bigwin-collect:hover { transform: scale(1.05); }
-@keyframes bigwinBtnPulse {
-    from { box-shadow: 0 0 20px rgba(251,191,36,0.5); }
-    to   { box-shadow: 0 0 40px rgba(251,191,36,0.8); }
-}
+.bigwin-collect:hover { transform: scale(1.06); }
+.bigwin-tier-super .bigwin-collect { background: linear-gradient(135deg, #0369a1, #38bdf8); border-color: #7dd3fc; color: #fff; }
+.bigwin-tier-mega  .bigwin-collect { background: linear-gradient(135deg, #86198f, #d946ef); border-color: #e879f9; color: #fff; }
 
 /* Coin rain */
 .bigwin-coins {
-    position: absolute;
+    position: fixed;
     inset: 0;
     pointer-events: none;
     overflow: hidden;
+    z-index: 8501;
 }
 .bigwin-coin {
     position: absolute;
-    top: -40px;
+    top: -50px;
     animation: coinFall linear forwards;
-}
-@keyframes coinFall {
-    0%   { top: -40px; transform: rotate(0deg) scale(0.5); opacity: 0; }
-    10%  { opacity: 1; transform: rotate(30deg) scale(1); }
-    90%  { opacity: 1; }
-    100% { top: 110%; transform: rotate(360deg) scale(0.8); opacity: 0; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

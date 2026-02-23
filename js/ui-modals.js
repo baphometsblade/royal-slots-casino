@@ -309,7 +309,25 @@
             saveXP();
             updateXPDisplay();
             if (levelledUp) {
-                showToast(`Level Up! You are now Level ${playerLevel}!`, 'levelup');
+                // Award free spins on level up — scales slightly with level
+                const freeSpinsCount = 5 + Math.floor((playerLevel - 1) / 5); // 5 base, +1 every 5 levels
+                if (currentGame && !freeSpinsActive) {
+                    // Slot is open and idle — start free spins immediately
+                    triggerFreeSpins(currentGame, freeSpinsCount);
+                    showToast(`🎉 Level Up! Level ${playerLevel}! ${freeSpinsCount} FREE SPINS!`, 'levelup');
+                } else if (currentGame && freeSpinsActive) {
+                    // Already in free spins — top them up
+                    freeSpinsRemaining += freeSpinsCount;
+                    updateFreeSpinsDisplay();
+                    showToast(`🎉 Level Up! Level ${playerLevel}! +${freeSpinsCount} FREE SPINS added!`, 'levelup');
+                } else {
+                    // Not in a slot — award a small balance bonus instead
+                    const bonus = Math.round(playerLevel * 5 * 100) / 100; // $5 × level
+                    balance += bonus;
+                    saveBalance();
+                    updateBalance();
+                    showToast(`🎉 Level Up! Level ${playerLevel}! +$${bonus.toFixed(2)} BONUS!`, 'levelup');
+                }
             }
         }
 

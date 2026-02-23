@@ -32,11 +32,15 @@
 
         function getBetBounds() {
             if (!currentGame) return null;
-            const minBet = currentGame.minBet;
-            const cappedMax = Math.min(currentGame.maxBet, balance);
-            const snappedMax = Math.floor(cappedMax / minBet) * minBet;
-            const maxBet = Math.max(minBet, snappedMax || 0);
-            return { minBet, maxBet };
+            // Find the first BET_STEPS value at or above the game's minBet floor
+            const gameMin = currentGame.minBet;
+            const gameMax = Math.min(currentGame.maxBet, balance || gameMin);
+            const validSteps = BET_STEPS.filter(v => v >= gameMin - 0.001 && v <= gameMax + 0.001);
+            if (validSteps.length === 0) {
+                // Edge case: balance too low for even the cheapest step — use game floor directly
+                return { minBet: gameMin, maxBet: Math.max(gameMin, gameMax) };
+            }
+            return { minBet: validSteps[0], maxBet: validSteps[validSteps.length - 1] };
         }
 
 
@@ -47,16 +51,27 @@
             const bounds = getBetBounds();
             if (!betRange || !bounds) return;
 
-            betRange.min = bounds.minBet;
-            betRange.max = bounds.maxBet;
-            betRange.step = currentGame.minBet;
+            // Build valid step list for this game/balance combo
+            const validSteps = BET_STEPS.filter(v => v >= bounds.minBet - 0.001 && v <= bounds.maxBet + 0.001);
+            const stepCount = validSteps.length;
 
-            if (currentBet < bounds.minBet) currentBet = bounds.minBet;
-            if (currentBet > bounds.maxBet) currentBet = bounds.maxBet;
+            // Range slider travels 0…(stepCount-1) indices — non-linear mapping
+            betRange.min   = 0;
+            betRange.max   = Math.max(0, stepCount - 1);
+            betRange.step  = 1;
 
-            betRange.value = currentBet;
-            document.getElementById('minBet').textContent = currentGame.minBet;
-            document.getElementById('maxBet').textContent = currentGame.maxBet;
+            // Snap currentBet to the nearest valid step
+            if (stepCount > 0) {
+                if (currentBet < bounds.minBet) currentBet = bounds.minBet;
+                if (currentBet > bounds.maxBet) currentBet = bounds.maxBet;
+                const nearest = validSteps.reduce((a, b) =>
+                    Math.abs(b - currentBet) < Math.abs(a - currentBet) ? b : a);
+                currentBet = nearest;
+                betRange.value = validSteps.findIndex(v => Math.abs(v - currentBet) < 0.001);
+            }
+
+            document.getElementById('minBet').textContent = bounds.minBet.toFixed(2);
+            document.getElementById('maxBet').textContent = currentGame.maxBet.toFixed(2);
             updateBetDisplay();
 
             const spinBtn = document.getElementById('spinBtn');

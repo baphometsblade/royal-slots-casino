@@ -18,7 +18,23 @@
 const DEFAULT_BALANCE = 5000;
 
 /** @type {number} Default bet amount */
-const DEFAULT_BET = 50;
+const DEFAULT_BET = 1.00;
+
+/**
+ * Non-linear bet steps:
+ *   $0.20 → $2.00   in $0.20 increments  (10 steps)
+ *   $2.00 → $5.00   in $1.00 increments   (3 steps)
+ *   $5.00 → $25.00  in $5.00 increments   (4 steps)
+ *   $25.00 → $500   in $25.00 increments  (19 steps)
+ */
+const BET_STEPS = [
+    0.20, 0.40, 0.60, 0.80, 1.00, 1.20, 1.40, 1.60, 1.80, 2.00,
+    3.00, 4.00, 5.00,
+    10.00, 15.00, 20.00, 25.00,
+    50.00, 75.00, 100.00, 125.00, 150.00, 175.00, 200.00,
+    225.00, 250.00, 275.00, 300.00, 325.00, 350.00, 375.00,
+    400.00, 425.00, 450.00, 475.00, 500.00
+];
 
 /** @type {object} Default player statistics on first load or reset */
 const DEFAULT_STATS = {
