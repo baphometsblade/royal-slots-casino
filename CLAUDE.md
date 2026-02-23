@@ -114,6 +114,23 @@ On failure: `errors.json` + `failure-shot.png` appear there.
 | `autoSpin=1` | Trigger one automatic spin |
 | `noBonus=1` | Suppress daily bonus modal |
 
+## Claude Code Automations
+
+Automations live in `.claude/` (tracked in git; only `settings.local.json` is gitignored).
+
+| What | Where | Effect |
+|---|---|---|
+| Pre-commit QA gate | `.claude/hooks/pre-commit-qa.js` | Blocks `git commit` if regression fails |
+| `.env` write guard | `.claude/hooks/block-dotenv.js` | Blocks Claude editing `.env` |
+| Hook config | `.claude/settings.json` | Registers both hooks as `PreToolUse` |
+| Security reviewer | `.claude/agents/security-reviewer.md` | Audits auth, SQL, house-edge, CORS |
+| New-game scaffold | `.claude/skills/new-game/SKILL.md` | `/new-game` — step-by-step slot game addition |
+| context7 MCP | `.mcp.json` | Live docs for express, jwt, bcrypt, sql.js, playwright |
+
+### Adding MCP Servers
+`claude mcp add` cannot run inside a Claude Code session (nested sessions are blocked).
+Edit `.mcp.json` directly instead.
+
 ## Environment Setup
 
 Create `.env` in the project root (optional — defaults work for local dev):
