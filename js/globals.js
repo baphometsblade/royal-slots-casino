@@ -63,7 +63,8 @@
         const REEL_CELL_ANIMATION_CLASSES = [
             'reel-landing', 'reel-win-glow', 'reel-wild-glow',
             'reel-scatter-glow', 'reel-celebrating', 'reel-mega-win',
-            'reel-wild-expand', 'reel-big-win-glow'
+            'reel-wild-expand', 'reel-big-win-glow',
+            'reel-near-miss', 'reel-win-entrance'
         ];
 
         // ═══════════════════════════════════════════════════
@@ -110,6 +111,9 @@
         // DAILY_REWARDS — from constants.js
 
         let dailyBonusState = { streak: 0, lastClaim: null, claimedToday: false };
+
+        // ===== Win Streak =====
+        let _winStreak = 0;
 
         // ===== Bonus Wheel =====
         // WHEEL_SEGMENTS — from constants.js

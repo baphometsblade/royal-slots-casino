@@ -1238,14 +1238,95 @@
 
 
         // Display win result from server (no client-side win calculation)
+        // -- Near-Miss Detection
+        function detectAndShowNearMiss(grid, game) {
+            if (!grid) return;
+            const cols = getGridCols(game);
+            const rows = getGridRows(game);
+            const nearMissCells = [];
+
+            if (cols <= 4) {
+                for (let r = 0; r < rows; r++) {
+                    const rowSyms = [];
+                    for (let c = 0; c < cols; c++) {
+                        rowSyms.push(grid[c] ? grid[c][r] : null);
+                    }
+                    const freq = {};
+                    rowSyms.forEach(function(sym) {
+                        if (!sym || isWild(sym, game) || isScatter(sym, game)) return;
+                        freq[sym] = (freq[sym] || 0) + 1;
+                    });
+                    Object.keys(freq).forEach(function(sym) {
+                        const count = freq[sym];
+                        if (count >= 2 && count < cols) {
+                            rowSyms.forEach(function(s, c) {
+                                if (s !== sym && !isWild(s, game)) {
+                                    nearMissCells.push([c, r]);
+                                }
+                            });
+                        }
+                    });
+                }
+            } else {
+                const midRow = Math.floor(rows / 2);
+                const sym0 = grid[0] ? grid[0][midRow] : null;
+                if (sym0 && !isWild(sym0, game) && !isScatter(sym0, game)) {
+                    let matchCount = 0;
+                    for (let c = 0; c < 4 && c < cols; c++) {
+                        const s = grid[c] ? grid[c][midRow] : null;
+                        if (s === sym0 || isWild(s, game)) matchCount++;
+                    }
+                    if (matchCount >= 4 && cols > 4) {
+                        const col4Sym = grid[4] ? grid[4][midRow] : null;
+                        if (col4Sym && col4Sym !== sym0 && !isWild(col4Sym, game)) {
+                            nearMissCells.push([4, midRow]);
+                        }
+                    }
+                }
+            }
+
+            if (nearMissCells.length > 0) {
+                nearMissCells.forEach(function(pair) {
+                    const c = pair[0], r = pair[1];
+                    const cellEl = document.getElementById("reel_" + c + "_" + r);
+                    if (cellEl) {
+                        cellEl.classList.add("reel-near-miss");
+                        setTimeout(function() { cellEl.classList.remove("reel-near-miss"); }, 1200);
+                    }
+                });
+                showMessage("So Close! 👀", "near-miss");
+            }
+        }
+
+        // -- Win Streak Toast
+        function showStreakToast(streak) {
+            const reelArea = document.querySelector(".slot-reel-area");
+            if (!reelArea) return;
+            const toast = document.createElement("div");
+            toast.className = "streak-toast";
+            let icon = "🔥";
+            const text = streak + " WIN STREAK!";
+            if (streak >= 10) {
+                icon = "🔥🔥🔥";
+                toast.classList.add("streak-toast--legendary");
+            } else if (streak >= 5) {
+                icon = "🔥🔥";
+                toast.classList.add("streak-toast--hot");
+            }
+            toast.textContent = icon + " " + text;
+            reelArea.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 2500);
+        }
+
+        // Display win result from server (no client-side win calculation)
         function displayServerWinResult(result, game) {
             const grid = result.grid;
             const winAmount = result.winAmount;
             const details = result.winDetails || {};
 
             // Clear highlights
-            getAllCells().forEach(cell => {
-                cell.classList.remove('reel-win-glow', 'reel-wild-glow', 'reel-scatter-glow', 'reel-wild-expand');
+            getAllCells().forEach(function(cell) {
+                cell.classList.remove("reel-win-glow", "reel-wild-glow", "reel-scatter-glow", "reel-wild-expand");
             });
 
             // Highlight wilds and scatters
@@ -1254,10 +1335,10 @@
                 const rows = getGridRows(game);
                 for (let c = 0; c < cols; c++) {
                     for (let r = 0; r < rows; r++) {
-                        const cell = document.getElementById(`reel_${c}_${r}`);
+                        const cell = document.getElementById("reel_" + c + "_" + r);
                         if (!cell || !grid[c]) continue;
-                        if (isWild(grid[c][r], game)) cell.classList.add('reel-wild-glow');
-                        if (isScatter(grid[c][r], game)) cell.classList.add('reel-scatter-glow');
+                        if (isWild(grid[c][r], game)) cell.classList.add("reel-wild-glow");
+                        if (isScatter(grid[c][r], game)) cell.classList.add("reel-scatter-glow");
                     }
                 }
             }
@@ -1272,20 +1353,27 @@
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 updateSlotWinDisplay(winAmount);
 
-                const message = details.message || `WIN! $${winAmount.toLocaleString()}!`;
+                // Win entrance animation on highlighted cells
+                const winCells = document.querySelectorAll(".reel-win-glow, .reel-big-win-glow");
+                winCells.forEach(function(cell) { cell.classList.add("reel-win-entrance"); });
+                setTimeout(function() {
+                    document.querySelectorAll(".reel-win-entrance").forEach(function(cell) { cell.classList.remove("reel-win-entrance"); });
+                }, 400);
+
+                const message = details.message || ("WIN! $" + winAmount.toLocaleString() + "!");
                 if (winAmount >= currentBet * 20) {
-                    playProviderSound('bigwin', currentGame);
+                    playProviderSound("bigwin", currentGame);
                 } else {
-                    playProviderSound('win', currentGame);
+                    playProviderSound("win", currentGame);
                 }
-                showMessage(message, 'win');
+                showMessage(message, "win");
 
                 stats.totalWon += winAmount;
                 if (winAmount > stats.biggestWin) stats.biggestWin = winAmount;
                 saveStats();
                 updateStatsSummary();
 
-                if (typeof awardXP === 'function') awardXP(winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN);
+                if (typeof awardXP === "function") awardXP(winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN);
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -1299,13 +1387,26 @@
 
                 // Big win celebration for wins >= 10x bet
                 if (winAmount >= currentBet * 10 && !freeSpinsActive) {
-                    setTimeout(() => showBigWinCelebration(winAmount), 800);
+                    setTimeout(function() { showBigWinCelebration(winAmount); }, 800);
+                }
+
+                // Win streak tracking
+                _winStreak++;
+                if (_winStreak >= 3) {
+                    showStreakToast(_winStreak);
                 }
             } else {
-                showMessage(details.message || 'No win. Try again.', 'lose');
+                // Streak ended
+                if (_winStreak >= 3) {
+                    showMessage("Streak ended at " + _winStreak + "! Keep spinning!", "lose");
+                } else {
+                    showMessage(details.message || "No win. Try again.", "lose");
+                }
+                _winStreak = 0;
                 hideGambleButton();
+                detectAndShowNearMiss(grid, game);
             }
-            if (typeof awardXP === 'function') awardXP(XP_AWARD_PER_SPIN);
+            if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
         }
 
 

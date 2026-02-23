@@ -2370,6 +2370,247 @@
 
         /* ═══ END PER-PROVIDER CHROME STYLES ═══ */
 
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           ENHANCED CHROME ANIMATIONS v2 — busier, more distinctive
+           Each provider gets a signature animated overlay that
+           overrides the subtler v1 pulses above.
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+        /* 1. NOVASPIN — Electric scan beam sweeping top → bottom */
+        @keyframes novaBeam {
+            0%   { background-position: 50% -100%; }
+            100% { background-position: 50%  300%; }
+        }
+        @keyframes novaContainerGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 1px rgba(0,212,255,0.2),
+                            0 0 30px rgba(0,212,255,0.25),
+                            0 0 60px rgba(0,128,255,0.10),
+                            inset 0 0 20px rgba(0,20,40,0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 1px rgba(0,212,255,0.55),
+                            0 0 55px rgba(0,212,255,0.50),
+                            0 0 110px rgba(0,128,255,0.22),
+                            inset 0 0 35px rgba(0,20,60,0.5);
+            }
+        }
+        .slot-chrome-novaspin .slot-reel-area::before {
+            background: linear-gradient(0deg,
+                transparent 38%,
+                rgba(0,212,255,0.04) 42%, rgba(0,212,255,0.18) 49%,
+                rgba(0,255,255,0.24) 50%,
+                rgba(0,212,255,0.18) 51%, rgba(0,212,255,0.04) 58%,
+                transparent 62%
+            );
+            background-size: 100% 400%;
+            animation: novaBeam 2.4s linear infinite;
+        }
+        .slot-chrome-novaspin .reels-container {
+            animation: novaContainerGlow 2s ease-in-out infinite !important;
+        }
+
+        /* 2. CELESTIAL — Rising gold light column from base */
+        @keyframes celestialRise {
+            0%   { background-position: 0% 100%, 50% 100%; }
+            50%  { background-position: 0% 0%,   50% 0%;   }
+            100% { background-position: 0% 100%, 50% 100%; }
+        }
+        @keyframes celestialContainerGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 1px rgba(245,200,66,0.30),
+                            0 0 40px rgba(245,200,66,0.25),
+                            inset 0 0 20px rgba(102,126,234,0.08);
+            }
+            50% {
+                box-shadow: 0 0 0 2px rgba(245,200,66,0.65),
+                            0 0 70px rgba(245,200,66,0.45),
+                            inset 0 0 35px rgba(140,110,234,0.15);
+            }
+        }
+        .slot-chrome-celestial .slot-reel-area::before {
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 50%, rgba(245,200,66,0.09) 0%, transparent 70%),
+                linear-gradient(0deg,
+                    rgba(245,200,66,0.00) 0%,
+                    rgba(245,200,66,0.12) 30%,
+                    rgba(255,245,180,0.06) 50%,
+                    rgba(245,200,66,0.00) 100%
+                );
+            background-size: 100% 100%, 100% 200%;
+            animation: celestialRise 4s ease-in-out infinite;
+        }
+        .slot-chrome-celestial .reels-container {
+            animation: celestialContainerGlow 3s ease-in-out infinite !important;
+        }
+
+        /* 3. IRONREEL — Animated film grain with earth-tone vignette */
+        @keyframes ironGrain {
+            0%   { opacity: 0.04; background-position:   0px   0px, 0 0; }
+            25%  { opacity: 0.09; background-position:  50px  30px, 0 0; }
+            50%  { opacity: 0.06; background-position:  20px  60px, 0 0; }
+            75%  { opacity: 0.10; background-position:  80px  10px, 0 0; }
+            100% { opacity: 0.04; background-position:   0px   0px, 0 0; }
+        }
+        .slot-chrome-ironreel .slot-reel-area::before {
+            background:
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E"),
+                radial-gradient(ellipse 80% 50% at 50% 50%, transparent 30%, rgba(30,15,4,0.35) 100%);
+            background-size: 150px 150px, 100% 100%;
+            animation: ironGrain 0.5s steps(4) infinite;
+        }
+
+        /* 4. GOLDENEDGE — Rotating pastel rainbow shimmer */
+        @keyframes goldenShimmer {
+            0%   { background-position: 0%   50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0%   50%; }
+        }
+        .slot-chrome-goldenedge .slot-reel-area::before {
+            background: linear-gradient(135deg,
+                rgba(255,111,216,0.06) 0%,
+                rgba(247,165,49, 0.10) 20%,
+                rgba(255,255,140,0.08) 40%,
+                rgba(120,255,180,0.06) 60%,
+                rgba(120,180,255,0.09) 80%,
+                rgba(255,111,216,0.06) 100%
+            );
+            background-size: 300% 300%;
+            animation: goldenShimmer 5s ease-in-out infinite;
+        }
+
+        /* 5. VAULTX — Surveillance scan bar + cold vignette */
+        @keyframes vaultSurveillanceBar {
+            0%   { background-position: 0 -50%,  0 0, 0 0; }
+            100% { background-position: 0 150%,  0 0, 0 0; }
+        }
+        .slot-chrome-vaultx .slot-reel-area::before {
+            background:
+                linear-gradient(0deg,
+                    transparent 44%,
+                    rgba(0,255,0,0.015) 47%, rgba(0,255,0,0.04) 50%,
+                    rgba(0,255,0,0.015) 53%, transparent 56%
+                ),
+                repeating-linear-gradient(90deg,
+                    transparent 0px, transparent 29px,
+                    rgba(0,0,0,0.10) 29px, rgba(0,0,0,0.10) 31px
+                ),
+                radial-gradient(ellipse 90% 80% at 50% 50%, transparent 50%, rgba(0,0,0,0.40) 100%);
+            background-size: 100% 300%, 30px 100%, 100% 100%;
+            animation: vaultSurveillanceBar 4.5s linear infinite;
+        }
+
+        /* 6. SOLSTICE — Ember glow rising from base, side bleed */
+        @keyframes solsticeEmber {
+            0%   { background-position: 0% 0%, 100% 0%, 50% 100%; opacity: 0.80; }
+            50%  { background-position: 8% 30%, 92% 20%, 50% 0%;   opacity: 1.00; }
+            100% { background-position: 0% 0%, 100% 0%, 50% 100%; opacity: 0.80; }
+        }
+        @keyframes solsticeContainerGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 2px rgba(196,30,58,0.4),
+                            0 0 0 4px #ffd700,
+                            0 0 40px rgba(196,30,58,0.25),
+                            inset 0 0 20px rgba(0,0,0,0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 2px rgba(196,30,58,0.75),
+                            0 0 0 4px #ffd700,
+                            0 0 72px rgba(196,30,58,0.48),
+                            inset 0 0 30px rgba(0,0,0,0.5);
+            }
+        }
+        .slot-chrome-solstice .slot-reel-area::before {
+            background:
+                radial-gradient(ellipse 50% 60% at 0%   50%, rgba(196,30,58,0.09) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 60% at 100% 50%, rgba(196,30,58,0.09) 0%, transparent 65%),
+                radial-gradient(ellipse 70% 40% at 50% 100%, rgba(255,215,0,0.12) 0%, transparent 60%);
+            background-size: 200% 200%, 200% 200%, 100% 100%;
+            animation: solsticeEmber 3.5s ease-in-out infinite;
+        }
+        .slot-chrome-solstice .reels-container {
+            animation: solsticeContainerGlow 2.5s ease-in-out infinite !important;
+        }
+
+        /* 7. PHANTOMWORKS — Drifting purple-crimson fog from sides */
+        @keyframes phantomFog {
+            0%   { background-position:   0% 0%,  100% 100%; opacity: 0.55; }
+            33%  { background-position:  20% 40%,  80%  60%; opacity: 1.00; }
+            66%  { background-position:  40% 80%,  60%  20%; opacity: 0.75; }
+            100% { background-position:   0% 0%,  100% 100%; opacity: 0.55; }
+        }
+        @keyframes phantomContainerGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 2px rgba(107,33,168,0.40),
+                            0 0 0 4px #991b1b,
+                            0 0 50px rgba(107,33,168,0.30),
+                            inset 0 0 30px rgba(0,0,0,0.70);
+            }
+            50% {
+                box-shadow: 0 0 0 2px rgba(107,33,168,0.75),
+                            0 0 0 4px #cc2222,
+                            0 0 90px rgba(107,33,168,0.55),
+                            inset 0 0 45px rgba(30,0,50,0.50);
+            }
+        }
+        .slot-chrome-phantomworks .slot-reel-area::before {
+            background:
+                radial-gradient(ellipse 45% 65% at 10%  50%, rgba(107,33,168,0.14) 0%, transparent 70%),
+                radial-gradient(ellipse 45% 65% at 90%  50%, rgba(153,27,27, 0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 80% 40% at 50% 100%, rgba(50,0,80,  0.18) 0%, transparent 60%);
+            background-size: 200% 200%, 200% 200%, 100% 100%;
+            animation: phantomFog 6s ease-in-out infinite;
+        }
+        .slot-chrome-phantomworks .reels-container {
+            animation: phantomContainerGlow 3s ease-in-out infinite !important;
+        }
+
+        /* 8. ARCADEFORGE — CRT scanline sweep + phosphor afterglow */
+        @keyframes arcadeScan {
+            0%   { background-position: 0 -50%, 0 0; }
+            100% { background-position: 0 150%, 0 0; }
+        }
+        @keyframes arcadeContainerGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 2px #888,
+                            0 0 0 5px #ff0844,
+                            0 0 30px rgba(255,8,68,0.20),
+                            inset 0 2px 8px rgba(0,0,0,0.50);
+            }
+            50% {
+                box-shadow: 0 0 0 2px #ccc,
+                            0 0 0 5px #ff3366,
+                            0 0 55px rgba(255,8,68,0.45),
+                            inset 0 2px 8px rgba(0,0,0,0.50);
+            }
+        }
+        .slot-chrome-arcadeforge .slot-reel-area::before {
+            background:
+                linear-gradient(0deg,
+                    transparent 44%, rgba(255,8,68,0.05) 47%, rgba(255,8,68,0.12) 50%,
+                    rgba(255,8,68,0.05) 53%, transparent 56%
+                ),
+                repeating-linear-gradient(0deg,
+                    transparent 0px, transparent 2px,
+                    rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 3px
+                );
+            background-size: 100% 300%, 100% 3px;
+            animation: arcadeScan 1.6s linear infinite;
+        }
+        .slot-chrome-arcadeforge .reels-container {
+            animation: arcadeContainerGlow 1.3s ease-in-out infinite !important;
+        }
+
+        /* ━━━ Extra per-provider reel-area gradients (richer atmospheres) ━━━ */
+        .slot-chrome-novaspin    .slot-reel-area { background: radial-gradient(ellipse at 50% 50%, rgba(0,40,80,0.30) 0%, rgba(0,4,12,0.50) 100%); }
+        .slot-chrome-celestial   .slot-reel-area { background: radial-gradient(ellipse at 50% 30%, rgba(42,20,90,0.40) 0%, rgba(4,6,24,0.55) 100%); }
+        .slot-chrome-ironreel    .slot-reel-area { background: radial-gradient(ellipse at 50% 70%, rgba(60,30,6,0.35)  0%, rgba(8,4,0,0.55)  100%); }
+        .slot-chrome-goldenedge  .slot-reel-area { background: radial-gradient(ellipse at 50% 50%, rgba(60,0,40,0.35)  0%, rgba(12,2,8,0.55)  100%); }
+        .slot-chrome-vaultx      .slot-reel-area { background: radial-gradient(ellipse at 50% 50%, rgba(20,14,2,0.40)  0%, rgba(4,3,0,0.60)  100%); }
+        .slot-chrome-solstice    .slot-reel-area { background: radial-gradient(ellipse at 50% 60%, rgba(70,0,12,0.35)  0%, rgba(8,0,2,0.55)  100%); }
+        .slot-chrome-phantomworks .slot-reel-area{ background: radial-gradient(ellipse at 50% 100%,rgba(30,0,50,0.45) 0%, rgba(2,0,5,0.60)  100%); }
+        .slot-chrome-arcadeforge .slot-reel-area { background: radial-gradient(ellipse at 50% 50%, rgba(20,0,8,0.40)   0%, rgba(3,0,1,0.60)  100%); }
+
         /* ═══ VIBRANT WIN HIGHLIGHT SYSTEM ═══ */
 
         .reel-win-glow {
@@ -8724,3 +8965,85 @@
 .autoplay-start-btn:hover  { filter: brightness(1.1); }
 .autoplay-start-btn:active { transform: scale(0.99); }
 
+
+/* =============================================
+   WIN CLARITY & ENGAGEMENT PSYCHOLOGY
+   Win Entrance, Near-Miss, Streak Toast
+   ============================================= */
+
+/* -- Win Entrance Animation -- */
+@keyframes winEntrance {
+    0%   { transform: scale(0.9); }
+    60%  { transform: scale(1.05); }
+    100% { transform: scale(1.0); }
+}
+
+.reel-win-entrance {
+    animation: winEntrance 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+}
+
+/* -- Near-Miss Flash Animation -- */
+@keyframes nearMissFlash {
+    0%   { box-shadow: none; transform: scale(1); border-color: transparent; }
+    25%  { box-shadow: 0 0 18px rgba(251, 146, 60, 0.9), 0 0 40px rgba(251, 146, 60, 0.5); transform: scale(1.06); border-color: #fb923c; }
+    60%  { box-shadow: 0 0 10px rgba(251, 146, 60, 0.6); transform: scale(0.98); border-color: #f97316; }
+    100% { box-shadow: none; transform: scale(1); border-color: transparent; }
+}
+
+.reel-near-miss {
+    border: 2px solid #fb923c !important;
+    border-radius: 6px;
+    animation: nearMissFlash 1.2s ease-out forwards;
+    z-index: 4;
+    position: relative;
+}
+
+/* -- Near-Miss Message Color -- */
+.message-near-miss {
+    color: #fb923c;
+    font-weight: 900;
+    text-shadow: 0 0 12px rgba(251, 146, 60, 0.7);
+}
+
+/* -- Streak Toast Notification -- */
+@keyframes streakFadeUp {
+    0%   { opacity: 0; transform: translateY(20px) scale(0.85); }
+    20%  { opacity: 1; transform: translateY(0) scale(1.05); }
+    80%  { opacity: 1; transform: translateY(0) scale(1.0); }
+    100% { opacity: 0; transform: translateY(-12px) scale(0.95); }
+}
+
+.streak-toast {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.95), rgba(249, 115, 22, 0.9));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: 2px solid rgba(255, 200, 100, 0.6);
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.5), 0 0 0 1px rgba(255,255,255,0.1);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 100;
+    animation: streakFadeUp 2.5s ease-in-out forwards;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.streak-toast--hot {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.95), rgba(239, 68, 68, 0.9));
+    border-color: rgba(255, 180, 100, 0.7);
+    font-size: 17px;
+}
+
+.streak-toast--legendary {
+    background: linear-gradient(135deg, rgba(120, 10, 10, 0.97), rgba(200, 30, 30, 0.95), rgba(255, 100, 0, 0.9));
+    border-color: rgba(255, 215, 0, 0.8);
+    font-size: 19px;
+    box-shadow: 0 4px 30px rgba(255, 50, 0, 0.7), 0 0 0 2px rgba(255,215,0,0.3);
+    animation: streakFadeUp 2.5s ease-in-out forwards;
+}
