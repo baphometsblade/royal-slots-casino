@@ -159,6 +159,9 @@ Calls `GET /api/admin/stats` (requires admin JWT). Admin password set via `ADMIN
 - **House edge is server-enforced:** 88% RTP, $50k session win cap, 500x max win multiplier — all in `server/config.js`. Client-side win calculations are for display only; server has final say.
 - **QA regression uses its own base URL:** The Playwright suite hits `http://localhost:3000` via the preview server — always run `npm start` (or `preview_start`) before `npm run qa:regression`.
 - **`appSettings` is not lazy:** It must be populated before any modal opens. `loadSettings()` is called as the first line of `initBase()`. Do not call modal-open functions before `initBase()` runs.
+- **Slot testing requires auth:** `openSlot()` silently no-ops when `currentUser === null`. The preview browser always starts unauthenticated. Use `npm run qa:regression` — it is the only reliable way to verify slot behaviour without a real login.
+- **Modal layout timing:** `classList.add('active')` does not immediately settle flex layout or CSS transitions. Use `requestAnimationFrame(() => requestAnimationFrame(() => fn()))` (double-RAF) for any DOM measurement that depends on a freshly activated modal.
+- **Reel animation state:** `reelStripData[]` in `globals.js` stores live per-column animation state (`cellH`, `visibleH`, `totalH`, `currentY`, `targetY`, `stripEl`). Any runtime resize of reel cells must update all six fields in sync or the spin animation drifts. `REEL_CELL_DIMS` (constants.js) and `REEL_STRIP_BUFFER` are the canonical sizing constants.
 
 ## Asset Generation
 
