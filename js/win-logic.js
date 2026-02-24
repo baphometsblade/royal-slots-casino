@@ -603,6 +603,12 @@
                         message = `RE-SPIN BONUS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                         triggerFreeSpins(game, game.freeSpinsCount);
                     }
+                } else if (game.bonusType === 'prize_wheel') {
+                    if (typeof triggerPrizeWheel === 'function') {
+                        playSound('freespin');
+                        message = `PRIZE WHEEL! +${scatterWin.toLocaleString()}!`;
+                        triggerPrizeWheel(game);
+                    }
                 } else if (scatterCount >= fullScatterThreshold) {
                     playSound('freespin');
                     triggerFreeSpins(game, game.freeSpinsCount);

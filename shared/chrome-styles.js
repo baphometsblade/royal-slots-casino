@@ -148,6 +148,12 @@ const GAME_CHROME_STYLES = {
     thunder_reel:      'novaspin',
     crystal_veil:      'phantomworks',
     primal_vault:      'ironreel',
+    fortune_bazaar:    'arcadeforge',
+    celestial_bazaar:  'vaultx',
+    titan_forge:       'ironreel',
+    mammoth_riches:    'ironreel',
+    koi_ascension:     'celestial',
+    pharaoh_collect:   'vaultx',
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)

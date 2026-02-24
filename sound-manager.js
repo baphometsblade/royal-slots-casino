@@ -576,6 +576,62 @@
                         osc.stop(now + 0.13);
                     }
                     break;
+
+                case 'wheel_spin':
+                    // Prize wheel spins — rapid tick accelerating
+                    {
+                        var tickCount = 8;
+                        for (var i = 0; i < tickCount; i++) {
+                            (function(idx) {
+                                var osc = audioContext.createOscillator();
+                                var gain = audioContext.createGain();
+                                osc.type = 'triangle';
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                var delay = idx * Math.max(0.02, 0.12 - idx * 0.012);
+                                osc.frequency.value = 440 + idx * 30;
+                                gain.gain.setValueAtTime(0.10 * soundVolume, now + delay);
+                                gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + delay + 0.06);
+                                osc.start(now + delay);
+                                osc.stop(now + delay + 0.07);
+                            })(i);
+                        }
+                    }
+                    break;
+
+                case 'colossal_land':
+                    // Giant symbol lands — deep thud + shimmer
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sine';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(80, now);
+                        osc.frequency.exponentialRampToValueAtTime(40, now + 0.18);
+                        gain.gain.setValueAtTime(0.35 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.25);
+                        osc.start(now);
+                        osc.stop(now + 0.26);
+                    }
+                    break;
+
+                case 'collect_tick':
+                    // Symbol collected — ascending pip
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sine';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(880, now);
+                        osc.frequency.exponentialRampToValueAtTime(1320, now + 0.06);
+                        gain.gain.setValueAtTime(0.12 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.09);
+                        osc.start(now);
+                        osc.stop(now + 0.10);
+                    }
+                    break;
             }
         } catch (e) {
             // Silently ignore audio errors in headless/automated environments
