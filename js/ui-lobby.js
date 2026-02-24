@@ -2,6 +2,9 @@
 // UI-LOBBY MODULE
 // ═══════════════════════════════════════════════════════
 
+        // Module-level search state — persists across filter tab switches
+        let lobbySearchQuery = '';
+
 
         // ═══════════════════════════════════════════════════════
         // LOADING SKELETONS
@@ -165,6 +168,71 @@
                     .game-card:hover .gi-strip { background: rgba(0,0,0,0.88); }
                 `;
                 document.head.appendChild(gis);
+            }
+
+            // Inject lobby search CSS once
+            if (!document.getElementById('lobbySearchCss')) {
+                const lsc = document.createElement('style');
+                lsc.id = 'lobbySearchCss';
+                lsc.textContent = `
+                    #lobbySearchBar {
+                        display: flex; align-items: center; gap: 8px;
+                        padding: 8px 0 4px;
+                        max-width: 480px;
+                    }
+                    #lobbyProviderStrip::-webkit-scrollbar { display: none; }
+                    .lobby-provider-pill:hover {
+                        background: rgba(255,255,255,0.12) !important;
+                        color: #fff !important;
+                    }
+                    @media (max-width: 480px) {
+                        #lobbySearchBar { padding: 6px 0 2px; }
+                        #lobbyProviderStrip { padding: 2px 0 6px; }
+                    }
+                `;
+                document.head.appendChild(lsc);
+            }
+
+            // Inject search bar once — positioned before filter tabs
+            if (!document.getElementById('lobbySearchBar')) {
+                const filterTabs = document.getElementById('filterTabs');
+                if (filterTabs) {
+                    const searchBarEl = document.createElement('div');
+                    searchBarEl.id = 'lobbySearchBar';
+                    searchBarEl.innerHTML = `
+                        <div style="position:relative; flex:1;">
+                            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.4);font-size:16px;">🔍</span>
+                            <input id="lobbySearchInput" type="text" placeholder="Search games or providers..."
+                                style="width:100%;padding:9px 36px 9px 34px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+                                       border-radius:20px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
+                                oninput="lobbyOnSearch(this.value)">
+                            <button id="lobbySearchClear" onclick="lobbyOnSearch('')"
+                                style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);
+                                       background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:18px;padding:0;line-height:1;">×</button>
+                        </div>
+                    `;
+                    filterTabs.parentNode.insertBefore(searchBarEl, filterTabs);
+                }
+            }
+
+            // Inject provider quick-link strip once — after search bar, before filter tabs
+            if (!document.getElementById('lobbyProviderStrip')) {
+                const filterTabs = document.getElementById('filterTabs');
+                if (filterTabs) {
+                    const providers = [...new Set(games.map(g => g.provider))].sort();
+                    const stripEl = document.createElement('div');
+                    stripEl.id = 'lobbyProviderStrip';
+                    stripEl.style.cssText = 'display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none;';
+                    stripEl.innerHTML = providers.map(p => `
+                        <button class="lobby-provider-pill" onclick="lobbySetProvider('${p.replace(/'/g, "\\'")}')"
+                            data-provider="${p}"
+                            style="flex-shrink:0;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);
+                                   background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);font-size:11px;
+                                   cursor:pointer;white-space:nowrap;transition:all 0.15s;">
+                            ${p}
+                        </button>`).join('');
+                    filterTabs.parentNode.insertBefore(stripEl, filterTabs);
+                }
             }
 
             // Inject Favourites filter tab once
@@ -440,6 +508,18 @@
             if (currentProviderFilter !== 'all') {
                 list = list.filter(g => g.provider === currentProviderFilter);
             }
+            // Apply lobby search query (set by lobbyOnSearch / lobbySetProvider)
+            if (lobbySearchQuery) {
+                if (lobbySearchQuery.startsWith('__provider__')) {
+                    const prov = lobbySearchQuery.slice('__provider__'.length);
+                    list = list.filter(g => g.provider.toLowerCase() === prov);
+                } else {
+                    list = list.filter(g =>
+                        g.name.toLowerCase().includes(lobbySearchQuery) ||
+                        g.provider.toLowerCase().includes(lobbySearchQuery)
+                    );
+                }
+            }
             return list;
         }
 
@@ -637,4 +717,46 @@
             const clearBtn = document.getElementById('searchClearBtn');
             if (clearBtn) clearBtn.style.display = 'none';
             searchGames('');
+        }
+
+
+        // ═══════════════════════════════════════════════════════════
+        // LOBBY SEARCH BAR + PROVIDER QUICK-LINKS
+        // ═══════════════════════════════════════════════════════════
+
+        function lobbyOnSearch(query) {
+            lobbySearchQuery = query.trim().toLowerCase();
+            const clearBtn = document.getElementById('lobbySearchClear');
+            const input = document.getElementById('lobbySearchInput');
+            if (clearBtn) clearBtn.style.display = lobbySearchQuery ? 'block' : 'none';
+            if (input && input.value !== query) input.value = query;
+            // Clear any active provider pill highlight when typing a free-text query
+            if (!lobbySearchQuery.startsWith('__provider__')) {
+                document.querySelectorAll('.lobby-provider-pill').forEach(pill => {
+                    pill.style.background = 'rgba(255,255,255,0.06)';
+                    pill.style.borderColor = 'rgba(255,255,255,0.15)';
+                    pill.style.color = 'rgba(255,255,255,0.7)';
+                });
+            }
+            renderFilteredGames();
+        }
+
+
+        function lobbySetProvider(providerName) {
+            // Clear free-text search
+            lobbySearchQuery = '';
+            const input = document.getElementById('lobbySearchInput');
+            if (input) input.value = '';
+            const clearBtn = document.getElementById('lobbySearchClear');
+            if (clearBtn) clearBtn.style.display = 'none';
+            // Highlight the active provider pill
+            document.querySelectorAll('.lobby-provider-pill').forEach(pill => {
+                const active = pill.dataset.provider === providerName;
+                pill.style.background   = active ? 'rgba(123,97,255,0.3)'    : 'rgba(255,255,255,0.06)';
+                pill.style.borderColor  = active ? 'rgba(123,97,255,0.6)'    : 'rgba(255,255,255,0.15)';
+                pill.style.color        = active ? '#b39ddb'                  : 'rgba(255,255,255,0.7)';
+            });
+            // Use the sentinel prefix so getFilteredGames does an exact provider match
+            lobbySearchQuery = '__provider__' + providerName.toLowerCase();
+            renderFilteredGames();
         }

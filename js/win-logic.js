@@ -539,13 +539,40 @@
             const scatterThreshold     = isMultiRow(game) ? SCATTER_THRESHOLD_MULTI_ROW      : SCATTER_THRESHOLD_CLASSIC;
             const fullScatterThreshold = isMultiRow(game) ? FULL_SCATTER_THRESHOLD_MULTI_ROW : FULL_SCATTER_THRESHOLD_CLASSIC;
 
-            if (scatterCount >= scatterThreshold && !freeSpinsActive && game.freeSpinsCount > 0) {
+            // ── Hold & Win / Coin Respin bonus trigger ──
+            if (scatterCount >= scatterThreshold && !freeSpinsActive &&
+                (game.bonusType === 'hold_and_win' || game.bonusType === 'coin_respin') &&
+                typeof triggerHoldAndWin === 'function') {
+                // Build list of locked cell positions from currentGrid
+                const scatterCells = [];
+                if (grid) {
+                    const cols = getGridCols(game);
+                    const rows = getGridRows(game);
+                    for (let c = 0; c < cols; c++) {
+                        for (let r = 0; r < rows; r++) {
+                            if (grid[c] && grid[c][r] === game.scatterSymbol) {
+                                scatterCells.push({ col: c, row: r });
+                            }
+                        }
+                    }
+                }
+                playSound('freespin');
+                message = `BONUS! HOLD & WIN TRIGGERED!`;
+                triggerHoldAndWin(game, scatterCells, currentBet);
+            } else if (scatterCount >= scatterThreshold && !freeSpinsActive && game.freeSpinsCount > 0) {
                 // Realistic scatter pay: 0.5x per scatter (real slots: 0.5x-1x)
                 const scatterPayMult = window.HouseEdge ? window.HouseEdge.getScatterPay(scatterCount) : scatterCount * 0.5;
                 const scatterWin = currentBet * scatterPayMult;
                 winAmount += scatterWin;
 
-                if (scatterCount >= fullScatterThreshold) {
+                // ── chamber_spins hook — Eternal Romance ──
+                if (game.bonusType === 'chamber_spins') {
+                    if (typeof triggerChamberSpins === 'function') {
+                        playSound('freespin');
+                        message = `CHAMBER BONUS! +$${scatterWin.toLocaleString()} scatter pay!`;
+                        triggerChamberSpins(game);
+                    }
+                } else if (scatterCount >= fullScatterThreshold) {
                     playSound('freespin');
                     triggerFreeSpins(game, game.freeSpinsCount);
                     message = `SCATTER BONUS! ${game.freeSpinsCount} FREE SPINS AWARDED! +$${scatterWin.toLocaleString()} scatter pay!`;
@@ -560,13 +587,21 @@
             // ── Scatter retrigger during free spins (capped to prevent runaway) ──
             // MAX_FREE_SPINS — from constants.js
             if (scatterCount >= scatterThreshold && freeSpinsActive && game.freeSpinsRetrigger && freeSpinsRemaining < MAX_FREE_SPINS) {
-                const extraSpins = scatterCount >= fullScatterThreshold ? game.freeSpinsCount : Math.max(2, Math.floor(game.freeSpinsCount / 3));
-                const capped = Math.min(extraSpins, MAX_FREE_SPINS - freeSpinsRemaining);
-                if (capped > 0) {
-                    freeSpinsRemaining += capped;
-                    message += ` +${capped} EXTRA FREE SPINS!`;
-                    updateFreeSpinsDisplay();
-                    showBonusEffect(`+${capped} FREE SPINS!`, '#fbbf24');
+                // ── chamber_spins retrigger — advance chamber level ──
+                if (game.bonusType === 'chamber_spins') {
+                    if (typeof advanceChamberLevel === 'function') {
+                        advanceChamberLevel(game);
+                        message += ' CHAMBER ADVANCED!';
+                    }
+                } else {
+                    const extraSpins = scatterCount >= fullScatterThreshold ? game.freeSpinsCount : Math.max(2, Math.floor(game.freeSpinsCount / 3));
+                    const capped = Math.min(extraSpins, MAX_FREE_SPINS - freeSpinsRemaining);
+                    if (capped > 0) {
+                        freeSpinsRemaining += capped;
+                        message += ` +${capped} EXTRA FREE SPINS!`;
+                        updateFreeSpinsDisplay();
+                        showBonusEffect(`+${capped} FREE SPINS!`, '#fbbf24');
+                    }
                 }
             }
 

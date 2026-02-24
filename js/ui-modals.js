@@ -73,6 +73,125 @@
             try { localStorage.setItem(ACH_STORAGE_KEY, JSON.stringify(s)); } catch(e) {}
         }
 
+        // ── Login Streak ──────────────────────────────────────────
+        const LOGIN_STREAK_KEY = 'matrixLoginStreak';
+
+        function _loadStreakState() {
+            try {
+                const d = JSON.parse(localStorage.getItem(LOGIN_STREAK_KEY) || '{}');
+                return {
+                    lastDate: d.lastDate || null,
+                    streak: d.streak || 0,
+                    longestStreak: d.longestStreak || 0,
+                    totalLogins: d.totalLogins || 0,
+                };
+            } catch(e) { return { lastDate: null, streak: 0, longestStreak: 0, totalLogins: 0 }; }
+        }
+
+        function _saveStreakState(s) {
+            try { localStorage.setItem(LOGIN_STREAK_KEY, JSON.stringify(s)); } catch(e) {}
+        }
+
+        function _checkLoginStreak() {
+            const s = _loadStreakState();
+            const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+            if (s.lastDate === today) return s; // already checked today
+
+            const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+            const isConsecutive = s.lastDate === yesterday;
+
+            s.streak = isConsecutive ? s.streak + 1 : 1;
+            s.longestStreak = Math.max(s.longestStreak, s.streak);
+            s.totalLogins++;
+            s.lastDate = today;
+            _saveStreakState(s);
+
+            // Award XP for streak milestones
+            const milestones = [3, 7, 14, 30];
+            if (milestones.includes(s.streak) && typeof gainXP === 'function') {
+                const xpBonus = s.streak * 10;
+                gainXP(xpBonus);
+                _showStreakToast(s.streak, xpBonus);
+            } else if (s.streak > 1) {
+                _showStreakToast(s.streak, 0);
+            }
+            return s;
+        }
+
+        function _showStreakToast(streak, xpBonus) {
+            const prev = document.getElementById('streakToast');
+            if (prev) prev.remove();
+            const t = document.createElement('div');
+            t.id = 'streakToast';
+            const emoji = streak >= 30 ? '🔥🔥🔥' : streak >= 7 ? '🔥🔥' : '🔥';
+            t.style.cssText = 'position:fixed;top:70px;right:16px;transform:translateX(120%);'
+                + 'background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #ff6d00;'
+                + 'color:#fff;border-radius:12px;padding:10px 16px;font-size:13px;z-index:99999;'
+                + 'box-shadow:0 4px 20px rgba(255,109,0,0.3);transition:transform 0.4s ease;'
+                + 'max-width:220px;pointer-events:none;';
+            t.innerHTML = `<div style="font-weight:700;margin-bottom:2px">${emoji} ${streak}-Day Streak!</div>`
+                + (xpBonus > 0 ? `<div style="font-size:11px;color:#ffb74d">+${xpBonus} XP Milestone Bonus</div>` :
+                   `<div style="font-size:11px;color:rgba(255,255,255,0.5)">Keep it up!</div>`);
+            document.body.appendChild(t);
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                t.style.transform = 'translateX(0)';
+            }));
+            setTimeout(() => {
+                t.style.transform = 'translateX(120%)';
+                setTimeout(() => t.remove(), 450);
+            }, 3500);
+        }
+
+        function _nextStreakMilestone(streak) {
+            const milestones = [3, 7, 14, 30, 60, 100];
+            return milestones.find(m => m > streak) || streak + 10;
+        }
+
+        function _renderStreakPanel() {
+            const el = document.getElementById('streakPanelContainer');
+            if (!el) return;
+            const s = _checkLoginStreak(); // will only update once per day
+            const flames = Math.min(s.streak, 5);
+
+            el.innerHTML = `
+                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                  <div style="text-align:center;">
+                    <div style="font-size:32px;line-height:1">${'🔥'.repeat(flames)}</div>
+                    <div style="font-size:28px;font-weight:900;color:#ff6d00;line-height:1.1">${s.streak}</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Day Streak</div>
+                  </div>
+                  <div style="flex:1;min-width:120px;">
+                    <div class="streak-stat-row"><span>🏆 Longest Streak</span><strong>${s.longestStreak} days</strong></div>
+                    <div class="streak-stat-row"><span>📅 Total Logins</span><strong>${s.totalLogins}</strong></div>
+                    <div class="streak-stat-row"><span>📆 Next Milestone</span><strong>${_nextStreakMilestone(s.streak)} days</strong></div>
+                  </div>
+                </div>`;
+        }
+
+        function _ensureStreakPanel() {
+            if (document.getElementById('streakPanelContainer')) return;
+            if (!document.getElementById('streakCss')) {
+                const st = document.createElement('style');
+                st.id = 'streakCss';
+                st.textContent = `.streak-stat-row{display:flex;justify-content:space-between;font-size:12px;`
+                    + `padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.7)}`
+                    + `.streak-stat-row strong{color:#fff}`;
+                document.head.appendChild(st);
+            }
+            const wrap = document.createElement('div');
+            wrap.id = 'streakPanelContainer';
+            wrap.style.cssText = 'margin-top:14px;padding:12px;background:rgba(255,109,0,0.06);'
+                + 'border-radius:10px;border:1px solid rgba(255,109,0,0.2);';
+            // Inject before achievements panel or append to statsContent
+            const achPanel = document.getElementById('achPanelContainer');
+            if (achPanel && achPanel.parentNode) {
+                achPanel.parentNode.insertBefore(wrap, achPanel);
+            } else {
+                const sc = document.getElementById('statsContent') || document.querySelector('[id*="stats"]');
+                if (sc) sc.appendChild(wrap);
+            }
+        }
+
         // Global hook called by spin/win code in ui-slot.js
         window.onChallengeEvent = function(eventType, payload) {
             const state = _loadChallengeState();
@@ -176,6 +295,10 @@
             // ── Achievements panel (localStorage-tracked) ─────────────
             _ensureAchievementsPanel();
             _renderAchievementsPanel();
+
+            // ── Login Streak panel ────────────────────────────────────
+            _ensureStreakPanel();
+            _renderStreakPanel();
         }
 
 
@@ -1098,3 +1221,7 @@
 
             requestAnimationFrame(animateWheel);
         }
+
+
+        // ── Login streak: check once on page load (toast fires even if stats modal is never opened)
+        setTimeout(function() { _checkLoginStreak(); }, 800);

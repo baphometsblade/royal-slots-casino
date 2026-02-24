@@ -222,7 +222,8 @@
                     cell.className = 'reel-cell';
                     cell.style.height = dims.h + 'px';
                     cell.style.minHeight = dims.h + 'px';
-                    if (s > 0) cell.style.marginTop = dims.gap + 'px';
+                    cell.style.marginTop = s === 0 ? '0px' : dims.gap + 'px';
+                    cell.style.marginBottom = '0px';
 
                     // Mark visible-zone cells with proper IDs
                     const visIdx = s - REEL_STRIP_BUFFER;
@@ -313,9 +314,14 @@
                 rd.colEl.style.height = scaledVisibleH + 'px';
 
                 // Resize every cell in the strip (buffer + visible rows)
-                rd.stripEl.querySelectorAll('.reel-cell').forEach(cell => {
-                    cell.style.height    = scaledCellH + 'px';
-                    cell.style.minHeight = scaledCellH + 'px';
+                // Also enforce marginBottom=0 to cancel any CSS margin that would
+                // corrupt the cell-pitch arithmetic (total strip height calculation
+                // assumes pitch = cellH + gap only, with no extra bottom margin).
+                rd.stripEl.querySelectorAll('.reel-cell').forEach((cell, ci) => {
+                    cell.style.height      = scaledCellH + 'px';
+                    cell.style.minHeight   = scaledCellH + 'px';
+                    cell.style.marginBottom = '0px';
+                    if (ci === 0) cell.style.marginTop = '0px';
                 });
 
                 // Recalculate strip Y so the visible zone stays centred
@@ -1041,6 +1047,11 @@
                 var _oldHistPanel = document.getElementById('spinHistoryPanel');
                 if (_oldHistPanel) _oldHistPanel.parentNode.removeChild(_oldHistPanel);
                 _ensureSpinHistoryPanel();
+                // Inject session stats mini-bar (removed and re-injected so counts reset per game)
+                var _oldSessStats = document.getElementById('slotSessionStats');
+                if (_oldSessStats) _oldSessStats.parentNode.removeChild(_oldSessStats);
+                _ensureSlotSessionStats();
+                _updateSlotSessionStats();
                 // Wait two animation frames so flex layout + CSS transitions settle,
                 // then rescale reel cells to fit whatever height the container was given.
                 requestAnimationFrame(() => requestAnimationFrame(() => rescaleReelGridToFit(currentGame)));
@@ -1753,6 +1764,80 @@
                 slotModal.appendChild(panel);
             }
             renderSpinHistory();
+            _updateSlotSessionStats();
+        }
+
+        // ── Session Stats Mini-Bar ────────────────────────────────────────────
+        function _ensureSlotSessionStats() {
+            if (document.getElementById('slotSessionStats')) return;
+
+            // Inject CSS once (id-guarded)
+            if (!document.getElementById('slotSessCss')) {
+                const st = document.createElement('style');
+                st.id = 'slotSessCss';
+                st.textContent = [
+                    '.slot-session-stats { display:flex; align-items:center; justify-content:space-around; padding:8px 12px; margin:4px 8px 4px; background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid rgba(255,255,255,0.07); }',
+                    '.sss-item { display:flex; flex-direction:column; align-items:center; gap:2px; }',
+                    '.sss-label { font-size:9px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.5px; }',
+                    '.sss-value { font-size:13px; font-weight:700; color:rgba(255,255,255,0.9); }',
+                    '.sss-divider { width:1px; height:24px; background:rgba(255,255,255,0.1); }',
+                    '@media (max-width: 480px) { .slot-session-stats { flex-wrap: wrap; gap: 6px; } .sss-item { flex: 1 1 42%; } .sss-divider { display: none; } }'
+                ].join('\n');
+                document.head.appendChild(st);
+            }
+
+            const bar = document.createElement('div');
+            bar.id = 'slotSessionStats';
+            bar.className = 'slot-session-stats';
+            bar.innerHTML =
+                '<div class="sss-item"><span class="sss-label">Spins</span><span class="sss-value" id="sssSpins">0</span></div>' +
+                '<div class="sss-divider"></div>' +
+                '<div class="sss-item"><span class="sss-label">Win Rate</span><span class="sss-value" id="sssWinRate">0%</span></div>' +
+                '<div class="sss-divider"></div>' +
+                '<div class="sss-item"><span class="sss-label">Net</span><span class="sss-value" id="sssNet">$0</span></div>' +
+                '<div class="sss-divider"></div>' +
+                '<div class="sss-item"><span class="sss-label">Best Win</span><span class="sss-value" id="sssBest">$0</span></div>';
+
+            // Insert just above spin history panel, or above slot-bottom-bar as fallback
+            const histPanel = document.getElementById('spinHistoryPanel');
+            const bottomBar = document.querySelector('.slot-bottom-bar');
+            if (histPanel && histPanel.parentNode) {
+                histPanel.parentNode.insertBefore(bar, histPanel);
+            } else if (bottomBar && bottomBar.parentNode) {
+                bottomBar.parentNode.insertBefore(bar, bottomBar);
+            }
+        }
+
+        function _updateSlotSessionStats() {
+            const spinsEl = document.getElementById('sssSpins');
+            const wrEl    = document.getElementById('sssWinRate');
+            const netEl   = document.getElementById('sssNet');
+            const bestEl  = document.getElementById('sssBest');
+            if (!spinsEl) return;
+
+            // Derive stats from spinHistory (session-scoped array, reset on each openSlot)
+            let spins = 0, wins = 0, netVal = 0, bestWin = 0;
+            if (typeof spinHistory !== 'undefined' && Array.isArray(spinHistory) && spinHistory.length > 0) {
+                spins   = spinHistory.length;
+                wins    = spinHistory.filter(function(s) { return s.win > 0; }).length;
+                netVal  = spinHistory.reduce(function(acc, s) { return acc + (s.win - s.bet); }, 0);
+                bestWin = Math.max.apply(null, spinHistory.map(function(s) { return s.win; }));
+            } else {
+                spins  = typeof sessionSpins   !== 'undefined' ? sessionSpins   : 0;
+                wins   = typeof sessionWins    !== 'undefined' ? sessionWins    : 0;
+                netVal = (typeof sessionWon    !== 'undefined' ? sessionWon     : 0)
+                       - (typeof sessionWagered !== 'undefined' ? sessionWagered : 0);
+            }
+
+            const wr = spins > 0 ? Math.round((wins / spins) * 100) : 0;
+            spinsEl.textContent = spins.toLocaleString();
+            wrEl.textContent    = wr + '%';
+            netEl.textContent   = (netVal >= 0 ? '+' : '') + '$' + Math.abs(netVal).toFixed(2);
+            netEl.style.color   = netVal > 0 ? '#66bb6a' : netVal < 0 ? '#ef5350' : 'rgba(255,255,255,0.6)';
+            if (bestEl) {
+                bestEl.textContent  = '$' + bestWin.toFixed(2);
+                bestEl.style.color  = bestWin > 0 ? '#ffd54f' : 'rgba(255,255,255,0.5)';
+            }
         }
 
         // Display win result from server (no client-side win calculation)
@@ -1814,7 +1899,7 @@
                 });
                 showMessage("So Close! 👀", "near-miss");
                 triggerNearMissNudge();
-                if (spinHistory.length > 0) { spinHistory[0].isNearMiss = true; renderSpinHistory(); }
+                if (spinHistory.length > 0) { spinHistory[0].isNearMiss = true; renderSpinHistory(); _updateSlotSessionStats(); }
             }
         }
 
@@ -1855,6 +1940,7 @@
             if (spinHistory.length > SPIN_HISTORY_MAX) spinHistory.pop();
             if (typeof onChallengeEvent === 'function') onChallengeEvent('spin', { bet: currentBet, win: winAmount, gameId: currentGame ? currentGame.id : null });
             renderSpinHistory();
+            _updateSlotSessionStats();
 
             // Clear highlights
             getAllCells().forEach(function(cell) {
@@ -1885,6 +1971,7 @@
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 setTimeout(showPaylinePaths, 300);
+                setTimeout(triggerPaylineFlash, 350);
                 updateSlotWinDisplay(winAmount);
 
                 // Win entrance animation on highlighted cells
@@ -2495,6 +2582,202 @@
         }
 
 
+
+        // ═══════════════════════════════════════════════════════
+        // HOLD & WIN / COIN RESPIN ENGINE
+        // ═══════════════════════════════════════════════════════
+
+        // Credit a Hold & Win total win back to the player.
+        window.onHoldWinComplete = function(winAmount) {
+            if (winAmount > 0) {
+                balance += winAmount;
+                if (typeof updateBalance === 'function') updateBalance();
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof showWinAnimation === 'function') showWinAnimation(winAmount);
+                if (typeof triggerWinParticles === 'function') triggerWinParticles(winAmount);
+                if (typeof stats !== 'undefined') {
+                    stats.totalWon += winAmount;
+                    if (winAmount > stats.biggestWin) stats.biggestWin = winAmount;
+                    if (typeof saveStats === 'function') saveStats();
+                    if (typeof updateStatsSummary === 'function') updateStatsSummary();
+                }
+                if (window.HouseEdge) window.HouseEdge.recordSpin(0, winAmount, currentGame && currentGame.id);
+                if (typeof awardXP === 'function') awardXP(XP_AWARD_BIG_WIN);
+                if (winAmount >= (typeof currentBet !== 'undefined' ? currentBet : 1) * 10) {
+                    setTimeout(function() { if (typeof showBigWinCelebration === 'function') showBigWinCelebration(winAmount); }, 400);
+                }
+            }
+        };
+
+
+        async function triggerHoldAndWin(game, initialLockCells, betAmount) {
+            const cols = getGridCols(game);
+            const rows = getGridRows(game);
+            const COIN_VALUES = (game.bonusType === 'coin_respin' && game.coinRespinValues)
+                ? game.coinRespinValues
+                : [2, 5, 10, 25, 50, 100];
+
+            // Build 2-D locked grid: null = empty, number = locked coin value
+            const lockedGrid = [];
+            for (let c = 0; c < cols; c++) {
+                lockedGrid.push(new Array(rows).fill(null));
+            }
+
+            function randomCoinValue() {
+                const pick = COIN_VALUES[Math.floor(Math.random() * COIN_VALUES.length)];
+                return Math.round(pick * betAmount * 100) / 100;
+            }
+
+            // Lock initial scatter positions
+            initialLockCells.forEach(function(pos) {
+                if (pos.col < cols && pos.row < rows) {
+                    lockedGrid[pos.col][pos.row] = randomCoinValue();
+                }
+            });
+
+            const reelArea = document.querySelector('.slot-reel-area');
+            if (!reelArea) return;
+
+            // Remove any stale overlay from a previous bonus round
+            const stale = document.getElementById('holdWinOverlay');
+            if (stale) stale.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'holdWinOverlay';
+            overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.88);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-family:inherit';
+
+            const accentColor = game.accentColor || '#ffd700';
+            const titleText = game.bonusType === 'coin_respin' ? '🐸 COIN RESPIN' : '💰 HOLD & WIN';
+
+            overlay.innerHTML =
+                '<div style="font-size:28px;font-weight:bold;color:' + accentColor + ';margin-bottom:8px;text-shadow:0 0 16px ' + accentColor + '80;">' + titleText + '</div>'
+                + '<div id="hwRespin" style="color:#fff;font-size:18px;margin-bottom:12px;">RESPINS: <b>3</b></div>'
+                + '<div id="hwGrid" style="display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:4px;margin-bottom:12px;width:min(90%,320px);"></div>'
+                + '<div id="hwTotal" style="color:' + accentColor + ';font-size:20px;font-weight:bold;">COLLECTED: $0.00</div>';
+
+            reelArea.style.position = 'relative';
+            reelArea.appendChild(overlay);
+
+            // Re-render the mini grid display, returns current collected total
+            function renderHWGrid() {
+                const gridEl = document.getElementById('hwGrid');
+                if (!gridEl) return 0;
+                gridEl.innerHTML = '';
+                let collected = 0;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const val = lockedGrid[c][r];
+                        const cell = document.createElement('div');
+                        cell.style.cssText = 'aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;font-weight:bold;transition:background 0.2s';
+                        if (val !== null) {
+                            cell.style.background = accentColor;
+                            cell.style.color = '#000';
+                            cell.textContent = '$' + val.toLocaleString();
+                            collected += val;
+                        } else {
+                            cell.style.background = 'rgba(255,255,255,0.08)';
+                            cell.style.border = '1px solid rgba(255,255,255,0.15)';
+                        }
+                        gridEl.appendChild(cell);
+                    }
+                }
+                const totalEl = document.getElementById('hwTotal');
+                if (totalEl) {
+                    totalEl.textContent = 'COLLECTED: $' + collected.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+                return collected;
+            }
+
+            function updateRespinDisplay(n) {
+                const el = document.getElementById('hwRespin');
+                if (el) el.innerHTML = 'RESPINS: <b>' + n + '</b>';
+            }
+
+            function wait(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); }
+
+            // Initial render showing locked scatter positions
+            renderHWGrid();
+            await wait(600);
+
+            // Respin loop
+            let respinsLeft = 3;
+            updateRespinDisplay(respinsLeft);
+
+            while (respinsLeft > 0) {
+                respinsLeft--;
+                updateRespinDisplay(respinsLeft);
+                await wait(700);
+
+                let newCoinLanded = false;
+                for (let c = 0; c < cols; c++) {
+                    for (let r = 0; r < rows; r++) {
+                        if (lockedGrid[c][r] === null && Math.random() < 0.25) {
+                            lockedGrid[c][r] = randomCoinValue();
+                            newCoinLanded = true;
+                        }
+                    }
+                }
+
+                renderHWGrid();
+
+                if (newCoinLanded) {
+                    // New coin landed: reset respin counter to 3
+                    respinsLeft = 3;
+                    updateRespinDisplay(respinsLeft);
+                    if (typeof playSound === 'function') playSound('coin_land');
+                }
+
+                await wait(400);
+            }
+
+            // Tally final win
+            let totalWin = 0;
+            let allFilled = true;
+            for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows; r++) {
+                    if (lockedGrid[c][r] !== null) {
+                        totalWin += lockedGrid[c][r];
+                    } else {
+                        allFilled = false;
+                    }
+                }
+            }
+
+            // Grand jackpot bonus when all grid positions are filled
+            if (allFilled && game.jackpots && game.jackpots.grand) {
+                const grandBonus = Math.round(game.jackpots.grand * betAmount * 100) / 100;
+                totalWin += grandBonus;
+                const jackpotBanner = document.createElement('div');
+                jackpotBanner.style.cssText = 'color:#ff0;font-size:22px;font-weight:bold;margin-top:8px;text-shadow:0 0 12px #ff080088;';
+                jackpotBanner.textContent = 'GRAND JACKPOT! +$' + grandBonus.toLocaleString();
+                overlay.appendChild(jackpotBanner);
+                await wait(1500);
+            }
+
+            // Apply house-edge cap
+            if (window.HouseEdge && typeof window.HouseEdge.capWin === 'function') {
+                totalWin = window.HouseEdge.capWin(totalWin, betAmount, game);
+                totalWin = Math.round(totalWin * 100) / 100;
+            }
+
+            // Show completion message inside the overlay
+            const completionEl = document.createElement('div');
+            completionEl.style.cssText = 'color:' + accentColor + ';font-size:22px;font-weight:bold;margin-top:10px;';
+            completionEl.textContent = totalWin > 0
+                ? 'YOU WIN $' + totalWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '!'
+                : 'BETTER LUCK NEXT TIME!';
+            overlay.appendChild(completionEl);
+
+            if (typeof createConfetti === 'function' && totalWin > 0) createConfetti();
+            await wait(2500);
+
+            // Remove overlay and credit the win
+            if (overlay.parentNode) overlay.remove();
+            if (typeof window.onHoldWinComplete === 'function') {
+                window.onHoldWinComplete(totalWin);
+            }
+        }
+
         function toggleAutoSpin(count) {
             if (autoSpinActive) {
                 stopAutoSpin();
@@ -2997,3 +3280,401 @@
                 setTimeout(onComplete, REEL_DECEL_DURATION + REEL_BOUNCE_DURATION + 100);
             }
         }
+
+        // ── Payline Flash Effect ─────────────────────────────────────────────
+        // Injects CSS once then fires a staggered per-payline cell highlight.
+        function _injectPaylineFlashCss() {
+            if (document.getElementById('paylineFlashCss')) return;
+            var style = document.createElement('style');
+            style.id = 'paylineFlashCss';
+            style.textContent = [
+                '@keyframes paylineFlash {',
+                '  0%   { outline: 3px solid transparent; outline-offset: -2px; filter: brightness(1); }',
+                '  20%  { outline: 3px solid rgba(255,215,0,0.95); outline-offset: -2px; filter: brightness(1.45); }',
+                '  60%  { outline: 2px solid rgba(255,215,0,0.55); outline-offset: -1px; filter: brightness(1.2); }',
+                '  100% { outline: 2px solid transparent; outline-offset: -1px; filter: brightness(1); }',
+                '}',
+                '.payline-flash-0 { animation: paylineFlash 900ms ease-out forwards; }',
+                '.payline-flash-1 { animation: paylineFlash 900ms ease-out 200ms forwards; }',
+                '.payline-flash-2 { animation: paylineFlash 900ms ease-out 400ms forwards; }',
+                '.payline-flash-3 { animation: paylineFlash 900ms ease-out 600ms forwards; }',
+                '.payline-flash-4 { animation: paylineFlash 900ms ease-out 800ms forwards; }',
+                '.payline-flash-5 { animation: paylineFlash 900ms ease-out 1000ms forwards; }',
+                '.payline-flash-6 { animation: paylineFlash 900ms ease-out 1200ms forwards; }',
+                '.payline-flash-7 { animation: paylineFlash 900ms ease-out 1400ms forwards; }'
+            ].join('\n');
+            document.head.appendChild(style);
+        }
+
+        // Called after a server win result is displayed.
+        // Reads _lastWinLines (populated by win-logic.js / displayServerWinResult)
+        // and adds staggered payline-flash CSS classes to each winning cell.
+        function triggerPaylineFlash() {
+            _injectPaylineFlashCss();
+
+            var winLines = (typeof _lastWinLines !== 'undefined') ? _lastWinLines : [];
+
+            // Fallback: if no structured win-line data, flash all currently
+            // highlighted win cells together as a single group.
+            if (!winLines || winLines.length === 0) {
+                var allWinCells = document.querySelectorAll('.reel-win-glow, .reel-big-win-glow');
+                if (allWinCells.length === 0) return;
+                allWinCells.forEach(function(cell) {
+                    cell.classList.remove(
+                        'payline-flash-0','payline-flash-1','payline-flash-2','payline-flash-3',
+                        'payline-flash-4','payline-flash-5','payline-flash-6','payline-flash-7'
+                    );
+                    void cell.offsetWidth; // reflow to restart animation
+                    cell.classList.add('payline-flash-0');
+                });
+                setTimeout(function() {
+                    document.querySelectorAll(
+                        '.payline-flash-0,.payline-flash-1,.payline-flash-2,.payline-flash-3,' +
+                        '.payline-flash-4,.payline-flash-5,.payline-flash-6,.payline-flash-7'
+                    ).forEach(function(el) {
+                        el.classList.remove(
+                            'payline-flash-0','payline-flash-1','payline-flash-2','payline-flash-3',
+                            'payline-flash-4','payline-flash-5','payline-flash-6','payline-flash-7'
+                        );
+                    });
+                }, 1100);
+                return;
+            }
+
+            // Structured path: one flash class per payline, staggered 200ms each.
+            winLines.forEach(function(winLine, idx) {
+                var cells = winLine.cells;
+                if (!cells || cells.length === 0) return;
+                var flashClass = 'payline-flash-' + (idx % 8);
+                cells.forEach(function(pair) {
+                    var cellEl = document.getElementById('reel_' + pair[0] + '_' + pair[1]);
+                    if (!cellEl) return;
+                    cellEl.classList.remove(
+                        'payline-flash-0','payline-flash-1','payline-flash-2','payline-flash-3',
+                        'payline-flash-4','payline-flash-5','payline-flash-6','payline-flash-7'
+                    );
+                    void cellEl.offsetWidth; // reflow
+                    cellEl.classList.add(flashClass);
+                });
+            });
+
+            // Clean up after all animations have finished (last delay 1400ms + 900ms duration).
+            var cleanupDelay = 200 * Math.min(winLines.length - 1, 7) + 1000;
+            setTimeout(function() {
+                document.querySelectorAll(
+                    '.payline-flash-0,.payline-flash-1,.payline-flash-2,.payline-flash-3,' +
+                    '.payline-flash-4,.payline-flash-5,.payline-flash-6,.payline-flash-7'
+                ).forEach(function(el) {
+                    el.classList.remove(
+                        'payline-flash-0','payline-flash-1','payline-flash-2','payline-flash-3',
+                        'payline-flash-4','payline-flash-5','payline-flash-6','payline-flash-7'
+                    );
+                });
+            }, cleanupDelay);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // MYSTERY STACKS — Depth Charge (razor_shark)
+        // bonusType: 'mystery_stacks'
+        // ═══════════════════════════════════════════════════════════
+
+        // Called from the displayServerWinResult patch when game.bonusType === 'mystery_stacks'.
+        // Overlays a random column with '❓' cells, then reveals them after 500 ms to
+        // match the actual grid result.  Has a 5% chance of applying a rare multiplier.
+        function applyMysteryStacks(result, game) {
+            if (!result || !result.grid) return;
+            var grid = result.grid;
+            var cols = getGridCols(game);
+            var rows = getGridRows(game);
+            var mysteryCol = Math.floor(Math.random() * cols);
+            var multipliers = game.mysteryRevealMultipliers || [1, 2, 5, 10, 50, 2500];
+
+            // Overlay the chosen column with ❓
+            for (var r = 0; r < rows; r++) {
+                var cell = document.getElementById('reel_' + mysteryCol + '_' + r);
+                if (cell) {
+                    cell.innerHTML = '<span style="font-size:1.6em;filter:drop-shadow(0 0 8px #00bcd4);">\u2753</span>';
+                    cell.classList.add('reel-mystery-stack');
+                }
+            }
+
+            // After 500 ms reveal the actual symbol
+            setTimeout(function() {
+                if (typeof playSound === 'function') playSound('mystery_reveal');
+                var revealSymbol = (grid[mysteryCol] && grid[mysteryCol][0]) ||
+                    game.symbols[Math.floor(Math.random() * game.symbols.length)];
+
+                for (var r2 = 0; r2 < rows; r2++) {
+                    var cell2 = document.getElementById('reel_' + mysteryCol + '_' + r2);
+                    if (cell2) {
+                        cell2.innerHTML = renderSymbol(revealSymbol);
+                        cell2.classList.remove('reel-mystery-stack');
+                        cell2.classList.add('reel-win-entrance');
+                        (function(c) { setTimeout(function() { c.classList.remove('reel-win-entrance'); }, 400); })(cell2);
+                    }
+                }
+
+                // 5% chance of a rare multiplier (skip index 0 which is x1)
+                if (Math.random() < 0.05 && result.winAmount > 0) {
+                    var rareIdx = 1 + Math.floor(Math.random() * (multipliers.length - 1));
+                    var mult = multipliers[rareIdx];
+                    if (mult > 1) {
+                        var bonus = result.winAmount * (mult - 1);
+                        balance += bonus;
+                        updateBalance();
+                        saveBalance();
+                        showBonusEffect('\uD83D\uDD31 MYSTERY x' + mult + '!', '#00bcd4');
+                        showWinAnimation(result.winAmount * mult);
+                    }
+                }
+            }, 500);
+        }
+
+        // Patch displayServerWinResult to run mystery stacks overlay before the
+        // standard win handling so the ❓ appears immediately when reels stop.
+        (function() {
+            var _origDSWR_mystery = displayServerWinResult;
+            displayServerWinResult = function(result, game) {
+                if (game && game.bonusType === 'mystery_stacks') {
+                    applyMysteryStacks(result, game);
+                }
+                _origDSWR_mystery(result, game);
+            };
+        })();
+
+
+        // ═══════════════════════════════════════════════════════════
+        // WILD COLLECT — Loki's Wild Loot (loki_loot)
+        // bonusType: 'wild_collect'
+        // ═══════════════════════════════════════════════════════════
+
+        window._wildMeterValue = window._wildMeterValue || 1;
+
+        function resetWildMeter() {
+            window._wildMeterValue = 1;
+            updateWildMeterDisplay();
+        }
+
+        function updateWildMeterDisplay() {
+            var el = document.getElementById('wildMeterDisplay');
+            if (!el) return;
+            var mv = window._wildMeterValue || 1;
+            el.textContent = '\u26A1 WILD METER: ' + mv + 'x';
+            el.style.display = (mv > 1) ? 'inline-block' : 'none';
+            var meterColor = mv >= 16 ? '#ff5252' : mv >= 6 ? '#ff9800' : '#c6ff00';
+            el.style.borderColor = meterColor;
+            el.style.color = meterColor;
+        }
+
+        function ensureWildMeterDisplay() {
+            if (document.getElementById('wildMeterDisplay')) return;
+            var reelArea = document.querySelector('.slot-reel-area');
+            if (!reelArea) return;
+            var chip = document.createElement('div');
+            chip.id = 'wildMeterDisplay';
+            chip.style.cssText = [
+                'display:none',
+                'position:absolute',
+                'bottom:-32px',
+                'left:50%',
+                'transform:translateX(-50%)',
+                'background:rgba(10,31,10,0.92)',
+                'border:2px solid #c6ff00',
+                'border-radius:20px',
+                'padding:4px 16px',
+                'font-size:0.85em',
+                'font-weight:700',
+                'color:#c6ff00',
+                'letter-spacing:0.08em',
+                'white-space:nowrap',
+                'z-index:20',
+                'pointer-events:none'
+            ].join(';');
+            var raPos = window.getComputedStyle(reelArea).position;
+            if (raPos === 'static') reelArea.style.position = 'relative';
+            reelArea.appendChild(chip);
+        }
+
+        // Count wilds in the result grid, grow the meter, return boosted win amount.
+        function applyWildCollect(result, game) {
+            if (!result || !result.grid) return result ? (result.winAmount || 0) : 0;
+            ensureWildMeterDisplay();
+            var grid = result.grid;
+            var cols = getGridCols(game);
+            var rows = getGridRows(game);
+            var wildCount = 0;
+
+            for (var c = 0; c < cols; c++) {
+                for (var r = 0; r < rows; r++) {
+                    if (grid[c] && isWild(grid[c][r], game)) {
+                        wildCount++;
+                    }
+                }
+            }
+
+            // Accumulate meter (not during free spins — meter is frozen but still applies)
+            if (wildCount > 0 && !freeSpinsActive) {
+                var picks = game.wildCollectMultiplier || [2, 3, 5, 10];
+                for (var i = 0; i < wildCount; i++) {
+                    window._wildMeterValue += picks[Math.floor(Math.random() * picks.length)];
+                }
+                if (typeof playSound === 'function') playSound('wild_meter_tick');
+                showBonusEffect('\u26A1 WILD METER +" + wildCount + " WILD' + (wildCount > 1 ? 'S' : '') + '!', '#c6ff00');
+            }
+
+            updateWildMeterDisplay();
+
+            var win = result.winAmount || 0;
+            if (win > 0 && window._wildMeterValue > 1) {
+                var boosted = win * window._wildMeterValue;
+                var bonusPart = boosted - win;
+                balance += bonusPart;
+                updateBalance();
+                saveBalance();
+                return boosted;
+            }
+            return win;
+        }
+
+        // Patch displayServerWinResult for wild_collect.
+        (function() {
+            var _origDSWR_wild = displayServerWinResult;
+            displayServerWinResult = function(result, game) {
+                if (game && game.bonusType === 'wild_collect') {
+                    var boostedWin = applyWildCollect(result, game);
+                    if (boostedWin !== (result ? result.winAmount || 0 : 0)) {
+                        var patched = Object.assign({}, result, { winAmount: boostedWin });
+                        _origDSWR_wild(patched, game);
+                        return;
+                    }
+                }
+                _origDSWR_wild(result, game);
+            };
+        })();
+
+
+        // ═══════════════════════════════════════════════════════════
+        // CHAMBER SPINS — Eternal Romance (eternal_romance)
+        // bonusType: 'chamber_spins'
+        // ═══════════════════════════════════════════════════════════
+
+        var CHAMBER_CONFIGS = [
+            { spins: 10, name: 'Chamber I \u2014 Amber',   color: '#ffc107', mult: 1, wildReel: false },
+            { spins: 15, name: 'Chamber II \u2014 Troy',   color: '#ff7043', mult: 1, wildReel: false },
+            { spins: 20, name: 'Chamber III \u2014 Michael', color: '#9c27b0', mult: 5, wildReel: false },
+            { spins: 25, name: 'Chamber IV \u2014 Sarah',  color: '#c62828', mult: 1, wildReel: true  }
+        ];
+
+        window._chamberLevel = (typeof window._chamberLevel !== 'undefined') ? window._chamberLevel : 0;
+        window._chamberMultiplier = window._chamberMultiplier || 1;
+        window._chamberWildReel = (typeof window._chamberWildReel !== 'undefined') ? window._chamberWildReel : -1;
+
+        function resetChamberState() {
+            window._chamberLevel = 0;
+            window._chamberMultiplier = 1;
+            window._chamberWildReel = -1;
+        }
+
+        // Called by win-logic.js when a scatter fires for bonusType === 'chamber_spins'
+        // outside of free spins (initial trigger).
+        function triggerChamberSpins(game) {
+            var level = (typeof window._chamberLevel !== 'undefined') ? window._chamberLevel : 0;
+            if (level >= CHAMBER_CONFIGS.length) level = CHAMBER_CONFIGS.length - 1;
+            var cfg = CHAMBER_CONFIGS[level];
+
+            window._chamberMultiplier = cfg.mult;
+            window._chamberWildReel = cfg.wildReel
+                ? Math.floor(Math.random() * getGridCols(game))
+                : -1;
+
+            showBonusEffect(cfg.name.toUpperCase() + ' ACTIVATED!', cfg.color);
+            triggerFreeSpins(game, cfg.spins);
+
+            // Update overlay text after it renders
+            setTimeout(function() {
+                var titleEl = document.querySelector('#freeSpinsOverlay .fs-intro-title');
+                if (titleEl) titleEl.textContent = cfg.name;
+                var descEl = document.querySelector('#freeSpinsOverlay .fs-intro-desc');
+                if (descEl) {
+                    if (cfg.mult > 1) {
+                        descEl.textContent = cfg.mult + '\u00d7 multiplier on all wins!';
+                    } else if (cfg.wildReel && window._chamberWildReel >= 0) {
+                        descEl.textContent = 'Reel ' + (window._chamberWildReel + 1) + ' is fully WILD!';
+                    }
+                }
+            }, 800);
+        }
+
+        // Called by win-logic.js when a scatter fires DURING free spins for chamber_spins.
+        function advanceChamberLevel(game) {
+            if (typeof window._chamberLevel === 'undefined') window._chamberLevel = 0;
+            var nextLevel = Math.min(window._chamberLevel + 1, CHAMBER_CONFIGS.length - 1);
+            if (nextLevel === window._chamberLevel) {
+                // At max chamber — give bonus spins
+                freeSpinsRemaining += 5;
+                updateFreeSpinsDisplay();
+                showBonusEffect('+5 FREE SPINS!', '#c62828');
+                return;
+            }
+            window._chamberLevel = nextLevel;
+            var cfg = CHAMBER_CONFIGS[nextLevel];
+            window._chamberMultiplier = cfg.mult;
+            window._chamberWildReel = cfg.wildReel
+                ? Math.floor(Math.random() * getGridCols(game))
+                : -1;
+
+            freeSpinsRemaining += cfg.spins;
+            updateFreeSpinsDisplay();
+            if (typeof playSound === 'function') playSound('level_up');
+            showBonusEffect(cfg.name.toUpperCase() + ' UNLOCKED!', cfg.color);
+        }
+
+        // Patch displayServerWinResult for chamber_spins: inject wild reel visuals
+        // and apply the chamber multiplier when active.
+        (function() {
+            var _origDSWR_chamber = displayServerWinResult;
+            displayServerWinResult = function(result, game) {
+                if (game && game.bonusType === 'chamber_spins' && freeSpinsActive) {
+                    // Wild reel: force wild symbol into a full column
+                    if (window._chamberWildReel >= 0 && result && result.grid) {
+                        var wc = window._chamberWildReel;
+                        var rows = getGridRows(game);
+                        for (var r = 0; r < rows; r++) {
+                            if (result.grid[wc]) result.grid[wc][r] = game.wildSymbol;
+                            var cell = document.getElementById('reel_' + wc + '_' + r);
+                            if (cell) {
+                                cell.innerHTML = renderSymbol(game.wildSymbol);
+                                cell.classList.add('reel-wild-glow');
+                            }
+                        }
+                    }
+
+                    // Chamber multiplier (only Chamber III has mult > 1)
+                    var mult = window._chamberMultiplier || 1;
+                    if (mult > 1 && result && result.winAmount > 0) {
+                        var boosted = result.winAmount * mult;
+                        var bonusPart = boosted - result.winAmount;
+                        balance += bonusPart;
+                        updateBalance();
+                        saveBalance();
+                        var patched = Object.assign({}, result, { winAmount: boosted });
+                        _origDSWR_chamber(patched, game);
+                        showBonusEffect('x' + mult + ' CHAMBER MULTIPLIER!', '#9c27b0');
+                        return;
+                    }
+                }
+                _origDSWR_chamber(result, game);
+            };
+        })();
+
+        // Reset chamber and wild meter state when openSlot is called for these games.
+        (function() {
+            if (typeof openSlot === 'function') {
+                var _origOpenSlotBonus = openSlot;
+                openSlot = function(game) {
+                    if (game && game.bonusType === 'chamber_spins') resetChamberState();
+                    if (game && game.bonusType === 'wild_collect') resetWildMeter();
+                    _origOpenSlotBonus(game);
+                };
+            }
+        })();

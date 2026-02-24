@@ -359,6 +359,87 @@ let _promoState = {
 
 
 // ─────────────────────────────────────────────────────────────────────
+// 1b. ENHANCEMENT CSS INJECTION (id-guarded, injected once on load)
+// ─────────────────────────────────────────────────────────────────────
+(function injectPromoEnhancementStyles() {
+    if (document.getElementById('promoEnhCss')) return;
+    const s = document.createElement('style');
+    s.id = 'promoEnhCss';
+    s.textContent = `
+.promo-progress-wrap {
+  margin-top: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.promo-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7b61ff, #00bcd4);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.promo-progress-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 3px;
+  display: block;
+}
+.promo-expiring { color: #ffb74d; font-size: 11px; }
+.promo-expiring-soon { color: #ff8a65; font-size: 11px; font-weight: 600; }
+.promo-expiring-urgent { color: #ef5350; font-size: 11px; font-weight: 700; animation: pulse 1s infinite; }
+.promo-expired { color: rgba(255,255,255,0.3); font-size: 11px; }
+.promo-type-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.promo-type-deposit  { background: rgba(76,175,80,0.2);  color: #81c784; }
+.promo-type-freespin { background: rgba(33,150,243,0.2); color: #64b5f6; }
+.promo-type-cashback { background: rgba(255,152,0,0.2);  color: #ffb74d; }
+.promo-type-vip      { background: rgba(156,39,176,0.2); color: #ce93d8; }
+/* Colored left-border stripe per promo type */
+.promo-popup-card[data-promo-type="deposit"]  { border-left: 4px solid #81c784; }
+.promo-popup-card[data-promo-type="freespin"] { border-left: 4px solid #64b5f6; }
+.promo-popup-card[data-promo-type="cashback"] { border-left: 4px solid #ffb74d; }
+.promo-popup-card[data-promo-type="vip"]      { border-left: 4px solid #ce93d8; }
+/* CLAIM / ACTIVE badge in top-left corner of card */
+.promo-status-badge {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  pointer-events: none;
+}
+.promo-status-badge.badge-claim  { background: rgba(245,158,11,0.25); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+.promo-status-badge.badge-active { background: rgba(52,211,153,0.2);  color: #34d399; border: 1px solid rgba(52,211,153,0.35); }
+/* Countdown row inside card */
+.promo-countdown-row {
+  text-align: center;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+`;
+    document.head.appendChild(s);
+})();
+
+
+// ─────────────────────────────────────────────────────────────────────
 // 2. SUPPRESSION HELPERS
 // ─────────────────────────────────────────────────────────────────────
 
@@ -380,6 +461,69 @@ function _promoSetSessionFlag(key) {
 
 
 // ─────────────────────────────────────────────────────────────────────
+// 2b. ENHANCEMENT HELPER FUNCTIONS
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Returns countdown info for a given expiry date/string, or null if none.
+ * @param {string|number|Date} expiresAt
+ * @returns {{ text: string, cls: string }|null}
+ */
+function _promoTimeLeft(expiresAt) {
+    if (!expiresAt) return null;
+    const diff = new Date(expiresAt) - Date.now();
+    if (diff <= 0) return { text: 'Expired', cls: 'promo-expired' };
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    if (d > 0) return { text: 'Expires in ' + d + 'd ' + h + 'h', cls: 'promo-expiring' };
+    if (h > 0) return { text: 'Expires in ' + h + 'h ' + m + 'm', cls: 'promo-expiring-soon' };
+    return { text: 'Expires in ' + m + 'm', cls: 'promo-expiring-urgent' };
+}
+
+/**
+ * Returns visual metadata for a promo type string.
+ * Supported types: 'deposit', 'freespin', 'cashback', 'vip'
+ * Falls back to 'deposit' for unknown types.
+ *
+ * @param {string} [promoType]
+ * @returns {{ type: string, badgeLabel: string, icon: string }}
+ */
+function _promoGetTypeMeta(promoType) {
+    const type = (promoType || 'deposit').toLowerCase();
+    const map = {
+        deposit:  { type: 'deposit',  badgeLabel: 'Deposit Bonus', icon: '\uD83C\uDF81' },
+        freespin: { type: 'freespin', badgeLabel: 'Free Spins',    icon: '\uD83C\uDFB0' },
+        cashback: { type: 'cashback', badgeLabel: 'Cashback',      icon: '\uD83D\uDCAA' },
+        vip:      { type: 'vip',      badgeLabel: 'VIP Offer',     icon: '\uD83D\uDC51' },
+    };
+    return map[type] || map['deposit'];
+}
+
+/**
+ * Build the wagering-progress HTML block.
+ * Returns empty string when insufficient data is present.
+ *
+ * @param {number|undefined} wagered  — amount already wagered
+ * @param {number|undefined} required — total wagering requirement
+ * @returns {string}
+ */
+function _promoProgressHtml(wagered, required) {
+    if (typeof required !== 'number' || required <= 0) return '';
+    const w = Math.min(typeof wagered === 'number' ? wagered : 0, required);
+    const pct = Math.round((w / required) * 100);
+    const wFmt = (typeof formatMoney === 'function') ? formatMoney(w) : w.toFixed(2);
+    const rFmt = (typeof formatMoney === 'function') ? formatMoney(required) : required.toFixed(2);
+    return (
+        '<div class="promo-progress-wrap">' +
+            '<div class="promo-progress-bar" style="width:' + pct + '%"></div>' +
+        '</div>' +
+        '<span class="promo-progress-label">$' + wFmt + ' / $' + rFmt + ' wagered</span>'
+    );
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
 // 3. GENERIC POPUP RENDERER
 // ─────────────────────────────────────────────────────────────────────
 
@@ -387,16 +531,21 @@ function _promoSetSessionFlag(key) {
  * Show a promo popup with the given configuration.
  *
  * @param {Object} config
- * @param {string} config.id          — unique promo identifier
- * @param {string} config.icon        — emoji or HTML for the header icon
- * @param {string} config.title       — headline text
- * @param {string} config.body        — description HTML
- * @param {string} [config.cta]       — CTA button label (omit to hide)
- * @param {Function} [config.onCta]   — CTA click handler
- * @param {string} [config.timer]     — countdown HTML (rendered in timer row)
- * @param {string} [config.extraHtml] — extra HTML inserted before suppress checkbox
+ * @param {string} config.id                   — unique promo identifier
+ * @param {string} config.icon                 — emoji or HTML for the header icon
+ * @param {string} config.title                — headline text
+ * @param {string} config.body                 — description HTML
+ * @param {string} [config.cta]                — CTA button label (omit to hide)
+ * @param {Function} [config.onCta]            — CTA click handler
+ * @param {string} [config.timer]              — countdown HTML (rendered in timer row)
+ * @param {string} [config.extraHtml]          — extra HTML inserted before suppress checkbox
  * @param {boolean} [config.suppressible=true] — show "don't show again" checkbox
- * @param {Function} [config.onDismiss] — called when popup is dismissed
+ * @param {Function} [config.onDismiss]        — called when popup is dismissed
+ * @param {string} [config.promoType]          — 'deposit'|'freespin'|'cashback'|'vip'
+ * @param {string|number|Date} [config.expiresAt] — expiry date for countdown display
+ * @param {number} [config.wageredAmount]      — amount already wagered toward requirement
+ * @param {number} [config.wageringRequired]   — total wagering requirement amount
+ * @param {boolean} [config.isActive]          — true = show ACTIVE badge, false/undefined = CLAIM
  */
 function showPromoPopup(config) {
     if (!config || !config.id) return;
@@ -420,6 +569,27 @@ function showPromoPopup(config) {
 
     _promoState.activePopup = config.id;
 
+    // ── Enhancement: resolve type metadata & optional enhancements ──
+    const typeMeta    = _promoGetTypeMeta(config.promoType);
+    const timeLeft    = _promoTimeLeft(config.expiresAt);
+    const progressHtml = _promoProgressHtml(config.wageredAmount, config.wageringRequired);
+
+    // Status badge: ACTIVE if the promo is already claimed/running, else CLAIM
+    const statusBadgeClass = config.isActive ? 'badge-active' : 'badge-claim';
+    const statusBadgeText  = config.isActive ? 'Active' : 'Claim';
+
+    // Type badge HTML (always shown)
+    const typeBadgeHtml = '<div class="promo-type-badge promo-type-' + typeMeta.type + '">' +
+        typeMeta.badgeLabel + '</div>';
+
+    // Countdown row HTML (only when expiry data exists)
+    const countdownHtml = timeLeft
+        ? '<div class="promo-countdown-row"><span class="' + timeLeft.cls + '">\u23F0 ' + timeLeft.text + '</span></div>'
+        : '';
+
+    // Use icon from typeMeta when no explicit icon is provided
+    const resolvedIcon = config.icon || typeMeta.icon;
+
     // Build DOM
     const overlay = document.createElement('div');
     overlay.className = 'promo-popup-overlay';
@@ -431,12 +601,16 @@ function showPromoPopup(config) {
 
     overlay.innerHTML = `
         <div class="promo-popup-backdrop"></div>
-        <div class="promo-popup-card">
+        <div class="promo-popup-card" data-promo-type="${typeMeta.type}">
+            <span class="promo-status-badge ${statusBadgeClass}">${statusBadgeText}</span>
             <button class="promo-close-btn" aria-label="Close" onclick="dismissPromo('${config.id}')">&times;</button>
-            <div class="promo-icon">${config.icon || ''}</div>
+            <div class="promo-icon">${resolvedIcon}</div>
+            ${typeBadgeHtml}
             <div class="promo-title">${config.title || ''}</div>
             <div class="promo-body">${config.body || ''}</div>
             ${config.timer ? '<div class="promo-timer"><span class="promo-timer-icon">&#9200;</span> <span id="promoTimerText_' + config.id + '">' + config.timer + '</span></div>' : ''}
+            ${countdownHtml}
+            ${progressHtml}
             ${config.extraHtml || ''}
             ${config.cta ? '<button class="promo-cta-btn" id="promoCta_' + config.id + '">' + config.cta + '</button>' : ''}
             ${suppressible ? '<label class="promo-suppress"><input type="checkbox" id="' + suppressId + '"> Don\'t show this again</label>' : ''}
@@ -566,6 +740,8 @@ function _promoCheckFirstDeposit() {
     showPromoPopup({
         id: promoId,
         icon: '\uD83C\uDF81',
+        promoType: 'deposit',
+        expiresAt: deadline,
         title: 'First Deposit Bonus!',
         body: 'Match your first deposit <span class="promo-highlight">100% up to $500</span>! Double your starting balance and hit the reels with confidence.',
         timer: timerText,
@@ -618,6 +794,7 @@ function _promoCheckLossRecovery() {
     showPromoPopup({
         id: promoId,
         icon: '\uD83D\uDCAA',
+        promoType: 'cashback',
         title: 'Cashback Offer!',
         body: 'Looks like luck isn\'t on your side right now. Here\'s <span class="promo-highlight">10% cashback</span> on your session losses!',
         extraHtml: '<div class="promo-win-amount">$' + formatMoney(cashback) + '</div>',
@@ -647,6 +824,7 @@ function _promoCheckLowBalance() {
     showPromoPopup({
         id: promoId,
         icon: '\u26A0\uFE0F',
+        promoType: 'deposit',
         title: 'Balance Running Low!',
         body: 'Your balance is <span class="promo-highlight">$' + formatMoney(balance) + '</span>. Top up now and get a <span class="promo-highlight">50% reload bonus</span>!',
         extraHtml: `
@@ -696,6 +874,7 @@ function _promoCheckWelcomeBack() {
     showPromoPopup({
         id: promoId,
         icon: '\uD83C\uDF1F',
+        promoType: 'deposit',
         title: 'Welcome Back!',
         body: 'We missed you! Here\'s a free <span class="promo-highlight">$' + formatMoney(bonusAmount) + ' bonus</span> to get you started.',
         cta: 'Claim $' + formatMoney(bonusAmount) + ' Bonus',
@@ -764,6 +943,8 @@ function _promoCheckHappyHour() {
     showPromoPopup({
         id: promoId,
         icon: '\uD83C\uDF89',
+        promoType: 'freespin',
+        expiresAt: endTime,
         title: 'Happy Hour!',
         body: 'All wins are <span class="promo-highlight">boosted 1.5x</span> for the next <span class="promo-highlight">30 minutes</span>! Make the most of it!',
         cta: 'Start Playing!',
@@ -865,6 +1046,7 @@ function _promoCheckPostWin(winAmount, betAmount) {
     showPromoPopup({
         id: promoId,
         icon: '\uD83C\uDF86',
+        promoType: 'deposit',
         title: 'Incredible Win!',
         body: 'You just won <span class="promo-highlight">' + multiplier.toFixed(1) + 'x</span> your bet! Double down with a deposit and get <span class="promo-highlight">25% extra</span>!',
         extraHtml: '<div class="promo-win-amount">$' + formatMoney(winAmount) + '</div>',

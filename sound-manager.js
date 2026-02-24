@@ -343,6 +343,84 @@
                         });
                     }
                     break;
+
+                case 'coin_land':
+                    // Coin locks in Hold & Win — bright metallic clink
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sine';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(1200, now);
+                        osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+                        gain.gain.setValueAtTime(0.18 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.18);
+                        osc.start(now);
+                        osc.stop(now + 0.2);
+                    }
+                    break;
+
+                case 'level_up':
+                    // Chamber Spins level advance — ascending 4-note fanfare
+                    {
+                        [523, 659, 784, 1047].forEach(function(freq, i) {
+                            var osc = audioContext.createOscillator();
+                            var gain = audioContext.createGain();
+                            osc.type = 'square';
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.12 * soundVolume, now + i * 0.09);
+                            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.28 + i * 0.09);
+                            osc.start(now + i * 0.09);
+                            osc.stop(now + 0.30 + i * 0.09);
+                        });
+                    }
+                    break;
+
+                case 'mystery_reveal':
+                    // Mystery Stacks reveal — swoosh followed by bright pop
+                    {
+                        var oscS = audioContext.createOscillator();
+                        var gainS = audioContext.createGain();
+                        oscS.type = 'sawtooth';
+                        oscS.connect(gainS);
+                        gainS.connect(audioContext.destination);
+                        oscS.frequency.setValueAtTime(1800, now);
+                        oscS.frequency.exponentialRampToValueAtTime(400, now + 0.25);
+                        gainS.gain.setValueAtTime(0.08 * soundVolume, now);
+                        gainS.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.25);
+                        oscS.start(now);
+                        oscS.stop(now + 0.26);
+                        var oscP = audioContext.createOscillator();
+                        var gainP = audioContext.createGain();
+                        oscP.type = 'sine';
+                        oscP.connect(gainP);
+                        gainP.connect(audioContext.destination);
+                        oscP.frequency.value = 1400;
+                        gainP.gain.setValueAtTime(0.20 * soundVolume, now + 0.22);
+                        gainP.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.45);
+                        oscP.start(now + 0.22);
+                        oscP.stop(now + 0.46);
+                    }
+                    break;
+
+                case 'wild_meter_tick':
+                    // Wild Meter accumulation — short electric click
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'square';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.value = 800 + Math.random() * 200;
+                        gain.gain.setValueAtTime(0.10 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.07);
+                        osc.start(now);
+                        osc.stop(now + 0.08);
+                    }
+                    break;
             }
         } catch (e) {
             // Silently ignore audio errors in headless/automated environments
