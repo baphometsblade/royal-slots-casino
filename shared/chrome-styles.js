@@ -154,6 +154,12 @@ const GAME_CHROME_STYLES = {
     mammoth_riches:    'ironreel',
     koi_ascension:     'celestial',
     pharaoh_collect:   'vaultx',
+    midnight_oasis:    'vaultx',
+    neptune_storm:     'novaspin',
+    twin_dragons:      'celestial',
+    mirror_palace:     'phantomworks',
+    golden_vault:      'vaultx',
+    thunder_jackpot:   'novaspin',
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)
