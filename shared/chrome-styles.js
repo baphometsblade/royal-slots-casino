@@ -111,6 +111,25 @@ const GAME_CHROME_STYLES = {
     'lucha_mania':        'arcadeforge', // Lucha Libre
     'elvis_frog':         'arcadeforge', // Elvis Frog in Vegas
     'super_hot':          'arcadeforge', // 100 Super Hot (EGT)
+    // -- WILD COLLECT additions
+    'wild_safari':       'ironreel',     // Wild Safari Express
+    'wild_deep':         'vaultx',       // Wild Deep Ocean
+    'wild_west_rush':    'vaultx',       // Reel Wild West
+
+    // -- MYSTERY STACKS additions
+    'golden_pharaoh':    'phantomworks', // Golden Pharaoh's Secret
+    'mystic_cauldron':   'phantomworks', // Mystic Cauldron
+    'crystal_shrine':    'celestial',    // Crystal Shrine
+
+    // -- COIN RESPIN additions
+    'dragon_coins':      'solstice',     // Lucky Dragon Coins
+    'mine_coins':        'vaultx',       // Gold Mine Coins
+    'vault_coins':       'ironreel',     // Money Vault
+
+    // -- CHAMBER SPINS additions
+    'demon_chambers':    'phantomworks', // Demon Chambers
+    'norse_vaults':      'novaspin',     // Norse Vaults
+    'crystal_chambers':  'celestial',    // Crystal Chambers
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)

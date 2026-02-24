@@ -1970,6 +1970,10 @@
                 animateBalanceRoll(oldBalance, balance, Math.min(2000, winAmount * 20));
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
+                // Tumble visual cascade for tumble/avalanche games
+                if (currentGame && (currentGame.bonusType === 'tumble' || currentGame.bonusType === 'avalanche')) {
+                    setTimeout(function() { triggerTumbleCascade(currentGame); }, 60);
+                }
                 setTimeout(showPaylinePaths, 300);
                 setTimeout(triggerPaylineFlash, 350);
                 updateSlotWinDisplay(winAmount);
@@ -3304,6 +3308,66 @@
                 '.payline-flash-7 { animation: paylineFlash 900ms ease-out 1400ms forwards; }'
             ].join('\n');
             document.head.appendChild(style);
+        }
+
+
+        function _injectTumbleCss() {
+            if (document.getElementById('tumbleCascadeCss')) return;
+            var st = document.createElement('style');
+            st.id = 'tumbleCascadeCss';
+            st.textContent = [
+                '@keyframes tumbleBurst {',
+                '  0%   { transform: scale(1)    rotate(0deg);    opacity: 1; filter: brightness(1); }',
+                '  40%  { transform: scale(1.35) rotate(8deg);    opacity: 0.9; filter: brightness(2.5); }',
+                '  100% { transform: scale(0.05) rotate(-12deg);  opacity: 0; filter: brightness(3); }',
+                '}',
+                '@keyframes tumbleDrop {',
+                '  0%   { transform: translateY(-32px); opacity: 0; }',
+                '  60%  { transform: translateY(4px);   opacity: 0.8; }',
+                '  100% { transform: translateY(0);     opacity: 1; }',
+                '}',
+                '.reel-tumble-burst { animation: tumbleBurst 480ms cubic-bezier(0.4,0,0.6,1) forwards !important; pointer-events: none; }',
+                '.reel-tumble-drop  { animation: tumbleDrop  380ms cubic-bezier(0.34,1.56,0.64,1) forwards; }'
+            ].join('\n');
+            document.head.appendChild(st);
+        }
+
+        function triggerTumbleCascade(game) {
+            if (!game || (game.bonusType !== 'tumble' && game.bonusType !== 'avalanche')) return;
+            _injectTumbleCss();
+
+            var cols = getGridCols(game);
+            var rows = getGridRows(game);
+
+            // Collect winning cells (those already highlighted with reel-win-glow)
+            var winCols = {};
+            for (var c = 0; c < cols; c++) {
+                for (var r = 0; r < rows; r++) {
+                    var cell = document.getElementById('reel_' + c + '_' + r);
+                    if (cell && cell.classList.contains('reel-win-glow')) {
+                        if (!winCols[c]) winCols[c] = [];
+                        winCols[c].push(r);
+                        cell.classList.add('reel-tumble-burst');
+                    }
+                }
+            }
+
+            // For each column that had wins, apply tumble-drop to the non-winning cells
+            var burstDur = 480;
+            setTimeout(function() {
+                Object.keys(winCols).forEach(function(c) {
+                    var winRows = winCols[c];
+                    for (var r = 0; r < rows; r++) {
+                        if (winRows.indexOf(r) === -1) {
+                            var cell = document.getElementById('reel_' + c + '_' + r);
+                            if (cell) {
+                                cell.classList.add('reel-tumble-drop');
+                                (function(_c) { setTimeout(function() { _c.classList.remove('reel-tumble-drop'); }, 420); })(cell);
+                            }
+                        }
+                    }
+                });
+            }, burstDur - 80);
         }
 
         // Called after a server win result is displayed.
