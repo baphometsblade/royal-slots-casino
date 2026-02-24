@@ -622,7 +622,12 @@
             // We want the winning segment at the top (270deg / -PI/2)
             // The pointer is at top, reading from angle -PI/2
             const targetAngle = -(winIndex * segAngle + segAngle / 2) - Math.PI / 2;
-            const totalRotation = targetAngle + Math.PI * 2 * (5 + Math.random() * 3);
+            // Normalize to [0, 2π) so the final wheelAngle is exact.
+            // Extra rotations MUST be whole integers — a fractional multiplier causes
+            // totalRotation % 2π to land off-target, awarding the wrong segment.
+            const targetNorm = ((targetAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+            const extraRotations = 5 + Math.floor(Math.random() * 4); // 5–8 whole rotations
+            const totalRotation = targetNorm + Math.PI * 2 * extraRotations;
 
             const startAngle = wheelAngle;
             const duration = 4000;
@@ -640,8 +645,8 @@
                 if (t < 1) {
                     requestAnimationFrame(animateWheel);
                 } else {
-                    // Landed
-                    wheelAngle = totalRotation % (2 * Math.PI);
+                    // Landed — use targetNorm directly to avoid float drift from modulo
+                    wheelAngle = targetNorm;
                     const seg = WHEEL_SEGMENTS[winIndex];
 
                     balance += seg.value;

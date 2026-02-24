@@ -6,6 +6,7 @@ const gameEngine = require('../services/game-engine');
 const houseEdge = require('../services/house-edge');
 const games = require('../../shared/game-definitions');
 
+const jackpotService = require('../services/jackpot.service');
 const router = express.Router();
 
 // Rate limiting state per user
@@ -178,6 +179,27 @@ router.post('/', authenticate, async (req, res) => {
             );
         }
 
+        // -- Jackpot contribution + award check --
+        if (!usedFreeSpin && bet > 0) {
+            // Contribute to pool (fire-and-forget style -- failures do not block spin)
+            jackpotService.contribute(bet).catch(err => console.error('[Jackpot] Contribute error:', err));
+
+            // Check for jackpot win
+            const isJackpotGame = Boolean(game.jackpot);
+            const jackpotWin = await jackpotService.checkAndAward(userId, bet, game.minBet || 0.20, isJackpotGame);
+            if (jackpotWin) {
+                // Credit jackpot amount to user
+                const balanceBeforeJp = finalBalance;
+                finalBalance = balanceBeforeJp + jackpotWin.amount;
+                await db.run('UPDATE users SET balance = ? WHERE id = ?', [finalBalance, userId]);
+                await db.run(
+                    'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                    [userId, 'jackpot', jackpotWin.amount, balanceBeforeJp, finalBalance, 'jackpot:' + jackpotWin.tier]
+                );
+                spinResult.jackpotWon = jackpotWin;
+            }
+        }
+
         // ── Log spin ──
         await db.run(
             'INSERT INTO spins (user_id, game_id, bet_amount, result_grid, win_amount, rng_seed) VALUES (?, ?, ?, ?, ?, ?)',
@@ -197,6 +219,7 @@ router.post('/', authenticate, async (req, res) => {
             scatterTriggered: spinResult.scatterTriggered,
             freeSpinsAwarded: spinResult.freeSpinsAwarded,
             usedFreeSpin,
+            jackpotWon: spinResult.jackpotWon || null,
         });
 
     } catch (err) {

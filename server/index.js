@@ -54,6 +54,8 @@ const balanceRoutes = require('./routes/balance.routes');
 const adminRoutes = require('./routes/admin.routes');
 const userRoutes = require('./routes/user.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const jackpotRoutes = require('./routes/jackpot.routes');
+const leaderboardRoutes = require('./routes/leaderboard.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/spin', spinRoutes);
@@ -61,6 +63,8 @@ app.use('/api/balance', balanceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/jackpot', jackpotRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 // ─── Game definitions endpoint (sanitized — no payout tables) ───
 const games = require('../shared/game-definitions');

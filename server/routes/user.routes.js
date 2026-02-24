@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const config = require('../config');
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
+const { sendPasswordReset } = require('../services/email.service');
 
 const router = express.Router();
 
@@ -185,7 +186,7 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        const user = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+        const user = await db.get('SELECT id, email FROM users WHERE email = ?', [email]);
         if (!user) {
             // Return success even if user not found (prevents email enumeration)
             return res.json({ message: 'If that email is registered, a reset token has been generated' });
@@ -211,12 +212,22 @@ router.post('/forgot-password', async (req, res) => {
             [user.id, token, expiresAt]
         );
 
-        // In production this token would be emailed — for dev we return it directly
-        const response = { message: 'If that email is registered, a reset token has been generated' };
-        if (process.env.NODE_ENV !== 'production') {
-            response.token = token;
+        // Build reset URL pointing back to the app
+        const origin = req.headers.origin || `https://www.msaart.online`;
+        const resetUrl = `${origin}?resetToken=${token}`;
+
+        // Send email (non-blocking — always return success to prevent email enumeration)
+        sendPasswordReset(user.email, resetUrl, expiryHours).catch(err => {
+            console.error('[User] Failed to send password reset email:', err.message);
+        });
+
+        // In dev mode also log the token so it can be tested without SMTP
+        if (config.NODE_ENV !== 'production') {
+            console.log(`[User] Password reset token for ${email}: ${token}`);
+            console.log(`[User] Reset URL: ${resetUrl}`);
         }
-        res.json(response);
+
+        res.json({ message: 'If that email is registered, a password reset link has been sent.' });
     } catch (err) {
         console.error('[User] Forgot password error:', err);
         res.status(500).json({ error: 'Failed to process password reset request' });

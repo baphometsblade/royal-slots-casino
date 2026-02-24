@@ -127,6 +127,17 @@ const TABLES = [
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
     )`,
+
+    `CREATE TABLE IF NOT EXISTS jackpot_pool (
+        tier TEXT PRIMARY KEY,
+        current_amount NUMERIC(15,2) NOT NULL,
+        seed_amount NUMERIC(15,2) NOT NULL,
+        contribution_rate REAL NOT NULL,
+        total_contributed NUMERIC(15,2) DEFAULT 0,
+        total_paid_out NUMERIC(15,2) DEFAULT 0,
+        last_won_at TIMESTAMPTZ,
+        last_winner_id INTEGER REFERENCES users(id)
+    )`,
 ];
 
 const INDEXES = [
@@ -136,6 +147,7 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_deposits_user ON deposits(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_withdrawals_user ON withdrawals(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_payment_methods_user ON payment_methods(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_jackpot_tier ON jackpot_pool(tier)`,
 ];
 
 /** Extra columns added via migrations (column name → PG definition). */

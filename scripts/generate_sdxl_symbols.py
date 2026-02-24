@@ -189,9 +189,25 @@ STYLE_PROMPT = {
 NEGATIVE_PROMPT = (
     "blurry, text, letters, words, watermark, signature, border, frame, box, "
     "background scene, landscape, interior, people, human, multiple objects, "
-    "cluttered, low quality, bad art, ugly, deformed, distorted, dark gloomy overall, "
-    "oversaturated, grain, noise, jpeg artifacts, duplicate"
+    "cluttered, low quality, bad art, ugly, deformed, distorted, "
+    "oversaturated, grain, noise, jpeg artifacts, duplicate, "
+    "black background, dark background, grey background, shadow background, vignette, "
+    "dark corners, dark edges, black corners, black edges, black halo, dark halo"
 )
+
+# Per-symbol-position distinct color accents — ensures each symbol in a game
+# has a visually distinct dominant hue, making them easy to differentiate at a glance.
+POSITION_COLOR_ACCENT = {
+    "s1": "warm red and orange accent colors, ruby red tones",
+    "s2": "cool blue and cyan accent colors, sapphire blue tones",
+    "s3": "rich green and emerald accent colors, verdant green tones",
+    "s4": "deep purple and violet accent colors, amethyst purple tones",
+    "s5": "bright yellow and amber accent colors, topaz gold tones",
+    "s6": "pink and magenta accent colors, rose pink tones",
+    "wild": "radiant gold and white gleam, golden metallic accent",
+    "scatter": "silver and iridescent accent, prismatic shimmer",
+    "bonus": "rainbow prismatic colors, multi-colored festive",
+}
 
 
 def parse_symbol_description(symbol_name: str) -> str:
@@ -210,14 +226,24 @@ def parse_symbol_description(symbol_name: str) -> str:
     return desc
 
 
+def get_position_prefix(symbol_name: str) -> str:
+    """Return the position prefix (s1, s2, wild, etc.) for color accent lookup."""
+    parts = symbol_name.split("_")
+    if parts[0] in {"s1","s2","s3","s4","s5","s6","wild","scatter","bonus"}:
+        return parts[0]
+    return "s1"
+
+
 def build_prompt(symbol_name: str, chrome: str) -> str:
     obj = parse_symbol_description(symbol_name)
     style = STYLE_PROMPT.get(chrome, STYLE_PROMPT["joker"])
     theme = CHROME_THEME.get(chrome, "")
+    pos = get_position_prefix(symbol_name)
+    color_accent = POSITION_COLOR_ACCENT.get(pos, "")
     return (
-        f"{obj}, casino slot machine game icon, {style}, {theme}, "
-        f"isolated on black background, centered composition, transparent bg, "
-        f"no background, high detail, sharp edges, 3D render, 4k, masterpiece"
+        f"{obj}, casino slot machine game icon, {style}, {theme}, {color_accent}, "
+        f"isolated on pure white background, white background, centered composition, "
+        f"high detail, sharp edges, vibrant colors, bright and vivid, 3D render, 4k, masterpiece"
     )
 
 

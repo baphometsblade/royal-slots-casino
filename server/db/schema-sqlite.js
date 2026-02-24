@@ -133,6 +133,18 @@ const TABLES = [
         updated_at TEXT DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id)
     )`,
+
+    `CREATE TABLE IF NOT EXISTS jackpot_pool (
+        tier TEXT PRIMARY KEY,
+        current_amount REAL NOT NULL,
+        seed_amount REAL NOT NULL,
+        contribution_rate REAL NOT NULL,
+        total_contributed REAL DEFAULT 0,
+        total_paid_out REAL DEFAULT 0,
+        last_won_at TEXT,
+        last_winner_id INTEGER,
+        FOREIGN KEY (last_winner_id) REFERENCES users(id)
+    )`,
 ];
 
 const INDEXES = [
@@ -142,6 +154,7 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_deposits_user ON deposits(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_withdrawals_user ON withdrawals(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_payment_methods_user ON payment_methods(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_jackpot_tier ON jackpot_pool(tier)`,
 ];
 
 /** Extra columns added via migrations (column name → definition). */

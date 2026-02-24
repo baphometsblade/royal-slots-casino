@@ -126,12 +126,93 @@
 
 
         function startJackpotTicker() {
-            const el = document.getElementById('jackpotAmount');
-            if (!el) return;
-            setInterval(() => {
-                jackpotValue += Math.floor(Math.random() * (JACKPOT_TICKER_INCREMENT_MAX - JACKPOT_TICKER_INCREMENT_MIN + 1) + JACKPOT_TICKER_INCREMENT_MIN);
-                el.textContent = jackpotValue.toLocaleString();
-            }, JACKPOT_TICKER_INTERVAL);
+            async function fetchAndUpdate() {
+                try {
+                    const res = await fetch('/api/jackpot');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const fmt = v => '$' + Number(v).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    const mini  = document.getElementById('jackpot-mini-amount');
+                    const major = document.getElementById('jackpot-major-amount');
+                    const mega  = document.getElementById('jackpot-mega-amount');
+                    if (mini)  mini.textContent  = fmt(data.mini  || 500);
+                    if (major) major.textContent = fmt(data.major || 2500);
+                    if (mega)  mega.textContent  = fmt(data.mega  || 10000);
+                } catch (_) {}
+            }
+            fetchAndUpdate();
+            setInterval(fetchAndUpdate, 10000);
+            initLeaderboard();
+        }
+
+
+        // ── Leaderboard ──
+        function initLeaderboard() {
+            let currentCat    = 'net';
+            let currentPeriod = 'today';
+            let collapsed     = false;
+
+            const section = document.getElementById('leaderboard-section');
+            const list    = document.getElementById('leaderboard-list');
+            const toggle  = document.getElementById('leaderboard-toggle');
+            if (!section || !list || !toggle) return;
+
+            async function loadLeaderboard() {
+                list.innerHTML = '<div class="lb-loading">Loading\u2026</div>';
+                try {
+                    const res = await fetch(`/api/leaderboard?period=${currentPeriod}&category=${currentCat}`);
+                    if (!res.ok) throw new Error('fetch failed');
+                    const { players } = await res.json();
+
+                    if (!players || players.length === 0) {
+                        list.innerHTML = '<div class="lb-empty">No entries yet \u2014 be the first!</div>';
+                        return;
+                    }
+
+                    const medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+                    list.innerHTML = players.map(p => `
+                        <div class="lb-row">
+                          <span class="lb-rank">${medals[p.rank - 1] || p.rank}</span>
+                          <span class="lb-name">${p.username}</span>
+                          <span class="lb-spins">${p.spins} spins</span>
+                          <span class="lb-amount">$${Number(p.amount).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>`).join('');
+                } catch (_) {
+                    list.innerHTML = '<div class="lb-empty">Could not load leaderboard.</div>';
+                }
+            }
+
+            // Category tabs
+            section.querySelectorAll('.lb-tab').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    section.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCat = btn.dataset.cat;
+                    loadLeaderboard();
+                });
+            });
+
+            // Period tabs
+            section.querySelectorAll('.lb-period').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    section.querySelectorAll('.lb-period').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentPeriod = btn.dataset.period;
+                    loadLeaderboard();
+                });
+            });
+
+            // Collapse toggle
+            toggle.addEventListener('click', () => {
+                collapsed = !collapsed;
+                section.classList.toggle('collapsed', collapsed);
+            });
+            toggle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggle.click(); });
+
+            loadLeaderboard();
+            setInterval(loadLeaderboard, 30000); // refresh every 30s
         }
 
 

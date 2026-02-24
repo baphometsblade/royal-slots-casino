@@ -10,7 +10,11 @@
     "qa:regression": "node scripts/qa_regression.js",
     "reasset:slot-chrome": "py -3.10 scripts/reasset_slot_chrome.py --engine sdxl --force --style-mode contrast",
     "reasset:slot-chrome:auto": "py -3.10 scripts/reasset_slot_chrome.py --engine auto --force --style-mode contrast",
-    "reasset:slot-chrome:balanced": "py -3.10 scripts/reasset_slot_chrome.py --engine sdxl --force --style-mode balanced"
+    "reasset:slot-chrome:balanced": "py -3.10 scripts/reasset_slot_chrome.py --engine sdxl --force --style-mode balanced",
+    "reasset:symbols": "py -3.10 scripts/generate_sdxl_symbols.py --force",
+    "animate:symbols": "py -3.10 scripts/generate_animated_symbols_pil.py --force",
+    "animate:backgrounds": "py -3.10 scripts/generate_animated_backgrounds_pil.py --force",
+    "animate:all": "npm run animate:symbols && npm run animate:backgrounds"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,6 +24,7 @@
     "express-rate-limit": "^7.1.5",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^8.0.1",
     "pg": "^8.18.0",
     "sql.js": "^1.10.2"
   },

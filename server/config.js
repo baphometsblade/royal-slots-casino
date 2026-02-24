@@ -36,6 +36,14 @@ module.exports = {
     PASSWORD_RESET_EXPIRY_HOURS: 1,
     PASSWORD_RESET_MAX_ACTIVE: 3,
 
+    // Email / SMTP (optional — password reset emails require these to be set)
+    SMTP_HOST:   process.env.SMTP_HOST   || null,
+    SMTP_PORT:   parseInt(process.env.SMTP_PORT, 10) || 587,
+    SMTP_SECURE: process.env.SMTP_SECURE === 'true',   // true = SSL/465, false = STARTTLS/587
+    SMTP_USER:   process.env.SMTP_USER   || null,
+    SMTP_PASS:   process.env.SMTP_PASS   || null,
+    SMTP_FROM:   process.env.SMTP_FROM   || '"Royal Slots Casino" <noreply@msaart.online>',
+
     // Responsible gambling defaults
     DEFAULT_DAILY_DEPOSIT_LIMIT: null,   // No limit by default
     DEFAULT_SESSION_TIME_LIMIT: null,    // No limit by default
