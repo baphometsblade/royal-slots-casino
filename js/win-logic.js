@@ -293,7 +293,12 @@
                         // Highlight winning cells
                         cluster.cells.forEach(([c, r]) => {
                             const cell = document.getElementById(`reel_${c}_${r}`);
-                            if (cell) cell.classList.add('reel-win-glow');
+                            if (cell) {
+                                cell.classList.add('reel-win-glow');
+                                if (typeof triggerSymbolHitAnimation === 'function') {
+                                    triggerSymbolHitAnimation(cell, game);
+                                }
+                            }
                         });
                     }
                 }
@@ -351,7 +356,12 @@
                     // Highlight winning cells
                     win.cells.forEach(([c, r]) => {
                         const cell = document.getElementById(`reel_${c}_${r}`);
-                        if (cell) cell.classList.add('reel-win-glow');
+                        if (cell) {
+                            cell.classList.add('reel-win-glow');
+                            if (typeof triggerSymbolHitAnimation === 'function') {
+                                triggerSymbolHitAnimation(cell, game);
+                            }
+                        }
                     });
 
                     // Store for SVG payline visualiser
@@ -444,7 +454,12 @@
                         playSound('win');
                     }
                     showWinAnimation(winAmount); upgradeWinGlow(winAmount);
-                    getAllCells().forEach(cell => cell.classList.add('reel-win-glow'));
+                    getAllCells().forEach(cell => {
+                        cell.classList.add('reel-win-glow');
+                        if (typeof triggerSymbolHitAnimation === 'function') {
+                            triggerSymbolHitAnimation(cell, game);
+                        }
+                    });
                     // Classic 3-reel triple: line through all 3 cells on row 0
                     const cols3 = getGridCols(game);
                     _lastWinLines.push({ cells: Array.from({length: cols3}, (_, c) => [c, 0]), lineIndex: 0 });
@@ -478,7 +493,12 @@
                         showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                         doublePair.forEach(idx => {
                             const cell = document.getElementById(`reel_${idx}_0`);
-                            if (cell) cell.classList.add('reel-win-glow');
+                            if (cell) {
+                                cell.classList.add('reel-win-glow');
+                                if (typeof triggerSymbolHitAnimation === 'function') {
+                                    triggerSymbolHitAnimation(cell, game);
+                                }
+                            }
                         });
                         // Classic double: line through the 2 matched cells
                         _lastWinLines.push({ cells: doublePair.map(idx => [idx, 0]), lineIndex: 0 });

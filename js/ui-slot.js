@@ -1090,6 +1090,87 @@
 
                 // Start idle spin invitation timer
                 resetIdleTimer();
+
+                // ── Intro Splash Overlay ──
+                // Remove any leftover overlay from a previous game open
+                var oldIntro = document.getElementById('slotIntroOverlay');
+                if (oldIntro) oldIntro.parentNode.removeChild(oldIntro);
+
+                var introGame = currentGame;
+                var introAccent = introGame.accentColor || '#fbbf24';
+                var introBg = introGame.bgGradient || 'linear-gradient(135deg,#0a0a18 0%,#1a0a2e 100%)';
+                var introProvider = introGame.provider || '';
+
+                var overlay = document.createElement('div');
+                overlay.id = 'slotIntroOverlay';
+                overlay.style.cssText = [
+                    'position:absolute',
+                    'inset:0',
+                    'z-index:20',
+                    'display:flex',
+                    'flex-direction:column',
+                    'align-items:center',
+                    'justify-content:center',
+                    'background:' + introBg,
+                    'opacity:1',
+                    'cursor:pointer',
+                    'animation:introFadeOut 2s ease-in-out 0s 1 forwards'
+                ].join(';');
+
+                overlay.innerHTML = [
+                    '<div class="slot-intro-title" style="',
+                        'font-size:clamp(22px,5vw,42px);',
+                        'font-weight:900;',
+                        'letter-spacing:0.04em;',
+                        'text-align:center;',
+                        'color:#fff;',
+                        'text-shadow:0 0 24px ' + introAccent + ',0 0 48px ' + introAccent + '88,0 2px 8px rgba(0,0,0,0.8);',
+                        'padding:0 24px;',
+                        'line-height:1.15;',
+                        'margin-bottom:10px',
+                    '">' + introGame.name + '</div>',
+                    '<div class="slot-intro-provider" style="',
+                        'font-size:clamp(12px,2.5vw,16px);',
+                        'font-weight:600;',
+                        'letter-spacing:0.18em;',
+                        'text-transform:uppercase;',
+                        'color:' + introAccent + ';',
+                        'opacity:0.85;',
+                        'margin-bottom:28px',
+                    '">' + introProvider + '</div>',
+                    '<div class="slot-intro-glow" style="',
+                        'width:80px;height:4px;',
+                        'border-radius:2px;',
+                        'background:linear-gradient(90deg,' + introAccent + '00,' + introAccent + ',' + introAccent + '00);',
+                        'box-shadow:0 0 18px ' + introAccent + ';',
+                        'margin-bottom:auto',
+                    '"></div>',
+                    '<div class="slot-intro-hint" style="',
+                        'position:absolute;bottom:28px;',
+                        'font-size:11px;',
+                        'letter-spacing:0.22em;',
+                        'text-transform:uppercase;',
+                        'color:rgba(255,255,255,0.45)',
+                    '">TAP TO SKIP</div>'
+                ].join('');
+
+                // Dismiss on click
+                overlay.addEventListener('click', function() {
+                    overlay.style.animation = 'none';
+                    overlay.style.transition = 'opacity 0.25s ease';
+                    overlay.style.opacity = '0';
+                    setTimeout(function() {
+                        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                    }, 260);
+                }, { once: true });
+
+                // Auto-remove after animation completes (2s)
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                }, 2100);
+
+                var slotModalContent = document.querySelector('.slot-modal-fullscreen');
+                if (slotModalContent) slotModalContent.appendChild(overlay);
             });
         }
 

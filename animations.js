@@ -119,6 +119,123 @@ function triggerWinCascade(game) {
 }
 
 // ───────────────────────────────────────────────────────
+// Symbol Hit Animation — CSS keyframes (injected once at load)
+// ───────────────────────────────────────────────────────
+
+(function _injectSymbolHitStyles() {
+    if (document.getElementById('sym-hit-styles')) return; // already injected
+    var style = document.createElement('style');
+    style.id = 'sym-hit-styles';
+    style.textContent = [
+        /* electric — quick white flash for lightning / sci-fi / gothic themes */
+        '@keyframes symHitElectric {',
+        '  0%   { box-shadow: 0 0 0px #fff; filter: brightness(1); }',
+        '  20%  { box-shadow: 0 0 24px 8px #fff, 0 0 40px 16px #7c4dff88; filter: brightness(2.5); }',
+        '  60%  { box-shadow: 0 0 12px 4px #b0bec5; filter: brightness(1.4); }',
+        '  100% { box-shadow: none; filter: brightness(1); }',
+        '}',
+        '.sym-hit-electric {',
+        '  animation: symHitElectric 0.4s ease-out forwards;',
+        '}',
+
+        /* rainbow — hue-rotate shimmer for candy / sweet themes */
+        '@keyframes symHitRainbow {',
+        '  0%   { box-shadow: 0 0 0px #f06292; filter: hue-rotate(0deg) brightness(1); }',
+        '  25%  { box-shadow: 0 0 18px 6px #ba68c8; filter: hue-rotate(90deg) brightness(1.6); }',
+        '  50%  { box-shadow: 0 0 22px 8px #ff80ab; filter: hue-rotate(180deg) brightness(1.8); }',
+        '  75%  { box-shadow: 0 0 18px 6px #ea80fc; filter: hue-rotate(270deg) brightness(1.6); }',
+        '  100% { box-shadow: none; filter: hue-rotate(360deg) brightness(1); }',
+        '}',
+        '.sym-hit-rainbow {',
+        '  animation: symHitRainbow 0.4s ease-out forwards;',
+        '}',
+
+        /* golden — warm gold box-shadow pulse for coin / nature / wealth themes */
+        '@keyframes symHitGolden {',
+        '  0%   { box-shadow: 0 0 0px #fbbf24; filter: brightness(1); }',
+        '  30%  { box-shadow: 0 0 20px 8px #fbbf24, 0 0 36px 12px #f59e0b88; filter: brightness(1.7); }',
+        '  70%  { box-shadow: 0 0 10px 4px #fbbf2488; filter: brightness(1.2); }',
+        '  100% { box-shadow: none; filter: brightness(1); }',
+        '}',
+        '.sym-hit-golden {',
+        '  animation: symHitGolden 0.4s ease-out forwards;',
+        '}',
+
+        /* accent — CSS variable driven pulse for game accentColor fallback */
+        '@keyframes symHitAccent {',
+        '  0%   { box-shadow: 0 0 0px var(--sym-hit-color, #fbbf24); filter: brightness(1); }',
+        '  30%  { box-shadow: 0 0 20px 8px var(--sym-hit-color, #fbbf24); filter: brightness(1.7); }',
+        '  70%  { box-shadow: 0 0 10px 4px var(--sym-hit-color, #fbbf24); filter: brightness(1.2); }',
+        '  100% { box-shadow: none; filter: brightness(1); }',
+        '}',
+        '.sym-hit-accent {',
+        '  animation: symHitAccent 0.4s ease-out forwards;',
+        '}'
+    ].join('\n');
+    document.head.appendChild(style);
+}());
+
+// ───────────────────────────────────────────────────────
+// Game-Specific Symbol Hit Animation
+// ───────────────────────────────────────────────────────
+
+/**
+ * Play a brief (0.4 s) CSS animation on a winning symbol cell,
+ * styled to match the provider/game theme.
+ *
+ * Hit styles (resolved from PROVIDER_FULL_THEMES.symbolHitStyle or game.accentColor):
+ *   'electric'  — quick white flash (lightning / sci-fi / gothic themes)
+ *   'rainbow'   — pastel hue-rotate shimmer (candy / sweet themes)
+ *   'golden'    — warm gold box-shadow pulse (coin / nature / wealth themes)
+ *   default     — accentColor box-shadow pulse when no provider style matches
+ *
+ * Safe to call with null/undefined cellElement.
+ *
+ * @param {Element|null} cellElement  - winning reel cell DOM element
+ * @param {object|null}  game         - current game definition object
+ */
+function triggerSymbolHitAnimation(cellElement, game) {
+    if (!cellElement) return;
+    if (!_animSettingEnabled('animations')) return;
+
+    // Resolve provider theme for hit style
+    var hitStyle = 'golden'; // safe default
+    var accentColor = (game && game.accentColor) ? game.accentColor : null;
+
+    if (game && typeof getProviderFullTheme === 'function') {
+        var fullTheme = getProviderFullTheme(game);
+        if (fullTheme && fullTheme.symbolHitStyle) {
+            hitStyle = fullTheme.symbolHitStyle;
+        }
+    }
+
+    // Choose animation class by hit style
+    var cssClass;
+    if (hitStyle === 'electric') {
+        cssClass = 'sym-hit-electric';
+    } else if (hitStyle === 'rainbow') {
+        cssClass = 'sym-hit-rainbow';
+    } else if (hitStyle === 'golden') {
+        cssClass = 'sym-hit-golden';
+    } else if (accentColor) {
+        // Fallback: inline box-shadow pulse in the game's accentColor
+        cssClass = 'sym-hit-accent';
+        cellElement.style.setProperty('--sym-hit-color', accentColor);
+    } else {
+        cssClass = 'sym-hit-golden';
+    }
+
+    // Apply and auto-remove after animation duration (400 ms)
+    cellElement.classList.add(cssClass);
+    setTimeout(function() {
+        cellElement.classList.remove(cssClass);
+        if (cssClass === 'sym-hit-accent') {
+            cellElement.style.removeProperty('--sym-hit-color');
+        }
+    }, 400);
+}
+
+// ───────────────────────────────────────────────────────
 // Bonus Overlay Effect
 // ───────────────────────────────────────────────────────
 
@@ -365,6 +482,30 @@ function triggerCinematicWinSequence(winMultiplier, winAmount, game, winningCell
         providerKey = getGameChromeStyle(game);
     }
 
+    // ── Resolve game-specific accent color for win text glow ──────────────
+    // Prefer game.accentColor, then fall back to provider theme primary, then gold.
+    var gameAccentColor = '#fbbf24'; // default gold
+    if (game && game.accentColor) {
+        gameAccentColor = game.accentColor;
+    } else if (typeof getProviderFullTheme === 'function') {
+        var _pfTheme = getProviderFullTheme(game);
+        if (_pfTheme && _pfTheme.visual && _pfTheme.visual.primary) {
+            gameAccentColor = _pfTheme.visual.primary;
+        }
+    }
+
+    // ── Resolve win text gradient from provider theme ──────────────────────
+    var winTextGradient = null;
+    if (typeof getProviderFullTheme === 'function') {
+        var _pfThemeText = getProviderFullTheme(game);
+        if (_pfThemeText && _pfThemeText.winTextStyle) {
+            winTextGradient = _pfThemeText.winTextStyle;
+        }
+    }
+
+    // ── Detect jackpot game for extra intensity ────────────────────────────
+    var isJackpotGame = game && game.jackpot && game.jackpot > 0;
+
     // === CINEMATIC TIMELINE ===
     var timeline = 0;
     var pauseMs = typeof CINEMATIC_PAUSE !== 'undefined' ? CINEMATIC_PAUSE : 500;
@@ -399,14 +540,29 @@ function triggerCinematicWinSequence(winMultiplier, winAmount, game, winningCell
         }, timeline);
     }
 
-    // 1200ms: Win text slam
+    // 1200ms: Win text slam — styled with game accent color
     setTimeout(function() {
         var label;
         if (tier === 'jackpot') label = 'JACKPOT!';
         else if (tier === 'mega') label = 'MEGA WIN!';
         else if (tier === 'epic') label = 'EPIC WIN!';
         else label = 'BIG WIN!';
-        showWinTextSlam(label, tier);
+        var winEl = showWinTextSlam(label, tier);
+
+        // Apply game-specific glow color and gradient to win text element
+        if (winEl) {
+            winEl.style.textShadow = [
+                '0 0 40px ' + gameAccentColor,
+                '0 0 80px ' + gameAccentColor + '88',
+                '0 0 120px ' + gameAccentColor + '44'
+            ].join(', ');
+            if (winTextGradient) {
+                winEl.style.backgroundImage = winTextGradient;
+                winEl.style.webkitBackgroundClip = 'text';
+                winEl.style.backgroundClip = 'text';
+                winEl.style.webkitTextFillColor = 'transparent';
+            }
+        }
 
         // Play appropriate win sound
         if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
@@ -427,6 +583,17 @@ function triggerCinematicWinSequence(winMultiplier, winAmount, game, winningCell
             var cx = (rect.left + rect.width / 2) - cRect.left;
             var cy = (rect.top + rect.height / 2) - cRect.top;
             triggerWinParticles(cx, cy, winMultiplier, providerKey);
+
+            // Extra particle burst for jackpot games — fire a second salvo offset
+            if (isJackpotGame && (tier === 'mega' || tier === 'jackpot')) {
+                setTimeout(function() {
+                    triggerWinParticles(cx - 80, cy, winMultiplier, providerKey);
+                    triggerWinParticles(cx + 80, cy, winMultiplier, providerKey);
+                }, 300);
+                setTimeout(function() {
+                    triggerWinParticles(cx, cy - 60, winMultiplier, providerKey);
+                }, 600);
+            }
         }
         // Also trigger legacy confetti
         if (typeof createConfetti === 'function') createConfetti();
@@ -445,12 +612,18 @@ function triggerCinematicWinSequence(winMultiplier, winAmount, game, winningCell
     timeline += (typeof CINEMATIC_COUNTER_ROLL !== 'undefined' ? CINEMATIC_COUNTER_ROLL : 2000);
 
     // 4200ms: Extra confetti rain for mega+
+    // Jackpot games get an additional extra wave of confetti
     if (tier === 'mega' || tier === 'jackpot') {
         setTimeout(function() {
             if (typeof createConfetti === 'function') {
                 createConfetti();
                 setTimeout(function() { createConfetti(); }, 500);
                 setTimeout(function() { createConfetti(); }, 1000);
+                // Jackpot games: one more burst
+                if (isJackpotGame) {
+                    setTimeout(function() { createConfetti(); }, 1500);
+                    setTimeout(function() { createConfetti(); }, 2000);
+                }
             }
         }, timeline);
         timeline += (typeof CINEMATIC_CONFETTI_DURATION !== 'undefined' ? CINEMATIC_CONFETTI_DURATION : 3000);

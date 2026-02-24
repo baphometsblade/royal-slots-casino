@@ -129,7 +129,7 @@ async function start() {
     await initDatabase();
     app.listen(config.PORT, () => {
         console.log(`\n${'='.repeat(50)}`);
-        console.log(`  Royal Casino Server running on port ${config.PORT}`);
+        console.log(`  Matrix Spins Server running on port ${config.PORT}`);
         console.log(`  Environment: ${config.NODE_ENV}`);
         console.log(`  Open: http://localhost:${config.PORT}`);
         console.log(`  Admin: http://localhost:${config.PORT}/admin`);

@@ -140,61 +140,109 @@ function getGameChromeStyle(game) {
 // ═══════════════════════════════════════════════════════════════════
 
 const PROVIDER_FULL_THEMES = {
+    // ── NovaSpin Studios: sci-fi electric cyan / cosmic space ────────────────
     novaspin: {
         visual: { primary: '#00e5ff', secondary: '#0a0a2e', glow: '#00e5ff', accent: 'linear-gradient(135deg,#00e5ff,#7c4dff)' },
         particles: { colors: ['#00e5ff','#7c4dff','#ffffff','#00b8d4','#448aff'], style: 'electric', gravity: 0.02, drag: 0.98, turbulence: 0.3 },
         sound: { waveform: 'sawtooth', baseFreq: 440, scale: [440,523,587,659,784,880], filterFreq: 3000, reverb: 0.3, attack: 0.01, decay: 0.3 },
         ambient: { waveform: 'sine', freq: 110, filterFreq: 800, volume: 0.04 },
-        animation: { chrome: 'novaFrameEnergy', idle: 'pulse', win: 'electricBurst' }
+        animation: { chrome: 'novaFrameEnergy', idle: 'pulse', win: 'electricBurst' },
+        // Game-specific celebration config
+        particleColors: ['#00e5ff','#7c4dff','#ffffff','#00b8d4','#448aff'],
+        ambientStyle: 'cosmic',
+        winTextStyle: 'linear-gradient(135deg, #00e5ff 0%, #7c4dff 100%)',
+        symbolHitStyle: 'electric'   // white flash for electric/lightning themes
     },
+    // ── Celestial Plays: Greek mythology, lightning, gold columns / azure ────
     celestial: {
         visual: { primary: '#ffd700', secondary: '#0d1b3e', glow: '#ffd700', accent: 'linear-gradient(135deg,#ffd700,#ff8f00)' },
         particles: { colors: ['#ffd700','#ffecb3','#ffffff','#ff8f00','#ffe082'], style: 'feather', gravity: 0.03, drag: 0.97, turbulence: 0.15 },
         sound: { waveform: 'sine', baseFreq: 523, scale: [523,587,659,698,784,880], filterFreq: 2000, reverb: 0.6, attack: 0.05, decay: 0.5 },
         ambient: { waveform: 'triangle', freq: 130, filterFreq: 600, volume: 0.03 },
-        animation: { chrome: 'celestialFrameShimmer', idle: 'shimmer', win: 'divineRays' }
+        animation: { chrome: 'celestialFrameShimmer', idle: 'shimmer', win: 'divineRays' },
+        // Game-specific celebration config
+        particleColors: ['#ffd700','#4fc3f7','#ffffff','#29b6f6','#ffe082'],
+        ambientStyle: 'electric',
+        winTextStyle: 'linear-gradient(135deg, #ffd700 0%, #4fc3f7 50%, #ffd700 100%)',
+        symbolHitStyle: 'electric'   // lightning/god theme → white flash
     },
+    // ── IronReel Entertainment: earthy nature, wolf, copper/stone ───────────
     ironreel: {
         visual: { primary: '#ff6d00', secondary: '#1a1209', glow: '#ff6d00', accent: 'linear-gradient(135deg,#ff6d00,#ffab00)' },
         particles: { colors: ['#ff6d00','#ffab00','#ff3d00','#ffffff','#ffd54f'], style: 'ember', gravity: 0.08, drag: 0.96, turbulence: 0.1 },
         sound: { waveform: 'square', baseFreq: 220, scale: [220,261,293,349,392,440], filterFreq: 1500, reverb: 0.2, attack: 0.005, decay: 0.2 },
         ambient: { waveform: 'sawtooth', freq: 65, filterFreq: 400, volume: 0.03 },
-        animation: { chrome: 'ironFrameGrain', idle: 'grain', win: 'emberShower' }
+        animation: { chrome: 'ironFrameGrain', idle: 'grain', win: 'emberShower' },
+        // Game-specific celebration config
+        particleColors: ['#26a69a','#80cbc4','#8d6e63','#a5d6a7','#ffffff'],
+        ambientStyle: 'nature',
+        winTextStyle: 'linear-gradient(135deg, #ff6d00 0%, #ffab00 100%)',
+        symbolHitStyle: 'golden'     // earthy/gold pulse
     },
+    // ── GoldenEdge Gaming: candy/sweet, pastel pink/amber/rainbow ───────────
     goldenedge: {
         visual: { primary: '#ffab00', secondary: '#1a0f00', glow: '#ffd54f', accent: 'linear-gradient(135deg,#ffab00,#ffd54f)' },
         particles: { colors: ['#ffd700','#ffab00','#ffd54f','#ffffff','#ffe082'], style: 'droplet', gravity: 0.06, drag: 0.97, turbulence: 0.08 },
         sound: { waveform: 'sine', baseFreq: 392, scale: [392,440,523,587,659,784], filterFreq: 2500, reverb: 0.4, attack: 0.02, decay: 0.4 },
         ambient: { waveform: 'sine', freq: 98, filterFreq: 500, volume: 0.03 },
-        animation: { chrome: 'goldenFrameFlow', idle: 'flow', win: 'goldCascade' }
+        animation: { chrome: 'goldenFrameFlow', idle: 'flow', win: 'goldCascade' },
+        // Game-specific celebration config
+        particleColors: ['#f06292','#ba68c8','#ff80ab','#ea80fc','#ffffff'],
+        ambientStyle: 'golden',
+        winTextStyle: 'linear-gradient(135deg, #f06292 0%, #ba68c8 33%, #ffab00 66%, #f06292 100%)',
+        symbolHitStyle: 'rainbow'    // candy theme → rainbow shimmer
     },
+    // ── VaultX Gaming: wealth/heist, dark steel, gold/green ─────────────────
     vaultx: {
         visual: { primary: '#00e676', secondary: '#0a0a0a', glow: '#00e676', accent: 'linear-gradient(135deg,#00e676,#00bfa5)' },
         particles: { colors: ['#00e676','#69f0ae','#00bfa5','#ffffff','#b2ff59'], style: 'matrix', gravity: 0.01, drag: 0.99, turbulence: 0.2 },
         sound: { waveform: 'sawtooth', baseFreq: 330, scale: [330,370,415,440,494,554], filterFreq: 2000, reverb: 0.2, attack: 0.005, decay: 0.25 },
         ambient: { waveform: 'square', freq: 82, filterFreq: 350, volume: 0.025 },
-        animation: { chrome: 'vaultFrameScan', idle: 'scan', win: 'matrixRain' }
+        animation: { chrome: 'vaultFrameScan', idle: 'scan', win: 'matrixRain' },
+        // Game-specific celebration config
+        particleColors: ['#ffd700','#69f0ae','#00e676','#ffffff','#b2ff59'],
+        ambientStyle: 'golden',
+        winTextStyle: 'linear-gradient(135deg, #ffd700 0%, #00e676 100%)',
+        symbolHitStyle: 'golden'     // coin/gold wealth theme → golden pulse
     },
+    // ── SolsticeFX: imperial red lacquer, gold filigree, eastern dragon ─────
     solstice: {
         visual: { primary: '#ff1744', secondary: '#1a0a00', glow: '#ffd700', accent: 'linear-gradient(135deg,#ff1744,#ffd700)' },
         particles: { colors: ['#ff1744','#ffd700','#ff6d00','#ffffff','#ff8a80'], style: 'wisp', gravity: 0.04, drag: 0.97, turbulence: 0.25 },
         sound: { waveform: 'triangle', baseFreq: 349, scale: [349,392,440,523,587,698], filterFreq: 1800, reverb: 0.5, attack: 0.03, decay: 0.4 },
         ambient: { waveform: 'sine', freq: 116, filterFreq: 550, volume: 0.035 },
-        animation: { chrome: 'solsticeFrameAurora', idle: 'aurora', win: 'auroraFlare' }
+        animation: { chrome: 'solsticeFrameAurora', idle: 'aurora', win: 'auroraFlare' },
+        // Game-specific celebration config
+        particleColors: ['#ff1744','#ffd700','#ff6d00','#ef9a9a','#ffffff'],
+        ambientStyle: 'mystical',
+        winTextStyle: 'linear-gradient(135deg, #ff1744 0%, #ffd700 100%)',
+        symbolHitStyle: 'golden'     // imperial gold accent pulse
     },
+    // ── PhantomWorks: gothic purple, blood-red, dark/egyptian mystery ────────
     phantomworks: {
         visual: { primary: '#aa00ff', secondary: '#0d0014', glow: '#ea80fc', accent: 'linear-gradient(135deg,#aa00ff,#d500f9)' },
         particles: { colors: ['#aa00ff','#ea80fc','#d500f9','#ce93d8','#ffffff'], style: 'smoke', gravity: -0.02, drag: 0.98, turbulence: 0.35 },
         sound: { waveform: 'sawtooth', baseFreq: 261, scale: [261,293,311,349,392,466], filterFreq: 1200, reverb: 0.7, attack: 0.08, decay: 0.6 },
         ambient: { waveform: 'sawtooth', freq: 73, filterFreq: 300, volume: 0.025 },
-        animation: { chrome: 'phantomFrameMist', idle: 'mist', win: 'spectralBurst' }
+        animation: { chrome: 'phantomFrameMist', idle: 'mist', win: 'spectralBurst' },
+        // Game-specific celebration config
+        particleColors: ['#aa00ff','#ea80fc','#d500f9','#ce93d8','#7c4dff'],
+        ambientStyle: 'mystical',
+        winTextStyle: 'linear-gradient(135deg, #aa00ff 0%, #ea80fc 50%, #d500f9 100%)',
+        symbolHitStyle: 'electric'   // dark/spectral flash
     },
+    // ── ArcadeForge: classic/retro pub machine, red/orange/pixel ────────────
     arcadeforge: {
         visual: { primary: '#ff4081', secondary: '#0a0a1a', glow: '#ff80ab', accent: 'linear-gradient(135deg,#ff4081,#536dfe)' },
         particles: { colors: ['#ff4081','#536dfe','#ffff00','#00e676','#ffffff'], style: 'pixel', gravity: 0.05, drag: 0.96, turbulence: 0.15 },
         sound: { waveform: 'square', baseFreq: 523, scale: [523,587,659,698,784,880], filterFreq: 4000, reverb: 0.1, attack: 0.005, decay: 0.15 },
         ambient: { waveform: 'square', freq: 130, filterFreq: 700, volume: 0.02 },
-        animation: { chrome: 'arcadeFrameFlicker', idle: 'flicker', win: 'pixelExplosion' }
+        animation: { chrome: 'arcadeFrameFlicker', idle: 'flicker', win: 'pixelExplosion' },
+        // Game-specific celebration config
+        particleColors: ['#ff1744','#ff6d00','#ffff00','#ff4081','#ffffff'],
+        ambientStyle: 'volcanic',
+        winTextStyle: 'linear-gradient(135deg, #ff1744 0%, #ff6d00 50%, #ffff00 100%)',
+        symbolHitStyle: 'golden'     // classic hot/retro → warm golden pulse
     }
 };
 

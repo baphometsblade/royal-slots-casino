@@ -1234,5 +1234,30 @@
     <style>
         body.auth-gate #authModal .auth-close-btn { display: none !important; }
     </style>
+
+    <!-- Slot intro splash overlay -->
+    <style>
+        /* Ensure the fullscreen slot modal is a positioning context for the overlay */
+        .slot-modal-fullscreen {
+            position: relative;
+        }
+
+        @keyframes introFadeOut {
+            0%   { opacity: 1; }
+            70%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        #slotIntroOverlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+    </style>
 </body>
 </html>

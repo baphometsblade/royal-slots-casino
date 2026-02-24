@@ -1,5 +1,5 @@
 {
-  "name": "royal-casino-server",
+  "name": "matrix-spins-server",
   "version": "1.0.0",
   "description": "Server-side casino with secure RNG, JWT auth, and house edge enforcement",
   "main": "server/index.js",

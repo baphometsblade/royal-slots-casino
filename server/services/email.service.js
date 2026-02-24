@@ -33,9 +33,9 @@ async function sendPasswordReset(toEmail, resetUrl, expiryHours) {
     await transporter.sendMail({
         from: config.SMTP_FROM,
         to: toEmail,
-        subject: 'Royal Slots Casino — Password Reset',
+        subject: 'Matrix Spins — Password Reset',
         text: [
-            'You requested a password reset for your Royal Slots Casino account.',
+            'You requested a password reset for your Matrix Spins account.',
             '',
             `Click the link below to reset your password (expires in ${expiryHours} hour${expiryHours !== 1 ? 's' : ''}):`,
             '',
@@ -43,7 +43,7 @@ async function sendPasswordReset(toEmail, resetUrl, expiryHours) {
             '',
             'If you did not request this, please ignore this email.',
             '',
-            'Royal Slots Casino',
+            'Matrix Spins',
         ].join('\n'),
         html: `<!DOCTYPE html>
 <html>
@@ -51,7 +51,7 @@ async function sendPasswordReset(toEmail, resetUrl, expiryHours) {
 <body style="font-family:Arial,sans-serif;background:#0d0d1a;color:#fff;padding:40px;margin:0">
   <div style="max-width:520px;margin:0 auto;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,215,0,0.3);border-radius:12px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#ffd700,#ff8c00);padding:20px;text-align:center">
-      <h1 style="margin:0;color:#0d0d1a;font-size:24px">&#127920; Royal Slots Casino</h1>
+      <h1 style="margin:0;color:#0d0d1a;font-size:24px">&#127920; Matrix Spins</h1>
     </div>
     <div style="padding:32px">
       <h2 style="color:#ffd700;margin-top:0">Password Reset Request</h2>

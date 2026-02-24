@@ -82,6 +82,30 @@
 
 
         function renderGames() {
+            // Inject animated-preview styles once into <head>
+            if (!document.getElementById('lobbyAnimStyles')) {
+                const s = document.createElement('style');
+                s.id = 'lobbyAnimStyles';
+                s.textContent = `
+                    .card-anim-preview {
+                        position: absolute; inset: 0;
+                        background-size: cover; background-position: center;
+                        opacity: 0; transition: opacity 0.4s ease;
+                        pointer-events: none; z-index: 2;
+                    }
+                    .game-card:hover .card-anim-preview { opacity: 1; }
+                    .card-anim-preview.hidden { display: none; }
+                    .preview-badge {
+                        position: absolute; top: 6px; right: 6px;
+                        background: rgba(0,0,0,0.6); color: #00ff41;
+                        font-size: 9px; font-family: monospace;
+                        padding: 2px 5px; border-radius: 3px; letter-spacing: 1px;
+                        pointer-events: none;
+                    }
+                `;
+                document.head.appendChild(s);
+            }
+
             const hotGamesDiv = document.getElementById('hotGames');
             const allGamesDiv = document.getElementById('allGames');
 
@@ -257,6 +281,9 @@
                 <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')">
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
+                        <div class="card-anim-preview" style="background-image:url('assets/backgrounds/slots/${game.id}_bg.webp')" onerror="this.classList.add('hidden')">
+                            <span class="preview-badge">&#9654; PREVIEW</span>
+                        </div>
                         ${topTag}
                         ${jackpotBadge}
                         <div class="game-vol-badge ${volClass}" title="Volatility: ${vol}">
