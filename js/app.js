@@ -141,6 +141,19 @@
         }
 
 
+        // Post-auth initialization — runs after login or on page load if already authenticated
+        function onPostAuthInit() {
+            checkDailyBonusReset();
+            const urlParams = new URLSearchParams(window.location.search);
+            const suppressBonus = urlParams.get('qaTools') === '1' || urlParams.get('qaTools') === 'true'
+                || urlParams.get('noBonus') === '1' || urlParams.get('autoSpin') === '1';
+            if (!dailyBonusState.claimedToday && !suppressBonus) {
+                setTimeout(() => showDailyBonusModal(), 1500);
+            }
+            if (typeof initPromoEngine === 'function') initPromoEngine();
+        }
+
+
         // ===== Update init to include new systems =====
         async function initAllSystems() {
             loadXP();
@@ -155,17 +168,14 @@
             updateAuthButton();
             await syncServerSession();
 
-            // Show daily bonus if not claimed today
-            checkDailyBonusReset();
-            const urlParams = new URLSearchParams(window.location.search);
-            const suppressBonus = urlParams.get('qaTools') === '1' || urlParams.get('qaTools') === 'true'
-                || urlParams.get('noBonus') === '1' || urlParams.get('autoSpin') === '1';
-            if (!dailyBonusState.claimedToday && !suppressBonus) {
-                setTimeout(() => showDailyBonusModal(), 1500);
+            if (!currentUser) {
+                // Block the lobby until the user signs in
+                document.body.classList.add('auth-gate');
+                showAuthModal();
+                return;
             }
 
-            // Promotional engagement engine
-            if (typeof initPromoEngine === 'function') initPromoEngine();
+            onPostAuthInit();
         }
 
 

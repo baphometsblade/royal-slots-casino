@@ -198,9 +198,11 @@
                 }
                 applyAuthSession(response.token, response.user);
                 updateAuthButton();
+                document.body.classList.remove('auth-gate');
                 hideAuthModal();
                 showToast(`Welcome back, ${response.user.username}!`, 'success');
                 if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
+                if (typeof onPostAuthInit === 'function') onPostAuthInit();
                 return;
             } catch (error) {
                 serverError = error;
@@ -212,9 +214,11 @@
 
             const user = await loginWithLocalFallback(username, password);
             updateAuthButton();
+            document.body.classList.remove('auth-gate');
             hideAuthModal();
             showToast(`Welcome back, ${user.username}!`, 'success');
             if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
+            if (typeof onPostAuthInit === 'function') onPostAuthInit();
         }
 
 
@@ -231,9 +235,11 @@
                 }
                 applyAuthSession(response.token, response.user);
                 updateAuthButton();
+                document.body.classList.remove('auth-gate');
                 hideAuthModal();
                 showToast(`Welcome, ${response.user.username}! Your account has been created.`, 'success');
                 if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
+                if (typeof onPostAuthInit === 'function') onPostAuthInit();
                 return;
             } catch (error) {
                 serverError = error;
@@ -245,9 +251,11 @@
 
             await registerWithLocalFallback(username, email, password);
             updateAuthButton();
+            document.body.classList.remove('auth-gate');
             hideAuthModal();
             showToast(`Welcome, ${username}! Your account has been created.`, 'success');
             if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
+            if (typeof onPostAuthInit === 'function') onPostAuthInit();
         }
 
 
@@ -283,6 +291,8 @@
 
 
         function hideAuthModal() {
+            // When auth is required, don't allow the modal to be dismissed until signed in
+            if (document.body.classList.contains('auth-gate') && !currentUser) return;
             const modal = document.getElementById('authModal');
             if (modal) modal.classList.remove('active');
             // Clear form fields and errors on close

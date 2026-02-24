@@ -258,6 +258,9 @@ async function run() {
       localStorage.removeItem("casinoXP");
       localStorage.removeItem("casinoDailyBonus");
       localStorage.removeItem("casinoBonusWheel");
+      // Inject a QA test user so the auth gate is bypassed
+      localStorage.setItem("casinoUser", JSON.stringify({ id: 0, username: "QA_Test", is_admin: false }));
+      localStorage.setItem("casinoToken", "local-qa-regression-token");
     });
     await page.goto(baseUrl + "?noBonus=1", { waitUntil: "domcontentloaded" });
 
