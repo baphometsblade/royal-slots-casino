@@ -1071,6 +1071,63 @@ const games = [
       bonusType: 'walking_wilds', freeSpinsCount: 10, freeSpinsRetrigger: true,
       bonusDesc: 'Iron Stampede: 5x3 — Bull wilds charge left! Each new scatter during free spins adds another bull!',
       payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 0.20, maxBet: 4000, hot: false, jackpot: 0 }
+,
+
+    // 99-101. multiplier_wilds games
+    { id: 'golden_jaguar', name: 'Golden Jaguar', provider: 'GoldenEdge Gaming', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/golden_jaguar.png', bgGradient: 'linear-gradient(135deg, #4e342e 0%, #f57f17 100%)',
+      symbols: ['s1_jungle_leaf','s2_tribal_mask','s3_snake_idol','s4_jaguar_paw','s5_golden_idol','wild_jaguar'],
+      reelBg: 'linear-gradient(180deg, #120800 0%, #0a0400 100%)', accentColor: '#ff6d00',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_jaguar', scatterSymbol: 's5_golden_idol',
+      bonusType: 'multiplier_wilds', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      bonusDesc: 'Golden Jaguar: 5x3 -- Wild Jaguars carry 2-10x multipliers! Stack multiplier wilds for epic wins!',
+      payouts: { triple: 85, double: 9, wildTriple: 130, scatterPay: 3 }, minBet: 0.20, maxBet: 3000, hot: true, jackpot: 0 },
+
+    { id: 'lightning_pearl', name: 'Lightning Pearl', provider: 'NovaSpin Studios', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/lightning_pearl.png', bgGradient: 'linear-gradient(135deg, #0a0a2a 0%, #00bcd4 100%)',
+      symbols: ['s1_coral','s2_sea_horse','s3_manta_ray','s4_trident','s5_pearl_kraken','wild_lightning'],
+      reelBg: 'linear-gradient(180deg, #030312 0%, #010109 100%)', accentColor: '#00e5ff',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_lightning', scatterSymbol: 's5_pearl_kraken',
+      bonusType: 'multiplier_wilds', freeSpinsCount: 12, freeSpinsRetrigger: true,
+      bonusDesc: 'Lightning Pearl: 5x3 -- Electric wilds multiply wins 2-10x! Ocean-deep bonus rounds!',
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 0.20, maxBet: 2500, hot: false, jackpot: 0 },
+
+    { id: 'samurai_blade', name: 'Samurai Blade', provider: 'Orient Reels', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/samurai_blade.png', bgGradient: 'linear-gradient(135deg, #1a0a0a 0%, #b71c1c 100%)',
+      symbols: ['s1_cherry_blossom','s2_katana','s3_shuriken','s4_oni_mask','s5_shogun','wild_blade'],
+      reelBg: 'linear-gradient(180deg, #120002 0%, #080001 100%)', accentColor: '#ff1744',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_blade', scatterSymbol: 's5_shogun',
+      bonusType: 'multiplier_wilds', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      bonusDesc: 'Samurai Blade: 5x3 -- Blade wilds slash wins with multipliers! Shogun bonus unlocks max 10x!',
+      payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 0.20, maxBet: 4000, hot: false, jackpot: 0 },
+
+    // 102-104. increasing_mult games
+    { id: 'comet_rush', name: 'Comet Rush', provider: 'NovaSpin Studios', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/comet_rush.png', bgGradient: 'linear-gradient(135deg, #0a0015 0%, #7c4dff 100%)',
+      symbols: ['s1_asteroid','s2_plasma_ring','s3_nebula','s4_comet_tail','s5_supernova','wild_comet'],
+      reelBg: 'linear-gradient(180deg, #04000f 0%, #020008 100%)', accentColor: '#7c4dff',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_comet', scatterSymbol: 's5_supernova',
+      bonusType: 'increasing_mult', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      bonusDesc: 'Comet Rush: 5x3 -- Multiplier rockets from 1x to 10x across free spins! Retrigger resets the climb!',
+      payouts: { triple: 85, double: 9, wildTriple: 125, scatterPay: 3 }, minBet: 0.20, maxBet: 3000, hot: true, jackpot: 0 },
+
+    { id: 'wolf_rise', name: 'Wolf Rise', provider: 'SolsticeFX', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/wolf_rise.png', bgGradient: 'linear-gradient(135deg, #1a1a2e 0%, #546e7a 100%)',
+      symbols: ['s1_paw_print','s2_moon_shard','s3_howling_wolf','s4_pack_alpha','s5_spirit_wolf','wild_moonbeam'],
+      reelBg: 'linear-gradient(180deg, #08080f 0%, #040408 100%)', accentColor: '#90caf9',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_moonbeam', scatterSymbol: 's5_spirit_wolf',
+      bonusType: 'increasing_mult', freeSpinsCount: 12, freeSpinsRetrigger: true,
+      bonusDesc: 'Wolf Rise: 5x3 -- Multiplier grows with the pack! 10x max on the final free spins!',
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 0.20, maxBet: 2500, hot: true, jackpot: 0 },
+
+    { id: 'aztec_ascent', name: 'Aztec Ascent', provider: 'GoldenEdge Gaming', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/aztec_ascent.png', bgGradient: 'linear-gradient(135deg, #1b5e20 0%, #f57f17 100%)',
+      symbols: ['s1_cacao_bean','s2_serpent_stone','s3_sun_disc','s4_feathered_crown','s5_quetzal','wild_sunstone'],
+      reelBg: 'linear-gradient(180deg, #060f02 0%, #030700 100%)', accentColor: '#ffd600',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_sunstone', scatterSymbol: 's5_quetzal',
+      bonusType: 'increasing_mult', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      bonusDesc: 'Aztec Ascent: 5x3 -- Climb the temple! Each free spin ascends the multiplier toward 10x!',
+      payouts: { triple: 85, double: 9, wildTriple: 128, scatterPay: 3 }, minBet: 0.20, maxBet: 3000, hot: false, jackpot: 0 }
 ];
 // Export for Node.js (server), no-op in browser
 if (typeof module !== 'undefined' && module.exports) {

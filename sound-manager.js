@@ -474,6 +474,57 @@
                         });
                     }
                     break;
+                case 'wild_mult':
+                    // Multiplier wild activates — quick pop + ascending sine
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sine';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(440, now);
+                        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.10);
+                        gain.gain.setValueAtTime(0.20 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.18);
+                        osc.start(now);
+                        osc.stop(now + 0.20);
+                    }
+                    break;
+
+                case 'mult_rise':
+                    // Increasing multiplier ticks up — short bright ping
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'triangle';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(660, now);
+                        osc.frequency.exponentialRampToValueAtTime(990, now + 0.08);
+                        gain.gain.setValueAtTime(0.15 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.12);
+                        osc.start(now);
+                        osc.stop(now + 0.13);
+                    }
+                    break;
+
+                case 'buy_feature':
+                    // Buy Feature purchased — cash register chime
+                    {
+                        [523, 784, 1047, 1568].forEach(function(freq, i) {
+                            var osc = audioContext.createOscillator();
+                            var gain = audioContext.createGain();
+                            osc.type = 'sine';
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.16 * soundVolume, now + i * 0.06);
+                            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.25 + i * 0.06);
+                            osc.start(now + i * 0.06);
+                            osc.stop(now + 0.26 + i * 0.06);
+                        });
+                    }
+                    break;
             }
         } catch (e) {
             // Silently ignore audio errors in headless/automated environments

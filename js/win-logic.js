@@ -590,6 +590,13 @@
                         triggerFreeSpins(game, game.freeSpinsCount);
                         message = `WALKING WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                     }
+                } else if (game.bonusType === 'increasing_mult') {
+                    if (typeof triggerFreeSpins === 'function') {
+                        playSound('freespin');
+                        message = `INCREASING MULTIPLIER! ${game.freeSpinsCount} FREE SPINS! +${scatterWin.toLocaleString()}!`;
+                        if (typeof resetIncrMult === 'function') resetIncrMult();
+                        triggerFreeSpins(game, game.freeSpinsCount);
+                    }
                 } else if (scatterCount >= fullScatterThreshold) {
                     playSound('freespin');
                     triggerFreeSpins(game, game.freeSpinsCount);

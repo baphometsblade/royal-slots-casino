@@ -136,6 +136,12 @@ const GAME_CHROME_STYLES = {
     midnight_drifter:  { provider: 'NeonCore Labs' },
     pharaoh_march:     { provider: 'Desert Gold Studios' },
     iron_stampede:     { provider: 'IronReel Entertainment' },
+    golden_jaguar:     'goldenedge',  // GoldenEdge Gaming — jungle gold/wildlife
+    lightning_pearl:   'novaspin',    // NovaSpin Studios — electric ocean
+    samurai_blade:     'celestial',   // Orient Reels — eastern mythic
+    comet_rush:        'novaspin',    // NovaSpin Studios — space sci-fi
+    wolf_rise:         'solstice',    // SolsticeFX — dark nature electric
+    aztec_ascent:      'goldenedge',  // GoldenEdge Gaming — jungle ancient gold
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)
