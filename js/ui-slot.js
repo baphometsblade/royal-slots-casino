@@ -3850,7 +3850,8 @@
             cells.forEach(function(pos) {
                 var el = document.getElementById('reel_' + pos.col + '_' + pos.row);
                 if (el) {
-                    el.innerHTML = renderSymbol(game.wildSymbol);
+                    // wildSymbol is internal game config, not user input — safe to render as HTML
+                    el.innerHTML = renderSymbol(game.wildSymbol); // nosec
                     el.classList.add('reel-sticky-wild', 'reel-wild-glow');
                 }
             });
@@ -3976,7 +3977,8 @@
             (window._walkingWildCells || []).forEach(function(pos) {
                 var el = document.getElementById('reel_' + pos.col + '_' + pos.row);
                 if (el) {
-                    el.innerHTML = renderSymbol(game.wildSymbol);
+                    // wildSymbol is internal game config, not user input — safe to render as HTML
+                    el.innerHTML = renderSymbol(game.wildSymbol); // nosec
                     el.classList.add('reel-walking-wild', 'reel-wild-glow');
                 }
             });

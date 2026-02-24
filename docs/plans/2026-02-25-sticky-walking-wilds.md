@@ -4,7 +4,7 @@
 
 **Goal:** Add Sticky Wilds and Walking Wilds free-spin mechanics, a Win Streak tracker, 6 new slot games, and 3 new sound events — then commit to master.
 
-**Architecture:** Same global-scope JS pattern as all previous mechanics. New engines go at the bottom of `js/ui-slot.js` as self-contained sections; each patches `displayServerWinResult` via IIFE to intercept results. Dispatch is added to `js/win-logic.js` in the scatter section (same pattern as `chamber_spins`). Sound cases added to `sound-manager.js` switch before closing `}`. New games appended to `shared/game-definitions.js` and their provider mappings to `shared/chrome-styles.js`.
+**Architecture:** Same global-scope JS pattern as all previous mechanics. New engines go at the bottom of `js/ui-slot.js` as self-contained sections; each engine patches `displayServerWinResult` via IIFE to intercept results. Dispatch is added to `js/win-logic.js` in the scatter section (same pattern as `chamber_spins`). Sound cases added to `sound-manager.js` switch before closing `}`. New games appended to `shared/game-definitions.js` and their provider mappings to `shared/chrome-styles.js`.
 
 **Tech Stack:** Vanilla JS, Web Audio API (`playSound()`), CSS animations, Playwright QA
 

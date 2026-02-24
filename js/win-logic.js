@@ -574,21 +574,21 @@
                     }
                 } else if (game.bonusType === 'sticky_wilds') {
                     if (typeof triggerStickyWildsFreeSpins === 'function') {
-                        message = `STICKY WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                        message = `STICKY WILDS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                         triggerStickyWildsFreeSpins(game, scatterWin);
                     } else {
                         playSound('freespin');
                         triggerFreeSpins(game, game.freeSpinsCount);
-                        message = `STICKY WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                        message = `STICKY WILDS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                     }
                 } else if (game.bonusType === 'walking_wilds') {
                     if (typeof triggerWalkingWildsFreeSpins === 'function') {
-                        message = `WALKING WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                        message = `WALKING WILDS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                         triggerWalkingWildsFreeSpins(game, scatterWin);
                     } else {
                         playSound('freespin');
                         triggerFreeSpins(game, game.freeSpinsCount);
-                        message = `WALKING WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                        message = `WALKING WILDS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                     }
                 } else if (scatterCount >= fullScatterThreshold) {
                     playSound('freespin');
