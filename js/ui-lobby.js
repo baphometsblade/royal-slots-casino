@@ -142,6 +142,31 @@
                 document.head.appendChild(fs);
             }
 
+            // Inject game info strip styles once
+            if (!document.getElementById('gameInfoStripStyles')) {
+                const gis = document.createElement('style');
+                gis.id = 'gameInfoStripStyles';
+                gis.textContent = `
+                    .gi-strip {
+                        position: absolute; bottom: 0; left: 0; right: 0;
+                        display: flex; align-items: center; gap: 4px;
+                        padding: 3px 7px;
+                        background: rgba(0,0,0,0.72); backdrop-filter: blur(2px);
+                        font-size: 10px; line-height: 1.3; color: rgba(255,255,255,0.85);
+                        pointer-events: none; border-radius: 0 0 6px 6px; transition: opacity 0.2s;
+                    }
+                    .gi-grid { font-weight: 700; color: #90caf9; flex-shrink: 0; }
+                    .gi-bonus { flex: 1; text-align: center; overflow: hidden; white-space: nowrap;
+                                text-overflow: ellipsis; color: rgba(255,255,255,0.65); }
+                    .gi-vol { flex-shrink: 0; letter-spacing: -1px; }
+                    .gi-vol--low  { color: #81c784; }
+                    .gi-vol--med  { color: #ffb74d; }
+                    .gi-vol--high { color: #e57373; }
+                    .game-card:hover .gi-strip { background: rgba(0,0,0,0.88); }
+                `;
+                document.head.appendChild(gis);
+            }
+
             // Inject Favourites filter tab once
             if (!document.getElementById('favFilterTab')) {
                 const filterTabs = document.getElementById('filterTabs');
@@ -290,6 +315,26 @@
         }
 
 
+        function _giVolatility(game) {
+            const maxMult = game.payouts && game.minBet > 0
+                ? (game.payouts.triple || game.payouts.payline5 || 0) / game.minBet
+                : 100;
+            if (maxMult >= 300) return { cls: 'gi-vol--high', dots: '●●●', label: 'High' };
+            if (maxMult >= 100) return { cls: 'gi-vol--med',  dots: '●●○', label: 'Med'  };
+            return                     { cls: 'gi-vol--low',  dots: '●○○', label: 'Low'  };
+        }
+
+        function _giBonusLabel(game) {
+            const map = {
+                free_spins: 'Free Spins', megaways: 'Megaways', expanding_symbol: 'Expanding',
+                respin: 'Respin', money_collect: 'Collect', bonus_wheel: 'Wheel',
+                mystery_symbol: 'Mystery', cascading: 'Cascade', tumbling_reels: 'Tumble',
+                sticky_wild: 'Sticky Wild', win_both_ways: 'Both Ways', power_spin: 'PowerSpin',
+                hold_and_respin: 'Hold&Spin',
+            };
+            return map[game.bonusType] || 'Bonus';
+        }
+
         function createGameCard(game) {
             const thumbStyle = game.thumbnail
                 ? `background-image: url('${game.thumbnail}'); background-size: cover; background-position: center;`
@@ -346,6 +391,11 @@
                             <svg class="game-play-svg" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" fill="rgba(23,145,99,0.9)" stroke="rgba(86,210,160,0.6)" stroke-width="2"/><polygon points="19,14 19,34 35,24" fill="#fff"/></svg>
                             ${metaPills ? `<div class="game-hover-pills">${metaPills}</div>` : ''}
                             ${shortDesc}
+                        </div>
+                        <div class="gi-strip">
+                            <span class="gi-grid">${game.gridCols}×${game.gridRows}</span>
+                            <span class="gi-bonus">${_giBonusLabel(game)}</span>
+                            <span class="gi-vol ${_giVolatility(game).cls}" title="Volatility: ${_giVolatility(game).label}">${_giVolatility(game).dots}</span>
                         </div>
                     </div>
                     <div class="game-info">

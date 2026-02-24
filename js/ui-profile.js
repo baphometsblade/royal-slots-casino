@@ -1002,6 +1002,59 @@ function renderProfileOverview() {
     const totalWon     = stats ? stats.totalWon : 0;
     const biggestWin   = stats ? stats.biggestWin : 0;
 
+    // --- Extra stats ---
+    const winRate    = stats && stats.totalSpins > 0 ? Math.round((stats.totalWins || 0) / stats.totalSpins * 100) : 0;
+    const totalSpins = stats && stats.totalSpins || 0;
+
+    // --- Net P&L ---
+    const pnl        = totalWon - totalWagered;
+    const pnlClass   = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'neutral';
+    const pnlSign    = pnl >= 0 ? '+' : '';
+    const pnlArrow   = pnl > 0 ? '▲' : pnl < 0 ? '▼' : '';
+    const returnRate = totalWagered > 0 ? Math.round((totalWon / totalWagered) * 100) : 0;
+    const rrClass    = returnRate >= 100 ? 'pos' : returnRate > 0 ? 'neutral' : 'neg';
+
+    // --- XP progress ---
+    let xpData = { level: 1, xp: 0, totalXp: 0 };
+    try { const raw = localStorage.getItem('matrixXP'); if (raw) xpData = JSON.parse(raw); } catch(e) {}
+    const xpForLevel  = (xpData.level || 1) * 1000;
+    const xpInLevel   = (xpData.xp || 0) % xpForLevel;
+    const xpPct       = Math.round((xpInLevel / xpForLevel) * 100);
+    const toNextLevel = xpForLevel - xpInLevel;
+
+    // --- CSS injection (once) ---
+    if (!document.getElementById('profileEnhCss')) {
+        const s = document.createElement('style');
+        s.id = 'profileEnhCss';
+        s.textContent = `
+.profile-quick-stats { flex-wrap: wrap; }
+.profile-stat-box { min-width: 80px; }
+.profile-pnl-row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 8px 12px; margin: 8px 0;
+  background: rgba(255,255,255,0.03); border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.07); font-size: 12px;
+}
+.profile-pnl-label { color: rgba(255,255,255,0.5); }
+.profile-pnl-pos { color: #66bb6a; font-weight: 700; }
+.profile-pnl-neg { color: #ef5350; font-weight: 700; }
+.profile-pnl-neutral { color: rgba(255,255,255,0.5); }
+.profile-pnl-divider { color: rgba(255,255,255,0.2); }
+.profile-xp-section {
+  padding: 10px 12px; margin: 8px 0;
+  background: rgba(255,255,255,0.03); border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.profile-xp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12px; }
+.profile-xp-level-badge { font-weight:700; color:#ffd54f; }
+.profile-xp-next-label { color:rgba(255,255,255,0.4); font-size:11px; }
+.profile-xp-bar-track { height:7px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden; margin-bottom:5px; }
+.profile-xp-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#7b61ff,#00bcd4); transition:width 0.7s ease; width:0%; }
+.profile-xp-counts { display:flex; justify-content:space-between; font-size:10px; color:rgba(255,255,255,0.4); }
+        `;
+        document.head.appendChild(s);
+    }
+
     el.innerHTML = `
         <div class="profile-section-title">Account Overview</div>
 
@@ -1032,6 +1085,36 @@ function renderProfileOverview() {
             <div class="profile-stat-box">
                 <div class="profile-stat-value">$${formatMoney(biggestWin)}</div>
                 <div class="profile-stat-label">Biggest Win</div>
+            </div>
+            <div class="profile-stat-box">
+                <div class="profile-stat-value">${winRate}%</div>
+                <div class="profile-stat-label">Win Rate</div>
+            </div>
+            <div class="profile-stat-box">
+                <div class="profile-stat-value">${totalSpins.toLocaleString()}</div>
+                <div class="profile-stat-label">Total Spins</div>
+            </div>
+        </div>
+
+        <div class="profile-pnl-row">
+            <span class="profile-pnl-label">Net P&amp;L:</span>
+            <span class="profile-pnl-${pnlClass}">${pnlSign}$${formatMoney(Math.abs(pnl))} ${pnlArrow}</span>
+            <span class="profile-pnl-divider">|</span>
+            <span class="profile-pnl-label">Return Rate:</span>
+            <span class="profile-pnl-${rrClass}">${returnRate}%</span>
+        </div>
+
+        <div class="profile-xp-section">
+            <div class="profile-xp-header">
+                <span class="profile-xp-level-badge">⭐ Level ${xpData.level}</span>
+                <span class="profile-xp-next-label">${toNextLevel.toLocaleString()} XP to next level</span>
+            </div>
+            <div class="profile-xp-bar-track">
+                <div class="profile-xp-bar-fill" style="width:0%"></div>
+            </div>
+            <div class="profile-xp-counts">
+                <span>${xpInLevel.toLocaleString()} XP</span>
+                <span>${xpForLevel.toLocaleString()} XP</span>
             </div>
         </div>
 
@@ -1075,6 +1158,12 @@ function renderProfileOverview() {
             <span style="color:#fbbf24; cursor:pointer; text-decoration:underline;" onclick="switchProfileTab('limits')">Responsible Play</span> section.</span>
         </div>
     `;
+
+    // Animate XP bar after layout settles
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        const fill = el.querySelector('.profile-xp-bar-fill');
+        if (fill) fill.style.width = xpPct + '%';
+    }));
 }
 
 

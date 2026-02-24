@@ -11,6 +11,7 @@ let walletActiveTab = 'deposit'; // 'deposit' | 'withdraw' | 'methods' | 'histor
 let walletHistoryPage = 1;
 let walletHistoryTotalPages = 1;
 let walletAddMethodType = null; // tracks which sub-form is open
+let walletSessionStartBalance = null;
 
 
 // ── Payment Type Metadata ─────────────────────────────
@@ -64,6 +65,7 @@ function showWalletModal() {
         showToast('Please log in to access the cashier.', 'error');
         return;
     }
+    if (walletSessionStartBalance === null) walletSessionStartBalance = balance;
     const modal = document.getElementById('walletModal');
     if (!modal) return;
     walletActiveTab = 'deposit';
@@ -256,6 +258,39 @@ function renderDepositForm() {
     const container = document.getElementById('walletContent');
     if (!container) return;
 
+    if (!document.getElementById('walletEnhCss')) {
+        const s = document.createElement('style');
+        s.id = 'walletEnhCss';
+        s.textContent = `.wallet-tx-icon { font-size: 14px; vertical-align: middle; margin-right: 2px; }
+#walletSessionTracker {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 7px 12px; margin-bottom: 10px;
+  background: rgba(255,255,255,0.04); border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08); font-size: 12px;
+}
+.wst-label { color: rgba(255,255,255,0.45); }
+.wst-amount { color: rgba(255,255,255,0.75); font-weight: 600; }
+.wst-sep { color: rgba(255,255,255,0.2); }
+.wst-net { font-weight: 700; }
+.wst-pos { color: #66bb6a; }
+.wst-neg { color: #ef5350; }
+.wst-neutral { color: rgba(255,255,255,0.4); }`;
+        document.head.appendChild(s);
+    }
+
+    const walletStart = walletSessionStartBalance !== null ? walletSessionStartBalance : balance;
+    const netChange = balance - walletStart;
+    const netClass = netChange > 0 ? 'wst-pos' : netChange < 0 ? 'wst-neg' : 'wst-neutral';
+    const netSign = netChange >= 0 ? '+' : '';
+    const netArrow = netChange > 0 ? '▲' : netChange < 0 ? '▼' : '–';
+    const sessionTrackerHtml = `<div id="walletSessionTracker">
+  <span class="wst-label">Session start:</span>
+  <span class="wst-amount">$${formatMoney(walletStart)}</span>
+  <span class="wst-sep">·</span>
+  <span class="wst-label">Net:</span>
+  <span class="wst-net ${netClass}">${netSign}$${formatMoney(Math.abs(netChange))} ${netArrow}</span>
+</div>`;
+
     const quickBtns = WALLET_QUICK_AMOUNTS.map(amt =>
         `<button class="wallet-quick-btn" onclick="walletSetDepositAmount(${amt})">$${amt}</button>`
     ).join('');
@@ -283,7 +318,7 @@ function renderDepositForm() {
            </div>`
         : '';
 
-    container.innerHTML = `
+    container.innerHTML = sessionTrackerHtml + `
         <div class="wallet-section">
             <div class="wallet-balance-display">
                 <span class="wallet-balance-display__label">Current Balance</span>
@@ -407,6 +442,19 @@ function renderWithdrawForm() {
     const container = document.getElementById('walletContent');
     if (!container) return;
 
+    const walletStart = walletSessionStartBalance !== null ? walletSessionStartBalance : balance;
+    const netChange = balance - walletStart;
+    const netClass = netChange > 0 ? 'wst-pos' : netChange < 0 ? 'wst-neg' : 'wst-neutral';
+    const netSign = netChange >= 0 ? '+' : '';
+    const netArrow = netChange > 0 ? '▲' : netChange < 0 ? '▼' : '–';
+    const sessionTrackerHtml = `<div id="walletSessionTracker">
+  <span class="wst-label">Session start:</span>
+  <span class="wst-amount">$${formatMoney(walletStart)}</span>
+  <span class="wst-sep">·</span>
+  <span class="wst-label">Net:</span>
+  <span class="wst-net ${netClass}">${netSign}$${formatMoney(Math.abs(netChange))} ${netArrow}</span>
+</div>`;
+
     const payTypeCards = Object.entries(WALLET_PAYMENT_TYPES).map(([type, meta]) => `
         <label class="wallet-pay-card" data-type="${type}">
             <input type="radio" name="walletWithdrawType" value="${type}" class="wallet-pay-card__radio">
@@ -435,7 +483,7 @@ function renderWithdrawForm() {
            </div>`
         : '';
 
-    container.innerHTML = `
+    container.innerHTML = sessionTrackerHtml + `
         <div class="wallet-section">
             <div class="wallet-balance-display">
                 <span class="wallet-balance-display__label">Available to Withdraw</span>
@@ -601,10 +649,12 @@ function renderTransactionHistory(transactions, pagination) {
             const sign = isCredit ? '+' : '-';
             const colorClass = isCredit ? 'wallet-tx--credit' : 'wallet-tx--debit';
             const typeLabel = walletTxTypeLabel(tx.type);
+            const txIconMap = { deposit: '💰', withdrawal: '➡️', bet: '🎰', win: '🏆', bonus: '🎁', refund: '🔄', free_spin: '⚡' };
+            const icon = txIconMap[tx.type] || '💳';
             return `
                 <tr class="wallet-tx-row ${colorClass}">
                     <td class="wallet-tx-cell">
-                        <span class="wallet-tx-type-badge wallet-tx-type-badge--${tx.type}">${typeLabel}</span>
+                        <span class="wallet-tx-type-badge wallet-tx-type-badge--${tx.type}"><span class="wallet-tx-icon">${icon}</span> ${typeLabel}</span>
                     </td>
                     <td class="wallet-tx-cell wallet-tx-cell--amount">${sign}$${formatMoney(Math.abs(tx.amount))}</td>
                     <td class="wallet-tx-cell wallet-tx-cell--date">${walletFormatDate(tx.created_at)}</td>

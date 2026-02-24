@@ -23,6 +23,24 @@
         ];
         const CHALLENGE_STORAGE_KEY = 'matrixChallenges';
 
+        // ── Achievements ──────────────────────────────────────────
+        const ACH_STORAGE_KEY = 'matrixAchievements';
+
+        const ACH_DEFS = [
+            { id: 'first_spin',   icon: '🎰', name: 'First Spin',      desc: 'Play your first spin',            req: { type: 'spins',   target: 1    } },
+            { id: 'spin_10',      icon: '🔄', name: 'Getting Started', desc: 'Complete 10 spins',                req: { type: 'spins',   target: 10   } },
+            { id: 'spin_100',     icon: '💫', name: 'Spin Master',     desc: 'Complete 100 spins',               req: { type: 'spins',   target: 100  } },
+            { id: 'spin_500',     icon: '⚡', name: 'High Roller',     desc: 'Complete 500 spins',               req: { type: 'spins',   target: 500  } },
+            { id: 'first_win',    icon: '🏆', name: 'First Win',       desc: 'Win your first spin',              req: { type: 'wins',    target: 1    } },
+            { id: 'win_10',       icon: '💰', name: 'On a Roll',       desc: 'Win 10 times',                     req: { type: 'wins',    target: 10   } },
+            { id: 'win_50',       icon: '🤑', name: 'Lucky Streak',    desc: 'Win 50 times',                     req: { type: 'wins',    target: 50   } },
+            { id: 'big_win',      icon: '💥', name: 'Big Winner',      desc: 'Win over 100× your bet',           req: { type: 'bigWin',  target: 100  } },
+            { id: 'mega_win',     icon: '🌟', name: 'Mega Winner',     desc: 'Win over 500× your bet',           req: { type: 'bigWin',  target: 500  } },
+            { id: 'games_5',      icon: '🎮', name: 'Explorer',        desc: 'Try 5 different games',            req: { type: 'games',   target: 5    } },
+            { id: 'games_20',     icon: '🗺️', name: 'Adventurer',     desc: 'Try 20 different games',           req: { type: 'games',   target: 20   } },
+            { id: 'balance_500',  icon: '💎', name: 'High Balance',    desc: 'Reach a balance of $500',          req: { type: 'balance', target: 500  } },
+        ];
+
         function _loadChallengeState() {
             try {
                 const raw = JSON.parse(localStorage.getItem(CHALLENGE_STORAGE_KEY) || '{}');
@@ -38,6 +56,21 @@
 
         function _saveChallengeState(state) {
             localStorage.setItem(CHALLENGE_STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function _loadAchState() {
+            try {
+                const d = JSON.parse(localStorage.getItem(ACH_STORAGE_KEY) || '{}');
+                return {
+                    spins: d.spins || 0, wins: d.wins || 0,
+                    games: Array.isArray(d.games) ? d.games : [],
+                    maxWinMult: d.maxWinMult || 0, maxBalance: d.maxBalance || 0,
+                    unlocked: Array.isArray(d.unlocked) ? d.unlocked : [],
+                };
+            } catch(e) { return { spins:0, wins:0, games:[], maxWinMult:0, maxBalance:0, unlocked:[] }; }
+        }
+        function _saveAchState(s) {
+            try { localStorage.setItem(ACH_STORAGE_KEY, JSON.stringify(s)); } catch(e) {}
         }
 
         // Global hook called by spin/win code in ui-slot.js
@@ -72,6 +105,7 @@
                 _saveChallengeState(state);
                 _renderChallengesPanel();
             }
+            _checkAchievements(eventType, payload);
         };
 
         function _formatDuration(ms) {
@@ -138,6 +172,10 @@
 
             // Update achievements
             updateAchievements();
+
+            // ── Achievements panel (localStorage-tracked) ─────────────
+            _ensureAchievementsPanel();
+            _renderAchievementsPanel();
         }
 
 
@@ -402,6 +440,119 @@
                 notification.style.animation = 'slideOutRight 0.5s ease-out';
                 setTimeout(() => notification.remove(), 500);
             }, 4000);
+        }
+
+
+        // ── Achievement System (localStorage-tracked) ─────────────────
+
+        function _checkAchievements(eventType, payload) {
+            const s = _loadAchState();
+            let changed = false;
+            if (eventType === 'spin') {
+                s.spins++;
+                if (payload.win > 0) s.wins++;
+                const mult = payload.bet > 0 ? payload.win / payload.bet : 0;
+                if (mult > s.maxWinMult) s.maxWinMult = mult;
+                if (payload.gameId && !s.games.includes(payload.gameId)) s.games.push(payload.gameId);
+                changed = true;
+            }
+            // Update max balance on any event
+            try {
+                if (typeof balance !== 'undefined' && balance > s.maxBalance) {
+                    s.maxBalance = balance; changed = true;
+                }
+            } catch(e) {}
+
+            const newUnlocks = [];
+            for (const ach of ACH_DEFS) {
+                if (s.unlocked.includes(ach.id)) continue;
+                const r = ach.req;
+                const unlocked =
+                    (r.type === 'spins'   && s.spins >= r.target)        ||
+                    (r.type === 'wins'    && s.wins  >= r.target)        ||
+                    (r.type === 'bigWin'  && s.maxWinMult >= r.target)   ||
+                    (r.type === 'games'   && s.games.length >= r.target) ||
+                    (r.type === 'balance' && s.maxBalance >= r.target);
+                if (unlocked) { s.unlocked.push(ach.id); newUnlocks.push(ach); changed = true; }
+            }
+            if (changed) _saveAchState(s);
+            newUnlocks.forEach(_showAchUnlockToast);
+        }
+
+
+        function _showAchUnlockToast(ach) {
+            const prev = document.getElementById('achUnlockToast');
+            if (prev) prev.remove();
+            const t = document.createElement('div');
+            t.id = 'achUnlockToast';
+            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;'
+                + 'background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #7b61ff;color:#fff;'
+                + 'border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;font-size:14px;'
+                + 'z-index:99999;box-shadow:0 4px 24px rgba(123,97,255,0.4);transition:all 0.4s ease;'
+                + 'pointer-events:none;max-width:320px;';
+            t.innerHTML = `<span style="font-size:28px">${ach.icon}</span><div>`
+                + `<div style="font-size:10px;color:#7b61ff;font-weight:700;letter-spacing:1px;text-transform:uppercase">Achievement Unlocked!</div>`
+                + `<div style="font-weight:700;margin:2px 0">${ach.name}</div>`
+                + `<div style="font-size:11px;color:rgba(255,255,255,0.6)">${ach.desc}</div></div>`;
+            document.body.appendChild(t);
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                t.style.transform = 'translateX(-50%) translateY(0)';
+                t.style.opacity = '1';
+            }));
+            setTimeout(() => {
+                t.style.transform = 'translateX(-50%) translateY(20px)';
+                t.style.opacity = '0';
+                setTimeout(() => t.remove(), 450);
+            }, 4000);
+        }
+
+
+        function _renderAchievementsPanel() {
+            const container = document.getElementById('achPanelContainer');
+            if (!container) return;
+            const s = _loadAchState();
+            container.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                  <span style="font-weight:700;font-size:13px">🏅 Achievements</span>
+                  <span class="ach-count-badge">${s.unlocked.length} / ${ACH_DEFS.length}</span>
+                </div>
+                <div class="ach-grid">
+                  ${ACH_DEFS.map(a => `<div class="ach-card ${s.unlocked.includes(a.id)?'ach-unlocked':'ach-locked'}">
+                    <div class="ach-icon">${a.icon}</div>
+                    <div class="ach-name">${a.name}</div>
+                    <div class="ach-desc">${a.desc}</div>
+                  </div>`).join('')}
+                </div>`;
+        }
+
+
+        function _ensureAchievementsPanel() {
+            if (document.getElementById('achPanelContainer')) return;
+            if (!document.getElementById('achCss')) {
+                const st = document.createElement('style');
+                st.id = 'achCss';
+                st.textContent = `.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:4px}`
+                    + `.ach-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 8px;text-align:center;transition:border-color 0.2s}`
+                    + `.ach-card.ach-unlocked{border-color:rgba(123,97,255,0.5);background:rgba(123,97,255,0.08)}`
+                    + `.ach-card.ach-locked{opacity:.4;filter:grayscale(.5)}`
+                    + `.ach-icon{font-size:24px;margin-bottom:3px}`
+                    + `.ach-name{font-size:10px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:2px}`
+                    + `.ach-desc{font-size:9px;color:rgba(255,255,255,0.4);line-height:1.3}`
+                    + `.ach-unlocked .ach-name{color:#b39ddb}`
+                    + `.ach-count-badge{font-size:11px;background:rgba(123,97,255,0.2);color:#b39ddb;padding:2px 8px;border-radius:20px}`;
+                document.head.appendChild(st);
+            }
+            const wrap = document.createElement('div');
+            wrap.id = 'achPanelContainer';
+            wrap.style.cssText = 'margin-top:14px;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid rgba(255,255,255,0.06);';
+            // Insert after challengesPanelContainer if it exists, else append to statsContent
+            const chal = document.getElementById('challengesPanelContainer') || document.getElementById('dailyChallengesPanel');
+            if (chal && chal.parentNode) {
+                chal.parentNode.insertBefore(wrap, chal.nextSibling);
+            } else {
+                const sc = document.getElementById('statsContent') || document.querySelector('[id*="stats"]');
+                if (sc) sc.appendChild(wrap);
+            }
         }
 
 
