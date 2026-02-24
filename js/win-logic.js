@@ -597,6 +597,12 @@
                         if (typeof resetIncrMult === 'function') resetIncrMult();
                         triggerFreeSpins(game, game.freeSpinsCount);
                     }
+                } else if (game.bonusType === 'respin') {
+                    if (typeof triggerFreeSpins === 'function') {
+                        playSound('freespin');
+                        message = `RE-SPIN BONUS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                        triggerFreeSpins(game, game.freeSpinsCount);
+                    }
                 } else if (scatterCount >= fullScatterThreshold) {
                     playSound('freespin');
                     triggerFreeSpins(game, game.freeSpinsCount);

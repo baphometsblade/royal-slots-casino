@@ -525,6 +525,57 @@
                         });
                     }
                     break;
+
+                case 'cascade_hit':
+                    // Cascade pop — each level of cascade gets a higher note
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'square';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(330, now);
+                        osc.frequency.exponentialRampToValueAtTime(660, now + 0.07);
+                        gain.gain.setValueAtTime(0.12 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.10);
+                        osc.start(now);
+                        osc.stop(now + 0.11);
+                    }
+                    break;
+
+                case 'wild_expand':
+                    // Expanding wild whoosh — downward sweep then ring
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sawtooth';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(800, now);
+                        osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
+                        gain.gain.setValueAtTime(0.18 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.22);
+                        osc.start(now);
+                        osc.stop(now + 0.23);
+                    }
+                    break;
+
+                case 'respin_lock':
+                    // Symbol locks in — mechanical click + buzz
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'triangle';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(220, now);
+                        osc.frequency.setValueAtTime(180, now + 0.04);
+                        gain.gain.setValueAtTime(0.22 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.12);
+                        osc.start(now);
+                        osc.stop(now + 0.13);
+                    }
+                    break;
             }
         } catch (e) {
             // Silently ignore audio errors in headless/automated environments

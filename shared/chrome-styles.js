@@ -142,6 +142,12 @@ const GAME_CHROME_STYLES = {
     comet_rush:        'novaspin',    // NovaSpin Studios — space sci-fi
     wolf_rise:         'solstice',    // SolsticeFX — dark nature electric
     aztec_ascent:      'goldenedge',  // GoldenEdge Gaming — jungle ancient gold
+    diamond_falls:     'novaspin',
+    dragon_tumble:     'phantomworks',
+    golden_cascade:    'ironreel',
+    thunder_reel:      'novaspin',
+    crystal_veil:      'phantomworks',
+    primal_vault:      'ironreel',
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)
