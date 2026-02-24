@@ -210,6 +210,7 @@
                 totalWon: DEFAULT_STATS.totalWon,
                 biggestWin: DEFAULT_STATS.biggestWin,
                 gamesPlayed: {},
+                gameStats: {},
                 achievements: []
             };
         }

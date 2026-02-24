@@ -11011,3 +11011,209 @@
     .limits-grid { grid-template-columns: 1fr; }
     .payment-type-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOBILE UX POLISH — 375-430px viewport (phones)
+   Appended as a single authoritative override block.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+    /* ── 1. Header: compress logo + hide low-priority items ── */
+    header {
+        padding: 10px 0;
+    }
+
+    .header-content {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0 12px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+
+    .logo-text h1 {
+        font-size: 16px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Hide the "PREMIUM SLOTS" subtitle — saves vertical space */
+    .logo-text .subtitle {
+        display: none;
+    }
+
+    /* Header-actions row: fill full width, tighten gaps */
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    /* Compact balance display */
+    .balance-display {
+        padding: 5px 10px;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .balance-label {
+        font-size: 9px;
+    }
+
+    .balance-amount {
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    /* Hide STATS button — accessible via profile */
+    .btn[onclick*="openStatsModal"] {
+        display: none;
+    }
+
+    /* Icon-only buttons: shrink to save row space */
+    .btn-user {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        padding: 0;
+        font-size: 13px;
+    }
+
+    /* WALLET button: show icon only */
+    .btn-deposit {
+        padding: 0 10px;
+        font-size: 12px;
+        gap: 4px;
+        height: 36px;
+    }
+
+    /* ── 2. Game grid: 2 columns on phones (not 1) ── */
+    .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    /* Recently-played row: keep horizontal scroll, smaller cards */
+    .recently-played-scroll .game-card {
+        width: 110px;
+        min-width: 110px;
+    }
+
+    /* ── 3. Hero banner: tighter padding on phones ── */
+    .hero-banner {
+        padding: 20px 16px;
+    }
+
+    .hero-title {
+        font-size: 20px;
+    }
+
+    /* ── 4. Auth modal: comfortable on 375px ── */
+    .auth-modal {
+        width: 100%;
+        max-width: 100vw;
+        border-radius: 0;
+        /* Slide up from bottom for modal-on-mobile feel */
+    }
+
+    /* Reduce header padding so the form fits without scrolling */
+    .auth-modal-header {
+        padding: 18px 16px 0;
+    }
+
+    .auth-form {
+        padding: 16px 16px 20px;
+    }
+
+    /* Ensure inputs don't trigger iOS auto-zoom (must be ≥16px) */
+    .auth-field input {
+        font-size: 16px;
+        padding: 11px 12px;
+    }
+
+    .auth-guest-btn {
+        width: calc(100% - 32px);
+        margin: 10px 16px 0;
+        font-size: 13px;
+    }
+
+    /* Close button: bump to 44px tap target */
+    .auth-close-btn {
+        width: 40px;
+        height: 40px;
+        top: 10px;
+        right: 10px;
+    }
+
+    /* ── 5. Slot modal close button tap target ── */
+    .slot-close-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+    }
+
+    /* ── 6. Slot bottom bar: keep controls reachable ── */
+    .slot-bet-btn {
+        width: 36px;
+        height: 36px;
+        /* visual size — touch target extended via padding */
+    }
+
+    /* ── 7. Reel container: remove excess padding that clips reels ── */
+    .reels-container {
+        padding: 8px !important;
+    }
+
+    /* ── 8. Section headers: tighter on small screens ── */
+    .section-header {
+        margin-bottom: 10px;
+    }
+
+    /* ── 9. Jackpot ticker: smaller text so it fits one line ── */
+    .jackpot-tier {
+        font-size: 11px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOUCH INTERACTION IMPROVEMENTS
+   Active-state feedback replaces hover on coarse-pointer devices.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Tactile press-down on game cards */
+    .game-card:active {
+        transform: scale(0.97);
+        transition: transform 0.1s ease;
+    }
+
+    /* Spin button press feedback */
+    .slot-spin-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+
+    /* General button press feedback */
+    .btn:active {
+        transform: scale(0.96);
+        transition: transform 0.1s ease;
+    }
+
+    /* Auth submit press */
+    .auth-submit:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+
+    /* Bump close buttons to minimum 44px tap target */
+    .slot-close-btn,
+    .auth-close-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}

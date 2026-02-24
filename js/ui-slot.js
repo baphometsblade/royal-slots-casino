@@ -1607,10 +1607,68 @@
             }
             if (!stats.gamesPlayed[spinGame.id]) stats.gamesPlayed[spinGame.id] = 0;
             stats.gamesPlayed[spinGame.id]++;
+            // Per-game detailed stats
+            if (!stats.gameStats) stats.gameStats = {};
+            if (!stats.gameStats[spinGame.id]) {
+                stats.gameStats[spinGame.id] = { spins: 0, won: 0, bet: 0, name: spinGame.name };
+            }
+            stats.gameStats[spinGame.id].spins++;
+            if (!serverResult || !serverResult.usedFreeSpin) {
+                stats.gameStats[spinGame.id].bet += currentBet;
+            }
+            // Track session spins
+            if (typeof sessionSpins !== 'undefined') sessionSpins++;
             saveStats();
             updateStatsSummary();
         }
 
+
+        // ── Balance Counter Roll Animation ──────────────────────────────────
+        // Animates the balance display from fromAmount to toAmount over durationMs.
+        // Uses ease-out cubic so the counter decelerates near the end.
+        function animateBalanceRoll(fromAmount, toAmount, durationMs) {
+            if (durationMs <= 0 || Math.abs(toAmount - fromAmount) < 0.5) {
+                updateBalance();
+                return;
+            }
+            const startTime = performance.now();
+            const delta = toAmount - fromAmount;
+            const balEl = document.getElementById('balance');
+            const slotBalEl = document.getElementById('slotBalance');
+
+            function tick(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(elapsed / durationMs, 1);
+                const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+                const current = fromAmount + delta * eased;
+                const formatted = '$' + Number(current).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                if (balEl) balEl.textContent = formatMoney(current);
+                if (slotBalEl) slotBalEl.textContent = formatMoney(current);
+                if (t < 1) {
+                    requestAnimationFrame(tick);
+                } else {
+                    // Snap to exact final value and run a full updateBalance() to
+                    // ensure refreshBetControls() is called.
+                    updateBalance();
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        // ── Near-Miss Screen Nudge ──────────────────────────────────────────
+        // Adds a subtle horizontal camera nudge to the reel area on near-miss.
+        function triggerNearMissNudge() {
+            if (!_animSettingEnabled('animations')) return;
+            const reelArea = document.querySelector('.slot-reel-area');
+            if (!reelArea) return;
+            reelArea.classList.add('reel-near-miss-nudge');
+            setTimeout(function() {
+                reelArea.classList.remove('reel-near-miss-nudge');
+            }, 400);
+        }
 
         // Display win result from server (no client-side win calculation)
         // -- Near-Miss Detection
@@ -1670,6 +1728,7 @@
                     }
                 });
                 showMessage("So Close! 👀", "near-miss");
+                triggerNearMissNudge();
             }
         }
 
@@ -1719,11 +1778,12 @@
             }
 
             if (winAmount > 0) {
+                const oldBalance = balance;
                 const serverBalance = Number(result.balance);
                 if (Number.isFinite(serverBalance)) {
                     balance = serverBalance;
                 }
-                updateBalance();
+                animateBalanceRoll(oldBalance, balance, Math.min(2000, winAmount * 20));
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 setTimeout(showPaylinePaths, 300);
@@ -1746,6 +1806,13 @@
 
                 stats.totalWon += winAmount;
                 if (winAmount > stats.biggestWin) stats.biggestWin = winAmount;
+                // Per-game won tracking
+                if (!stats.gameStats) stats.gameStats = {};
+                if (game && game.id && stats.gameStats[game.id]) {
+                    stats.gameStats[game.id].won += winAmount;
+                }
+                // Track session win
+                if (typeof sessionWon !== 'undefined') sessionWon += winAmount;
                 saveStats();
                 updateStatsSummary();
 

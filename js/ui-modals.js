@@ -2,6 +2,27 @@
 // UI-MODALS MODULE
 // ═══════════════════════════════════════════════════════
 
+        // ── Session tracking (reset on each page load) ──────────────
+        const sessionStartTime = Date.now();
+        let sessionSpins = 0;
+        let sessionWon = 0;
+        let sessionStartBalance = null; // set on first spin or modal open
+
+        function _getSessionStartBalance() {
+            if (sessionStartBalance === null) {
+                sessionStartBalance = typeof balance !== 'undefined' ? balance : 0;
+            }
+            return sessionStartBalance;
+        }
+
+        function _formatDuration(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            if (minutes === 0) return seconds + 's';
+            return minutes + 'm ' + seconds + 's';
+        }
+
 
         function updateStatsSummary() {
             const biggestWinEl = document.getElementById('biggestWin');
@@ -46,8 +67,118 @@
                     .join('');
             }
 
+            // ── Session info section ──────────────────────────────────
+            _renderSessionSection();
+
+            // ── Top games by spins with RTP section ──────────────────
+            _renderTopGamesSection();
+
             // Update achievements
             updateAchievements();
+        }
+
+
+        function _renderSessionSection() {
+            const containerId = 'statsSessionSection';
+            let container = document.getElementById(containerId);
+            if (!container) {
+                // Inject after the stats-grid, before "Top Played Games" heading
+                const gamesListEl = document.getElementById('statsGamesList');
+                if (!gamesListEl) return;
+                // Find the h4 heading immediately before the games list
+                let insertBefore = gamesListEl.previousElementSibling;
+                while (insertBefore && insertBefore.tagName !== 'H4') {
+                    insertBefore = insertBefore.previousElementSibling;
+                }
+                container = document.createElement('div');
+                container.id = containerId;
+                if (insertBefore) {
+                    insertBefore.parentNode.insertBefore(container, insertBefore);
+                } else {
+                    gamesListEl.parentNode.insertBefore(container, gamesListEl);
+                }
+            }
+
+            const startBal = _getSessionStartBalance();
+            const currentBal = typeof balance !== 'undefined' ? balance : startBal;
+            const netSession = currentBal - startBal;
+            const durationMs = Date.now() - sessionStartTime;
+            const netColor = netSession >= 0 ? '#00ff41' : '#fca5a5';
+            const netPrefix = netSession >= 0 ? '+' : '-';
+
+            container.innerHTML = `
+                <h4 style="margin-bottom:10px;margin-top:20px;color:#00ff41;font-size:13px;text-transform:uppercase;letter-spacing:1px;">This Session</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;">
+                    <div style="background:rgba(0,255,65,0.06);border:1px solid rgba(0,255,65,0.2);border-radius:8px;padding:10px 12px;">
+                        <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Duration</div>
+                        <div style="font-size:16px;font-weight:700;color:#e2e8f0;">${_formatDuration(durationMs)}</div>
+                    </div>
+                    <div style="background:rgba(0,255,65,0.06);border:1px solid rgba(0,255,65,0.2);border-radius:8px;padding:10px 12px;">
+                        <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Spins</div>
+                        <div style="font-size:16px;font-weight:700;color:#e2e8f0;">${sessionSpins.toLocaleString()}</div>
+                    </div>
+                    <div style="background:rgba(0,255,65,0.06);border:1px solid rgba(0,255,65,0.2);border-radius:8px;padding:10px 12px;">
+                        <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Won This Session</div>
+                        <div style="font-size:16px;font-weight:700;color:#e2e8f0;">$${formatMoney(sessionWon)}</div>
+                    </div>
+                    <div style="background:rgba(0,255,65,0.06);border:1px solid rgba(0,255,65,0.2);border-radius:8px;padding:10px 12px;">
+                        <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Net This Session</div>
+                        <div style="font-size:16px;font-weight:700;color:${netColor};">${netPrefix}$${formatMoney(Math.abs(netSession))}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function _renderTopGamesSection() {
+            const containerId = 'statsTopGamesSection';
+            let container = document.getElementById(containerId);
+            if (!container) {
+                const achievementsEl = document.getElementById('achievementsList');
+                if (!achievementsEl) return;
+                // Find the h4 before achievementsList
+                let insertBefore = achievementsEl.previousElementSibling;
+                while (insertBefore && insertBefore.tagName !== 'H4') {
+                    insertBefore = insertBefore.previousElementSibling;
+                }
+                container = document.createElement('div');
+                container.id = containerId;
+                if (insertBefore) {
+                    insertBefore.parentNode.insertBefore(container, insertBefore);
+                } else {
+                    achievementsEl.parentNode.insertBefore(container, achievementsEl);
+                }
+            }
+
+            const gameStats = stats.gameStats || {};
+            const topGames = Object.entries(gameStats)
+                .filter(([, gs]) => gs.spins > 0)
+                .sort((a, b) => b[1].spins - a[1].spins)
+                .slice(0, 3);
+
+            if (topGames.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const rows = topGames.map(([gameId, gs]) => {
+                const rtp = gs.bet > 0 ? ((gs.won / gs.bet) * 100).toFixed(1) : '—';
+                const rtpColor = gs.bet > 0 && gs.won / gs.bet >= 1 ? '#00ff41' : '#fca5a5';
+                const name = gs.name || gameId;
+                const shortName = name.length > 18 ? name.slice(0, 17) + '…' : name;
+                return `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(0,0,0,0.3);border-radius:6px;margin-bottom:6px;">
+                        <span style="font-size:12px;color:#e2e8f0;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${name}">${shortName}</span>
+                        <span style="font-size:11px;color:#94a3b8;margin:0 12px;white-space:nowrap;">${gs.spins.toLocaleString()} spins</span>
+                        <span style="font-size:12px;font-weight:700;color:${rtpColor};white-space:nowrap;">${rtp === '—' ? '—' : rtp + '% RTP'}</span>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <h4 style="margin-bottom:10px;margin-top:20px;color:#00ff41;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Top Games This Account</h4>
+                ${rows}
+            `;
         }
 
 
