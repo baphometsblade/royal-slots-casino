@@ -2,6 +2,9 @@
 // UI-SLOT MODULE
 // ═══════════════════════════════════════════════════════
 
+        // ── Spin History State ──────────────────────────────────
+        let spinHistory = []; // [{win, bet, isNearMiss, timestamp}, ...]
+        const SPIN_HISTORY_MAX = 15;
 
         // Build symbol image HTML for any game symbol
         function getSymbolHtml(symbolName, gameId) {
@@ -867,6 +870,9 @@
             currentGame = games.find(g => g.id === gameId);
             if (!currentGame) return;
 
+            // Reset spin history for the new game session
+            spinHistory = [];
+
             preloadAnimatedAssets(currentGame);
 
             addRecentlyPlayed(gameId);
@@ -1031,6 +1037,10 @@
             freeSpinsRemaining = 0;
 
                 document.getElementById('slotModal').classList.add('active');
+                // Inject spin history panel (idempotent — removed and re-injected on each game open)
+                var _oldHistPanel = document.getElementById('spinHistoryPanel');
+                if (_oldHistPanel) _oldHistPanel.parentNode.removeChild(_oldHistPanel);
+                _ensureSpinHistoryPanel();
                 // Wait two animation frames so flex layout + CSS transitions settle,
                 // then rescale reel cells to fit whatever height the container was given.
                 requestAnimationFrame(() => requestAnimationFrame(() => rescaleReelGridToFit(currentGame)));
@@ -1670,6 +1680,81 @@
             }, 400);
         }
 
+        // ── Spin History Rendering ────────────────────────────────────────────
+        function renderSpinHistory() {
+            const panel = document.getElementById('spinHistoryPanel');
+            if (!panel) return;
+            const list = document.getElementById('spinHistoryList');
+            if (!list) return;
+            if (spinHistory.length === 0) {
+                list.innerHTML = '<div style="color:#64748b;font-size:11px;padding:4px 0;">No spins yet this session</div>';
+                return;
+            }
+            list.innerHTML = spinHistory.map(function(entry) {
+                const isWin = entry.win > 0;
+                const isNM = entry.isNearMiss;
+                const dot = isWin ? '#22c55e' : isNM ? '#fbbf24' : '#ef4444';
+                const label = isWin ? ('+$' + formatMoney(entry.win)) : isNM ? 'Near!' : ('-$' + formatMoney(entry.bet));
+                const color = isWin ? '#22c55e' : isNM ? '#fbbf24' : '#94a3b8';
+                const ago = _histTimeAgo(entry.timestamp);
+                return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);">' +
+                    '<span style="width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;display:inline-block;"></span>' +
+                    '<span style="font-size:11px;font-weight:700;color:' + color + ';min-width:60px;">' + label + '</span>' +
+                    '<span style="font-size:10px;color:#475569;margin-left:auto;">' + ago + '</span>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function _histTimeAgo(ts) {
+            const s = Math.floor((Date.now() - ts) / 1000);
+            if (s < 5) return 'just now';
+            if (s < 60) return s + 's ago';
+            return Math.floor(s / 60) + 'm ago';
+        }
+
+        function _ensureSpinHistoryPanel() {
+            if (document.getElementById('spinHistoryPanel')) return;
+            const slotModal = document.getElementById('slotModal') || document.querySelector('.slot-modal-fullscreen');
+            if (!slotModal) return;
+
+            // Inject CSS once
+            if (!document.getElementById('spinHistoryCss')) {
+                const s = document.createElement('style');
+                s.id = 'spinHistoryCss';
+                s.textContent = [
+                    '#spinHistoryPanel { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; margin: 0 12px 10px; overflow: hidden; }',
+                    '#spinHistoryToggle { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; cursor:pointer; user-select:none; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:1px; }',
+                    '#spinHistoryToggle:hover { color:#94a3b8; }',
+                    '#spinHistoryList { padding: 4px 12px 8px; max-height: 200px; overflow-y: auto; }',
+                    '#spinHistoryList::-webkit-scrollbar { width:3px; }',
+                    '#spinHistoryList::-webkit-scrollbar-thumb { background:#334155; border-radius:2px; }'
+                ].join('\n');
+                document.head.appendChild(s);
+            }
+
+            const panel = document.createElement('div');
+            panel.id = 'spinHistoryPanel';
+            panel.innerHTML =
+                '<div id="spinHistoryToggle" onclick="(function(t){' +
+                    'var l=t.parentElement.querySelector(\'#spinHistoryList\');' +
+                    'l.style.display=(l.style.display===\'none\'?\'\':\'none\');' +
+                    't.querySelector(\'.hist-arrow\').textContent=(l.style.display===\'none\'?\'&#9654;\':\'&#9660;\');' +
+                '})(this)">' +
+                    '<span>Spin History</span>' +
+                    '<span class="hist-arrow">&#9660;</span>' +
+                '</div>' +
+                '<div id="spinHistoryList"></div>';
+
+            // Insert between reel area and bottom bar
+            const bottomBar = slotModal.querySelector('.slot-bottom-bar');
+            if (bottomBar && bottomBar.parentNode) {
+                bottomBar.parentNode.insertBefore(panel, bottomBar);
+            } else {
+                slotModal.appendChild(panel);
+            }
+            renderSpinHistory();
+        }
+
         // Display win result from server (no client-side win calculation)
         // -- Near-Miss Detection
         function detectAndShowNearMiss(grid, game) {
@@ -1729,6 +1814,7 @@
                 });
                 showMessage("So Close! 👀", "near-miss");
                 triggerNearMissNudge();
+                if (spinHistory.length > 0) { spinHistory[0].isNearMiss = true; renderSpinHistory(); }
             }
         }
 
@@ -1757,6 +1843,18 @@
             const grid = result.grid;
             const winAmount = result.winAmount;
             const details = result.winDetails || {};
+
+            // Record to spin history
+            const _histEntry = {
+                win: winAmount,
+                bet: currentBet,
+                isNearMiss: false,
+                timestamp: Date.now()
+            };
+            spinHistory.unshift(_histEntry);
+            if (spinHistory.length > SPIN_HISTORY_MAX) spinHistory.pop();
+            if (typeof onChallengeEvent === 'function') onChallengeEvent('spin', { bet: currentBet, win: winAmount, gameId: currentGame ? currentGame.id : null });
+            renderSpinHistory();
 
             // Clear highlights
             getAllCells().forEach(function(cell) {

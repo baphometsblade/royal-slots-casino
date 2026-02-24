@@ -15,6 +15,65 @@
             return sessionStartBalance;
         }
 
+        // ── Daily Challenges ──────────────────────────────────────
+        const DAILY_CHALLENGES = [
+            { id: 'spins_20',    label: 'Spin It Up',  desc: 'Complete 20 spins today',      target: 20, xp: 50, icon: '🎰' },
+            { id: 'games_3',     label: 'Game Hopper', desc: 'Play 3 different games today', target: 3,  xp: 75, icon: '🎮' },
+            { id: 'win_once',    label: 'Lucky Break', desc: 'Win at least once today',      target: 1,  xp: 40, icon: '🍀' },
+        ];
+        const CHALLENGE_STORAGE_KEY = 'matrixChallenges';
+
+        function _loadChallengeState() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(CHALLENGE_STORAGE_KEY) || '{}');
+                const today = new Date().toDateString();
+                if (raw.date !== today) {
+                    return { date: today, progress: {}, completed: [] };
+                }
+                return raw;
+            } catch(e) {
+                return { date: new Date().toDateString(), progress: {}, completed: [] };
+            }
+        }
+
+        function _saveChallengeState(state) {
+            localStorage.setItem(CHALLENGE_STORAGE_KEY, JSON.stringify(state));
+        }
+
+        // Global hook called by spin/win code in ui-slot.js
+        window.onChallengeEvent = function(eventType, payload) {
+            const state = _loadChallengeState();
+            let changed = false;
+
+            if (eventType === 'spin') {
+                state.progress['spins_20'] = (state.progress['spins_20'] || 0) + 1;
+                if (payload.gameId) {
+                    if (!state.gamesPlayedToday) state.gamesPlayedToday = [];
+                    if (!state.gamesPlayedToday.includes(payload.gameId)) {
+                        state.gamesPlayedToday.push(payload.gameId);
+                    }
+                    state.progress['games_3'] = state.gamesPlayedToday.length;
+                }
+                if (payload.win && payload.win > 0) {
+                    state.progress['win_once'] = Math.max(state.progress['win_once'] || 0, 1);
+                }
+                changed = true;
+            }
+
+            if (changed) {
+                DAILY_CHALLENGES.forEach(ch => {
+                    const prog = state.progress[ch.id] || 0;
+                    if (prog >= ch.target && !state.completed.includes(ch.id)) {
+                        state.completed.push(ch.id);
+                        if (typeof gainXP === 'function') gainXP(ch.xp);
+                        _showChallengeCompleteToast(ch);
+                    }
+                });
+                _saveChallengeState(state);
+                _renderChallengesPanel();
+            }
+        };
+
         function _formatDuration(ms) {
             const totalSeconds = Math.floor(ms / 1000);
             const minutes = Math.floor(totalSeconds / 60);
@@ -72,6 +131,10 @@
 
             // ── Top games by spins with RTP section ──────────────────
             _renderTopGamesSection();
+
+            // ── Daily Challenges section ──────────────────────────────
+            _ensureDailyChallengesPanel();
+            _renderChallengesPanel();
 
             // Update achievements
             updateAchievements();
@@ -179,6 +242,88 @@
                 <h4 style="margin-bottom:10px;margin-top:20px;color:#00ff41;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Top Games This Account</h4>
                 ${rows}
             `;
+        }
+
+
+        function _showChallengeCompleteToast(ch) {
+            const el = document.createElement('div');
+            el.style.cssText = `
+                position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
+                background:linear-gradient(135deg,#065f46,#047857); color:#d1fae5;
+                padding:14px 24px; border-radius:12px; z-index:12000; font-weight:800;
+                box-shadow:0 8px 24px rgba(0,200,100,0.4); text-align:center;
+                animation:challengeToastIn 0.4s ease-out forwards;
+                border:1px solid rgba(52,211,153,0.4); min-width:260px;
+            `;
+            el.innerHTML = `
+                <div style="font-size:28px;margin-bottom:4px;">${ch.icon}</div>
+                <div style="font-size:13px;letter-spacing:1px;margin-bottom:2px;">✅ CHALLENGE COMPLETE!</div>
+                <div style="font-size:15px;">${ch.label}</div>
+                <div style="font-size:12px;color:#6ee7b7;margin-top:4px;">+${ch.xp} XP awarded!</div>
+            `;
+            if (!document.getElementById('challengeToastKf')) {
+                const s = document.createElement('style');
+                s.id = 'challengeToastKf';
+                s.textContent = `
+                    @keyframes challengeToastIn { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+                    @keyframes challengeToastOut { from{opacity:1;transform:translateX(-50%) translateY(0)} to{opacity:0;transform:translateX(-50%) translateY(-10px)} }
+                `;
+                document.head.appendChild(s);
+            }
+            document.body.appendChild(el);
+            setTimeout(() => {
+                el.style.animation = 'challengeToastOut 0.4s ease-in forwards';
+                setTimeout(() => el.remove(), 400);
+            }, 3500);
+        }
+
+
+        function _renderChallengesPanel() {
+            const container = document.getElementById('dailyChallengesPanel');
+            if (!container) return;
+            const state = _loadChallengeState();
+            container.innerHTML = DAILY_CHALLENGES.map(ch => {
+                const prog = Math.min(state.progress[ch.id] || 0, ch.target);
+                const pct = Math.round((prog / ch.target) * 100);
+                const done = state.completed.includes(ch.id);
+                const barColor = done ? '#34d399' : '#3b82f6';
+                return `
+                <div style="margin-bottom:14px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                        <span style="font-size:20px;">${ch.icon}</span>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:12px;font-weight:700;color:${done ? '#34d399' : '#e2e8f0'};">${ch.label}${done ? ' ✓' : ''}</div>
+                            <div style="font-size:10px;color:#64748b;">${ch.desc}</div>
+                        </div>
+                        <div style="font-size:11px;font-weight:700;color:#fbbf24;white-space:nowrap;">+${ch.xp} XP</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border-radius:4px;height:6px;overflow:hidden;">
+                        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width 0.4s ease;"></div>
+                    </div>
+                    <div style="font-size:10px;color:#475569;margin-top:3px;text-align:right;">${prog}/${ch.target}</div>
+                </div>`;
+            }).join('');
+        }
+
+
+        function _ensureDailyChallengesPanel() {
+            if (document.getElementById('dailyChallengesPanel')) return;
+            const achievementsEl = document.getElementById('achievementsList');
+            if (!achievementsEl) return;
+            let insertBefore = achievementsEl.previousElementSibling;
+            while (insertBefore && insertBefore.tagName !== 'H4') {
+                insertBefore = insertBefore.previousElementSibling;
+            }
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = `
+                <h4 style="margin-bottom:10px;margin-top:20px;color:#3b82f6;font-size:13px;text-transform:uppercase;letter-spacing:1px;">⚡ Daily Challenges</h4>
+                <div id="dailyChallengesPanel"></div>
+            `;
+            if (insertBefore) {
+                insertBefore.parentNode.insertBefore(wrapper, insertBefore);
+            } else {
+                achievementsEl.parentNode.insertBefore(wrapper, achievementsEl);
+            }
         }
 
 

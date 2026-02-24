@@ -106,6 +106,56 @@
                 document.head.appendChild(s);
             }
 
+            // Inject favorites styles once into <head>
+            if (!document.getElementById('favStyles')) {
+                const fs = document.createElement('style');
+                fs.id = 'favStyles';
+                fs.textContent = `
+                    .fav-btn {
+                        position: absolute; top: 6px; right: 34px;
+                        background: transparent; border: none;
+                        font-size: 20px; cursor: pointer; z-index: 10;
+                        line-height: 1; padding: 4px; border-radius: 50%;
+                        transition: transform 0.15s;
+                    }
+                    .fav-btn:hover { transform: scale(1.3); }
+                    .fav-btn.fav-active { animation: favPop 0.3s ease-out; }
+                    @keyframes favPop {
+                        0%   { transform: scale(1); }
+                        50%  { transform: scale(1.5); }
+                        100% { transform: scale(1); }
+                    }
+                    .filter-fav-count {
+                        display: inline-block; background: #e11d48;
+                        color: #fff; font-size: 10px; font-weight: 700;
+                        border-radius: 8px; padding: 1px 5px; margin-left: 4px;
+                        vertical-align: middle; line-height: 16px; min-width: 16px;
+                        text-align: center;
+                    }
+                    .games-fav-empty {
+                        grid-column: 1 / -1; text-align: center;
+                        padding: 48px 24px; color: rgba(255,255,255,0.45);
+                        font-size: 15px;
+                    }
+                    .games-fav-empty .fav-empty-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+                `;
+                document.head.appendChild(fs);
+            }
+
+            // Inject Favourites filter tab once
+            if (!document.getElementById('favFilterTab')) {
+                const filterTabs = document.getElementById('filterTabs');
+                if (filterTabs) {
+                    const favTab = document.createElement('button');
+                    favTab.id = 'favFilterTab';
+                    favTab.className = 'filter-tab';
+                    favTab.dataset.filter = 'favorites';
+                    favTab.setAttribute('onclick', "setFilter('favorites')");
+                    favTab.innerHTML = '\u2764\uFE0F Favourites';
+                    filterTabs.appendChild(favTab);
+                }
+            }
+
             const hotGamesDiv = document.getElementById('hotGames');
             const allGamesDiv = document.getElementById('allGames');
 
@@ -277,8 +327,11 @@
             const shortDesc = game.bonusDesc
                 ? `<div class="game-hover-desc">${bonusIcon} ${game.bonusDesc.split(':').pop().trim().slice(0,60)}${game.bonusDesc.length > 70 ? '…' : ''}</div>`
                 : '';
+            const favored = isFavorite(game.id);
+            const favIcon = favored ? '\u2764\uFE0F' : '\u2661';
             return `
-                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')">
+                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')" style="position:relative">
+                    <button class="fav-btn${favored ? ' fav-active' : ''}" data-game-id="${game.id}" title="${favored ? 'Remove from favourites' : 'Add to favourites'}" onclick="event.stopPropagation(); (function(btn){var nowFav=toggleFavorite('${game.id}'); btn.textContent=nowFav?'\u2764\uFE0F':'\u2661'; btn.title=nowFav?'Remove from favourites':'Add to favourites'; btn.classList.add('fav-active'); setTimeout(function(){btn.classList.remove('fav-active');},350); updateFavTabBadge();})(this)">${favIcon}</button>
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
                         <div class="card-anim-preview" style="background-image:url('assets/backgrounds/slots/${game.id}_bg.webp')" onerror="this.classList.add('hidden')">
@@ -328,10 +381,11 @@
         function getFilteredGames(filter) {
             let list;
             switch (filter) {
-                case 'hot':      list = games.filter(g => g.hot); break;
-                case 'new':      list = games.filter(g => g.tag === 'NEW'); break;
-                case 'jackpot':  list = games.filter(g => g.tag === 'JACKPOT' || g.tag === 'MEGA'); break;
-                default:         list = games;
+                case 'hot':       list = games.filter(g => g.hot); break;
+                case 'new':       list = games.filter(g => g.tag === 'NEW'); break;
+                case 'jackpot':   list = games.filter(g => g.tag === 'JACKPOT' || g.tag === 'MEGA'); break;
+                case 'favorites': list = games.filter(g => isFavorite(g.id)); break;
+                default:          list = games;
             }
             if (currentProviderFilter !== 'all') {
                 list = list.filter(g => g.provider === currentProviderFilter);
@@ -352,7 +406,11 @@
         function renderFilteredGames() {
             const allGamesDiv = document.getElementById('allGames');
             const filtered = getFilteredGames(currentFilter);
-            allGamesDiv.innerHTML = filtered.map(g => createGameCard(g)).join('');
+            if (currentFilter === 'favorites' && filtered.length === 0) {
+                allGamesDiv.innerHTML = `<div class="games-fav-empty"><span class="fav-empty-icon">\u2661</span>Heart your first game to see it here!</div>`;
+            } else {
+                allGamesDiv.innerHTML = filtered.map(g => createGameCard(g)).join('');
+            }
             updateFilterCounts();
             // Update the "All Slots" count label
             const countEl = document.getElementById('allGamesCount');
@@ -361,22 +419,55 @@
 
 
         function updateFilterCounts() {
+            const favCount = loadFavorites().length;
             const counts = {
-                all:     games.length,
-                hot:     games.filter(g => g.hot).length,
-                new:     games.filter(g => g.tag === 'NEW').length,
-                jackpot: games.filter(g => g.tag === 'JACKPOT' || g.tag === 'MEGA').length
+                all:       games.length,
+                hot:       games.filter(g => g.hot).length,
+                new:       games.filter(g => g.tag === 'NEW').length,
+                jackpot:   games.filter(g => g.tag === 'JACKPOT' || g.tag === 'MEGA').length,
+                favorites: favCount
             };
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 const f = tab.dataset.filter;
-                let countEl = tab.querySelector('.filter-count');
-                if (!countEl) {
-                    countEl = document.createElement('span');
-                    countEl.className = 'filter-count';
-                    tab.appendChild(countEl);
+                if (f === 'favorites') {
+                    // Use a distinct red badge for favorites count
+                    let badge = tab.querySelector('.filter-fav-count');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'filter-fav-count';
+                        tab.appendChild(badge);
+                    }
+                    badge.textContent = favCount > 0 ? favCount : '';
+                    badge.style.display = favCount > 0 ? '' : 'none';
+                } else {
+                    let countEl = tab.querySelector('.filter-count');
+                    if (!countEl) {
+                        countEl = document.createElement('span');
+                        countEl.className = 'filter-count';
+                        tab.appendChild(countEl);
+                    }
+                    countEl.textContent = counts[f] ?? '';
                 }
-                countEl.textContent = counts[f] ?? '';
             });
+        }
+
+
+        function updateFavTabBadge() {
+            const favTab = document.getElementById('favFilterTab');
+            if (!favTab) return;
+            let badge = favTab.querySelector('.filter-fav-count');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'filter-fav-count';
+                favTab.appendChild(badge);
+            }
+            const favCount = loadFavorites().length;
+            badge.textContent = favCount > 0 ? favCount : '';
+            badge.style.display = favCount > 0 ? '' : 'none';
+            // If currently viewing favorites, re-render the list to reflect removals
+            if (currentFilter === 'favorites') {
+                renderFilteredGames();
+            }
         }
 
 

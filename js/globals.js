@@ -316,3 +316,24 @@
 
         // Settings state (initialized after loadSettings is defined)
         let appSettings = null;
+
+        // ===== Favorites =====
+        const FAVORITES_KEY = 'casinoFavorites';
+
+        function loadFavorites() {
+            try { return JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'); } catch(e) { return []; }
+        }
+        function saveFavorites(arr) {
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify(arr));
+        }
+        function toggleFavorite(gameId) {
+            let favs = loadFavorites();
+            const idx = favs.indexOf(gameId);
+            if (idx === -1) favs.push(gameId);
+            else favs.splice(idx, 1);
+            saveFavorites(favs);
+            return idx === -1; // true = now favorited
+        }
+        function isFavorite(gameId) {
+            return loadFavorites().includes(gameId);
+        }

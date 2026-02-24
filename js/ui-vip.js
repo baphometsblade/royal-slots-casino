@@ -150,6 +150,139 @@ function claimWeeklyReload() {
 }
 
 
+// ═══════════════════════════════════════════════════════════════
+// ENHANCED PROGRESS VISUALIZATION — CSS INJECTION
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Injects the enhanced VIP progress CSS once into the document head.
+ * A style#vipEnhancedCss guard prevents double-injection.
+ */
+function _injectVipCss() {
+    if (document.getElementById('vipEnhancedCss')) return;
+    const s = document.createElement('style');
+    s.id = 'vipEnhancedCss';
+    s.textContent = `
+/* Animated tier progress bar */
+#vipProgressBarFill {
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: linear-gradient(90deg, var(--vip-color-from, #a78bfa), var(--vip-color-to, #7c3aed));
+    box-shadow: 0 0 12px var(--vip-glow, rgba(167,139,250,0.6));
+    position: relative;
+    overflow: hidden;
+}
+#vipProgressBarFill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: vipShimmer 2s infinite;
+}
+@keyframes vipShimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+/* Milestone markers on progress bar */
+.vip-milestone-marker {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,0.25);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+/* Mini tier card grid (distinct from .vip-tier-card large card) */
+.vip-tier-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin: 16px 0;
+}
+.vip-mini-tier-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+    transition: border-color 0.3s, background 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+.vip-mini-tier-card.tier-current {
+    border-color: var(--vip-color-to, #7c3aed);
+    background: rgba(124,58,237,0.15);
+    box-shadow: 0 0 16px rgba(124,58,237,0.2);
+}
+.vip-mini-tier-card.tier-unlocked {
+    opacity: 0.7;
+}
+.vip-mini-tier-card.tier-locked {
+    opacity: 0.4;
+}
+.vip-tier-badge {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+.vip-tier-name-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+.vip-tier-perk {
+    font-size: 9px;
+    color: #64748b;
+    line-height: 1.3;
+}
+.vip-current-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: #fbbf24;
+    color: #000;
+    font-size: 7px;
+    font-weight: 900;
+    padding: 1px 4px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+/* Wager countdown */
+.vip-wager-countdown {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.vip-wager-amount {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fbbf24;
+}
+/* Enhanced progress container spacing */
+#vipEnhancedProgressContainer {
+    padding: 0 32px 16px;
+}
+#vipTierCardsContainer {
+    padding: 0 32px;
+}
+#vipWagerCountdown {
+    padding: 0 32px 16px;
+}
+@media (max-width: 640px) {
+    #vipEnhancedProgressContainer,
+    #vipTierCardsContainer,
+    #vipWagerCountdown { padding-left: 16px; padding-right: 16px; }
+}
+`;
+    document.head.appendChild(s);
+}
+
+
 // ── Format Helpers ───────────────────────────────────────────
 
 function _vipFormatCooldown(ms) {
@@ -166,6 +299,141 @@ function _vipFormatWagered(amount) {
     if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
     if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
     return `$${formatMoney(amount)}`;
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ENHANCED PROGRESS BAR RENDERER
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Converts a CSS hex color string to a comma-separated RGB triple.
+ * @param {string} hex - e.g. '#CD7F32'
+ * @returns {string} e.g. '205,127,50'
+ */
+function _hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+        ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}`
+        : '167,139,250';
+}
+
+/**
+ * Renders the animated enhanced progress bar into #vipEnhancedProgressContainer.
+ * @param {object} tier        - current tier object from VIP_TIERS
+ * @param {object|null} nextTier - next tier object or null if max tier
+ * @param {number} progressPct  - 0-100
+ */
+function _renderEnhancedProgress(tier, nextTier, progressPct) {
+    const container = document.getElementById('vipEnhancedProgressContainer');
+    if (!container) return;
+
+    const colorFrom = tier.color || '#a78bfa';
+    const colorTo   = nextTier ? (nextTier.color || '#7c3aed') : '#fbbf24';
+    const glow      = `rgba(${_hexToRgb(colorFrom)},0.5)`;
+    const wagered   = (stats && stats.totalWagered) || 0;
+
+    container.innerHTML = `
+        <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;font-weight:700;color:${colorFrom};">${tier.icon || '\u2B50'} ${tier.name}</span>
+            ${nextTier
+                ? `<span style="font-size:12px;color:#64748b;">${nextTier.icon || '\u2B50'} ${nextTier.name}</span>`
+                : `<span style="font-size:11px;color:#fbbf24;">MAX TIER \u{1F451}</span>`
+            }
+        </div>
+        <div style="position:relative;background:rgba(255,255,255,0.08);border-radius:8px;height:14px;overflow:hidden;">
+            <div id="vipProgressBarFill" style="
+                height:100%;
+                width:0%;
+                border-radius:8px;
+                --vip-color-from:${colorFrom};
+                --vip-color-to:${colorTo};
+                --vip-glow:${glow};
+            "></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+            <span style="font-size:10px;color:#475569;">${Math.round(progressPct)}% to next tier</span>
+            ${nextTier
+                ? `<span style="font-size:10px;color:#475569;">Wager $${formatMoney(Math.max(0, nextTier.minWagered - wagered))} more</span>`
+                : ''
+            }
+        </div>
+    `;
+
+    // Animate bar width after paint settles
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        const fill = document.getElementById('vipProgressBarFill');
+        if (fill) fill.style.width = progressPct + '%';
+    }));
+}
+
+/**
+ * Renders a mini grid of all VIP tier cards into #vipTierCardsContainer,
+ * showing unlocked / current / locked state for each tier.
+ * @param {number} currentTierIdx - 0-based index of the active tier
+ */
+function _renderTierCards(currentTierIdx) {
+    const container = document.getElementById('vipTierCardsContainer');
+    if (!container || typeof VIP_TIERS === 'undefined') return;
+
+    container.innerHTML = '<div class="vip-tier-cards">' + VIP_TIERS.map((t, i) => {
+        const state = i < currentTierIdx ? 'tier-unlocked'
+                    : i === currentTierIdx ? 'tier-current'
+                    : 'tier-locked';
+
+        // Build up to 2 perk lines from fields that exist on the tier object
+        const perkLines = [
+            t.cashbackPct   ? `${t.cashbackPct}% cashback`      : null,
+            t.weeklyReloadPct > 0 ? `${t.weeklyReloadPct}% reload` : null,
+        ].filter(Boolean).slice(0, 2).join('<br>') || 'Base tier';
+
+        // For current card, use its color for the border glow via inline style
+        const currentStyle = i === currentTierIdx
+            ? `border-color:${t.color};background:${t.color}22;box-shadow:0 0 16px ${t.color}33;`
+            : '';
+
+        return `
+            <div class="vip-mini-tier-card ${state}" style="${currentStyle}">
+                ${i === currentTierIdx ? '<div class="vip-current-badge">YOU</div>' : ''}
+                <div class="vip-tier-badge">${t.icon || '\u2B50'}</div>
+                <div class="vip-tier-name-label" style="color:${t.color || '#e2e8f0'};">${t.name}</div>
+                <div class="vip-tier-perk">${perkLines}</div>
+            </div>
+        `;
+    }).join('') + '</div>';
+}
+
+/**
+ * Renders the wager-needed countdown into #vipWagerCountdown.
+ * @param {object|null} nextTier       - next tier or null if max
+ * @param {number}      currentWagered - stats.totalWagered
+ */
+function _renderWagerCountdown(nextTier, currentWagered) {
+    const container = document.getElementById('vipWagerCountdown');
+    if (!container) return;
+
+    if (!nextTier) {
+        container.innerHTML = `<div class="vip-wager-countdown" style="justify-content:center;">
+            <span style="font-size:24px;">\u{1F451}</span>
+            <div>
+                <div style="font-size:14px;font-weight:800;color:#fbbf24;">Maximum Tier Reached!</div>
+                <div style="font-size:11px;color:#64748b;">You have unlocked all VIP benefits.</div>
+            </div>
+        </div>`;
+        return;
+    }
+
+    const needed = Math.max(0, nextTier.minWagered - currentWagered);
+    container.innerHTML = `<div class="vip-wager-countdown">
+        <span style="font-size:28px;">${nextTier.icon || '\u2B50'}</span>
+        <div style="flex:1;">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Wager to reach ${nextTier.name}</div>
+            <div style="display:flex;align-items:baseline;gap:6px;">
+                <span class="vip-wager-amount">$${formatMoney(needed)}</span>
+                <span style="font-size:11px;color:#475569;">more</span>
+            </div>
+        </div>
+    </div>`;
 }
 
 
@@ -674,6 +942,9 @@ function hideVipModal() {
 // ═══════════════════════════════════════════════════════════════
 
 function _renderVipModalContent() {
+    // Inject enhanced CSS on first call (id-guarded, no-op after first run)
+    _injectVipCss();
+
     const tier = getVipTier();
     const tierIdx = getVipTierIndex();
     const nextTier = getNextVipTier();
@@ -693,7 +964,16 @@ function _renderVipModalContent() {
         <!-- Tier Card -->
         ${renderVipTierCard(tier)}
 
-        <!-- Progress Bar -->
+        <!-- Enhanced Animated Progress Bar -->
+        <div id="vipEnhancedProgressContainer"></div>
+
+        <!-- Tier Card Grid -->
+        <div id="vipTierCardsContainer"></div>
+
+        <!-- Wager Countdown -->
+        <div id="vipWagerCountdown"></div>
+
+        <!-- Original Progress Bar (retained for layout continuity) -->
         ${_renderProgressSection(tier, nextTier, progress, wagered)}
 
         <!-- Current Benefits -->
@@ -721,13 +1001,19 @@ function _renderVipModalContent() {
         ${_renderTipsSection()}
     `;
 
-    // Animate progress bar after DOM paint
+    // Animate original progress bar after DOM paint
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             const fill = container.querySelector('.vip-progress-fill');
             if (fill) fill.style.width = progress + '%';
         });
     });
+
+    // Render enhanced progress visualization widgets
+    // (each function uses requestAnimationFrame internally for animation)
+    _renderEnhancedProgress(tier, nextTier, progress);
+    _renderTierCards(tierIdx);
+    _renderWagerCountdown(nextTier, wagered);
 }
 
 
