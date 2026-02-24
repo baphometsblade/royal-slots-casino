@@ -1014,8 +1014,63 @@ const games = [
       bonusType: 'chamber_spins', freeSpinsCount: 12, freeSpinsRetrigger: true,
       chamberLevels: ['quartz_10fs', 'sapphire_15fs_2x', 'ruby_20fs_4x', 'diamond_25fs_wild_reel'],
       bonusDesc: 'Crystal Chambers: 5×3 — Four gem chambers! Diamond chamber unlocks wild reel! Max 8x!',
-      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 0.20, maxBet: 3000, hot: false, jackpot: 0 }
-    // ═90. game block placeholder
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 0.20, maxBet: 3000, hot: false, jackpot: 0 },
+
+    // ═93. sticky_wilds games
+    { id: 'jade_temple', name: 'Jade Temple', provider: 'Orient Reels', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/jade_temple.png', bgGradient: 'linear-gradient(135deg, #004d40 0%, #1b5e20 100%)',
+      symbols: ['s1_bamboo','s2_lotus','s3_dragon_carp','s4_jade_mask','s5_temple_deity','wild_jade'],
+      reelBg: 'linear-gradient(180deg, #011a15 0%, #020e08 100%)', accentColor: '#00e676',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_jade', scatterSymbol: 's5_temple_deity',
+      bonusType: 'sticky_wilds', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      bonusDesc: 'Jade Temple: 5x3 — Wilds stick for the duration! Each new wild grows the grid coverage!',
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 0.20, maxBet: 2500, hot: true, jackpot: 0 },
+
+    { id: 'arctic_foxes', name: 'Arctic Foxes', provider: 'FrostByte Gaming', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/arctic_foxes.png', bgGradient: 'linear-gradient(135deg, #0d47a1 0%, #b0bec5 100%)',
+      symbols: ['s1_snowflake','s2_ice_shard','s3_aurora','s4_fox_cub','s5_spirit_fox','wild_icebloom'],
+      reelBg: 'linear-gradient(180deg, #030d1a 0%, #020810 100%)', accentColor: '#80d8ff',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_icebloom', scatterSymbol: 's5_spirit_fox',
+      bonusType: 'sticky_wilds', freeSpinsCount: 12, freeSpinsRetrigger: true,
+      bonusDesc: 'Arctic Foxes: 5x3 — Icy wilds freeze in place! Each spin adds more frozen wilds!',
+      payouts: { triple: 85, double: 9, wildTriple: 125, scatterPay: 3 }, minBet: 0.20, maxBet: 3000, hot: false, jackpot: 0 },
+
+    { id: 'neon_viper', name: 'Neon Viper', provider: 'NeonCore Labs', tag: 'HOT', tagClass: 'tag-hot', thumbnail: 'assets/thumbnails/neon_viper.png', bgGradient: 'linear-gradient(135deg, #1a0033 0%, #00e5ff 100%)',
+      symbols: ['s1_pixel_byte','s2_circuit','s3_laser_eye','s4_cyber_fang','s5_viper_boss','wild_neon'],
+      reelBg: 'linear-gradient(180deg, #0a0015 0%, #05000d 100%)', accentColor: '#e040fb',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_neon', scatterSymbol: 's5_viper_boss',
+      bonusType: 'sticky_wilds', freeSpinsCount: 8, freeSpinsRetrigger: true,
+      bonusDesc: 'Neon Viper: 5x3 — Cyber wilds lock on the grid! Collect 10 to activate Blackout Mode!',
+      payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 0.20, maxBet: 4000, hot: true, jackpot: 0 },
+
+    // ═96. walking_wilds games
+    { id: 'midnight_drifter', name: 'Midnight Drifter', provider: 'NeonCore Labs', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/midnight_drifter.png', bgGradient: 'linear-gradient(135deg, #0a0a0a 0%, #1a237e 100%)',
+      symbols: ['s1_streetlight','s2_graffiti','s3_drift_car','s4_chrome_wheel','s5_night_king','wild_drift'],
+      reelBg: 'linear-gradient(180deg, #050510 0%, #020206 100%)', accentColor: '#aeea00',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_drift', scatterSymbol: 's5_night_king',
+      bonusType: 'walking_wilds', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      bonusDesc: 'Midnight Drifter: 5x3 — Wilds walk left each spin! Stack multiple walkers for massive wins!',
+      payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 0.20, maxBet: 2500, hot: false, jackpot: 0 },
+
+    { id: 'pharaoh_march', name: "Pharaoh's March", provider: 'Desert Gold Studios', tag: 'POPULAR', tagClass: 'tag-popular', thumbnail: 'assets/thumbnails/pharaoh_march.png', bgGradient: 'linear-gradient(135deg, #f57f17 0%, #4e342e 100%)',
+      symbols: ['s1_hieroglyph','s2_canopic_jar','s3_scarab','s4_eye_of_ra','s5_pharaoh','wild_ankh'],
+      reelBg: 'linear-gradient(180deg, #120800 0%, #0a0500 100%)', accentColor: '#ffab00',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_ankh', scatterSymbol: 's5_pharaoh',
+      bonusType: 'walking_wilds', freeSpinsCount: 12, freeSpinsRetrigger: true,
+      bonusDesc: "Pharaoh's March: 5x3 — Ankh wilds march across the reels! Retrigger for extra marchers!",
+      payouts: { triple: 85, double: 9, wildTriple: 130, scatterPay: 3 }, minBet: 0.20, maxBet: 3000, hot: true, jackpot: 0 },
+
+    { id: 'iron_stampede', name: 'Iron Stampede', provider: 'IronReel Entertainment', tag: 'NEW', tagClass: 'tag-new', thumbnail: 'assets/thumbnails/iron_stampede.png', bgGradient: 'linear-gradient(135deg, #212121 0%, #bf360c 100%)',
+      symbols: ['s1_horseshoe','s2_lasso','s3_bull_horn','s4_iron_brand','s5_stampede_chief','wild_ironbull'],
+      reelBg: 'linear-gradient(180deg, #0d0503 0%, #060200 100%)', accentColor: '#ff7043',
+      gridCols: 5, gridRows: 3, template: 'standard', winType: 'payline',
+      wildSymbol: 'wild_ironbull', scatterSymbol: 's5_stampede_chief',
+      bonusType: 'walking_wilds', freeSpinsCount: 10, freeSpinsRetrigger: true,
+      bonusDesc: 'Iron Stampede: 5x3 — Bull wilds charge left! Each new scatter during free spins adds another bull!',
+      payouts: { triple: 90, double: 9, wildTriple: 135, scatterPay: 3 }, minBet: 0.20, maxBet: 4000, hot: false, jackpot: 0 }
 ];
 // Export for Node.js (server), no-op in browser
 if (typeof module !== 'undefined' && module.exports) {

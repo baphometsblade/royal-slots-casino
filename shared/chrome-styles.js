@@ -130,6 +130,12 @@ const GAME_CHROME_STYLES = {
     'demon_chambers':    'phantomworks', // Demon Chambers
     'norse_vaults':      'novaspin',     // Norse Vaults
     'crystal_chambers':  'celestial',    // Crystal Chambers
+    jade_temple:       { provider: 'Orient Reels' },
+    arctic_foxes:      { provider: 'FrostByte Gaming' },
+    neon_viper:        { provider: 'NeonCore Labs' },
+    midnight_drifter:  { provider: 'NeonCore Labs' },
+    pharaoh_march:     { provider: 'Desert Gold Studios' },
+    iron_stampede:     { provider: 'IronReel Entertainment' },
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)
