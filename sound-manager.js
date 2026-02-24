@@ -632,6 +632,59 @@
                         osc.stop(now + 0.10);
                     }
                     break;
+
+                case 'wild_reel':
+                    // Wild reel sweep — descending shimmer
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sine';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(1200, now);
+                        osc.frequency.exponentialRampToValueAtTime(300, now + 0.22);
+                        gain.gain.setValueAtTime(0.18 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.28);
+                        osc.start(now);
+                        osc.stop(now + 0.29);
+                    }
+                    break;
+
+                case 'both_ways_hit':
+                    // Both-ways reverse win — mirror ping
+                    {
+                        [660, 880].forEach(function(freq, i) {
+                            var osc = audioContext.createOscillator();
+                            var gain = audioContext.createGain();
+                            osc.type = 'triangle';
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.14 * soundVolume, now + i * 0.05);
+                            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.15 + i * 0.05);
+                            osc.start(now + i * 0.05);
+                            osc.stop(now + 0.16 + i * 0.05);
+                        });
+                    }
+                    break;
+
+                case 'jackpot_hit':
+                    // Random jackpot — triumphant ascending fanfare
+                    {
+                        [261, 329, 392, 523, 659, 784].forEach(function(freq, i) {
+                            var osc = audioContext.createOscillator();
+                            var gain = audioContext.createGain();
+                            osc.type = 'sine';
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.22 * soundVolume, now + i * 0.08);
+                            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.30 + i * 0.08);
+                            osc.start(now + i * 0.08);
+                            osc.stop(now + 0.32 + i * 0.08);
+                        });
+                    }
+                    break;
             }
         } catch (e) {
             // Silently ignore audio errors in headless/automated environments
