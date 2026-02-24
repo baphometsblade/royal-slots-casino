@@ -259,10 +259,32 @@
         }
 
 
+        function loginAsGuest() {
+            // Create a fresh local guest session — no server auth needed
+            applyAuthSession(`${LOCAL_TOKEN_PREFIX}guest`, {
+                id: null,
+                username: 'Guest',
+                email: '',
+                isGuest: true,
+            });
+            balance = 1000;
+            updateBalance();
+            saveBalance();
+            document.body.classList.remove('auth-gate');
+            hideAuthModal();
+            updateAuthButton();
+            showToast('Playing as Guest — $1,000 loaded. Have fun!', 'success');
+            if (typeof onPostAuthInit === 'function') onPostAuthInit();
+        }
+
+
         function logout() {
             clearAuthSession();
             updateAuthButton();
             showToast('Logged out successfully.', 'info');
+            // Return to auth gate
+            document.body.classList.add('auth-gate');
+            showAuthModal();
         }
 
 

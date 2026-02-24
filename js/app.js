@@ -175,6 +175,13 @@
                 return;
             }
 
+            // Always refresh guest balance to $1,000 on page load
+            if (currentUser.isGuest) {
+                balance = 1000;
+                updateBalance();
+                saveBalance();
+            }
+
             onPostAuthInit();
         }
 
