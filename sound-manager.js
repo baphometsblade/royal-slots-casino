@@ -421,6 +421,59 @@
                         osc.stop(now + 0.08);
                     }
                     break;
+
+                case 'sticky_lock':
+                    // Wild locks sticky during free spins — magnetic snap + sustain
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sine';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(600, now);
+                        osc.frequency.exponentialRampToValueAtTime(1400, now + 0.06);
+                        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.20);
+                        gain.gain.setValueAtTime(0.16 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.25);
+                        osc.start(now);
+                        osc.stop(now + 0.26);
+                    }
+                    break;
+
+                case 'wild_walk':
+                    // Walking wild shifts left — short whoosh
+                    {
+                        var osc = audioContext.createOscillator();
+                        var gain = audioContext.createGain();
+                        osc.type = 'sawtooth';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(900, now);
+                        osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+                        gain.gain.setValueAtTime(0.12 * soundVolume, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.18);
+                        osc.start(now);
+                        osc.stop(now + 0.18);
+                    }
+                    break;
+
+                case 'streak_hit':
+                    // Win streak milestone — bright ascending triple ping
+                    {
+                        [880, 1108, 1320].forEach(function(freq, i) {
+                            var osc = audioContext.createOscillator();
+                            var gain = audioContext.createGain();
+                            osc.type = 'sine';
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.14 * soundVolume, now + i * 0.07);
+                            gain.gain.exponentialRampToValueAtTime(0.001 * soundVolume, now + 0.22 + i * 0.07);
+                            osc.start(now + i * 0.07);
+                            osc.stop(now + 0.23 + i * 0.07);
+                        });
+                    }
+                    break;
             }
         } catch (e) {
             // Silently ignore audio errors in headless/automated environments
