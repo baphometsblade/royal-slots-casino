@@ -157,6 +157,13 @@
             }, 60000);
         }
 
+        window.addEventListener('beforeunload', function () {
+            if (window._sessionDurationTimer) {
+                clearInterval(window._sessionDurationTimer);
+                window._sessionDurationTimer = null;
+            }
+        });
+
 
         // ===== Update init to include new systems =====
         async function initAllSystems() {

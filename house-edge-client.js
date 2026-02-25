@@ -818,10 +818,4 @@
         SESSION_WIN_CAP: SESSION_WIN_CAP,
     };
 
-    console.log('[HouseEdge] Profit protection engine loaded. Target RTP:', (TARGET_RTP * 100) + '%');
-    if (globalStats.totalSpins > 0) {
-        console.log('[HouseEdge] Lifetime stats — Wagered:', '$' + globalStats.totalWagered.toFixed(2),
-            '| Paid:', '$' + globalStats.totalPaid.toFixed(2),
-            '| Profit:', '$' + globalStats.houseProfit.toFixed(2));
-    }
 })();
