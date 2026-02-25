@@ -942,6 +942,45 @@
                 if (_bar && _bar.parentNode) _bar.parentNode.insertBefore(_hud, _bar.nextSibling);
             })();
 
+            // Inject bet chip row below bet display
+            (function() {
+                var betSection = document.querySelector('.slot-bar-bet');
+                if (!betSection) return;
+                var old = betSection.querySelector('.bet-chip-row');
+                if (old) old.remove();
+                var row = document.createElement('div');
+                row.className = 'bet-chip-row';
+                // Determine Min/Mid/Max labels from BET_STEPS filtered to game range
+                var game = currentGame || {};
+                var minB = (game.minBet !== undefined ? game.minBet : 10);
+                var maxB = (game.maxBet !== undefined ? game.maxBet : 500);
+                var allSteps = typeof BET_STEPS !== 'undefined' ? BET_STEPS : [10,25,50,100,200,500];
+                var steps = allSteps.filter(function(s){ return s >= minB && s <= maxB; });
+                if (steps.length < 2) steps = allSteps.slice(0, 3);
+                var picks = [steps[0], steps[Math.floor((steps.length - 1) / 2)], steps[steps.length - 1]];
+                var labels = ['Min', 'Mid', 'Max'];
+                picks.forEach(function(val, i) {
+                    var chip = document.createElement('button');
+                    chip.className = 'bet-chip';
+                    chip.dataset.betVal = val;
+                    chip.textContent = labels[i];
+                    chip.setAttribute('title', '$' + val);
+                    chip.addEventListener('click', function() {
+                        if (typeof setPresetBetValue === 'function') {
+                            setPresetBetValue(val);
+                        } else {
+                            // fallback: set currentBet directly and update display
+                            if (typeof currentBet !== 'undefined') {
+                                currentBet = val;
+                                if (typeof updateBetDisplay === 'function') updateBetDisplay();
+                            }
+                        }
+                    });
+                    row.appendChild(chip);
+                });
+                betSection.appendChild(row);
+            })();
+
             showPageTransition(() => {
                 closeStatsModal();
                 document.getElementById('slotGameName').textContent = currentGame.name;
@@ -1282,6 +1321,8 @@
             const slotModalEl = document.getElementById('slotModal');
             slotModalEl.classList.remove('active');
             slotModalEl.removeAttribute('data-slot-theme');
+            // Capture last played game before clearing, so lobby can show resume banner
+            if (typeof captureLastPlayedGame === 'function') captureLastPlayedGame();
             currentGame = null;
             // Clean up reel strip animation loops
             reelStripData.forEach(data => {
@@ -1316,6 +1357,11 @@
                 ? String(currentBet)
                 : currentBet.toFixed(2);
             document.getElementById('betAmount').textContent = display;
+            // Sync bet chip active state
+            document.querySelectorAll('.bet-chip').forEach(function(chip) {
+                var v = parseFloat(chip.dataset.betVal);
+                chip.classList.toggle('bet-chip-active', v === (typeof currentBet !== 'undefined' ? currentBet : -1));
+            });
         }
 
 
@@ -1793,6 +1839,11 @@
             setTimeout(function() {
                 reelArea.classList.remove('reel-near-miss-nudge');
             }, 400);
+            // Near-miss sound
+            if (typeof SoundManager !== 'undefined' && typeof SoundManager.playNearMiss === 'function') {
+                var _nmProv = typeof getGameChromeStyle === 'function' ? getGameChromeStyle(currentGame) : 'ironreel';
+                SoundManager.playNearMiss(_nmProv);
+            }
         }
 
         // ── Spin History Rendering ────────────────────────────────────────────
@@ -2061,6 +2112,13 @@
                 _sessTotalBet += currentBet;
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
+                // Dynamic layer escalation
+                if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
+                    var _streak = typeof winStreak !== 'undefined' ? winStreak : 0;
+                    var _layer = _streak >= 4 ? 2 : _streak >= 2 ? 1 : 1;
+                    if (typeof currentBet !== 'undefined' && typeof winAmount !== 'undefined' && winAmount >= currentBet * 10) { _layer = 3; }
+                    SoundManager.playDynamicLayer(_layer);
+                }
                 // Tumble visual cascade for tumble/avalanche games
                 if (currentGame && (currentGame.bonusType === 'tumble' || currentGame.bonusType === 'avalanche')) {
                     setTimeout(function() { triggerTumbleCascade(currentGame); }, 60);
@@ -2144,6 +2202,10 @@
                 _sessSpins++;
                 _sessTotalBet += currentBet;
                 _updateSessionHud();
+                // Dynamic layer de-escalation
+                if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
+                    SoundManager.playDynamicLayer(0);
+                }
             }
             // Apply idle shimmer to all visible wild/scatter cells
             (function() {
@@ -5424,6 +5486,13 @@
                 _sessTotalBet += currentBet;
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
+                // Dynamic layer escalation
+                if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
+                    var _streak = typeof winStreak !== 'undefined' ? winStreak : 0;
+                    var _layer = _streak >= 4 ? 2 : _streak >= 2 ? 1 : 1;
+                    if (typeof currentBet !== 'undefined' && typeof winAmount !== 'undefined' && winAmount >= currentBet * 10) { _layer = 3; }
+                    SoundManager.playDynamicLayer(_layer);
+                }
                 // Tumble visual cascade for tumble/avalanche games
                 if (currentGame && (currentGame.bonusType === 'tumble' || currentGame.bonusType === 'avalanche')) {
                     setTimeout(function() { triggerTumbleCascade(currentGame); }, 60);
@@ -5487,6 +5556,10 @@
                 _sessSpins++;
                 _sessTotalBet += currentBet;
                 _updateSessionHud();
+                // Dynamic layer de-escalation
+                if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
+                    SoundManager.playDynamicLayer(0);
+                }
             }
             if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
 

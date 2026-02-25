@@ -8,6 +8,10 @@
         let currentSortMode = 'default';    // 'default' | 'vol_asc' | 'vol_desc'
         let searchQuery = '';                      // real-time game search (compound with other filters)
 
+        // Quick-resume banner state
+        var _resumeBannerTimer = null;
+        var _lastPlayedGameForResume = null;
+
 
         // ═══════════════════════════════════════════════════════
         // LOADING SKELETONS
@@ -111,8 +115,67 @@
         }
 
 
+        function showResumeBanner(game) {
+            if (!game) return;
+            // Remove existing banner
+            var old = document.getElementById('lobbyResumeBanner');
+            if (old) old.remove();
+            if (_resumeBannerTimer) { clearTimeout(_resumeBannerTimer); _resumeBannerTimer = null; }
+
+            var banner = document.createElement('div');
+            banner.id = 'lobbyResumeBanner';
+            banner.className = 'lobby-resume-banner';
+            banner.innerHTML =
+                '<span class="resume-icon">&#8629;</span>' +
+                '<span class="resume-label">Resume <strong>' + (game.name || 'Last Game') + '</strong></span>' +
+                '<span class="resume-x" id="resumeBannerX">&#x2715;</span>';
+
+            document.body.appendChild(banner);
+
+            // Slide in
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() { banner.classList.add('visible'); });
+            });
+
+            // Click banner body to resume
+            banner.addEventListener('click', function(e) {
+                if (e.target.id === 'resumeBannerX') return;
+                banner.classList.remove('visible');
+                setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+                if (_resumeBannerTimer) { clearTimeout(_resumeBannerTimer); _resumeBannerTimer = null; }
+                if (typeof openSlot === 'function') openSlot(game);
+            });
+
+            // X to dismiss
+            document.getElementById('resumeBannerX').addEventListener('click', function(e) {
+                e.stopPropagation();
+                banner.classList.remove('visible');
+                setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+                if (_resumeBannerTimer) { clearTimeout(_resumeBannerTimer); _resumeBannerTimer = null; }
+            });
+
+            // Auto-dismiss after 8s
+            _resumeBannerTimer = setTimeout(function() {
+                banner.classList.remove('visible');
+                setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+                _resumeBannerTimer = null;
+            }, 8000);
+        }
+
+        // Called from closeSlot in ui-slot.js to capture last played game before returning to lobby
+        function captureLastPlayedGame() {
+            if (typeof currentGame !== 'undefined' && currentGame) {
+                _lastPlayedGameForResume = currentGame;
+            }
+        }
+
         function renderGames() {
 
+            // Show resume banner if returning from a slot
+            if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
+                showResumeBanner(_lastPlayedGameForResume);
+                _lastPlayedGameForResume = null;
+            }
 
             // Inject search bar once — positioned before filter tabs
             if (!document.getElementById('lobbySearchBar')) {
