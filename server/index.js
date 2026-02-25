@@ -8,6 +8,10 @@ const { initDatabase } = require('./database');
 
 const app = express();
 
+// Trust Render's reverse proxy so rate-limiters and IP detection use the real
+// client IP rather than the load-balancer IP (which would bucket all users together)
+app.set('trust proxy', 1);
+
 // ─── Security Middleware ───
 app.use(helmet({
     contentSecurityPolicy: false, // Allow inline scripts for the casino client
