@@ -144,6 +144,8 @@
         // Post-auth initialization — runs after login or on page load if already authenticated
         function onPostAuthInit() {
             checkDailyBonusReset();
+            // Popups and engagement features only for verified (registered) users — not guests
+            if (!currentUser || currentUser.isGuest) return;
             const urlParams = new URLSearchParams(window.location.search);
             const suppressBonus = urlParams.get('qaTools') === '1' || urlParams.get('qaTools') === 'true'
                 || urlParams.get('noBonus') === '1' || urlParams.get('autoSpin') === '1';
