@@ -7,6 +7,7 @@
         let currentMechanicFilter = 'all'; // 'all' | 'tumble' | 'hold_win' | 'free_spins' | 'wilds' | 'jackpot'
         let currentSortMode = 'default';    // 'default' | 'vol_asc' | 'vol_desc'
         let searchQuery = '';                      // real-time game search (compound with other filters)
+        let _lobbySearchQuery = '';                // hide/show search query (Sprint 18 search bar)
 
         // Quick-resume banner state
         var _resumeBannerTimer = null;
@@ -323,6 +324,7 @@
                     const hotGames = games.filter(g => g.hot);
                     hotGamesDiv.innerHTML = hotGames.map(g => createGameCard(g)).join('');
                     renderFilteredGames();
+                    _injectLobbySearch();
                     renderRecentlyPlayed();
                     renderYouMightLike();
                     renderRecommendations(allGamesDiv.parentNode || document.getElementById('lobby') || allGamesDiv);
@@ -734,7 +736,7 @@
             const favIcon = favored ? '\u2764\uFE0F' : '\u2661';
             _seedCount(game.id, isHot || _hotIds.has(game.id));
             return `
-                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')" style="position:relative">
+                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
                     <button class="fav-btn${favored ? ' fav-active' : ''}" data-game-id="${game.id}" title="${favored ? 'Remove from favourites' : 'Add to favourites'}" onclick="event.stopPropagation(); (function(btn){var nowFav=toggleFavorite('${game.id}'); btn.textContent=nowFav?'\u2764\uFE0F':'\u2661'; btn.title=nowFav?'Remove from favourites':'Add to favourites'; btn.classList.add('fav-active'); setTimeout(function(){btn.classList.remove('fav-active');},350); updateFavTabBadge();})(this)">${favIcon}</button>
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
@@ -951,6 +953,8 @@
             // Update the "All Slots" count label
             const countEl = document.getElementById('allGamesCount');
             if (countEl) countEl.textContent = `${filtered.length} game${filtered.length !== 1 ? 's' : ''}`;
+            // Re-apply hide/show search filter after every render
+            if (typeof _applyLobbySearch === 'function') _applyLobbySearch();
         }
 
 
@@ -1159,6 +1163,93 @@
         // ═══════════════════════════════════════════════════════════
         // LOBBY SEARCH BAR + PROVIDER QUICK-LINKS
         // ═══════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════
+        // SPRINT 18 SEARCH BAR — hide/show filter (complements re-render search)
+        // ═══════════════════════════════════════════════════════════
+
+        function _injectLobbySearch() {
+          if (document.getElementById('lobbySearchWrap')) return;
+          var filtersEl = document.querySelector('.lobby-filters') ||
+                          document.querySelector('.filter-tabs') ||
+                          document.querySelector('.game-filters') ||
+                          document.getElementById('filterTabs');
+          if (!filtersEl) return;
+
+          var wrap = document.createElement('div');
+          wrap.id = 'lobbySearchWrap';
+          wrap.className = 'lobby-search-wrap';
+
+          var input = document.createElement('input');
+          input.type = 'search';
+          input.id = 'lobbySearchInput2';
+          input.className = 'lobby-search-input';
+          input.placeholder = 'Search games…';
+          input.autocomplete = 'off';
+          input.spellcheck = false;
+
+          var clearBtn = document.createElement('button');
+          clearBtn.id = 'lobbySearchClear2';
+          clearBtn.className = 'lobby-search-clear';
+          clearBtn.innerHTML = '✕';
+          clearBtn.title = 'Clear search';
+          clearBtn.type = 'button';
+
+          wrap.appendChild(input);
+          wrap.appendChild(clearBtn);
+
+          // Insert above filter tabs (guard against double-injection)
+          if (filtersEl.parentNode && !document.getElementById('lobbySearchWrap')) {
+            filtersEl.parentNode.insertBefore(wrap, filtersEl);
+          }
+
+          // No-results message (appended after game grid)
+          var noRes = document.getElementById('lobbySearchNoResults');
+          if (!noRes) {
+            noRes = document.createElement('div');
+            noRes.id = 'lobbySearchNoResults';
+            noRes.className = 'lobby-search-no-results';
+            noRes.textContent = 'No games match your search.';
+            if (filtersEl.parentNode) filtersEl.parentNode.appendChild(noRes);
+          }
+
+          var _searchDebounce = null;
+          input.addEventListener('input', function() {
+            clearTimeout(_searchDebounce);
+            _searchDebounce = setTimeout(function() {
+              _lobbySearchQuery = input.value.trim().toLowerCase();
+              wrap.classList.toggle('active', _lobbySearchQuery.length > 0);
+              input.classList.toggle('has-value', _lobbySearchQuery.length > 0);
+              _applyLobbySearch();
+            }, 150);
+          });
+
+          clearBtn.addEventListener('click', function() {
+            input.value = '';
+            _lobbySearchQuery = '';
+            wrap.classList.remove('active');
+            input.classList.remove('has-value');
+            _applyLobbySearch();
+            input.focus();
+          });
+        }
+
+        function _applyLobbySearch() {
+          var q = _lobbySearchQuery;
+          var noRes = document.getElementById('lobbySearchNoResults');
+          var cards = document.querySelectorAll('.game-card');
+          var visible = 0;
+          cards.forEach(function(card) {
+            if (!q) { card.style.display = ''; visible++; return; }
+            var nameEl = card.querySelector('.game-name, .card-title, h3, h4');
+            var name = (card.dataset.gameName || (nameEl ? nameEl.textContent : '') || '').toLowerCase();
+            var id   = (card.dataset.gameId   || '').toLowerCase();
+            var matches = name.includes(q) || id.includes(q);
+            card.style.display = matches ? '' : 'none';
+            if (matches) visible++;
+          });
+          if (noRes) noRes.classList.toggle('visible', q.length > 0 && visible === 0);
+        }
 
         function lobbyOnSearch(query) {
             lobbySearchQuery = query.trim().toLowerCase();

@@ -479,6 +479,17 @@
                 _apBtn.title = "Autoplay";
             }
         }
+        function _updateTurboBtn() {
+            var btn = document.getElementById('turboSpinBtn');
+            if (!btn) return;
+            if (window._turboSpinEnabled) {
+                btn.classList.add('turbo-on');
+                btn.title = 'Turbo: ON (click to disable)';
+            } else {
+                btn.classList.remove('turbo-on');
+                btn.title = 'Turbo spin (fast reels)';
+            }
+        }
         function clearReelAnimations(cells) {
             cells.forEach(cell => {
                 REEL_CELL_ANIMATION_CLASSES.forEach(cls => cell.classList.remove(cls));
@@ -1452,6 +1463,37 @@
                     document.addEventListener("click", function(e) {
                         if (!_apWrapper.contains(e.target)) _apPicker.classList.remove("open");
                     });
+                });
+                // — Turbo spin button —
+                (function _injectTurboBtn() {
+                    if (document.getElementById('turboSpinBtn')) return;
+                    window._turboSpinEnabled = false;
+                    try { if (localStorage.getItem('casinoTurboSpin') === '1') window._turboSpinEnabled = true; } catch(e) {}
+                    var _tBtn = document.createElement('button');
+                    _tBtn.id = 'turboSpinBtn';
+                    _tBtn.className = 'turbo-spin-btn';
+                    _tBtn.title = window._turboSpinEnabled ? 'Turbo: ON (click to disable)' : 'Turbo spin (fast reels)';
+                    _tBtn.innerHTML = '<span class="turbo-icon">⚡</span>TURBO';
+                    if (window._turboSpinEnabled) _tBtn.classList.add('turbo-on');
+                    _tBtn.addEventListener('click', function() {
+                        window._turboSpinEnabled = !window._turboSpinEnabled;
+                        _updateTurboBtn();
+                        var _rc = document.querySelector('.reels-container') || document.querySelector('.reels');
+                        if (_rc) _rc.classList.toggle('turbo-mode', window._turboSpinEnabled);
+                        try { localStorage.setItem('casinoTurboSpin', window._turboSpinEnabled ? '1' : '0'); } catch(e) {}
+                    });
+                    var _apBtn = document.getElementById('autoplayBtn');
+                    if (_apBtn && _apBtn.parentNode && _apBtn.parentNode.parentNode) {
+                        var _apWrapper = _apBtn.parentNode;
+                        _apWrapper.parentNode.insertBefore(_tBtn, _apWrapper.nextSibling);
+                    } else {
+                        var _sb2 = document.getElementById('spinBtn');
+                        if (_sb2 && _sb2.parentNode) _sb2.parentNode.appendChild(_tBtn);
+                    }
+                    if (window._turboSpinEnabled) {
+                        var _rc2 = document.querySelector('.reels-container') || document.querySelector('.reels');
+                        if (_rc2) _rc2.classList.add('turbo-mode');
+                    }
                 })();
                 // ── Touch gestures: tap or swipe-down on reels triggers spin ──
                 (function attachReelTouchGesture() {
@@ -1493,6 +1535,8 @@
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
             if (window._autoplayActive) { window._autoplayActive = false; window._autoplayRemaining = 0; window._autoplayStopping = false; _updateAutoplayBtn(); }
+            var _rcClose = document.querySelector('.reels-container') || document.querySelector('.reels');
+            if (_rcClose) _rcClose.classList.remove('turbo-mode');
 
             // Stop jackpot banner ticker and hide banner
             if (window._slotTimerInterval) { clearInterval(window._slotTimerInterval); window._slotTimerInterval = null; }
@@ -1882,6 +1926,10 @@
             spinning = true;
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
+            if (window._turboSpinEnabled) {
+                var _rcTurbo = document.querySelector('.reels-container') || document.querySelector('.reels');
+                if (_rcTurbo) _rcTurbo.classList.add('turbo-mode');
+            }
 
             updateSlotWinDisplay(0);
             // Add bg zoom effect during spin
