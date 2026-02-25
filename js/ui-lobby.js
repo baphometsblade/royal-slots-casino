@@ -345,23 +345,58 @@
 
 
         function startJackpotTicker() {
+            const fmt = v => '$' + Number(v).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            // Live display values — ticked up between fetches
+            const _live = { mini: 500, major: 2500, mega: 10000 };
+
             async function fetchAndUpdate() {
                 try {
                     const res = await fetch('/api/jackpot');
                     if (!res.ok) return;
                     const data = await res.json();
-                    const fmt = v => '$' + Number(v).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    const mini  = document.getElementById('jackpot-mini-amount');
-                    const major = document.getElementById('jackpot-major-amount');
-                    const mega  = document.getElementById('jackpot-mega-amount');
-                    if (mini)  mini.textContent  = fmt(data.mini  || 500);
-                    if (major) major.textContent = fmt(data.major || 2500);
-                    if (mega)  mega.textContent  = fmt(data.mega  || 10000);
+                    // Snap live values to server truth
+                    _live.mini  = Number(data.mini)  || 500;
+                    _live.major = Number(data.major) || 2500;
+                    _live.mega  = Number(data.mega)  || 10000;
                 } catch (_) {}
             }
+
+            // Inflate displayed values by a tiny random amount every 200ms
+            setInterval(function() {
+                _live.mini  += 0.01 + Math.random() * 0.02;
+                _live.major += 0.03 + Math.random() * 0.05;
+                _live.mega  += 0.10 + Math.random() * 0.15;
+                const mini  = document.getElementById('jackpot-mini-amount');
+                const major = document.getElementById('jackpot-major-amount');
+                const mega  = document.getElementById('jackpot-mega-amount');
+                if (mini)  mini.textContent  = fmt(_live.mini);
+                if (major) major.textContent = fmt(_live.major);
+                if (mega)  mega.textContent  = fmt(_live.mega);
+            }, 200);
+
+            // Sync with server every 10s
             fetchAndUpdate();
             setInterval(fetchAndUpdate, 10000);
+            startCardSpotlight();
             initLeaderboard();
+        }
+
+        // Random game-card spotlight — briefly highlights a random card every 3-5s
+        // to make the lobby feel alive. Idempotent: only one loop runs at a time.
+        let _spotlightRunning = false;
+        function startCardSpotlight() {
+            if (_spotlightRunning) return;
+            _spotlightRunning = true;
+            function _doSpotlight() {
+                const cards = document.querySelectorAll('.game-card');
+                if (cards.length > 0) {
+                    const card = cards[Math.floor(Math.random() * cards.length)];
+                    card.classList.add('game-card-spotlight');
+                    setTimeout(function() { card.classList.remove('game-card-spotlight'); }, 1400);
+                }
+                setTimeout(_doSpotlight, 3000 + Math.floor(Math.random() * 2000));
+            }
+            setTimeout(_doSpotlight, 5000); // First spotlight 5s after init
         }
 
 

@@ -1966,7 +1966,7 @@
 
             // Clear highlights
             getAllCells().forEach(function(cell) {
-                cell.classList.remove("reel-win-glow", "reel-wild-glow", "reel-scatter-glow", "reel-wild-expand");
+                cell.classList.remove("reel-win-glow", "reel-wild-glow", "reel-scatter-glow", "reel-wild-expand", "reel-wild-idle", "reel-scatter-idle");
             });
 
             // Highlight wilds and scatters
@@ -2073,6 +2073,25 @@
                     document.querySelectorAll('.reel-loss-droop').forEach(function(c) { c.classList.remove('reel-loss-droop'); });
                 }, 420);
             }
+            // Apply idle shimmer to all visible wild/scatter cells
+            (function() {
+                if (!game || !game.wildSymbol) return;
+                var _gc = getGridCols(game), _gr = getGridRows(game);
+                for (var _c = 0; _c < _gc; _c++) {
+                    for (var _r = 0; _r < _gr; _r++) {
+                        var _cellEl = document.getElementById('reel_' + _c + '_' + _r);
+                        if (!_cellEl) continue;
+                        var _sym = grid && grid[_c] && grid[_c][_r];
+                        if (!_sym) continue;
+                        if (typeof isWild === 'function' && isWild(_sym, game)) {
+                            _cellEl.classList.add('reel-wild-idle');
+                        } else if (typeof isScatter === 'function' && isScatter(_sym, game)) {
+                            _cellEl.classList.add('reel-scatter-idle');
+                        }
+                    }
+                }
+            })();
+
             if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
 
             // Promo engagement triggers
