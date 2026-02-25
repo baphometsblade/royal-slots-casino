@@ -308,13 +308,8 @@
                     isBigWin = winAmount >= currentBet * 3;
                     const totalSize = clusters.reduce((sum, cl) => sum + cl.size, 0);
                     message = `CLUSTER WIN! ${clusterCount} cluster${clusterCount > 1 ? 's' : ''} (${totalSize} symbols) = $${winAmount.toLocaleString()}!`;
-                    if (winAmount >= currentBet * 10) {
-                        playSound('megawin');
-                    } else if (winAmount >= currentBet * 3) {
-                        playSound('bigwin');
-                    } else {
-                        playSound('win');
-                    }
+                    { const _wm = currentBet > 0 ? winAmount / currentBet : 0;
+                      playSound(_wm >= WIN_TIER_EPIC_THRESHOLD ? 'jackpot' : _wm >= WIN_TIER_MEGA_THRESHOLD ? 'megawin' : _wm >= WIN_TIER_BIG_THRESHOLD ? 'bigwin' : 'win'); }
                     showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 } else {
                     message = 'No clusters. Try again.';
@@ -390,13 +385,8 @@
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
                     }
 
-                    if (winAmount >= currentBet * 10) {
-                        playSound('megawin');
-                    } else if (winAmount >= currentBet * 3) {
-                        playSound('bigwin');
-                    } else {
-                        playSound('win');
-                    }
+                    { const _wm = currentBet > 0 ? winAmount / currentBet : 0;
+                      playSound(_wm >= WIN_TIER_EPIC_THRESHOLD ? 'jackpot' : _wm >= WIN_TIER_MEGA_THRESHOLD ? 'megawin' : _wm >= WIN_TIER_BIG_THRESHOLD ? 'bigwin' : 'win'); }
                     showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 } else {
                     message = 'No winning lines. Try again.';
@@ -448,11 +438,8 @@
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
                     }
 
-                    if (winAmount >= currentBet * 5) {
-                        playSound('bigwin');
-                    } else {
-                        playSound('win');
-                    }
+                    { const _wm = currentBet > 0 ? winAmount / currentBet : 0;
+                      playSound(_wm >= WIN_TIER_EPIC_THRESHOLD ? 'jackpot' : _wm >= WIN_TIER_MEGA_THRESHOLD ? 'megawin' : _wm >= WIN_TIER_BIG_THRESHOLD ? 'bigwin' : 'win'); }
                     showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                     getAllCells().forEach(cell => {
                         cell.classList.add('reel-win-glow');

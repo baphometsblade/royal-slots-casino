@@ -1984,10 +1984,14 @@
                 }, 400);
 
                 const message = details.message || ("WIN! $" + winAmount.toLocaleString() + "!");
-                if (winAmount >= currentBet * 20) {
-                    playProviderSound("bigwin", currentGame);
-                } else {
-                    playProviderSound("win", currentGame);
+                {
+                    const _wm = currentBet > 0 ? winAmount / currentBet : 0;
+                    playProviderSound(
+                        _wm >= WIN_TIER_EPIC_THRESHOLD ? 'jackpot' :
+                        _wm >= WIN_TIER_MEGA_THRESHOLD ? 'megawin' :
+                        _wm >= WIN_TIER_BIG_THRESHOLD  ? 'bigwin'  : 'win',
+                        currentGame
+                    );
                 }
                 showMessage(message, "win");
 
