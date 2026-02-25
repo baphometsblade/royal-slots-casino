@@ -1703,7 +1703,17 @@
             function tick(now) {
                 const elapsed = now - startTime;
                 const t = Math.min(elapsed / durationMs, 1);
-                const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+                // Ease-out with subtle sine-wave overshoot in last 8% for a "landing" feel
+                var eased;
+                if (t < 0.92) {
+                    const u = t / 0.92;
+                    eased = 1 - Math.pow(1 - u, 3);
+                    eased = eased * 0.92;
+                } else {
+                    const u = (t - 0.92) / 0.08;
+                    eased = 0.92 + 0.08 * (1 + 0.02 * Math.sin(u * Math.PI));
+                    if (t >= 1) eased = 1.0;
+                }
                 const current = fromAmount + delta * eased;
                 const formatted = '$' + Number(current).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -1992,10 +2002,24 @@
 
                 // Win entrance animation on highlighted cells
                 const winCells = document.querySelectorAll(".reel-win-glow, .reel-big-win-glow");
-                winCells.forEach(function(cell) { cell.classList.add("reel-win-entrance"); });
+                winCells.forEach(function(cell) {
+                    // Stagger by column: parse column index from id "reel_C_R"
+                    var colIdx = 0;
+                    if (cell.dataset && cell.dataset.col !== undefined) {
+                        colIdx = parseInt(cell.dataset.col, 10) || 0;
+                    } else if (cell.id) {
+                        const parts = cell.id.split('_');
+                        if (parts.length >= 2) colIdx = parseInt(parts[1], 10) || 0;
+                    }
+                    cell.style.animationDelay = (colIdx * 60) + 'ms';
+                    cell.classList.add("reel-win-entrance");
+                });
                 setTimeout(function() {
-                    document.querySelectorAll(".reel-win-entrance").forEach(function(cell) { cell.classList.remove("reel-win-entrance"); });
-                }, 400);
+                    document.querySelectorAll(".reel-win-entrance").forEach(function(cell) {
+                        cell.classList.remove("reel-win-entrance");
+                        cell.style.animationDelay = '';
+                    });
+                }, 600);
 
                 const message = details.message || ("WIN! $" + winAmount.toLocaleString() + "!");
                 {
@@ -2042,6 +2066,12 @@
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
                 detectAndShowNearMiss(grid, game);
+                // Loss droop: briefly dim all reel cells
+                const _droopCells = document.querySelectorAll('.reel-cell');
+                _droopCells.forEach(function(c) { c.classList.add('reel-loss-droop'); });
+                setTimeout(function() {
+                    document.querySelectorAll('.reel-loss-droop').forEach(function(c) { c.classList.remove('reel-loss-droop'); });
+                }, 420);
             }
             if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
 

@@ -11747,3 +11747,17 @@
     grid-column: 1 / -1;
 }
 .search-no-results strong { color: rgba(255,255,255,0.7); }
+
+/* ═══════════════════════════════════════════════════════════
+   WIN JUICE — Loss Droop
+   ═══════════════════════════════════════════════════════════ */
+
+/* Loss droop: brief dim + desaturate on complete loss */
+@keyframes lossDropp {
+    0%   { opacity: 1; filter: saturate(1) brightness(1); }
+    35%  { opacity: 0.72; filter: saturate(0.25) brightness(0.82); }
+    100% { opacity: 1; filter: saturate(1) brightness(1); }
+}
+.reel-loss-droop {
+    animation: lossDropp 380ms ease-out both;
+}
