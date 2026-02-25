@@ -1214,6 +1214,30 @@
 
                 var slotModalContent = document.querySelector('.slot-modal-fullscreen');
                 if (slotModalContent) slotModalContent.appendChild(overlay);
+
+                // ── Touch gestures: tap or swipe-down on reels triggers spin ──
+                (function attachReelTouchGesture() {
+                    const reelEl = document.querySelector('.reels-container') || document.querySelector('.reels');
+                    if (!reelEl) return;
+                    let touchStartY = 0;
+                    let touchStartX = 0;
+                    reelEl.addEventListener('touchstart', function(e) {
+                        touchStartY = e.touches[0].clientY;
+                        touchStartX = e.touches[0].clientX;
+                    }, { passive: true });
+                    reelEl.addEventListener('touchend', function(e) {
+                        const dy = e.changedTouches[0].clientY - touchStartY;
+                        const dx = e.changedTouches[0].clientX - touchStartX;
+                        const dist = Math.sqrt(dy * dy + dx * dx);
+                        // Tap (minimal movement) or swipe-down (dy >= 30, more vertical than horizontal)
+                        const isTap = dist < 15;
+                        const isSwipeDown = dy >= 30 && Math.abs(dy) > Math.abs(dx);
+                        if (isTap || isSwipeDown) {
+                            const btn = document.getElementById('spinBtn');
+                            if (btn && !btn.disabled) btn.click();
+                        }
+                    }, { passive: true });
+                })();
             });
         }
 
