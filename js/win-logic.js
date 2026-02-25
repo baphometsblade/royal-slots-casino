@@ -649,6 +649,7 @@
                         message += ` +${capped} EXTRA FREE SPINS!`;
                         updateFreeSpinsDisplay();
                         showBonusEffect(`+${capped} FREE SPINS!`, '#fbbf24');
+                        if (typeof showRetriggerBanner === 'function') showRetriggerBanner(capped);
                     }
                 }
             }

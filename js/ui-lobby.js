@@ -183,6 +183,7 @@
                     hotGamesDiv.innerHTML = hotGames.map(g => createGameCard(g)).join('');
                     renderFilteredGames();
                     renderRecentlyPlayed();
+                    renderYouMightLike();
                 }, 200);
             });
         }
@@ -209,6 +210,84 @@
             const recentGames = recent.map(id => games.find(g => g.id === id)).filter(Boolean);
             section.style.display = '';
             container.innerHTML = recentGames.map(g => createGameCard(g)).join('');
+            renderYouMightLike();
+        }
+
+        function renderYouMightLike() {
+            // Clean up stale section if games list not ready
+            if (!games || games.length === 0) return;
+
+            // Get recently played IDs
+            let recentIds = [];
+            try { recentIds = JSON.parse(localStorage.getItem(RECENTLY_PLAYED_KEY)) || []; } catch(e) {}
+            if (recentIds.length < 2) {
+                // Not enough play history — hide the section
+                const old = document.getElementById('youMightLikeSection');
+                if (old) old.style.display = 'none';
+                return;
+            }
+
+            // Determine dominant mechanic category from recent games
+            const recentGames = recentIds.map(id => games.find(g => g.id === id)).filter(Boolean);
+            const categoryCounts = {};
+            recentGames.forEach(g => {
+                const cat = _getMechanicCategory(g);
+                categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+            });
+            // Pick the most-played category (excluding 'other')
+            let topCat = 'other';
+            let topCount = 0;
+            Object.entries(categoryCounts).forEach(([cat, count]) => {
+                if (cat !== 'other' && count > topCount) { topCat = cat; topCount = count; }
+            });
+            // If all are 'other', pick any
+            if (topCat === 'other') {
+                topCat = Object.keys(categoryCounts)[0] || 'other';
+            }
+
+            // Find candidate games: same mechanic, not recently played
+            const recentSet = new Set(recentIds);
+            const candidates = games.filter(g => !recentSet.has(g.id) && _getMechanicCategory(g) === topCat);
+
+            if (candidates.length === 0) {
+                const old = document.getElementById('youMightLikeSection');
+                if (old) old.style.display = 'none';
+                return;
+            }
+
+            // Shuffle and take up to 6
+            const shuffled = candidates.slice().sort(() => Math.random() - 0.5).slice(0, 6);
+
+            const catLabels = {
+                tumble: '🌊 Tumble Games', hold_win: '🎯 Hold & Win', free_spins: '🎁 Free Spins',
+                wilds: '🌟 Wild Games', jackpot: '🏆 Jackpot Games', other: '🎰 Similar Games'
+            };
+            const label = catLabels[topCat] || 'Similar Games';
+            const becauseGame = recentGames[0] ? recentGames[0].name : 'similar games';
+
+            // Inject or update section
+            let section = document.getElementById('youMightLikeSection');
+            if (!section) {
+                section = document.createElement('div');
+                section.id = 'youMightLikeSection';
+                // Insert after recentlyPlayedSection, or before allGames header
+                const recentSec = document.getElementById('recentlyPlayedSection');
+                if (recentSec && recentSec.parentNode) {
+                    recentSec.parentNode.insertBefore(section, recentSec.nextSibling);
+                } else {
+                    const allGames = document.getElementById('allGames');
+                    if (allGames && allGames.parentNode) allGames.parentNode.insertBefore(section, allGames);
+                }
+            }
+
+            section.style.display = '';
+            section.innerHTML = `
+                <div class="section-header">
+                    <h3 class="section-title" style="font-size:14px">${label}<span style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.35);margin-left:8px;font-style:italic;">because you play ${becauseGame}</span></h3>
+                </div>
+                <div class="recently-played-scroll" id="youMightLikeGames">
+                    ${shuffled.map(g => createGameCard(g)).join('')}
+                </div>`;
         }
 
 

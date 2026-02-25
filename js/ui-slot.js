@@ -848,6 +848,21 @@
 
 
         // ═══ Reel Anticipation ═══
+        // Count scatter symbols on all columns up to and including maxColIdx.
+        // Used for real scatter anticipation tension on intermediate reels.
+        function _countScattersOnCols(maxColIdx, grid, game) {
+            if (!grid || !game || !game.scatterSymbol) return 0;
+            const rows = getGridRows(game);
+            let count = 0;
+            for (let c = 0; c <= maxColIdx; c++) {
+                if (!grid[c]) continue;
+                for (let r = 0; r < rows; r++) {
+                    if (grid[c][r] === game.scatterSymbol) count++;
+                }
+            }
+            return count;
+        }
+
         function checkAnticipation(colIdx, grid) {
             if (colIdx < 1 || !grid || !currentGame) return false;
             const rows = currentGame.gridRows || 3;
@@ -1594,14 +1609,34 @@
             // Stop each column one by one with decel + bounce
             stopDelays.forEach((delay, colIdx) => {
                 setTimeout(() => {
-                    // Trigger reel anticipation on last reel(s) when 2 matching middle symbols seen
-                    if (!turboMode && colIdx === cols - 1 && checkAnticipation(colIdx, finalGrid)) {
-                        const colEl = document.getElementById('reelCol' + colIdx);
-                        if (colEl) {
-                            colEl.classList.add('reel-anticipation');
-                            setTimeout(function() { colEl.classList.remove('reel-anticipation'); }, 700);
+                       // ── Enhanced scatter anticipation ──
+                    // Remove tension from this column as it stops
+                    const _stopEl = document.getElementById('reelCol' + colIdx);
+                    if (_stopEl) _stopEl.classList.remove('reel-scatter-tension', 'reel-scatter-primed');
+
+                    if (!turboMode && spinGame && spinGame.scatterSymbol) {
+                        const _scattersSoFar = _countScattersOnCols(colIdx, finalGrid, spinGame);
+
+                        if (_scattersSoFar >= 2 && colIdx < cols - 1) {
+                            // 2+ scatters confirmed — apply tension to all remaining spinning reels
+                            for (let _rem = colIdx + 1; _rem < cols; _rem++) {
+                                const _remEl = document.getElementById('reelCol' + _rem);
+                                if (_remEl) {
+                                    _remEl.classList.remove('reel-scatter-tension', 'reel-scatter-primed');
+                                    _remEl.classList.add(_scattersSoFar >= 3 ? 'reel-scatter-primed' : 'reel-scatter-tension');
+                                }
+                            }
+                            if (typeof playSound === 'function') playSound('scatter');
                         }
-                        if (typeof playSound === 'function') playSound('scatter');
+
+                        // Legacy last-reel anticipation (symbol match) — keep as fallback
+                        if (colIdx === cols - 1 && checkAnticipation(colIdx, finalGrid)) {
+                            const _lastEl = document.getElementById('reelCol' + colIdx);
+                            if (_lastEl) {
+                                _lastEl.classList.add('reel-anticipation');
+                                setTimeout(function() { _lastEl.classList.remove('reel-anticipation'); }, 700);
+                            }
+                        }
                     }
                     animateReelStop(colIdx, finalGrid[colIdx], null, cols, finalGrid, spinGame, () => {
                         if (serverResult) {
@@ -2204,6 +2239,34 @@
                 hideFreeSpinsDisplay();
             }, 3000);
         }
+
+        // Shows a prominent "+N FREE SPINS!" retrigger banner on the FS HUD
+        window.showRetriggerBanner = function(extraSpins) {
+            var overlay = document.getElementById('freeSpinsOverlay');
+            if (!overlay) return;
+            var prev = overlay.querySelector('.fs-retrigger-banner');
+            if (prev) prev.remove();
+            var banner = document.createElement('div');
+            banner.className = 'fs-retrigger-banner';
+            banner.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);'
+                + 'background:linear-gradient(135deg,#ff6d00,#ffd740);color:#1a1a2e;font-weight:900;'
+                + 'font-size:clamp(20px,5vw,32px);letter-spacing:2px;border-radius:12px;'
+                + 'padding:14px 28px;text-align:center;z-index:200;white-space:nowrap;'
+                + 'box-shadow:0 4px 32px rgba(255,109,0,0.7);pointer-events:none;'
+                + 'transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease;opacity:0;';
+            banner.textContent = '+' + extraSpins + ' FREE SPINS!';
+            overlay.style.position = 'relative';
+            overlay.appendChild(banner);
+            requestAnimationFrame(function() { requestAnimationFrame(function() {
+                banner.style.transform = 'translate(-50%,-50%) scale(1)';
+                banner.style.opacity = '1';
+            }); });
+            setTimeout(function() {
+                banner.style.transform = 'translate(-50%,-50%) scale(0.8)';
+                banner.style.opacity = '0';
+                setTimeout(function() { if (banner.parentNode) banner.remove(); }, 350);
+            }, 2200);
+        };
 
 
         function triggerRespin(reelIndex, currentSymbols, game) {
@@ -3231,6 +3294,10 @@
             if (colIdx === cols - 1) {
                 if (spinInterval) clearInterval(spinInterval);
                 currentGrid = finalGrid;
+                // Clear any lingering scatter tension from all reels
+                document.querySelectorAll('.reel-scatter-tension, .reel-scatter-primed').forEach(function(el) {
+                    el.classList.remove('reel-scatter-tension', 'reel-scatter-primed');
+                });
                 currentReels = flattenGrid(finalGrid);
                 renderGrid(finalGrid, game);
                 setTimeout(onComplete, REEL_DECEL_DURATION + REEL_BOUNCE_DURATION + 100);
