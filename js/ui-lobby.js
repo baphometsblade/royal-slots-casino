@@ -744,6 +744,7 @@
                         ${topTag}
                         ${jackpotBadge}
                         <div class="card-players-live" data-game="${game.id}"> ${_getLiveCount(game.id)} playing</div>
+                        ${(function() { try { var _v = parseFloat(localStorage.getItem('personalBest_' + game.id) || '0'); if (_v > 0) { var _disp = _v >= 1000 ? ('$' + (_v/1000).toFixed(1) + 'K') : ('$' + Math.round(_v)); return '<div class="card-personal-best">\u{1F3C6} PB ' + _disp + '</div>'; } } catch(e) {} return ''; })()}
                         <div class="game-vol-badge ${volClass}" title="Volatility: ${vol}">
                             ${dotsHtml}
                         </div>

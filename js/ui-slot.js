@@ -1011,6 +1011,20 @@
             }
 
             currentBet = currentGame.minBet;
+            // Restore last used bet for this game
+            (function() {
+                try {
+                    var _saved = localStorage.getItem('lastBet_' + game.id);
+                    if (_saved) {
+                        var _parsed = parseFloat(_saved);
+                        var _min = game.minBet || 0.20;
+                        var _max = game.maxBet || 500;
+                        if (!isNaN(_parsed) && _parsed >= _min && _parsed <= _max) {
+                            currentBet = _parsed;
+                        }
+                    }
+                } catch(e) {}
+            })();
             refreshBetControls();
 
             // Apply game-specific theming
@@ -1703,6 +1717,10 @@
             expandingWildRespinsLeft = 0;
 
             playProviderSound('spin', currentGame);
+            // Persist last bet for this game
+            if (currentGame && currentGame.id && typeof currentBet !== 'undefined') {
+                try { localStorage.setItem('lastBet_' + currentGame.id, String(currentBet)); } catch(e) {}
+            }
             spinning = true;
             resetIdleTimer(); // reset idle pulse at spin start
             updateSlotWinDisplay(0);
@@ -2226,7 +2244,7 @@
                 _updateSessionHud();
                 // Dynamic layer escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
-                    var _streak = typeof winStreak !== 'undefined' ? winStreak : 0;
+                    var _streak = window._winStreak || 0;
                     var _layer = _streak >= 4 ? 2 : _streak >= 2 ? 1 : 1;
                     if (typeof currentBet !== 'undefined' && typeof winAmount !== 'undefined' && winAmount >= currentBet * 10) { _layer = 3; }
                     SoundManager.playDynamicLayer(_layer);
@@ -2316,6 +2334,15 @@
                 if (typeof addPlayerWinToTicker === 'function' && typeof winAmount !== 'undefined' && typeof currentBet !== 'undefined' && winAmount >= currentBet * 10) {
                     var _tickerGame = (currentGame && currentGame.name) ? currentGame.name : 'a slot';
                     addPlayerWinToTicker(winAmount, _tickerGame);
+                }
+
+                // Save personal best win for this game
+                if (currentGame && currentGame.id && typeof winAmount !== 'undefined' && winAmount > 0) {
+                    try {
+                        var _pbKey = 'personalBest_' + currentGame.id;
+                        var _prevBest = parseFloat(localStorage.getItem(_pbKey) || '0');
+                        if (winAmount > _prevBest) localStorage.setItem(_pbKey, String(winAmount));
+                    } catch(e) {}
                 }
 
                 // Win toast notifications
@@ -5655,7 +5682,7 @@
                 _updateSessionHud();
                 // Dynamic layer escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
-                    var _streak = typeof winStreak !== 'undefined' ? winStreak : 0;
+                    var _streak = window._winStreak || 0;
                     var _layer = _streak >= 4 ? 2 : _streak >= 2 ? 1 : 1;
                     if (typeof currentBet !== 'undefined' && typeof winAmount !== 'undefined' && winAmount >= currentBet * 10) { _layer = 3; }
                     SoundManager.playDynamicLayer(_layer);
@@ -5731,6 +5758,15 @@
                 if (typeof addPlayerWinToTicker === 'function' && typeof winAmount !== 'undefined' && typeof currentBet !== 'undefined' && winAmount >= currentBet * 10) {
                     var _tickerGame = (currentGame && currentGame.name) ? currentGame.name : 'a slot';
                     addPlayerWinToTicker(winAmount, _tickerGame);
+                }
+
+                // Save personal best win for this game
+                if (currentGame && currentGame.id && typeof winAmount !== 'undefined' && winAmount > 0) {
+                    try {
+                        var _pbKey = 'personalBest_' + currentGame.id;
+                        var _prevBest = parseFloat(localStorage.getItem(_pbKey) || '0');
+                        if (winAmount > _prevBest) localStorage.setItem(_pbKey, String(winAmount));
+                    } catch(e) {}
                 }
 
                 // Win toast notifications
