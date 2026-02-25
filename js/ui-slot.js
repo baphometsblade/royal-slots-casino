@@ -979,6 +979,20 @@
                 betSection.appendChild(row);
             })();
 
+            // Wire hover sounds to slot control buttons
+            (function() {
+                var _hoverBtns = ['spinBtn', 'betUpBtn', 'betDownBtn', 'turboBtn'];
+                _hoverBtns.forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (!el) return;
+                    el.addEventListener('mouseenter', function() {
+                        if (typeof SoundManager !== 'undefined' && typeof SoundManager.playHoverSound === 'function') {
+                            SoundManager.playHoverSound();
+                        }
+                    });
+                });
+            })();
+
             showPageTransition(() => {
                 closeStatsModal();
                 document.getElementById('slotGameName').textContent = currentGame.name;
@@ -2276,6 +2290,23 @@
                     setTimeout(function() { showBigWinCelebration(winAmount); }, 800);
                 }
 
+                // Balance win flash
+                (function() {
+                    var _bEl = document.getElementById('headerBalance') || document.getElementById('balanceDisplay') || document.querySelector('.balance-value');
+                    if (_bEl) {
+                        _bEl.classList.remove('balance-flash-win', 'balance-flash-loss');
+                        void _bEl.offsetWidth;
+                        _bEl.classList.add('balance-flash-win');
+                        setTimeout(function() { _bEl.classList.remove('balance-flash-win'); }, 650);
+                    }
+                })();
+
+                // Add big player wins to lobby ticker
+                if (typeof addPlayerWinToTicker === 'function' && typeof winAmount !== 'undefined' && typeof currentBet !== 'undefined' && winAmount >= currentBet * 10) {
+                    var _tickerGame = (currentGame && currentGame.name) ? currentGame.name : 'a slot';
+                    addPlayerWinToTicker(winAmount, _tickerGame);
+                }
+
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
@@ -2293,6 +2324,16 @@
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     SoundManager.playDynamicLayer(0);
                 }
+                // Balance loss flash
+                (function() {
+                    var _bEl = document.getElementById('headerBalance') || document.getElementById('balanceDisplay') || document.querySelector('.balance-value');
+                    if (_bEl) {
+                        _bEl.classList.remove('balance-flash-win', 'balance-flash-loss');
+                        void _bEl.offsetWidth;
+                        _bEl.classList.add('balance-flash-loss');
+                        setTimeout(function() { _bEl.classList.remove('balance-flash-loss'); }, 550);
+                    }
+                })();
             }
             // Apply idle shimmer to all visible wild/scatter cells
             (function() {
@@ -5637,6 +5678,23 @@
                     setTimeout(function() { showBigWinCelebration(winAmount); }, 800);
                 }
 
+                // Balance win flash
+                (function() {
+                    var _bEl = document.getElementById('headerBalance') || document.getElementById('balanceDisplay') || document.querySelector('.balance-value');
+                    if (_bEl) {
+                        _bEl.classList.remove('balance-flash-win', 'balance-flash-loss');
+                        void _bEl.offsetWidth;
+                        _bEl.classList.add('balance-flash-win');
+                        setTimeout(function() { _bEl.classList.remove('balance-flash-win'); }, 650);
+                    }
+                })();
+
+                // Add big player wins to lobby ticker
+                if (typeof addPlayerWinToTicker === 'function' && typeof winAmount !== 'undefined' && typeof currentBet !== 'undefined' && winAmount >= currentBet * 10) {
+                    var _tickerGame = (currentGame && currentGame.name) ? currentGame.name : 'a slot';
+                    addPlayerWinToTicker(winAmount, _tickerGame);
+                }
+
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
@@ -5648,6 +5706,16 @@
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     SoundManager.playDynamicLayer(0);
                 }
+                // Balance loss flash
+                (function() {
+                    var _bEl = document.getElementById('headerBalance') || document.getElementById('balanceDisplay') || document.querySelector('.balance-value');
+                    if (_bEl) {
+                        _bEl.classList.remove('balance-flash-win', 'balance-flash-loss');
+                        void _bEl.offsetWidth;
+                        _bEl.classList.add('balance-flash-loss');
+                        setTimeout(function() { _bEl.classList.remove('balance-flash-loss'); }, 550);
+                    }
+                })();
             }
             if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
 

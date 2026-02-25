@@ -193,6 +193,59 @@
             }
         }
 
+        function renderRecommendations(container) {
+            // Need recently played data
+            var rpRaw = localStorage.getItem(typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'recentlyPlayed');
+            var rpIds = [];
+            try { rpIds = JSON.parse(rpRaw) || []; } catch(e) {}
+            if (rpIds.length < 2) return; // Not enough history
+
+            var allGames = typeof GAMES !== 'undefined' ? GAMES : [];
+            var rpGames = rpIds.slice(0, 5).map(function(id) {
+                return allGames.find(function(g) { return g.id === id; });
+            }).filter(Boolean);
+            if (rpGames.length < 2) return;
+
+            // Collect providers and bonusTypes from recent plays
+            var likedProviders = {};
+            var likedBonus = {};
+            rpGames.forEach(function(g) {
+                if (g.provider) likedProviders[g.provider] = (likedProviders[g.provider] || 0) + 1;
+                if (g.bonusType) likedBonus[g.bonusType] = (likedBonus[g.bonusType] || 0) + 1;
+            });
+
+            // Score all games by affinity
+            var rpIdSet = new Set(rpIds);
+            var scored = allGames.filter(function(g) { return !rpIdSet.has(g.id); }).map(function(g) {
+                var score = 0;
+                if (g.provider && likedProviders[g.provider]) score += likedProviders[g.provider] * 2;
+                if (g.bonusType && likedBonus[g.bonusType]) score += likedBonus[g.bonusType];
+                return { game: g, score: score };
+            }).filter(function(x) { return x.score > 0; });
+            scored.sort(function(a, b) { return b.score - a.score; });
+
+            var picks = scored.slice(0, 4).map(function(x) { return x.game; });
+            if (picks.length === 0) return;
+
+            var row = document.createElement('div');
+            row.className = 'lobby-recommendations';
+            row.innerHTML = '<div class="lobby-rec-label">Recommended for you</div>';
+            var chips = document.createElement('div');
+            chips.className = 'lobby-rec-games';
+            picks.forEach(function(g) {
+                var chip = document.createElement('div');
+                chip.className = 'lobby-rec-chip';
+                chip.textContent = g.name || g.id;
+                chip.addEventListener('click', function() {
+                    if (typeof openSlot === 'function') openSlot(g.id);
+                });
+                chips.appendChild(chip);
+            });
+            row.appendChild(chips);
+            container.appendChild(row);
+        }
+
+
         function renderGames() {
 
             // Show resume banner if returning from a slot
@@ -272,6 +325,7 @@
                     renderFilteredGames();
                     renderRecentlyPlayed();
                     renderYouMightLike();
+                    renderRecommendations(allGamesDiv.parentNode || document.getElementById('lobby') || allGamesDiv);
                     renderBestWins();
                     // Start live-count tick once, persists across re-renders
                     if (!window._liveCountsInterval) {
@@ -1023,6 +1077,35 @@
             // Force reflow then re-apply
             void content.offsetWidth;
             content.style.animation = '';
+        }
+
+
+        /**
+         * Called from ui-slot.js when a real player win >= 10x bet occurs.
+         * Prepends the win to the live ticker with amber colour so it stands out.
+         */
+        function addPlayerWinToTicker(amount, gameName) {
+            var ticker = document.querySelector('.win-ticker-inner') || document.getElementById('tickerContent');
+            if (!ticker) return;
+            var username = (typeof currentUser !== 'undefined' && currentUser && currentUser.username)
+                ? currentUser.username : 'You';
+            var formatted = typeof amount === 'number'
+                ? '$' + amount.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                : '$' + amount;
+            var span = document.createElement('span');
+            span.className = 'ticker-item ticker-player-win';
+            span.textContent = '🏆 ' + username + ' won ' + formatted + ' on ' + gameName + '!';
+            // Prepend so it appears first; separate with bullet
+            var sep = document.createElement('span');
+            sep.className = 'ticker-sep';
+            sep.textContent = ' · ';
+            ticker.insertBefore(sep, ticker.firstChild);
+            ticker.insertBefore(span, ticker.firstChild);
+            // Auto-remove after 60 seconds so ticker stays fresh
+            setTimeout(function() {
+                if (span.parentNode) span.parentNode.removeChild(span);
+                if (sep.parentNode) sep.parentNode.removeChild(sep);
+            }, 60000);
         }
 
 
