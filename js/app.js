@@ -123,24 +123,6 @@
         }
 
 
-        function handleSwipe() {
-            const xDiff = touchEndX - touchStartX;
-            const yDiff = touchEndY - touchStartY;
-
-            // Check if it's a horizontal swipe (game navigation)
-            if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                if (Math.abs(xDiff) > MIN_SWIPE_DISTANCE) {
-                    // Left swipe - could trigger "next games"
-                    // Right swipe - could trigger "previous games"
-                }
-            }
-            // Vertical swipe (scroll through sections)
-            else if (Math.abs(yDiff) > MIN_SWIPE_DISTANCE) {
-                // Can be used for smooth scrolling between sections
-            }
-        }
-
-
         // Post-auth initialization — runs after login or on page load if already authenticated
         function onPostAuthInit() {
             checkDailyBonusReset();

@@ -5,8 +5,6 @@
         // ── Spin History State ──────────────────────────────────
         let spinHistory = []; // [{win, bet, isNearMiss, timestamp}, ...]
         const SPIN_HISTORY_MAX = 15;
-        var _lowBalanceWarnCount = 0;
-
         // Build symbol image HTML for any game symbol
         function getSymbolHtml(symbolName, gameId) {
             var useAnimated = window.appSettings &&
