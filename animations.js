@@ -568,6 +568,10 @@ function triggerCinematicWinSequence(winMultiplier, winAmount, game, winningCell
         if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
             SoundManager.playSoundEvent(tier === 'big' ? 'bigwin' : tier, providerKey);
         }
+        // Jackpot coin shower (fires 300ms after win text slams in)
+        if (tier === 'jackpot' && typeof triggerCoinShower === 'function') {
+            setTimeout(triggerCoinShower, 300);
+        }
     }, timeline);
     timeline += (typeof CINEMATIC_TEXT_SLAM !== 'undefined' ? CINEMATIC_TEXT_SLAM : 300) + 200;
 
@@ -634,4 +638,33 @@ function triggerCinematicWinSequence(winMultiplier, winAmount, game, winningCell
         hideCinematicVignette();
         remove3DWinDepth(allCells);
     }, timeline + (typeof CINEMATIC_FADE_BACK !== 'undefined' ? CINEMATIC_FADE_BACK : 500));
+}
+
+/**
+ * Spawns animated coin-rain particles for jackpot celebrations.
+ * CSS class .coin-rain-particle + @keyframes coinFall must exist in styles.css (they do).
+ * @param {number} count - Number of coins to spawn (default 30)
+ */
+function triggerCoinShower(count) {
+    var q = (typeof appSettings !== 'undefined' && appSettings.animationQuality) || 'high';
+    if (q === 'off' || q === 'low') return;
+    var n = count || (q === 'ultra' ? 40 : q === 'high' ? 30 : 18);
+    var coins = ['🪙', '💰', '💎', '⭐', '🌟'];
+    for (var i = 0; i < n; i++) {
+        (function(idx) {
+            setTimeout(function() {
+                var el = document.createElement('div');
+                el.className = 'coin-rain-particle';
+                el.textContent = coins[Math.floor(Math.random() * coins.length)];
+                var leftPct = 5 + Math.random() * 90;
+                el.style.left = leftPct + 'vw';
+                var dur = 1.4 + Math.random() * 1.8;
+                el.style.animationDuration = dur + 's';
+                el.style.animationDelay = '0s';
+                el.style.fontSize = (16 + Math.random() * 14) + 'px';
+                document.body.appendChild(el);
+                setTimeout(function() { if (el.parentNode) el.remove(); }, (dur + 0.2) * 1000);
+            }, idx * 60 + Math.random() * 80);
+        })(i);
+    }
 }

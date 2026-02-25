@@ -1772,6 +1772,63 @@
                             }
                         }
                     }
+                    // Wire reel-stop sound
+                    if (typeof SoundManager !== 'undefined' && typeof SoundManager.playReelStop === 'function') {
+                        var _rsProv = typeof getGameChromeStyle === 'function' ? getGameChromeStyle(currentGame) : 'ironreel';
+                        SoundManager.playReelStop(colIdx, _rsProv);
+                    }
+
+                    // Cell landing pop animation
+                    (function() {
+                        var _col = document.getElementById('reelCol' + colIdx);
+                        if (!_col) return;
+                        var _cells = _col.querySelectorAll('.reel-cell');
+                        _cells.forEach(function(cell) {
+                            cell.classList.remove('cell-land-pop');
+                            // Force reflow to restart animation
+                            void cell.offsetWidth;
+                            cell.classList.add('cell-land-pop');
+                            setTimeout(function() { cell.classList.remove('cell-land-pop'); }, 350);
+                        });
+                    })();
+
+                    // Scatter waiting glow
+                    (function() {
+                        var _totalCols = typeof cols !== 'undefined' ? cols : (finalGrid ? finalGrid.length : 5);
+                        // Remove glow from this column's cells first
+                        var _thisCol = document.getElementById('reelCol' + colIdx);
+                        if (_thisCol) {
+                            _thisCol.querySelectorAll('.scatter-waiting-glow').forEach(function(el) {
+                                el.classList.remove('scatter-waiting-glow');
+                            });
+                        }
+                        if (colIdx >= _totalCols - 1) {
+                            // Last column stopped — remove all remaining glows
+                            document.querySelectorAll('.scatter-waiting-glow').forEach(function(el) {
+                                el.classList.remove('scatter-waiting-glow');
+                            });
+                            return;
+                        }
+                        // Count scatters landed so far
+                        var _scCount = typeof _countScattersOnCols === 'function'
+                            ? _countScattersOnCols(colIdx, finalGrid, spinGame)
+                            : 0;
+                        if (_scCount < 1) return;
+                        // Apply glow to scatter cells in stopped columns 0..colIdx
+                        var _scSym = spinGame && spinGame.scatterSymbol;
+                        if (!_scSym) return;
+                        for (var _sc = 0; _sc <= colIdx; _sc++) {
+                            var _scCol = document.getElementById('reelCol' + _sc);
+                            if (!_scCol) continue;
+                            _scCol.querySelectorAll('.reel-cell').forEach(function(cell) {
+                                var img = cell.querySelector('img');
+                                if (img && img.src && img.src.includes(_scSym)) {
+                                    cell.classList.add('scatter-waiting-glow');
+                                }
+                            });
+                        }
+                    })();
+
                     animateReelStop(colIdx, finalGrid[colIdx], null, cols, finalGrid, spinGame, () => {
                         if (serverResult) {
                             displayServerWinResult(serverResult, spinGame);

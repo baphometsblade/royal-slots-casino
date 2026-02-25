@@ -12013,3 +12013,52 @@
     color: rgba(255,255,255,0.35);
     margin-bottom: 6px;
 }
+
+/* ---- Reel-cell landing pop -------------------------------------------- */
+@keyframes cellLandPop {
+    0%   { transform: scaleY(1.18) scaleX(0.88); }
+    35%  { transform: scaleY(0.92) scaleX(1.06); }
+    60%  { transform: scaleY(1.05) scaleX(0.97); }
+    80%  { transform: scaleY(0.98) scaleX(1.01); }
+    100% { transform: scaleY(1)    scaleX(1); }
+}
+.cell-land-pop {
+    animation: cellLandPop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform-origin: center bottom;
+}
+
+/* ---- Scatter awaiting-glow (landed scatters pulse while reels still spin) */
+@keyframes scatterGlowPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+        filter: brightness(1);
+    }
+    50% {
+        box-shadow: 0 0 18px 6px rgba(255, 215, 0, 0.75),
+                    inset 0 0 12px rgba(255, 215, 0, 0.35);
+        filter: brightness(1.4);
+    }
+}
+.scatter-waiting-glow {
+    animation: scatterGlowPulse 700ms ease-in-out infinite;
+    border-radius: 6px;
+    z-index: 2;
+    position: relative;
+}
+
+/* ---- Coin-rain particles (jackpot celebration) ------------------------- */
+@keyframes coinFall {
+    0%   { transform: translateY(-40px) rotate(0deg)   scale(1);    opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg) scale(0.6);  opacity: 0; }
+}
+.coin-rain-particle {
+    position: fixed;
+    top: 0;
+    font-size: 22px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 9999;
+    animation: coinFall linear forwards;
+    will-change: transform, opacity;
+}
