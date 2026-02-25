@@ -12,6 +12,17 @@ const app = express();
 // client IP rather than the load-balancer IP (which would bucket all users together)
 app.set('trust proxy', 1);
 
+// Redirect bare domain → www in production (Render only provisions cert for www)
+if (config.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        const host = req.headers.host || '';
+        if (host === 'msaart.online') {
+            return res.redirect(301, `https://www.msaart.online${req.url}`);
+        }
+        next();
+    });
+}
+
 // ─── Security Middleware ───
 app.use(helmet({
     contentSecurityPolicy: false, // Allow inline scripts for the casino client
