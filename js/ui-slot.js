@@ -399,6 +399,86 @@
         }
 
 
+
+        // Win Cell Ring Glow helpers
+        function _applyWinCellGlow(tierClass) {
+            document.querySelectorAll(".reel-cell.win-cell-glow").forEach(function(el) {
+                el.classList.remove("win-cell-glow", "win-tier-epic", "win-tier-mega", "win-tier-jackpot");
+            });
+            document.querySelectorAll(".reel-win-glow, .reel-big-win-glow").forEach(function(cell) {
+                cell.classList.add("win-cell-glow");
+                if (tierClass) cell.classList.add(tierClass);
+            });
+        }
+
+        function _clearWinCellGlow() {
+            document.querySelectorAll(".reel-cell.win-cell-glow").forEach(function(el) {
+                el.classList.remove("win-cell-glow", "win-tier-epic", "win-tier-mega", "win-tier-jackpot");
+            });
+        }
+        // Autoplay (N-spin) helpers
+        function _startAutoplay(count) {
+            window._autoplayActive = true;
+            window._autoplayRemaining = count;
+            window._autoplayStopping = false;
+            _updateAutoplayBtn();
+            _autoplayStep();
+        }
+
+        function _stopAutoplay() {
+            window._autoplayStopping = true;
+            _updateAutoplayBtn();
+        }
+
+        function _autoplayStep() {
+            if (!window._autoplayActive) return;
+            if (window._autoplayStopping || window._autoplayRemaining <= 0) {
+                window._autoplayActive = false;
+                window._autoplayRemaining = 0;
+                window._autoplayStopping = false;
+                _updateAutoplayBtn();
+                return;
+            }
+            if (typeof spinning !== "undefined" && spinning) { setTimeout(_autoplayStep, 200); return; }
+            if (typeof freeSpinsActive !== "undefined" && freeSpinsActive) { setTimeout(_autoplayStep, 200); return; }
+            if (typeof balance !== "undefined" && typeof currentBet !== "undefined" && balance < currentBet) {
+                window._autoplayActive = false;
+                window._autoplayRemaining = 0;
+                window._autoplayStopping = false;
+                _updateAutoplayBtn();
+                return;
+            }
+            window._autoplayRemaining--;
+            _updateAutoplayBtn();
+            var _apSpinBtn = document.getElementById("spinBtn");
+            if (_apSpinBtn && !_apSpinBtn.disabled) {
+                _apSpinBtn.click();
+                (function _waitForSpinEnd() {
+                    if (typeof spinning !== "undefined" && spinning) { setTimeout(_waitForSpinEnd, 150); return; }
+                    setTimeout(_autoplayStep, 600);
+                })();
+            } else {
+                setTimeout(_autoplayStep, 300);
+            }
+        }
+
+        function _updateAutoplayBtn() {
+            var _apBtn = document.getElementById("autoplayBtn");
+            if (!_apBtn) return;
+            if (window._autoplayActive && !window._autoplayStopping) {
+                _apBtn.className = "autoplay-btn autoplay-active";
+                _apBtn.innerHTML = "↻ Auto <span class='autoplay-count-badge'>" + window._autoplayRemaining + "</span>";
+                _apBtn.title = "Click to stop autoplay";
+            } else if (window._autoplayStopping) {
+                _apBtn.className = "autoplay-btn autoplay-stopping";
+                _apBtn.innerHTML = "↻ Stopping…";
+                _apBtn.title = "Stopping after this spin";
+            } else {
+                _apBtn.className = "autoplay-btn";
+                _apBtn.innerHTML = "↻ Auto";
+                _apBtn.title = "Autoplay";
+            }
+        }
         function clearReelAnimations(cells) {
             cells.forEach(cell => {
                 REEL_CELL_ANIMATION_CLASSES.forEach(cls => cell.classList.remove(cls));
@@ -1328,6 +1408,51 @@
                 var slotModalContent = document.querySelector('.slot-modal-fullscreen');
                 if (slotModalContent) slotModalContent.appendChild(overlay);
 
+                // Autoplay Button
+                (function() {
+                    var _existingAP = document.getElementById("autoplayBtn");
+                    if (_existingAP && _existingAP.parentNode) _existingAP.parentNode.removeChild(_existingAP);
+                    var _spinBtnAP = document.getElementById("spinBtn");
+                    if (!_spinBtnAP || !_spinBtnAP.parentNode) return;
+                    window._autoplayActive = false;
+                    window._autoplayRemaining = 0;
+                    window._autoplayStopping = false;
+                    var _apWrapper = document.createElement("div");
+                    _apWrapper.style.cssText = "position:relative;display:inline-block;";
+                    var _apBtnEl = document.createElement("button");
+                    _apBtnEl.id = "autoplayBtn";
+                    _apBtnEl.className = "autoplay-btn";
+                    _apBtnEl.innerHTML = "↻ Auto";
+                    _apBtnEl.title = "Autoplay";
+                    var _apPicker = document.createElement("div");
+                    _apPicker.id = "autoplayPicker";
+                    _apPicker.className = "autoplay-picker";
+                    [10, 25, 50, 100].forEach(function(n) {
+                        var _apPb = document.createElement("button");
+                        _apPb.className = "autoplay-picker-btn";
+                        _apPb.textContent = n + " spins";
+                        _apPb.addEventListener("click", function(e) {
+                            e.stopPropagation();
+                            _apPicker.classList.remove("open");
+                            _startAutoplay(n);
+                        });
+                        _apPicker.appendChild(_apPb);
+                    });
+                    _apWrapper.appendChild(_apBtnEl);
+                    _apWrapper.appendChild(_apPicker);
+                    _spinBtnAP.parentNode.insertBefore(_apWrapper, _spinBtnAP.nextSibling);
+                    _apBtnEl.addEventListener("click", function(e) {
+                        e.stopPropagation();
+                        if (window._autoplayActive) {
+                            _stopAutoplay();
+                        } else {
+                            _apPicker.classList.toggle("open");
+                        }
+                    });
+                    document.addEventListener("click", function(e) {
+                        if (!_apWrapper.contains(e.target)) _apPicker.classList.remove("open");
+                    });
+                })();
                 // ── Touch gestures: tap or swipe-down on reels triggers spin ──
                 (function attachReelTouchGesture() {
                     const reelEl = document.querySelector('.reels-container') || document.querySelector('.reels');
@@ -1366,6 +1491,9 @@
             }
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
+            // Reset new autoplay state
+            if (window._autoplayActive) { window._autoplayActive = false; window._autoplayRemaining = 0; window._autoplayStopping = false; _updateAutoplayBtn(); }
+
             // Stop jackpot banner ticker and hide banner
             if (window._slotTimerInterval) { clearInterval(window._slotTimerInterval); window._slotTimerInterval = null; }
             if (_slotJackpotTickInterval) { clearInterval(_slotJackpotTickInterval); _slotJackpotTickInterval = null; }
@@ -1746,6 +1874,8 @@
             }
             spinning = true;
             resetIdleTimer(); // reset idle pulse at spin start
+            _clearWinCellGlow(); // clear win-cell-glow before new spin
+
             updateSlotWinDisplay(0);
             // Add bg zoom effect during spin
             const reelAreaSpin = document.querySelector('.slot-reel-area');
@@ -2260,6 +2390,16 @@
                 animateBalanceRoll(oldBalance, balance, Math.min(2000, winAmount * 20));
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
+
+                // Apply win-cell-glow ring to winning cells based on win tier
+                (function() {
+                    var _wm2 = currentBet > 0 ? winAmount / currentBet : 0;
+                    var _glowTier = "";
+                    if (_wm2 >= 100) _glowTier = "win-tier-jackpot";
+                    else if (_wm2 >= 50) _glowTier = "win-tier-mega";
+                    else if (_wm2 >= 20) _glowTier = "win-tier-epic";
+                    _applyWinCellGlow(_glowTier);
+                })();
                 _sessSpins++;
                 _sessWins++;
                 _sessTotalBet += currentBet;
