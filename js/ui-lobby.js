@@ -184,6 +184,7 @@
                     renderFilteredGames();
                     renderRecentlyPlayed();
                     renderYouMightLike();
+                    renderBestWins();
                 }, 200);
             });
         }
@@ -211,6 +212,7 @@
             section.style.display = '';
             container.innerHTML = recentGames.map(g => createGameCard(g)).join('');
             renderYouMightLike();
+            renderBestWins();
         }
 
         function renderYouMightLike() {
@@ -287,6 +289,56 @@
                 </div>
                 <div class="recently-played-scroll" id="youMightLikeGames">
                     ${shuffled.map(g => createGameCard(g)).join('')}
+                </div>`;
+        }
+
+        function renderBestWins() {
+            const HOF_KEY = typeof STORAGE_KEY_HALL_OF_FAME !== 'undefined'
+                ? STORAGE_KEY_HALL_OF_FAME : 'matrixHallOfFame';
+            let entries = [];
+            try { entries = JSON.parse(localStorage.getItem(HOF_KEY)) || []; } catch(e) {}
+
+            // Remove stale section if no data
+            const existing = document.getElementById('bestWinsSection');
+            if (entries.length === 0) {
+                if (existing) existing.style.display = 'none';
+                return;
+            }
+
+            // Take top 5 by amount
+            const top = entries.slice().sort((a, b) => b.amount - a.amount).slice(0, 5);
+
+            let section = existing;
+            if (!section) {
+                section = document.createElement('div');
+                section.id = 'bestWinsSection';
+                // Inject at end of lobby container (after youMightLikeSection or allGames)
+                const yml = document.getElementById('youMightLikeSection');
+                const allGames = document.getElementById('allGames');
+                const anchor = yml || allGames;
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.appendChild(section);
+                } else {
+                    const container = document.querySelector('.lobby-content') || document.querySelector('main');
+                    if (container) container.appendChild(section);
+                }
+            }
+
+            section.style.display = '';
+            section.innerHTML = `
+                <div class="section-header">
+                    <h3 class="section-title" style="font-size:14px">🏆 Your Best Wins</h3>
+                </div>
+                <div class="best-wins-list">
+                    ${top.map((e, idx) => `
+                    <div class="best-win-row">
+                        <span class="bw-rank">#${idx + 1}</span>
+                        <span class="bw-game">${e.gameName || e.game || 'Unknown'}</span>
+                        <span class="bw-mult">${e.mult ? e.mult.toFixed(1) + '×' : ''}</span>
+                        <span class="bw-amount">$${(e.amount || 0).toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+                        <span class="bw-date">${e.date ? e.date.slice(0,10) : ''}</span>
+                    </div>
+                    `).join('')}
                 </div>`;
         }
 

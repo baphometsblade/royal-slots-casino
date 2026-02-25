@@ -11612,3 +11612,58 @@
     animation: scatterPrimedPulse 0.45s ease-in-out infinite;
     border-radius: 8px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   BEST WINS PERSONAL STRIP
+   ═══════════════════════════════════════════════════════════ */
+#bestWinsSection {
+    margin: 12px 0 8px;
+    padding: 0 4px;
+}
+.best-wins-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 0 2px;
+}
+.best-win-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,215,0,0.05);
+    border: 1px solid rgba(255,215,0,0.12);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+.bw-rank {
+    font-weight: 700;
+    color: rgba(255,215,0,0.6);
+    min-width: 24px;
+}
+.bw-game {
+    flex: 1;
+    color: rgba(255,255,255,0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bw-mult {
+    color: #fbbf24;
+    font-size: 11px;
+    min-width: 42px;
+    text-align: right;
+}
+.bw-amount {
+    font-weight: 700;
+    color: #4ade80;
+    min-width: 80px;
+    text-align: right;
+}
+.bw-date {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    min-width: 70px;
+    text-align: right;
+}
