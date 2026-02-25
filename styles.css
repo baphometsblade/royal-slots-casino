@@ -11246,3 +11246,90 @@
   0%   { transform: scale(0); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   LOBBY UI STYLES — consolidated from runtime injection in ui-lobby.js
+   ═══════════════════════════════════════════════════════════ */
+
+/* Card animated preview overlay (lobbyAnimStyles) */
+.card-anim-preview {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 0.4s ease;
+    pointer-events: none; z-index: 2;
+}
+.game-card:hover .card-anim-preview { opacity: 1; }
+.card-anim-preview.hidden { display: none; }
+.preview-badge {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.6); color: #00ff41;
+    font-size: 9px; font-family: monospace;
+    padding: 2px 5px; border-radius: 3px; letter-spacing: 1px;
+    pointer-events: none;
+}
+
+/* Favourites button and empty state (favStyles) */
+.fav-btn {
+    position: absolute; top: 6px; right: 34px;
+    background: transparent; border: none;
+    font-size: 20px; cursor: pointer; z-index: 10;
+    line-height: 1; padding: 4px; border-radius: 50%;
+    transition: transform 0.15s;
+}
+.fav-btn:hover { transform: scale(1.3); }
+.fav-btn.fav-active { animation: favPop 0.3s ease-out; }
+@keyframes favPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+.filter-fav-count {
+    display: inline-block; background: #e11d48;
+    color: #fff; font-size: 10px; font-weight: 700;
+    border-radius: 8px; padding: 1px 5px; margin-left: 4px;
+    vertical-align: middle; line-height: 16px; min-width: 16px;
+    text-align: center;
+}
+.games-fav-empty {
+    grid-column: 1 / -1; text-align: center;
+    padding: 48px 24px; color: rgba(255,255,255,0.45);
+    font-size: 15px;
+}
+.games-fav-empty .fav-empty-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+
+/* Game info strip on each card (gameInfoStripStyles) */
+.gi-strip {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px 7px;
+    background: rgba(0,0,0,0.72); backdrop-filter: blur(2px);
+    font-size: 10px; line-height: 1.3; color: rgba(255,255,255,0.85);
+    pointer-events: none; border-radius: 0 0 6px 6px; transition: opacity 0.2s;
+}
+.gi-grid { font-weight: 700; color: #90caf9; flex-shrink: 0; }
+.gi-bonus {
+    flex: 1; text-align: center; overflow: hidden; white-space: nowrap;
+    text-overflow: ellipsis; color: rgba(255,255,255,0.65);
+}
+.gi-vol { flex-shrink: 0; letter-spacing: -1px; }
+.gi-vol--low  { color: #81c784; }
+.gi-vol--med  { color: #ffb74d; }
+.gi-vol--high { color: #e57373; }
+.game-card:hover .gi-strip { background: rgba(0,0,0,0.88); }
+
+/* Lobby search bar and provider pills (lobbySearchCss) */
+#lobbySearchBar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 0 4px;
+    max-width: 480px;
+}
+#lobbyProviderStrip::-webkit-scrollbar { display: none; }
+.lobby-provider-pill:hover {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+}
+@media (max-width: 480px) {
+    #lobbySearchBar { padding: 6px 0 2px; }
+    #lobbyProviderStrip { padding: 2px 0 6px; }
+}
