@@ -22,6 +22,8 @@ module.exports = {
     MAX_WIN_MULTIPLIER: 500,       // No single spin can win more than 500x bet
     PROFIT_FLOOR: -500,            // Emergency mode if house is down $500+
     SESSION_WIN_CAP: 50000,        // Player can't win more than $50k per session
+    MAX_PAYOUT_PROFIT_PCT: 0.20,   // Single payout never exceeds 20% of total site profit
+    MIN_WIN_MULTIPLIER_FLOOR: 2,   // Minimum win floor (2x bet) to keep game playable at low profit
 
     // Payment configuration
     CURRENCY: 'AUD',

@@ -221,6 +221,19 @@ async function capWinAmount(winAmount, betAmount, game, db) {
         const globalStats = await db.get('SELECT SUM(bet_amount) as wagered, SUM(win_amount) as paid FROM spins');
         if (globalStats && globalStats.wagered > 0) {
             const currentProfit = (globalStats.wagered || 0) - (globalStats.paid || 0);
+
+            // ── 20% of total site profit cap ──────────────────────────────
+            // A single payout may never exceed 20% of accumulated house profit.
+            // Ensures the house is always net-positive after paying out.
+            // A small floor (MIN_WIN_MULTIPLIER_FLOOR × bet) keeps the game
+            // playable during early low-profit bootstrap phase.
+            const profitPct = config.MAX_PAYOUT_PROFIT_PCT || 0.20;
+            const minFloor  = betAmount * (config.MIN_WIN_MULTIPLIER_FLOOR || 2);
+            const profitCap = Math.max(minFloor, currentProfit * profitPct);
+            capped = Math.min(capped, profitCap);
+
+            // ── Absolute profit-floor guard (legacy) ──────────────────────
+            // Refuse any payout that would push house below PROFIT_FLOOR.
             const projectedProfit = currentProfit - capped;
             if (projectedProfit < (config.PROFIT_FLOOR || -500)) {
                 const maxAllowed = Math.max(0, currentProfit - (config.PROFIT_FLOOR || -500));
