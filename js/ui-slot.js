@@ -588,7 +588,7 @@
                     </div>
                     <div class="paytable-stat">
                         <div class="paytable-stat-label">Max Win</div>
-                        <div class="paytable-stat-value">${game.payouts.triple}x</div>
+                        <div class="paytable-stat-value">${(game.payouts && game.payouts.triple) || '—'}x</div>
                     </div>
                     <div class="paytable-stat">
                         <div class="paytable-stat-label">Bet Range</div>
@@ -648,7 +648,7 @@
 
             // RTP
             html += `<div class="paytable-section">
-                <div class="paytable-rtp">RTP: <strong>${rtp}%</strong> &middot; Volatility: <strong>${game.payouts.triple >= 100 ? 'High' : game.payouts.triple >= 50 ? 'Medium' : 'Low'}</strong></div>
+                <div class="paytable-rtp">RTP: <strong>${rtp}%</strong> &middot; Volatility: <strong>${deriveGameVolatility(game)}</strong></div>
             </div>`;
 
             body.innerHTML = html;
@@ -657,7 +657,7 @@
 
         // Derive RTP from game properties (simulated since not stored in game data)
         function deriveGameRTP(game) {
-            const maxPayout = game.payouts.triple || 100;
+            const maxPayout = (game.payouts && game.payouts.triple) || (game.rtp ? Math.round(game.rtp * 2) : 100);
             if (maxPayout >= 200) return '96.8%';
             if (maxPayout >= 100) return '96.5%';
             if (maxPayout >= 70) return '96.2%';
@@ -667,7 +667,14 @@
 
         // Derive volatility from game properties
         function deriveGameVolatility(game) {
-            const maxPayout = game.payouts.triple || 100;
+            if (game.volatility) {
+                const v = game.volatility.toLowerCase();
+                if (v === 'extreme' || v === 'very high') return 'Very High';
+                if (v === 'high') return 'High';
+                if (v === 'medium') return 'Medium';
+                return 'Low';
+            }
+            const maxPayout = (game.payouts && game.payouts.triple) || 100;
             const hasMultipliers = game.tumbleMultipliers || game.zeusMultipliers || game.randomMultiplierRange || game.avalancheMultipliers;
             if (maxPayout >= 200 || (hasMultipliers && maxPayout >= 100)) return 'Very High';
             if (maxPayout >= 100 || hasMultipliers) return 'High';
@@ -828,7 +835,7 @@
             // Set game stats
             document.getElementById('featureStatRTP').textContent = deriveGameRTP(game);
             document.getElementById('featureStatVolatility').textContent = deriveGameVolatility(game);
-            document.getElementById('featureStatMaxWin').textContent = (game.payouts.triple || 100) + 'x';
+            document.getElementById('featureStatMaxWin').textContent = ((game.payouts && game.payouts.triple) || 100) + 'x';
 
             // Show with animation
             overlay.classList.remove('dismissing');
@@ -999,7 +1006,7 @@
                 closeStatsModal();
                 document.getElementById('slotGameName').textContent = currentGame.name;
                 document.getElementById('slotProvider').textContent = currentGame.provider || '';
-                document.getElementById('slotMaxPayout').textContent = currentGame.payouts.triple;
+                document.getElementById('slotMaxPayout').textContent = (currentGame.payouts && currentGame.payouts.triple) || '—';
 
             const tagEl = document.getElementById('slotGameTag');
             if (currentGame.tag) {
@@ -1034,6 +1041,21 @@
             }
             // Build dynamic reel grid
             buildReelGrid(currentGame);
+
+            // cascade chain counter overlay
+            (function() {
+              var existingChain = document.getElementById('cascadeChainDisplay');
+              if (existingChain) existingChain.remove();
+              var chainEl = document.createElement('div');
+              chainEl.id = 'cascadeChainDisplay';
+              chainEl.className = 'cascade-chain-display';
+              chainEl.innerHTML = '<span class="cascade-chain-icon">🔗</span><span class="cascade-chain-label">Chain</span><span class="cascade-chain-count">×1</span>';
+              var reelArea = document.querySelector('.slot-reels') || document.querySelector('.reel-grid') || document.querySelector('.reel-container');
+              if (reelArea && reelArea.parentNode) {
+                reelArea.parentNode.style.position = 'relative';
+                reelArea.parentNode.appendChild(chainEl);
+              }
+            })();
 
             // Apply accent color to reel borders and top bar accent
             const accent = currentGame.accentColor || '#fbbf24';
@@ -1385,6 +1407,7 @@
             if (typeof stopAmbientParticles === 'function') stopAmbientParticles();
             if (typeof SoundManager !== 'undefined' && SoundManager.stopAmbient) SoundManager.stopAmbient();
             if (typeof destroyParticleEngine === 'function') destroyParticleEngine();
+            _hideCascadeChain();
         }
 
 
@@ -2251,6 +2274,8 @@
                 }
                 // Tumble visual cascade for tumble/avalanche games
                 if (currentGame && (currentGame.bonusType === 'tumble' || currentGame.bonusType === 'avalanche')) {
+                    window._tumbleCascadeDepth = (window._tumbleCascadeDepth || 0) + 1;
+                    _showCascadeChain(window._tumbleCascadeDepth);
                     setTimeout(function() { triggerTumbleCascade(currentGame); }, 60);
                 }
                 setTimeout(showPaylinePaths, 300);
@@ -2399,6 +2424,9 @@
                         setTimeout(function() { _bEl.classList.remove('balance-flash-loss'); }, 550);
                     }
                 })();
+                // Hide cascade chain counter on loss
+                _hideCascadeChain();
+                window._tumbleCascadeDepth = 0;
             }
             // Apply idle shimmer to all visible wild/scatter cells
             (function() {
@@ -4648,6 +4676,30 @@
             window._cascadeActive = false;
             var el = document.getElementById('cascadeMultDisplay');
             if (el) el.style.display = 'none';
+            _hideCascadeChain();
+        }
+
+        // ── cascade chain counter helpers ──
+        function _showCascadeChain(level) {
+            var el = document.getElementById('cascadeChainDisplay');
+            if (!el) return;
+            if (!currentGame || !currentGame.bonusType) return;
+            var bt = currentGame.bonusType;
+            if (bt !== 'cascading' && bt !== 'avalanche' && bt !== 'tumble') return;
+            var countEl = el.querySelector('.cascade-chain-count');
+            if (countEl) countEl.textContent = '×' + level;
+            el.setAttribute('data-level', String(level));
+            el.classList.add('visible');
+            el.classList.remove('bump');
+            void el.offsetWidth;
+            el.classList.add('bump');
+            setTimeout(function() { el.classList.remove('bump'); }, 300);
+        }
+        function _hideCascadeChain() {
+            var el = document.getElementById('cascadeChainDisplay');
+            if (!el) return;
+            el.classList.remove('visible');
+            el.setAttribute('data-level', '1');
         }
 
         function _currentCascadeMult() {
@@ -4718,6 +4770,7 @@
                         if ((window._cascadeLevel || 0) < _CASCADE_MULTS.length - 1) {
                             window._cascadeLevel = (window._cascadeLevel || 0) + 1;
                         }
+                        _showCascadeChain(window._cascadeLevel + 1);
                         _updateCascadeDisplay();
                         return;
                     }
@@ -8038,6 +8091,7 @@
             window._cascadeActive = false;
             var el = document.getElementById('cascadeMultDisplay');
             if (el) el.style.display = 'none';
+            _hideCascadeChain();
         }
 
         function _currentCascadeMult() {
@@ -8108,6 +8162,7 @@
                         if ((window._cascadeLevel || 0) < _CASCADE_MULTS.length - 1) {
                             window._cascadeLevel = (window._cascadeLevel || 0) + 1;
                         }
+                        _showCascadeChain(window._cascadeLevel + 1);
                         _updateCascadeDisplay();
                         return;
                     }

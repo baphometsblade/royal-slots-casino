@@ -1024,7 +1024,8 @@
             _tickerRecentNames.push(name);
             if (_tickerRecentNames.length > 10) _tickerRecentNames.shift();
 
-            const game = games[Math.floor(Math.random() * games.length)];
+            const tickerPool = games.filter(g => g.payouts && g.payouts.triple && g.payouts.double);
+            const game = tickerPool[Math.floor(Math.random() * tickerPool.length)];
             const multiplier = Math.floor(Math.random() * game.payouts.triple) + game.payouts.double;
             const bet = game.minBet + Math.floor(Math.random() * (game.maxBet - game.minBet) / game.minBet) * game.minBet;
             const win = bet * multiplier;

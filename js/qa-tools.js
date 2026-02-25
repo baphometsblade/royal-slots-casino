@@ -341,8 +341,8 @@
                         gridCols: getGridCols(currentGame),
                         gridRows: getGridRows(currentGame),
                         winType: getWinType(currentGame),
-                        payoutTriple: currentGame.payouts.triple,
-                        payoutDouble: currentGame.payouts.double
+                        payoutTriple: currentGame.payouts && currentGame.payouts.triple,
+                        payoutDouble: currentGame.payouts && currentGame.payouts.double
                     }
                     : null,
                 reels: [...currentReels],

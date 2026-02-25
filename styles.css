@@ -12257,3 +12257,69 @@
     border: 1px solid rgba(251,191,36,0.25);
     white-space: nowrap;
 }
+
+/* ── Cascade Chain Counter ──────────────────────────── */
+.cascade-chain-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  z-index: 120;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+}
+.cascade-chain-display.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.cascade-chain-display.bump {
+  animation: cascadeBump 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes cascadeBump {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  50%  { transform: translate(-50%, -50%) scale(1.35); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+.cascade-chain-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(255,200,50,0.9));
+  animation: chainIconSpin 0.6s ease-out;
+}
+@keyframes chainIconSpin {
+  from { transform: rotate(-30deg) scale(0.7); }
+  to   { transform: rotate(0deg)   scale(1);   }
+}
+.cascade-chain-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,220,100,0.85);
+  text-shadow: 0 0 6px rgba(255,180,0,0.7);
+}
+.cascade-chain-count {
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-shadow:
+    0 0 10px rgba(255,200,50,1),
+    0 0 24px rgba(255,140,0,0.8),
+    0 2px 0 rgba(0,0,0,0.6);
+  letter-spacing: -0.02em;
+}
+/* level-based colour tints */
+.cascade-chain-display[data-level="2"] .cascade-chain-count { color: #ffe066; }
+.cascade-chain-display[data-level="3"] .cascade-chain-count { color: #ffaa00; }
+.cascade-chain-display[data-level="4"] .cascade-chain-count,
+.cascade-chain-display[data-level="5"] .cascade-chain-count { color: #ff6600; text-shadow: 0 0 14px rgba(255,80,0,1), 0 0 30px rgba(255,100,0,0.8), 0 2px 0 rgba(0,0,0,0.6); }
+.cascade-chain-display[data-level^="6"] .cascade-chain-count,
+.cascade-chain-display[data-level^="7"] .cascade-chain-count,
+.cascade-chain-display[data-level^="8"] .cascade-chain-count,
+.cascade-chain-display[data-level^="9"] .cascade-chain-count { color: #ff3300; text-shadow: 0 0 16px rgba(255,50,0,1), 0 0 36px rgba(200,0,0,0.9), 0 2px 0 rgba(0,0,0,0.6); }
