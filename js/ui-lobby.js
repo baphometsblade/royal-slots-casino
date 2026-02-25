@@ -466,7 +466,41 @@
             return map[game.bonusType] || 'Bonus';
         }
 
+        function _getDailyHotGames() {
+            if (!window.GAMES || !window.GAMES.length) return new Set();
+            // Simple deterministic daily seed from date string
+            var seed = new Date().toDateString().split('').reduce(function(h, c) {
+                return (Math.imul(31, h) + c.charCodeAt(0)) | 0;
+            }, 0);
+            var indices = new Set();
+            var len = window.GAMES.length;
+            var s = Math.abs(seed);
+            while (indices.size < 8) {
+                s = (Math.imul(s, 1664525) + 1013904223) | 0;
+                indices.add(Math.abs(s) % len);
+            }
+            return new Set(Array.from(indices).map(function(i) { return window.GAMES[i].id; }));
+        }
+
+        function _getNewGameIds() {
+            if (!window.GAMES || window.GAMES.length < 6) return new Set();
+            return new Set(window.GAMES.slice(-6).map(function(g) { return g.id; }));
+        }
+
+        // Cache hot/new sets — recomputed only once per day
+        var _cachedHotIds = null, _cachedNewIds = null, _cachedHotDate = '';
+        function _getHotNewCached() {
+            var today = new Date().toDateString();
+            if (!_cachedHotIds || _cachedHotDate !== today) {
+                _cachedHotIds  = _getDailyHotGames();
+                _cachedNewIds  = _getNewGameIds();
+                _cachedHotDate = today;
+            }
+            return { hotIds: _cachedHotIds, newIds: _cachedNewIds };
+        }
+
         function createGameCard(game) {
+            const { hotIds: _hotIds, newIds: _newIds } = _getHotNewCached();
             const thumbStyle = game.thumbnail
                 ? `background-image: url('${game.thumbnail}'); background-size: cover; background-position: center;`
                 : `background: ${game.bgGradient};`;
@@ -543,6 +577,8 @@
                         <div class="game-name">${game.name}</div>
                         <div class="game-provider">${game.provider || ''}</div>
                     </div>
+                    ${_hotIds.has(game.id) ? '<span class="lobby-badge lobby-badge-hot">🔥 HOT</span>' : ''}
+                    ${_newIds.has(game.id) ? '<span class="lobby-badge lobby-badge-new">✨ NEW</span>' : ''}
                 </div>
             `;
         }

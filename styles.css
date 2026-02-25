@@ -11667,3 +11667,36 @@
     min-width: 70px;
     text-align: right;
 }
+
+/* ── Lobby HOT / NEW game badges ────────────────────────────────── */
+.lobby-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    z-index: 2;
+    pointer-events: none;
+    text-shadow: none;
+}
+.lobby-badge-hot {
+    background: linear-gradient(135deg, #ff6d00, #ff1744);
+    color: #fff;
+    top: 6px;
+    right: 6px;
+}
+.lobby-badge-new {
+    background: linear-gradient(135deg, #00c853, #1de9b6);
+    color: #fff;
+    top: 6px;
+    right: 6px;
+}
+/* When both badges present, stack them */
+.lobby-badge-hot ~ .lobby-badge-new,
+.lobby-badge-new ~ .lobby-badge-hot {
+    top: 28px;
+}
