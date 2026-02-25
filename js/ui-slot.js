@@ -897,6 +897,8 @@
             spinHistory = [];
             // Reset session stats HUD
             _sessSpins = 0; _sessTotalBet = 0; _sessTotalWon = 0; _sessWins = 0;
+            var _sb0 = document.getElementById('spinBtn');
+            if (_sb0) _sb0.classList.remove('spin-btn-fire');
             var _oldHud = document.getElementById('slotSessionHud');
             if (_oldHud) _oldHud.remove();
 
@@ -1123,6 +1125,15 @@
             freeSpinsRemaining = 0;
 
                 document.getElementById('slotModal').classList.add('active');
+                // Brief open shimmer
+                (function() {
+                    var _modal = document.getElementById('slotModal') || document.querySelector('.slot-modal');
+                    if (!_modal) return;
+                    var _shim = document.createElement('div');
+                    _shim.className = 'slot-shimmer-overlay';
+                    _modal.appendChild(_shim);
+                    setTimeout(function() { if (_shim.parentNode) _shim.remove(); }, 650);
+                })();
                 // Inject spin history panel (idempotent — removed and re-injected on each game open)
                 var _oldHistPanel = document.getElementById('spinHistoryPanel');
                 if (_oldHistPanel) _oldHistPanel.parentNode.removeChild(_oldHistPanel);
@@ -2307,10 +2318,37 @@
                     addPlayerWinToTicker(winAmount, _tickerGame);
                 }
 
+                // Win toast notifications
+                if (typeof showWinToast === 'function') {
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak === 3)  showWinToast('3\u00d7 Win Streak!', 'streak');
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak === 5)  showWinToast('\uD83D\uDD25 5\u00d7 Streak!', 'streak');
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak === 10) showWinToast('\uD83D\uDCA5 10\u00d7 Streak!', 'epic');
+                    if (typeof winAmount !== 'undefined' && typeof currentBet !== 'undefined') {
+                        if (winAmount >= currentBet * 100) showWinToast('\uD83C\uDFB0 JACKPOT!', 'jackpot');
+                        else if (winAmount >= currentBet * 50) showWinToast('\uD83D\uDC8E Mega Win!', 'epic');
+                        else if (winAmount >= currentBet * 20) showWinToast('\uD83C\uDFC6 Epic Win!', 'big');
+                    }
+                }
+                // Streak fire on spin button
+                (function() {
+                    var _sb = document.getElementById('spinBtn');
+                    if (!_sb) return;
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak >= 3) {
+                        _sb.classList.add('spin-btn-fire');
+                    } else {
+                        _sb.classList.remove('spin-btn-fire');
+                    }
+                })();
+
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
                 detectAndShowNearMiss(grid, game);
+                // Clear streak fire on loss
+                (function() {
+                    var _sb = document.getElementById('spinBtn');
+                    if (_sb) _sb.classList.remove('spin-btn-fire');
+                })();
                 // Loss droop: briefly dim all reel cells
                 const _droopCells = document.querySelectorAll('.reel-cell');
                 _droopCells.forEach(function(c) { c.classList.add('reel-loss-droop'); });
@@ -5695,10 +5733,37 @@
                     addPlayerWinToTicker(winAmount, _tickerGame);
                 }
 
+                // Win toast notifications
+                if (typeof showWinToast === 'function') {
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak === 3)  showWinToast('3\u00d7 Win Streak!', 'streak');
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak === 5)  showWinToast('\uD83D\uDD25 5\u00d7 Streak!', 'streak');
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak === 10) showWinToast('\uD83D\uDCA5 10\u00d7 Streak!', 'epic');
+                    if (typeof winAmount !== 'undefined' && typeof currentBet !== 'undefined') {
+                        if (winAmount >= currentBet * 100) showWinToast('\uD83C\uDFB0 JACKPOT!', 'jackpot');
+                        else if (winAmount >= currentBet * 50) showWinToast('\uD83D\uDC8E Mega Win!', 'epic');
+                        else if (winAmount >= currentBet * 20) showWinToast('\uD83C\uDFC6 Epic Win!', 'big');
+                    }
+                }
+                // Streak fire on spin button
+                (function() {
+                    var _sb = document.getElementById('spinBtn');
+                    if (!_sb) return;
+                    if (typeof window._winStreak !== 'undefined' && window._winStreak >= 3) {
+                        _sb.classList.add('spin-btn-fire');
+                    } else {
+                        _sb.classList.remove('spin-btn-fire');
+                    }
+                })();
+
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
                 detectAndShowNearMiss(grid, game);
+                // Clear streak fire on loss
+                (function() {
+                    var _sb = document.getElementById('spinBtn');
+                    if (_sb) _sb.classList.remove('spin-btn-fire');
+                })();
                 _sessSpins++;
                 _sessTotalBet += currentBet;
                 _updateSessionHud();

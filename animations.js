@@ -668,3 +668,41 @@ function triggerCoinShower(count) {
         })(i);
     }
 }
+
+/**
+ * Shows a slide-in toast notification for win milestones.
+ * CSS (.win-toast, .win-toast-streak/big/epic/jackpot) already exists in styles.css.
+ * @param {string} message  - Short message text, e.g. "🔥 5× Streak!"
+ * @param {string} tier     - 'streak' | 'big' | 'epic' | 'jackpot'
+ * @param {string} [title]  - Optional label above message
+ */
+function showWinToast(message, tier, title) {
+    var q = (typeof appSettings !== 'undefined' && appSettings.animationQuality) || 'high';
+    if (q === 'off') return;
+
+    var icons = { streak: '🔥', big: '🏆', epic: '💎', jackpot: '🎰' };
+    var icon = icons[tier] || '⭐';
+    var tierClass = 'win-toast-' + (tier || 'big');
+
+    // Stack existing toasts downward
+    var existing = document.querySelectorAll('.win-toast:not(.toast-out)');
+    var offset = 72 + existing.length * 62;
+
+    var el = document.createElement('div');
+    el.className = 'win-toast ' + tierClass;
+    el.style.top = offset + 'px';
+    el.innerHTML =
+        '<span class="win-toast-icon">' + icon + '</span>' +
+        '<div class="win-toast-body">' +
+        (title ? '<div class="win-toast-title">' + title + '</div>' : '') +
+        '<div>' + message + '</div>' +
+        '</div>';
+    document.body.appendChild(el);
+
+    // Auto-dismiss after 3s
+    var dismiss = function() {
+        el.classList.add('toast-out');
+        setTimeout(function() { if (el.parentNode) el.remove(); }, 300);
+    };
+    setTimeout(dismiss, 3000);
+}

@@ -12139,3 +12139,99 @@
     color: #fbbf24;
     font-weight: 700;
 }
+
+/* ---- Win-streak fire on spin button ----------------------------------- */
+@keyframes flameDance {
+    0%   { text-shadow: 0 0 8px #ff4500, 0 0 20px #ff6d00, 0 0 40px #ffd700; transform: scale(1)   rotate(-1deg); }
+    25%  { text-shadow: 0 0 12px #ff2200, 0 0 28px #ff4500, 0 0 50px #ff8c00; transform: scale(1.04) rotate(1deg); }
+    50%  { text-shadow: 0 0 8px #ff6d00, 0 0 22px #ff8c00, 0 0 42px #ffd700; transform: scale(1)   rotate(-0.5deg); }
+    75%  { text-shadow: 0 0 14px #ff2200, 0 0 30px #ff4500, 0 0 55px #ff8c00; transform: scale(1.05) rotate(1.5deg); }
+    100% { text-shadow: 0 0 8px #ff4500, 0 0 20px #ff6d00, 0 0 40px #ffd700; transform: scale(1)   rotate(-1deg); }
+}
+@keyframes fireRing {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,100,0,0), 0 0 18px 4px rgba(255,140,0,0.45); }
+    50%       { box-shadow: 0 0 0 6px rgba(255,100,0,0.18), 0 0 32px 10px rgba(255,140,0,0.65); }
+}
+.spin-btn-fire {
+    animation: fireRing 900ms ease-in-out infinite;
+    position: relative;
+}
+.spin-btn-fire::after {
+    content: '🔥';
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    animation: flameDance 600ms ease-in-out infinite;
+    pointer-events: none;
+    line-height: 1;
+}
+
+/* ---- Win-toast notifications ------------------------------------------ */
+@keyframes toastIn {
+    from { transform: translateX(110%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes toastOut {
+    from { transform: translateX(0);    opacity: 1; }
+    to   { transform: translateX(110%); opacity: 0; }
+}
+.win-toast {
+    position: fixed;
+    top: 72px;
+    right: 12px;
+    z-index: 9998;
+    min-width: 200px;
+    max-width: 280px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(18,18,32,0.97);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+    transition: top 0.22s ease;
+}
+.win-toast.toast-out {
+    animation: toastOut 0.28s ease-in forwards;
+}
+.win-toast-icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.win-toast-body { flex: 1; }
+.win-toast-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; margin-bottom: 1px; }
+/* Tier colours */
+.win-toast-streak  { border-color: rgba(251,191,36,0.5);  box-shadow: 0 6px 24px rgba(0,0,0,0.55), 0 0 18px rgba(251,191,36,0.2); }
+.win-toast-big     { border-color: rgba(74,222,128,0.5);  box-shadow: 0 6px 24px rgba(0,0,0,0.55), 0 0 18px rgba(74,222,128,0.18); }
+.win-toast-epic    { border-color: rgba(167,139,250,0.6); box-shadow: 0 6px 24px rgba(0,0,0,0.55), 0 0 20px rgba(167,139,250,0.25); }
+.win-toast-jackpot { border-color: rgba(255,215,0,0.7);   box-shadow: 0 6px 24px rgba(0,0,0,0.55), 0 0 28px rgba(255,215,0,0.35); }
+
+/* ---- Slot modal open shimmer ------------------------------------------ */
+@keyframes shimmerSlide {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+}
+.slot-shimmer-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+        105deg,
+        rgba(255,255,255,0)   30%,
+        rgba(255,255,255,0.08) 50%,
+        rgba(255,255,255,0)   70%
+    );
+    background-size: 200% 100%;
+    animation: shimmerSlide 0.55s ease-out forwards;
+    opacity: 0;
+    animation-fill-mode: both;
+}
