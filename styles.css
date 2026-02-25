@@ -11700,3 +11700,50 @@
 .lobby-badge-new ~ .lobby-badge-hot {
     top: 28px;
 }
+
+/* ── Lobby game search bar (inline, below mechanic filter) ────────────────────── */
+.game-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 16px 4px;
+}
+.game-search-wrap .game-search-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    color: #e2e8f0;
+    font-size: 13px;
+    padding: 8px 36px 8px 16px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.game-search-wrap .game-search-input::placeholder { color: rgba(255,255,255,0.35); }
+.game-search-wrap .game-search-input:focus {
+    border-color: rgba(99,179,237,0.5);
+    background: rgba(255,255,255,0.09);
+}
+.game-search-clear {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px;
+    line-height: 1;
+}
+.game-search-clear:hover { color: #fff; }
+.search-no-results {
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    padding: 40px 20px;
+    font-size: 14px;
+    grid-column: 1 / -1;
+}
+.search-no-results strong { color: rgba(255,255,255,0.7); }

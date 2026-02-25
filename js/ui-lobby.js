@@ -6,6 +6,7 @@
         let lobbySearchQuery = '';
         let currentMechanicFilter = 'all'; // 'all' | 'tumble' | 'hold_win' | 'free_spins' | 'wilds' | 'jackpot'
         let currentSortMode = 'default';    // 'default' | 'vol_asc' | 'vol_desc'
+        let searchQuery = '';                      // real-time game search (compound with other filters)
 
 
         // ═══════════════════════════════════════════════════════
@@ -596,9 +597,12 @@
         // ===== Filter Tabs =====
         function setFilter(filter) {
             currentFilter = filter;
-            // Clear search input when switching filters
+            // Clear inline search bar when switching filter tabs
             const searchInput = document.getElementById('gameSearchInput');
             if (searchInput) searchInput.value = '';
+            searchQuery = '';
+            const _clrBtn = document.getElementById('gameSearchClear');
+            if (_clrBtn) _clrBtn.style.display = 'none';
             const tabs = document.querySelectorAll('.filter-tab');
             tabs.forEach(tab => {
                 tab.classList.toggle('filter-tab-active', tab.dataset.filter === filter);
@@ -634,6 +638,11 @@
             // Apply mechanic filter
             if (currentMechanicFilter !== 'all') {
                 list = list.filter(g => _getMechanicCategory(g) === currentMechanicFilter);
+            }
+            // Apply inline search bar query (compound with all other filters)
+            if (searchQuery) {
+                var _sq = searchQuery.toLowerCase();
+                list = list.filter(function(g) { return g.name.toLowerCase().includes(_sq); });
             }
             // Apply sort
             if (currentSortMode === 'vol_asc') {
@@ -698,10 +707,35 @@
                 const _allGames = document.getElementById('allGames');
                 if (_allGames && _allGames.parentNode) _allGames.parentNode.insertBefore(_mechBar, _allGames);
             }
+            // ── Game search bar (injected once, after mechanic filter bar) ──
+            if (!document.getElementById('gameSearchWrap')) {
+                var _searchWrap = document.createElement('div');
+                _searchWrap.id = 'gameSearchWrap';
+                _searchWrap.className = 'game-search-wrap';
+                _searchWrap.innerHTML = '<input type="text" id="gameSearchInput" class="game-search-input" placeholder="🔍  Search games..." autocomplete="off" />' +
+                    '<button id="gameSearchClear" class="game-search-clear" style="display:none">✕</button>';
+                var _mechBar2 = document.getElementById('mechanicFilterBar');
+                if (_mechBar2 && _mechBar2.parentNode) {
+                    _mechBar2.parentNode.insertBefore(_searchWrap, _mechBar2.nextSibling);
+                }
+                document.getElementById('gameSearchInput').addEventListener('input', function() {
+                    searchQuery = this.value.trim();
+                    document.getElementById('gameSearchClear').style.display = searchQuery ? '' : 'none';
+                    renderFilteredGames();
+                });
+                document.getElementById('gameSearchClear').addEventListener('click', function() {
+                    searchQuery = '';
+                    document.getElementById('gameSearchInput').value = '';
+                    this.style.display = 'none';
+                    renderFilteredGames();
+                });
+            }
             const allGamesDiv = document.getElementById('allGames');
             const filtered = getFilteredGames(currentFilter);
             if (currentFilter === 'favorites' && filtered.length === 0) {
-                allGamesDiv.innerHTML = `<div class="games-fav-empty"><span class="fav-empty-icon">\u2661</span>Heart your first game to see it here!</div>`;
+                allGamesDiv.innerHTML = `<div class="games-fav-empty"><span class="fav-empty-icon">♡</span>Heart your first game to see it here!</div>`;
+            } else if (filtered.length === 0 && searchQuery) {
+                allGamesDiv.innerHTML = '<div class="search-no-results">No games found for "<strong>' + searchQuery.replace(/[<>]/g, '') + '</strong>"</div>';
             } else {
                 allGamesDiv.innerHTML = filtered.map(g => createGameCard(g)).join('');
             }

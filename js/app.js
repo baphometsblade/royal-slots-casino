@@ -153,6 +153,26 @@
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
             if (typeof initPromoEngine === 'function') initPromoEngine();
+            startSessionDurationWatch();
+        }
+
+        // Responsible gambling: remind player every 60 minutes of continuous play
+        function startSessionDurationWatch() {
+            if (window._sessionDurationTimer) return; // already running
+            window._sessionStartTime = window._sessionStartTime || Date.now();
+            window._sessionDurationTimer = setInterval(function () {
+                const mins = Math.round((Date.now() - window._sessionStartTime) / 60000);
+                if (mins > 0 && mins % 60 === 0) {
+                    const hrs = mins / 60;
+                    if (typeof showMessage === 'function') {
+                        showMessage(
+                            '⏱ You\'ve been playing for ' + hrs + ' hour' + (hrs > 1 ? 's' : '') +
+                            '. Remember to take breaks and play responsibly.',
+                            'near-miss'
+                        );
+                    }
+                }
+            }, 60000);
         }
 
 
