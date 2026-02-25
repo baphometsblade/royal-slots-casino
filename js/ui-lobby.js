@@ -777,6 +777,31 @@
         }
 
 
+
+        // ===== Favorites =====
+        var _favKey = 'casinoFavorites';
+        var _favsSet = (function() {
+            try { return new Set(JSON.parse(localStorage.getItem(_favKey) || '[]')); }
+            catch(e) { return new Set(); }
+        })();
+
+        function loadFavorites() {
+            return [..._favsSet];
+        }
+
+        function isFavorite(gameId) {
+            return _favsSet.has(gameId);
+        }
+
+        function toggleFavorite(gameId) {
+            if (_favsSet.has(gameId)) {
+                _favsSet.delete(gameId);
+            } else {
+                _favsSet.add(gameId);
+            }
+            try { localStorage.setItem(_favKey, JSON.stringify([..._favsSet])); } catch(e) {}
+            return _favsSet.has(gameId);
+        }
         // ===== Filter Tabs =====
         function setFilter(filter) {
             currentFilter = filter;

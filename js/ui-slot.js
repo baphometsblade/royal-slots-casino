@@ -1537,6 +1537,11 @@
             if (typeof destroyParticleEngine === 'function') destroyParticleEngine();
             _hideCascadeChain();
             _updateFreeSpinsFrame(); // cleanup: removes golden frame and banner
+            // Cleanup gamble state
+            if (typeof hideGambleButton === 'function') hideGambleButton();
+            if (typeof gambleState !== 'undefined') { gambleState.active = false; gambleState.amount = 0; gambleState.round = 0; }
+            var _gambleOverlayClose = document.getElementById('gambleOverlay');
+            if (_gambleOverlayClose) _gambleOverlayClose.style.display = 'none';
         }
 
 
@@ -2476,9 +2481,11 @@
                     updateFreeSpinsDisplay();
                 }
 
-                // Show gamble button for wins >= 1x bet (not during free spins)
-                if (!freeSpinsActive && !autoSpinActive && winAmount >= currentBet) {
+                // Show gamble button for wins >= 1x bet and < 100x bet (no gamble for jackpot wins)
+                if (!freeSpinsActive && !autoSpinActive && winAmount >= currentBet && winAmount < currentBet * 100) {
                     showGambleButton(winAmount);
+                } else if (!freeSpinsActive && !autoSpinActive) {
+                    hideGambleButton();
                 }
 
                 // Big win celebration for wins >= 10x bet
@@ -5966,9 +5973,11 @@
                     updateFreeSpinsDisplay();
                 }
 
-                // Show gamble button for wins >= 1x bet (not during free spins)
-                if (!freeSpinsActive && !autoSpinActive && winAmount >= currentBet) {
+                // Show gamble button for wins >= 1x bet and < 100x bet (no gamble for jackpot wins)
+                if (!freeSpinsActive && !autoSpinActive && winAmount >= currentBet && winAmount < currentBet * 100) {
                     showGambleButton(winAmount);
+                } else if (!freeSpinsActive && !autoSpinActive) {
+                    hideGambleButton();
                 }
 
                 // Big win celebration for wins >= 10x bet

@@ -12527,3 +12527,146 @@
 .buy-feature-btn:not(:disabled) {
   animation: buyFeaturePulse 3s ease-in-out infinite;
 }
+
+/* ── Gamble / Double-Up Feature ─────────────────────── */
+.gamble-overlay {
+  align-items: center;
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  justify-content: center;
+  left: 0;
+  opacity: 0;
+  padding: 24px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: opacity 0.25s ease;
+  z-index: 150;
+}
+.gamble-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.gamble-title {
+  color: #ffe066;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 10px rgba(255,200,0,0.7);
+  text-transform: uppercase;
+}
+.gamble-amount {
+  color: #4eff8f;
+  font-size: 1.6rem;
+  font-weight: 900;
+  text-shadow: 0 0 12px rgba(78,255,143,0.6);
+}
+.gamble-prompt {
+  color: #ccc;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.gamble-cards {
+  display: flex;
+  gap: 12px;
+}
+.gamble-card-btn {
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.6rem;
+  font-weight: 900;
+  height: 64px;
+  letter-spacing: 0.04em;
+  transition: transform 0.15s, box-shadow 0.15s;
+  width: 90px;
+}
+.gamble-card-btn:hover {
+  transform: scale(1.08);
+}
+.gamble-card-btn.red {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  box-shadow: 0 4px 16px rgba(200,50,50,0.5);
+  color: #fff;
+}
+.gamble-card-btn.red:hover { box-shadow: 0 6px 22px rgba(200,50,50,0.8); }
+.gamble-card-btn.black {
+  background: linear-gradient(135deg, #1a1a2e, #2c3e50);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.gamble-card-btn.black:hover { box-shadow: 0 6px 22px rgba(80,80,120,0.6); }
+@keyframes gambleFlip {
+  0%   { transform: rotateY(0deg) scale(1); }
+  50%  { transform: rotateY(90deg) scale(1.15); }
+  100% { transform: rotateY(0deg) scale(1); }
+}
+.gamble-result {
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 6px 18px;
+  text-transform: uppercase;
+}
+.gamble-result.win  { background: rgba(78,255,143,0.15); color: #4eff8f; border: 1px solid rgba(78,255,143,0.4); }
+.gamble-result.lose { background: rgba(255,80,80,0.15);  color: #ff6060; border: 1px solid rgba(255,80,80,0.4);  }
+.gamble-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.gamble-collect-btn {
+  background: linear-gradient(135deg, #1a3a1a, #2d5a2d);
+  border: 1px solid rgba(78,255,143,0.5);
+  border-radius: 8px;
+  color: #4eff8f;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 7px 16px;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.gamble-collect-btn:hover { background: linear-gradient(135deg, #2d5a2d, #3a7a3a); }
+.gamble-streak {
+  color: rgba(255,220,100,0.7);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Lobby Favorites ────────────────────────────────── */
+.game-fav-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  transition: color 0.18s, transform 0.18s;
+  z-index: 5;
+}
+.game-fav-btn:hover { color: rgba(255,100,100,0.8); transform: scale(1.2); }
+.game-fav-btn.fav-active { color: #ff4466; }
+.game-fav-btn.fav-active:hover { color: #ff6680; }
+@keyframes favPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.game-fav-btn.fav-pop { animation: favPop 0.35s cubic-bezier(0.34,1.56,0.64,1); }

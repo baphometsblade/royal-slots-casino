@@ -178,6 +178,12 @@ const GAME_CHROME_STYLES = {
   game138: 'arcadeforge',
   game139: 'phantomworks',
   game140: 'novaspin',
+  game141: 'vaultx',
+  game142: 'celestial',
+  game143: 'novaspin',
+  game144: 'ironreel',
+  game145: 'arcadeforge',
+  game146: 'phantomworks',
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)
