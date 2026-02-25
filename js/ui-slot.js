@@ -1728,21 +1728,6 @@
             const slotModal = document.getElementById('slotModal') || document.querySelector('.slot-modal-fullscreen');
             if (!slotModal) return;
 
-            // Inject CSS once
-            if (!document.getElementById('spinHistoryCss')) {
-                const s = document.createElement('style');
-                s.id = 'spinHistoryCss';
-                s.textContent = [
-                    '#spinHistoryPanel { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; margin: 0 12px 10px; overflow: hidden; }',
-                    '#spinHistoryToggle { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; cursor:pointer; user-select:none; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:1px; }',
-                    '#spinHistoryToggle:hover { color:#94a3b8; }',
-                    '#spinHistoryList { padding: 4px 12px 8px; max-height: 200px; overflow-y: auto; }',
-                    '#spinHistoryList::-webkit-scrollbar { width:3px; }',
-                    '#spinHistoryList::-webkit-scrollbar-thumb { background:#334155; border-radius:2px; }'
-                ].join('\n');
-                document.head.appendChild(s);
-            }
-
             const panel = document.createElement('div');
             panel.id = 'spinHistoryPanel';
             panel.innerHTML =
@@ -1770,21 +1755,6 @@
         // ── Session Stats Mini-Bar ────────────────────────────────────────────
         function _ensureSlotSessionStats() {
             if (document.getElementById('slotSessionStats')) return;
-
-            // Inject CSS once (id-guarded)
-            if (!document.getElementById('slotSessCss')) {
-                const st = document.createElement('style');
-                st.id = 'slotSessCss';
-                st.textContent = [
-                    '.slot-session-stats { display:flex; align-items:center; justify-content:space-around; padding:8px 12px; margin:4px 8px 4px; background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid rgba(255,255,255,0.07); }',
-                    '.sss-item { display:flex; flex-direction:column; align-items:center; gap:2px; }',
-                    '.sss-label { font-size:9px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.5px; }',
-                    '.sss-value { font-size:13px; font-weight:700; color:rgba(255,255,255,0.9); }',
-                    '.sss-divider { width:1px; height:24px; background:rgba(255,255,255,0.1); }',
-                    '@media (max-width: 480px) { .slot-session-stats { flex-wrap: wrap; gap: 6px; } .sss-item { flex: 1 1 42%; } .sss-divider { display: none; } }'
-                ].join('\n');
-                document.head.appendChild(st);
-            }
 
             const bar = document.createElement('div');
             bar.id = 'slotSessionStats';
@@ -3288,48 +3258,12 @@
         // ── Payline Flash Effect ─────────────────────────────────────────────
         // Injects CSS once then fires a staggered per-payline cell highlight.
         function _injectPaylineFlashCss() {
-            if (document.getElementById('paylineFlashCss')) return;
-            var style = document.createElement('style');
-            style.id = 'paylineFlashCss';
-            style.textContent = [
-                '@keyframes paylineFlash {',
-                '  0%   { outline: 3px solid transparent; outline-offset: -2px; filter: brightness(1); }',
-                '  20%  { outline: 3px solid rgba(255,215,0,0.95); outline-offset: -2px; filter: brightness(1.45); }',
-                '  60%  { outline: 2px solid rgba(255,215,0,0.55); outline-offset: -1px; filter: brightness(1.2); }',
-                '  100% { outline: 2px solid transparent; outline-offset: -1px; filter: brightness(1); }',
-                '}',
-                '.payline-flash-0 { animation: paylineFlash 900ms ease-out forwards; }',
-                '.payline-flash-1 { animation: paylineFlash 900ms ease-out 200ms forwards; }',
-                '.payline-flash-2 { animation: paylineFlash 900ms ease-out 400ms forwards; }',
-                '.payline-flash-3 { animation: paylineFlash 900ms ease-out 600ms forwards; }',
-                '.payline-flash-4 { animation: paylineFlash 900ms ease-out 800ms forwards; }',
-                '.payline-flash-5 { animation: paylineFlash 900ms ease-out 1000ms forwards; }',
-                '.payline-flash-6 { animation: paylineFlash 900ms ease-out 1200ms forwards; }',
-                '.payline-flash-7 { animation: paylineFlash 900ms ease-out 1400ms forwards; }'
-            ].join('\n');
-            document.head.appendChild(style);
+            // CSS is in styles.css
         }
 
 
         function _injectTumbleCss() {
-            if (document.getElementById('tumbleCascadeCss')) return;
-            var st = document.createElement('style');
-            st.id = 'tumbleCascadeCss';
-            st.textContent = [
-                '@keyframes tumbleBurst {',
-                '  0%   { transform: scale(1)    rotate(0deg);    opacity: 1; filter: brightness(1); }',
-                '  40%  { transform: scale(1.35) rotate(8deg);    opacity: 0.9; filter: brightness(2.5); }',
-                '  100% { transform: scale(0.05) rotate(-12deg);  opacity: 0; filter: brightness(3); }',
-                '}',
-                '@keyframes tumbleDrop {',
-                '  0%   { transform: translateY(-32px); opacity: 0; }',
-                '  60%  { transform: translateY(4px);   opacity: 0.8; }',
-                '  100% { transform: translateY(0);     opacity: 1; }',
-                '}',
-                '.reel-tumble-burst { animation: tumbleBurst 480ms cubic-bezier(0.4,0,0.6,1) forwards !important; pointer-events: none; }',
-                '.reel-tumble-drop  { animation: tumbleDrop  380ms cubic-bezier(0.34,1.56,0.64,1) forwards; }'
-            ].join('\n');
-            document.head.appendChild(st);
+            // CSS is in styles.css
         }
 
         function triggerTumbleCascade(game) {
@@ -3875,23 +3809,6 @@
             }
         }
 
-        (function() {
-            if (document.getElementById('_stickyWildCss')) return;
-            var st = document.createElement('style');
-            st.id = '_stickyWildCss';
-            st.textContent = [
-                '.reel-sticky-wild {',
-                '  outline: 2.5px solid #c6ff00 !important;',
-                '  outline-offset: -2px;',
-                '  animation: stickyWildPulse 1.2s ease-in-out infinite !important;',
-                '}',
-                '@keyframes stickyWildPulse {',
-                '  0%,100% { box-shadow: 0 0 0 0 rgba(198,255,0,0.0); }',
-                '  50%     { box-shadow: 0 0 12px 4px rgba(198,255,0,0.55); }',
-                '}'
-            ].join('\n');
-            document.head.appendChild(st);
-        })();
 
         (function() {
             var _origDSWR_sticky = displayServerWinResult;
@@ -3982,24 +3899,6 @@
             });
         }
 
-        (function() {
-            if (document.getElementById('_walkingWildCss')) return;
-            var st = document.createElement('style');
-            st.id = '_walkingWildCss';
-            st.textContent = [
-                '.reel-walking-wild {',
-                '  outline: 2.5px solid #00e5ff !important;',
-                '  outline-offset: -2px;',
-                '  animation: walkingWildSlide 0.5s ease-out !important;',
-                '}',
-                '@keyframes walkingWildSlide {',
-                '  0%   { transform: translateX(30px); opacity:0.4; }',
-                '  60%  { transform: translateX(-4px); opacity:1; }',
-                '  100% { transform: translateX(0);    opacity:1; }',
-                '}'
-            ].join('\n');
-            document.head.appendChild(st);
-        })();
 
         (function() {
             var _origDSWR_walk = displayServerWinResult;
@@ -4087,14 +3986,6 @@
             });
         }
 
-        (function() {
-            if (document.getElementById('_multWildCss')) return;
-            var st = document.createElement('style');
-            st.id = '_multWildCss';
-            st.textContent = '.mw-badge { animation: mwPop 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }'
-                + '@keyframes mwPop { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }';
-            document.head.appendChild(st);
-        })();
 
         // Patch: assign mult values, then boost win if wilds were on winning lines
         (function() {
@@ -4351,14 +4242,6 @@
             if (typeof playSound === 'function') playSound('cascade_hit');
         }
 
-        (function() {
-            if (document.getElementById('_cascadeCss')) return;
-            var st = document.createElement('style');
-            st.id = '_cascadeCss';
-            st.textContent = '@keyframes cascadeExplode { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.35);opacity:0.7;filter:brightness(2)} 100%{transform:scale(0);opacity:0} }'
-                + '.cascade-explode { animation: cascadeExplode 0.35s ease-out both !important; }';
-            document.head.appendChild(st);
-        })();
 
         (function() {
             var _origDSWR_cas = displayServerWinResult;
@@ -4451,14 +4334,6 @@
             });
         }
 
-        (function() {
-            if (document.getElementById('_expandWildCss')) return;
-            var st = document.createElement('style');
-            st.id = '_expandWildCss';
-            st.textContent = '@keyframes expandWild { 0%{transform:scaleY(0);opacity:0} 60%{transform:scaleY(1.15)} 100%{transform:scaleY(1);opacity:1} }'
-                + '.expand-wild-anim { animation: expandWild 0.45s cubic-bezier(0.22,1,0.36,1) both !important; transform-origin: top center; }';
-            document.head.appendChild(st);
-        })();
 
         (function() {
             var _origDSWR_ew = displayServerWinResult;
@@ -4537,14 +4412,6 @@
             }
         }
 
-        (function() {
-            if (document.getElementById('_respinCss')) return;
-            var st = document.createElement('style');
-            st.id = '_respinCss';
-            st.textContent = '@keyframes respinPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,0.8)} 50%{box-shadow:0 0 0 6px rgba(255,215,0,0)} }'
-                + '.respin-lock { outline: 2px solid #ffd600; border-radius: 4px; animation: respinPulse 1s ease-in-out infinite; }';
-            document.head.appendChild(st);
-        })();
 
         (function() {
             var _origDSWR_rs = displayServerWinResult;
@@ -4806,13 +4673,6 @@
             if (typeof playSound === 'function') playSound('colossal_land');
         }
 
-        (function() {
-            if (document.getElementById('_colossalCss')) return;
-            var st = document.createElement('style');
-            st.id = '_colossalCss';
-            st.textContent = '@keyframes colossalIn { 0%{transform:scale(0.5);opacity:0} 100%{transform:scale(1);opacity:1} }';
-            document.head.appendChild(st);
-        })();
 
         (function() {
             var _origDSWR_col = displayServerWinResult;
@@ -5222,6 +5082,259 @@
                     var ov = document.getElementById('rjOverlay');
                     if (ov) ov.parentNode && ov.parentNode.removeChild(ov);
                     _origOpenSlot_rj(game);
+                };
+            }
+        })();
+
+
+        // ═══════════════════════════════════════════════════════════════
+        // WIN STREAK TRACKER
+        // ═══════════════════════════════════════════════════════════════
+
+        window._winStreak = window._winStreak || 0;
+        window._winStreakBest = window._winStreakBest || 0;
+
+        var _STREAK_MILESTONES = [
+            { at: 3,  label: '3x STREAK',   color: '#cd7f32', cls: 'streak-bronze' },
+            { at: 5,  label: '5x STREAK',   color: '#c0c0c0', cls: 'streak-silver' },
+            { at: 10, label: '10x STREAK',  color: '#ffd700', cls: 'streak-gold'   },
+            { at: 20, label: '20x STREAK',  color: '#e040fb', cls: 'streak-legend' }
+        ];
+
+        function resetWinStreak() {
+            window._winStreak = 0;
+            _updateStreakDisplay();
+        }
+
+        function _updateStreakDisplay() {
+            var el = document.getElementById('winStreakBadge');
+            if (!el) return;
+            var streak = window._winStreak || 0;
+            if (streak < 2) { el.style.display = 'none'; return; }
+            var color = '#ffc107', cls = '';
+            for (var i = 0; i < _STREAK_MILESTONES.length; i++) {
+                if (streak >= _STREAK_MILESTONES[i].at) { color = _STREAK_MILESTONES[i].color; cls = _STREAK_MILESTONES[i].cls; }
+            }
+            el.textContent = '\uD83D\uDD25 ' + streak + '\xD7 STREAK';
+            el.style.display = 'inline-block';
+            el.style.color = color;
+            el.style.borderColor = color;
+            el.className = 'win-streak-badge' + (cls ? ' ' + cls : '');
+        }
+
+        function _ensureStreakBadge() {
+            if (document.getElementById('winStreakBadge')) return;
+            var badge = document.createElement('span');
+            badge.id = 'winStreakBadge';
+            badge.className = 'win-streak-badge';
+            badge.style.cssText = 'display:none;position:fixed;top:90px;right:14px;z-index:1500;'
+                + 'background:rgba(0,0,0,0.75);border:1.5px solid #ffc107;border-radius:20px;'
+                + 'padding:4px 12px;font-size:0.82rem;font-weight:700;color:#ffc107;'
+                + 'letter-spacing:0.04em;pointer-events:none;';
+            document.body.appendChild(badge);
+        }
+
+        (function() {
+            var _origDSWR_streak = displayServerWinResult;
+            displayServerWinResult = function(result, game) {
+                _ensureStreakBadge();
+                var won = result && result.winAmount > 0;
+                if (won) {
+                    window._winStreak = (window._winStreak || 0) + 1;
+                    if (window._winStreak > (window._winStreakBest || 0)) window._winStreakBest = window._winStreak;
+                    for (var i = 0; i < _STREAK_MILESTONES.length; i++) {
+                        if (window._winStreak === _STREAK_MILESTONES[i].at) {
+                            showBonusEffect(_STREAK_MILESTONES[i].label + '!', _STREAK_MILESTONES[i].color);
+                            if (typeof playSound === 'function') playSound('streak_hit');
+                            break;
+                        }
+                    }
+                } else {
+                    window._winStreak = 0;
+                }
+                _updateStreakDisplay();
+                _origDSWR_streak(result, game);
+            };
+        })();
+
+        (function() {
+            if (typeof openSlot === 'function') {
+                var _origOpenSlot_streak = openSlot;
+                openSlot = function(game) {
+                    resetWinStreak();
+                    _origOpenSlot_streak(game);
+                };
+            }
+        })();
+
+
+        // ═══════════════════════════════════════════════════════════════
+        // STICKY WILDS — bonusType: 'sticky_wilds'
+        // ═══════════════════════════════════════════════════════════════
+
+        window._stickyWildCells = window._stickyWildCells || [];
+
+        function resetStickyWilds() {
+            window._stickyWildCells = [];
+            document.querySelectorAll('.reel-sticky-wild').forEach(function(el) {
+                el.classList.remove('reel-sticky-wild');
+            });
+        }
+
+        function triggerStickyWildsFreeSpins(game, scatterWin) {
+            resetStickyWilds();
+            if (typeof playSound === 'function') playSound('freespin');
+            showBonusEffect('STICKY WILDS BONUS!', game.accentColor || '#9c27b0');
+            triggerFreeSpins(game, game.freeSpinsCount);
+        }
+
+        function _applyStickyWildVisuals(game) {
+            var cells = window._stickyWildCells || [];
+            cells.forEach(function(pos) {
+                var el = document.getElementById('reel_' + pos.col + '_' + pos.row);
+                if (el) {
+                    el.innerHTML = renderSymbol(game.wildSymbol);
+                    el.classList.add('reel-sticky-wild', 'reel-wild-glow');
+                }
+            });
+        }
+
+        function _collectNewStickyWilds(result, game) {
+            var cells = window._stickyWildCells;
+            if (!result || !result.grid) return;
+            var cols = result.grid.length;
+            for (var c = 0; c < cols; c++) {
+                var col = result.grid[c];
+                if (!col) continue;
+                for (var r = 0; r < col.length; r++) {
+                    if (isWild(col[r], game)) {
+                        var already = cells.some(function(p) { return p.col === c && p.row === r; });
+                        if (!already) {
+                            cells.push({ col: c, row: r });
+                            if (typeof playSound === 'function') playSound('sticky_lock');
+                        }
+                    }
+                }
+            }
+        }
+
+
+        (function() {
+            var _origDSWR_sticky = displayServerWinResult;
+            displayServerWinResult = function(result, game) {
+                if (game && game.bonusType === 'sticky_wilds' && freeSpinsActive) {
+                    var cells = window._stickyWildCells || [];
+                    if (cells.length > 0 && result && result.grid) {
+                        cells.forEach(function(pos) {
+                            if (result.grid[pos.col]) result.grid[pos.col][pos.row] = game.wildSymbol;
+                        });
+                    }
+                    _origDSWR_sticky(result, game);
+                    _collectNewStickyWilds(result, game);
+                    setTimeout(function() { _applyStickyWildVisuals(game); }, 50);
+                    return;
+                }
+                _origDSWR_sticky(result, game);
+            };
+        })();
+
+        (function() {
+            if (typeof openSlot === 'function') {
+                var _origOpenSlot_sticky = openSlot;
+                openSlot = function(game) {
+                    if (game && game.bonusType === 'sticky_wilds') resetStickyWilds();
+                    _origOpenSlot_sticky(game);
+                };
+            }
+        })();
+
+
+        // ═══════════════════════════════════════════════════════════════
+        // WALKING WILDS — bonusType: 'walking_wilds'
+        // ═══════════════════════════════════════════════════════════════
+
+        window._walkingWildCells = window._walkingWildCells || [];
+
+        function resetWalkingWilds() {
+            window._walkingWildCells = [];
+            document.querySelectorAll('.reel-walking-wild').forEach(function(el) {
+                el.classList.remove('reel-walking-wild');
+            });
+        }
+
+        function triggerWalkingWildsFreeSpins(game, scatterWin) {
+            resetWalkingWilds();
+            if (typeof playSound === 'function') playSound('freespin');
+            showBonusEffect('WALKING WILDS BONUS!', game.accentColor || '#00bcd4');
+            triggerFreeSpins(game, game.freeSpinsCount);
+        }
+
+        function _stepWalkingWilds() {
+            var next = [];
+            var walked = false;
+            window._walkingWildCells.forEach(function(pos) {
+                if (pos.col > 0) { next.push({ col: pos.col - 1, row: pos.row }); walked = true; }
+            });
+            window._walkingWildCells = next;
+            if (walked && typeof playSound === 'function') playSound('wild_walk');
+        }
+
+        function _collectNewWalkingWilds(result, game) {
+            var cells = window._walkingWildCells;
+            if (!result || !result.grid) return;
+            var cols = result.grid.length;
+            for (var c = 0; c < cols; c++) {
+                var col = result.grid[c];
+                if (!col) continue;
+                for (var r = 0; r < col.length; r++) {
+                    if (isWild(col[r], game)) {
+                        var already = cells.some(function(p) { return p.col === c && p.row === r; });
+                        if (!already) cells.push({ col: c, row: r });
+                    }
+                }
+            }
+        }
+
+        function _applyWalkingWildVisuals(game) {
+            document.querySelectorAll('.reel-walking-wild').forEach(function(el) {
+                el.classList.remove('reel-walking-wild');
+            });
+            (window._walkingWildCells || []).forEach(function(pos) {
+                var el = document.getElementById('reel_' + pos.col + '_' + pos.row);
+                if (el) {
+                    el.innerHTML = renderSymbol(game.wildSymbol);
+                    el.classList.add('reel-walking-wild', 'reel-wild-glow');
+                }
+            });
+        }
+
+
+        (function() {
+            var _origDSWR_walk = displayServerWinResult;
+            displayServerWinResult = function(result, game) {
+                if (game && game.bonusType === 'walking_wilds' && freeSpinsActive) {
+                    _stepWalkingWilds();
+                    var cells = window._walkingWildCells;
+                    if (cells.length > 0 && result && result.grid) {
+                        cells.forEach(function(pos) {
+                            if (result.grid[pos.col]) result.grid[pos.col][pos.row] = game.wildSymbol;
+                        });
+                    }
+                    _origDSWR_walk(result, game);
+                    _collectNewWalkingWilds(result, game);
+                    setTimeout(function() { _applyWalkingWildVisuals(game); }, 50);
+                    return;
+                }
+                _origDSWR_walk(result, game);
+            };
+        })();
+
+        (function() {
+            if (typeof openSlot === 'function') {
+                var _origOpenSlot_walk = openSlot;
+                openSlot = function(game) {
+                    if (game && game.bonusType === 'walking_wilds') resetWalkingWilds();
+                    _origOpenSlot_walk(game);
                 };
             }
         })();

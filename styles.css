@@ -11333,3 +11333,186 @@
     #lobbySearchBar { padding: 6px 0 2px; }
     #lobbyProviderStrip { padding: 2px 0 6px; }
 }
+
+/* =====================================================
+   SLOT UI STYLES - consolidated from runtime injection in ui-slot.js
+   ===================================================== */
+
+/* Spin History Panel (spinHistoryCss) */
+#spinHistoryPanel {
+    background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; margin: 0 12px 10px; overflow: hidden;
+}
+#spinHistoryToggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; cursor: pointer; user-select: none;
+    font-size: 11px; font-weight: 700; color: #64748b;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+#spinHistoryToggle:hover { color: #94a3b8; }
+#spinHistoryList { padding: 4px 12px 8px; max-height: 200px; overflow-y: auto; }
+#spinHistoryList::-webkit-scrollbar { width: 3px; }
+#spinHistoryList::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+/* Slot Session Stats Bar (slotSessCss) */
+.slot-session-stats {
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 8px 12px; margin: 4px 8px 4px;
+    background: rgba(0,0,0,0.3); border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.07);
+}
+.sss-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.sss-label { font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
+.sss-value { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); }
+.sss-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); }
+@media (max-width: 480px) {
+    .slot-session-stats { flex-wrap: wrap; gap: 6px; }
+    .sss-item { flex: 1 1 42%; }
+    .sss-divider { display: none; }
+}
+
+/* Payline Flash Effect (paylineFlashCss) */
+@keyframes paylineFlash {
+    0%   { outline: 3px solid transparent; outline-offset: -2px; filter: brightness(1); }
+    20%  { outline: 3px solid rgba(255,215,0,0.95); outline-offset: -2px; filter: brightness(1.45); }
+    60%  { outline: 2px solid rgba(255,215,0,0.55); outline-offset: -1px; filter: brightness(1.2); }
+    100% { outline: 2px solid transparent; outline-offset: -1px; filter: brightness(1); }
+}
+.payline-flash-0 { animation: paylineFlash 900ms ease-out forwards; }
+.payline-flash-1 { animation: paylineFlash 900ms ease-out 200ms forwards; }
+.payline-flash-2 { animation: paylineFlash 900ms ease-out 400ms forwards; }
+.payline-flash-3 { animation: paylineFlash 900ms ease-out 600ms forwards; }
+.payline-flash-4 { animation: paylineFlash 900ms ease-out 800ms forwards; }
+.payline-flash-5 { animation: paylineFlash 900ms ease-out 1000ms forwards; }
+.payline-flash-6 { animation: paylineFlash 900ms ease-out 1200ms forwards; }
+.payline-flash-7 { animation: paylineFlash 900ms ease-out 1400ms forwards; }
+
+/* Tumble / Avalanche Cascade (tumbleCascadeCss) */
+@keyframes tumbleBurst {
+    0%   { transform: scale(1)    rotate(0deg);   opacity: 1; filter: brightness(1); }
+    40%  { transform: scale(1.35) rotate(8deg);   opacity: 0.9; filter: brightness(2.5); }
+    100% { transform: scale(0.05) rotate(-12deg); opacity: 0; filter: brightness(3); }
+}
+@keyframes tumbleDrop {
+    0%   { transform: translateY(-32px); opacity: 0; }
+    60%  { transform: translateY(4px);   opacity: 0.8; }
+    100% { transform: translateY(0);     opacity: 1; }
+}
+.reel-tumble-burst { animation: tumbleBurst 480ms cubic-bezier(0.4,0,0.6,1) forwards !important; pointer-events: none; }
+.reel-tumble-drop  { animation: tumbleDrop  380ms cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+/* Sticky Wilds (stickyWildCss) */
+.reel-sticky-wild {
+    outline: 2.5px solid #c6ff00 !important;
+    outline-offset: -2px;
+    animation: stickyWildPulse 1.2s ease-in-out infinite !important;
+}
+@keyframes stickyWildPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(198,255,0,0.0); }
+    50%       { box-shadow: 0 0 12px 4px rgba(198,255,0,0.55); }
+}
+
+/* Walking Wilds (walkingWildCss) */
+.reel-walking-wild {
+    outline: 2.5px solid #00e5ff !important;
+    outline-offset: -2px;
+    animation: walkingWildSlide 0.5s ease-out !important;
+}
+@keyframes walkingWildSlide {
+    0%   { transform: translateX(30px); opacity: 0.4; }
+    60%  { transform: translateX(-4px); opacity: 1; }
+    100% { transform: translateX(0);    opacity: 1; }
+}
+
+/* Multiplier Wilds badge (multWildCss) */
+.mw-badge { animation: mwPop 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes mwPop {
+    0%   { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Cascading Reels explode (cascadeCss) */
+@keyframes cascadeExplode {
+    0%   { transform: scale(1);    opacity: 1; }
+    50%  { transform: scale(1.35); opacity: 0.7; filter: brightness(2); }
+    100% { transform: scale(0);    opacity: 0; }
+}
+.cascade-explode { animation: cascadeExplode 0.35s ease-out both !important; }
+
+/* Expanding Wilds (expandWildCss) */
+@keyframes expandWild {
+    0%   { transform: scaleY(0); opacity: 0; }
+    60%  { transform: scaleY(1.15); }
+    100% { transform: scaleY(1); opacity: 1; }
+}
+.expand-wild-anim { animation: expandWild 0.45s cubic-bezier(0.22,1,0.36,1) both !important; transform-origin: top center; }
+
+/* Re-Spin Hold (respinCss) */
+@keyframes respinPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.8); }
+    50%       { box-shadow: 0 0 0 6px rgba(255,215,0,0); }
+}
+.respin-lock { outline: 2px solid #ffd600; border-radius: 4px; animation: respinPulse 1s ease-in-out infinite; }
+
+/* Colossal Symbols reveal (colossalCss) */
+@keyframes colossalIn {
+    0%   { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1);   opacity: 1; }
+}
+
+/* =====================================================
+   MODAL UI STYLES - consolidated from runtime injection in ui-modals.js
+   ===================================================== */
+
+/* Login Streak panel row (streakCss) */
+.streak-stat-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+}
+.streak-stat-row strong { color: #fff; }
+
+/* Daily Challenge completion toast (challengeToastKf) */
+@keyframes challengeToastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes challengeToastOut {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to   { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+/* Achievements grid (achCss) */
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px,1fr)); gap: 8px; margin-top: 4px; }
+.ach-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 10px 8px; text-align: center; transition: border-color 0.2s;
+}
+.ach-card.ach-unlocked { border-color: rgba(123,97,255,0.5); background: rgba(123,97,255,0.08); }
+.ach-card.ach-locked   { opacity: 0.4; filter: grayscale(0.5); }
+.ach-icon  { font-size: 24px; margin-bottom: 3px; }
+.ach-name  { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.9); margin-bottom: 2px; }
+.ach-desc  { font-size: 9px; color: rgba(255,255,255,0.4); line-height: 1.3; }
+.ach-unlocked .ach-name { color: #b39ddb; }
+.ach-count-badge { font-size: 11px; background: rgba(123,97,255,0.2); color: #b39ddb; padding: 2px 8px; border-radius: 20px; }
+
+/* =====================================================
+   WALLET UI STYLES - consolidated from runtime injection in ui-wallet.js
+   ===================================================== */
+
+/* Wallet session tracker (walletEnhCss) */
+.wallet-tx-icon { font-size: 14px; vertical-align: middle; margin-right: 2px; }
+#walletSessionTracker {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; margin-bottom: 10px;
+    background: rgba(255,255,255,0.04); border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08); font-size: 12px;
+}
+.wst-label   { color: rgba(255,255,255,0.45); }
+.wst-amount  { color: rgba(255,255,255,0.75); font-weight: 600; }
+.wst-sep     { color: rgba(255,255,255,0.2); }
+.wst-net     { font-weight: 700; }
+.wst-pos     { color: #66bb6a; }
+.wst-neg     { color: #ef5350; }
+.wst-neutral { color: rgba(255,255,255,0.4); }

@@ -170,14 +170,6 @@
 
         function _ensureStreakPanel() {
             if (document.getElementById('streakPanelContainer')) return;
-            if (!document.getElementById('streakCss')) {
-                const st = document.createElement('style');
-                st.id = 'streakCss';
-                st.textContent = `.streak-stat-row{display:flex;justify-content:space-between;font-size:12px;`
-                    + `padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.7)}`
-                    + `.streak-stat-row strong{color:#fff}`;
-                document.head.appendChild(st);
-            }
             const wrap = document.createElement('div');
             wrap.id = 'streakPanelContainer';
             wrap.style.cssText = 'margin-top:14px;padding:12px;background:rgba(255,109,0,0.06);'
@@ -422,15 +414,6 @@
                 <div style="font-size:15px;">${ch.label}</div>
                 <div style="font-size:12px;color:#6ee7b7;margin-top:4px;">+${ch.xp} XP awarded!</div>
             `;
-            if (!document.getElementById('challengeToastKf')) {
-                const s = document.createElement('style');
-                s.id = 'challengeToastKf';
-                s.textContent = `
-                    @keyframes challengeToastIn { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-                    @keyframes challengeToastOut { from{opacity:1;transform:translateX(-50%) translateY(0)} to{opacity:0;transform:translateX(-50%) translateY(-10px)} }
-                `;
-                document.head.appendChild(s);
-            }
             document.body.appendChild(el);
             setTimeout(() => {
                 el.style.animation = 'challengeToastOut 0.4s ease-in forwards';
@@ -651,20 +634,6 @@
 
         function _ensureAchievementsPanel() {
             if (document.getElementById('achPanelContainer')) return;
-            if (!document.getElementById('achCss')) {
-                const st = document.createElement('style');
-                st.id = 'achCss';
-                st.textContent = `.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:4px}`
-                    + `.ach-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 8px;text-align:center;transition:border-color 0.2s}`
-                    + `.ach-card.ach-unlocked{border-color:rgba(123,97,255,0.5);background:rgba(123,97,255,0.08)}`
-                    + `.ach-card.ach-locked{opacity:.4;filter:grayscale(.5)}`
-                    + `.ach-icon{font-size:24px;margin-bottom:3px}`
-                    + `.ach-name{font-size:10px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:2px}`
-                    + `.ach-desc{font-size:9px;color:rgba(255,255,255,0.4);line-height:1.3}`
-                    + `.ach-unlocked .ach-name{color:#b39ddb}`
-                    + `.ach-count-badge{font-size:11px;background:rgba(123,97,255,0.2);color:#b39ddb;padding:2px 8px;border-radius:20px}`;
-                document.head.appendChild(st);
-            }
             const wrap = document.createElement('div');
             wrap.id = 'achPanelContainer';
             wrap.style.cssText = 'margin-top:14px;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid rgba(255,255,255,0.06);';

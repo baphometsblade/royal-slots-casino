@@ -258,26 +258,6 @@ function renderDepositForm() {
     const container = document.getElementById('walletContent');
     if (!container) return;
 
-    if (!document.getElementById('walletEnhCss')) {
-        const s = document.createElement('style');
-        s.id = 'walletEnhCss';
-        s.textContent = `.wallet-tx-icon { font-size: 14px; vertical-align: middle; margin-right: 2px; }
-#walletSessionTracker {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  padding: 7px 12px; margin-bottom: 10px;
-  background: rgba(255,255,255,0.04); border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.08); font-size: 12px;
-}
-.wst-label { color: rgba(255,255,255,0.45); }
-.wst-amount { color: rgba(255,255,255,0.75); font-weight: 600; }
-.wst-sep { color: rgba(255,255,255,0.2); }
-.wst-net { font-weight: 700; }
-.wst-pos { color: #66bb6a; }
-.wst-neg { color: #ef5350; }
-.wst-neutral { color: rgba(255,255,255,0.4); }`;
-        document.head.appendChild(s);
-    }
-
     const walletStart = walletSessionStartBalance !== null ? walletSessionStartBalance : balance;
     const netChange = balance - walletStart;
     const netClass = netChange > 0 ? 'wst-pos' : netChange < 0 ? 'wst-neg' : 'wst-neutral';
