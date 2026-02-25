@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Auth gate: hide all content instantly if no session token exists -->
+    <script>
+    (function(){
+        if (!localStorage.getItem('casinoToken')) {
+            document.body.classList.add('auth-gate');
+        }
+    })();
+    </script>
     <!-- Page Transition Overlay -->
     <div class="page-transition" id="pageTransition">
         <div class="spinner"></div>
@@ -1233,6 +1241,11 @@
     <!-- Auth gate: hide close button when login is required -->
     <style>
         body.auth-gate #authModal .auth-close-btn { display: none !important; }
+        /* Hide all page content while auth gate is active — show only the auth modal */
+        body.auth-gate > *:not(#authModal):not(.toast-container) {
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
     </style>
 
     <!-- Slot intro splash overlay -->

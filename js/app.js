@@ -158,6 +158,20 @@
 
         // ===== Update init to include new systems =====
         async function initAllSystems() {
+            // Fast-path: if no session exists, show auth immediately.
+            // currentUser is already restored from localStorage by globals.js.
+            if (!currentUser) {
+                document.body.classList.add('auth-gate');
+                // Still run essential non-lobby inits so modals work correctly
+                loadXP();
+                loadDailyBonus();
+                loadWheelState();
+                initBase();
+                updateAuthButton();
+                showAuthModal();
+                return;
+            }
+
             loadXP();
             loadDailyBonus();
             loadWheelState();
@@ -171,7 +185,7 @@
             await syncServerSession();
 
             if (!currentUser) {
-                // Block the lobby until the user signs in
+                // Token was invalidated by server (e.g. 401) — re-gate
                 document.body.classList.add('auth-gate');
                 showAuthModal();
                 return;
