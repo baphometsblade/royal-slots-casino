@@ -3583,7 +3583,7 @@
                     window._wildMeterValue += picks[Math.floor(Math.random() * picks.length)];
                 }
                 if (typeof playSound === 'function') playSound('wild_meter_tick');
-                showBonusEffect('\u26A1 WILD METER +" + wildCount + " WILD' + (wildCount > 1 ? 'S' : '') + '!', '#c6ff00');
+                showBonusEffect('\u26A1 WILD METER +' + wildCount + ' WILD' + (wildCount > 1 ? 'S' : '') + '!', '#c6ff00');
             }
 
             updateWildMeterDisplay();
@@ -4255,6 +4255,8 @@
                         triggerStickyWildsFreeSpins(game, 0);
                     } else if (game.bonusType === 'walking_wilds' && typeof triggerWalkingWildsFreeSpins === 'function') {
                         triggerWalkingWildsFreeSpins(game, 0);
+                    } else if (game.bonusType === 'prize_wheel' && typeof triggerPrizeWheel === 'function') {
+                        triggerPrizeWheel(game);
                     } else {
                         triggerFreeSpins(game, game.freeSpinsCount);
                     }

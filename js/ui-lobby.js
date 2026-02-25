@@ -394,11 +394,23 @@
 
         function _giBonusLabel(game) {
             const map = {
-                free_spins: 'Free Spins', megaways: 'Megaways', expanding_symbol: 'Expanding',
-                respin: 'Respin', money_collect: 'Collect', bonus_wheel: 'Wheel',
-                mystery_symbol: 'Mystery', cascading: 'Cascade', tumbling_reels: 'Tumble',
-                sticky_wild: 'Sticky Wild', win_both_ways: 'Both Ways', power_spin: 'PowerSpin',
-                hold_and_respin: 'Hold&Spin',
+                // Legacy/original types
+                tumble: 'Tumble', avalanche: 'Tumble', random_multiplier: 'Random ×',
+                zeus_multiplier: 'Zeus ×', money_collect: 'Collect', stacked_wilds: 'Stacked Wilds',
+                expanding_wild_respin: 'Expand+Respin', expanding_symbol: 'Expanding',
+                fisherman_collect: 'Fish Collect', wheel_multiplier: 'Wheel ×',
+                hold_and_win: 'Hold & Win', coin_respin: 'Coin Respin',
+                // Sprint 1-2
+                wild_collect: 'Wild Meter', mystery_stacks: 'Mystery Stacks',
+                chamber_spins: 'Chamber Spins', sticky_wilds: 'Sticky Wilds',
+                walking_wilds: 'Walking Wilds', win_streak: 'Win Streak',
+                multiplier_wilds: 'Mult Wilds', increasing_mult: 'Rising ×',
+                // Sprint 3
+                cascading: 'Cascade', expanding_wilds: 'Expand Wild', respin: 'Re-Spin',
+                // Sprint 4
+                prize_wheel: 'Prize Wheel', colossal: 'Colossal', symbol_collect: 'Symbol Collect',
+                // Sprint 5
+                wild_reels: 'Wild Reels', both_ways: 'Both Ways', random_jackpot: 'Random JP',
             };
             return map[game.bonusType] || 'Bonus';
         }
@@ -423,14 +435,24 @@
             const dotsHtml = Array.from({length: 4}, (_, i) =>
                 `<span class="vol-dot${i < volDots ? ' vol-dot-filled' : ''}"></span>`
             ).join('');
-            // Build hover overlay bonus pill
             const featureIconMap = {
+                // Legacy/original types
                 tumble: '⬇️', avalanche: '🪨', random_multiplier: '✨', zeus_multiplier: '⚡',
-                money_collect: '💰', respin: '🔄', stacked_wilds: '🔥', hold_and_win: '🎯',
+                money_collect: '💰', stacked_wilds: '🔥', hold_and_win: '🎯',
                 fisherman_collect: '🎣', wheel_multiplier: '🎡', expanding_symbol: '📖',
-                expanding_wild_respin: '🌟', sticky_wilds: '🍯', progressive: '🏆',
-                mystery_symbols: '❓', cascading: '🌊', nudge: '👆', trail_bonus: '🗺️',
-                pick_bonus: '🎁', super_meter: '📊', lightning_respin: '⚡', mega_symbols: '🔮'
+                expanding_wild_respin: '🌟', progressive: '🏆', mystery_symbols: '❓',
+                nudge: '👆', trail_bonus: '🗺️', pick_bonus: '🎁', super_meter: '📊',
+                lightning_respin: '⚡', mega_symbols: '🔮', coin_respin: '🪙',
+                // Sprint 1-2
+                wild_collect: '⚡', mystery_stacks: '❓', chamber_spins: '🔫',
+                sticky_wilds: '🍯', walking_wilds: '🚶', win_streak: '🔥',
+                multiplier_wilds: '✖️', increasing_mult: '📈',
+                // Sprint 3
+                respin: '🔄', cascading: '🌊', expanding_wilds: '🌟',
+                // Sprint 4
+                prize_wheel: '🎡', colossal: '🔮', symbol_collect: '💎',
+                // Sprint 5
+                wild_reels: '🎰', both_ways: '↔️', random_jackpot: '💰',
             };
             const bonusIcon = (game.bonusType && featureIconMap[game.bonusType]) || '🎰';
             const gridLabel = (game.gridCols && game.gridRows) ? `${game.gridCols}×${game.gridRows}` : '';
