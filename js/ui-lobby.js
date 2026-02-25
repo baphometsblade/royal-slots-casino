@@ -467,24 +467,26 @@
         }
 
         function _getDailyHotGames() {
-            if (!window.GAMES || !window.GAMES.length) return new Set();
+            var g = (typeof games !== 'undefined' && games) || window.GAMES;
+            if (!g || !g.length) return new Set();
             // Simple deterministic daily seed from date string
             var seed = new Date().toDateString().split('').reduce(function(h, c) {
                 return (Math.imul(31, h) + c.charCodeAt(0)) | 0;
             }, 0);
             var indices = new Set();
-            var len = window.GAMES.length;
+            var len = g.length;
             var s = Math.abs(seed);
             while (indices.size < 8) {
                 s = (Math.imul(s, 1664525) + 1013904223) | 0;
                 indices.add(Math.abs(s) % len);
             }
-            return new Set(Array.from(indices).map(function(i) { return window.GAMES[i].id; }));
+            return new Set(Array.from(indices).map(function(i) { return g[i].id; }));
         }
 
         function _getNewGameIds() {
-            if (!window.GAMES || window.GAMES.length < 6) return new Set();
-            return new Set(window.GAMES.slice(-6).map(function(g) { return g.id; }));
+            var g = (typeof games !== 'undefined' && games) || window.GAMES;
+            if (!g || g.length < 6) return new Set();
+            return new Set(g.slice(-6).map(function(x) { return x.id; }));
         }
 
         // Cache hot/new sets — recomputed only once per day
