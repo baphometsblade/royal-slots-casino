@@ -1873,25 +1873,6 @@
             }
         }
 
-        // -- Win Streak Toast
-        function showStreakToast(streak) {
-            const reelArea = document.querySelector(".slot-reel-area");
-            if (!reelArea) return;
-            const toast = document.createElement("div");
-            toast.className = "streak-toast";
-            let icon = "🔥";
-            const text = streak + " WIN STREAK!";
-            if (streak >= 10) {
-                icon = "🔥🔥🔥";
-                toast.classList.add("streak-toast--legendary");
-            } else if (streak >= 5) {
-                icon = "🔥🔥";
-                toast.classList.add("streak-toast--hot");
-            }
-            toast.textContent = icon + " " + text;
-            reelArea.appendChild(toast);
-            setTimeout(function() { toast.remove(); }, 2500);
-        }
 
         // Display win result from server (no client-side win calculation)
         function displayServerWinResult(result, game) {
@@ -1992,19 +1973,8 @@
                     setTimeout(function() { showBigWinCelebration(winAmount); }, 800);
                 }
 
-                // Win streak tracking
-                _winStreak++;
-                if (_winStreak >= 3) {
-                    showStreakToast(_winStreak);
-                }
             } else {
-                // Streak ended
-                if (_winStreak >= 3) {
-                    showMessage("Streak ended at " + _winStreak + "! Keep spinning!", "lose");
-                } else {
-                    showMessage(details.message || "No win. Try again.", "lose");
-                }
-                _winStreak = 0;
+                showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
                 detectAndShowNearMiss(grid, game);
             }
