@@ -11929,3 +11929,87 @@
     transition: color 0.15s;
 }
 .lobby-resume-banner .resume-x:hover { color: rgba(255,255,255,0.8); }
+
+/* ---- Session HUD win-rate span ----------------------------------------- */
+.slot-session-hud .hud-winrate {
+    color: rgba(255,255,255,0.38);
+    font-size: 9px;
+}
+
+/* ---- Lobby "X playing" live badge -------------------------------------- */
+.card-players-live {
+    position: absolute;
+    bottom: 7px;
+    left: 8px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.62);
+    backdrop-filter: blur(4px);
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    border: 1px solid rgba(255,255,255,0.10);
+}
+.card-players-live::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 5px #4ade80;
+    animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.45; transform: scale(0.8); }
+}
+
+/* ---- Hotkey cheatsheet overlay ---------------------------------------- */
+.hotkey-sheet {
+    position: fixed;
+    bottom: 76px;
+    right: 16px;
+    z-index: 4000;
+    background: rgba(12,12,24,0.95);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    min-width: 160px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+    transition: opacity 0.18s, transform 0.18s;
+    font-family: 'Courier New', monospace;
+}
+.hotkey-sheet.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.hotkey-sheet table { border-collapse: collapse; width: 100%; }
+.hotkey-sheet td { padding: 2px 4px; }
+.hotkey-sheet td:first-child {
+    font-weight: 800;
+    color: var(--slot-accent, #ffd700);
+    white-space: nowrap;
+    padding-right: 10px;
+}
+.hotkey-sheet .hs-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 6px;
+}

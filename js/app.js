@@ -263,5 +263,11 @@
                         togglePaytable();
                     }
                     break;
+                default:
+                    if ((e.key === '?' || e.key === '/') && slotOpen) {
+                        if (typeof _toggleHotkeySheet === 'function') _toggleHotkeySheet();
+                        return;
+                    }
+                    break;
             }
         });

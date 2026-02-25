@@ -6,6 +6,7 @@
         let spinHistory = []; // [{win, bet, isNearMiss, timestamp}, ...]
         // Session stats tracking (reset each time a new game opens)
         let _sessSpins = 0, _sessTotalBet = 0, _sessTotalWon = 0;
+        let _sessWins = 0;
         const SPIN_HISTORY_MAX = 15;
         // Build symbol image HTML for any game symbol
         function getSymbolHtml(symbolName, gameId) {
@@ -895,7 +896,7 @@
             // Reset spin history for the new game session
             spinHistory = [];
             // Reset session stats HUD
-            _sessSpins = 0; _sessTotalBet = 0; _sessTotalWon = 0;
+            _sessSpins = 0; _sessTotalBet = 0; _sessTotalWon = 0; _sessWins = 0;
             var _oldHud = document.getElementById('slotSessionHud');
             if (_oldHud) _oldHud.remove();
 
@@ -937,7 +938,7 @@
                 var _hud = document.createElement('div');
                 _hud.id = 'slotSessionHud';
                 _hud.className = 'slot-session-hud';
-                _hud.innerHTML = '<span class="hud-neutral">SESSION &mdash;</span><span class="hud-sep">|</span><span id="hudSpins">0 spins</span><span class="hud-sep">|</span><span id="hudPL" class="hud-neutral">$0.00</span>';
+                _hud.innerHTML = '<span class="hud-neutral">SESSION &mdash;</span><span class="hud-sep">|</span><span id="hudSpins">0 spins</span><span class="hud-sep">|</span><span id="hudPL" class="hud-neutral">$0.00</span><span class="hud-sep">|</span><span id="hudWR" class="hud-winrate">0%</span>';
                 var _bar = modal.querySelector('.slot-bottom-bar');
                 if (_bar && _bar.parentNode) _bar.parentNode.insertBefore(_hud, _bar.nextSibling);
             })();
@@ -966,14 +967,11 @@
                     chip.textContent = labels[i];
                     chip.setAttribute('title', '$' + val);
                     chip.addEventListener('click', function() {
-                        if (typeof setPresetBetValue === 'function') {
-                            setPresetBetValue(val);
+                        if (typeof setPresetBet === 'function') {
+                            setPresetBet(i);
                         } else {
-                            // fallback: set currentBet directly and update display
-                            if (typeof currentBet !== 'undefined') {
-                                currentBet = val;
-                                if (typeof updateBetDisplay === 'function') updateBetDisplay();
-                            }
+                            currentBet = val;
+                            if (typeof updateBetDisplay === 'function') updateBetDisplay();
                         }
                     });
                     row.appendChild(chip);
@@ -1414,6 +1412,37 @@
             var sign = pl >= 0 ? '+' : '';
             plEl.textContent = sign + '$' + Math.abs(pl).toFixed(2);
             plEl.className = pl > 0 ? 'hud-profit' : pl < 0 ? 'hud-loss' : 'hud-neutral';
+            var wrEl = document.getElementById('hudWR');
+            if (wrEl) {
+                var wr = _sessSpins > 0 ? Math.round((_sessWins / _sessSpins) * 100) : 0;
+                wrEl.textContent = wr + '% hit';
+            }
+        }
+
+        function _toggleHotkeySheet() {
+            var sheet = document.getElementById('slotHotkeySheet');
+            if (!sheet) {
+                sheet = document.createElement('div');
+                sheet.id = 'slotHotkeySheet';
+                sheet.className = 'hotkey-sheet';
+                sheet.innerHTML =
+                    '<div class="hs-title">Keyboard Shortcuts</div>' +
+                    '<table>' +
+                    '<tr><td>Space</td><td>Spin</td></tr>' +
+                    '<tr><td>T</td><td>Turbo mode</td></tr>' +
+                    '<tr><td>A</td><td>Autoplay \xd710</td></tr>' +
+                    '<tr><td>I</td><td>Paytable info</td></tr>' +
+                    '<tr><td>Esc</td><td>Back to lobby</td></tr>' +
+                    '<tr><td>?</td><td>This cheatsheet</td></tr>' +
+                    '</table>';
+                document.body.appendChild(sheet);
+            }
+            sheet.classList.toggle('visible');
+            // Auto-hide after 4s if shown
+            if (sheet.classList.contains('visible')) {
+                clearTimeout(sheet._ht);
+                sheet._ht = setTimeout(function() { sheet.classList.remove('visible'); }, 4000);
+            }
         }
 
         function toggleTurbo() {
@@ -2109,6 +2138,7 @@
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 _sessSpins++;
+                _sessWins++;
                 _sessTotalBet += currentBet;
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
@@ -5483,6 +5513,7 @@
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
                 _sessSpins++;
+                _sessWins++;
                 _sessTotalBet += currentBet;
                 _sessTotalWon += winAmount;
                 _updateSessionHud();

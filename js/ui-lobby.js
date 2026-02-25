@@ -12,6 +12,30 @@
         var _resumeBannerTimer = null;
         var _lastPlayedGameForResume = null;
 
+        // Live player count simulation
+        var _liveCounts = {};
+
+        function _seedCount(gameId, isHot) {
+            var h = 0;
+            for (var i = 0; i < gameId.length; i++) { h = (h * 31 + gameId.charCodeAt(i)) & 0xffff; }
+            var base = isHot ? (18 + h % 80) : (8 + h % 45);
+            _liveCounts[gameId] = base;
+        }
+
+        function _getLiveCount(gameId) {
+            return _liveCounts[gameId] || 12;
+        }
+
+        function _tickLiveCounts() {
+            Object.keys(_liveCounts).forEach(function(id) {
+                var delta = Math.floor(Math.random() * 5) - 2; // -2 to +2
+                _liveCounts[id] = Math.max(6, _liveCounts[id] + delta);
+                // Update any visible badges
+                var badge = document.querySelector('.card-players-live[data-game="' + id + '"]');
+                if (badge) badge.lastChild.nodeValue = ' ' + _liveCounts[id] + ' playing';
+            });
+        }
+
 
         // ═══════════════════════════════════════════════════════
         // LOADING SKELETONS
@@ -249,6 +273,10 @@
                     renderRecentlyPlayed();
                     renderYouMightLike();
                     renderBestWins();
+                    // Start live-count tick once, persists across re-renders
+                    if (!window._liveCountsInterval) {
+                        window._liveCountsInterval = setInterval(_tickLiveCounts, 15000 + Math.random() * 6000);
+                    }
                 }, 200);
             });
         }
@@ -650,6 +678,7 @@
                 : '';
             const favored = isFavorite(game.id);
             const favIcon = favored ? '\u2764\uFE0F' : '\u2661';
+            _seedCount(game.id, isHot || _hotIds.has(game.id));
             return `
                 <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')" style="position:relative">
                     <button class="fav-btn${favored ? ' fav-active' : ''}" data-game-id="${game.id}" title="${favored ? 'Remove from favourites' : 'Add to favourites'}" onclick="event.stopPropagation(); (function(btn){var nowFav=toggleFavorite('${game.id}'); btn.textContent=nowFav?'\u2764\uFE0F':'\u2661'; btn.title=nowFav?'Remove from favourites':'Add to favourites'; btn.classList.add('fav-active'); setTimeout(function(){btn.classList.remove('fav-active');},350); updateFavTabBadge();})(this)">${favIcon}</button>
@@ -660,6 +689,7 @@
                         </div>
                         ${topTag}
                         ${jackpotBadge}
+                        <div class="card-players-live" data-game="${game.id}"> ${_getLiveCount(game.id)} playing</div>
                         <div class="game-vol-badge ${volClass}" title="Volatility: ${vol}">
                             ${dotsHtml}
                         </div>
