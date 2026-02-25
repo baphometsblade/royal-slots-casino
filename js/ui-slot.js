@@ -4690,6 +4690,10 @@
                         : '🎉 ' + seg.label + ' WIN! +$' + (prize || 0).toLocaleString();
                     resultEl.style.cssText = 'color:#ffd600;font-size:1.3rem;font-weight:900;margin-top:16px;'
                         + 'text-shadow:0 0 14px #ffd600;animation:wheelPrizeIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;';
+                    // Audio + visual feedback when wheel result reveals
+                    if (typeof playSound === 'function') playSound(seg.type === 'jackpot' ? 'megawin' : 'bonus');
+                    if (seg.type === 'jackpot' && typeof showBonusEffect === 'function') showBonusEffect('🎰 JACKPOT! +$' + (prize || 0).toLocaleString(), '#ffd600');
+                    if (seg.type === 'spins' && typeof showBonusEffect === 'function') showBonusEffect('🎉 ' + seg.value + ' FREE SPINS!', '#69f0ae');
                     overlay.appendChild(resultEl);
 
                     var closeBtn = document.createElement('button');
@@ -4709,12 +4713,6 @@
             };
             overlay.appendChild(spinBtn);
 
-            if (!document.getElementById('_wheelCss')) {
-                var st = document.createElement('style');
-                st.id = '_wheelCss';
-                st.textContent = '@keyframes wheelPrizeIn { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }';
-                document.head.appendChild(st);
-            }
 
             document.body.appendChild(overlay);
         }
@@ -5003,14 +5001,6 @@
             if (typeof playSound === 'function') playSound('wild_reel');
         }
 
-        (function() {
-            if (document.getElementById('_wildReelCss')) return;
-            var st = document.createElement('style');
-            st.id = '_wildReelCss';
-            st.textContent = '@keyframes wildReelSweep { 0%{background:rgba(255,214,0,0);box-shadow:none} 40%{background:rgba(255,214,0,0.18);box-shadow:0 0 18px rgba(255,214,0,0.6)} 100%{background:rgba(255,214,0,0);box-shadow:0 0 8px rgba(255,214,0,0.25)} }'
-                + '.wild-reel-glow { animation: wildReelSweep 0.5s ease-in-out both; outline: 2px solid #ffd600; border-radius: 4px; }';
-            document.head.appendChild(st);
-        })();
 
         (function() {
             var _origDSWR_wr = displayServerWinResult;
@@ -5166,12 +5156,6 @@
                 + 'text-shadow:0 0 10px rgba(255,214,0,0.8);animation:rjPop 0.4s 0.15s cubic-bezier(0.34,1.56,0.64,1) both;';
             ov.appendChild(sub);
 
-            if (!document.getElementById('_rjCss')) {
-                var st = document.createElement('style');
-                st.id = '_rjCss';
-                st.textContent = '@keyframes rjPop { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }';
-                document.head.appendChild(st);
-            }
 
             document.body.appendChild(ov);
 
