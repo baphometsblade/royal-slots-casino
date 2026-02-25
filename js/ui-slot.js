@@ -1536,6 +1536,7 @@
             if (typeof SoundManager !== 'undefined' && SoundManager.stopAmbient) SoundManager.stopAmbient();
             if (typeof destroyParticleEngine === 'function') destroyParticleEngine();
             _hideCascadeChain();
+            _updateFreeSpinsFrame(); // cleanup: removes golden frame and banner
         }
 
 
@@ -1588,6 +1589,7 @@
             const betRange = document.getElementById('betRange');
             if (betRange) betRange.value = newIdx;
             updateBetDisplay();
+            var _bfRefBtn = document.getElementById('buyFeatureBtn'); if (_bfRefBtn && _bfRefBtn._refreshCost) _bfRefBtn._refreshCost();
             const spinBtn = document.getElementById('spinBtn');
             if (spinBtn) spinBtn.disabled = spinning || currentBet > balance;
         }
@@ -2708,6 +2710,7 @@
 
             showFreeSpinsOverlay(game, count);
             updateFreeSpinsDisplay();
+            _updateFreeSpinsFrame();
             createConfetti();
         }
 
@@ -2717,6 +2720,7 @@
 
             freeSpinsRemaining--;
             updateFreeSpinsDisplay();
+            _updateFreeSpinsFrame();
 
             if (freeSpinsRemaining <= 0) {
                 endFreeSpins(game);
@@ -2792,6 +2796,7 @@
 
         function endFreeSpins(game) {
             freeSpinsActive = false;
+            _updateFreeSpinsFrame();
             freeSpinsExpandedSymbol = null;
             freeSpinsCascadeLevel = 0;
             expandingWildRespinsLeft = 0;
@@ -4774,6 +4779,13 @@
                 }, 600);
             };
             document.body.appendChild(btn);
+            btn._refreshCost = function() {
+                var c = currentBet * costMult;
+                btn.title = 'Buy Feature: ' + costMult + 'x bet = $' + c.toLocaleString();
+                btn.disabled = (balance < c) || spinning || freeSpinsActive;
+                btn.style.opacity = btn.disabled ? '0.5' : '1';
+            };
+            btn._refreshCost();
         }
 
         // Hook into openSlot to add/remove button
@@ -4835,6 +4847,34 @@
             el.classList.add('bump');
             setTimeout(function() { el.classList.remove('bump'); }, 300);
         }
+
+        // -- Free Spins Golden Frame --
+        function _updateFreeSpinsFrame() {
+            var reelArea = document.querySelector('.slot-reels') || document.querySelector('.reel-grid') || document.querySelector('.reel-container');
+            if (!reelArea) return;
+            var parent = reelArea.parentNode;
+            if (!parent) return;
+            if (freeSpinsActive) {
+                parent.classList.add('free-spins-active-frame');
+                var banner = document.getElementById('freeSpinsBanner');
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'freeSpinsBanner';
+                    banner.className = 'free-spins-banner';
+                    parent.insertBefore(banner, reelArea);
+                }
+                var totalWinStr = typeof freeSpinsTotalWin !== 'undefined' && freeSpinsTotalWin > 0
+                    ? ' <span class="fs-total-win">+$' + freeSpinsTotalWin.toFixed(2) + '</span>'
+                    : '';
+                var remaining = typeof freeSpinsRemaining !== 'undefined' ? freeSpinsRemaining : '?';
+                banner.innerHTML = '✨ FREE SPINS <span class="fs-remaining">' + remaining + ' left</span>' + totalWinStr;
+            } else {
+                parent.classList.remove('free-spins-active-frame');
+                var existBanner = document.getElementById('freeSpinsBanner');
+                if (existBanner) existBanner.remove();
+            }
+        }
+
         function _hideCascadeChain() {
             var el = document.getElementById('cascadeChainDisplay');
             if (!el) return;
@@ -6123,6 +6163,7 @@
 
             showFreeSpinsOverlay(game, count);
             updateFreeSpinsDisplay();
+            _updateFreeSpinsFrame();
             createConfetti();
         }
 
@@ -6207,6 +6248,7 @@
 
         function endFreeSpins(game) {
             freeSpinsActive = false;
+            _updateFreeSpinsFrame();
             freeSpinsExpandedSymbol = null;
             freeSpinsCascadeLevel = 0;
             expandingWildRespinsLeft = 0;

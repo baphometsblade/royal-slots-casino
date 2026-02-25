@@ -12435,3 +12435,95 @@
   border-color: rgba(100,180,255,0.5);
   color: #fff;
 }
+
+/* ── Free Spins Golden Frame ────────────────────────── */
+@keyframes freeSpinsAura {
+  0%   { box-shadow: 0 0 0 3px rgba(255,215,0,0.5),  0 0 20px rgba(255,180,0,0.3),  inset 0 0 30px rgba(255,200,0,0.05); }
+  50%  { box-shadow: 0 0 0 4px rgba(255,235,80,0.8), 0 0 35px rgba(255,200,0,0.55), inset 0 0 40px rgba(255,200,0,0.1); }
+  100% { box-shadow: 0 0 0 3px rgba(255,215,0,0.5),  0 0 20px rgba(255,180,0,0.3),  inset 0 0 30px rgba(255,200,0,0.05); }
+}
+@keyframes freeSpinsTopBanner {
+  0%   { opacity: 0.85; transform: scaleX(0.97); }
+  50%  { opacity: 1;    transform: scaleX(1);    }
+  100% { opacity: 0.85; transform: scaleX(0.97); }
+}
+.free-spins-active-frame {
+  border-radius: 12px;
+  animation: freeSpinsAura 2s ease-in-out infinite;
+  transition: box-shadow 0.5s ease;
+}
+.free-spins-banner {
+  align-items: center;
+  animation: freeSpinsTopBanner 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,200,0,0.18) 20%, rgba(255,215,0,0.28) 50%, rgba(255,200,0,0.18) 80%, transparent 100%);
+  border-bottom: 1px solid rgba(255,215,0,0.35);
+  border-radius: 10px 10px 0 0;
+  color: #ffe866;
+  display: flex;
+  font-size: 0.8rem;
+  font-weight: 700;
+  gap: 10px;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  padding: 5px 12px;
+  text-shadow: 0 0 8px rgba(255,200,0,0.8);
+  text-transform: uppercase;
+  width: 100%;
+}
+.free-spins-banner .fs-remaining {
+  background: rgba(255,215,0,0.2);
+  border: 1px solid rgba(255,215,0,0.5);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  padding: 1px 8px;
+}
+.free-spins-banner .fs-total-win {
+  color: #4eff8f;
+  text-shadow: 0 0 6px rgba(78,255,143,0.7);
+}
+
+/* ── Buy Feature Button ─────────────────────────────── */
+.buy-feature-btn {
+  align-items: center;
+  background: linear-gradient(135deg, #1a0d2e 0%, #2d1060 100%);
+  border: 1px solid rgba(180,100,255,0.45);
+  border-radius: 8px;
+  color: #d090ff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.7rem;
+  font-weight: 700;
+  gap: 2px;
+  letter-spacing: 0.05em;
+  padding: 6px 10px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.buy-feature-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2d1060 0%, #4a1a80 100%);
+  border-color: rgba(200,130,255,0.8);
+  box-shadow: 0 0 12px rgba(180,100,255,0.4);
+  color: #e8b0ff;
+}
+.buy-feature-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.buy-feature-btn .bf-label {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+.buy-feature-btn .bf-cost {
+  color: #ffe066;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+@keyframes buyFeaturePulse {
+  0%, 100% { border-color: rgba(180,100,255,0.45); box-shadow: none; }
+  50%       { border-color: rgba(200,130,255,0.7);  box-shadow: 0 0 10px rgba(180,100,255,0.3); }
+}
+.buy-feature-btn:not(:disabled) {
+  animation: buyFeaturePulse 3s ease-in-out infinite;
+}
