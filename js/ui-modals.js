@@ -17,9 +17,14 @@
 
         // ── Daily Challenges ──────────────────────────────────────
         const DAILY_CHALLENGES = [
-            { id: 'spins_20',    label: 'Spin It Up',  desc: 'Complete 20 spins today',      target: 20, xp: 50, icon: '🎰' },
-            { id: 'games_3',     label: 'Game Hopper', desc: 'Play 3 different games today', target: 3,  xp: 75, icon: '🎮' },
-            { id: 'win_once',    label: 'Lucky Break', desc: 'Win at least once today',      target: 1,  xp: 40, icon: '🍀' },
+            { id: 'spins_20',   label: 'Spin It Up',    desc: 'Complete 20 spins today',              target: 20,  xp: 50,  icon: '🎰', type: 'spins'   },
+            { id: 'spins_50',   label: 'Spin Machine',  desc: 'Complete 50 spins today',              target: 50,  xp: 100, icon: '⚡', type: 'spins'   },
+            { id: 'games_3',    label: 'Game Hopper',   desc: 'Play 3 different games today',         target: 3,   xp: 75,  icon: '🎮', type: 'games'   },
+            { id: 'win_once',   label: 'Lucky Break',   desc: 'Win at least once today',              target: 1,   xp: 40,  icon: '🍀', type: 'wins'    },
+            { id: 'big_win_50', label: 'High Roller',   desc: 'Land a win worth 50x your bet',        target: 50,  xp: 150, icon: '💥', type: 'winMult' },
+            { id: 'bonus_1',    label: 'Bonus Hunter',  desc: 'Trigger a bonus or free spins round',  target: 1,   xp: 125, icon: '🎁', type: 'bonuses' },
+            { id: 'wager_500',  label: 'Whale Watch',   desc: 'Wager $500 total today',               target: 500, xp: 100, icon: '🐋', type: 'wager'   },
+            { id: 'streak_3',   label: 'Hot Streak',    desc: 'Win 3 spins in a row',                 target: 3,   xp: 120, icon: '🔥', type: 'streak'  },
         ];
         const CHALLENGE_STORAGE_KEY = 'matrixChallenges';
 
@@ -27,18 +32,39 @@
         const ACH_STORAGE_KEY = 'matrixAchievements';
 
         const ACH_DEFS = [
-            { id: 'first_spin',   icon: '🎰', name: 'First Spin',      desc: 'Play your first spin',            req: { type: 'spins',   target: 1    } },
-            { id: 'spin_10',      icon: '🔄', name: 'Getting Started', desc: 'Complete 10 spins',                req: { type: 'spins',   target: 10   } },
-            { id: 'spin_100',     icon: '💫', name: 'Spin Master',     desc: 'Complete 100 spins',               req: { type: 'spins',   target: 100  } },
-            { id: 'spin_500',     icon: '⚡', name: 'High Roller',     desc: 'Complete 500 spins',               req: { type: 'spins',   target: 500  } },
-            { id: 'first_win',    icon: '🏆', name: 'First Win',       desc: 'Win your first spin',              req: { type: 'wins',    target: 1    } },
-            { id: 'win_10',       icon: '💰', name: 'On a Roll',       desc: 'Win 10 times',                     req: { type: 'wins',    target: 10   } },
-            { id: 'win_50',       icon: '🤑', name: 'Lucky Streak',    desc: 'Win 50 times',                     req: { type: 'wins',    target: 50   } },
-            { id: 'big_win',      icon: '💥', name: 'Big Winner',      desc: 'Win over 100× your bet',           req: { type: 'bigWin',  target: 100  } },
-            { id: 'mega_win',     icon: '🌟', name: 'Mega Winner',     desc: 'Win over 500× your bet',           req: { type: 'bigWin',  target: 500  } },
-            { id: 'games_5',      icon: '🎮', name: 'Explorer',        desc: 'Try 5 different games',            req: { type: 'games',   target: 5    } },
-            { id: 'games_20',     icon: '🗺️', name: 'Adventurer',     desc: 'Try 20 different games',           req: { type: 'games',   target: 20   } },
-            { id: 'balance_500',  icon: '💎', name: 'High Balance',    desc: 'Reach a balance of $500',          req: { type: 'balance', target: 500  } },
+            // Spin milestones
+            { id: 'first_spin',    icon: '🎰', name: 'First Spin',       desc: 'Play your first spin',               req: { type: 'spins',   target: 1      } },
+            { id: 'spin_10',       icon: '🔄', name: 'Getting Started',  desc: 'Complete 10 spins',                  req: { type: 'spins',   target: 10     } },
+            { id: 'spin_100',      icon: '💫', name: 'Spin Master',      desc: 'Complete 100 spins',                 req: { type: 'spins',   target: 100    } },
+            { id: 'spin_500',      icon: '⚡', name: 'Centurion',        desc: 'Complete 500 spins',                 req: { type: 'spins',   target: 500    } },
+            { id: 'spin_1000',     icon: '🌀', name: 'Reel Veteran',     desc: 'Complete 1,000 spins',               req: { type: 'spins',   target: 1000   } },
+            // Win milestones
+            { id: 'first_win',     icon: '🏆', name: 'First Win',        desc: 'Win your first spin',                req: { type: 'wins',    target: 1      } },
+            { id: 'win_10',        icon: '💰', name: 'On a Roll',        desc: 'Win 10 times',                       req: { type: 'wins',    target: 10     } },
+            { id: 'win_50',        icon: '🤑', name: 'Lucky Streak',     desc: 'Win 50 times',                       req: { type: 'wins',    target: 50     } },
+            { id: 'win_200',       icon: '🥇', name: 'Win Connoisseur',  desc: 'Win 200 times',                      req: { type: 'wins',    target: 200    } },
+            // Big win multipliers
+            { id: 'big_win',       icon: '💥', name: 'Big Winner',       desc: 'Win over 100x your bet',             req: { type: 'bigWin',  target: 100    } },
+            { id: 'mega_win',      icon: '🌟', name: 'Mega Winner',      desc: 'Win over 500x your bet',             req: { type: 'bigWin',  target: 500    } },
+            { id: 'epic_win',      icon: '🔥', name: 'Epic Winner',      desc: 'Win over 1,000x your bet',           req: { type: 'bigWin',  target: 1000   } },
+            // Game variety
+            { id: 'games_5',       icon: '🎮', name: 'Explorer',         desc: 'Try 5 different games',              req: { type: 'games',   target: 5      } },
+            { id: 'games_20',      icon: '🗺️', name: 'Adventurer',      desc: 'Try 20 different games',             req: { type: 'games',   target: 20     } },
+            { id: 'games_50',      icon: '🌍', name: 'Globe Trotter',    desc: 'Try 50 different games',             req: { type: 'games',   target: 50     } },
+            { id: 'games_all',     icon: '👑', name: 'Master of All',    desc: 'Try all 122 games',                  req: { type: 'games',   target: 122    } },
+            // Balance milestones
+            { id: 'balance_500',   icon: '💎', name: 'Getting Rich',     desc: 'Reach a balance of $500',            req: { type: 'balance', target: 500    } },
+            { id: 'balance_1000',  icon: '💰', name: 'High Balance',     desc: 'Reach a balance of $1,000',          req: { type: 'balance', target: 1000   } },
+            { id: 'balance_5000',  icon: '🏦', name: 'Bank Breaker',     desc: 'Reach a balance of $5,000',          req: { type: 'balance', target: 5000   } },
+            // Wager milestones
+            { id: 'wager_1k',      icon: '📊', name: 'Regular',          desc: 'Wager $1,000 total',                 req: { type: 'wager',   target: 1000   } },
+            { id: 'wager_10k',     icon: '📈', name: 'Whale',            desc: 'Wager $10,000 total',                req: { type: 'wager',   target: 10000  } },
+            // Bonus triggers
+            { id: 'bonus_5',       icon: '🎁', name: 'Bonus Seeker',     desc: 'Trigger 5 bonus rounds',             req: { type: 'bonuses', target: 5      } },
+            { id: 'bonus_25',      icon: '🎯', name: 'Bonus Hunter',     desc: 'Trigger 25 bonus rounds',            req: { type: 'bonuses', target: 25     } },
+            // Win streak
+            { id: 'streak_5',      icon: '🔥', name: 'Hot Hand',         desc: 'Win 5 spins in a row',               req: { type: 'streak',  target: 5      } },
+            { id: 'streak_10',     icon: '💠', name: 'Unstoppable',      desc: 'Win 10 spins in a row',              req: { type: 'streak',  target: 10     } },
         ];
 
         function _loadChallengeState() {
@@ -65,6 +91,9 @@
                     spins: d.spins || 0, wins: d.wins || 0,
                     games: Array.isArray(d.games) ? d.games : [],
                     maxWinMult: d.maxWinMult || 0, maxBalance: d.maxBalance || 0,
+                    totalWagered: d.totalWagered || 0,
+                    bonusesTriggered: d.bonusesTriggered || 0,
+                    maxStreak: d.maxStreak || 0,
                     unlocked: Array.isArray(d.unlocked) ? d.unlocked : [],
                 };
             } catch(e) { return { spins:0, wins:0, games:[], maxWinMult:0, maxBalance:0, unlocked:[] }; }
@@ -190,7 +219,12 @@
             let changed = false;
 
             if (eventType === 'spin') {
+                // spin counts
                 state.progress['spins_20'] = (state.progress['spins_20'] || 0) + 1;
+                state.progress['spins_50'] = (state.progress['spins_50'] || 0) + 1;
+                // wager
+                state.progress['wager_500'] = (state.progress['wager_500'] || 0) + (payload.bet || 0);
+                // game variety
                 if (payload.gameId) {
                     if (!state.gamesPlayedToday) state.gamesPlayedToday = [];
                     if (!state.gamesPlayedToday.includes(payload.gameId)) {
@@ -198,9 +232,23 @@
                     }
                     state.progress['games_3'] = state.gamesPlayedToday.length;
                 }
+                // win
                 if (payload.win && payload.win > 0) {
                     state.progress['win_once'] = Math.max(state.progress['win_once'] || 0, 1);
                 }
+                // win multiplier
+                if ((payload.winMult || 0) >= 50) {
+                    state.progress['big_win_50'] = Math.max(state.progress['big_win_50'] || 0, 1);
+                }
+                // win streak
+                if ((payload.streak || 0) >= 3) {
+                    state.progress['streak_3'] = Math.max(state.progress['streak_3'] || 0, 1);
+                }
+                changed = true;
+            }
+
+            if (eventType === 'bonus') {
+                state.progress['bonus_1'] = Math.max(state.progress['bonus_1'] || 0, 1);
                 changed = true;
             }
 
@@ -279,6 +327,7 @@
 
             // ── Daily Challenges section ──────────────────────────────
             _ensureDailyChallengesPanel();
+            _ensureHoFPanel();
             _renderChallengesPanel();
 
             // Update achievements
@@ -560,6 +609,13 @@
                 const mult = payload.bet > 0 ? payload.win / payload.bet : 0;
                 if (mult > s.maxWinMult) s.maxWinMult = mult;
                 if (payload.gameId && !s.games.includes(payload.gameId)) s.games.push(payload.gameId);
+                s.totalWagered = (s.totalWagered || 0) + (payload.bet || 0);
+                const streak = payload.streak || 0;
+                if (streak > (s.maxStreak || 0)) s.maxStreak = streak;
+                changed = true;
+            }
+            if (eventType === 'bonus') {
+                s.bonusesTriggered = (s.bonusesTriggered || 0) + 1;
                 changed = true;
             }
             // Update max balance on any event
@@ -574,11 +630,14 @@
                 if (s.unlocked.includes(ach.id)) continue;
                 const r = ach.req;
                 const unlocked =
-                    (r.type === 'spins'   && s.spins >= r.target)        ||
-                    (r.type === 'wins'    && s.wins  >= r.target)        ||
-                    (r.type === 'bigWin'  && s.maxWinMult >= r.target)   ||
-                    (r.type === 'games'   && s.games.length >= r.target) ||
-                    (r.type === 'balance' && s.maxBalance >= r.target);
+                    (r.type === 'spins'   && s.spins >= r.target)                 ||
+                    (r.type === 'wins'    && s.wins  >= r.target)                 ||
+                    (r.type === 'bigWin'  && s.maxWinMult >= r.target)            ||
+                    (r.type === 'games'   && s.games.length >= r.target)          ||
+                    (r.type === 'balance' && s.maxBalance >= r.target)            ||
+                    (r.type === 'wager'   && (s.totalWagered||0) >= r.target)     ||
+                    (r.type === 'bonuses' && (s.bonusesTriggered||0) >= r.target) ||
+                    (r.type === 'streak'  && (s.maxStreak||0) >= r.target);
                 if (unlocked) { s.unlocked.push(ach.id); newUnlocks.push(ach); changed = true; }
             }
             if (changed) _saveAchState(s);
@@ -610,6 +669,80 @@
                 t.style.opacity = '0';
                 setTimeout(() => t.remove(), 450);
             }, 4000);
+        }
+
+        // ── Hall of Fame — cross-session best wins ────────────────
+        const HOF_KEY = typeof STORAGE_KEY_HALL_OF_FAME !== 'undefined' ? STORAGE_KEY_HALL_OF_FAME : 'matrixHallOfFame';
+        const HOF_MAX = 10;
+
+        function _loadHoF() {
+            try { return JSON.parse(localStorage.getItem(HOF_KEY) || '[]'); } catch(e) { return []; }
+        }
+        function _saveHoF(list) {
+            try { localStorage.setItem(HOF_KEY, JSON.stringify(list)); } catch(e) {}
+        }
+
+        window.recordHallOfFameWin = function(winAmount, bet, gameName, gameId, bonusType) {
+            if (!winAmount || winAmount <= 0) return;
+            const mult = bet > 0 ? winAmount / bet : 0;
+            if (mult < 5) return;
+            const list = _loadHoF();
+            list.push({
+                amount: winAmount,
+                mult: parseFloat(mult.toFixed(1)),
+                game: gameName || 'Unknown',
+                gameId: gameId || '',
+                bonusType: bonusType || '',
+                date: new Date().toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'2-digit' })
+            });
+            list.sort((a, b) => b.mult - a.mult);
+            if (list.length > HOF_MAX) list.length = HOF_MAX;
+            _saveHoF(list);
+        };
+
+        function _renderHoFPanel(container) {
+            const list = _loadHoF();
+            if (list.length === 0) {
+                container.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:12px;text-align:center;padding:12px 0">No big wins yet \u2014 spin to make history!</div>';
+                return;
+            }
+            const medals = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+            container.innerHTML = list.map((e, i) => `
+                <div class="hof-row">
+                    <span class="hof-rank">${medals[i] || (i+1)}</span>
+                    <span class="hof-game">${e.game}</span>
+                    <span class="hof-mult">${e.mult}\xD7</span>
+                    <span class="hof-amount">$${Number(e.amount).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+                    <span class="hof-date">${e.date}</span>
+                </div>`).join('');
+        }
+
+        function _ensureHoFPanel() {
+            if (document.getElementById('hofPanel')) return;
+            const statsContent = document.getElementById('statsContent');
+            if (!statsContent) return;
+            const wrap = document.createElement('div');
+            wrap.id = 'hofPanel';
+            wrap.style.cssText = 'margin-top:16px';
+            wrap.innerHTML = `
+                <div class="hof-header" id="hofToggle" role="button" tabindex="0" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:8px;margin-bottom:0">
+                    <span style="font-size:13px;font-weight:700;color:#ffd700">\uD83C\uDFC6 Hall of Fame</span>
+                    <span id="hofChevron" style="color:rgba(255,255,255,0.4);font-size:12px">\u25BC</span>
+                </div>
+                <div id="hofBody" style="border:1px solid rgba(255,215,0,0.15);border-top:none;border-radius:0 0 8px 8px;padding:8px 12px;background:rgba(0,0,0,0.3)">
+                    <div id="hofList"></div>
+                </div>`;
+            statsContent.appendChild(wrap);
+            _renderHoFPanel(document.getElementById('hofList'));
+
+            let collapsed = false;
+            const body = document.getElementById('hofBody');
+            const chev = document.getElementById('hofChevron');
+            document.getElementById('hofToggle').addEventListener('click', () => {
+                collapsed = !collapsed;
+                body.style.display = collapsed ? 'none' : '';
+                chev.textContent = collapsed ? '\u25B6' : '\u25BC';
+            });
         }
 
 

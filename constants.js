@@ -821,6 +821,9 @@ const WHEEL_CENTER_STROKE_WIDTH = 3;
 /** localStorage key for VIP state (weekly reload claim, cashback history) */
 const STORAGE_KEY_VIP = 'casinoVIP';
 
+/** @type {string} localStorage key for cross-session Hall of Fame best wins */
+const STORAGE_KEY_HALL_OF_FAME = 'matrixHallOfFame';
+
 /**
  * VIP tier definitions ordered by wagering threshold.
  * Each tier defines: name, min/max wagered, cashback %, weekly reload %,

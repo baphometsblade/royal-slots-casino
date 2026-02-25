@@ -559,6 +559,7 @@
                 playSound('freespin');
                 message = `BONUS! HOLD & WIN TRIGGERED!`;
                 triggerHoldAndWin(game, scatterCells, currentBet);
+                if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
             } else if (scatterCount >= scatterThreshold && !freeSpinsActive && game.freeSpinsCount > 0) {
                 // Realistic scatter pay: 0.5x per scatter (real slots: 0.5x-1x)
                 const scatterPayMult = window.HouseEdge ? window.HouseEdge.getScatterPay(scatterCount) : scatterCount * 0.5;
@@ -571,23 +572,28 @@
                         playSound('freespin');
                         message = `CHAMBER BONUS! +$${scatterWin.toLocaleString()} scatter pay!`;
                         triggerChamberSpins(game);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     }
                 } else if (game.bonusType === 'sticky_wilds') {
                     if (typeof triggerStickyWildsFreeSpins === 'function') {
                         message = `STICKY WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                         triggerStickyWildsFreeSpins(game, scatterWin);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     } else {
                         playSound('freespin');
                         triggerFreeSpins(game, game.freeSpinsCount);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                         message = `STICKY WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                     }
                 } else if (game.bonusType === 'walking_wilds') {
                     if (typeof triggerWalkingWildsFreeSpins === 'function') {
                         message = `WALKING WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                         triggerWalkingWildsFreeSpins(game, scatterWin);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     } else {
                         playSound('freespin');
                         triggerFreeSpins(game, game.freeSpinsCount);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                         message = `WALKING WILDS! $${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                     }
                 } else if (game.bonusType === 'increasing_mult') {
@@ -596,27 +602,32 @@
                         message = `INCREASING MULTIPLIER! ${game.freeSpinsCount} FREE SPINS! +${scatterWin.toLocaleString()}!`;
                         if (typeof resetIncrMult === 'function') resetIncrMult();
                         triggerFreeSpins(game, game.freeSpinsCount);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     }
                 } else if (game.bonusType === 'respin') {
                     if (typeof triggerFreeSpins === 'function') {
                         playSound('freespin');
                         message = `RE-SPIN BONUS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                         triggerFreeSpins(game, game.freeSpinsCount);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     }
                 } else if (game.bonusType === 'prize_wheel') {
                     if (typeof triggerPrizeWheel === 'function') {
                         playSound('freespin');
                         message = `PRIZE WHEEL! +${scatterWin.toLocaleString()}!`;
                         triggerPrizeWheel(game);
+                        if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     }
                 } else if (scatterCount >= fullScatterThreshold) {
                     playSound('freespin');
                     triggerFreeSpins(game, game.freeSpinsCount);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     message = `SCATTER BONUS! ${game.freeSpinsCount} FREE SPINS AWARDED! +$${scatterWin.toLocaleString()} scatter pay!`;
                 } else {
                     const halfSpins = Math.max(3, Math.floor(game.freeSpinsCount / 2));
                     playSound('freespin');
                     triggerFreeSpins(game, halfSpins);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     message = `SCATTER! ${halfSpins} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
                 }
             }

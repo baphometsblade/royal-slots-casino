@@ -1889,7 +1889,19 @@
             };
             spinHistory.unshift(_histEntry);
             if (spinHistory.length > SPIN_HISTORY_MAX) spinHistory.pop();
-            if (typeof onChallengeEvent === 'function') onChallengeEvent('spin', { bet: currentBet, win: winAmount, gameId: currentGame ? currentGame.id : null });
+            if (typeof onChallengeEvent === 'function') {
+                const _challengeMult = currentBet > 0 ? winAmount / currentBet : 0;
+                onChallengeEvent('spin', {
+                    bet: currentBet,
+                    win: winAmount,
+                    gameId: currentGame ? currentGame.id : null,
+                    winMult: _challengeMult,
+                    streak: typeof _winStreak === 'number' ? _winStreak : 0
+                });
+            }
+            if (typeof recordHallOfFameWin === 'function' && winAmount > 0 && currentGame) {
+                recordHallOfFameWin(winAmount, currentBet, currentGame.name, currentGame.id, currentGame.bonusType);
+            }
             renderSpinHistory();
             _updateSlotSessionStats();
 

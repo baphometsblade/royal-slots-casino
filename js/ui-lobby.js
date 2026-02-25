@@ -4,6 +4,8 @@
 
         // Module-level search state — persists across filter tab switches
         let lobbySearchQuery = '';
+        let currentMechanicFilter = 'all'; // 'all' | 'tumble' | 'hold_win' | 'free_spins' | 'wilds' | 'jackpot'
+        let currentSortMode = 'default';    // 'default' | 'vol_asc' | 'vol_desc'
 
 
         // ═══════════════════════════════════════════════════════
@@ -22,6 +24,30 @@
                 </div>`;
             }
             return html;
+        }
+
+
+        function _getMechanicCategory(game) {
+            const bt = game.bonusType || '';
+            if (bt === 'tumble' || bt === 'avalanche' || bt === 'cascading') return 'tumble';
+            if (bt === 'hold_and_win' || bt === 'coin_respin') return 'hold_win';
+            if (bt === 'random_jackpot' || game.tag === 'JACKPOT' || game.tag === 'MEGA') return 'jackpot';
+            if (bt.includes('wild')) return 'wilds';
+            if ((game.freeSpinsCount && game.freeSpinsCount > 0) || bt.includes('free') || bt.includes('spin') ||
+                bt === 'chamber_spins' || bt === 'sticky_wilds' || bt === 'walking_wilds' ||
+                bt === 'multiplier_wilds' || bt === 'increasing_mult' || bt === 'win_streak' ||
+                bt === 'prize_wheel' || bt === 'symbol_collect') return 'free_spins';
+            return 'other';
+        }
+
+        function _getVolatility(game) {
+            const payouts = game.payouts || {};
+            const vals = Object.values(payouts).filter(v => typeof v === 'number');
+            if (!vals.length) return 2;
+            const maxMult = game.minBet > 0 ? Math.max(...vals) / game.minBet : 0;
+            if (maxMult >= 300) return 3;
+            if (maxMult >= 100) return 2;
+            return 1;
         }
 
 
@@ -436,6 +462,16 @@
                     );
                 }
             }
+            // Apply mechanic filter
+            if (currentMechanicFilter !== 'all') {
+                list = list.filter(g => _getMechanicCategory(g) === currentMechanicFilter);
+            }
+            // Apply sort
+            if (currentSortMode === 'vol_asc') {
+                list = [...list].sort((a, b) => _getVolatility(a) - _getVolatility(b));
+            } else if (currentSortMode === 'vol_desc') {
+                list = [...list].sort((a, b) => _getVolatility(b) - _getVolatility(a));
+            }
             return list;
         }
 
@@ -449,7 +485,50 @@
         }
 
 
+        function setMechanicFilter(mech) {
+            currentMechanicFilter = mech;
+            document.querySelectorAll('.mechanic-chip').forEach(c => {
+                c.classList.toggle('mechanic-chip-active', c.dataset.mech === mech);
+            });
+            renderFilteredGames();
+        }
+
+        function setSortMode(mode) {
+            currentSortMode = mode;
+            document.querySelectorAll('.sort-btn').forEach(b => {
+                b.classList.toggle('sort-btn-active', b.dataset.sort === mode);
+            });
+            renderFilteredGames();
+        }
+
+
         function renderFilteredGames() {
+            // ── Mechanic filter bar (injected once) ──
+            if (!document.getElementById('mechanicFilterBar')) {
+                const _mechBar = document.createElement('div');
+                _mechBar.id = 'mechanicFilterBar';
+                _mechBar.className = 'mechanic-filter-bar';
+                const _mechs = [
+                    { id: 'all',        label: 'All Mechanics' },
+                    { id: 'tumble',     label: '\uD83C\uDF0A Tumble' },
+                    { id: 'hold_win',   label: '\uD83C\uDFAF Hold & Win' },
+                    { id: 'free_spins', label: '\uD83C\uDF81 Free Spins' },
+                    { id: 'wilds',      label: '\uD83C\uDF1F Wilds' },
+                    { id: 'jackpot',    label: '\uD83C\uDFC6 Jackpot' },
+                ];
+                _mechBar.innerHTML = `
+                    <div class="mechanic-chips">
+                        ${_mechs.map(m => `<button class="mechanic-chip${m.id==='all'?' mechanic-chip-active':''}" data-mech="${m.id}" onclick="setMechanicFilter('${m.id}')">${m.label}</button>`).join('')}
+                    </div>
+                    <div class="sort-controls">
+                        <span style="font-size:11px;color:rgba(255,255,255,0.4)">Sort:</span>
+                        <button class="sort-btn sort-btn-active" data-sort="default" onclick="setSortMode('default')">Default</button>
+                        <button class="sort-btn" data-sort="vol_asc" onclick="setSortMode('vol_asc')">Vol \u2191</button>
+                        <button class="sort-btn" data-sort="vol_desc" onclick="setSortMode('vol_desc')">Vol \u2193</button>
+                    </div>`;
+                const _allGames = document.getElementById('allGames');
+                if (_allGames && _allGames.parentNode) _allGames.parentNode.insertBefore(_mechBar, _allGames);
+            }
             const allGamesDiv = document.getElementById('allGames');
             const filtered = getFilteredGames(currentFilter);
             if (currentFilter === 'favorites' && filtered.length === 0) {

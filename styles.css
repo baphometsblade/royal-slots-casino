@@ -11516,3 +11516,79 @@
 .wst-pos     { color: #66bb6a; }
 .wst-neg     { color: #ef5350; }
 .wst-neutral { color: rgba(255,255,255,0.4); }
+
+/* ═══════════════════════════════════════════════════════════
+   HALL OF FAME
+   ═══════════════════════════════════════════════════════════ */
+.hof-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 50px 90px 52px;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,215,0,0.08);
+    font-size: 12px;
+}
+.hof-row:last-child { border-bottom: none; }
+.hof-rank  { text-align: center; font-size: 14px; }
+.hof-game  { color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hof-mult  { color: #ffd700; font-weight: 700; text-align: right; }
+.hof-amount { color: #4caf50; font-weight: 700; text-align: right; }
+.hof-date  { color: rgba(255,255,255,0.35); text-align: right; font-size: 10px; }
+
+/* ═══════════════════════════════════════════════════════════
+   MECHANIC FILTER BAR
+   ═══════════════════════════════════════════════════════════ */
+.mechanic-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0 4px;
+    flex-wrap: wrap;
+}
+.mechanic-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+.mechanic-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.65);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+.mechanic-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.mechanic-chip-active {
+    background: rgba(123,97,255,0.2);
+    border-color: #7b61ff;
+    color: #c4b5fd;
+    font-weight: 600;
+}
+.sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.sort-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.sort-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.sort-btn-active {
+    background: rgba(123,97,255,0.2);
+    border-color: #7b61ff;
+    color: #c4b5fd;
+}
