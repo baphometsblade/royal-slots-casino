@@ -4,6 +4,8 @@
 
         // ── Spin History State ──────────────────────────────────
         let spinHistory = []; // [{win, bet, isNearMiss, timestamp}, ...]
+        // Session stats tracking (reset each time a new game opens)
+        let _sessSpins = 0, _sessTotalBet = 0, _sessTotalWon = 0;
         const SPIN_HISTORY_MAX = 15;
         // Build symbol image HTML for any game symbol
         function getSymbolHtml(symbolName, gameId) {
@@ -892,6 +894,10 @@
 
             // Reset spin history for the new game session
             spinHistory = [];
+            // Reset session stats HUD
+            _sessSpins = 0; _sessTotalBet = 0; _sessTotalWon = 0;
+            var _oldHud = document.getElementById('slotSessionHud');
+            if (_oldHud) _oldHud.remove();
 
             preloadAnimatedAssets(currentGame);
 
@@ -926,6 +932,15 @@
             const gg = parseInt(acHex.slice(3,5), 16) || 0;
             const bb = parseInt(acHex.slice(5,7), 16) || 0;
             modal.style.setProperty('--accent-rgb', `${rr}, ${gg}, ${bb}`);
+            // Inject session HUD strip below the bottom bar
+            (function() {
+                var _hud = document.createElement('div');
+                _hud.id = 'slotSessionHud';
+                _hud.className = 'slot-session-hud';
+                _hud.innerHTML = '<span class="hud-neutral">SESSION &mdash;</span><span class="hud-sep">|</span><span id="hudSpins">0 spins</span><span class="hud-sep">|</span><span id="hudPL" class="hud-neutral">$0.00</span>';
+                var _bar = modal.querySelector('.slot-bottom-bar');
+                if (_bar && _bar.parentNode) _bar.parentNode.insertBefore(_hud, _bar.nextSibling);
+            })();
 
             showPageTransition(() => {
                 closeStatsModal();
@@ -1341,6 +1356,18 @@
             updateBetDisplay();
             const spinBtn = document.getElementById('spinBtn');
             if (spinBtn) spinBtn.disabled = spinning || currentBet > balance;
+        }
+
+        function _updateSessionHud() {
+            if (!document.getElementById('slotSessionHud')) return;
+            var spinsEl = document.getElementById('hudSpins');
+            var plEl    = document.getElementById('hudPL');
+            if (!spinsEl || !plEl) return;
+            spinsEl.textContent = _sessSpins + ' spin' + (_sessSpins !== 1 ? 's' : '');
+            var pl = _sessTotalWon - _sessTotalBet;
+            var sign = pl >= 0 ? '+' : '';
+            plEl.textContent = sign + '$' + Math.abs(pl).toFixed(2);
+            plEl.className = pl > 0 ? 'hud-profit' : pl < 0 ? 'hud-loss' : 'hud-neutral';
         }
 
         function toggleTurbo() {
@@ -1900,6 +1927,7 @@
             const cols = getGridCols(game);
             const rows = getGridRows(game);
             const nearMissCells = [];
+            const beatCells = [];   // matching cells that get heartbeat pulse
 
             if (cols <= 4) {
                 for (let r = 0; r < rows; r++) {
@@ -1918,6 +1946,8 @@
                             rowSyms.forEach(function(s, c) {
                                 if (s !== sym && !isWild(s, game)) {
                                     nearMissCells.push([c, r]);
+                                } else if (s === sym || isWild(s, game)) {
+                                    beatCells.push([c, r]);
                                 }
                             });
                         }
@@ -1936,6 +1966,8 @@
                         const col4Sym = grid[4] ? grid[4][midRow] : null;
                         if (col4Sym && col4Sym !== sym0 && !isWild(col4Sym, game)) {
                             nearMissCells.push([4, midRow]);
+                            // first 4 cols are the matching ones
+                            for (var _bc = 0; _bc < 4 && _bc < cols; _bc++) { beatCells.push([_bc, midRow]); }
                         }
                     }
                 }
@@ -1948,6 +1980,15 @@
                     if (cellEl) {
                         cellEl.classList.add("reel-near-miss");
                         setTimeout(function() { cellEl.classList.remove("reel-near-miss"); }, 1200);
+                    }
+                });
+                // Heartbeat the matching cells (the "so close" symbols)
+                beatCells.forEach(function(pair) {
+                    var bc = pair[0], br = pair[1];
+                    var beatEl = document.getElementById("reel_" + bc + "_" + br);
+                    if (beatEl) {
+                        beatEl.classList.add("reel-near-miss-beat");
+                        setTimeout(function() { beatEl.classList.remove("reel-near-miss-beat"); }, 380);
                     }
                 });
                 showMessage("So Close! 👀", "near-miss");
@@ -2016,6 +2057,10 @@
                 animateBalanceRoll(oldBalance, balance, Math.min(2000, winAmount * 20));
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
+                _sessSpins++;
+                _sessTotalBet += currentBet;
+                _sessTotalWon += winAmount;
+                _updateSessionHud();
                 // Tumble visual cascade for tumble/avalanche games
                 if (currentGame && (currentGame.bonusType === 'tumble' || currentGame.bonusType === 'avalanche')) {
                     setTimeout(function() { triggerTumbleCascade(currentGame); }, 60);
@@ -2096,6 +2141,9 @@
                 setTimeout(function() {
                     document.querySelectorAll('.reel-loss-droop').forEach(function(c) { c.classList.remove('reel-loss-droop'); });
                 }, 420);
+                _sessSpins++;
+                _sessTotalBet += currentBet;
+                _updateSessionHud();
             }
             // Apply idle shimmer to all visible wild/scatter cells
             (function() {
@@ -5242,6 +5290,7 @@
             const cols = getGridCols(game);
             const rows = getGridRows(game);
             const nearMissCells = [];
+            const beatCells = [];   // matching cells that get heartbeat pulse
 
             if (cols <= 4) {
                 for (let r = 0; r < rows; r++) {
@@ -5260,6 +5309,8 @@
                             rowSyms.forEach(function(s, c) {
                                 if (s !== sym && !isWild(s, game)) {
                                     nearMissCells.push([c, r]);
+                                } else if (s === sym || isWild(s, game)) {
+                                    beatCells.push([c, r]);
                                 }
                             });
                         }
@@ -5278,6 +5329,8 @@
                         const col4Sym = grid[4] ? grid[4][midRow] : null;
                         if (col4Sym && col4Sym !== sym0 && !isWild(col4Sym, game)) {
                             nearMissCells.push([4, midRow]);
+                            // first 4 cols are the matching ones
+                            for (var _bc = 0; _bc < 4 && _bc < cols; _bc++) { beatCells.push([_bc, midRow]); }
                         }
                     }
                 }
@@ -5290,6 +5343,15 @@
                     if (cellEl) {
                         cellEl.classList.add("reel-near-miss");
                         setTimeout(function() { cellEl.classList.remove("reel-near-miss"); }, 1200);
+                    }
+                });
+                // Heartbeat the matching cells (the "so close" symbols)
+                beatCells.forEach(function(pair) {
+                    var bc = pair[0], br = pair[1];
+                    var beatEl = document.getElementById("reel_" + bc + "_" + br);
+                    if (beatEl) {
+                        beatEl.classList.add("reel-near-miss-beat");
+                        setTimeout(function() { beatEl.classList.remove("reel-near-miss-beat"); }, 380);
                     }
                 });
                 showMessage("So Close! 👀", "near-miss");
@@ -5358,6 +5420,10 @@
                 animateBalanceRoll(oldBalance, balance, Math.min(2000, winAmount * 20));
                 saveBalance();
                 showWinAnimation(winAmount); upgradeWinGlow(winAmount);
+                _sessSpins++;
+                _sessTotalBet += currentBet;
+                _sessTotalWon += winAmount;
+                _updateSessionHud();
                 // Tumble visual cascade for tumble/avalanche games
                 if (currentGame && (currentGame.bonusType === 'tumble' || currentGame.bonusType === 'avalanche')) {
                     setTimeout(function() { triggerTumbleCascade(currentGame); }, 60);
@@ -5418,6 +5484,9 @@
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
                 detectAndShowNearMiss(grid, game);
+                _sessSpins++;
+                _sessTotalBet += currentBet;
+                _updateSessionHud();
             }
             if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
 
