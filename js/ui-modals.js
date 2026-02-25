@@ -719,8 +719,9 @@
 
         function _ensureHoFPanel() {
             if (document.getElementById('hofPanel')) return;
-            const statsContent = document.getElementById('statsContent');
-            if (!statsContent) return;
+            // Append after the achievements panel, or after dailyChallengesPanel, or after achievementsList
+            const parent = (document.getElementById('achPanelContainer') || document.getElementById('dailyChallengesPanel') || document.getElementById('achievementsList') || {}).parentNode;
+            if (!parent) return;
             const wrap = document.createElement('div');
             wrap.id = 'hofPanel';
             wrap.style.cssText = 'margin-top:16px';
@@ -732,7 +733,7 @@
                 <div id="hofBody" style="border:1px solid rgba(255,215,0,0.15);border-top:none;border-radius:0 0 8px 8px;padding:8px 12px;background:rgba(0,0,0,0.3)">
                     <div id="hofList"></div>
                 </div>`;
-            statsContent.appendChild(wrap);
+            parent.appendChild(wrap);
             _renderHoFPanel(document.getElementById('hofList'));
 
             let collapsed = false;
