@@ -12,16 +12,9 @@ const app = express();
 // client IP rather than the load-balancer IP (which would bucket all users together)
 app.set('trust proxy', 1);
 
-// Redirect bare domain → www in production (Render only provisions cert for www)
-if (config.NODE_ENV === 'production') {
-    app.use((req, res, next) => {
-        const host = req.headers.host || '';
-        if (host === 'msaart.online') {
-            return res.redirect(301, `https://www.msaart.online${req.url}`);
-        }
-        next();
-    });
-}
+// NOTE: No www redirect here — Cloudflare sits in front and already handles
+// SSL for both msaart.online and www.msaart.online. Adding a server-side
+// redirect creates a loop because Cloudflare redirects www→bare domain.
 
 // ─── Security Middleware ───
 app.use(helmet({
