@@ -490,6 +490,122 @@
                 btn.title = 'Turbo spin (fast reels)';
             }
         }
+        // -- Intro splash helper (Sprint 19) --
+        function _showSlotSplash(game) {
+            var container = document.getElementById("slotModal") ||
+                            document.querySelector(".slot-modal") ||
+                            document.querySelector(".game-panel");
+            if (!container) return;
+            var existing = container.querySelector(".slot-intro-splash");
+            if (existing) existing.remove();
+            var splash = document.createElement("div");
+            splash.className = "slot-intro-splash";
+            splash.style.background = game.bgGradient || "linear-gradient(135deg,#1a1a2e,#0f3460)";
+            var providerTag = document.createElement("div");
+            providerTag.className = "splash-provider-tag";
+            providerTag.textContent = game.provider || "";
+            var titleEl = document.createElement("div");
+            titleEl.className = "splash-game-title";
+            titleEl.textContent = game.name || "";
+            var loadingBar = document.createElement("div");
+            loadingBar.className = "splash-loading-bar";
+            splash.appendChild(providerTag);
+            splash.appendChild(titleEl);
+            splash.appendChild(loadingBar);
+            container.style.position = container.style.position || "relative";
+            container.insertBefore(splash, container.firstChild);
+            requestAnimationFrame(function() { splash.classList.add("splash-visible"); });
+            setTimeout(function() {
+                splash.classList.remove("splash-visible");
+                setTimeout(function() { if (splash.parentNode) splash.remove(); }, 350);
+            }, 1500);
+        }
+
+        // -- Paytable overlay helpers (Sprint 19) --
+        function _buildPaytableHTML(game) {
+            var payouts = game.payouts || {};
+            var rtp = game.rtp ? game.rtp.toFixed(1) + "%" : "N/A";
+            var volatility = game.volatility || game.vol || "medium";
+            var volLabelMap = { low: "Low", medium: "Medium", high: "High" };
+            var volLabel = volLabelMap[volatility] || volatility;
+            var grid = (game.gridCols || game.cols || 5) + "x" + (game.gridRows || game.rows || 3);
+            var minBet = "$" + (game.minBet || 0.20).toFixed(2);
+            var maxBet = "$" + (game.maxBet || 500).toFixed(2);
+            var payoutEntries = [];
+            if (payouts.triple)     payoutEntries.push(["3x Match", payouts.triple + "x"]);
+            if (payouts.double)     payoutEntries.push(["2x Match", payouts.double + "x"]);
+            if (payouts.wildTriple) payoutEntries.push(["3x Wild", payouts.wildTriple + "x"]);
+            if (payouts.scatterPay) payoutEntries.push(["Scatter", payouts.scatterPay + "x"]);
+            if (payouts.cluster5)   payoutEntries.push(["Cluster 5+", payouts.cluster5 + "x"]);
+            if (payouts.cluster8)   payoutEntries.push(["Cluster 8+", payouts.cluster8 + "x"]);
+            if (payouts.cluster12)  payoutEntries.push(["Cluster 12+", payouts.cluster12 + "x"]);
+            if (payouts.cluster15)  payoutEntries.push(["Cluster 15+", payouts.cluster15 + "x"]);
+            var payoutRowsHTML = payoutEntries.map(function(p) {
+                return "<div class=\"paytable-payout-row\">" +
+                       "<span class=\"paytable-payout-label\">" + p[0] + "</span>" +
+                       "<span class=\"paytable-payout-value\">" + p[1] + "</span>" +
+                       "</div>";
+            }).join("");
+            var symbols = (game.symbols || []).slice(0, 9);
+            var symbolChips = symbols.map(function(s) {
+                var display = s.replace(/^s\d+_|^wild_|^scatter_/, "").replace(/_/g, " ");
+                return "<div class=\"paytable-symbol-chip\">" + display + "</div>";
+            }).join("");
+            var bonusDesc = game.bonusDesc || game.description || "Spin to win!";
+            var html = "";
+            html += "<div class=\"paytable-header\">";
+            html += "<div><div class=\"paytable-title\">" + (game.name || "Game Info") + "</div>";
+            html += "<div class=\"paytable-subtitle\">" + (game.provider || "") + "</div></div>";
+            html += "<button class=\"paytable-close\" id=\"paytableCloseBtn\" title=\"Close\">&#x2715;</button>";
+            html += "</div>";
+            html += "<div class=\"paytable-body\">";
+            html += "<div class=\"paytable-section\"><div class=\"paytable-stats-row\">";
+            html += "<div class=\"paytable-stat\"><div class=\"paytable-stat-value\">" + rtp + "</div><div class=\"paytable-stat-label\">RTP</div></div>";
+            html += "<div class=\"paytable-stat\"><div class=\"paytable-stat-value\">" + volLabel + "</div><div class=\"paytable-stat-label\">Volatility</div></div>";
+            html += "<div class=\"paytable-stat\"><div class=\"paytable-stat-value\">" + grid + "</div><div class=\"paytable-stat-label\">Grid</div></div>";
+            html += "</div><div class=\"paytable-stats-row\">";
+            html += "<div class=\"paytable-stat\"><div class=\"paytable-stat-value\">" + minBet + "</div><div class=\"paytable-stat-label\">Min Bet</div></div>";
+            html += "<div class=\"paytable-stat\"><div class=\"paytable-stat-value\">" + maxBet + "</div><div class=\"paytable-stat-label\">Max Bet</div></div>";
+            html += "</div></div>";
+            if (payoutEntries.length) {
+                html += "<div class=\"paytable-section\"><div class=\"paytable-section-title\">Payouts</div>" +
+                        "<div class=\"paytable-payout-grid\">" + payoutRowsHTML + "</div></div>";
+            }
+            if (symbolChips) {
+                html += "<div class=\"paytable-section\"><div class=\"paytable-section-title\">Symbols</div>" +
+                        "<div class=\"paytable-symbols-list\">" + symbolChips + "</div></div>";
+            }
+            html += "<div class=\"paytable-section\"><div class=\"paytable-section-title\">Bonus Feature</div>" +
+                    "<div class=\"paytable-bonus-desc\">" + bonusDesc + "</div></div>";
+            html += "</div>";
+            return html;
+        }
+
+        function _openPaytable() {
+            var overlay = document.getElementById("paytableOverlay");
+            if (!overlay) {
+                overlay = document.createElement("div");
+                overlay.id = "paytableOverlay";
+                overlay.className = "paytable-overlay";
+                var modal = document.createElement("div");
+                modal.className = "paytable-modal";
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                overlay.addEventListener("click", function(e) {
+                    if (e.target === overlay) _closePaytable();
+                });
+            }
+            var modal = overlay.querySelector(".paytable-modal");
+            modal.innerHTML = _buildPaytableHTML(currentGame || {});
+            var closeBtn = document.getElementById("paytableCloseBtn");
+            if (closeBtn) closeBtn.addEventListener("click", _closePaytable);
+            requestAnimationFrame(function() { overlay.classList.add("open"); });
+        }
+
+        function _closePaytable() {
+            var overlay = document.getElementById("paytableOverlay");
+            if (overlay) overlay.classList.remove("open");
+        }
         function clearReelAnimations(cells) {
             cells.forEach(cell => {
                 REEL_CELL_ANIMATION_CLASSES.forEach(cls => cell.classList.remove(cls));
@@ -1261,6 +1377,8 @@
                     _modal.appendChild(_shim);
                     setTimeout(function() { if (_shim.parentNode) _shim.remove(); }, 650);
                 })();
+                // Show intro splash for this game
+                _showSlotSplash(currentGame);
                 // Inject spin history panel (idempotent — removed and re-injected on each game open)
                 var _oldHistPanel = document.getElementById('spinHistoryPanel');
                 if (_oldHistPanel) _oldHistPanel.parentNode.removeChild(_oldHistPanel);
@@ -1495,6 +1613,23 @@
                         if (_rc2) _rc2.classList.add('turbo-mode');
                     }
                 })();
+                // — Paytable / Info button —
+                (function _injectPaytableBtn() {
+                    if (document.getElementById("paytableBtn")) return;
+                    var _ptBtn = document.createElement("button");
+                    _ptBtn.id = "paytableBtn";
+                    _ptBtn.className = "paytable-btn";
+                    _ptBtn.title = "Game info & paytable";
+                    _ptBtn.textContent = "ⓘ";
+                    _ptBtn.addEventListener("click", _openPaytable);
+                    var _turboB = document.getElementById("turboSpinBtn");
+                    if (_turboB && _turboB.parentNode) {
+                        _turboB.parentNode.insertBefore(_ptBtn, _turboB.nextSibling);
+                    } else {
+                        var _spinB = document.getElementById("spinBtn") || document.querySelector(".spin-btn");
+                        if (_spinB && _spinB.parentNode) _spinB.parentNode.appendChild(_ptBtn);
+                    }
+                })();
                 // ── Touch gestures: tap or swipe-down on reels triggers spin ──
                 (function attachReelTouchGesture() {
                     const reelEl = document.querySelector('.reels-container') || document.querySelector('.reels');
@@ -1586,6 +1721,8 @@
             if (typeof gambleState !== 'undefined') { gambleState.active = false; gambleState.amount = 0; gambleState.round = 0; }
             var _gambleOverlayClose = document.getElementById('gambleOverlay');
             if (_gambleOverlayClose) _gambleOverlayClose.style.display = 'none';
+            // Close paytable overlay if open
+            _closePaytable();
         }
 
 

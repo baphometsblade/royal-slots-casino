@@ -333,6 +333,8 @@
                     if (!window._liveCountsInterval) {
                         window._liveCountsInterval = setInterval(_tickLiveCounts, 15000 + Math.random() * 6000);
                     }
+                    // Initial tab count badges after games load (Sprint 19)
+                    setTimeout(function() { if (typeof _updateTabCounts === 'function') _updateTabCounts(); }, 0);
                 }, 200);
             });
         }
@@ -989,8 +991,44 @@
                     countEl.textContent = counts[f] ?? '';
                 }
             });
+            // Sync .filter-tab-count badges (Sprint 19)
+            if (typeof _updateTabCounts === 'function') _updateTabCounts();
         }
 
+
+        function _updateTabCounts() {
+            try {
+                var allGames = (typeof games !== 'undefined' ? games : []);
+                if (!allGames || !allGames.length) return;
+
+                // Build counts per filter key — mirrors getFilteredGames() switch cases
+                var favCount = (typeof _favsSet !== 'undefined'
+                    ? _favsSet.size
+                    : (typeof loadFavorites === 'function' ? loadFavorites().length : 0));
+                var counts = {
+                    'all':       allGames.length,
+                    'hot':       allGames.filter(function(g) { return g.hot; }).length,
+                    'new':       allGames.filter(function(g) { return g.tag === 'NEW'; }).length,
+                    'jackpot':   allGames.filter(function(g) { return g.tag === 'JACKPOT' || g.tag === 'MEGA'; }).length,
+                    'favorites': favCount
+                };
+
+                // Update .filter-tab-count badge inside each tab button
+                document.querySelectorAll('.filter-tab[data-filter]').forEach(function(btn) {
+                    var key = btn.dataset.filter;
+                    if (!(key in counts)) return;
+                    var badge = btn.querySelector('.filter-tab-count');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'filter-tab-count';
+                        btn.appendChild(badge);
+                    }
+                    badge.textContent = counts[key];
+                });
+            } catch (e) {
+                // Defensive — never block render on count error
+            }
+        }
 
         function updateFavTabBadge() {
             const favTab = document.getElementById('favFilterTab');
@@ -1249,6 +1287,8 @@
             if (matches) visible++;
           });
           if (noRes) noRes.classList.toggle('visible', q.length > 0 && visible === 0);
+          // Update tab count badges after search filter (Sprint 19)
+          if (typeof _updateTabCounts === 'function') _updateTabCounts();
         }
 
         function lobbyOnSearch(query) {
