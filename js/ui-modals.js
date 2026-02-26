@@ -447,6 +447,77 @@
             // ── Login Streak panel ────────────────────────────────────
             _ensureStreakPanel();
             _renderStreakPanel();
+
+            // ── All-Time Leaderboard panel ─────────────────────────────
+            _ensureLeaderboardPanel();
+        }
+
+
+        function _ensureLeaderboardPanel() {
+            if (document.getElementById('leaderboardPanelContainer')) return;
+            var wrap = document.createElement('div');
+            wrap.id = 'leaderboardPanelContainer';
+            wrap.style.cssText = 'margin-top:14px;';
+            wrap.innerHTML = '<div id="leaderboardToggle" role="button" tabindex="0"'
+                + ' style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;'
+                + 'padding:8px 12px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:8px;">'
+                + '<span style="font-size:13px;font-weight:700;color:#ffd700">\uD83C\uDFC6 All-Time Big Wins</span>'
+                + '<span id="leaderboardChevron" style="color:rgba(255,255,255,0.4);font-size:12px">\u25BC</span>'
+                + '</div>'
+                + '<div id="leaderboardBody" style="border:1px solid rgba(255,215,0,0.12);border-top:none;'
+                + 'border-radius:0 0 8px 8px;padding:8px 12px;background:rgba(0,0,0,0.25);display:none">'
+                + '<div id="leaderboardList"><div style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0">Loading\u2026</div></div>'
+                + '</div>';
+            var streak = document.getElementById('streakPanelContainer');
+            if (streak && streak.parentNode) {
+                streak.parentNode.insertBefore(wrap, streak.nextSibling);
+            } else {
+                var sc = document.querySelector('.stats-panel');
+                if (sc) sc.appendChild(wrap);
+            }
+            document.getElementById('leaderboardToggle').addEventListener('click', function() {
+                var body = document.getElementById('leaderboardBody');
+                var chev = document.getElementById('leaderboardChevron');
+                var isOpen = body.style.display !== 'none';
+                body.style.display = isOpen ? 'none' : '';
+                chev.textContent = isOpen ? '\u25BC' : '\u25B2';
+                if (!isOpen && !body.dataset.loaded) {
+                    body.dataset.loaded = '1';
+                    _fetchLeaderboard();
+                }
+            });
+        }
+
+        function _fetchLeaderboard() {
+            var list = document.getElementById('leaderboardList');
+            if (!list) return;
+            fetch('/api/leaderboard')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var entries = data.leaderboard || [];
+                    if (entries.length === 0) {
+                        list.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0">No big wins yet \u2014 be the first!</div>';
+                        return;
+                    }
+                    var medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+                    list.innerHTML = entries.map(function(e, i) {
+                        var gameName = e.gameId || 'Unknown';
+                        if (typeof games !== 'undefined') {
+                            var g = games.find(function(x) { return x.id === e.gameId; });
+                            if (g) gameName = g.name;
+                        }
+                        return '<div class="ldb-row">'
+                            + '<span class="ldb-rank">' + (medals[i] || (i + 1)) + '</span>'
+                            + '<span class="ldb-player">' + e.username + '</span>'
+                            + '<span class="ldb-game">' + gameName + '</span>'
+                            + '<span class="ldb-mult">' + e.mult + '\xD7</span>'
+                            + '<span class="ldb-amount">$' + Number(e.winAmount).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span>'
+                            + '</div>';
+                    }).join('');
+                })
+                .catch(function() {
+                    list.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0">Could not load leaderboard.</div>';
+                });
         }
 
 

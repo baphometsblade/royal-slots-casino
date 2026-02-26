@@ -829,6 +829,7 @@ const STORAGE_KEY_WEEKLY_MISSIONS = 'matrixWeeklyMissions';
 
 /** @type {string} localStorage key for notification center entries */
 const STORAGE_KEY_NOTIFICATIONS = 'matrixNotifications';
+const STORAGE_KEY_LOGIN_STREAK = 'matrixLoginStreak';
 
 /**
  * VIP tier definitions ordered by wagering threshold.

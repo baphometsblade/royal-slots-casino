@@ -13776,3 +13776,22 @@ button.active .filter-tab-count {
     text-align: center;
     padding: 8px 0;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ALL-TIME LEADERBOARD PANEL
+   ═══════════════════════════════════════════════════════════ */
+
+.ldb-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 12px;
+}
+.ldb-row:last-child { border-bottom: none; }
+.ldb-rank  { width: 22px; text-align: center; flex-shrink: 0; }
+.ldb-player{ width: 58px; color: #ffd700; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ldb-game  { flex: 1; color: rgba(255,255,255,0.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ldb-mult  { width: 50px; text-align: right; color: #34d399; font-weight: 700; flex-shrink: 0; }
+.ldb-amount{ width: 72px; text-align: right; color: rgba(255,255,255,0.9); flex-shrink: 0; }
