@@ -1388,6 +1388,40 @@
                 if (_oldSessStats) _oldSessStats.parentNode.removeChild(_oldSessStats);
                 _ensureSlotSessionStats();
                 _updateSlotSessionStats();
+                // Inject session-stats-bar (new compact bar with time/spins/P&L)
+                (function _injectSessionStatsBar() {
+                    var _oldBar = document.getElementById('sessionStatsBar');
+                    if (_oldBar) _oldBar.parentNode.removeChild(_oldBar);
+                    var _bar = document.createElement('div');
+                    _bar.id = 'sessionStatsBar';
+                    _bar.className = 'session-stats-bar';
+                    _bar.innerHTML = [
+                        '<div class="session-stat-item">',
+                            '<span class="session-stat-icon">⏱</span>',
+                            '<span class="session-stat-value" id="statTime">00:00</span>',
+                            '<span class="session-stat-label">time</span>',
+                        '</div>',
+                        '<div class="session-stat-item">',
+                            '<span class="session-stat-icon">🎰</span>',
+                            '<span class="session-stat-value" id="statSpins">0</span>',
+                            '<span class="session-stat-label">spins</span>',
+                        '</div>',
+                        '<div class="session-stat-item">',
+                            '<span class="session-stat-icon">📈</span>',
+                            '<span class="session-stat-value" id="statPnl">$0.00</span>',
+                            '<span class="session-stat-label">P&amp;L</span>',
+                        '</div>'
+                    ].join('');
+                    // Insert before the existing slot-session-stats bar, or before slot-bottom-bar
+                    var _existingSss = document.getElementById('slotSessionStats');
+                    var _bottomBar   = document.querySelector('.slot-bottom-bar');
+                    if (_existingSss && _existingSss.parentNode) {
+                        _existingSss.parentNode.insertBefore(_bar, _existingSss);
+                    } else if (_bottomBar && _bottomBar.parentNode) {
+                        _bottomBar.parentNode.insertBefore(_bar, _bottomBar);
+                    }
+                    _initSessionStats(typeof balance !== 'undefined' ? balance : 0);
+                })();
                 window._slotSessionStart = Date.now();
                 if (window._slotTimerInterval) clearInterval(window._slotTimerInterval);
                 window._slotTimerInterval = setInterval(function() {
@@ -1675,6 +1709,7 @@
 
             // Stop jackpot banner ticker and hide banner
             if (window._slotTimerInterval) { clearInterval(window._slotTimerInterval); window._slotTimerInterval = null; }
+            clearInterval(window._sessionStatsInterval); window._sessionStatsInterval = null;
             if (_slotJackpotTickInterval) { clearInterval(_slotJackpotTickInterval); _slotJackpotTickInterval = null; }
             const jackpotBannerClose = document.getElementById('slotJackpotBanner');
             if (jackpotBannerClose) jackpotBannerClose.style.display = 'none';
@@ -2445,6 +2480,41 @@
                 timeEl.textContent = Math.floor(elapsed / 60) + ':' + String(elapsed % 60).padStart(2, '0');
             }
         }
+
+        // -- Session Stats Bar (session-stats-bar CSS class) ---
+        function _initSessionStats(startBalance) {
+            window._sessionStartBalance = (typeof startBalance !== 'undefined') ? startBalance : (typeof balance !== 'undefined' ? balance : 0);
+            window._sessionStartTime    = Date.now();
+            clearInterval(window._sessionStatsInterval);
+            window._sessionStatsInterval = setInterval(_updateSessionStats, 1000);
+            _updateSessionStats();
+        }
+
+        function _updateSessionStats() {
+            var bar = document.getElementById('sessionStatsBar');
+            if (!bar) { clearInterval(window._sessionStatsInterval); return; }
+
+            // Time
+            var elapsed = Math.floor((Date.now() - (window._sessionStartTime || Date.now())) / 1000);
+            var mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            var ss = String(elapsed % 60).padStart(2, '0');
+            var timeEl = bar.querySelector('#statTime');
+            if (timeEl) timeEl.textContent = mm + ':' + ss;
+
+            // Spins -- reuse existing _sessSpins counter
+            var spinEl = bar.querySelector('#statSpins');
+            if (spinEl) spinEl.textContent = (typeof _sessSpins !== 'undefined' ? _sessSpins : 0);
+
+            // P&L -- current balance minus opening balance
+            var pnlEl = bar.querySelector('#statPnl');
+            if (pnlEl && typeof window._sessionStartBalance !== 'undefined' && window._sessionStartBalance !== null) {
+                var currentBal = (typeof balance !== 'undefined') ? balance : 0;
+                var pnl = currentBal - window._sessionStartBalance;
+                var sign = pnl >= 0 ? '+' : '';
+                pnlEl.textContent = sign + '$' + Math.abs(pnl).toFixed(2);
+                pnlEl.className   = 'session-stat-value ' + (pnl >= 0 ? 'positive' : 'negative');
+            }
+        }
         // Display win result from server (no client-side win calculation)
         // -- Near-Miss Detection
         function detectAndShowNearMiss(grid, game) {
@@ -2597,6 +2667,7 @@
                 _sessTotalBet += currentBet;
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
+                _updateSessionStats();
                 // Dynamic layer escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     var _streak = window._winStreak || 0;
@@ -2744,6 +2815,7 @@
                 _sessSpins++;
                 _sessTotalBet += currentBet;
                 _updateSessionHud();
+                _updateSessionStats();
                 // Dynamic layer de-escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     SoundManager.playDynamicLayer(0);
@@ -6105,6 +6177,7 @@
                 _sessTotalBet += currentBet;
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
+                _updateSessionStats();
                 // Dynamic layer escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     var _streak = window._winStreak || 0;
@@ -6230,6 +6303,7 @@
                 _sessSpins++;
                 _sessTotalBet += currentBet;
                 _updateSessionHud();
+                _updateSessionStats();
                 // Dynamic layer de-escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     SoundManager.playDynamicLayer(0);

@@ -13090,3 +13090,111 @@ button.active .filter-tab-count {
   background: rgba(255,255,255,0.2);
   color: rgba(255,255,255,0.85);
 }
+
+/* ═══════════════════════════════════════════
+   SPRINT 20 — XP / LEVEL BADGE (lobby header)
+   ═══════════════════════════════════════════ */
+.xp-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  user-select: none;
+  min-width: 160px;
+}
+.xp-level-badge:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,200,50,0.3);
+}
+.xp-badge-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.xp-badge-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.xp-badge-level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.xp-badge-level {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f0c040;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.xp-badge-next {
+  font-size: 10px;
+  color: #555;
+  white-space: nowrap;
+}
+.xp-bar-track {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f0c040, #ff9500);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(.22,1,.36,1);
+  min-width: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   SPRINT 20 — IN-SLOT SESSION STATS BAR
+   ═══════════════════════════════════════════ */
+.session-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 4px 0;
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  flex-shrink: 0;
+}
+.session-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 14px;
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+.session-stat-item + .session-stat-item {
+  border-left: 1px solid rgba(255,255,255,0.07);
+}
+.session-stat-icon {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.session-stat-value {
+  font-weight: 700;
+  color: #bbb;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.session-stat-value.positive { color: #4caf50; }
+.session-stat-value.negative { color: #ef5350; }
+.session-stat-label {
+  color: #555;
+  font-size: 10px;
+}

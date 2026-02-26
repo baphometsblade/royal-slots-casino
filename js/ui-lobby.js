@@ -247,7 +247,72 @@
         }
 
 
-        function renderGames() {
+                // ── XP Level Badge (Sprint 20) ────────────────────────────────────────
+        function _renderXPBadge() {
+            // Read XP data from localStorage using the canonical key
+            const XP_KEY = typeof XP_STORAGE_KEY !== 'undefined' ? XP_STORAGE_KEY
+                         : typeof STORAGE_KEY_XP  !== 'undefined' ? STORAGE_KEY_XP
+                         : 'casinoXP';
+            let xpData = null;
+            try {
+                const raw = localStorage.getItem(XP_KEY);
+                if (raw) xpData = JSON.parse(raw);
+            } catch(e) {}
+
+            // XP data is {xp: <within-level>, level: <level>} — same structure as saveXP()
+            const level      = (xpData && xpData.level   != null) ? Math.max(1, xpData.level)   : 1;
+            const xpIntoLvl  = (xpData && xpData.xp      != null) ? Math.max(0, xpData.xp)      : 0;
+
+            // XP required for THIS level: floor(100 * 1.25^(level-1))
+            const baseXP   = typeof BASE_XP_PER_LEVEL     !== 'undefined' ? BASE_XP_PER_LEVEL     : 100;
+            const growth   = typeof XP_LEVEL_GROWTH_RATE  !== 'undefined' ? XP_LEVEL_GROWTH_RATE  : 1.25;
+            const needed   = Math.max(1, Math.floor(baseXP * Math.pow(growth, level - 1)));
+            const xpToNext = Math.max(0, needed - xpIntoLvl);
+            const pct      = Math.min(100, Math.round((xpIntoLvl / needed) * 100));
+
+            // Icon scales with level tier
+            const icon = level >= 50 ? '💎' : level >= 20 ? '🏆' : level >= 10 ? '⭐' : '🎮';
+
+            // Create badge element once; update on every call
+            let badge = document.getElementById('xpLevelBadge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id        = 'xpLevelBadge';
+                badge.className = 'xp-level-badge';
+                badge.title     = 'Your XP progress — click to open stats';
+                badge.addEventListener('click', function() {
+                    if (typeof openStatsModal === 'function') openStatsModal();
+                    else if (typeof openXPModal === 'function') openXPModal();
+                });
+
+                // Insert before #filterTabs so it sits above the game filter row
+                const filterTabs = document.getElementById('filterTabs');
+                if (filterTabs && filterTabs.parentNode) {
+                    filterTabs.parentNode.insertBefore(badge, filterTabs);
+                } else {
+                    // Fallback: prepend to main lobby container
+                    const lobby = document.getElementById('lobby') ||
+                                  document.getElementById('lobbyView') ||
+                                  document.querySelector('.lobby-container');
+                    if (lobby) lobby.insertBefore(badge, lobby.firstChild);
+                }
+            }
+
+            badge.innerHTML = [
+                '<span class="xp-badge-icon">' + icon + '</span>',
+                '<div class="xp-badge-info">',
+                  '<div class="xp-badge-level-row">',
+                    '<span class="xp-badge-level">Level ' + level + '</span>',
+                    '<span class="xp-badge-next">' + xpToNext.toLocaleString() + ' xp to next</span>',
+                  '</div>',
+                  '<div class="xp-bar-track">',
+                    '<div class="xp-bar-fill" style="width:' + pct + '%"></div>',
+                  '</div>',
+                '</div>'
+            ].join('');
+        }
+
+function renderGames() {
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -335,6 +400,8 @@
                     }
                     // Initial tab count badges after games load (Sprint 19)
                     setTimeout(function() { if (typeof _updateTabCounts === 'function') _updateTabCounts(); }, 0);
+                    // XP level badge update (Sprint 20)
+                    setTimeout(function() { if (typeof _renderXPBadge === 'function') _renderXPBadge(); }, 50);
                 }, 200);
             });
         }
