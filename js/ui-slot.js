@@ -1687,6 +1687,8 @@
                         }
                     }, { passive: true });
                 })();
+                // Inject tournament active badge
+                _injectTournamentBadge();
             });
         }
 
@@ -1757,6 +1759,8 @@
             var _gambleOverlayClose = document.getElementById('gambleOverlay');
             if (_gambleOverlayClose) _gambleOverlayClose.style.display = 'none';
             // Close paytable overlay if open
+            // Remove tournament slot badge
+            _removeTournamentBadge();
             _closePaytable();
         }
 
@@ -2797,6 +2801,13 @@
                     }
                 })();
 
+
+                // Jackpot win celebration
+                if (result && result.jackpotWon && result.jackpotWon.tier) {
+                    setTimeout(function() {
+                        showJackpotWinModal(result.jackpotWon.tier, result.jackpotWon.amount);
+                    }, 1200); // slight delay so reel settle animation plays first
+                }
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
@@ -9432,3 +9443,79 @@
                 };
             }
         })();
+
+
+        // ── Jackpot Win Modal ─────────────────────────────────────────────────
+        function showJackpotWinModal(tier, amount) {
+            var overlay = document.getElementById('jackpotWinOverlay');
+            if (!overlay) return;
+
+            var tierConfig = {
+                mini:  { label: 'MINI JACKPOT',  icon: '🥈', cls: 'jackpot-win-modal--mini'  },
+                major: { label: 'MAJOR JACKPOT', icon: '🏆', cls: 'jackpot-win-modal--major' },
+                mega:  { label: 'MEGA JACKPOT!', icon: '👑', cls: 'jackpot-win-modal--mega'  },
+            };
+            var cfg = tierConfig[tier] || tierConfig.mini;
+
+            var modal = overlay.querySelector('.jackpot-win-modal');
+            if (modal) {
+                modal.className = 'jackpot-win-modal ' + cfg.cls;
+            }
+
+            var iconEl   = overlay.querySelector('.jackpot-win-icon');
+            var tierEl   = overlay.querySelector('.jackpot-win-tier');
+            var amountEl = overlay.querySelector('.jackpot-win-amount');
+
+            if (iconEl)   iconEl.textContent   = cfg.icon;
+            if (tierEl)   tierEl.textContent   = cfg.label;
+            if (amountEl) amountEl.textContent = '+$' + Number(amount).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            overlay.classList.add('active');
+
+            // Trigger particle burst if available
+            if (typeof triggerWinParticles === 'function') {
+                try { triggerWinParticles('jackpot'); } catch(e) {}
+            }
+            if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
+                try { SoundManager.playSoundEvent('jackpot'); } catch(e) {}
+            }
+        }
+
+        function closeJackpotWinModal() {
+            var overlay = document.getElementById('jackpotWinOverlay');
+            if (overlay) overlay.classList.remove('active');
+            // Refresh jackpot ticker amounts since jackpot just reset
+            if (typeof _fetchAndRenderTournaments === 'function') {
+                try { _fetchAndRenderTournaments(); } catch(e) {}
+            }
+        }
+        window.closeJackpotWinModal = closeJackpotWinModal;
+
+        // ── Tournament Active Badge in Slot ───────────────────────────────────
+        function _injectTournamentBadge() {
+            if (document.getElementById('tournSlotBadge')) return;
+            fetch('/api/tournaments').then(function(r) { return r.json(); }).then(function(data) {
+                var active = (data && data.active) || [];
+                if (active.length === 0) return;
+                var t = active[0];
+                var badge = document.createElement('div');
+                badge.id = 'tournSlotBadge';
+                badge.className = 'tourn-slot-badge';
+                badge.innerHTML = '🏆 <strong>Tournament Active</strong> — Best win multiplier wins <strong>' +
+                    (t.type === 'daily' ? '$200' : '$25') + '</strong>';
+                // Insert after the slot header area
+                var slotModal = document.getElementById('slotModal') || document.getElementById('slot-modal') || document.querySelector('.slot-modal');
+                var slotHeader = slotModal && (slotModal.querySelector('.slot-header') || slotModal.querySelector('.slot-top-bar'));
+                if (slotHeader) {
+                    slotHeader.insertAdjacentElement('afterend', badge);
+                } else if (slotModal) {
+                    slotModal.insertAdjacentElement('afterbegin', badge);
+                }
+            }).catch(function() {});
+        }
+
+        function _removeTournamentBadge() {
+            var badge = document.getElementById('tournSlotBadge');
+            if (badge) badge.remove();
+        }
+
