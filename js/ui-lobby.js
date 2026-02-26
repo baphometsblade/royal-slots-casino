@@ -601,6 +601,7 @@ function renderGames() {
             startCardSpotlight();
             initLeaderboard();
             initTournamentBanner();
+            initLiveFeed();
         }
 
         // Random game-card spotlight — briefly highlights a random card every 3-5s
@@ -1560,4 +1561,97 @@ function renderGames() {
                 btn.textContent = 'JOIN FREE';
                 btn.disabled = false;
             }
+        }
+
+        // ── Live Activity Feed ────────────────────────────────────────────────
+        let _feedRefreshInterval = null;
+
+        function initLiveFeed() {
+            if (document.getElementById('liveFeedWidget')) return;
+
+            const widget = document.createElement('div');
+            widget.id = 'liveFeedWidget';
+            widget.className = 'live-feed-widget';
+            widget.innerHTML = `
+                <div class="live-feed-header">
+                    <span class="live-feed-dot"></span>
+                    <span class="live-feed-title">Live Big Wins</span>
+                </div>
+                <div class="live-feed-list" id="liveFeedList">
+                    <div class="live-feed-loading">Loading…</div>
+                </div>`;
+
+            // Insert after tournament banner (or before game grid if banner missing)
+            const banner = document.getElementById('tournamentBanner');
+            if (banner && banner.parentNode) {
+                banner.parentNode.insertBefore(widget, banner.nextSibling);
+            } else {
+                const grid = document.getElementById('games-section')
+                    || document.getElementById('gamesContainer')
+                    || document.querySelector('.games-grid')
+                    || document.querySelector('.game-grid');
+                if (grid && grid.parentNode) grid.parentNode.insertBefore(widget, grid);
+            }
+
+            _fetchLiveFeed();
+            _feedRefreshInterval = setInterval(_fetchLiveFeed, 15000);
+        }
+
+        async function _fetchLiveFeed() {
+            const listEl = document.getElementById('liveFeedList');
+            if (!listEl) return;
+            try {
+                const res = await fetch('/api/feed');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                const feed = data.feed || [];
+                _renderLiveFeed(feed);
+            } catch (e) {
+                // Hide feed widget if server unreachable
+                const widget = document.getElementById('liveFeedWidget');
+                if (widget) widget.style.display = 'none';
+            }
+        }
+
+        function _renderLiveFeed(feed) {
+            const listEl = document.getElementById('liveFeedList');
+            if (!listEl) return;
+            if (!feed || feed.length === 0) {
+                listEl.innerHTML = '<div class="live-feed-empty">No big wins yet — be the first!</div>';
+                return;
+            }
+
+            // Find game name from GAMES array if available
+            function _gameName(gameId) {
+                if (typeof GAMES !== 'undefined') {
+                    const g = GAMES.find(function(x) { return x.id === gameId; });
+                    if (g) return g.name;
+                }
+                return gameId;
+            }
+
+            function _fmtMoney(n) {
+                return '$' + Number(n).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function _timeAgo(isoStr) {
+                const diff = Date.now() - new Date(isoStr).getTime();
+                const m = Math.floor(diff / 60000);
+                if (m < 1)  return 'just now';
+                if (m < 60) return m + 'm ago';
+                const h = Math.floor(m / 60);
+                if (h < 24) return h + 'h ago';
+                return Math.floor(h / 24) + 'd ago';
+            }
+
+            listEl.innerHTML = feed.slice(0, 8).map(function(entry) {
+                return '<div class="live-feed-entry">' +
+                    '<span class="lfe-user">' + entry.username + '</span>' +
+                    ' won ' +
+                    '<span class="lfe-win">' + _fmtMoney(entry.win) + '</span>' +
+                    ' <span class="lfe-mult">(' + entry.mult + '×)</span>' +
+                    ' on <span class="lfe-game">' + _gameName(entry.gameId) + '</span>' +
+                    '<span class="lfe-time">' + _timeAgo(entry.ts) + '</span>' +
+                    '</div>';
+            }).join('');
         }

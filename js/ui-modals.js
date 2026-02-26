@@ -28,6 +28,112 @@
         ];
         const CHALLENGE_STORAGE_KEY = 'matrixChallenges';
 
+        // ── Weekly Missions ──────────────────────────────────
+        const WEEKLY_MISSIONS = [
+            { id: 'weekly_spins_200', label: 'Marathon Spinner', desc: 'Complete 200 spins this week',        target: 200,  xp: 300, icon: '🏃', type: 'spins'   },
+            { id: 'weekly_games_10',  label: 'World Tour',       desc: 'Play 10 different games this week',   target: 10,   xp: 250, icon: '🌍', type: 'games'   },
+            { id: 'weekly_big_win',   label: 'Century Club',     desc: 'Land a win worth 100× your bet',      target: 1,    xp: 500, icon: '💯', type: 'winMult' },
+            { id: 'weekly_wager_2k',  label: 'High Roller Week', desc: 'Wager $2,000 total this week',        target: 2000, xp: 400, icon: '🐳', type: 'wager'   },
+        ];
+        const WEEKLY_STORAGE_KEY = typeof STORAGE_KEY_WEEKLY_MISSIONS !== 'undefined'
+            ? STORAGE_KEY_WEEKLY_MISSIONS : 'matrixWeeklyMissions';
+
+        function _getMondayIso() {
+            const d = new Date();
+            const day = d.getDay();
+            const diff = (day === 0 ? -6 : 1 - day);
+            d.setDate(d.getDate() + diff);
+            d.setHours(0, 0, 0, 0);
+            return d.toISOString().slice(0, 10);
+        }
+
+        function _loadWeeklyState() {
+            try {
+                const raw = localStorage.getItem(WEEKLY_STORAGE_KEY);
+                const state = raw ? JSON.parse(raw) : null;
+                const monday = _getMondayIso();
+                if (!state || state.weekStart !== monday) {
+                    return { weekStart: monday, progress: {}, completed: [] };
+                }
+                return state;
+            } catch (e) {
+                return { weekStart: _getMondayIso(), progress: {}, completed: [] };
+            }
+        }
+
+        function _saveWeeklyState(state) {
+            try { localStorage.setItem(WEEKLY_STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+        }
+
+        function _renderWeeklyPanel() {
+            const container = document.getElementById('weeklyChallengesPanel');
+            if (!container) return;
+            const state = _loadWeeklyState();
+            const monday = _getMondayIso();
+            const nextMonday = new Date(monday);
+            nextMonday.setDate(nextMonday.getDate() + 7);
+            const msLeft = nextMonday - Date.now();
+            const dLeft = Math.floor(msLeft / 86400000);
+            const hLeft = Math.floor((msLeft % 86400000) / 3600000);
+            container.innerHTML = '<div class="challenge-reset-info">Resets in ' + dLeft + 'd ' + hLeft + 'h</div>' +
+                WEEKLY_MISSIONS.map(m => {
+                    const prog = Math.min(state.progress[m.id] || 0, m.target);
+                    const done = state.completed.includes(m.id);
+                    const pct  = Math.round((prog / m.target) * 100);
+                    return '<div class="challenge-item' + (done ? ' challenge-done' : '') + '">' +
+                        '<div class="challenge-icon">' + m.icon + '</div>' +
+                        '<div class="challenge-info">' +
+                            '<div class="challenge-label">' + m.label + '</div>' +
+                            '<div class="challenge-desc">' + m.desc + '</div>' +
+                            '<div class="challenge-progress-bar">' +
+                                '<div class="challenge-progress-fill" style="width:' + pct + '%"></div>' +
+                            '</div>' +
+                            '<div class="challenge-progress-text">' + prog + ' / ' + m.target + (done ? ' ✓' : '') + '</div>' +
+                        '</div>' +
+                        '<div class="challenge-xp">+' + m.xp + ' XP</div>' +
+                    '</div>';
+                }).join('');
+        }
+
+        // Called from the same event pipeline as daily challenges
+        window.onWeeklyMissionEvent = function(eventType, payload) {
+            const state = _loadWeeklyState();
+            let changed = false;
+
+            if (eventType === 'spin') {
+                state.progress['weekly_spins_200'] = (state.progress['weekly_spins_200'] || 0) + 1;
+                if (payload && payload.gameId) {
+                    if (!state._games) state._games = {};
+                    state._games[payload.gameId] = true;
+                    state.progress['weekly_games_10'] = Object.keys(state._games).length;
+                }
+                if ((payload && payload.wager || 0) > 0) {
+                    state.progress['weekly_wager_2k'] = (state.progress['weekly_wager_2k'] || 0) + (payload.wager || 0);
+                }
+                if ((payload && payload.winMult || 0) >= 100) {
+                    state.progress['weekly_big_win'] = 1;
+                }
+                changed = true;
+            }
+
+            if (changed) {
+                WEEKLY_MISSIONS.forEach(m => {
+                    const prog = state.progress[m.id] || 0;
+                    if (prog >= m.target && !state.completed.includes(m.id)) {
+                        state.completed.push(m.id);
+                        if (typeof gainXP === 'function') gainXP(m.xp);
+                        _showChallengeCompleteToast({ ...m, label: '📋 Weekly: ' + m.label });
+                        if (typeof addNotification === 'function') {
+                            addNotification('weekly', 'Weekly Mission Complete!', m.label + ' — +' + m.xp + ' XP earned');
+                        }
+                    }
+                });
+                _saveWeeklyState(state);
+                _renderWeeklyPanel();
+            }
+        };
+
+
         // ── Achievements ──────────────────────────────────────────
         const ACH_STORAGE_KEY = 'matrixAchievements';
 
@@ -329,6 +435,7 @@
             _ensureDailyChallengesPanel();
             _ensureHoFPanel();
             _renderChallengesPanel();
+            _initChallengesTabs();
 
             // Update achievements
             updateAchievements();
@@ -499,6 +606,24 @@
         }
 
 
+        function _initChallengesTabs() {
+            const tabContainer = document.getElementById('challengesTabs');
+            if (!tabContainer || tabContainer.dataset.init) return;
+            tabContainer.dataset.init = '1';
+            tabContainer.addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-tab]');
+                if (!btn) return;
+                tabContainer.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('ch-tab-active'));
+                btn.classList.add('ch-tab-active');
+                const tab = btn.dataset.tab;
+                const daily  = document.getElementById('dailyChallengesPanel');
+                const weekly = document.getElementById('weeklyChallengesPanel');
+                if (daily)  daily.style.display  = tab === 'daily'  ? '' : 'none';
+                if (weekly) weekly.style.display  = tab === 'weekly' ? '' : 'none';
+                if (tab === 'weekly') _renderWeeklyPanel();
+            });
+        }
+
         function _ensureDailyChallengesPanel() {
             if (document.getElementById('dailyChallengesPanel')) return;
             const achievementsEl = document.getElementById('achievementsList');
@@ -563,6 +688,10 @@
 
 
         function showAchievementNotification(achievement) {
+            // Also persist in notification center
+            if (typeof addNotification === "function") {
+                addNotification("achievement", "🏆" + achievement.name, achievement.desc);
+            }
             playSound('bigwin');
 
             const notification = document.createElement('div');
@@ -1325,6 +1454,139 @@
             requestAnimationFrame(animateWheel);
         }
 
+
+
+        // ══════════════════════════════════════════════════════════
+        // NOTIFICATION CENTER
+        // ══════════════════════════════════════════════════════════
+
+        const _NOTIF_KEY = typeof STORAGE_KEY_NOTIFICATIONS !== 'undefined'
+            ? STORAGE_KEY_NOTIFICATIONS : 'matrixNotifications';
+        const _NOTIF_MAX = 30;
+        const _NOTIF_EXPIRE_MS = 7 * 24 * 3600 * 1000;
+
+        function _loadNotifications() {
+            try {
+                const raw = localStorage.getItem(_NOTIF_KEY);
+                if (!raw) return [];
+                const all = JSON.parse(raw);
+                const cutoff = Date.now() - _NOTIF_EXPIRE_MS;
+                return all.filter(n => new Date(n.ts).getTime() > cutoff);
+            } catch (e) { return []; }
+        }
+
+        function _saveNotifications(list) {
+            try { localStorage.setItem(_NOTIF_KEY, JSON.stringify(list.slice(0, _NOTIF_MAX))); } catch (e) {}
+        }
+
+        function _updateNotifBadge() {
+            const badge = document.getElementById('notifBadge');
+            if (!badge) return;
+            const unread = _loadNotifications().filter(n => !n.read).length;
+            badge.textContent = unread;
+            badge.style.display = unread > 0 ? '' : 'none';
+        }
+
+        window.addNotification = function(type, title, body) {
+            const icons = { achievement: '🏆', tournament: '⚡', weekly: '📋', daily: '🎯', daily_bonus: '🎁', system: '📣' };
+            const list = _loadNotifications();
+            list.unshift({
+                id:    Date.now() + Math.random(),
+                type:  type,
+                icon:  icons[type] || '📣',
+                title: title,
+                body:  body || '',
+                ts:    new Date().toISOString(),
+                read:  false,
+            });
+            _saveNotifications(list);
+            _updateNotifBadge();
+        };
+
+        window.openNotificationPanel = function() {
+            let panel = document.getElementById('notifPanel');
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'notifPanel';
+                panel.className = 'notif-panel';
+                panel.innerHTML = '<div class="notif-panel-header">'
+                    + '<span class="notif-panel-title">Notifications</span>'
+                    + '<button class="notif-mark-read" onclick="markAllNotificationsRead()">Mark all read</button>'
+                    + '<button class="notif-panel-close" onclick="closeNotificationPanel()">✕</button>'
+                    + '</div>'
+                    + '<div class="notif-panel-list" id="notifPanelList"></div>';
+                document.body.appendChild(panel);
+            }
+            _renderNotifPanel();
+            panel.classList.add('active');
+            // backdrop
+            let bd = document.getElementById('notifBackdrop');
+            if (!bd) {
+                bd = document.createElement('div');
+                bd.id = 'notifBackdrop';
+                bd.className = 'notif-backdrop';
+                bd.onclick = closeNotificationPanel;
+                document.body.appendChild(bd);
+            }
+            bd.classList.add('active');
+        };
+
+        window.closeNotificationPanel = function() {
+            const panel = document.getElementById('notifPanel');
+            const bd    = document.getElementById('notifBackdrop');
+            if (panel) panel.classList.remove('active');
+            if (bd)    bd.classList.remove('active');
+        };
+
+        window.markAllNotificationsRead = function() {
+            const list = _loadNotifications().map(n => ({ ...n, read: true }));
+            _saveNotifications(list);
+            _updateNotifBadge();
+            _renderNotifPanel();
+        };
+
+        function _timeAgo(isoStr) {
+            const diff = Date.now() - new Date(isoStr).getTime();
+            const m = Math.floor(diff / 60000);
+            if (m < 1)  return 'just now';
+            if (m < 60) return m + 'm ago';
+            const h = Math.floor(m / 60);
+            if (h < 24) return h + 'h ago';
+            return Math.floor(h / 24) + 'd ago';
+        }
+
+        function _renderNotifPanel() {
+            const list = document.getElementById('notifPanelList');
+            if (!list) return;
+            const notifs = _loadNotifications();
+            if (notifs.length === 0) {
+                list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+                return;
+            }
+            list.innerHTML = notifs.map(n =>
+                '<div class="notif-item' + (n.read ? '' : ' notif-unread') + '">' +
+                '<div class="notif-item-icon">' + n.icon + '</div>' +
+                '<div class="notif-item-body">' +
+                '<div class="notif-item-title">' + n.title + '</div>' +
+                (n.body ? '<div class="notif-item-text">' + n.body + '</div>' : '') +
+                '<div class="notif-item-time">' + _timeAgo(n.ts) + '</div>' +
+                '</div>' +
+                '</div>'
+            ).join('');
+        }
+
+        // Patch showAchievementNotification to also persist in notification center
+        const _origShowAchNotif = typeof showAchievementNotification === 'function' ? showAchievementNotification : null;
+        // Override happens at call site: see below
+
+        // Initialise badge on load
+        document.addEventListener('DOMContentLoaded', function() {
+            _updateNotifBadge();
+        });
+        // Also update now in case DOMContentLoaded already fired
+        if (document.readyState !== 'loading') {
+            setTimeout(_updateNotifBadge, 200);
+        }
 
         // ── Login streak: check once on page load (toast fires even if stats modal is never opened)
         setTimeout(function() { _checkLoginStreak(); }, 800);

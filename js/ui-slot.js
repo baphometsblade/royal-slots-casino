@@ -2622,6 +2622,16 @@
                     streak: typeof _winStreak === 'number' ? _winStreak : 0
                 });
             }
+            if (typeof window.onWeeklyMissionEvent === 'function') {
+                const _wkMult = currentBet > 0 ? winAmount / currentBet : 0;
+                window.onWeeklyMissionEvent('spin', {
+                    bet: currentBet,
+                    win: winAmount,
+                    wager: currentBet,
+                    gameId: currentGame ? currentGame.id : null,
+                    winMult: _wkMult,
+                });
+            }
             if (typeof recordHallOfFameWin === 'function' && winAmount > 0 && currentGame) {
                 recordHallOfFameWin(winAmount, currentBet, currentGame.name, currentGame.id, currentGame.bonusType);
             }
@@ -6147,6 +6157,16 @@
                     gameId: currentGame ? currentGame.id : null,
                     winMult: _challengeMult,
                     streak: typeof _winStreak === 'number' ? _winStreak : 0
+                });
+            }
+            if (typeof window.onWeeklyMissionEvent === 'function') {
+                const _wkMult = currentBet > 0 ? winAmount / currentBet : 0;
+                window.onWeeklyMissionEvent('spin', {
+                    bet: currentBet,
+                    win: winAmount,
+                    wager: currentBet,
+                    gameId: currentGame ? currentGame.id : null,
+                    winMult: _wkMult,
                 });
             }
             if (typeof recordHallOfFameWin === 'function' && winAmount > 0 && currentGame) {
