@@ -2636,6 +2636,8 @@
             if (typeof recordHallOfFameWin === 'function' && winAmount > 0 && currentGame) {
                 recordHallOfFameWin(winAmount, currentBet, currentGame.name, currentGame.id, currentGame.bonusType);
             }
+            if (typeof recordBalancePoint === 'function') recordBalancePoint();
+            if (typeof recordSessionSpin === 'function') recordSessionSpin(winAmount > 0);
             renderSpinHistory();
             _updateSlotSessionStats();
 
@@ -6173,6 +6175,8 @@
             if (typeof recordHallOfFameWin === 'function' && winAmount > 0 && currentGame) {
                 recordHallOfFameWin(winAmount, currentBet, currentGame.name, currentGame.id, currentGame.bonusType);
             }
+            if (typeof recordBalancePoint === 'function') recordBalancePoint();
+            if (typeof recordSessionSpin === 'function') recordSessionSpin(winAmount > 0);
             renderSpinHistory();
             _updateSlotSessionStats();
 

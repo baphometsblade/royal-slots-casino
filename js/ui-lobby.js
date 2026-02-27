@@ -507,10 +507,106 @@ function renderGames() {
                     setTimeout(function() { if (typeof _updateTabCounts === 'function') _updateTabCounts(); }, 0);
                     // XP level badge update (Sprint 20)
                     setTimeout(function() { if (typeof _renderXPBadge === 'function') _renderXPBadge(); }, 50);
+                    // Balance sparkline (Sprint 29)
+                    renderBalanceSparkline();
+                    // Session summary when returning to lobby
+                    showSessionSummary();
+                    // Init session tracking
+                    _initSession();
                 }, 200);
             });
         }
 
+
+        // ── Balance Sparkline ─────────────────────────────────
+        const BAL_HISTORY_KEY = 'matrixBalanceHistory';
+        const BAL_HISTORY_MAX = 100;
+
+        function recordBalancePoint() {
+            if (typeof balance === 'undefined') return;
+            try {
+                let hist = JSON.parse(localStorage.getItem(BAL_HISTORY_KEY) || '[]');
+                hist.push({ t: Date.now(), v: Math.round(balance) });
+                if (hist.length > BAL_HISTORY_MAX) hist = hist.slice(-BAL_HISTORY_MAX);
+                localStorage.setItem(BAL_HISTORY_KEY, JSON.stringify(hist));
+            } catch(e) {}
+        }
+
+        function renderBalanceSparkline() {
+            const wrap = document.getElementById('balanceSparklineWrap');
+            const svg = document.getElementById('balanceSparkline');
+            if (!wrap || !svg) return;
+            let hist = [];
+            try { hist = JSON.parse(localStorage.getItem(BAL_HISTORY_KEY) || '[]'); } catch(e) {}
+            if (hist.length < 3) { wrap.style.display = 'none'; return; }
+
+            const pts = hist.slice(-50);
+            const vals = pts.map(p => p.v);
+            const mn = Math.min(...vals);
+            const mx = Math.max(...vals);
+            const range = mx - mn || 1;
+            const w = 120, h = 32, pad = 2;
+            const coords = vals.map((v, i) => {
+                const x = pad + (i / (vals.length - 1)) * (w - pad * 2);
+                const y = pad + (1 - (v - mn) / range) * (h - pad * 2);
+                return x.toFixed(1) + ',' + y.toFixed(1);
+            });
+            const trend = vals[vals.length - 1] >= vals[0];
+            const color = trend ? '#34d399' : '#f87171';
+            svg.innerHTML = `<polyline points="${coords.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+            wrap.style.display = '';
+            wrap.title = 'Balance: $' + vals[vals.length - 1].toLocaleString();
+        }
+
+        window.recordBalancePoint = recordBalancePoint;
+
+        // ── Session Summary ──────────────────────────────────
+        const SESSION_KEY = 'matrixSessionData';
+
+        function _initSession() {
+            if (sessionStorage.getItem(SESSION_KEY)) return;
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+                startBalance: typeof balance !== 'undefined' ? balance : 0,
+                spins: 0, wins: 0, xpEarned: 0, startTime: Date.now()
+            }));
+        }
+
+        function recordSessionSpin(isWin) {
+            try {
+                const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+                s.spins = (s.spins || 0) + 1;
+                if (isWin) s.wins = (s.wins || 0) + 1;
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
+            } catch(e) {}
+        }
+
+        function showSessionSummary() {
+            try {
+                const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+                if (!s.spins || s.spins < 3) return; // Not enough play to summarize
+                const balChange = (typeof balance !== 'undefined' ? balance : 0) - (s.startBalance || 0);
+                const mins = Math.round((Date.now() - (s.startTime || Date.now())) / 60000);
+                if (mins < 1) return;
+                const sign = balChange >= 0 ? '+' : '';
+                const color = balChange >= 0 ? '#34d399' : '#f87171';
+                const t = document.createElement('div');
+                t.className = 'session-summary-toast';
+                t.innerHTML = `<div class="sst-title">Session Summary</div>`
+                    + `<div class="sst-row"><span>${s.spins} spins</span><span>${s.wins || 0} wins</span><span>${mins}m played</span></div>`
+                    + `<div class="sst-balance" style="color:${color}">${sign}$${Math.abs(Math.round(balChange)).toLocaleString()}</div>`;
+                document.body.appendChild(t);
+                requestAnimationFrame(() => requestAnimationFrame(() => { t.classList.add('sst-visible'); }));
+                setTimeout(() => {
+                    t.classList.remove('sst-visible');
+                    setTimeout(() => t.remove(), 500);
+                }, 5000);
+                // Reset session after showing
+                sessionStorage.removeItem(SESSION_KEY);
+            } catch(e) {}
+        }
+
+        window.recordSessionSpin = recordSessionSpin;
+        window.showSessionSummary = showSessionSummary;
 
         function addRecentlyPlayed(gameId) {
             let recent = [];
