@@ -16,15 +16,84 @@
         }
 
 
+        // ── User Data Scoping ─────────────────────────────────
+        // Keys that contain user-specific data and must be saved/restored per user
+        const _USER_SCOPED_KEYS = [
+            typeof STORAGE_KEY_BALANCE !== 'undefined' ? STORAGE_KEY_BALANCE : 'casinoBalance',
+            typeof STORAGE_KEY_STATS !== 'undefined' ? STORAGE_KEY_STATS : 'casinoStats',
+            typeof STORAGE_KEY_XP !== 'undefined' ? STORAGE_KEY_XP : 'casinoXP',
+            typeof STORAGE_KEY_DAILY_BONUS !== 'undefined' ? STORAGE_KEY_DAILY_BONUS : 'casinoDailyBonus',
+            typeof STORAGE_KEY_BONUS_WHEEL !== 'undefined' ? STORAGE_KEY_BONUS_WHEEL : 'casinoBonusWheel',
+            typeof STORAGE_KEY_RECENTLY_PLAYED !== 'undefined' ? STORAGE_KEY_RECENTLY_PLAYED : 'casinoRecentlyPlayed',
+            typeof STORAGE_KEY_VIP !== 'undefined' ? STORAGE_KEY_VIP : 'casinoVIP',
+            typeof STORAGE_KEY_HALL_OF_FAME !== 'undefined' ? STORAGE_KEY_HALL_OF_FAME : 'matrixHallOfFame',
+            typeof STORAGE_KEY_WEEKLY_MISSIONS !== 'undefined' ? STORAGE_KEY_WEEKLY_MISSIONS : 'matrixWeeklyMissions',
+            typeof STORAGE_KEY_NOTIFICATIONS !== 'undefined' ? STORAGE_KEY_NOTIFICATIONS : 'matrixNotifications',
+            typeof STORAGE_KEY_LOGIN_STREAK !== 'undefined' ? STORAGE_KEY_LOGIN_STREAK : 'matrixLoginStreak',
+            'matrixChallenges', 'matrixAchievements', 'matrixLoginCalendar', 'matrixCalendarMilestones',
+            'matrixBalanceHistory', 'matrixCommunityJackpot', 'matrixXpBoost', 'matrixMysteryBox',
+            'matrixLevelMilestones', 'matrixSpinHistory',
+            typeof STORAGE_KEY_SETTINGS !== 'undefined' ? STORAGE_KEY_SETTINGS : 'casinoSettings',
+        ];
+
+        function _saveUserData(userId) {
+            if (!userId) return;
+            const prefix = '_user_' + userId + '_';
+            _USER_SCOPED_KEYS.forEach(key => {
+                const val = localStorage.getItem(key);
+                if (val !== null) {
+                    localStorage.setItem(prefix + key, val);
+                }
+            });
+        }
+
+        function _clearActiveUserData() {
+            _USER_SCOPED_KEYS.forEach(key => {
+                localStorage.removeItem(key);
+            });
+        }
+
+        function _restoreUserData(userId) {
+            if (!userId) return;
+            const prefix = '_user_' + userId + '_';
+            _USER_SCOPED_KEYS.forEach(key => {
+                const val = localStorage.getItem(prefix + key);
+                if (val !== null) {
+                    localStorage.setItem(key, val);
+                } else {
+                    localStorage.removeItem(key);
+                }
+            });
+        }
+
         function clearAuthSession() {
+            // Save outgoing user's data before clearing
+            if (currentUser && currentUser.id) {
+                _saveUserData(currentUser.id);
+            }
+            _clearActiveUserData();
             authToken = null;
             localStorage.removeItem(STORAGE_KEY_TOKEN);
             currentUser = null;
             localStorage.removeItem(STORAGE_KEY_USER);
+            // Reset in-memory state
+            if (typeof balance !== 'undefined') balance = 0;
+            if (typeof stats !== 'undefined') {
+                stats.totalSpins = 0; stats.totalWins = 0;
+                stats.totalWagered = 0; stats.biggestWin = 0;
+            }
+            if (typeof playerXP !== 'undefined') playerXP = 0;
+            if (typeof playerLevel !== 'undefined') playerLevel = 1;
         }
 
 
         function applyAuthSession(token, user) {
+            // Save outgoing user's data if switching users
+            if (currentUser && currentUser.id && (!user || user.id !== currentUser.id)) {
+                _saveUserData(currentUser.id);
+                _clearActiveUserData();
+            }
+
             authToken = token;
             localStorage.setItem(STORAGE_KEY_TOKEN, token);
             currentUser = user ? {
@@ -35,12 +104,45 @@
             } : null;
             localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
 
+            // Restore incoming user's saved data
+            if (currentUser && currentUser.id) {
+                _restoreUserData(currentUser.id);
+            }
+
+            // Server-provided balance takes precedence
             const userBalance = Number(user?.balance);
             if (Number.isFinite(userBalance)) {
                 balance = userBalance;
                 updateBalance();
                 saveBalance();
+            } else {
+                // Load balance from restored localStorage
+                try {
+                    const saved = localStorage.getItem(typeof STORAGE_KEY_BALANCE !== 'undefined' ? STORAGE_KEY_BALANCE : 'casinoBalance');
+                    if (saved !== null) balance = parseFloat(saved) || 0;
+                } catch(e) {}
+                if (typeof updateBalance === 'function') updateBalance();
             }
+
+            // Reload XP from restored data
+            try {
+                const xpKey = typeof STORAGE_KEY_XP !== 'undefined' ? STORAGE_KEY_XP : 'casinoXP';
+                const xpData = JSON.parse(localStorage.getItem(xpKey) || '{}');
+                if (typeof playerXP !== 'undefined') playerXP = xpData.xp || 0;
+                if (typeof playerLevel !== 'undefined') playerLevel = xpData.level || 1;
+            } catch(e) {}
+
+            // Reload stats from restored data
+            try {
+                const statsKey = typeof STORAGE_KEY_STATS !== 'undefined' ? STORAGE_KEY_STATS : 'casinoStats';
+                const savedStats = JSON.parse(localStorage.getItem(statsKey) || '{}');
+                if (typeof stats !== 'undefined') {
+                    stats.totalSpins = savedStats.totalSpins || 0;
+                    stats.totalWins = savedStats.totalWins || 0;
+                    stats.totalWagered = savedStats.totalWagered || 0;
+                    stats.biggestWin = savedStats.biggestWin || 0;
+                }
+            } catch(e) {}
         }
 
 
@@ -284,6 +386,7 @@
         function logout() {
             clearAuthSession();
             updateAuthButton();
+            if (typeof updateBalance === 'function') updateBalance();
             showToast('Logged out successfully.', 'info');
             // Return to auth gate
             document.body.classList.add('auth-gate');
