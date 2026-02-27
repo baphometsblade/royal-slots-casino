@@ -664,6 +664,42 @@
             if (el) el.style.display = 'none';
         }
 
+        /* ── Sprint 64: Session Duration Warning ─────────── */
+        var _sdTimer = null;
+        var _sdFired = false;
+        function _startDurationWarn() {
+            _sdFired = false;
+            if (_sdTimer) clearTimeout(_sdTimer);
+            _sdTimer = setTimeout(function() {
+                if (_sdFired) return;
+                _sdFired = true;
+                var el = document.getElementById('sdWarn');
+                if (el) el.style.display = '';
+            }, 30 * 60 * 1000); // 30 minutes
+        }
+        function _stopDurationWarn() {
+            if (_sdTimer) { clearTimeout(_sdTimer); _sdTimer = null; }
+            _sdFired = false;
+            var el = document.getElementById('sdWarn');
+            if (el) el.style.display = 'none';
+        }
+
+        /* ── Sprint 64: Bet-to-Balance Ratio ─────────────── */
+        function updateBetRatio() {
+            var el = document.getElementById('bbRatio');
+            if (!el) return;
+            var bal = typeof balance !== 'undefined' ? balance : 0;
+            var bet = typeof currentBet !== 'undefined' ? currentBet : 0;
+            if (bal <= 0 || bet <= 0) { el.style.display = 'none'; return; }
+            var pct = (bet / bal * 100);
+            el.textContent = (pct < 1 ? pct.toFixed(1) : pct.toFixed(0)) + '% of bal';
+            el.style.display = '';
+        }
+        function _resetBetRatio() {
+            var el = document.getElementById('bbRatio');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1876,6 +1912,7 @@
             _resetROIMeter();
             _showProviderLabel();
             _showGridSize();
+            _startDurationWarn();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2495,6 +2532,8 @@
             _resetROIMeter();
             _hideProviderLabel();
             _hideGridSize();
+            _stopDurationWarn();
+            _resetBetRatio();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
@@ -2573,6 +2612,7 @@
             });
             if (typeof _highlightBetPreset === 'function') _highlightBetPreset();
             updateBetIndicator();
+            if (typeof updateBetRatio === 'function') updateBetRatio();
         }
 
 
