@@ -364,9 +364,11 @@
                     if (prog >= ch.target && !state.completed.includes(ch.id)) {
                         state.completed.push(ch.id);
                         awardXP(ch.xp);
-                        // Cash reward
+                        // Cash reward (with streak multiplier)
                         if ((ch.reward || 0) > 0) {
-                            balance += ch.reward;
+                            var _csMult = (typeof getChallengeStreakMultiplier === 'function') ? getChallengeStreakMultiplier() : 1;
+                            var _csReward = Math.round(ch.reward * _csMult);
+                            balance += _csReward;
                             if (typeof saveBalance === 'function') saveBalance();
                             if (typeof updateBalance === 'function') updateBalance();
                         }
@@ -376,6 +378,10 @@
                 });
                 _saveChallengeState(state);
                 _renderChallengesPanel();
+                // Check if all challenges completed → record streak day
+                if (state.completed.length >= DAILY_CHALLENGES.length && typeof recordChallengeStreakDay === 'function') {
+                    recordChallengeStreakDay();
+                }
             }
             _checkAchievements(eventType, payload);
         };
@@ -2572,3 +2578,54 @@
         }
 
         window.openPlayerCard = openPlayerCard;
+
+        /* ── Sprint 34: Challenge Streak Multiplier ──────── */
+        const CS_KEY = 'matrixChallengeStreak';
+
+        function _getChallengeStreak() {
+            try {
+                var d = JSON.parse(localStorage.getItem(CS_KEY));
+                if (!d) return { lastDay: '', streak: 0 };
+                return d;
+            } catch(e) { return { lastDay: '', streak: 0 }; }
+        }
+
+        function _getTodayStr() {
+            var d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+
+        function getChallengeStreakMultiplier() {
+            var cs = _getChallengeStreak();
+            var today = _getTodayStr();
+            // Check if streak is current
+            var yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            var yStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+            if (cs.lastDay !== today && cs.lastDay !== yStr) {
+                // Streak broken
+                return 1;
+            }
+            if (cs.streak >= 3) return 2;
+            if (cs.streak >= 2) return 1.5;
+            return 1;
+        }
+
+        function recordChallengeStreakDay() {
+            var cs = _getChallengeStreak();
+            var today = _getTodayStr();
+            if (cs.lastDay === today) return; // already recorded today
+            var yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            var yStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+            if (cs.lastDay === yStr) {
+                cs.streak += 1;
+            } else {
+                cs.streak = 1;
+            }
+            cs.lastDay = today;
+            localStorage.setItem(CS_KEY, JSON.stringify(cs));
+        }
+
+        window.getChallengeStreakMultiplier = getChallengeStreakMultiplier;
+        window.recordChallengeStreakDay = recordChallengeStreakDay;

@@ -513,6 +513,8 @@ function renderGames() {
                     renderCommunityJackpot();
                     // Automatic cashback (Sprint 31)
                     checkCashback();
+                    // Hourly bonus button (Sprint 34)
+                    _updateHourlyBonusBtn();
                     // Session summary when returning to lobby
                     showSessionSummary();
                     // Init session tracking
@@ -759,6 +761,70 @@ function renderGames() {
         }
 
         window.checkCashback = checkCashback;
+
+        /* ── Sprint 34: Hourly Free Bonus ────────────────── */
+        const HB_KEY = 'matrixHourlyBonus';
+        const HB_COOLDOWN = 3600000; // 1 hour
+        const HB_MIN = 25;
+        const HB_MAX = 100;
+
+        function claimHourlyBonus() {
+            var state = null;
+            try { state = JSON.parse(localStorage.getItem(HB_KEY)); } catch(e) {}
+            var now = Date.now();
+            if (state && (now - state.lastClaim) < HB_COOLDOWN) {
+                if (typeof showToast === 'function') showToast('Bonus not ready yet!', 'error');
+                return;
+            }
+            var amount = Math.floor(Math.random() * (HB_MAX - HB_MIN + 1)) + HB_MIN;
+            balance += amount;
+            updateBalance();
+            localStorage.setItem(HB_KEY, JSON.stringify({ lastClaim: now }));
+            _showHourlyBonusToast(amount);
+            if (typeof addNotification === 'function') {
+                addNotification('bonus', 'Hourly Bonus!', 'You claimed $' + amount + ' free bonus.');
+            }
+            _updateHourlyBonusBtn();
+        }
+
+        function _showHourlyBonusToast(amount) {
+            var t = document.createElement('div');
+            t.className = 'hb-toast';
+            t.innerHTML = '<div class="hb-toast-icon">🎁</div>'
+                + '<div class="hb-toast-text"><strong>Free Bonus!</strong><br>+$' + amount + ' added to balance</div>';
+            document.body.appendChild(t);
+            requestAnimationFrame(function() { requestAnimationFrame(function() { t.classList.add('show'); }); });
+            setTimeout(function() {
+                t.classList.remove('show');
+                setTimeout(function() { t.remove(); }, 400);
+            }, 3500);
+        }
+
+        function _updateHourlyBonusBtn() {
+            var btn = document.getElementById('hourlyBonusBtn');
+            var text = document.getElementById('hbText');
+            if (!btn || !text) return;
+            var state = null;
+            try { state = JSON.parse(localStorage.getItem(HB_KEY)); } catch(e) {}
+            var now = Date.now();
+            if (!state || (now - state.lastClaim) >= HB_COOLDOWN) {
+                text.textContent = 'FREE';
+                btn.classList.add('hb-ready');
+                btn.classList.remove('hb-cooldown');
+            } else {
+                var remaining = HB_COOLDOWN - (now - state.lastClaim);
+                var mins = Math.ceil(remaining / 60000);
+                text.textContent = mins + 'm';
+                btn.classList.remove('hb-ready');
+                btn.classList.add('hb-cooldown');
+            }
+        }
+
+        // Update button every 30s
+        setInterval(_updateHourlyBonusBtn, 30000);
+
+        window.claimHourlyBonus = claimHourlyBonus;
+        window._updateHourlyBonusBtn = _updateHourlyBonusBtn;
 
         function addRecentlyPlayed(gameId) {
             let recent = [];
