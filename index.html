@@ -131,6 +131,7 @@
                         <button class="nav-btn" onclick="if(typeof openScratchCard==='function')openScratchCard()">🎰 Scratch</button>
                         <button class="nav-btn" onclick="if(typeof openXpShop==='function')openXpShop()">💎 XP Shop</button>
                         <button class="nav-btn mystery-box-btn" id="mysteryBoxBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox()">🎁 Mystery</button>
+                        <button class="nav-btn" onclick="if(typeof openAchievements==='function')openAchievements()">🏆 Achievements</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -867,6 +868,18 @@
             <div class="mb-prize" id="mbPrize" style="display:none;"></div>
             <button class="mb-open-btn" id="mbOpenBtn">Open Box</button>
             <button class="mb-close-btn" id="mbCloseBtn" style="display:none;" onclick="document.getElementById('mysteryBoxModal').style.display='none'">Collect & Close</button>
+        </div>
+    </div>
+
+    <!-- Achievements Modal -->
+    <div id="achievementsModal" class="modal-overlay" style="display:none;">
+        <div class="ach-card">
+            <div class="ach-header">
+                <h2 class="ach-title">🏆 Achievements</h2>
+                <div class="ach-summary" id="achSummary">0 / 12 unlocked</div>
+            </div>
+            <div class="ach-grid" id="achGrid"></div>
+            <button class="ach-close" onclick="document.getElementById('achievementsModal').style.display='none'">Close</button>
         </div>
     </div>
 

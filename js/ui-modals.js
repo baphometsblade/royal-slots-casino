@@ -139,38 +139,38 @@
 
         const ACH_DEFS = [
             // Spin milestones
-            { id: 'first_spin',    icon: '🎰', name: 'First Spin',       desc: 'Play your first spin',               req: { type: 'spins',   target: 1      } },
-            { id: 'spin_10',       icon: '🔄', name: 'Getting Started',  desc: 'Complete 10 spins',                  req: { type: 'spins',   target: 10     } },
-            { id: 'spin_100',      icon: '💫', name: 'Spin Master',      desc: 'Complete 100 spins',                 req: { type: 'spins',   target: 100    } },
-            { id: 'spin_500',      icon: '⚡', name: 'Centurion',        desc: 'Complete 500 spins',                 req: { type: 'spins',   target: 500    } },
-            { id: 'spin_1000',     icon: '🌀', name: 'Reel Veteran',     desc: 'Complete 1,000 spins',               req: { type: 'spins',   target: 1000   } },
+            { id: 'first_spin',    icon: '🎰', name: 'First Spin',       desc: 'Play your first spin',               req: { type: 'spins',   target: 1      }, xp: 10,  cash: 25  },
+            { id: 'spin_10',       icon: '🔄', name: 'Getting Started',  desc: 'Complete 10 spins',                  req: { type: 'spins',   target: 10     }, xp: 20,  cash: 50  },
+            { id: 'spin_100',      icon: '💫', name: 'Spin Master',      desc: 'Complete 100 spins',                 req: { type: 'spins',   target: 100    }, xp: 50,  cash: 100 },
+            { id: 'spin_500',      icon: '⚡', name: 'Centurion',        desc: 'Complete 500 spins',                 req: { type: 'spins',   target: 500    }, xp: 100, cash: 250 },
+            { id: 'spin_1000',     icon: '🌀', name: 'Reel Veteran',     desc: 'Complete 1,000 spins',               req: { type: 'spins',   target: 1000   }, xp: 200, cash: 500 },
             // Win milestones
-            { id: 'first_win',     icon: '🏆', name: 'First Win',        desc: 'Win your first spin',                req: { type: 'wins',    target: 1      } },
-            { id: 'win_10',        icon: '💰', name: 'On a Roll',        desc: 'Win 10 times',                       req: { type: 'wins',    target: 10     } },
-            { id: 'win_50',        icon: '🤑', name: 'Lucky Streak',     desc: 'Win 50 times',                       req: { type: 'wins',    target: 50     } },
-            { id: 'win_200',       icon: '🥇', name: 'Win Connoisseur',  desc: 'Win 200 times',                      req: { type: 'wins',    target: 200    } },
+            { id: 'first_win',     icon: '🏆', name: 'First Win',        desc: 'Win your first spin',                req: { type: 'wins',    target: 1      }, xp: 10,  cash: 25  },
+            { id: 'win_10',        icon: '💰', name: 'On a Roll',        desc: 'Win 10 times',                       req: { type: 'wins',    target: 10     }, xp: 25,  cash: 50  },
+            { id: 'win_50',        icon: '🤑', name: 'Lucky Streak',     desc: 'Win 50 times',                       req: { type: 'wins',    target: 50     }, xp: 75,  cash: 150 },
+            { id: 'win_200',       icon: '🥇', name: 'Win Connoisseur',  desc: 'Win 200 times',                      req: { type: 'wins',    target: 200    }, xp: 150, cash: 400 },
             // Big win multipliers
-            { id: 'big_win',       icon: '💥', name: 'Big Winner',       desc: 'Win over 100x your bet',             req: { type: 'bigWin',  target: 100    } },
-            { id: 'mega_win',      icon: '🌟', name: 'Mega Winner',      desc: 'Win over 500x your bet',             req: { type: 'bigWin',  target: 500    } },
-            { id: 'epic_win',      icon: '🔥', name: 'Epic Winner',      desc: 'Win over 1,000x your bet',           req: { type: 'bigWin',  target: 1000   } },
+            { id: 'big_win',       icon: '💥', name: 'Big Winner',       desc: 'Win over 100x your bet',             req: { type: 'bigWin',  target: 100    }, xp: 100, cash: 300 },
+            { id: 'mega_win',      icon: '🌟', name: 'Mega Winner',      desc: 'Win over 500x your bet',             req: { type: 'bigWin',  target: 500    }, xp: 200, cash: 750 },
+            { id: 'epic_win',      icon: '🔥', name: 'Epic Winner',      desc: 'Win over 1,000x your bet',           req: { type: 'bigWin',  target: 1000   }, xp: 400, cash: 1500 },
             // Game variety
-            { id: 'games_5',       icon: '🎮', name: 'Explorer',         desc: 'Try 5 different games',              req: { type: 'games',   target: 5      } },
-            { id: 'games_20',      icon: '🗺️', name: 'Adventurer',      desc: 'Try 20 different games',             req: { type: 'games',   target: 20     } },
-            { id: 'games_50',      icon: '🌍', name: 'Globe Trotter',    desc: 'Try 50 different games',             req: { type: 'games',   target: 50     } },
-            { id: 'games_all',     icon: '👑', name: 'Master of All',    desc: 'Try all 122 games',                  req: { type: 'games',   target: 122    } },
+            { id: 'games_5',       icon: '🎮', name: 'Explorer',         desc: 'Try 5 different games',              req: { type: 'games',   target: 5      }, xp: 30,  cash: 75  },
+            { id: 'games_20',      icon: '🗺️', name: 'Adventurer',      desc: 'Try 20 different games',             req: { type: 'games',   target: 20     }, xp: 100, cash: 250 },
+            { id: 'games_50',      icon: '🌍', name: 'Globe Trotter',    desc: 'Try 50 different games',             req: { type: 'games',   target: 50     }, xp: 250, cash: 750 },
+            { id: 'games_all',     icon: '👑', name: 'Master of All',    desc: 'Try all 122 games',                  req: { type: 'games',   target: 122    }, xp: 500, cash: 2000 },
             // Balance milestones
-            { id: 'balance_500',   icon: '💎', name: 'Getting Rich',     desc: 'Reach a balance of $500',            req: { type: 'balance', target: 500    } },
-            { id: 'balance_1000',  icon: '💰', name: 'High Balance',     desc: 'Reach a balance of $1,000',          req: { type: 'balance', target: 1000   } },
-            { id: 'balance_5000',  icon: '🏦', name: 'Bank Breaker',     desc: 'Reach a balance of $5,000',          req: { type: 'balance', target: 5000   } },
+            { id: 'balance_500',   icon: '💎', name: 'Getting Rich',     desc: 'Reach a balance of $500',            req: { type: 'balance', target: 500    }, xp: 25,  cash: 0   },
+            { id: 'balance_1000',  icon: '💰', name: 'High Balance',     desc: 'Reach a balance of $1,000',          req: { type: 'balance', target: 1000   }, xp: 50,  cash: 0   },
+            { id: 'balance_5000',  icon: '🏦', name: 'Bank Breaker',     desc: 'Reach a balance of $5,000',          req: { type: 'balance', target: 5000   }, xp: 100, cash: 0   },
             // Wager milestones
-            { id: 'wager_1k',      icon: '📊', name: 'Regular',          desc: 'Wager $1,000 total',                 req: { type: 'wager',   target: 1000   } },
-            { id: 'wager_10k',     icon: '📈', name: 'Whale',            desc: 'Wager $10,000 total',                req: { type: 'wager',   target: 10000  } },
+            { id: 'wager_1k',      icon: '📊', name: 'Regular',          desc: 'Wager $1,000 total',                 req: { type: 'wager',   target: 1000   }, xp: 50,  cash: 100 },
+            { id: 'wager_10k',     icon: '📈', name: 'Whale',            desc: 'Wager $10,000 total',                req: { type: 'wager',   target: 10000  }, xp: 150, cash: 500 },
             // Bonus triggers
-            { id: 'bonus_5',       icon: '🎁', name: 'Bonus Seeker',     desc: 'Trigger 5 bonus rounds',             req: { type: 'bonuses', target: 5      } },
-            { id: 'bonus_25',      icon: '🎯', name: 'Bonus Hunter',     desc: 'Trigger 25 bonus rounds',            req: { type: 'bonuses', target: 25     } },
+            { id: 'bonus_5',       icon: '🎁', name: 'Bonus Seeker',     desc: 'Trigger 5 bonus rounds',             req: { type: 'bonuses', target: 5      }, xp: 75,  cash: 150 },
+            { id: 'bonus_25',      icon: '🎯', name: 'Bonus Hunter',     desc: 'Trigger 25 bonus rounds',            req: { type: 'bonuses', target: 25     }, xp: 200, cash: 500 },
             // Win streak
-            { id: 'streak_5',      icon: '🔥', name: 'Hot Hand',         desc: 'Win 5 spins in a row',               req: { type: 'streak',  target: 5      } },
-            { id: 'streak_10',     icon: '💠', name: 'Unstoppable',      desc: 'Win 10 spins in a row',              req: { type: 'streak',  target: 10     } },
+            { id: 'streak_5',      icon: '🔥', name: 'Hot Hand',         desc: 'Win 5 spins in a row',               req: { type: 'streak',  target: 5      }, xp: 50,  cash: 100 },
+            { id: 'streak_10',     icon: '💠', name: 'Unstoppable',      desc: 'Win 10 spins in a row',              req: { type: 'streak',  target: 10     }, xp: 250, cash: 500 },
         ];
 
         function _loadChallengeState() {
@@ -848,7 +848,15 @@
                 if (unlocked) { s.unlocked.push(ach.id); newUnlocks.push(ach); changed = true; }
             }
             if (changed) _saveAchState(s);
-            newUnlocks.forEach(_showAchUnlockToast);
+            newUnlocks.forEach(ach => {
+                if (ach.xp) awardXP(ach.xp);
+                if (ach.cash) {
+                    balance += ach.cash;
+                    if (typeof saveBalance === 'function') saveBalance();
+                    if (typeof updateBalance === 'function') updateBalance();
+                }
+                _showAchUnlockToast(ach);
+            });
         }
 
 
@@ -862,10 +870,15 @@
                 + 'border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;font-size:14px;'
                 + 'z-index:99999;box-shadow:0 4px 24px rgba(123,97,255,0.4);transition:all 0.4s ease;'
                 + 'pointer-events:none;max-width:320px;';
+            const rewards = [];
+            if (ach.xp) rewards.push('+' + ach.xp + ' XP');
+            if (ach.cash) rewards.push('+$' + ach.cash);
             t.innerHTML = `<span style="font-size:28px">${ach.icon}</span><div>`
                 + `<div style="font-size:10px;color:#7b61ff;font-weight:700;letter-spacing:1px;text-transform:uppercase">Achievement Unlocked!</div>`
                 + `<div style="font-weight:700;margin:2px 0">${ach.name}</div>`
-                + `<div style="font-size:11px;color:rgba(255,255,255,0.6)">${ach.desc}</div></div>`;
+                + `<div style="font-size:11px;color:rgba(255,255,255,0.6)">${ach.desc}</div>`
+                + (rewards.length ? `<div style="font-size:11px;color:#6ee7b7;margin-top:2px">${rewards.join(' + ')}</div>` : '')
+                + `</div>`;
             document.body.appendChild(t);
             requestAnimationFrame(() => requestAnimationFrame(() => {
                 t.style.transform = 'translateX(-50%) translateY(0)';
@@ -877,6 +890,51 @@
                 setTimeout(() => t.remove(), 450);
             }, 4000);
         }
+
+        // ── Achievements Modal ──────────────────────────────────────
+        function _achProgress(ach, s) {
+            const r = ach.req;
+            if (r.type === 'spins')   return Math.min(s.spins, r.target);
+            if (r.type === 'wins')    return Math.min(s.wins, r.target);
+            if (r.type === 'bigWin')  return Math.min(s.maxWinMult, r.target);
+            if (r.type === 'games')   return Math.min(s.games.length, r.target);
+            if (r.type === 'balance') return Math.min(s.maxBalance, r.target);
+            if (r.type === 'wager')   return Math.min(s.totalWagered || 0, r.target);
+            if (r.type === 'bonuses') return Math.min(s.bonusesTriggered || 0, r.target);
+            if (r.type === 'streak')  return Math.min(s.maxStreak || 0, r.target);
+            return 0;
+        }
+
+        function openAchievements() {
+            const modal = document.getElementById('achievementsModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            const s = _loadAchState();
+            const grid = document.getElementById('achGrid');
+            const summary = document.getElementById('achSummary');
+            if (summary) summary.textContent = s.unlocked.length + ' / ' + ACH_DEFS.length + ' unlocked';
+            if (!grid) return;
+            grid.innerHTML = ACH_DEFS.map(a => {
+                const done = s.unlocked.includes(a.id);
+                const prog = _achProgress(a, s);
+                const pct = Math.min(100, Math.round((prog / a.req.target) * 100));
+                const rewards = [];
+                if (a.xp) rewards.push('+' + a.xp + ' XP');
+                if (a.cash) rewards.push('+$' + a.cash);
+                return `<div class="ach-item ${done ? 'ach-done' : ''}">
+                    <div class="ach-item-icon">${a.icon}</div>
+                    <div class="ach-item-info">
+                        <div class="ach-item-name">${a.name}</div>
+                        <div class="ach-item-desc">${a.desc}</div>
+                        ${done ? '<div class="ach-item-status">Unlocked</div>'
+                               : `<div class="ach-item-bar"><div class="ach-item-bar-fill" style="width:${pct}%"></div></div>
+                                  <div class="ach-item-prog">${prog} / ${a.req.target}</div>`}
+                        ${rewards.length ? `<div class="ach-item-reward">${rewards.join(' + ')}</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        window.openAchievements = openAchievements;
 
         // ── Hall of Fame — cross-session best wins ────────────────
         const HOF_KEY = typeof STORAGE_KEY_HALL_OF_FAME !== 'undefined' ? STORAGE_KEY_HALL_OF_FAME : 'matrixHallOfFame';
