@@ -1606,6 +1606,14 @@
         _initSessStartTime();     // 152 — session start time
         _resetSpinPace();         // 153 — spin pace
         _resetCumulativeXp();     // 154 — cumulative XP
+        _resetResultHistory();    // 155 — result history
+        _resetProfitBadge156();   // 156 — profit badge
+        _resetBetRecommend();     // 157 — bet recommend
+        _resetNearMissHeat();     // 158 — near-miss heat
+        _resetCinematicCount();   // 159 — cinematic count
+        _resetSessCompareBadge(); // 160 — session compare
+        _resetSpinDistance();     // 161 — spin distance
+        _resetBiggestLoss();      // 162 — biggest loss
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -3086,6 +3094,13 @@
                 _updateScatterGap(currentGrid);        // 149 — scatter gap
                 _updateSpinPace();                     // 153 — spin pace
                 _refreshCumulativeXp();                // 154 — cumulative XP
+                _addResultHistory(winAmount, currentBet); // 155 — result history
+                _updateProfitBadge156();               // 156 — profit badge
+                _updateBetRecommend();                 // 157 — bet recommend
+                _updateNearMissHeat(false);            // 158 — near-miss heat (win = not near miss)
+                _updateSessCompareBadge(balance - _profitStartBal156); // 160 — sess compare
+                _updateSpinDistance();                 // 161 — spin dist
+                _updateBiggestLoss(winAmount, currentBet); // 162 — biggest loss
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3281,6 +3296,12 @@
             _updateScatterGap(currentGrid);            // 149 — scatter gap
             _updateSpinPace();                         // 153 — spin pace
             _refreshCumulativeXp();                    // 154 — cumulative XP
+            _addResultHistory(winAmount, currentBet);  // 155 — result history
+            _updateProfitBadge156();                   // 156 — profit badge
+            _updateBetRecommend();                     // 157 — bet recommend
+            _updateSessCompareBadge(balance - _profitStartBal156); // 160 — sess compare
+            _updateSpinDistance();                     // 161 — spin dist
+            _updateBiggestLoss(winAmount, currentBet); // 162 — biggest loss
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6754,6 +6775,13 @@
                 _updateScatterGap(currentGrid);        // 149 — scatter gap
                 _updateSpinPace();                     // 153 — spin pace
                 _refreshCumulativeXp();                // 154 — cumulative XP
+                _addResultHistory(winAmount, currentBet); // 155 — result history
+                _updateProfitBadge156();               // 156 — profit badge
+                _updateBetRecommend();                 // 157 — bet recommend
+                _updateNearMissHeat(false);            // 158 — near-miss heat (win = not near miss)
+                _updateSessCompareBadge(balance - _profitStartBal156); // 160 — sess compare
+                _updateSpinDistance();                 // 161 — spin dist
+                _updateBiggestLoss(winAmount, currentBet); // 162 — biggest loss
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6914,6 +6942,12 @@
             _updateScatterGap(currentGrid);            // 149 — scatter gap
             _updateSpinPace();                         // 153 — spin pace
             _refreshCumulativeXp();                    // 154 — cumulative XP
+            _addResultHistory(winAmount, currentBet);  // 155 — result history
+            _updateProfitBadge156();                   // 156 — profit badge
+            _updateBetRecommend();                     // 157 — bet recommend
+            _updateSessCompareBadge(balance - _profitStartBal156); // 160 — sess compare
+            _updateSpinDistance();                     // 161 — spin dist
+            _updateBiggestLoss(winAmount, currentBet); // 162 — biggest loss
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -12954,4 +12988,184 @@ function _resetCumulativeXp() {
 function _refreshCumulativeXp() {
     // call after XP award to refresh
     _resetCumulativeXp();
+}
+
+
+// ===============================================================
+//  SPRINT 155-162 -- Result history, win donut, bet suggest,
+//                    near-miss heat, scatter velocity,
+//                    session compare, cinematic wins, lucky number
+// ===============================================================
+
+// Sprint 155: Spin result history list (last 10 outcomes)
+var _resultHistory155 = [];
+function _resetResultHistory() {
+    _resultHistory155 = [];
+    var el = document.getElementById('resultHistoryList');
+    if (el) { while (el.firstChild) el.removeChild(el.firstChild); }
+}
+function _addResultHistory(winAmount, betAmount) {
+    var _DSN2 = String.fromCharCode(36);
+    var won = winAmount > 0;
+    var mult = betAmount > 0 ? (winAmount / betAmount) : 0;
+    _resultHistory155.unshift({ won: won, win: winAmount, mult: mult });
+    if (_resultHistory155.length > 10) _resultHistory155.pop();
+    var el = document.getElementById('resultHistoryList');
+    if (!el) return;
+    while (el.firstChild) el.removeChild(el.firstChild);
+    for (var i = 0; i < _resultHistory155.length; i++) {
+        var entry = _resultHistory155[i];
+        var item = document.createElement('span');
+        item.className = 'rhl-item ' + (entry.won ? 'rhl-win' : 'rhl-loss');
+        item.textContent = entry.won
+            ? ('+' + _DSN2 + entry.win.toFixed(2))
+            : '0';
+        el.appendChild(item);
+    }
+    el.style.display = '';
+}
+
+// Sprint 156: Session profit badge (simple +/- amount vs start, large text)
+var _profitStartBal156 = 0;
+function _resetProfitBadge156() {
+    _profitStartBal156 = (typeof balance !== 'undefined') ? balance : 0;
+    var el = document.getElementById('profitBadge156');
+    if (el) el.style.display = 'none';
+}
+function _updateProfitBadge156() {
+    var cur = (typeof balance !== 'undefined') ? balance : 0;
+    var diff = cur - _profitStartBal156;
+    var el = document.getElementById('profitBadge156');
+    if (!el) return;
+    var _DSN2 = String.fromCharCode(36);
+    var sign = diff >= 0 ? '+' : '';
+    el.textContent = sign + _DSN2 + diff.toFixed(2);
+    el.className = 'profit-badge-156 ' + (diff >= 0 ? 'pb156-pos' : 'pb156-neg');
+    el.style.display = '';
+}
+
+// Sprint 157: Bet recommendation (% of balance)
+function _resetBetRecommend() {
+    var el = document.getElementById('betRecommendBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateBetRecommend() {
+    var bal = (typeof balance !== 'undefined') ? balance : 0;
+    var bet = (typeof currentBet !== 'undefined') ? currentBet : 0;
+    if (!bal || !bet) return;
+    var ratio = bet / bal;
+    var el = document.getElementById('betRecommendBadge');
+    if (!el) return;
+    var msg, cls;
+    if (ratio > 0.1)       { msg = 'Bet: HIGH RISK'; cls = 'brb-danger'; }
+    else if (ratio > 0.05) { msg = 'Bet: caution'; cls = 'brb-caution'; }
+    else if (ratio < 0.005){ msg = 'Bet: very safe'; cls = 'brb-safe'; }
+    else                   { return; } // normal range, hide
+    el.textContent = msg;
+    el.className = 'bet-recommend-badge ' + cls;
+    el.style.display = '';
+}
+
+// Sprint 158: Near-miss heat (near-miss frequency in last 20 spins)
+var _nearMissHeat158 = [];
+function _resetNearMissHeat() {
+    _nearMissHeat158 = [];
+    var el = document.getElementById('nearMissHeat');
+    if (el) el.style.display = 'none';
+}
+function _updateNearMissHeat(isNearMiss) {
+    _nearMissHeat158.push(isNearMiss ? 1 : 0);
+    if (_nearMissHeat158.length > 20) _nearMissHeat158.shift();
+    if (_nearMissHeat158.length < 5) return;
+    var count = 0;
+    for (var i = 0; i < _nearMissHeat158.length; i++) count += _nearMissHeat158[i];
+    var pct = Math.round((count / _nearMissHeat158.length) * 100);
+    var el = document.getElementById('nearMissHeat');
+    if (!el) return;
+    if (pct >= 10) {
+        el.textContent = pct + '% near-miss';
+        el.className = 'near-miss-heat' + (pct >= 30 ? ' nmh-high' : pct >= 20 ? ' nmh-mid' : '');
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// Sprint 159: Cinematic win counter
+var _cinematicWins159 = 0;
+function _resetCinematicCount() {
+    _cinematicWins159 = 0;
+    var el = document.getElementById('cinematicCount');
+    if (el) el.style.display = 'none';
+}
+function _incrementCinematicCount() {
+    _cinematicWins159++;
+    var el = document.getElementById('cinematicCount');
+    if (!el) return;
+    el.textContent = _cinematicWins159 + ('' === '' ? ' big win' : '') + (_cinematicWins159 !== 1 ? 's' : '');
+    el.style.display = '';
+}
+
+// Sprint 160: Session compare badge (vs last stored session)
+var _sessCompKey160 = 'casino_last_sess_pnl';
+function _resetSessCompareBadge() {
+    var el = document.getElementById('sessCompareBadge');
+    if (el) el.style.display = 'none';
+}
+function _saveSessForCompare(pnl) {
+    try { localStorage.setItem(_sessCompKey160, pnl.toFixed(2)); } catch(e) {}
+}
+function _updateSessCompareBadge(currentPnl) {
+    var el = document.getElementById('sessCompareBadge');
+    if (!el) return;
+    try {
+        var lastStr = localStorage.getItem(_sessCompKey160);
+        if (!lastStr) return;
+        var last = parseFloat(lastStr);
+        var diff = currentPnl - last;
+        var _DSN2 = String.fromCharCode(36);
+        var sign = diff >= 0 ? '+' : '';
+        el.textContent = 'vs last: ' + sign + _DSN2 + diff.toFixed(2);
+        el.className = 'sess-compare-badge' + (diff >= 0 ? ' scb-better' : ' scb-worse');
+        el.style.display = '';
+    } catch(e) { el.style.display = 'none'; }
+}
+
+// Sprint 161: Total spin distance display (total reels * rows spun)
+var _totalSpinDist161 = 0;
+function _resetSpinDistance() {
+    _totalSpinDist161 = 0;
+    var el = document.getElementById('spinDistBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateSpinDistance() {
+    var cols = (typeof currentGame !== 'undefined' && currentGame && currentGame.reels) ? currentGame.reels : 5;
+    var rows = (typeof currentGame !== 'undefined' && currentGame && currentGame.rows) ? currentGame.rows : 3;
+    _totalSpinDist161 += cols * rows;
+    var el = document.getElementById('spinDistBadge');
+    if (!el) return;
+    var k = _totalSpinDist161 >= 1000 ? ((_totalSpinDist161 / 1000).toFixed(1) + 'k') : String(_totalSpinDist161);
+    el.textContent = k + ' cells spun';
+    el.style.display = '';
+}
+
+// Sprint 162: Biggest loss this session
+var _biggestLoss162 = 0;
+function _resetBiggestLoss() {
+    _biggestLoss162 = 0;
+    var el = document.getElementById('biggestLossBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateBiggestLoss(winAmount, betAmount) {
+    if (!betAmount || betAmount <= 0) return;
+    if (winAmount <= 0) {
+        if (betAmount > _biggestLoss162) {
+            _biggestLoss162 = betAmount;
+            var el = document.getElementById('biggestLossBadge');
+            if (!el) return;
+            var _DSN2 = String.fromCharCode(36);
+            el.textContent = 'Max loss: ' + _DSN2 + _biggestLoss162.toFixed(2);
+            el.style.display = '';
+        }
+    }
 }

@@ -16588,3 +16588,104 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     color: #a29bfe;
     border: 1px solid rgba(108,92,231,0.25);
 }
+
+
+/* =====================================================
+   SPRINT 155-162 STYLES
+   ===================================================== */
+
+/* Sprint 155: Result history list */
+.result-history-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    max-width: 100%;
+}
+.rhl-item {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+}
+.rhl-win  { color: #00ff88; background: rgba(0,255,136,0.1); }
+.rhl-loss { color: #636e72; background: rgba(99,110,114,0.1); }
+
+/* Sprint 156: Session profit badge */
+.profit-badge-156 {
+    font-size: 14px;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-variant-numeric: tabular-nums;
+}
+.pb156-pos { color: #00ff88; background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.25); }
+.pb156-neg { color: #ff7675; background: rgba(255,118,117,0.1); border: 1px solid rgba(255,118,117,0.25); }
+
+/* Sprint 157: Bet recommendation */
+.bet-recommend-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
+}
+.brb-danger  { color: #d63031; background: rgba(214,48,49,0.15); animation: brb-flash 0.8s ease-in-out infinite alternate; }
+.brb-caution { color: #fdcb6e; background: rgba(253,203,110,0.15); }
+.brb-safe    { color: #00cec9; background: rgba(0,206,201,0.1); }
+@keyframes brb-flash {
+    from { opacity: 0.8; }
+    to   { opacity: 1; box-shadow: 0 0 5px rgba(214,48,49,0.4); }
+}
+
+/* Sprint 158: Near-miss heat */
+.near-miss-heat {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-weight: 600;
+    background: rgba(162,155,254,0.08);
+    color: #a29bfe;
+}
+.near-miss-heat.nmh-mid  { color: #fdcb6e; background: rgba(253,203,110,0.1); }
+.near-miss-heat.nmh-high { color: #ff7675; background: rgba(255,118,117,0.12); }
+
+/* Sprint 159: Cinematic count */
+.cinematic-count {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(253,203,110,0.15), rgba(108,92,231,0.15));
+    color: #fdcb6e;
+}
+
+/* Sprint 160: Session compare badge */
+.sess-compare-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 8px;
+}
+.scb-better { color: #00ff88; background: rgba(0,255,136,0.1); }
+.scb-worse  { color: #ff7675; background: rgba(255,118,117,0.1); }
+
+/* Sprint 161: Spin distance badge */
+.spin-dist-badge {
+    font-size: 10px;
+    color: #b2bec3;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(178,190,195,0.07);
+    font-weight: 400;
+}
+
+/* Sprint 162: Biggest loss badge */
+.biggest-loss-badge {
+    font-size: 10px;
+    color: #ff7675;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(255,118,117,0.08);
+    font-weight: 600;
+}
