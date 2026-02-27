@@ -2749,7 +2749,14 @@ function renderGames() {
             var catCount = Object.keys(cats).length;
             var mins = Math.floor((Date.now() - _lfStart) / 60000);
             var timeStr = mins < 1 ? '<1m' : mins + 'm';
-            el.innerHTML = '<span>' + gameCount + ' Games</span><span>' + catCount + ' Categories</span><span>Online: ' + timeStr + '</span>';
+            // Sprint 78: Simulated online players
+            var h = new Date().getHours();
+            var basePop = [420,380,350,320,310,340,400,520,680,820,950,1080,
+                           1150,1120,1050,980,1020,1100,1250,1350,1280,1100,900,600];
+            var m = new Date().getMinutes();
+            var jitter = ((h * 60 + m) * 7 + 13) % 97 - 48;
+            var online = basePop[h] + jitter;
+            el.innerHTML = '<span>' + gameCount + ' Games</span><span>' + catCount + ' Categories</span><span>Online: ' + timeStr + '</span><span>~' + online.toLocaleString() + ' online</span>';
             if (!_lfInterval) {
                 _lfInterval = setInterval(function() { renderLobbyFooter(); }, 60000);
             }

@@ -760,6 +760,8 @@
             if (typeof pushOutcDot === 'function') pushOutcDot(winAmount > 0);
             // Sprint 77: Session net position
             if (typeof updateSessNet === 'function') updateSessNet();
+            // Sprint 78: Wild count
+            if (typeof updateWildCount === 'function') updateWildCount();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
