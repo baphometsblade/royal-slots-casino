@@ -2302,3 +2302,246 @@ function communityJackpotSpin(bet) {
     else { _cjInit(); }
     setInterval(_cjUpdateTicker, 30000);
 })();
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 31 — PROMO CODES + AUTOMATIC CASHBACK
+// ═══════════════════════════════════════════════════════
+
+var PROMO_CODES = {
+    WELCOME500: { type: 'one-time', reward: { cash: 500 },              desc: '+$500 Balance!' },
+    MATRIX100:  { type: 'one-time', reward: { xp: 100 },                desc: '+100 XP!' },
+    FREESPIN10: { type: 'one-time', reward: { spins: 10 },              desc: '10 Free Spins!' },
+    DAILY200:   { type: 'daily',    reward: { cash: 200 },              desc: '+$200 Balance!' },
+    XPBOOST:    { type: 'daily',    reward: { xpboost: 20 },            desc: '2× XP Boost (20 spins)!' },
+};
+var PROMO_STORAGE_KEY = 'matrixPromoCodes';
+
+function openPromoCode() {
+    var modal = document.getElementById('promoCodeModal');
+    if (!modal) return;
+    var inp = document.getElementById('promoCodeInput');
+    var res = document.getElementById('promoResult');
+    if (inp) inp.value = '';
+    if (res) res.textContent = '';
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+    if (inp) setTimeout(function() { inp.focus(); }, 80);
+    inp && inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') redeemPromoCode(); }, { once: true });
+}
+
+function redeemPromoCode() {
+    var inp = document.getElementById('promoCodeInput');
+    var res = document.getElementById('promoResult');
+    if (!inp) return;
+    var code = inp.value.trim().toUpperCase();
+    var def = PROMO_CODES[code];
+    var storage;
+    try { storage = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || '{}'); } catch(e) { storage = {}; }
+    if (!def) {
+        if (res) { res.textContent = '❌ Unknown code'; res.className = 'promo-result promo-fail'; }
+        return;
+    }
+    var today = new Date().toISOString().slice(0, 10);
+    var used = storage.used || {};
+    if (def.type === 'one-time' && used[code]) {
+        if (res) { res.textContent = '⚠️ Already redeemed'; res.className = 'promo-result promo-fail'; }
+        return;
+    }
+    if (def.type === 'daily' && used[code] === today) {
+        if (res) { res.textContent = '⚠️ Already used today'; res.className = 'promo-result promo-fail'; }
+        return;
+    }
+    // Apply reward
+    var r = def.reward;
+    if (r.cash && typeof balance !== 'undefined') {
+        balance += r.cash;
+        if (typeof saveBalance === 'function') saveBalance();
+        if (typeof updateBalance === 'function') updateBalance();
+    }
+    if (r.xp && typeof awardXP === 'function') awardXP(r.xp);
+    if (r.spins && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+        triggerFreeSpins(currentGame, r.spins);
+    }
+    if (r.xpboost) {
+        try {
+            var boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+            var rem = (boost && boost.remaining > 0) ? boost.remaining + r.xpboost : r.xpboost;
+            localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: rem }));
+        } catch(e) {}
+    }
+    // Mark used
+    if (!storage.used) storage.used = {};
+    storage.used[code] = def.type === 'daily' ? today : true;
+    localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage));
+    if (res) { res.textContent = '✅ ' + def.desc; res.className = 'promo-result promo-ok'; }
+    if (typeof showToast === 'function') showToast('🎟️ Code redeemed: ' + def.desc, 'win');
+    inp.value = '';
+}
+
+// ── Automatic Cashback ───────────────────────────────────────────────────────
+var CASHBACK_KEY  = 'matrixCashback';
+var CASHBACK_RATE = 0.05; // 5%
+var CASHBACK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24h
+
+function checkCashback() {
+    if (typeof balance === 'undefined') return;
+    var s;
+    try { s = JSON.parse(localStorage.getItem(CASHBACK_KEY) || 'null'); } catch(e) { s = null; }
+    var now = Date.now();
+    if (!s) {
+        localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance }));
+        return;
+    }
+    if (now - s.lastCheck < CASHBACK_INTERVAL_MS) return;
+    var loss = s.lastBalance - balance;
+    if (loss > 0) {
+        var cashback = Math.round(loss * CASHBACK_RATE * 100) / 100;
+        balance += cashback;
+        if (typeof saveBalance === 'function') saveBalance();
+        if (typeof updateBalance === 'function') updateBalance();
+        if (typeof showToast === 'function') showToast('💰 5% Daily Cashback: +$' + cashback.toFixed(2), 'win');
+    }
+    localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance }));
+}
+
+(function() {
+    function _cbInit() { if (typeof checkCashback === 'function') checkCashback(); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _cbInit); }
+    else { setTimeout(_cbInit, 1000); } // Delay so balance is loaded first
+})();
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 32 — SPIN HISTORY + PLAYER CARD
+// ═══════════════════════════════════════════════════════
+
+// ── Spin History ─────────────────────────────────────────────────────────────
+var SH_KEY     = 'matrixSpinHistory';
+var SH_MAX     = 100;
+var _shFilter  = 'all';
+
+function recordSpinHistory(entry) {
+    // entry: { game, gameId, bet, win }
+    try {
+        var hist = JSON.parse(localStorage.getItem(SH_KEY) || '[]');
+        hist.unshift({ ts: Date.now(), game: entry.game || '', gameId: entry.gameId || '', bet: entry.bet || 0, win: entry.win || 0, mult: entry.bet > 0 ? Math.round((entry.win / entry.bet) * 10) / 10 : 0 });
+        if (hist.length > SH_MAX) hist = hist.slice(0, SH_MAX);
+        localStorage.setItem(SH_KEY, JSON.stringify(hist));
+    } catch(e) {}
+}
+
+function _shRelTime(ts) {
+    var diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+}
+
+function shSetFilter(f, btn) {
+    _shFilter = f;
+    document.querySelectorAll('.sh-filter-btn').forEach(function(b) { b.classList.toggle('sh-filter-active', b === btn); });
+    _shRenderList();
+}
+
+function _shRenderList() {
+    var listEl = document.getElementById('shList');
+    if (!listEl) return;
+    var hist = [];
+    try { hist = JSON.parse(localStorage.getItem(SH_KEY) || '[]'); } catch(e) {}
+    var filtered = hist.filter(function(e) {
+        if (_shFilter === 'wins')   return e.win > e.bet;
+        if (_shFilter === 'losses') return e.win <= e.bet;
+        return true;
+    });
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="sh-empty">No spins recorded yet.</div>';
+        return;
+    }
+    listEl.innerHTML = filtered.map(function(e) {
+        var isWin = e.win > e.bet;
+        var net = e.win - e.bet;
+        var netStr = (net >= 0 ? '+$' : '-$') + Math.abs(net).toFixed(2);
+        var multBadge = e.mult >= 2 ? '<span class="sh-mult">' + e.mult + 'x</span>' : '';
+        return '<div class="sh-entry' + (isWin ? ' sh-win' : ' sh-loss') + '">' +
+            '<div class="sh-game">' + (e.game || e.gameId || 'Unknown') + '</div>' +
+            '<div class="sh-amounts"><span class="sh-bet">$' + (e.bet || 0).toFixed(2) + '</span>' + multBadge + '<span class="sh-net ' + (isWin ? 'sh-net-win' : 'sh-net-loss') + '">' + netStr + '</span></div>' +
+            '<div class="sh-time">' + _shRelTime(e.ts) + '</div></div>';
+    }).join('');
+}
+
+function openSpinHistory() {
+    var modal = document.getElementById('spinHistoryModal');
+    if (!modal) return;
+    _shFilter = 'all';
+    document.querySelectorAll('.sh-filter-btn').forEach(function(b) { b.classList.toggle('sh-filter-active', b.dataset.f === 'all'); });
+    _shRenderList();
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+// ── Player Stats Card ─────────────────────────────────────────────────────────
+function openPlayerCard() {
+    var modal = document.getElementById('playerCardModal');
+    var inner = document.getElementById('playerCardInner');
+    if (!modal || !inner) return;
+
+    var username = (typeof currentUser !== 'undefined' && currentUser && currentUser.username) ? currentUser.username : 'Guest';
+    var level    = (typeof playerLevel !== 'undefined') ? playerLevel : 1;
+    var xp       = (typeof playerXP !== 'undefined') ? Math.floor(playerXP) : 0;
+    var totalSpins = (typeof stats !== 'undefined' && stats.totalSpins) ? stats.totalSpins : 0;
+    var biggestWin = (typeof stats !== 'undefined' && stats.biggestWin) ? stats.biggestWin : 0;
+    var totalWon   = (typeof stats !== 'undefined' && stats.totalWon) ? stats.totalWon : 0;
+
+    // VIP tier
+    var vipTier = 'Bronze';
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.vipTier) vipTier = currentUser.vipTier;
+    else if (totalSpins >= 5000) vipTier = 'Platinum';
+    else if (totalSpins >= 1000) vipTier = 'Gold';
+    else if (totalSpins >= 200) vipTier = 'Silver';
+
+    // Favorite game
+    var favGame = 'None yet';
+    try {
+        var recent = JSON.parse(localStorage.getItem(typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'recentlyPlayed') || '[]');
+        if (recent.length > 0) {
+            var allGames = typeof GAMES !== 'undefined' ? GAMES : [];
+            var g = allGames.find(function(x) { return x.id === recent[0]; });
+            if (g) favGame = g.name || g.id;
+        }
+    } catch(e) {}
+
+    // Achievement count
+    var achCount = 0;
+    try { var achData = JSON.parse(localStorage.getItem('matrixAchievements') || '{}'); achCount = (achData.unlocked || []).length; } catch(e) {}
+
+    // XP needed for next level
+    var xpNeeded = (typeof getXPForLevel === 'function') ? getXPForLevel(level) : (level * 100);
+    var xpPct = Math.min(100, Math.round((xp / xpNeeded) * 100));
+
+    var vipColors = { Bronze: '#cd7f32', Silver: '#c0c0c0', Gold: '#ffd700', Platinum: '#e5e4e2' };
+    var vipColor = vipColors[vipTier] || '#ffd700';
+
+    inner.innerHTML =
+        '<div class="pc-header">' +
+            '<div class="pc-avatar">' + username.charAt(0).toUpperCase() + '</div>' +
+            '<div class="pc-identity">' +
+                '<div class="pc-username">' + username + '</div>' +
+                '<div class="pc-vip" style="color:' + vipColor + '">' + vipTier + ' Member</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="pc-level-wrap">' +
+            '<div class="pc-level-label">Level ' + level + '</div>' +
+            '<div class="pc-xp-bar"><div class="pc-xp-fill" style="width:' + xpPct + '%"></div></div>' +
+            '<div class="pc-xp-text">' + xp.toLocaleString() + ' / ' + xpNeeded.toLocaleString() + ' XP</div>' +
+        '</div>' +
+        '<div class="pc-stats-grid">' +
+            '<div class="pc-stat"><div class="pc-stat-val">' + totalSpins.toLocaleString() + '</div><div class="pc-stat-label">Spins</div></div>' +
+            '<div class="pc-stat"><div class="pc-stat-val">$' + (biggestWin >= 1000 ? (biggestWin / 1000).toFixed(1) + 'K' : biggestWin.toFixed(0)) + '</div><div class="pc-stat-label">Best Win</div></div>' +
+            '<div class="pc-stat"><div class="pc-stat-val">$' + (totalWon >= 1000 ? (totalWon / 1000).toFixed(1) + 'K' : totalWon.toFixed(0)) + '</div><div class="pc-stat-label">Total Won</div></div>' +
+            '<div class="pc-stat"><div class="pc-stat-val">' + achCount + '</div><div class="pc-stat-label">Badges</div></div>' +
+        '</div>' +
+        '<div class="pc-footer-row"><span class="pc-fav-label">Favorite:</span><span class="pc-fav-game">' + favGame + '</span></div>';
+
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}

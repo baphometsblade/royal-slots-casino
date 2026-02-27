@@ -132,6 +132,9 @@
                         <button class="nav-btn" onclick="if(typeof openXpShop==='function')openXpShop()">⚗️ XP Shop</button>
                         <button class="nav-btn" id="mysteryBoxNavBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox()">📦 Box</button>
                         <button class="nav-btn" onclick="if(typeof openLoginCalendar==='function')openLoginCalendar()">📅 Calendar</button>
+                        <button class="nav-btn" onclick="if(typeof openPromoCode==='function')openPromoCode()">🎟️ Promo</button>
+                        <button class="nav-btn" onclick="if(typeof openSpinHistory==='function')openSpinHistory()">📋 History</button>
+                        <button class="nav-btn" onclick="if(typeof openPlayerCard==='function')openPlayerCard()">🪪 My Card</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -848,6 +851,49 @@
             <div class="lc-month-title" id="lcMonthTitle"></div>
             <div class="lc-grid" id="lcGrid"></div>
             <div class="lc-milestones" id="lcMilestones"></div>
+        </div>
+    </div>
+
+    <!-- Promo Code Modal (Sprint 31) -->
+    <div class="modal" id="promoCodeModal">
+        <div class="modal-content promo-modal-content">
+            <div class="modal-header">
+                <h2>🎟️ Promo Code</h2>
+                <button class="modal-close" onclick="document.getElementById('promoCodeModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="promo-input-row">
+                <input class="promo-input" id="promoCodeInput" type="text" placeholder="Enter code…" autocomplete="off" spellcheck="false">
+                <button class="promo-submit-btn" onclick="if(typeof redeemPromoCode==='function')redeemPromoCode()">REDEEM</button>
+            </div>
+            <div class="promo-result" id="promoResult"></div>
+            <div class="promo-hint">Try: WELCOME500 · MATRIX100 · FREESPIN10 · DAILY200 · XPBOOST</div>
+        </div>
+    </div>
+
+    <!-- Spin History Modal (Sprint 32) -->
+    <div class="modal" id="spinHistoryModal">
+        <div class="modal-content spin-history-content">
+            <div class="modal-header">
+                <h2>📋 Spin History</h2>
+                <button class="modal-close" onclick="document.getElementById('spinHistoryModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="sh-filters" id="shFilters">
+                <button class="sh-filter-btn sh-filter-active" data-f="all"    onclick="if(typeof shSetFilter==='function')shSetFilter('all',this)">All</button>
+                <button class="sh-filter-btn"                   data-f="wins"   onclick="if(typeof shSetFilter==='function')shSetFilter('wins',this)">Wins</button>
+                <button class="sh-filter-btn"                   data-f="losses" onclick="if(typeof shSetFilter==='function')shSetFilter('losses',this)">Losses</button>
+            </div>
+            <div class="sh-list" id="shList"></div>
+        </div>
+    </div>
+
+    <!-- Player Card Modal (Sprint 32) -->
+    <div class="modal" id="playerCardModal">
+        <div class="modal-content player-card-content">
+            <div class="modal-header">
+                <h2>🪪 Player Card</h2>
+                <button class="modal-close" onclick="document.getElementById('playerCardModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="player-card" id="playerCardInner"></div>
         </div>
     </div>
 
