@@ -2195,3 +2195,142 @@
         setTimeout(_updateMysteryBoxBtn, 1000);
 
         window.openMysteryBox = openMysteryBox;
+
+        // ══════ Login Calendar ════════════════════════════════════
+        const CAL_KEY = 'matrixLoginCalendar';
+        const CAL_MILE_KEY = 'matrixCalendarMilestones';
+        const CAL_MILESTONES = [
+            { days: 7,  cash: 200,  xp: 0,   spins: 0, label: '7 Days' },
+            { days: 14, cash: 500,  xp: 50,  spins: 0, label: '14 Days' },
+            { days: 21, cash: 1000, xp: 100, spins: 0, label: '21 Days' },
+            { days: 28, cash: 2500, xp: 250, spins: 5, label: '28 Days' },
+        ];
+
+        function _getCalMonth() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        }
+
+        function _loadCalState() {
+            try {
+                const d = JSON.parse(localStorage.getItem(CAL_KEY) || '{}');
+                if (d.month !== _getCalMonth()) return { month: _getCalMonth(), days: [] };
+                return d;
+            } catch(e) { return { month: _getCalMonth(), days: [] }; }
+        }
+
+        function _saveCalState(s) {
+            try { localStorage.setItem(CAL_KEY, JSON.stringify(s)); } catch(e) {}
+        }
+
+        function _loadCalMilestones() {
+            try {
+                const d = JSON.parse(localStorage.getItem(CAL_MILE_KEY) || '{}');
+                if (d.month !== _getCalMonth()) return { month: _getCalMonth(), claimed: [] };
+                return d;
+            } catch(e) { return { month: _getCalMonth(), claimed: [] }; }
+        }
+
+        function _saveCalMilestones(s) {
+            try { localStorage.setItem(CAL_MILE_KEY, JSON.stringify(s)); } catch(e) {}
+        }
+
+        function openLoginCalendar() {
+            const modal = document.getElementById('loginCalendarModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+
+            const state = _loadCalState();
+            const today = new Date().getDate();
+
+            // Mark today if not already
+            if (!state.days.includes(today)) {
+                state.days.push(today);
+                _saveCalState(state);
+            }
+
+            // Render month header
+            const now = new Date();
+            const monthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            const monthEl = document.getElementById('calMonth');
+            if (monthEl) monthEl.textContent = monthName;
+
+            // Render calendar grid
+            const grid = document.getElementById('calGrid');
+            if (!grid) return;
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+
+            let html = '<div class="cal-weekdays">';
+            ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => { html += '<div class="cal-wk">' + d + '</div>'; });
+            html += '</div><div class="cal-days">';
+
+            // Empty cells for offset
+            for (let i = 0; i < firstDay; i++) html += '<div class="cal-day cal-empty"></div>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isToday = d === today;
+                const loggedIn = state.days.includes(d);
+                const isPast = d < today;
+                const isFuture = d > today;
+                let cls = 'cal-day';
+                if (isToday && loggedIn) cls += ' cal-today';
+                else if (loggedIn) cls += ' cal-logged';
+                else if (isPast) cls += ' cal-missed';
+                else if (isFuture) cls += ' cal-future';
+                html += '<div class="' + cls + '">' + d + '</div>';
+            }
+            html += '</div>';
+            grid.innerHTML = html;
+
+            // Render milestones
+            const milesEl = document.getElementById('calMilestones');
+            if (!milesEl) return;
+            const mileState = _loadCalMilestones();
+            const loginCount = state.days.length;
+
+            milesEl.innerHTML = CAL_MILESTONES.map(m => {
+                const done = loginCount >= m.days;
+                const claimed = mileState.claimed.includes(m.days);
+                const rewards = [];
+                if (m.cash) rewards.push('$' + m.cash);
+                if (m.xp) rewards.push(m.xp + ' XP');
+                if (m.spins) rewards.push(m.spins + ' Free Spins');
+                return '<div class="cal-mile ' + (done ? 'cal-mile-done' : '') + (claimed ? ' cal-mile-claimed' : '') + '">'
+                    + '<div class="cal-mile-label">' + m.label + '</div>'
+                    + '<div class="cal-mile-reward">' + rewards.join(' + ') + '</div>'
+                    + (done && !claimed
+                        ? '<button class="cal-mile-btn" onclick="claimCalendarMilestone(' + m.days + ')">Claim</button>'
+                        : (claimed ? '<span class="cal-mile-check">Claimed</span>' : '<span class="cal-mile-lock">' + loginCount + '/' + m.days + '</span>'))
+                    + '</div>';
+            }).join('');
+        }
+
+        window.claimCalendarMilestone = function(days) {
+            const m = CAL_MILESTONES.find(x => x.days === days);
+            if (!m) return;
+            const state = _loadCalState();
+            if (state.days.length < days) return;
+            const mileState = _loadCalMilestones();
+            if (mileState.claimed.includes(days)) return;
+
+            mileState.claimed.push(days);
+            _saveCalMilestones(mileState);
+
+            if (m.cash) {
+                balance += m.cash;
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof updateBalance === 'function') updateBalance();
+            }
+            if (m.xp) awardXP(m.xp);
+            if (m.spins && typeof triggerFreeSpins === 'function') {
+                triggerFreeSpins(currentGame || null, m.spins);
+            }
+
+            if (typeof showToast === 'function') {
+                showToast('Calendar milestone claimed! ' + (m.cash ? '+$' + m.cash : '') + (m.xp ? ' +' + m.xp + ' XP' : ''), 'success');
+            }
+            openLoginCalendar(); // Re-render
+        };
+
+        window.openLoginCalendar = openLoginCalendar;

@@ -2638,6 +2638,7 @@
             }
             if (typeof recordBalancePoint === 'function') recordBalancePoint();
             if (typeof recordSessionSpin === 'function') recordSessionSpin(winAmount > 0);
+            if (typeof contributeToCommunityJackpot === 'function') contributeToCommunityJackpot();
             renderSpinHistory();
             _updateSlotSessionStats();
 
@@ -6177,6 +6178,7 @@
             }
             if (typeof recordBalancePoint === 'function') recordBalancePoint();
             if (typeof recordSessionSpin === 'function') recordSessionSpin(winAmount > 0);
+            if (typeof contributeToCommunityJackpot === 'function') contributeToCommunityJackpot();
             renderSpinHistory();
             _updateSlotSessionStats();
 

@@ -509,6 +509,8 @@ function renderGames() {
                     setTimeout(function() { if (typeof _renderXPBadge === 'function') _renderXPBadge(); }, 50);
                     // Balance sparkline (Sprint 29)
                     renderBalanceSparkline();
+                    // Community jackpot (Sprint 30)
+                    renderCommunityJackpot();
                     // Session summary when returning to lobby
                     showSessionSummary();
                     // Init session tracking
@@ -607,6 +609,84 @@ function renderGames() {
 
         window.recordSessionSpin = recordSessionSpin;
         window.showSessionSummary = showSessionSummary;
+
+        // ── Community Jackpot Pool ───────────────────────────
+        const CJ_KEY = 'matrixCommunityJackpot';
+        const CJ_CONTRIBUTION = 0.5;
+        const CJ_WIN_CHANCE = 10000; // 1 in 10,000
+        const CJ_SEED = 1000;
+        const CJ_CAP = 50000;
+
+        function _loadCJPool() {
+            try {
+                const d = JSON.parse(localStorage.getItem(CJ_KEY) || '{}');
+                return { pool: d.pool || CJ_SEED, lastReset: d.lastReset || Date.now() };
+            } catch(e) { return { pool: CJ_SEED, lastReset: Date.now() }; }
+        }
+
+        function _saveCJPool(s) {
+            try { localStorage.setItem(CJ_KEY, JSON.stringify(s)); } catch(e) {}
+        }
+
+        function contributeToCommunityJackpot() {
+            const s = _loadCJPool();
+            s.pool = Math.min(s.pool + CJ_CONTRIBUTION, CJ_CAP);
+
+            // Random chance to win
+            const roll = Math.floor(Math.random() * CJ_WIN_CHANCE);
+            if (roll === 0 && s.pool >= 500) {
+                const winAmount = Math.round(s.pool);
+                s.pool = CJ_SEED;
+                s.lastReset = Date.now();
+                _saveCJPool(s);
+                // Award the jackpot
+                if (typeof balance !== 'undefined') {
+                    balance += winAmount;
+                    if (typeof saveBalance === 'function') saveBalance();
+                    if (typeof updateBalance === 'function') updateBalance();
+                }
+                _showCJWinToast(winAmount);
+                renderCommunityJackpot();
+                return;
+            }
+            _saveCJPool(s);
+            renderCommunityJackpot();
+        }
+
+        function renderCommunityJackpot() {
+            const el = document.getElementById('communityJackpotAmount');
+            if (!el) return;
+            const s = _loadCJPool();
+            el.textContent = '$' + Math.round(s.pool).toLocaleString();
+            const bar = document.getElementById('communityJackpotBar');
+            if (bar) {
+                bar.classList.toggle('cj-hot', s.pool >= 10000);
+            }
+        }
+
+        function _showCJWinToast(amount) {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.5);'
+                + 'opacity:0;background:linear-gradient(135deg,#1a1a2e,#0f172a);border:2px solid #fbbf24;'
+                + 'color:#fff;border-radius:20px;padding:32px 48px;z-index:99999;text-align:center;'
+                + 'box-shadow:0 0 60px rgba(251,191,36,0.5);transition:all 0.5s ease;';
+            t.innerHTML = '<div style="font-size:16px;color:#fbbf24;font-weight:700;letter-spacing:2px;text-transform:uppercase;">COMMUNITY JACKPOT!</div>'
+                + '<div style="font-size:42px;font-weight:900;margin:12px 0;">$' + amount.toLocaleString() + '</div>'
+                + '<div style="font-size:14px;color:#6ee7b7;">Added to your balance!</div>';
+            document.body.appendChild(t);
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                t.style.transform = 'translate(-50%,-50%) scale(1)';
+                t.style.opacity = '1';
+            }));
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transform = 'translate(-50%,-50%) scale(0.8)';
+                setTimeout(() => t.remove(), 600);
+            }, 5000);
+        }
+
+        window.contributeToCommunityJackpot = contributeToCommunityJackpot;
+        window.renderCommunityJackpot = renderCommunityJackpot;
 
         function addRecentlyPlayed(gameId) {
             let recent = [];
