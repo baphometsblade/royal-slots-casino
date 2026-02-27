@@ -677,6 +677,8 @@
                 }
                 // Sprint 50: Show last win preview with winning symbols
                 if (typeof showLastWinPreview === 'function') showLastWinPreview(symbols);
+                // Sprint 60: Track session best win
+                if (typeof updateSessionBestWin === 'function') updateSessionBestWin(winAmount);
 
                 // Apply celebration animations based on win size (adjusted thresholds)
                 const isMegaWin = winAmount >= currentBet * 10;
@@ -732,6 +734,8 @@
             if (typeof checkBalanceMilestone === 'function') checkBalanceMilestone();
             // Sprint 59: Profit target check
             if (typeof checkProfitTarget === 'function') checkProfitTarget();
+            // Sprint 60: Update spin pace
+            if (typeof updateSpinPace === 'function') updateSpinPace();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

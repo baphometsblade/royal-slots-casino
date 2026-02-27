@@ -566,6 +566,43 @@
             if (el) el.style.display = 'none';
         }
 
+        /* ── Sprint 60: Session Best Win ─────────────────── */
+        var _sbBest = 0;
+        function updateSessionBestWin(winAmount) {
+            if (!winAmount || winAmount <= _sbBest) return;
+            _sbBest = winAmount;
+            var el = document.getElementById('sbWin');
+            if (el) { el.textContent = 'Best: $' + _sbBest.toFixed(0); el.style.display = ''; }
+        }
+        function _resetSessionBestWin() {
+            _sbBest = 0;
+            var el = document.getElementById('sbWin');
+            if (el) el.style.display = 'none';
+        }
+
+        /* ── Sprint 60: Spin Pace (SPM) ─────────────────── */
+        var _spStart = 0;
+        var _spCount = 0;
+        function updateSpinPace() {
+            _spCount++;
+            if (_spStart === 0) _spStart = Date.now();
+            var elapsed = (Date.now() - _spStart) / 60000; // minutes
+            if (elapsed < 0.05) return; // wait at least 3 seconds
+            var spm = Math.round(_spCount / elapsed);
+            var el = document.getElementById('spPace');
+            if (el) { el.textContent = spm + ' spm'; el.style.display = ''; }
+        }
+        function _initSpinPace() {
+            _spStart = Date.now(); _spCount = 0;
+            var el = document.getElementById('spPace');
+            if (el) el.style.display = 'none';
+        }
+        function _resetSpinPace() {
+            _spStart = 0; _spCount = 0;
+            var el = document.getElementById('spPace');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1773,6 +1810,8 @@
             _initQuickVolume();
             showKbHints();
             _initProfitTarget();
+            _resetSessionBestWin();
+            _initSpinPace();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2387,6 +2426,8 @@
             hideKbHints();
             _resetBalanceMilestone();
             _resetProfitTarget();
+            _resetSessionBestWin();
+            _resetSpinPace();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
