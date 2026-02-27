@@ -2639,6 +2639,10 @@
             if (typeof recordBalancePoint === 'function') recordBalancePoint();
             if (typeof recordSessionSpin === 'function') recordSessionSpin(winAmount > 0);
             if (typeof contributeToCommunityJackpot === 'function') contributeToCommunityJackpot();
+            if (typeof recordSpinToHistory === 'function' && currentGame) {
+                var _shMult = currentBet > 0 ? winAmount / currentBet : 0;
+                recordSpinToHistory(currentGame.name, currentGame.id, currentBet, winAmount, _shMult);
+            }
             renderSpinHistory();
             _updateSlotSessionStats();
 
@@ -6179,6 +6183,10 @@
             if (typeof recordBalancePoint === 'function') recordBalancePoint();
             if (typeof recordSessionSpin === 'function') recordSessionSpin(winAmount > 0);
             if (typeof contributeToCommunityJackpot === 'function') contributeToCommunityJackpot();
+            if (typeof recordSpinToHistory === 'function' && currentGame) {
+                var _shMult = currentBet > 0 ? winAmount / currentBet : 0;
+                recordSpinToHistory(currentGame.name, currentGame.id, currentBet, winAmount, _shMult);
+            }
             renderSpinHistory();
             _updateSlotSessionStats();
 

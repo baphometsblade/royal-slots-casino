@@ -134,6 +134,8 @@
                         <button class="nav-btn" onclick="if(typeof openAchievements==='function')openAchievements()">🏆 Achievements</button>
                         <button class="nav-btn" onclick="if(typeof openLoginCalendar==='function')openLoginCalendar()">📅 Calendar</button>
                         <button class="nav-btn" onclick="if(typeof openPromoCode==='function')openPromoCode()">🔑 Promo</button>
+                        <button class="nav-btn" onclick="if(typeof openSpinHistory==='function')openSpinHistory()">📜 History</button>
+                        <button class="nav-btn" onclick="if(typeof openPlayerCard==='function')openPlayerCard()">🃏 My Card</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -921,6 +923,38 @@
             </div>
             <div class="promo-msg" id="promoMsg"></div>
             <button class="promo-close" onclick="document.getElementById('promoCodeModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Spin History Modal (Sprint 32) -->
+    <div id="spinHistoryModal" class="modal-overlay" style="display:none;">
+        <div class="sh-card">
+            <h2 class="sh-title">📜 Spin History</h2>
+            <div class="sh-filters" id="shFilters">
+                <button class="sh-filter active" data-filter="all">All</button>
+                <button class="sh-filter" data-filter="wins">Wins</button>
+                <button class="sh-filter" data-filter="losses">Losses</button>
+            </div>
+            <div class="sh-list" id="shList"></div>
+            <button class="sh-close" onclick="document.getElementById('spinHistoryModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Player Stats Card Modal (Sprint 32) -->
+    <div id="playerCardModal" class="modal-overlay" style="display:none;">
+        <div class="pc-card">
+            <div class="pc-header">
+                <div class="pc-avatar" id="pcAvatar">?</div>
+                <div class="pc-name" id="pcName">Player</div>
+                <div class="pc-vip" id="pcVip">Bronze</div>
+            </div>
+            <div class="pc-level-row">
+                <span class="pc-level-label" id="pcLevel">Lv 1</span>
+                <div class="pc-xp-bar"><div class="pc-xp-fill" id="pcXpFill"></div></div>
+            </div>
+            <div class="pc-stats-grid" id="pcStatsGrid"></div>
+            <div class="pc-footer" id="pcFooter"></div>
+            <button class="pc-close" onclick="document.getElementById('playerCardModal').style.display='none'">Close</button>
         </div>
     </div>
 

@@ -2412,3 +2412,163 @@
 
         window.openPromoCode = openPromoCode;
         window.redeemPromoCode = redeemPromoCode;
+
+        /* ── Sprint 32: Spin History Browser ─────────────── */
+        const SH_KEY = 'matrixSpinHistory';
+        const SH_MAX = 100;
+
+        function recordSpinToHistory(gameName, gameId, betAmt, winAmt, mult) {
+            let log = [];
+            try { log = JSON.parse(localStorage.getItem(SH_KEY)) || []; } catch(e) {}
+            log.unshift({ ts: Date.now(), game: gameName, gameId: gameId, bet: betAmt, win: winAmt, mult: mult || 1 });
+            if (log.length > SH_MAX) log = log.slice(0, SH_MAX);
+            localStorage.setItem(SH_KEY, JSON.stringify(log));
+        }
+
+        function openSpinHistory() {
+            const modal = document.getElementById('spinHistoryModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            _renderSpinHistoryList('all');
+            const filters = document.querySelectorAll('#shFilters .sh-filter');
+            filters.forEach(function(btn) {
+                btn.onclick = function() {
+                    filters.forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    _renderSpinHistoryList(btn.getAttribute('data-filter'));
+                };
+            });
+        }
+
+        function _renderSpinHistoryList(filter) {
+            const list = document.getElementById('shList');
+            if (!list) return;
+            let log = [];
+            try { log = JSON.parse(localStorage.getItem(SH_KEY)) || []; } catch(e) {}
+            if (filter === 'wins') log = log.filter(function(e) { return e.win > e.bet; });
+            else if (filter === 'losses') log = log.filter(function(e) { return e.win <= 0; });
+            if (log.length === 0) {
+                list.innerHTML = '<div class="sh-empty">No spin history yet. Play some games!</div>';
+                return;
+            }
+            list.innerHTML = log.map(function(e) {
+                var isWin = e.win > 0;
+                var net = e.win - e.bet;
+                var ago = _timeAgo(e.ts);
+                var multBadge = e.mult > 1 ? '<span class="sh-mult">' + e.mult.toFixed(1) + 'x</span>' : '';
+                return '<div class="sh-entry ' + (isWin ? 'sh-win' : 'sh-loss') + '">'
+                    + '<div class="sh-entry-top">'
+                    + '<span class="sh-game">' + (e.game || 'Unknown') + '</span>'
+                    + '<span class="sh-time">' + ago + '</span>'
+                    + '</div>'
+                    + '<div class="sh-entry-bot">'
+                    + '<span class="sh-bet">Bet: $' + (e.bet || 0).toLocaleString() + '</span>'
+                    + '<span class="sh-result ' + (isWin ? 'sh-pos' : 'sh-neg') + '">'
+                    + (isWin ? '+$' + e.win.toLocaleString() : '-$' + e.bet.toLocaleString())
+                    + '</span>'
+                    + multBadge
+                    + '</div></div>';
+            }).join('');
+        }
+
+        function _timeAgo(ts) {
+            var diff = Date.now() - ts;
+            if (diff < 60000) return 'just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+            return Math.floor(diff / 86400000) + 'd ago';
+        }
+
+        window.openSpinHistory = openSpinHistory;
+        window.recordSpinToHistory = recordSpinToHistory;
+
+        /* ── Sprint 32: Player Stats Card ────────────────── */
+        function openPlayerCard() {
+            var modal = document.getElementById('playerCardModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+
+            var name = (currentUser && currentUser.username) ? currentUser.username : 'Guest';
+            var avatar = document.getElementById('pcAvatar');
+            var nameEl = document.getElementById('pcName');
+            var vipEl = document.getElementById('pcVip');
+            var levelEl = document.getElementById('pcLevel');
+            var xpFill = document.getElementById('pcXpFill');
+            var grid = document.getElementById('pcStatsGrid');
+            var footer = document.getElementById('pcFooter');
+
+            if (avatar) avatar.textContent = name.charAt(0).toUpperCase();
+            if (nameEl) nameEl.textContent = name;
+
+            // VIP tier
+            var vipTier = 'Bronze';
+            if (typeof VIP_TIERS !== 'undefined' && typeof stats !== 'undefined') {
+                var wagered = stats.totalBet || 0;
+                for (var i = VIP_TIERS.length - 1; i >= 0; i--) {
+                    if (wagered >= VIP_TIERS[i].minWagered) { vipTier = VIP_TIERS[i].name; break; }
+                }
+            }
+            if (vipEl) {
+                vipEl.textContent = vipTier;
+                vipEl.className = 'pc-vip pc-vip-' + vipTier.toLowerCase();
+            }
+
+            // Level + XP
+            var xpData = null;
+            try { xpData = JSON.parse(localStorage.getItem(typeof STORAGE_KEY_XP !== 'undefined' ? STORAGE_KEY_XP : 'casinoXP')); } catch(e) {}
+            var lv = (xpData && xpData.level) ? xpData.level : 1;
+            var xp = (xpData && xpData.xp) ? xpData.xp : 0;
+            var xpNeeded = lv * 100;
+            var pct = Math.min(100, Math.round((xp / xpNeeded) * 100));
+            if (levelEl) levelEl.textContent = 'Level ' + lv;
+            if (xpFill) xpFill.style.width = pct + '%';
+
+            // Stats
+            var s = (typeof stats !== 'undefined') ? stats : {};
+            var totalSpins = s.totalSpins || 0;
+            var totalWon = s.totalWon || 0;
+            var bigWin = s.biggestWin || 0;
+            var gamesPlayed = s.gamesPlayed || 0;
+
+            // Achievement count
+            var achCount = 0;
+            try {
+                var achData = JSON.parse(localStorage.getItem('matrixAchievements'));
+                if (achData && achData.unlocked) achCount = achData.unlocked.length;
+            } catch(e) {}
+
+            // Favorite game
+            var favGame = 'None yet';
+            try {
+                var recent = JSON.parse(localStorage.getItem(typeof STORAGE_KEY_RECENTLY_PLAYED !== 'undefined' ? STORAGE_KEY_RECENTLY_PLAYED : 'casinoRecentlyPlayed'));
+                if (recent && recent.length > 0 && typeof GAMES !== 'undefined') {
+                    var g = GAMES.find(function(gm) { return gm.id === recent[0]; });
+                    if (g) favGame = g.name;
+                }
+            } catch(e) {}
+
+            if (grid) {
+                grid.innerHTML = ''
+                    + _pcStat('🎰', 'Total Spins', totalSpins.toLocaleString())
+                    + _pcStat('💰', 'Total Won', '$' + totalWon.toLocaleString())
+                    + _pcStat('🏆', 'Biggest Win', '$' + bigWin.toLocaleString())
+                    + _pcStat('🎮', 'Games Played', gamesPlayed.toLocaleString())
+                    + _pcStat('⭐', 'Achievements', achCount.toString())
+                    + _pcStat('❤️', 'Favorite', favGame);
+            }
+
+            if (footer) {
+                var joined = (currentUser && currentUser.createdAt) ? new Date(currentUser.createdAt).toLocaleDateString() : 'Today';
+                footer.textContent = 'Member since ' + joined;
+            }
+        }
+
+        function _pcStat(icon, label, value) {
+            return '<div class="pc-stat">'
+                + '<div class="pc-stat-icon">' + icon + '</div>'
+                + '<div class="pc-stat-val">' + value + '</div>'
+                + '<div class="pc-stat-label">' + label + '</div>'
+                + '</div>';
+        }
+
+        window.openPlayerCard = openPlayerCard;
