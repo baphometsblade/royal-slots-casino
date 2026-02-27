@@ -99,7 +99,7 @@
             turboDefault: false,
             autoSpinSpeed: 1500,
             animationQuality: 'ultra',
-            ambientMusic: true,
+            ambientMusic: false,
             winSounds: true,
             uiSounds: true
         };
