@@ -307,6 +307,15 @@
             <div class="rec-grid" id="recGrid"></div>
         </div>
 
+        <!-- Sprint 44: Game Collections -->
+        <div class="gc-collections" id="gcCollections">
+            <button class="gc-col-btn gc-col-active" data-col="all" onclick="if(typeof setCollection==='function')setCollection('all')">All Games</button>
+            <button class="gc-col-btn" data-col="high-rollers" onclick="if(typeof setCollection==='function')setCollection('high-rollers')">High Rollers</button>
+            <button class="gc-col-btn" data-col="quick-play" onclick="if(typeof setCollection==='function')setCollection('quick-play')">Quick Play</button>
+            <button class="gc-col-btn" data-col="jackpot-hunters" onclick="if(typeof setCollection==='function')setCollection('jackpot-hunters')">Jackpot Hunters</button>
+            <button class="gc-col-btn" data-col="adventure" onclick="if(typeof setCollection==='function')setCollection('adventure')">Adventure</button>
+        </div>
+
         <!-- All Slots Section -->
         <div class="section-header">
             <h3 class="section-title" id="allSlotsTitle">
@@ -592,6 +601,7 @@
                 <div class="slot-bar-section slot-bar-balance">
                     <div class="slot-bar-label">BALANCE</div>
                     <div class="slot-bar-value">$<span id="slotBalance">5000.00</span></div>
+                    <svg class="pnl-spark" id="pnlSpark" viewBox="0 0 120 30" preserveAspectRatio="none"><polyline id="pnlLine" fill="none" stroke="#4ade80" stroke-width="1.5" points=""/></svg>
                 </div>
 
                 <!-- Bet Controls -->

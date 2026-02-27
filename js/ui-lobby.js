@@ -1390,6 +1390,10 @@ function renderGames() {
             if (currentMechanicFilter !== 'all') {
                 list = list.filter(g => _getMechanicCategory(g) === currentMechanicFilter);
             }
+            // Apply collection filter (Sprint 44)
+            if (typeof _currentCollection !== 'undefined' && _currentCollection !== 'all' && _collectionDefs[_currentCollection]) {
+                list = list.filter(_collectionDefs[_currentCollection]);
+            }
             // Apply inline search bar query (compound with all other filters)
             if (searchQuery) {
                 var _sq = searchQuery.toLowerCase();
@@ -2383,3 +2387,25 @@ function renderGames() {
 
         window.renderRecommendations = renderRecommendations;
         window.toggleRecSection = toggleRecSection;
+
+        /* ── Sprint 44: Game Collections ────────────── */
+        var _currentCollection = 'all';
+
+        var _collectionDefs = {
+            'all':             function() { return true; },
+            'high-rollers':    function(g) { return g.maxBet >= 1000; },
+            'quick-play':      function(g) { return g.template === 'classic' || (g.gridCols <= 3 && g.gridRows <= 3); },
+            'jackpot-hunters': function(g) { return g.jackpot > 0 || g.tag === 'JACKPOT' || g.tag === 'MEGA'; },
+            'adventure':       function(g) { return g.freeSpinsCount >= 8 || g.bonusType === 'zeus_multiplier' || g.bonusType === 'expanding_wild_respin' || g.bonusType === 'tumble'; }
+        };
+
+        function setCollection(col) {
+            _currentCollection = col || 'all';
+            var btns = document.querySelectorAll('.gc-col-btn');
+            btns.forEach(function(b) {
+                b.classList.toggle('gc-col-active', b.getAttribute('data-col') === _currentCollection);
+            });
+            renderFilteredGames();
+        }
+
+        window.setCollection = setCollection;

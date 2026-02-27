@@ -148,6 +148,40 @@
             if (tracker) tracker.style.display = 'none';
         }
 
+        /* ── Sprint 44: Session P&L Sparkline ────────────── */
+        var _pnlData = [];
+        var _pnlMax = 20;
+
+        function _recordPnlPoint() {
+            _pnlData.push(balance);
+            if (_pnlData.length > _pnlMax) _pnlData.shift();
+            _drawPnlSparkline();
+        }
+
+        function _drawPnlSparkline() {
+            var line = document.getElementById('pnlLine');
+            var svg = document.getElementById('pnlSpark');
+            if (!line || _pnlData.length < 2) return;
+            var min = Math.min.apply(null, _pnlData);
+            var max = Math.max.apply(null, _pnlData);
+            var range = max - min || 1;
+            var w = 120, h = 30;
+            var pts = _pnlData.map(function(v, i) {
+                var x = (i / (_pnlData.length - 1)) * w;
+                var y = h - ((v - min) / range) * (h - 4) - 2;
+                return x.toFixed(1) + ',' + y.toFixed(1);
+            }).join(' ');
+            line.setAttribute('points', pts);
+            var up = _pnlData[_pnlData.length - 1] >= _pnlData[0];
+            line.setAttribute('stroke', up ? '#4ade80' : '#ef4444');
+        }
+
+        function _resetPnlSparkline() {
+            _pnlData = [];
+            var line = document.getElementById('pnlLine');
+            if (line) line.setAttribute('points', '');
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1345,6 +1379,8 @@
             addRecentlyPlayed(gameId);
             _startSessionTimer();
             _renderQuickSwitch();
+            _resetPnlSparkline();
+            _recordPnlPoint();
 
             // Set game-specific CSS theme
             document.getElementById('slotModal').setAttribute('data-game-id', currentGame.id);
@@ -1933,6 +1969,7 @@
             _stopSessionTimer();
             _resetBankrollOnClose();
             _resetWinGoalOnClose();
+            _resetPnlSparkline();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

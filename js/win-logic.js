@@ -706,6 +706,9 @@
             }
             if (typeof awardXP === 'function') awardXP(XP_AWARD_PER_SPIN);
 
+            // Sprint 44: Record balance for P&L sparkline
+            if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
+
             // ── Hot Chillies Respin (classic 3-reel only) ──
             if (winType === 'classic' && !freeSpinsActive && isDouble && !isTriple && game.bonusType === 'respin' && respinCount < (game.maxRespins || 3)) {
                 const doublePair = getDoubleMatch(symbols, game);

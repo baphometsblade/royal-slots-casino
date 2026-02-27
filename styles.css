@@ -15585,3 +15585,28 @@ button.active .filter-tab-count {
     padding: 8px 24px; color: #aaa; cursor: pointer; font-size: 0.85rem;
 }
 .kb-close:hover { color: #fff; }
+
+/* ══ Sprint 44: P&L Sparkline ══ */
+.pnl-spark {
+    width: 120px; height: 30px; display: inline-block;
+    vertical-align: middle; margin-left: 8px; opacity: 0.85;
+}
+
+/* ══ Sprint 44: Game Collections ══ */
+.gc-collections {
+    display: flex; gap: 8px; padding: 8px 0 12px;
+    overflow-x: auto; scrollbar-width: none;
+}
+.gc-collections::-webkit-scrollbar { display: none; }
+.gc-col-btn {
+    flex-shrink: 0; padding: 6px 16px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.65);
+    font-size: 12px; cursor: pointer; white-space: nowrap;
+    transition: all 0.15s;
+}
+.gc-col-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.gc-col-active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-color: #6366f1; color: #fff; font-weight: 600;
+}
