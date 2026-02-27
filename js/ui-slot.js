@@ -937,6 +937,19 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 73: Saved Bet Hint ── */
+        var _sbhTimer = null;
+        function _showSavedBetHint(betAmount) {
+            var el = document.getElementById('savedBetHint');
+            if (!el) return;
+            el.textContent = 'Restored: $' + betAmount.toFixed(2);
+            el.style.display = '';
+            if (_sbhTimer) clearTimeout(_sbhTimer);
+            _sbhTimer = setTimeout(function() {
+                el.style.display = 'none'; _sbhTimer = null;
+            }, 2000);
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2287,6 +2300,8 @@
                         var _max = game.maxBet || 500;
                         if (!isNaN(_parsed) && _parsed >= _min && _parsed <= _max) {
                             currentBet = _parsed;
+                            // Sprint 73: Show saved bet hint
+                            if (typeof _showSavedBetHint === 'function') _showSavedBetHint(_parsed);
                         }
                     }
                 } catch(e) {}

@@ -533,6 +533,7 @@ function renderGames() {
                     if (typeof _buildPopCounts === 'function') _buildPopCounts();
                     if (typeof renderLobbyQuickStats === 'function') renderLobbyQuickStats();
                     if (typeof renderLobbyGreeting === 'function') renderLobbyGreeting();
+                    if (typeof _renderRecentSearches === 'function') _renderRecentSearches();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -1826,6 +1827,8 @@ function renderGames() {
             const clearBtn = document.getElementById('searchClearBtn');
             if (clearBtn) clearBtn.style.display = value ? 'flex' : 'none';
             searchGames(value);
+            // Sprint 73: Save recent search
+            if (value && value.length >= 3 && typeof _saveRecentSearch === 'function') _saveRecentSearch(value.trim());
         }
 
 
@@ -2702,6 +2705,33 @@ function renderGames() {
             var h = new Date().getHours();
             var msg = h < 12 ? 'Good morning!' : h < 17 ? 'Good afternoon!' : 'Good evening!';
             el.textContent = msg;
+        }
+
+        /* ── Sprint 73: Recent Searches ──────────────── */
+        var _RS_KEY = 'matrixRecentSearches';
+        function _saveRecentSearch(term) {
+            if (!term || term.length < 2) return;
+            try {
+                var arr = JSON.parse(localStorage.getItem(_RS_KEY) || '[]');
+                arr = arr.filter(function(s) { return s !== term; });
+                arr.unshift(term);
+                if (arr.length > 3) arr.length = 3;
+                localStorage.setItem(_RS_KEY, JSON.stringify(arr));
+            } catch(e) {}
+            _renderRecentSearches();
+        }
+        function _renderRecentSearches() {
+            var el = document.getElementById('recentSearches');
+            if (!el) return;
+            try {
+                var arr = JSON.parse(localStorage.getItem(_RS_KEY) || '[]');
+                if (arr.length === 0) { el.style.display = 'none'; return; }
+                el.innerHTML = arr.map(function(s) {
+                    return '<span class="rs-chip" onclick="if(typeof filterGamesBySearch===\'function\'){document.getElementById(\'gameSearchInput\').value=\'' +
+                        s.replace(/'/g, "\\'") + '\';filterGamesBySearch(\'' + s.replace(/'/g, "\\'") + '\');}">' + s + '</span>';
+                }).join('');
+                el.style.display = '';
+            } catch(e) { el.style.display = 'none'; }
         }
 
         /* ── Sprint 65: Active Filter Label ──────────────── */
