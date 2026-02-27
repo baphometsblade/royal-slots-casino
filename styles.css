@@ -16247,3 +16247,19 @@ button.active .filter-tab-count {
     background: rgba(251,146,60,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* ── Sprint 81: Try Something New ── */
+.try-something {
+    text-align: center; font-size: 0.75rem; color: #94a3b8;
+    padding: 2px 16px; margin: 0 auto 4px;
+}
+.try-link { color: #60a5fa; text-decoration: none; font-weight: 500; }
+.try-link:hover { text-decoration: underline; }
+
+/* ── Sprint 81: Worst Loss Streak ── */
+.wl-streak {
+    position: absolute; top: 268px; right: 14px;
+    font-size: 0.68rem; color: #ef4444; font-weight: 500;
+    background: rgba(239,68,68,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}

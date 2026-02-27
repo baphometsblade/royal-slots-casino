@@ -1101,6 +1101,27 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 81: Worst Loss Streak ── */
+        var _wlsCur = 0; var _wlsWorst = 0;
+        function updateWorstLossStreak(isWin) {
+            if (!isWin) {
+                _wlsCur++;
+                if (_wlsCur > _wlsWorst) _wlsWorst = _wlsCur;
+            } else {
+                _wlsCur = 0;
+            }
+            if (_wlsWorst < 3) return;
+            var el = document.getElementById('wlStreak');
+            if (!el) return;
+            el.textContent = 'Loss Streak: ' + _wlsWorst;
+            el.style.display = '';
+        }
+        function _resetWorstLossStreak() {
+            _wlsCur = 0; _wlsWorst = 0;
+            var el = document.getElementById('wlStreak');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         /* ── Sprint 73: Saved Bet Hint ── */
         var _sbhTimer = null;
         function _showSavedBetHint(betAmount) {
@@ -2344,6 +2365,7 @@
             _resetScatterCount();
             _resetBestStreak();
             _resetNearMiss();
+            _resetWorstLossStreak();
             // Sprint 76: Track game played today
             if (typeof _trackGameToday === 'function' && currentGame) _trackGameToday(currentGame.id);
             _startSessionTimer();
@@ -2987,6 +3009,7 @@
             _resetScatterCount();
             _resetBestStreak();
             _resetNearMiss();
+            _resetWorstLossStreak();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

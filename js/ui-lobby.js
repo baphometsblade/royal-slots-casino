@@ -539,6 +539,8 @@ function renderGames() {
                     // Sprint 80: Day theme
                     if (typeof renderDayTheme === 'function') renderDayTheme();
                     if (typeof renderLobbyFooter === 'function') renderLobbyFooter();
+                    // Sprint 81: Try something new
+                    if (typeof renderTrySomething === 'function') renderTrySomething();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -2750,6 +2752,20 @@ function renderGames() {
                 'Scatter Saturday — scatters everywhere!'
             ];
             el.textContent = themes[new Date().getDay()];
+        }
+
+        /* ── Sprint 81: Try Something New ──────────────── */
+        function renderTrySomething() {
+            var el = document.getElementById('trySomething');
+            if (!el || typeof GAMES === 'undefined') return;
+            var rpKey = typeof STORAGE_KEY_RECENTLY_PLAYED !== 'undefined' ? STORAGE_KEY_RECENTLY_PLAYED : 'matrixRecentlyPlayed';
+            var played = [];
+            try { played = JSON.parse(localStorage.getItem(rpKey) || '[]'); } catch(e) {}
+            var unplayed = GAMES.filter(function(g) { return played.indexOf(g.id) === -1; });
+            if (unplayed.length === 0) { el.style.display = 'none'; return; }
+            var pick = unplayed[Math.floor(Math.random() * unplayed.length)];
+            el.innerHTML = 'Try: <a href="#" onclick="openSlot(\'' + pick.id + '\');return false" class="try-link">' + (pick.name || pick.id) + '</a>';
+            el.style.display = '';
         }
 
         /* ── Sprint 74: Lobby Footer Stats ──────────────── */
