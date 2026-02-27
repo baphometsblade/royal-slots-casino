@@ -492,8 +492,10 @@
         }
         // -- Intro splash helper (Sprint 19) --
         function _showSlotSplash(game) {
-            var container = document.getElementById("slotModal") ||
-                            document.querySelector(".slot-modal") ||
+            // Use the inner fullscreen div as positioning context so #slotModal stays position:fixed
+            var modal = document.getElementById("slotModal");
+            var container = (modal && modal.querySelector(".slot-modal-fullscreen")) ||
+                            modal ||
                             document.querySelector(".game-panel");
             if (!container) return;
             var existing = container.querySelector(".slot-intro-splash");
@@ -512,7 +514,6 @@
             splash.appendChild(providerTag);
             splash.appendChild(titleEl);
             splash.appendChild(loadingBar);
-            container.style.position = container.style.position || "relative";
             container.insertBefore(splash, container.firstChild);
             requestAnimationFrame(function() { splash.classList.add("splash-visible"); });
             setTimeout(function() {
