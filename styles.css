@@ -16078,3 +16078,18 @@ button.active .filter-tab-count {
     background: rgba(167,139,250,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* Sprint 69: Win Frequency */
+.sw-freq {
+    position: absolute; top: 160px; right: 14px;
+    font-size: 0.68rem; color: #38bdf8; font-weight: 500;
+    background: rgba(56,189,248,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}
+/* Sprint 69: Biggest Loss */
+.bl-display {
+    position: absolute; top: 160px; left: 14px;
+    font-size: 0.68rem; color: #f87171; font-weight: 500;
+    background: rgba(248,113,113,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}

@@ -831,6 +831,42 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 69: Session Win Frequency ── */
+        var _sfSpins = 0; var _sfWins = 0;
+        function updateWinFreq(isWin) {
+            _sfSpins++;
+            if (isWin) _sfWins++;
+            if (_sfSpins < 5) return;
+            var el = document.getElementById('swFreq');
+            if (!el) return;
+            var pct = Math.round(_sfWins / _sfSpins * 100);
+            el.textContent = 'Hits: ' + pct + '%';
+            el.style.display = '';
+        }
+        function _resetWinFreq() {
+            _sfSpins = 0; _sfWins = 0;
+            var el = document.getElementById('swFreq');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
+        /* ── Sprint 69: Biggest Loss Display ── */
+        var _blMax = 0;
+        function updateBiggestLoss(winAmount) {
+            if (winAmount > 0) return;
+            var bet = typeof currentBet !== 'undefined' ? currentBet : 0;
+            if (bet <= _blMax) return;
+            _blMax = bet;
+            var el = document.getElementById('blDisplay');
+            if (!el) return;
+            el.textContent = 'Max Loss: $' + _blMax.toFixed(0);
+            el.style.display = '';
+        }
+        function _resetBiggestLoss() {
+            _blMax = 0;
+            var el = document.getElementById('blDisplay');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2049,6 +2085,8 @@
             _initMechanicHelp();
             _resetLastWinMult();
             _resetAvgWin();
+            _resetWinFreq();
+            _resetBiggestLoss();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2676,6 +2714,8 @@
             _resetDrySpell();
             _resetLastWinMult();
             _resetAvgWin();
+            _resetWinFreq();
+            _resetBiggestLoss();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

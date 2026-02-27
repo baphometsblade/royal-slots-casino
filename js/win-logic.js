@@ -747,6 +747,9 @@
             if (typeof updateTotalWagered === 'function') updateTotalWagered();
             // Sprint 67: Dry spell encouragement
             if (typeof checkDrySpell === 'function') checkDrySpell(winAmount > 0);
+            // Sprint 69: Win frequency + biggest loss
+            if (typeof updateWinFreq === 'function') updateWinFreq(winAmount > 0);
+            if (typeof updateBiggestLoss === 'function') updateBiggestLoss(winAmount);
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
