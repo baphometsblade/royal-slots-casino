@@ -1492,6 +1492,8 @@
 
                 // Start idle spin invitation timer
                 resetIdleTimer();
+                // Sprint 38 — session timer
+                _startSessionTimer();
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1729,6 +1731,7 @@
             slotModalEl.removeAttribute('data-slot-theme');
             // Capture last played game before clearing, so lobby can show resume banner
             if (typeof captureLastPlayedGame === 'function') captureLastPlayedGame();
+            var _closingGame = currentGame; // Sprint 36: capture for rating prompt
             currentGame = null;
             // Clean up reel strip animation loops
             reelStripData.forEach(data => {
@@ -1765,6 +1768,17 @@
             // Remove tournament slot badge
             _removeTournamentBadge();
             _closePaytable();
+            // Sprint 38 — stop session timer
+            _stopSessionTimer();
+            // Sprint 37 — clean up demo mode if active
+            if (typeof _demoMode !== 'undefined' && _demoMode) { exitDemoMode(false); return; }
+            // Sprint 36 — rating prompt (after a short delay so modal closes first)
+            (function() {
+                if (_closingGame && typeof showRatingPrompt === 'function') {
+                    var _cgId = _closingGame.id, _cgName = _closingGame.name;
+                    setTimeout(function() { showRatingPrompt(_cgId, _cgName); }, 600);
+                }
+            })();
         }
 
 
@@ -2124,6 +2138,7 @@
             if (freeSpinsActive) return false;
             if (forcedSpinQueue.length > 0) return false;
             if (deterministicRng) return false;
+            if (typeof _demoMode !== 'undefined' && _demoMode) return false; // Sprint 37 demo
             const freeSpinCount = Number(game.freeSpinsCount || 0);
             return freeSpinCount <= 0;
         }
@@ -2201,7 +2216,7 @@
                     finalGrid = generateSpinResult(spinGame);
                     balance -= currentBet;
                     updateBalance();
-                    saveBalance();
+                    if (!(typeof _demoMode !== 'undefined' && _demoMode)) saveBalance(); // skip save in demo
                 }
             } catch (error) {
                 stopReelScrollingImmediately();
@@ -2798,6 +2813,8 @@
 
                 if (typeof awardXP === "function") { var _godMult = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round((winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN) * _godMult)); }
                 if (typeof recordSpinHistory === 'function') recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: currentBet > 0 ? Math.round(winAmount / currentBet) : 0 });
+                if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
+                _demoOnSpinEnd();
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -2929,6 +2946,7 @@
 
             if (typeof awardXP === "function") { var _godMult2 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_PER_SPIN * _godMult2)); }
             if (typeof recordSpinHistory === 'function' && winAmount <= 0) recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: 0, mult: 0 });
+            if (winAmount <= 0) _demoOnSpinEnd();
 
             // Promo engagement triggers
             if (typeof checkPromoTriggers === "function") {
@@ -6312,6 +6330,8 @@
 
                 if (typeof awardXP === "function") { var _godMult = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round((winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN) * _godMult)); }
                 if (typeof recordSpinHistory === 'function') recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: currentBet > 0 ? Math.round(winAmount / currentBet) : 0 });
+                if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
+                _demoOnSpinEnd();
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6408,6 +6428,7 @@
             }
             if (typeof awardXP === "function") { var _godMult2 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_PER_SPIN * _godMult2)); }
             if (typeof recordSpinHistory === 'function' && winAmount <= 0) recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: 0, mult: 0 });
+            if (winAmount <= 0) _demoOnSpinEnd();
 
             // Promo engagement triggers
             if (typeof checkPromoTriggers === "function") {
@@ -9594,5 +9615,103 @@
         function _removeTournamentBadge() {
             var badge = document.getElementById('tournSlotBadge');
             if (badge) badge.remove();
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // SPRINT 37 — Demo Mode
+        // ══════════════════════════════════════════════════════════
+        var _demoMode = false;
+        var _demoSpinsLeft = 0;
+        var _demoRealBalance = 0;
+
+        // Override openSlot to support demo mode: openSlot(gameId, { demo: true })
+        (function() {
+            var _origOpenSlot = typeof openSlot === 'function' ? openSlot : null;
+            if (!_origOpenSlot) return;
+            openSlot = function(gameId, opts) {
+                _demoMode = !!(opts && opts.demo);
+                if (_demoMode) {
+                    _demoSpinsLeft = 3;
+                    _demoRealBalance = typeof balance !== 'undefined' ? balance : 0;
+                    balance = 10000;
+                    if (typeof updateBalance === 'function') updateBalance();
+                } else {
+                    _demoMode = false;
+                }
+                _origOpenSlot(gameId);
+                // Show/hide demo banner
+                var banner = document.getElementById('demoBanner');
+                var spansEl = document.getElementById('demoSpinsLeft');
+                if (banner) banner.style.display = _demoMode ? 'flex' : 'none';
+                if (spansEl) spansEl.textContent = _demoSpinsLeft;
+            };
+        })();
+
+        function _demoOnSpinEnd() {
+            if (!_demoMode) return;
+            _demoSpinsLeft--;
+            var spansEl = document.getElementById('demoSpinsLeft');
+            if (spansEl) spansEl.textContent = _demoSpinsLeft;
+            if (_demoSpinsLeft <= 0) {
+                // Show demo end modal
+                var modal = document.getElementById('demoEndModal');
+                if (modal) modal.classList.add('active');
+            }
+        }
+
+        function exitDemoMode(playForReal) {
+            // Restore real balance (don't saveBalance during demo)
+            if (_demoMode) {
+                balance = _demoRealBalance;
+                if (typeof updateBalance === 'function') updateBalance();
+                if (typeof saveBalance === 'function') saveBalance();
+            }
+            _demoMode = false;
+            _demoSpinsLeft = 0;
+            _demoRealBalance = 0;
+            var banner = document.getElementById('demoBanner');
+            if (banner) banner.style.display = 'none';
+            var modal = document.getElementById('demoEndModal');
+            if (modal) modal.classList.remove('active');
+            if (playForReal) {
+                // Stay in slot with real balance
+            } else {
+                if (typeof closeSlot === 'function') closeSlot();
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // SPRINT 38 — Session Time Tracker
+        // ══════════════════════════════════════════════════════════
+        var _sessionTimerInterval = null;
+        var _sessionStartMs = 0;
+
+        function _startSessionTimer() {
+            _sessionStartMs = Date.now();
+            var timerEl = document.getElementById('sessionTimer');
+            if (timerEl) timerEl.style.display = '';
+            _updateSessionTimer();
+            if (_sessionTimerInterval) clearInterval(_sessionTimerInterval);
+            _sessionTimerInterval = setInterval(_updateSessionTimer, 30000); // update every 30s
+        }
+
+        function _stopSessionTimer() {
+            if (_sessionTimerInterval) { clearInterval(_sessionTimerInterval); _sessionTimerInterval = null; }
+            var timerEl = document.getElementById('sessionTimer');
+            if (timerEl) timerEl.style.display = 'none';
+            var valEl = document.getElementById('sessionTimerVal');
+            if (valEl) { valEl.className = 'payout-value session-timer-val'; }
+            _sessionStartMs = 0;
+        }
+
+        function _updateSessionTimer() {
+            if (!_sessionStartMs) return;
+            var mins = Math.floor((Date.now() - _sessionStartMs) / 60000);
+            var valEl = document.getElementById('sessionTimerVal');
+            if (!valEl) return;
+            valEl.textContent = mins < 60 ? mins + 'm' : Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm';
+            valEl.className = 'payout-value session-timer-val';
+            if (mins >= 60) valEl.classList.add('session-timer-red');
+            else if (mins >= 30) valEl.classList.add('session-timer-yellow');
         }
 

@@ -6,6 +6,7 @@
         let lobbySearchQuery = '';
         let currentMechanicFilter = 'all'; // 'all' | 'tumble' | 'hold_win' | 'free_spins' | 'wilds' | 'jackpot'
         let currentSortMode = 'default';    // 'default' | 'vol_asc' | 'vol_desc'
+        let _sortOrder = 'popular';          // Sprint 37 dropdown: 'popular'|'az'|'za'|'rtp'|'volatile'|'chill'
         let searchQuery = '';                      // real-time game search (compound with other filters)
         let _lobbySearchQuery = '';                // hide/show search query (Sprint 18 search bar)
 
@@ -1091,11 +1092,21 @@ function renderGames() {
                 var _sq = searchQuery.toLowerCase();
                 list = list.filter(function(g) { return g.name.toLowerCase().includes(_sq); });
             }
-            // Apply sort
+            // Apply sort (existing vol sort)
             if (currentSortMode === 'vol_asc') {
                 list = [...list].sort((a, b) => _getVolatility(a) - _getVolatility(b));
             } else if (currentSortMode === 'vol_desc') {
                 list = [...list].sort((a, b) => _getVolatility(b) - _getVolatility(a));
+            }
+            // Sprint 37 — additional sort order from dropdown
+            if (typeof _sortOrder !== 'undefined' && _sortOrder !== 'popular') {
+                switch (_sortOrder) {
+                    case 'az':       list = [...list].sort((a,b) => a.name.localeCompare(b.name)); break;
+                    case 'za':       list = [...list].sort((a,b) => b.name.localeCompare(a.name)); break;
+                    case 'rtp':      list = [...list].sort((a,b) => ((b.payouts && b.payouts.triple) || 0) - ((a.payouts && a.payouts.triple) || 0)); break;
+                    case 'volatile': list = [...list].sort((a,b) => _getVolatility(b) - _getVolatility(a)); break;
+                    case 'chill':    list = [...list].sort((a,b) => _getVolatility(a) - _getVolatility(b)); break;
+                }
             }
             return list;
         }
@@ -1123,6 +1134,12 @@ function renderGames() {
             document.querySelectorAll('.sort-btn').forEach(b => {
                 b.classList.toggle('sort-btn-active', b.dataset.sort === mode);
             });
+            renderFilteredGames();
+        }
+
+        // Sprint 37 — Game Sort Dropdown
+        function setSortOrder(val) {
+            _sortOrder = val || 'popular';
             renderFilteredGames();
         }
 

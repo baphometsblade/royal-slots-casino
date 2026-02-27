@@ -2552,3 +2552,177 @@ function openPlayerCard() {
     modal.classList.add('active');
     modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
 }
+
+// ══════════════════════════════════════════════════════════
+// SPRINT 36 — Lucky Spin Mini-Game
+// ══════════════════════════════════════════════════════════
+var _LS_KEY = 'matrixLuckySpin';
+var _LS_SEGMENTS = [
+    { label: '$50',    type: 'cash',  value: 50  },
+    { label: '100 XP', type: 'xp',   value: 100 },
+    { label: '$100',   type: 'cash',  value: 100 },
+    { label: '$50',    type: 'cash',  value: 50  },
+    { label: '$500',   type: 'cash',  value: 500 },
+    { label: '$100',   type: 'cash',  value: 100 },
+    { label: '$250',   type: 'cash',  value: 250 },
+    { label: '50 XP',  type: 'xp',   value: 50  }
+];
+var _lsSpinning = false;
+
+function _lsGetState() { try { return JSON.parse(localStorage.getItem(_LS_KEY) || '{}'); } catch(e) { return {}; } }
+
+function openLuckySpin() {
+    var modal = document.getElementById('luckySpinModal');
+    if (!modal) return;
+    _lsRefreshStatus();
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function _lsRefreshStatus() {
+    var state = _lsGetState();
+    var today = new Date().toDateString();
+    var statusEl = document.getElementById('lsStatus');
+    var btnEl = document.getElementById('lsSpinBtn');
+    var freeAvail = state.lastFreeDay !== today;
+    if (statusEl) statusEl.textContent = freeAvail ? '1 free spin available today!' : 'Free spin used — Extra spins cost $50';
+    if (btnEl) {
+        if (freeAvail) {
+            btnEl.textContent = '🎡 SPIN (Free!)';
+            btnEl.disabled = false;
+        } else {
+            var canAfford = typeof balance !== 'undefined' && balance >= 50;
+            btnEl.textContent = '🎡 SPIN ($50)';
+            btnEl.disabled = !canAfford;
+        }
+    }
+}
+
+function doLuckySpin() {
+    if (_lsSpinning) return;
+    var state = _lsGetState();
+    var today = new Date().toDateString();
+    var freeAvail = state.lastFreeDay !== today;
+    if (!freeAvail) {
+        if (typeof balance === 'undefined' || balance < 50) return;
+        balance -= 50;
+        if (typeof updateBalance === 'function') updateBalance();
+    }
+    _lsSpinning = true;
+    var btnEl = document.getElementById('lsSpinBtn');
+    var resultEl = document.getElementById('lsResult');
+    if (btnEl) btnEl.disabled = true;
+    if (resultEl) resultEl.textContent = '';
+    var segIdx = Math.floor(Math.random() * _LS_SEGMENTS.length);
+    var seg = _LS_SEGMENTS[segIdx];
+    var wheel = document.getElementById('lsWheel');
+    var segDeg = 360 / _LS_SEGMENTS.length;
+    var landAngle = 360 - (segIdx * segDeg) - segDeg / 2;
+    var totalRotation = 1440 + landAngle;
+    if (wheel) {
+        wheel.style.transition = 'transform 3s cubic-bezier(0.17,0.67,0.12,0.99)';
+        wheel.style.transform = 'rotate(' + totalRotation + 'deg)';
+    }
+    setTimeout(function() {
+        _lsSpinning = false;
+        if (seg.type === 'cash') {
+            if (typeof balance !== 'undefined') balance += seg.value;
+            if (typeof updateBalance === 'function') updateBalance();
+        } else if (seg.type === 'xp') {
+            if (typeof awardXP === 'function') awardXP(seg.value);
+        }
+        if (resultEl) resultEl.textContent = '🎉 You won ' + seg.label + '!';
+        if (freeAvail) state.lastFreeDay = today;
+        state.totalSpins = (state.totalSpins || 0) + 1;
+        localStorage.setItem(_LS_KEY, JSON.stringify(state));
+        _lsRefreshStatus();
+    }, 3100);
+}
+
+// ══════════════════════════════════════════════════════════
+// SPRINT 36 — Game Rating System
+// ══════════════════════════════════════════════════════════
+var _GR_KEY = 'matrixGameRatings';
+var _MY_RATINGS_KEY = 'matrixMyRatings';
+var _ratingGameId = null;
+
+function showRatingPrompt(gameId, gameName) {
+    _ratingGameId = gameId;
+    var prompt = document.getElementById('ratingPrompt');
+    var nameEl = document.getElementById('ratingGameName');
+    if (!prompt) return;
+    try {
+        var myRatings = JSON.parse(localStorage.getItem(_MY_RATINGS_KEY) || '{}');
+        if (myRatings[gameId]) return;
+    } catch(e) {}
+    if (nameEl) nameEl.textContent = gameName || 'this game';
+    document.querySelectorAll('.rp-star').forEach(function(s) { s.classList.remove('rp-active'); });
+    prompt.style.display = 'flex';
+    setTimeout(function() { dismissRating(); }, 10000);
+}
+
+function submitRating(val) {
+    if (!_ratingGameId) return;
+    try {
+        var ratings = JSON.parse(localStorage.getItem(_GR_KEY) || '{}');
+        var myRatings = JSON.parse(localStorage.getItem(_MY_RATINGS_KEY) || '{}');
+        if (!ratings[_ratingGameId]) ratings[_ratingGameId] = { rating: 0, count: 0 };
+        var r = ratings[_ratingGameId];
+        r.rating = ((r.rating * r.count) + val) / (r.count + 1);
+        r.count += 1;
+        myRatings[_ratingGameId] = val;
+        localStorage.setItem(_GR_KEY, JSON.stringify(ratings));
+        localStorage.setItem(_MY_RATINGS_KEY, JSON.stringify(myRatings));
+    } catch(e) {}
+    dismissRating();
+}
+
+function dismissRating() {
+    var prompt = document.getElementById('ratingPrompt');
+    if (prompt) prompt.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════
+// SPRINT 38 — Win Replay Gallery
+// ══════════════════════════════════════════════════════════
+var _WR_KEY = 'matrixWinReplays';
+var _WR_MAX = 20;
+
+function saveWinReplay(entry) {
+    try {
+        var replays = JSON.parse(localStorage.getItem(_WR_KEY) || '[]');
+        replays.unshift(entry);
+        if (replays.length > _WR_MAX) replays = replays.slice(0, _WR_MAX);
+        localStorage.setItem(_WR_KEY, JSON.stringify(replays));
+    } catch(e) {}
+}
+
+function openWinReplays() {
+    var modal = document.getElementById('winReplayModal');
+    var list = document.getElementById('wrList');
+    if (!modal || !list) return;
+    var replays = [];
+    try { replays = JSON.parse(localStorage.getItem(_WR_KEY) || '[]'); } catch(e) {}
+    if (replays.length === 0) {
+        list.innerHTML = '<div class="wr-empty">No replays yet. Wins of 10x+ bet are auto-saved.</div>';
+    } else {
+        list.innerHTML = replays.map(function(r) {
+            var mult = r.bet > 0 ? (r.win / r.bet).toFixed(1) : '?';
+            return '<div class="wr-entry">' +
+                '<div class="wr-game">' + (r.game || r.gameId || 'Unknown') + '</div>' +
+                '<div class="wr-win">$' + (r.win || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' <span class="wr-mult">' + mult + 'x</span></div>' +
+                '<div class="wr-time">' + _wrRelTime(r.ts) + '</div>' +
+                '</div>';
+        }).join('');
+    }
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function _wrRelTime(ts) {
+    var diff = Date.now() - ts;
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    return Math.floor(diff / 86400000) + 'd ago';
+}

@@ -14844,4 +14844,188 @@ button.active .filter-tab-count {
     cursor: pointer;
     outline: none;
 }
+
+/* ══════════════════════════════════════════════════════════
+   Sprint 36 — Lucky Spin Mini-Game
+══════════════════════════════════════════════════════════ */
+.lucky-spin-content { text-align: center; padding: 20px; }
+.ls-status { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 14px; }
+.ls-wheel-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 16px auto;
+}
+.ls-pointer {
+    position: absolute;
+    top: -18px;
+    z-index: 10;
+    font-size: 26px;
+    filter: drop-shadow(0 0 6px gold);
+    line-height: 1;
+}
+.ls-wheel {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: conic-gradient(
+        #ffd700 0deg 45deg,
+        #3b82f6 45deg 90deg,
+        #ef4444 90deg 135deg,
+        #f59e0b 135deg 180deg,
+        #10b981 180deg 225deg,
+        #ef4444 225deg 270deg,
+        #8b5cf6 270deg 315deg,
+        #3b82f6 315deg 360deg
+    );
+    border: 5px solid rgba(255,255,255,0.25);
+    box-shadow: 0 0 30px rgba(255,215,0,0.35), inset 0 0 20px rgba(0,0,0,0.4);
+    position: relative;
+    will-change: transform;
+}
+.ls-segment { display: none; } /* Colors handled by conic-gradient */
+.ls-spin-btn {
+    margin-top: 18px;
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 24px;
+    padding: 12px 32px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(255,215,0,0.35);
+}
+.ls-spin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,215,0,0.5); }
+.ls-spin-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.ls-result {
+    margin-top: 14px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffd700;
+    min-height: 28px;
+    text-shadow: 0 0 12px rgba(255,215,0,0.6);
+}
+
+/* Sprint 36 — Game Rating Prompt */
+.rating-prompt {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20,20,40,0.97);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 16px 24px;
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    min-width: 220px;
+    animation: rp-slide-up 0.3s ease;
+}
+@keyframes rp-slide-up {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);   opacity: 1; }
+}
+.rp-title { font-size: 13px; color: rgba(255,255,255,0.75); text-align: center; }
+.rp-stars { display: flex; gap: 6px; font-size: 28px; cursor: pointer; }
+.rp-star { color: rgba(255,255,255,0.25); transition: color 0.1s, transform 0.1s; }
+.rp-star:hover,
+.rp-star.rp-active { color: #ffd700; transform: scale(1.2); }
+.rp-skip {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.35);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 8px;
+}
+.rp-skip:hover { color: rgba(255,255,255,0.6); }
+
+/* ══════════════════════════════════════════════════════════
+   Sprint 37 — Game Sort Dropdown
+══════════════════════════════════════════════════════════ */
+.game-sort-select {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 5px 10px;
+    color: rgba(255,255,255,0.75);
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    flex-shrink: 0;
+}
+.game-sort-select:hover { border-color: rgba(255,255,255,0.3); }
+.game-sort-select option { background: #1a1a2e; }
+
+/* Sprint 37 — Demo Mode Banner */
+.demo-banner {
+    background: linear-gradient(90deg, rgba(99,102,241,0.9), rgba(139,92,246,0.9));
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 20px;
+    text-align: center;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Sprint 37 — Demo End Modal */
+.demo-end-content { text-align: center; padding: 32px 24px; }
+.demo-end-content h2 { font-size: 24px; margin-bottom: 8px; }
+.demo-end-content p { color: rgba(255,255,255,0.65); font-size: 14px; margin-bottom: 24px; }
+.demo-end-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-play {
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
+    color: #1a1a2e;
+    font-weight: 700;
+    border-radius: 24px;
+    padding: 12px 28px;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(255,215,0,0.3);
+}
+.btn-play:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,215,0,0.5); }
+
+/* ══════════════════════════════════════════════════════════
+   Sprint 38 — Win Replay Gallery
+══════════════════════════════════════════════════════════ */
+.win-replay-content { padding: 16px; }
+.wr-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
+.wr-entry {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.wr-game { flex: 1; font-size: 13px; color: rgba(255,255,255,0.75); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wr-win { font-size: 15px; font-weight: 700; color: #ffd700; white-space: nowrap; }
+.wr-mult { font-size: 11px; color: rgba(255,215,0,0.65); margin-left: 3px; }
+.wr-time { font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; }
+.wr-empty { font-size: 13px; color: rgba(255,255,255,0.3); text-align: center; padding: 32px 0; }
+
+/* Sprint 38 — Session Timer */
+.session-timer { text-align: center; }
+.session-timer-val { font-size: 14px !important; transition: color 0.3s; }
+.session-timer-yellow { color: #f59e0b !important; }
+.session-timer-red { color: #ef4444 !important; animation: timer-pulse 1.5s ease-in-out infinite; }
+@keyframes timer-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.65; }
+}
 .settings-select:focus { border-color: rgba(240,192,64,0.5); }

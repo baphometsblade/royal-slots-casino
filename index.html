@@ -135,6 +135,8 @@
                         <button class="nav-btn" onclick="if(typeof openPromoCode==='function')openPromoCode()">🎟️ Promo</button>
                         <button class="nav-btn" onclick="if(typeof openSpinHistory==='function')openSpinHistory()">📋 History</button>
                         <button class="nav-btn" onclick="if(typeof openPlayerCard==='function')openPlayerCard()">🪪 My Card</button>
+                        <button class="nav-btn" onclick="if(typeof openLuckySpin==='function')openLuckySpin()">🎡 Lucky Spin</button>
+                        <button class="nav-btn" onclick="if(typeof openWinReplays==='function')openWinReplays()">🎞️ Replays</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -205,6 +207,15 @@
             <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
             <input type="text" class="game-search-input" id="gameSearchInput" placeholder="Search 80+ games..." oninput="filterGamesBySearch(this.value)" aria-label="Search all games">
             <button class="search-clear-btn" id="searchClearBtn" onclick="clearGameSearch()" style="display:none;">&times;</button>
+            <!-- Sprint 37: Sort Dropdown -->
+            <select class="game-sort-select" id="gameSortSelect" onchange="if(typeof setSortOrder==='function')setSortOrder(this.value)" title="Sort games">
+                <option value="popular">Popular</option>
+                <option value="az">A–Z</option>
+                <option value="za">Z–A</option>
+                <option value="rtp">Highest RTP</option>
+                <option value="volatile">Most Volatile</option>
+                <option value="chill">Least Volatile</option>
+            </select>
         </div>
 
         <!-- Leaderboard -->
@@ -463,6 +474,10 @@
             </div>
 
             <!-- Top Bar: Game Info + Close -->
+            <!-- Sprint 37: Demo mode banner -->
+            <div class="demo-banner" id="demoBanner" style="display:none">
+                🎮 DEMO MODE — <span id="demoSpinsLeft">3</span> spins remaining
+            </div>
             <div class="slot-top-bar">
                 <button class="slot-close-btn" onclick="closeSlot()" title="Back to lobby">&times;</button>
                 <div class="slot-top-info">
@@ -482,6 +497,11 @@
                     <div class="slot-payout">
                         <div class="payout-label">MAX WIN</div>
                         <div class="payout-value"><span id="slotMaxPayout">150</span>x</div>
+                    </div>
+                    <!-- Sprint 38: Session Timer -->
+                    <div class="session-timer" id="sessionTimer" style="display:none">
+                        <div class="payout-label">SESSION</div>
+                        <div class="payout-value session-timer-val" id="sessionTimerVal">0m</div>
                     </div>
                 </div>
             </div>
@@ -923,6 +943,68 @@
                 <button class="modal-close" onclick="document.getElementById('playerCardModal').classList.remove('active')">&times;</button>
             </div>
             <div class="player-card" id="playerCardInner"></div>
+        </div>
+    </div>
+
+    <!-- Sprint 36: Lucky Spin Modal -->
+    <div class="modal" id="luckySpinModal">
+        <div class="modal-content lucky-spin-content">
+            <div class="modal-header">
+                <h2>🎡 Lucky Spin</h2>
+                <button class="modal-close" onclick="document.getElementById('luckySpinModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="ls-status" id="lsStatus"></div>
+            <div class="ls-wheel-wrap">
+                <div class="ls-pointer">▼</div>
+                <div class="ls-wheel" id="lsWheel">
+                    <div class="ls-segment ls-seg-0"><span>$50</span></div>
+                    <div class="ls-segment ls-seg-1"><span>100 XP</span></div>
+                    <div class="ls-segment ls-seg-2"><span>$100</span></div>
+                    <div class="ls-segment ls-seg-3"><span>$50</span></div>
+                    <div class="ls-segment ls-seg-4"><span>$500</span></div>
+                    <div class="ls-segment ls-seg-5"><span>$100</span></div>
+                    <div class="ls-segment ls-seg-6"><span>$250</span></div>
+                    <div class="ls-segment ls-seg-7"><span>50 XP</span></div>
+                </div>
+            </div>
+            <button class="ls-spin-btn" id="lsSpinBtn" onclick="doLuckySpin()">🎡 SPIN (Free!)</button>
+            <div class="ls-result" id="lsResult"></div>
+        </div>
+    </div>
+
+    <!-- Sprint 38: Win Replay Modal -->
+    <div class="modal" id="winReplayModal">
+        <div class="modal-content win-replay-content">
+            <div class="modal-header">
+                <h2>🎞️ Win Replays</h2>
+                <button class="modal-close" onclick="document.getElementById('winReplayModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="wr-list" id="wrList"></div>
+        </div>
+    </div>
+
+    <!-- Sprint 36: Game Rating Prompt (floating overlay) -->
+    <div class="rating-prompt" id="ratingPrompt" style="display:none">
+        <div class="rp-title">How was <span id="ratingGameName">this game</span>?</div>
+        <div class="rp-stars" id="ratingStars">
+            <span class="rp-star" data-v="1" onclick="submitRating(1)">★</span>
+            <span class="rp-star" data-v="2" onclick="submitRating(2)">★</span>
+            <span class="rp-star" data-v="3" onclick="submitRating(3)">★</span>
+            <span class="rp-star" data-v="4" onclick="submitRating(4)">★</span>
+            <span class="rp-star" data-v="5" onclick="submitRating(5)">★</span>
+        </div>
+        <button class="rp-skip" onclick="dismissRating()">Skip</button>
+    </div>
+
+    <!-- Sprint 37: Demo End Prompt -->
+    <div class="modal" id="demoEndModal">
+        <div class="modal-content demo-end-content">
+            <h2>🎮 Demo Complete!</h2>
+            <p>Ready to play for real?</p>
+            <div class="demo-end-btns">
+                <button class="btn btn-play" onclick="exitDemoMode(true)">Play for Real</button>
+                <button class="btn" onclick="exitDemoMode(false)">Back to Lobby</button>
+            </div>
         </div>
     </div>
 
