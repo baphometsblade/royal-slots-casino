@@ -3866,6 +3866,21 @@
 
 
         function showFreeSpinsHUD(game) {
+            // ── Bonus mode: transform the whole modal ──
+            const modal = document.querySelector('.slot-modal-fullscreen');
+            if (modal) modal.classList.add('bonus-mode-active');
+
+            // ── Insert persistent BONUS ROUND badge at very top of modal ──
+            let badge = document.getElementById('bonusModeBadge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'bonusModeBadge';
+                badge.className = 'bonus-mode-badge';
+                if (modal) modal.insertAdjacentElement('afterbegin', badge);
+            }
+            badge.style.display = 'flex';
+            _updateBonusBadge(game);
+
             let hud = document.getElementById('freeSpinsHUD');
             if (!hud) {
                 hud = document.createElement('div');
@@ -3873,15 +3888,61 @@
                 hud.className = 'free-spins-hud';
                 (document.querySelector('.slot-reel-area') || document.querySelector('.slot-modal-fullscreen'))?.insertAdjacentElement('beforebegin', hud);
             }
-            hud.style.borderColor = game.accentColor;
+            hud.style.borderColor = game.accentColor || '#fbbf24';
             hud.style.display = 'flex';
             updateFreeSpinsDisplay();
+        }
+
+        function _updateBonusBadge(game) {
+            const badge = document.getElementById('bonusModeBadge');
+            if (!badge) return;
+            const rem    = typeof freeSpinsRemaining !== 'undefined' ? freeSpinsRemaining : '?';
+            const win    = typeof freeSpinsTotalWin  !== 'undefined' ? freeSpinsTotalWin  : 0;
+            const accent = (game && game.accentColor) || '#fbbf24';
+            badge.style.borderBottomColor = accent;
+
+            // Build badge DOM safely (no innerHTML with external data)
+            while (badge.firstChild) badge.removeChild(badge.firstChild);
+
+            const starL = document.createElement('span');
+            starL.className = 'bm-star';
+            starL.textContent = '✨';
+            badge.appendChild(starL);
+
+            const textNode = document.createTextNode('\u00a0\u00a0 BONUS ROUND \u00a0\u00a0');
+            badge.appendChild(textNode);
+
+            const spinsChip = document.createElement('span');
+            spinsChip.className = 'bm-spins';
+            spinsChip.textContent = rem + ' FREE SPINS';
+            badge.appendChild(spinsChip);
+
+            if (win > 0) {
+                const sep = document.createTextNode('\u00a0\u00a0|\u00a0\u00a0');
+                badge.appendChild(sep);
+                const winEl = document.createElement('span');
+                winEl.className = 'bm-win';
+                winEl.textContent = 'WIN $' + win.toLocaleString();
+                badge.appendChild(winEl);
+            }
+
+            const spacer = document.createTextNode('\u00a0\u00a0');
+            badge.appendChild(spacer);
+            const starR = document.createElement('span');
+            starR.className = 'bm-star';
+            starR.textContent = '✨';
+            badge.appendChild(starR);
         }
 
 
         function updateFreeSpinsDisplay() {
             const hud = document.getElementById('freeSpinsHUD');
             if (!hud) return;
+
+            // Keep the top badge in sync with spin count + win total
+            if (typeof currentGame !== 'undefined' && currentGame) {
+                _updateBonusBadge(currentGame);
+            }
 
             const game = currentGame;
             let multText = '';
@@ -3915,6 +3976,11 @@
             if (hud) hud.style.display = 'none';
             const overlay = document.getElementById('freeSpinsOverlay');
             if (overlay) overlay.classList.remove('active');
+            // ── Remove bonus mode visual transformation ──
+            const modal = document.querySelector('.slot-modal-fullscreen');
+            if (modal) modal.classList.remove('bonus-mode-active');
+            const badge = document.getElementById('bonusModeBadge');
+            if (badge) badge.style.display = 'none';
         }
 
 
@@ -7533,6 +7599,21 @@
 
 
         function showFreeSpinsHUD(game) {
+            // ── Bonus mode: transform the whole modal ──
+            const modal = document.querySelector('.slot-modal-fullscreen');
+            if (modal) modal.classList.add('bonus-mode-active');
+
+            // ── Insert persistent BONUS ROUND badge at very top of modal ──
+            let badge = document.getElementById('bonusModeBadge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'bonusModeBadge';
+                badge.className = 'bonus-mode-badge';
+                if (modal) modal.insertAdjacentElement('afterbegin', badge);
+            }
+            badge.style.display = 'flex';
+            _updateBonusBadge(game);
+
             let hud = document.getElementById('freeSpinsHUD');
             if (!hud) {
                 hud = document.createElement('div');
@@ -7540,15 +7621,61 @@
                 hud.className = 'free-spins-hud';
                 (document.querySelector('.slot-reel-area') || document.querySelector('.slot-modal-fullscreen'))?.insertAdjacentElement('beforebegin', hud);
             }
-            hud.style.borderColor = game.accentColor;
+            hud.style.borderColor = game.accentColor || '#fbbf24';
             hud.style.display = 'flex';
             updateFreeSpinsDisplay();
+        }
+
+        function _updateBonusBadge(game) {
+            const badge = document.getElementById('bonusModeBadge');
+            if (!badge) return;
+            const rem    = typeof freeSpinsRemaining !== 'undefined' ? freeSpinsRemaining : '?';
+            const win    = typeof freeSpinsTotalWin  !== 'undefined' ? freeSpinsTotalWin  : 0;
+            const accent = (game && game.accentColor) || '#fbbf24';
+            badge.style.borderBottomColor = accent;
+
+            // Build badge DOM safely (no innerHTML with external data)
+            while (badge.firstChild) badge.removeChild(badge.firstChild);
+
+            const starL = document.createElement('span');
+            starL.className = 'bm-star';
+            starL.textContent = '✨';
+            badge.appendChild(starL);
+
+            const textNode = document.createTextNode('\u00a0\u00a0 BONUS ROUND \u00a0\u00a0');
+            badge.appendChild(textNode);
+
+            const spinsChip = document.createElement('span');
+            spinsChip.className = 'bm-spins';
+            spinsChip.textContent = rem + ' FREE SPINS';
+            badge.appendChild(spinsChip);
+
+            if (win > 0) {
+                const sep = document.createTextNode('\u00a0\u00a0|\u00a0\u00a0');
+                badge.appendChild(sep);
+                const winEl = document.createElement('span');
+                winEl.className = 'bm-win';
+                winEl.textContent = 'WIN $' + win.toLocaleString();
+                badge.appendChild(winEl);
+            }
+
+            const spacer = document.createTextNode('\u00a0\u00a0');
+            badge.appendChild(spacer);
+            const starR = document.createElement('span');
+            starR.className = 'bm-star';
+            starR.textContent = '✨';
+            badge.appendChild(starR);
         }
 
 
         function updateFreeSpinsDisplay() {
             const hud = document.getElementById('freeSpinsHUD');
             if (!hud) return;
+
+            // Keep the top badge in sync with spin count + win total
+            if (typeof currentGame !== 'undefined' && currentGame) {
+                _updateBonusBadge(currentGame);
+            }
 
             const game = currentGame;
             let multText = '';
@@ -7582,6 +7709,11 @@
             if (hud) hud.style.display = 'none';
             const overlay = document.getElementById('freeSpinsOverlay');
             if (overlay) overlay.classList.remove('active');
+            // ── Remove bonus mode visual transformation ──
+            const modal = document.querySelector('.slot-modal-fullscreen');
+            if (modal) modal.classList.remove('bonus-mode-active');
+            const badge = document.getElementById('bonusModeBadge');
+            if (badge) badge.style.display = 'none';
         }
 
 
