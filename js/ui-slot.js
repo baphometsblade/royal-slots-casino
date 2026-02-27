@@ -208,6 +208,51 @@
             if (badge) badge.style.display = 'none';
         }
 
+        /* ── Sprint 47: Ambient Sound Toggle ── */
+        var _ambientMuted = false;
+
+        function toggleAmbientSound() {
+            _ambientMuted = !_ambientMuted;
+            var btn = document.getElementById('ambToggle');
+            if (btn) btn.textContent = _ambientMuted ? '🔇' : '🔊';
+            if (typeof SoundManager !== 'undefined') {
+                if (_ambientMuted) { SoundManager.stopAmbient(); }
+                else if (currentGame) { SoundManager.startAmbient(currentGame); }
+            }
+        }
+
+        function _resetAmbientToggle() {
+            _ambientMuted = false;
+            var btn = document.getElementById('ambToggle');
+            if (btn) btn.textContent = '🔊';
+        }
+
+        /* ── Sprint 47: Quick Stats Tooltip ── */
+        var _qsTipTimer = null;
+
+        function showQuickStats() {
+            if (!currentGame) return;
+            var tip = document.getElementById('qsTip');
+            if (!tip) return;
+            var g = currentGame;
+            var vol = (typeof deriveGameVolatility === 'function') ? deriveGameVolatility(g) : 'N/A';
+            var grid = (g.gridCols && g.gridRows) ? g.gridCols + 'x' + g.gridRows : '';
+            var bonus = g.bonusType ? g.bonusType.replace(/_/g, ' ') : 'none';
+            tip.innerHTML = '<div class="qs-row"><span class="qs-label">Grid</span><span>' + grid + '</span></div>' +
+                '<div class="qs-row"><span class="qs-label">Volatility</span><span>' + vol + '</span></div>' +
+                '<div class="qs-row"><span class="qs-label">Bet Range</span><span>$' + (g.minBet||0.20).toFixed(2) + ' – $' + (g.maxBet||500) + '</span></div>' +
+                '<div class="qs-row"><span class="qs-label">Bonus</span><span>' + bonus + '</span></div>';
+            tip.style.display = '';
+            clearTimeout(_qsTipTimer);
+            _qsTipTimer = setTimeout(function() { tip.style.display = 'none'; }, 3000);
+        }
+
+        function hideQuickStats() {
+            var tip = document.getElementById('qsTip');
+            if (tip) tip.style.display = 'none';
+            clearTimeout(_qsTipTimer);
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1502,6 +1547,13 @@
                 document.getElementById('slotGameName').textContent = currentGame.name;
                 document.getElementById('slotProvider').textContent = currentGame.provider || '';
                 document.getElementById('slotMaxPayout').textContent = (currentGame.payouts && currentGame.payouts.triple) || '—';
+                // Sprint 47: Wire quick stats tooltip to game title
+                var _titleEl = document.getElementById('slotGameName');
+                if (_titleEl) {
+                    _titleEl.onmouseenter = showQuickStats;
+                    _titleEl.onmouseleave = hideQuickStats;
+                    _titleEl.style.cursor = 'help';
+                }
 
             const tagEl = document.getElementById('slotGameTag');
             if (currentGame.tag) {
@@ -1997,6 +2049,8 @@
             _resetWinGoalOnClose();
             _resetPnlSparkline();
             _resetWinStreak();
+            _resetAmbientToggle();
+            hideQuickStats();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

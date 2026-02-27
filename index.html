@@ -528,6 +528,7 @@
                     <div class="slot-provider" id="slotProvider">Royal Games</div>
                     <div class="game-tag tag-jackpot" id="slotGameTag" style="display:none;">JACKPOT</div>
                 </div>
+                <div class="qs-tip" id="qsTip" style="display:none;"></div>
                 <div class="session-timer" id="sessionTimer" title="Session time">⏱ <span id="sessionTimerValue">0m</span></div>
                 <button class="brm-set-btn" id="brmSetBtn" onclick="if(typeof openBankrollPrompt==='function')openBankrollPrompt()" title="Set session budget">💰 Budget</button>
                 <button class="wg-set-btn" id="wgSetBtn" onclick="if(typeof openWinGoalPrompt==='function')openWinGoalPrompt()" title="Set win goal">🎯 Goal</button>
@@ -536,6 +537,7 @@
                     <span class="wg-label" id="wgLabel">$0 / $0</span>
                     <button class="wg-clear" onclick="if(typeof clearWinGoal==='function')clearWinGoal()" title="Remove goal">&times;</button>
                 </div>
+                <button class="amb-toggle" id="ambToggle" onclick="if(typeof toggleAmbientSound==='function')toggleAmbientSound()" title="Toggle ambient sound">🔊</button>
                 <div class="slot-top-right">
                     <button class="buy-bonus-btn" id="buyBonusBtn" onclick="buyBonus()" style="display:none;" title="Buy Free Spins">
                         <span class="buy-bonus-icon">⚡</span>

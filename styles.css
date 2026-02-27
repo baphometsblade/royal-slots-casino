@@ -15692,3 +15692,21 @@ button.active .filter-tab-count {
 .tf-active.tf-new { background: rgba(34,197,94,0.2); color: #22c55e; border-color: #22c55e; }
 .tf-active.tf-jackpot { background: rgba(234,179,8,0.2); color: #eab308; border-color: #eab308; }
 .tf-active.tf-popular { background: rgba(99,102,241,0.2); color: #6366f1; border-color: #6366f1; }
+
+/* ══ Sprint 47: Ambient Sound Toggle ══ */
+.amb-toggle {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px; padding: 4px 8px; font-size: 14px; cursor: pointer;
+    color: rgba(255,255,255,0.7); transition: all 0.15s; margin-left: 4px;
+}
+.amb-toggle:hover { background: rgba(255,255,255,0.12); }
+
+/* ══ Sprint 47: Quick Stats Tooltip ══ */
+.qs-tip {
+    position: absolute; top: 56px; left: 16px; z-index: 30;
+    background: rgba(15,15,25,0.95); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; padding: 10px 14px; min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none;
+}
+.qs-row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 12px; color: #ccc; }
+.qs-label { color: rgba(255,255,255,0.4); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
