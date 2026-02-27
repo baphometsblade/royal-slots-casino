@@ -122,6 +122,33 @@
             updateBalance();
         }
 
+        /* ── Sprint 41: Quick Game Switch Strip ──────────────── */
+        function _renderQuickSwitch() {
+            var strip = document.getElementById('qgsStrip');
+            if (!strip || typeof GAMES === 'undefined') return;
+            var key = typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'recentlyPlayed';
+            var recent = [];
+            try { recent = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+            // Need at least 2 games to show the strip
+            if (recent.length < 2) { strip.style.display = 'none'; return; }
+            var curId = currentGame ? currentGame.id : '';
+            strip.innerHTML = recent.slice(0, 5).map(function(id) {
+                var g = GAMES.find(function(x) { return x.id === id; });
+                if (!g) return '';
+                var active = id === curId ? ' qgs-active' : '';
+                return '<button class="qgs-pill' + active + '" onclick="if(typeof quickSwitchGame===\'function\')quickSwitchGame(\'' + id + '\')" title="' + (g.name || id) + '">' +
+                    '<span class="qgs-name">' + (g.name || id).substring(0, 12) + '</span></button>';
+            }).join('');
+            strip.style.display = 'flex';
+        }
+
+        function quickSwitchGame(gameId) {
+            if (!gameId || spinning || freeSpinsActive) return;
+            if (currentGame && currentGame.id === gameId) return;
+            closeSlot();
+            setTimeout(function() { openSlot(gameId); }, 200);
+        }
+
         // ── Spin History State ──────────────────────────────────
         let spinHistory = []; // [{win, bet, isNearMiss, timestamp}, ...]
         // Session stats tracking (reset each time a new game opens)
@@ -1261,6 +1288,7 @@
 
             addRecentlyPlayed(gameId);
             _startSessionTimer();
+            _renderQuickSwitch();
 
             // Set game-specific CSS theme
             document.getElementById('slotModal').setAttribute('data-game-id', currentGame.id);

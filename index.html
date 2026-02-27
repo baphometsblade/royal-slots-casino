@@ -101,6 +101,7 @@
                 </button>
                 <button class="btn btn-user" onclick="openStatsModal()" title="View player stats">
                     STATS</button>
+                <span class="user-avatar" id="userAvatar" onclick="if(currentUser && typeof openAvatarPicker==='function')openAvatarPicker()" title="Change avatar"></span>
                 <button class="btn btn-user btn-profile" id="authBtn" onclick="currentUser ? showProfileModal() : showAuthModal()" title="Account">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                     <span id="authBtnLabel">LOGIN</span></button>
@@ -505,6 +506,9 @@
                     </div>
                 </div>
             </div>
+            <!-- Sprint 41: Quick Game Switch Strip -->
+            <div class="qgs-strip" id="qgsStrip" style="display:none;"></div>
+
             <!-- Demo Mode Banner -->
             <div class="demo-banner" id="demoBanner" style="display:none;">
                 <span class="demo-banner-icon">🎮</span>
@@ -1067,6 +1071,15 @@
             <span class="grp-star" data-val="5" onclick="if(typeof rateGame==='function')rateGame(5)">★</span>
         </div>
         <button class="grp-dismiss" onclick="document.getElementById('gameRatingPrompt').style.display='none'">Skip</button>
+    </div>
+
+    <!-- Sprint 41: Avatar Picker Modal -->
+    <div id="avatarPickerModal" class="modal-overlay" style="display:none;">
+        <div class="avp-card">
+            <h2 class="avp-title">Choose Your Avatar</h2>
+            <div class="avp-grid" id="avpGrid"></div>
+            <button class="avp-close" onclick="document.getElementById('avatarPickerModal').style.display='none'">Close</button>
+        </div>
     </div>
 
     <!-- Sprint 40: Game Comparison Bar -->

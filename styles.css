@@ -15441,3 +15441,52 @@ button.active .filter-tab-count {
     padding: 8px 24px; color: #aaa; cursor: pointer; font-size: 0.85rem;
 }
 .gc-close:hover { color: #fff; }
+
+/* ═══ Sprint 41: Quick Game Switch Strip ═══ */
+.qgs-strip {
+    display: flex; gap: 6px; padding: 6px 12px; overflow-x: auto;
+    background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05);
+    scrollbar-width: none;
+}
+.qgs-strip::-webkit-scrollbar { display: none; }
+.qgs-pill {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 4px 12px; color: #aaa; font-size: 0.75rem;
+    cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.qgs-pill:hover { background: rgba(255,215,0,0.12); color: #ffd700; border-color: rgba(255,215,0,0.3); }
+.qgs-active {
+    background: rgba(255,215,0,0.15) !important; color: #ffd700 !important;
+    border-color: rgba(255,215,0,0.4) !important; font-weight: 600;
+}
+
+/* ═══ Sprint 41: Avatar Picker ═══ */
+.user-avatar {
+    font-size: 1.4rem; cursor: pointer; margin-right: 4px;
+    transition: transform 0.2s;
+}
+.user-avatar:hover { transform: scale(1.2); }
+.avp-card {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(255,215,0,0.2); border-radius: 16px;
+    padding: 24px; max-width: 360px; width: 90%; color: #e0e0e0;
+}
+.avp-title { color: #ffd700; font-size: 1.2rem; text-align: center; margin-bottom: 16px; }
+.avp-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    justify-items: center;
+}
+.avp-option {
+    font-size: 2rem; background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 12px; width: 56px; height: 56px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.avp-option:hover { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.4); transform: scale(1.1); }
+.avp-selected { border-color: #ffd700 !important; background: rgba(255,215,0,0.15) !important; box-shadow: 0 0 12px rgba(255,215,0,0.3); }
+.avp-close {
+    display: block; margin: 16px auto 0; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    padding: 8px 24px; color: #aaa; cursor: pointer; font-size: 0.85rem;
+}
+.avp-close:hover { color: #fff; }

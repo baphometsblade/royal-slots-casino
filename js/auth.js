@@ -34,7 +34,7 @@
             'matrixBalanceHistory', 'matrixCommunityJackpot', 'matrixXpBoost', 'matrixMysteryBox',
             'matrixLevelMilestones', 'matrixSpinHistory', 'matrixPromoCodes', 'matrixCashback',
             'matrixHourlyBonus', 'matrixChallengeStreak',
-            'matrixLuckySpin', 'matrixGameRatings', 'matrixMyRatings', 'matrixWinReplays',
+            'matrixLuckySpin', 'matrixGameRatings', 'matrixMyRatings', 'matrixWinReplays', 'matrixUserAvatar',
             typeof STORAGE_KEY_SETTINGS !== 'undefined' ? STORAGE_KEY_SETTINGS : 'casinoSettings',
         ];
 

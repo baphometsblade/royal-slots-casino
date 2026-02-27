@@ -2890,3 +2890,41 @@
         window.openWinReplays = openWinReplays;
         window.saveWinReplay = saveWinReplay;
         window.autoSaveWinReplay = autoSaveWinReplay;
+
+        /* ── Sprint 41: Avatar Picker ────────────────────── */
+        var AVP_KEY = 'matrixUserAvatar';
+        var AVP_AVATARS = ['🎰', '🃏', '💎', '🎲', '🔥', '⚡', '🌟', '🎯', '🦊', '🐉', '👑', '🎭'];
+
+        function openAvatarPicker() {
+            var modal = document.getElementById('avatarPickerModal');
+            var grid = document.getElementById('avpGrid');
+            if (!modal || !grid) return;
+            var current = getAvatar();
+            grid.innerHTML = AVP_AVATARS.map(function(a) {
+                var sel = a === current ? ' avp-selected' : '';
+                return '<button class="avp-option' + sel + '" onclick="selectAvatar(\'' + a + '\')">' + a + '</button>';
+            }).join('');
+            modal.style.display = 'flex';
+        }
+
+        function selectAvatar(emoji) {
+            localStorage.setItem(AVP_KEY, emoji);
+            _updateAvatarDisplay();
+            document.getElementById('avatarPickerModal').style.display = 'none';
+        }
+
+        function getAvatar() {
+            return localStorage.getItem(AVP_KEY) || '🎰';
+        }
+
+        function _updateAvatarDisplay() {
+            var el = document.getElementById('userAvatar');
+            if (el) el.textContent = getAvatar();
+        }
+
+        // Initialize on load
+        setTimeout(_updateAvatarDisplay, 500);
+
+        window.openAvatarPicker = openAvatarPicker;
+        window.selectAvatar = selectAvatar;
+        window.getAvatar = getAvatar;
