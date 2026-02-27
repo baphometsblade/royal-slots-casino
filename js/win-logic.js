@@ -730,6 +730,8 @@
 
             // Sprint 58: Balance milestone check
             if (typeof checkBalanceMilestone === 'function') checkBalanceMilestone();
+            // Sprint 59: Profit target check
+            if (typeof checkProfitTarget === 'function') checkProfitTarget();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

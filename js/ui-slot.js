@@ -530,6 +530,42 @@
             _bmLastCrossed = 0;
         }
 
+        // Sprint 59: Profit target
+        var _ptGoal = 0;
+        var _ptOpenBal = 0;
+        var _ptReached = false;
+        function setProfitTarget() {
+            var input = prompt('Set profit target ($):');
+            if (!input) return;
+            var val = parseFloat(input);
+            if (isNaN(val) || val <= 0) return;
+            _ptGoal = val;
+            _ptOpenBal = typeof balance !== 'undefined' ? balance : 0;
+            _ptReached = false;
+            var el = document.getElementById('ptTarget');
+            if (el) { el.textContent = '🎯 Target: +$' + _ptGoal; el.className = 'pt-target pt-active'; }
+        }
+        function checkProfitTarget() {
+            if (_ptGoal <= 0 || _ptReached) return;
+            var profit = (typeof balance !== 'undefined' ? balance : 0) - _ptOpenBal;
+            if (profit >= _ptGoal) {
+                _ptReached = true;
+                var el = document.getElementById('ptTarget');
+                if (el) { el.textContent = '🎯 Target reached! +$' + profit.toFixed(0); el.className = 'pt-target pt-reached'; }
+                if (typeof showMessage === 'function') showMessage('Profit target reached! +$' + profit.toFixed(0), 'win');
+            }
+        }
+        function _initProfitTarget() {
+            _ptGoal = 0; _ptOpenBal = 0; _ptReached = false;
+            var el = document.getElementById('ptTarget');
+            if (el) { el.textContent = '🎯 Set profit target'; el.className = 'pt-target'; el.style.display = ''; }
+        }
+        function _resetProfitTarget() {
+            _ptGoal = 0; _ptOpenBal = 0; _ptReached = false;
+            var el = document.getElementById('ptTarget');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1736,6 +1772,7 @@
             updateVolatilityMeter();
             _initQuickVolume();
             showKbHints();
+            _initProfitTarget();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2349,6 +2386,7 @@
             _resetAvgBet();
             hideKbHints();
             _resetBalanceMilestone();
+            _resetProfitTarget();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

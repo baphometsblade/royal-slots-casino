@@ -1316,7 +1316,7 @@ function renderGames() {
                         </div>
                     </div>
                     <div class="game-info">
-                        <div class="game-name">${game.name}${typeof getGameDifficulty === 'function' ? getGameDifficulty(game) : ''}</div>
+                        <div class="game-name">${typeof highlightSearchTerm === 'function' ? highlightSearchTerm(game.name) : game.name}${typeof getGameDifficulty === 'function' ? getGameDifficulty(game) : ''}</div>
                         <div class="game-provider">${game.provider || ''}${typeof getCategoryBadge === 'function' ? getCategoryBadge(game) : ''}</div>
                     </div>
                     ${_hotIds.has(game.id) ? '<span class="lobby-badge lobby-badge-hot">🔥 HOT</span>' : ''}
@@ -2644,4 +2644,14 @@ function renderGames() {
             else label = '';
             if (!label) return '';
             return '<span class="cb-badge">' + label + '</span>';
+        }
+
+        // Sprint 59: Search highlight
+        function highlightSearchTerm(name) {
+            var q = (typeof lobbySearchQuery !== 'undefined' ? lobbySearchQuery : '').trim();
+            if (!q || q.startsWith('__provider__')) return name;
+            try {
+                var re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                return name.replace(re, '<mark class="sh-mark">$1</mark>');
+            } catch(e) { return name; }
         }
