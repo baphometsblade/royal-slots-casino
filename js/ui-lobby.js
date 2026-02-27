@@ -534,6 +534,9 @@ function renderGames() {
                     if (typeof renderLobbyQuickStats === 'function') renderLobbyQuickStats();
                     if (typeof renderLobbyGreeting === 'function') renderLobbyGreeting();
                     if (typeof _renderRecentSearches === 'function') _renderRecentSearches();
+                    // Sprint 74: Daily tip + lobby footer
+                    if (typeof renderDailyTip === 'function') renderDailyTip();
+                    if (typeof renderLobbyFooter === 'function') renderLobbyFooter();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -2705,6 +2708,51 @@ function renderGames() {
             var h = new Date().getHours();
             var msg = h < 12 ? 'Good morning!' : h < 17 ? 'Good afternoon!' : 'Good evening!';
             el.textContent = msg;
+        }
+
+        /* ── Sprint 74: Daily Playing Tip ──────────────── */
+        var _dailyTips = [
+            'Set a budget before you play and stick to it.',
+            'Take breaks every 30 minutes to stay fresh.',
+            'Higher volatility means bigger but rarer wins.',
+            'Low bets let you play longer on the same balance.',
+            'Free spins bonuses are where the big wins happen.',
+            'Never chase losses — tomorrow is another day.',
+            'Try different games to find your favorite style.',
+            'Check the paytable to understand symbol values.',
+            'Wild symbols substitute for others to form wins.',
+            'Scatter symbols often trigger bonus features.'
+        ];
+        function renderDailyTip() {
+            var el = document.getElementById('dailyTip');
+            if (!el) return;
+            var ds = new Date().toDateString();
+            var hash = 0;
+            for (var i = 0; i < ds.length; i++) {
+                hash = ((hash << 5) - hash + ds.charCodeAt(i)) | 0;
+            }
+            el.textContent = _dailyTips[Math.abs(hash) % _dailyTips.length];
+        }
+
+        /* ── Sprint 74: Lobby Footer Stats ──────────────── */
+        var _lfStart = Date.now(); var _lfInterval = null;
+        function renderLobbyFooter() {
+            var el = document.getElementById('lobbyFooter');
+            if (!el) return;
+            var gameCount = typeof GAMES !== 'undefined' ? GAMES.length : 0;
+            var cats = {};
+            if (typeof GAMES !== 'undefined') {
+                for (var i = 0; i < GAMES.length; i++) {
+                    cats[GAMES[i].category || 'other'] = 1;
+                }
+            }
+            var catCount = Object.keys(cats).length;
+            var mins = Math.floor((Date.now() - _lfStart) / 60000);
+            var timeStr = mins < 1 ? '<1m' : mins + 'm';
+            el.innerHTML = '<span>' + gameCount + ' Games</span><span>' + catCount + ' Categories</span><span>Online: ' + timeStr + '</span>';
+            if (!_lfInterval) {
+                _lfInterval = setInterval(function() { renderLobbyFooter(); }, 60000);
+            }
         }
 
         /* ── Sprint 73: Recent Searches ──────────────── */

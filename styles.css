@@ -16147,3 +16147,18 @@ button.active .filter-tab-count {
     background: rgba(252,211,77,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* ── Sprint 74: Daily Tip ── */
+.daily-tip {
+    text-align: center; font-style: italic; color: #9ca3af;
+    font-size: 0.78rem; padding: 4px 16px; margin: 2px auto 8px;
+    max-width: 480px;
+}
+
+/* ── Sprint 74: Lobby Footer ── */
+.lobby-footer {
+    display: flex; justify-content: center; gap: 18px;
+    font-size: 0.72rem; color: #6b7280; padding: 12px 0 8px;
+    border-top: 1px solid rgba(255,255,255,0.06); margin-top: 16px;
+}
+.lobby-footer span { opacity: 0.8; }
