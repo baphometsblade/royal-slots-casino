@@ -1419,6 +1419,42 @@ function renderGames() {
             renderFilteredGames();
         }
 
+        /* ── Sprint 39: Provider Stats Summary ──────────── */
+        function toggleProviderStats() {
+            var body = document.getElementById('pspBody');
+            var arrow = document.getElementById('pspArrow');
+            if (!body) return;
+            var open = body.style.display !== 'none';
+            body.style.display = open ? 'none' : 'grid';
+            if (arrow) arrow.textContent = open ? '\u25BC' : '\u25B2';
+            if (!open) renderProviderStats();
+        }
+
+        function renderProviderStats() {
+            var grid = document.getElementById('pspGrid');
+            if (!grid || typeof GAMES === 'undefined') return;
+            var map = {};
+            GAMES.forEach(function(g) {
+                var p = g.provider || 'Unknown';
+                if (!map[p]) map[p] = { count: 0, rtpSum: 0 };
+                map[p].count++;
+                map[p].rtpSum += (g.rtp || 96);
+            });
+            var providers = Object.keys(map).sort(function(a, b) {
+                return map[b].count - map[a].count;
+            });
+            grid.innerHTML = providers.map(function(p) {
+                var d = map[p];
+                var avgRtp = (d.rtpSum / d.count).toFixed(1);
+                var short = p.split(' ')[0];
+                return '<div class="psp-card" onclick="setProviderFilter(\'' + p.replace(/'/g, "\\'") + '\')">' +
+                    '<div class="psp-name">' + short + '</div>' +
+                    '<div class="psp-count">' + d.count + ' games</div>' +
+                    '<div class="psp-rtp">Avg RTP ' + avgRtp + '%</div>' +
+                '</div>';
+            }).join('');
+        }
+
 
         function setMechanicFilter(mech) {
             currentMechanicFilter = mech;

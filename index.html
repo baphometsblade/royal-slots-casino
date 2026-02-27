@@ -279,6 +279,17 @@
             <button class="provider-chip" data-provider="ArcadeForge" onclick="setProviderFilter('ArcadeForge')">ArcadeForge</button>
         </div>
 
+        <!-- Sprint 39: Provider Stats Summary -->
+        <div class="provider-stats-panel" id="providerStatsPanel">
+            <button class="psp-toggle" onclick="toggleProviderStats()">
+                <span class="psp-label">Provider Stats</span>
+                <span class="psp-arrow" id="pspArrow">&#9660;</span>
+            </button>
+            <div class="psp-body" id="pspBody" style="display:none;">
+                <div class="psp-grid" id="pspGrid"></div>
+            </div>
+        </div>
+
         <!-- All Slots Section -->
         <div class="section-header">
             <h3 class="section-title" id="allSlotsTitle">
@@ -575,6 +586,8 @@
                     <button class="bp-btn" data-bet="5" onclick="if(typeof setBetPreset==='function')setBetPreset(5)">$5</button>
                     <button class="bp-btn" data-bet="25" onclick="if(typeof setBetPreset==='function')setBetPreset(25)">$25</button>
                     <button class="bp-btn" data-bet="100" onclick="if(typeof setBetPreset==='function')setBetPreset(100)">$100</button>
+                    <button class="bp-btn bp-half" onclick="if(typeof betHalf==='function')betHalf()" title="Halve bet">½</button>
+                    <button class="bp-btn bp-double" onclick="if(typeof betDouble==='function')betDouble()" title="Double bet">2x</button>
                 </div>
 
                 <!-- Turbo Toggle -->

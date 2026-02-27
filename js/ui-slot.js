@@ -1943,6 +1943,17 @@
             });
         }
 
+        /* ── Sprint 39: Quick Bet Doubler ────────────────── */
+        function betDouble() {
+            if (!currentGame || spinning) return;
+            setBetPreset(currentBet * 2);
+        }
+
+        function betHalf() {
+            if (!currentGame || spinning) return;
+            setBetPreset(Math.max(1, Math.floor(currentBet / 2)));
+        }
+
         /* ── Sprint 33: Streak Indicator ─────────────────── */
         function _updateStreakIndicator() {
             var bar = document.getElementById('streakBar');

@@ -15315,3 +15315,41 @@ button.active .filter-tab-count {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
 }
+
+/* ═══ Sprint 39: Provider Stats Summary ═══ */
+.provider-stats-panel {
+    margin: 8px 0 12px;
+}
+.psp-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 8px 14px; color: #ccc; font-size: 0.85rem;
+    cursor: pointer; width: 100%; transition: background 0.2s;
+}
+.psp-toggle:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.psp-arrow { font-size: 0.7rem; margin-left: auto; }
+.psp-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px; padding: 10px 0;
+}
+.psp-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 10px; text-align: center; cursor: pointer;
+    transition: all 0.2s;
+}
+.psp-card:hover { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.3); transform: translateY(-2px); }
+.psp-name { font-weight: 600; color: #ffd700; font-size: 0.85rem; margin-bottom: 4px; }
+.psp-count { color: #aaa; font-size: 0.75rem; }
+.psp-rtp { color: #4ade80; font-size: 0.7rem; margin-top: 2px; }
+
+/* ═══ Sprint 39: Quick Bet Doubler ═══ */
+.bet-doubler-group {
+    display: flex; gap: 6px; align-items: center;
+}
+.bd-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px; padding: 6px 12px; color: #ddd; font-size: 0.8rem;
+    font-weight: 600; cursor: pointer; transition: all 0.2s; min-width: 36px;
+}
+.bd-btn:hover { background: rgba(255,215,0,0.15); border-color: rgba(255,215,0,0.4); color: #ffd700; }
+.bd-btn:active { transform: scale(0.95); }
