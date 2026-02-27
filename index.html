@@ -538,6 +538,10 @@
                 <button class="slot-close-btn" onclick="closeSlot()" title="Back to lobby">&times;</button>
                 <div class="slot-top-info">
                     <h2 class="slot-title" id="slotGameName">Sugar Rush 1000</h2>
+                    <div class="gs-nav">
+                        <button class="gs-nav-btn" id="gsNavPrev" onclick="if(typeof navGame==='function')navGame(-1)" title="Previous game">&#x25C0;</button>
+                        <button class="gs-nav-btn" id="gsNavNext" onclick="if(typeof navGame==='function')navGame(1)" title="Next game">&#x25B6;</button>
+                    </div>
                     <div class="slot-provider" id="slotProvider">Royal Games</div>
                     <div class="game-tag tag-jackpot" id="slotGameTag" style="display:none;">JACKPOT</div>
                 </div>
@@ -656,6 +660,7 @@
                     </div>
                     <button class="slot-bet-btn" id="betUpBtn" onclick="adjustBet(1)">&#43;</button>
                 </div>
+                <div class="ab-display" id="abDisplay" style="display:none;">Avg: $0</div>
                 <svg class="bh-chart" id="bhChart" viewBox="0 0 60 16" preserveAspectRatio="none" style="display:none;"><polyline id="bhLine" fill="none" stroke="#60a5fa" stroke-width="1.5"/></svg>
                 <input type="range" class="bet-range" id="betRange" min="50" max="5000" step="50" value="50" style="display:none;">
                 <span id="minBet" style="display:none;">50</span>

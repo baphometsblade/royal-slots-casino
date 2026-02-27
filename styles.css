@@ -15876,3 +15876,21 @@ button.active .filter-tab-count {
     background: rgba(96,165,250,0.15); color: #60a5fa;
     vertical-align: middle; text-transform: uppercase; letter-spacing: 0.3px;
 }
+
+/* ══ Sprint 57: Average Bet Display ══ */
+.ab-display {
+    display: none; text-align: center; font-size: 0.65rem; color: #64748b;
+    padding: 1px 0;
+}
+
+/* ══ Sprint 57: Game Navigation ══ */
+.gs-nav {
+    display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle;
+}
+.gs-nav-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #94a3b8;
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+    font-size: 0.6rem; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.gs-nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }

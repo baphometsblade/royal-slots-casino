@@ -424,6 +424,7 @@
             _bhData.push(currentBet);
             if (_bhData.length > _bhMax) _bhData.shift();
             _drawBetChart();
+            updateAvgBet();
         }
         function _drawBetChart() {
             var svg = document.getElementById('bhChart');
@@ -464,6 +465,33 @@
             _wrWins = 0; _wrTotal = 0;
             var el = document.getElementById('wrDisplay');
             if (el) { el.textContent = 'Hit: 0%'; el.style.display = 'none'; }
+        }
+
+        // Sprint 57: Average bet display (uses _bhData from Sprint 55)
+        function updateAvgBet() {
+            var el = document.getElementById('abDisplay');
+            if (!el || _bhData.length === 0) return;
+            var sum = 0;
+            for (var i = 0; i < _bhData.length; i++) sum += _bhData[i];
+            var avg = sum / _bhData.length;
+            el.textContent = 'Avg: $' + (Number.isInteger(avg) ? avg : avg.toFixed(1));
+            el.style.display = '';
+        }
+        function _resetAvgBet() {
+            var el = document.getElementById('abDisplay');
+            if (el) { el.style.display = 'none'; el.textContent = 'Avg: $0'; }
+        }
+
+        // Sprint 57: Next/Prev game navigation
+        function navGame(dir) {
+            if (!currentGame || spinning) return;
+            var games = typeof GAMES !== 'undefined' ? GAMES : [];
+            var idx = games.findIndex(function(g) { return g.id === currentGame.id; });
+            if (idx < 0) return;
+            var next = (idx + dir + games.length) % games.length;
+            var nextId = games[next].id;
+            closeSlot();
+            setTimeout(function() { openSlot(nextId); }, 300);
         }
 
         function _handleDemoSpinEnd() {
@@ -2281,6 +2309,7 @@
             _resetLuckySymbol();
             _resetBetHistory();
             _resetWinRate();
+            _resetAvgBet();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
