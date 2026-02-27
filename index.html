@@ -158,6 +158,12 @@
           <span class="jackpot-tier jackpot-mega">👑 MEGA <span id="jackpot-mega-amount">$10,000.00</span></span>
         </div>
 
+        <!-- Favorites Quick Bar (Sprint 35) -->
+        <div class="fav-quick-bar" id="favQuickBar" style="display:none;">
+            <div class="fqb-label">⭐ FAVORITES</div>
+            <div class="fqb-scroll" id="fqbScroll"></div>
+        </div>
+
         <!-- Community Jackpot Pool -->
         <div class="community-jackpot-bar" id="communityJackpotBar">
             <span class="cj-label">🎰 COMMUNITY JACKPOT</span>
@@ -1054,6 +1060,17 @@
                             <input type="checkbox" id="settingUiSounds" checked onchange="settingsToggleUiSounds(this.checked)">
                             <span class="settings-toggle-slider"></span>
                         </label>
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label">Sound Theme</label>
+                        <select class="settings-select" id="settingSoundTheme" onchange="settingsSetSoundTheme(this.value)">
+                            <option value="auto">Auto (Match Game)</option>
+                            <option value="classic">Classic Casino</option>
+                            <option value="tropical">Tropical</option>
+                            <option value="cyberpunk">Cyberpunk</option>
+                            <option value="zen">Zen</option>
+                            <option value="off">Off</option>
+                        </select>
                     </div>
                 </div>
 

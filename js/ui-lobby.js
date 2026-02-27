@@ -515,6 +515,8 @@ function renderGames() {
                     checkCashback();
                     // Hourly bonus button (Sprint 34)
                     _updateHourlyBonusBtn();
+                    // Favorites quick bar (Sprint 35)
+                    renderFavQuickBar();
                     // Session summary when returning to lobby
                     showSessionSummary();
                     // Init session tracking
@@ -825,6 +827,36 @@ function renderGames() {
 
         window.claimHourlyBonus = claimHourlyBonus;
         window._updateHourlyBonusBtn = _updateHourlyBonusBtn;
+
+        /* ── Sprint 35: Favorites Quick Bar ──────────────── */
+        function renderFavQuickBar() {
+            var bar = document.getElementById('favQuickBar');
+            var scroll = document.getElementById('fqbScroll');
+            if (!bar || !scroll) return;
+            var favIds = (typeof loadFavorites === 'function') ? loadFavorites() : [];
+            if (favIds.length === 0) {
+                bar.style.display = 'none';
+                return;
+            }
+            bar.style.display = 'flex';
+            var html = '';
+            favIds.forEach(function(id) {
+                var game = (typeof GAMES !== 'undefined') ? GAMES.find(function(g) { return g.id === id; }) : null;
+                if (!game) return;
+                var provColor = '#7c3aed';
+                if (typeof getProviderFullTheme === 'function') {
+                    var theme = getProviderFullTheme(game);
+                    if (theme && theme.accentColor) provColor = theme.accentColor;
+                }
+                html += '<div class="fqb-tile" onclick="openSlot(\'' + game.id + '\')" title="' + game.name + '">'
+                    + '<div class="fqb-icon" style="background:' + provColor + ';">' + (game.symbols ? game.symbols[0] : '🎰') + '</div>'
+                    + '<div class="fqb-name">' + game.name + '</div>'
+                    + '</div>';
+            });
+            scroll.innerHTML = html;
+        }
+
+        window.renderFavQuickBar = renderFavQuickBar;
 
         function addRecentlyPlayed(gameId) {
             let recent = [];

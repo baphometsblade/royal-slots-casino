@@ -1100,6 +1100,8 @@
             if (winSoundsCheck) winSoundsCheck.checked = appSettings.winSounds !== false;
             const uiSoundsCheck = document.getElementById('settingUiSounds');
             if (uiSoundsCheck) uiSoundsCheck.checked = appSettings.uiSounds !== false;
+            var soundThemeSelect = document.getElementById('settingSoundTheme');
+            if (soundThemeSelect) soundThemeSelect.value = appSettings.soundTheme || 'auto';
             modal.classList.add('active');
             playSound('click');
         }
@@ -1191,6 +1193,18 @@
         function settingsToggleUiSounds(enabled) {
             appSettings.uiSounds = enabled;
             saveSettings();
+        }
+
+        function settingsSetSoundTheme(theme) {
+            appSettings.soundTheme = theme;
+            saveSettings();
+            // Restart ambient with new theme if playing
+            if (typeof SoundManager !== 'undefined' && typeof SoundManager.stopAmbient === 'function') {
+                SoundManager.stopAmbient();
+                if (theme !== 'off' && appSettings.ambientMusic && appSettings.soundEnabled) {
+                    SoundManager.startAmbient();
+                }
+            }
         }
 
 
