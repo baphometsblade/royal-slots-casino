@@ -538,6 +538,7 @@ function renderGames() {
                     renderBestWins();
                     if (typeof _injectFilterCounts === 'function') _injectFilterCounts();
                     if (typeof _renderFeaturedSpotlight === 'function') _renderFeaturedSpotlight();
+                    if (typeof _initLazyThumbnails === 'function') _initLazyThumbnails();
                     // Slot of the Day — fetch once on first render, timer handles subsequent days
                     if (!gameOfDayId) fetchGameOfDay();
                     else applyGameOfDayBadge();
@@ -908,9 +909,13 @@ function renderGames() {
 
         function createGameCard(game) {
             const { hotIds: _hotIds, newIds: _newIds } = _getHotNewCached();
-            const thumbStyle = game.thumbnail
-                ? `background-image: url('${game.thumbnail}'); background-size: cover; background-position: center;`
+            // Thumbnails are lazy-loaded via IntersectionObserver (_initLazyThumbnails).
+            // data-bg stores the URL; the observer applies it only when the card is visible.
+            const hasThumbnail = !!game.thumbnail;
+            const thumbStyle = hasThumbnail
+                ? `background: #1a2332;`
                 : `background: ${game.bgGradient};`;
+            const thumbDataBg = hasThumbnail ? ` data-bg="${game.thumbnail}"` : '';
             const isJackpot = game.tag === 'JACKPOT' || game.tagClass === 'tag-jackpot';
             const isHot  = game.tag === 'HOT'  || game.tagClass === 'tag-hot';
             const isNew  = game.tag === 'NEW'  || game.tagClass === 'tag-new';
@@ -976,7 +981,7 @@ function renderGames() {
             return `
                 <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="if(typeof _compareMode!=='undefined'&&_compareMode){_addToCompare('${game.id}');this.classList.toggle('compare-selected',typeof _compareGames!=='undefined'&&_compareGames.indexOf('${game.id}')>=0);}else{openSlot('${game.id}');}" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
                     <button class="fav-btn${favored ? ' fav-active' : ''}" data-game-id="${game.id}" title="${favored ? 'Remove from favourites' : 'Add to favourites'}" onclick="event.stopPropagation(); (function(btn){var nowFav=toggleFavorite('${game.id}'); btn.textContent=nowFav?'\u2764\uFE0F':'\u2661'; btn.title=nowFav?'Remove from favourites':'Add to favourites'; btn.classList.add('fav-active'); setTimeout(function(){btn.classList.remove('fav-active');},350); updateFavTabBadge();})(this)">${favIcon}</button>
-                    <div class="game-thumbnail" style="${thumbStyle}">
+                    <div class="game-thumbnail" style="${thumbStyle}"${thumbDataBg}>
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
                         <div class="card-anim-preview" style="background-image:url('assets/backgrounds/slots/${game.id}_bg.webp')" onerror="this.classList.add('hidden')">
                             <span class="preview-badge">&#9654; PREVIEW</span>
@@ -1211,6 +1216,8 @@ function renderGames() {
             if (countEl) countEl.textContent = `${filtered.length} game${filtered.length !== 1 ? 's' : ''}`;
             // Re-apply hide/show search filter after every render
             if (typeof _applyLobbySearch === 'function') _applyLobbySearch();
+            // Lazy-load thumbnails for newly rendered cards
+            if (typeof _initLazyThumbnails === 'function') _initLazyThumbnails();
         }
 
 
@@ -2595,3 +2602,59 @@ function _renderFeaturedSpotlight() {
 }
 
 /* ─ END LOBBY VISUAL OVERHAUL ─ */
+
+/* ═══════════════════════════════════════════════════════════════
+   LAZY THUMBNAIL LOADER — 2026-02-27
+   Uses IntersectionObserver to defer loading game thumbnails until
+   they are about to scroll into view, preventing all ~120 HD images
+   (~20 MB WebP / ~150 MB PNG) from being fetched simultaneously.
+   ═══════════════════════════════════════════════════════════════ */
+
+(function() {
+  'use strict';
+
+  var _thumbObserver = null;
+
+  function _initLazyThumbnails() {
+    if (!('IntersectionObserver' in window)) {
+      // Fallback: apply all immediately for browsers without IO support.
+      document.querySelectorAll('.game-thumbnail[data-bg]').forEach(function(el) {
+        _applyBg(el);
+      });
+      return;
+    }
+    if (!_thumbObserver) {
+      _thumbObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            _applyBg(entry.target);
+            _thumbObserver.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '200px 0px', threshold: 0 });
+    }
+    document.querySelectorAll('.game-thumbnail[data-bg]').forEach(function(el) {
+      _thumbObserver.observe(el);
+    });
+  }
+
+  /** Apply background image, preferring WebP over PNG for smaller file sizes. */
+  function _applyBg(el) {
+    var src = el.getAttribute('data-bg');
+    if (!src) return;
+    el.removeAttribute('data-bg');
+    el.style.backgroundSize     = 'cover';
+    el.style.backgroundPosition = 'center';
+    var webpSrc = src.replace(/\.png$/, '.webp');
+    if (webpSrc !== src) {
+      var probe = new Image();
+      probe.onload  = function() { el.style.backgroundImage = 'url(\'' + webpSrc + '\')'; };
+      probe.onerror = function() { el.style.backgroundImage = 'url(\'' + src + '\')'; };
+      probe.src = webpSrc;
+    } else {
+      el.style.backgroundImage = 'url(\'' + src + '\')';
+    }
+  }
+
+  window._initLazyThumbnails = _initLazyThumbnails;
+})();
