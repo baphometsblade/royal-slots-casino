@@ -412,6 +412,7 @@ function fetchGameStats() {
         }
 
 function renderGames() {
+            renderLobbyChallengeWidget();
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -1772,3 +1773,64 @@ function renderGames() {
                     '</div>';
             }).join('');
         }
+
+        // ── Lobby Challenge Widget ────────────────────────────────
+        function _getDailyChallengeState() {
+            try {
+                var raw = localStorage.getItem('matrixChallenges');
+                var state = raw ? JSON.parse(raw) : null;
+                var today = new Date().toISOString().slice(0, 10);
+                if (!state || state.date !== today) return { date: today, progress: {}, completed: [] };
+                return state;
+            } catch(e) { return { date: new Date().toISOString().slice(0, 10), progress: {}, completed: [] }; }
+        }
+
+        function renderLobbyChallengeWidget() {
+            var container = document.getElementById('lobbyChallengeWidget');
+            if (!container) return;
+
+            var challenges = (typeof DAILY_CHALLENGES !== 'undefined' && DAILY_CHALLENGES) || [
+                { id: 'spins_20',   label: 'Spin It Up',   target: 20,  reward: 100, icon: '🎰' },
+                { id: 'games_3',    label: 'Game Hopper',  target: 3,   reward: 100, icon: '🎮' },
+                { id: 'win_once',   label: 'Lucky Break',  target: 1,   reward: 75,  icon: '🍀' },
+                { id: 'big_win_50', label: 'High Roller',  target: 50,  reward: 500, icon: '💥' },
+                { id: 'bonus_1',    label: 'Bonus Hunter', target: 1,   reward: 300, icon: '🎁' },
+                { id: 'wager_500',  label: 'Whale Watch',  target: 500, reward: 200, icon: '🐋' },
+                { id: 'streak_3',   label: 'Hot Streak',   target: 3,   reward: 250, icon: '🔥' },
+                { id: 'spins_50',   label: 'Spin Machine', target: 50,  reward: 150, icon: '⚡' },
+            ];
+
+            var state = _getDailyChallengeState();
+            var doneCount = state.completed.length;
+            var total = challenges.length;
+
+            // Show first 3 challenges
+            var shown = challenges.slice(0, 3);
+
+            var html = '<div class="lc-header">'
+                + '<span class="lc-title">Today\'s Challenges</span>'
+                + '<span class="lc-progress">' + doneCount + '/' + total + ' complete</span>'
+                + '<button class="lc-view-all" onclick="openStatsModal && openStatsModal()">View All</button>'
+                + '</div>'
+                + '<div class="lc-items">';
+
+            shown.forEach(function(ch) {
+                var prog = Math.min(state.progress[ch.id] || 0, ch.target);
+                var done = state.completed.indexOf(ch.id) >= 0;
+                var pct = Math.round((prog / ch.target) * 100);
+                html += '<div class="lc-item' + (done ? ' lc-done' : '') + '">'
+                    + '<span class="lc-icon">' + ch.icon + '</span>'
+                    + '<div class="lc-info">'
+                    +   '<div class="lc-label">' + ch.label + '</div>'
+                    +   '<div class="lc-bar"><div class="lc-bar-fill" style="width:' + pct + '%"></div></div>'
+                    + '</div>'
+                    + '<span class="lc-reward">' + (done ? '✓' : '+$' + (ch.reward || 0)) + '</span>'
+                    + '</div>';
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        window.refreshLobbyChallengeWidget = renderLobbyChallengeWidget;

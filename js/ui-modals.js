@@ -17,14 +17,14 @@
 
         // ── Daily Challenges ──────────────────────────────────────
         const DAILY_CHALLENGES = [
-            { id: 'spins_20',   label: 'Spin It Up',    desc: 'Complete 20 spins today',              target: 20,  xp: 50,  icon: '🎰', type: 'spins'   },
-            { id: 'spins_50',   label: 'Spin Machine',  desc: 'Complete 50 spins today',              target: 50,  xp: 100, icon: '⚡', type: 'spins'   },
-            { id: 'games_3',    label: 'Game Hopper',   desc: 'Play 3 different games today',         target: 3,   xp: 75,  icon: '🎮', type: 'games'   },
-            { id: 'win_once',   label: 'Lucky Break',   desc: 'Win at least once today',              target: 1,   xp: 40,  icon: '🍀', type: 'wins'    },
-            { id: 'big_win_50', label: 'High Roller',   desc: 'Land a win worth 50x your bet',        target: 50,  xp: 150, icon: '💥', type: 'winMult' },
-            { id: 'bonus_1',    label: 'Bonus Hunter',  desc: 'Trigger a bonus or free spins round',  target: 1,   xp: 125, icon: '🎁', type: 'bonuses' },
-            { id: 'wager_500',  label: 'Whale Watch',   desc: 'Wager $500 total today',               target: 500, xp: 100, icon: '🐋', type: 'wager'   },
-            { id: 'streak_3',   label: 'Hot Streak',    desc: 'Win 3 spins in a row',                 target: 3,   xp: 120, icon: '🔥', type: 'streak'  },
+            { id: 'spins_20',   label: 'Spin It Up',    desc: 'Complete 20 spins today',              target: 20,  xp: 50,  reward: 100, icon: '🎰', type: 'spins'   },
+            { id: 'spins_50',   label: 'Spin Machine',  desc: 'Complete 50 spins today',              target: 50,  xp: 100, reward: 150, icon: '⚡', type: 'spins'   },
+            { id: 'games_3',    label: 'Game Hopper',   desc: 'Play 3 different games today',         target: 3,   xp: 75,  reward: 100, icon: '🎮', type: 'games'   },
+            { id: 'win_once',   label: 'Lucky Break',   desc: 'Win at least once today',              target: 1,   xp: 40,  reward: 75,  icon: '🍀', type: 'wins'    },
+            { id: 'big_win_50', label: 'High Roller',   desc: 'Land a win worth 50x your bet',        target: 50,  xp: 150, reward: 500, icon: '💥', type: 'winMult' },
+            { id: 'bonus_1',    label: 'Bonus Hunter',  desc: 'Trigger a bonus or free spins round',  target: 1,   xp: 125, reward: 300, icon: '🎁', type: 'bonuses' },
+            { id: 'wager_500',  label: 'Whale Watch',   desc: 'Wager $500 total today',               target: 500, xp: 100, reward: 200, icon: '🐋', type: 'wager'   },
+            { id: 'streak_3',   label: 'Hot Streak',    desc: 'Win 3 spins in a row',                 target: 3,   xp: 120, reward: 250, icon: '🔥', type: 'streak'  },
         ];
         const CHALLENGE_STORAGE_KEY = 'matrixChallenges';
 
@@ -363,8 +363,15 @@
                     const prog = state.progress[ch.id] || 0;
                     if (prog >= ch.target && !state.completed.includes(ch.id)) {
                         state.completed.push(ch.id);
-                        if (typeof gainXP === 'function') gainXP(ch.xp);
+                        awardXP(ch.xp);
+                        // Cash reward
+                        if ((ch.reward || 0) > 0) {
+                            balance += ch.reward;
+                            if (typeof saveBalance === 'function') saveBalance();
+                            if (typeof updateBalance === 'function') updateBalance();
+                        }
                         _showChallengeCompleteToast(ch);
+                        if (typeof window.refreshLobbyChallengeWidget === 'function') window.refreshLobbyChallengeWidget();
                     }
                 });
                 _saveChallengeState(state);
@@ -639,7 +646,7 @@
                 <div style="font-size:28px;margin-bottom:4px;">${ch.icon}</div>
                 <div style="font-size:13px;letter-spacing:1px;margin-bottom:2px;">✅ CHALLENGE COMPLETE!</div>
                 <div style="font-size:15px;">${ch.label}</div>
-                <div style="font-size:12px;color:#6ee7b7;margin-top:4px;">+${ch.xp} XP awarded!</div>
+                <div style="font-size:12px;color:#6ee7b7;margin-top:4px;">+${ch.xp} XP${ch.reward ? ' · +$' + ch.reward : ''} awarded!</div>
             `;
             document.body.appendChild(el);
             setTimeout(() => {
@@ -1193,6 +1200,30 @@
             }
             saveXP();
             updateXPDisplay();
+            // Check milestone BEFORE generic levelledUp toast
+            const _MILESTONE_LEVELS = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100];
+            const _MILESTONE_PERKS = {
+                5: 'Lucky Charm Unlocked', 10: 'High Roller Status',
+                15: 'Fortune Seeker', 20: 'Gold Member',
+                25: 'Platinum Insider', 30: 'Diamond Hand',
+                40: 'Elite Spinner', 50: 'Casino Legend',
+                75: 'Master of the Reels', 100: 'Hall of Fame'
+            };
+            if (levelledUp && _MILESTONE_LEVELS.includes(playerLevel)) {
+                try {
+                    const _claimed = JSON.parse(localStorage.getItem('matrixLevelMilestones') || '[]');
+                    if (!_claimed.includes(playerLevel)) {
+                        _claimed.push(playerLevel);
+                        localStorage.setItem('matrixLevelMilestones', JSON.stringify(_claimed));
+                        const _bonus = playerLevel * 50;
+                        balance += _bonus;
+                        if (typeof saveBalance === 'function') saveBalance();
+                        if (typeof updateBalance === 'function') updateBalance();
+                        _openLevelMilestoneModal(playerLevel, _bonus, _MILESTONE_PERKS[playerLevel] || 'New Milestone');
+                        levelledUp = false; // suppress generic toast when modal is shown
+                    }
+                } catch(e) {}
+            }
             if (levelledUp) {
                 // Award free spins on level up — scales slightly with level
                 const freeSpinsCount = 5 + Math.floor((playerLevel - 1) / 5); // 5 base, +1 every 5 levels
@@ -1215,6 +1246,44 @@
                 }
             }
         }
+        function _openLevelMilestoneModal(level, bonus, perk) {
+            const modal = document.getElementById('levelMilestoneModal');
+            if (!modal) return;
+            const badge = document.getElementById('lmBadge');
+            const title = document.getElementById('lmTitle');
+            const perkEl = document.getElementById('lmPerk');
+            const rewardEl = document.getElementById('lmRewardAmount');
+            const btn = document.getElementById('lmClaimBtn');
+            if (badge) badge.textContent = level;
+            if (title) title.textContent = 'Level ' + level + ' Reached!';
+            if (perkEl) perkEl.textContent = perk;
+            if (rewardEl) rewardEl.textContent = '$0';
+            modal.style.display = 'flex';
+            // Animate reward counter
+            if (rewardEl) {
+                let current = 0;
+                const step = Math.ceil(bonus / 40);
+                const ticker = setInterval(function() {
+                    current = Math.min(current + step, bonus);
+                    rewardEl.textContent = '$' + current.toLocaleString();
+                    if (current >= bonus) clearInterval(ticker);
+                }, 25);
+            }
+            // Confetti burst
+            if (typeof triggerConfetti === 'function') {
+                triggerConfetti(80);
+            } else if (typeof burstParticles === 'function') {
+                burstParticles(80, window.innerWidth / 2, window.innerHeight / 2);
+            }
+            if (btn) {
+                btn.onclick = function() {
+                    modal.style.display = 'none';
+                    showToast('🏆 Level ' + level + ' Milestone! +$' + bonus.toLocaleString() + ' credited!', 'levelup');
+                };
+            }
+            modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
+        }
+
 
 
         function updateXPDisplay() {
