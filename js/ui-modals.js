@@ -2928,3 +2928,29 @@
         window.openAvatarPicker = openAvatarPicker;
         window.selectAvatar = selectAvatar;
         window.getAvatar = getAvatar;
+
+        /* ── Sprint 43: Keyboard Shortcuts Overlay ───────── */
+        var KB_SHORTCUTS = [
+            { key: 'Space', desc: 'Spin / Stop reels' },
+            { key: 'T', desc: 'Toggle turbo mode' },
+            { key: 'M', desc: 'Toggle sound on/off' },
+            { key: 'I', desc: 'Toggle paytable/game info' },
+            { key: 'Esc', desc: 'Close current modal / Back to lobby' },
+            { key: 'F', desc: 'Toggle fullscreen' },
+            { key: '1-5', desc: 'Bet preset shortcuts' },
+            { key: '?', desc: 'Show this shortcuts overlay' },
+            { key: 'S', desc: 'Open stats modal' },
+            { key: 'Q', desc: 'Toggle QA tools (dev)' }
+        ];
+
+        function openShortcutsModal() {
+            var modal = document.getElementById('shortcutsModal');
+            var grid = document.getElementById('kbGrid');
+            if (!modal || !grid) return;
+            grid.innerHTML = KB_SHORTCUTS.map(function(s) {
+                return '<div class="kb-row"><kbd class="kb-key">' + s.key + '</kbd><span class="kb-desc">' + s.desc + '</span></div>';
+            }).join('');
+            modal.style.display = 'flex';
+        }
+
+        window.openShortcutsModal = openShortcutsModal;

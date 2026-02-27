@@ -2318,3 +2318,68 @@ function renderGames() {
         window.addToCompare = addToCompare;
         window.clearComparison = clearComparison;
         window.openComparison = openComparison;
+
+        /* ── Sprint 43: Game Recommendations ─────────────── */
+        var _recCollapsed = false;
+
+        function renderRecommendations() {
+            var section = document.getElementById('recSection');
+            var grid = document.getElementById('recGrid');
+            if (!section || !grid || typeof GAMES === 'undefined') return;
+            var key = typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'recentlyPlayed';
+            var recent = [];
+            try { recent = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+            if (recent.length < 3) { section.style.display = 'none'; return; }
+            // Gather traits from recently played games
+            var providerCount = {};
+            var mechSet = new Set();
+            recent.forEach(function(id) {
+                var g = GAMES.find(function(x) { return x.id === id; });
+                if (!g) return;
+                providerCount[g.provider] = (providerCount[g.provider] || 0) + 1;
+                if (g.hasFreeSpins) mechSet.add('freeSpins');
+                if (g.hasWilds) mechSet.add('wilds');
+                if (g.tumble) mechSet.add('tumble');
+                if (g.holdAndWin) mechSet.add('holdAndWin');
+            });
+            // Score un-played games
+            var recentSet = new Set(recent);
+            var scored = GAMES.filter(function(g) { return !recentSet.has(g.id); }).map(function(g) {
+                var score = 0;
+                var reason = '';
+                if (providerCount[g.provider]) {
+                    score += providerCount[g.provider] * 3;
+                    reason = 'Same provider';
+                }
+                if (g.hasFreeSpins && mechSet.has('freeSpins')) { score += 2; if (!reason) reason = 'Free Spins'; }
+                if (g.hasWilds && mechSet.has('wilds')) { score += 1; }
+                if (g.tumble && mechSet.has('tumble')) { score += 2; if (!reason) reason = 'Tumble mechanic'; }
+                if (g.holdAndWin && mechSet.has('holdAndWin')) { score += 2; if (!reason) reason = 'Hold & Win'; }
+                return { game: g, score: score, reason: reason || 'Popular pick' };
+            }).filter(function(x) { return x.score > 0; }).sort(function(a, b) { return b.score - a.score; }).slice(0, 6);
+            if (scored.length < 2) { section.style.display = 'none'; return; }
+            grid.innerHTML = scored.map(function(item) {
+                var g = item.game;
+                return '<div class="rec-card" onclick="openSlot(\'' + g.id + '\')">' +
+                    '<div class="rec-thumb" style="background:' + (g.bgGradient || '#1a1a2e') + '"></div>' +
+                    '<div class="rec-info">' +
+                        '<div class="rec-name">' + (g.name || g.id) + '</div>' +
+                        '<div class="rec-reason">' + item.reason + '</div>' +
+                    '</div></div>';
+            }).join('');
+            section.style.display = _recCollapsed ? 'none' : 'block';
+        }
+
+        function toggleRecSection() {
+            _recCollapsed = !_recCollapsed;
+            var section = document.getElementById('recSection');
+            var btn = document.getElementById('recCollapseBtn');
+            if (section) {
+                var grid = document.getElementById('recGrid');
+                if (grid) grid.style.display = _recCollapsed ? 'none' : 'grid';
+                if (btn) btn.textContent = _recCollapsed ? 'Show' : 'Hide';
+            }
+        }
+
+        window.renderRecommendations = renderRecommendations;
+        window.toggleRecSection = toggleRecSection;

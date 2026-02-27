@@ -203,6 +203,7 @@
             updateXPDisplay();
             renderVipBadge();
             startWinTicker();
+            if (typeof renderRecommendations === 'function') renderRecommendations();
             updateAuthButton();
             await syncServerSession();
 
@@ -277,8 +278,9 @@
                     }
                     break;
                 default:
-                    if ((e.key === '?' || e.key === '/') && slotOpen) {
-                        if (typeof _toggleHotkeySheet === 'function') _toggleHotkeySheet();
+                    if (e.key === '?' || e.key === '/') {
+                        if (slotOpen && typeof _toggleHotkeySheet === 'function') { _toggleHotkeySheet(); }
+                        else if (typeof openShortcutsModal === 'function') { openShortcutsModal(); }
                         return;
                     }
                     break;

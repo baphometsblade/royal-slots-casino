@@ -15529,3 +15529,59 @@ button.active .filter-tab-count {
     cursor: pointer; padding: 0 4px; line-height: 1;
 }
 .wg-clear:hover { color: #ef4444; }
+
+/* ═══ Sprint 43: Game Recommendations ═══ */
+.rec-section { margin: 12px 0; }
+.rec-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+}
+.rec-title { color: #ffd700; font-size: 1rem; margin: 0; }
+.rec-collapse {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px; padding: 4px 10px; color: #aaa; font-size: 0.75rem;
+    cursor: pointer;
+}
+.rec-collapse:hover { color: #fff; }
+.rec-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+.rec-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; overflow: hidden; cursor: pointer;
+    transition: all 0.2s;
+}
+.rec-card:hover { border-color: rgba(255,215,0,0.3); transform: translateY(-2px); }
+.rec-thumb { height: 60px; }
+.rec-info { padding: 8px; }
+.rec-name { font-size: 0.8rem; font-weight: 600; color: #e0e0e0; margin-bottom: 2px; }
+.rec-reason { font-size: 0.65rem; color: #888; }
+
+/* ═══ Sprint 43: Keyboard Shortcuts Overlay ═══ */
+.btn-help {
+    font-weight: 700; font-size: 0.9rem;
+}
+.kb-card {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(255,215,0,0.2); border-radius: 16px;
+    padding: 24px; max-width: 400px; width: 90%; color: #e0e0e0;
+}
+.kb-title { color: #ffd700; font-size: 1.2rem; text-align: center; margin-bottom: 16px; }
+.kb-grid { display: flex; flex-direction: column; gap: 8px; }
+.kb-row {
+    display: flex; align-items: center; gap: 12px; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.kb-key {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px; padding: 4px 10px; color: #ffd700; font-size: 0.8rem;
+    font-family: monospace; min-width: 40px; text-align: center;
+}
+.kb-desc { color: #ccc; font-size: 0.85rem; }
+.kb-close {
+    display: block; margin: 16px auto 0; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    padding: 8px 24px; color: #aaa; cursor: pointer; font-size: 0.85rem;
+}
+.kb-close:hover { color: #fff; }
