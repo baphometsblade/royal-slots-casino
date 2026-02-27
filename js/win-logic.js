@@ -723,6 +723,9 @@
             // Sprint 53: Lucky symbol tracker (wins only)
             if (winAmount > 0 && typeof trackLuckySymbol === 'function') trackLuckySymbol(symbols);
 
+            // Sprint 55: Record bet for history chart
+            if (typeof recordBetHistory === 'function') recordBetHistory();
+
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
 

@@ -553,6 +553,7 @@
                 <button class="amb-toggle" id="ambToggle" onclick="if(typeof toggleAmbientSound==='function')toggleAmbientSound()" title="Toggle ambient sound">🔊</button>
                 <span class="st-timer" id="stTimer" title="Session time">00:00</span>
                 <span class="vm-meter" id="vmMeter" title="Volatility"><span class="vm-seg"></span><span class="vm-seg"></span><span class="vm-seg"></span><span class="vm-seg"></span><span class="vm-seg"></span></span>
+                <input type="range" class="qv-slider" id="qvSlider" min="0" max="100" value="70" title="Volume" oninput="if(typeof updateQuickVolume==='function')updateQuickVolume(this.value)">
                 <div class="slot-top-right">
                     <button class="buy-bonus-btn" id="buyBonusBtn" onclick="buyBonus()" style="display:none;" title="Buy Free Spins">
                         <span class="buy-bonus-icon">⚡</span>
@@ -654,6 +655,7 @@
                     </div>
                     <button class="slot-bet-btn" id="betUpBtn" onclick="adjustBet(1)">&#43;</button>
                 </div>
+                <svg class="bh-chart" id="bhChart" viewBox="0 0 60 16" preserveAspectRatio="none" style="display:none;"><polyline id="bhLine" fill="none" stroke="#60a5fa" stroke-width="1.5"/></svg>
                 <input type="range" class="bet-range" id="betRange" min="50" max="5000" step="50" value="50" style="display:none;">
                 <span id="minBet" style="display:none;">50</span>
                 <span id="maxBet" style="display:none;">5000</span>

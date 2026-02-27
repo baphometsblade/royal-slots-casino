@@ -400,6 +400,54 @@
             if (el) { el.style.display = 'none'; el.innerHTML = ''; }
         }
 
+        // Sprint 55: Quick volume slider
+        function updateQuickVolume(val) {
+            var v = parseInt(val, 10);
+            if (isNaN(v)) return;
+            if (typeof appSettings !== 'undefined') appSettings.soundVolume = v;
+            if (typeof SoundManager !== 'undefined' && SoundManager.setVolume) SoundManager.setVolume(v / 100);
+            try { localStorage.setItem('matrixSoundVolume', String(v)); } catch(e) {}
+        }
+        function _initQuickVolume() {
+            var sl = document.getElementById('qvSlider');
+            if (!sl) return;
+            var v = 70;
+            if (typeof appSettings !== 'undefined' && appSettings.soundVolume != null) v = appSettings.soundVolume;
+            sl.value = v;
+        }
+
+        // Sprint 55: Bet history mini-chart
+        var _bhData = [];
+        var _bhMax = 10;
+        function recordBetHistory() {
+            if (typeof currentBet === 'undefined') return;
+            _bhData.push(currentBet);
+            if (_bhData.length > _bhMax) _bhData.shift();
+            _drawBetChart();
+        }
+        function _drawBetChart() {
+            var svg = document.getElementById('bhChart');
+            var line = document.getElementById('bhLine');
+            if (!svg || !line || _bhData.length < 2) return;
+            svg.style.display = '';
+            var min = Math.min.apply(null, _bhData);
+            var max = Math.max.apply(null, _bhData);
+            var range = max - min || 1;
+            var pts = _bhData.map(function(v, i) {
+                var x = (i / (_bhData.length - 1)) * 58 + 1;
+                var y = 15 - ((v - min) / range) * 13;
+                return x.toFixed(1) + ',' + y.toFixed(1);
+            });
+            line.setAttribute('points', pts.join(' '));
+        }
+        function _resetBetHistory() {
+            _bhData = [];
+            var svg = document.getElementById('bhChart');
+            var line = document.getElementById('bhLine');
+            if (svg) svg.style.display = 'none';
+            if (line) line.setAttribute('points', '');
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1604,6 +1652,7 @@
             if (typeof trackGameExplored === 'function') trackGameExplored(gameId);
             _startSessionTimerDisplay();
             updateVolatilityMeter();
+            _initQuickVolume();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2212,6 +2261,7 @@
             _stopSessionTimerDisplay();
             _resetHotCold();
             _resetLuckySymbol();
+            _resetBetHistory();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
