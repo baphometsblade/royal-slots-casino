@@ -603,6 +603,21 @@
             if (el) el.style.display = 'none';
         }
 
+        /* ── Sprint 61: Session ROI Meter ────────────────── */
+        function updateROIMeter() {
+            var el = document.getElementById('roiMeter');
+            if (!el) return;
+            if (_sessTotalBet <= 0) { el.style.display = 'none'; return; }
+            var roi = (_sessTotalWon / _sessTotalBet * 100).toFixed(0);
+            el.textContent = 'ROI: ' + roi + '%';
+            el.className = 'roi-meter ' + (roi >= 100 ? 'roi-pos' : 'roi-neg');
+            el.style.display = '';
+        }
+        function _resetROIMeter() {
+            var el = document.getElementById('roiMeter');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1812,6 +1827,7 @@
             _initProfitTarget();
             _resetSessionBestWin();
             _initSpinPace();
+            _resetROIMeter();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2428,6 +2444,7 @@
             _resetProfitTarget();
             _resetSessionBestWin();
             _resetSpinPace();
+            _resetROIMeter();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

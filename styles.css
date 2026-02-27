@@ -15944,3 +15944,20 @@ button.active .filter-tab-count {
     text-align: center; font-size: 0.65rem; color: #94a3b8;
     padding: 2px 6px; margin: 2px auto;
 }
+
+/* ══ Sprint 61: ROI Meter ══ */
+.roi-meter {
+    text-align: center; font-size: 0.7rem; color: #94a3b8;
+    padding: 2px 8px; margin: 2px auto; max-width: 120px;
+    border-radius: 8px; font-weight: 600;
+}
+.roi-pos { color: #4ade80; background: rgba(74,222,128,0.1); }
+.roi-neg { color: #f87171; background: rgba(248,113,113,0.1); }
+
+/* ══ Sprint 61: Play Count Badge ══ */
+.pc-count {
+    position: absolute; top: 6px; left: 6px;
+    background: rgba(30,41,59,0.85); color: #94a3b8;
+    font-size: 0.6rem; padding: 1px 5px; border-radius: 4px;
+    font-weight: 500;
+}
