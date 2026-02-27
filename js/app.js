@@ -188,6 +188,17 @@
             loadWheelState();
             initBase();
 
+            // Sprint 42: Sync volume slider with stored value
+            (function() {
+                var slider = document.getElementById('volSlider');
+                var label = document.getElementById('volLabel');
+                var stored = parseFloat(localStorage.getItem('casinoSoundVolume'));
+                if (!isNaN(stored) && slider) {
+                    slider.value = Math.round(stored * 100);
+                    if (label) label.textContent = Math.round(stored * 100) + '%';
+                }
+            })();
+
             // New systems
             updateXPDisplay();
             renderVipBadge();

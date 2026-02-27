@@ -668,6 +668,8 @@
                 if (typeof autoSaveWinReplay === 'function' && currentGame) {
                     autoSaveWinReplay(currentGame.name, currentGame.id, currentBet, winAmount, symbols);
                 }
+                // Sprint 42: Track win goal progress
+                if (typeof _trackWinGoal === 'function') _trackWinGoal(winAmount);
 
                 // Apply celebration animations based on win size (adjusted thresholds)
                 const isMegaWin = winAmount >= currentBet * 10;

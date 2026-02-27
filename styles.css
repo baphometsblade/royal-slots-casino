@@ -15490,3 +15490,42 @@ button.active .filter-tab-count {
     padding: 8px 24px; color: #aaa; cursor: pointer; font-size: 0.85rem;
 }
 .avp-close:hover { color: #fff; }
+
+/* ═══ Sprint 42: Volume Slider ═══ */
+.vol-slider {
+    width: 60px; height: 4px; accent-color: #ffd700;
+    cursor: pointer; vertical-align: middle;
+}
+.vol-label {
+    color: #888; font-size: 0.65rem; margin-left: 2px;
+    vertical-align: middle; min-width: 28px; display: inline-block;
+}
+
+/* ═══ Sprint 42: Session Win Goal ═══ */
+.wg-set-btn {
+    background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25);
+    border-radius: 6px; padding: 4px 10px; color: #4ade80; font-size: 0.75rem;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.wg-set-btn:hover { background: rgba(74,222,128,0.2); }
+.wg-tracker {
+    display: flex; align-items: center; gap: 8px; margin: 0 4px;
+    padding: 4px 10px; background: rgba(0,0,0,0.3); border-radius: 6px;
+}
+.wg-track {
+    width: 60px; height: 6px; background: rgba(255,255,255,0.08);
+    border-radius: 3px; overflow: hidden;
+}
+.wg-fill {
+    height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s;
+}
+.wg-blue { background: #60a5fa; }
+.wg-yellow { background: #facc15; }
+.wg-green { background: #4ade80; }
+.wg-gold { background: linear-gradient(90deg, #ffd700, #ff8c00); }
+.wg-label { color: #aaa; font-size: 0.7rem; white-space: nowrap; }
+.wg-clear {
+    background: none; border: none; color: #666; font-size: 1rem;
+    cursor: pointer; padding: 0 4px; line-height: 1;
+}
+.wg-clear:hover { color: #ef4444; }

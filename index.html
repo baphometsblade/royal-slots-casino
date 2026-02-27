@@ -92,6 +92,8 @@
                     <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
                     WALLET</button>
                 <button class="btn btn-user" id="soundToggle" onclick="toggleSound()" title="Toggle sound" aria-label="Toggle sound">&#x1F50A;</button>
+                <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="50" oninput="if(typeof setSoundVolume==='function'){setSoundVolume(this.value/100);document.getElementById('volLabel').textContent=this.value+'%'}" title="Volume">
+                <span class="vol-label" id="volLabel">50%</span>
                 <button class="btn btn-user btn-notif" id="notifBell" onclick="openNotificationPanel()" title="Notifications" aria-label="Notifications">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z"/></svg>
                     <span class="notif-badge" id="notifBadge" style="display:none">0</span>
@@ -491,6 +493,12 @@
                 </div>
                 <div class="session-timer" id="sessionTimer" title="Session time">⏱ <span id="sessionTimerValue">0m</span></div>
                 <button class="brm-set-btn" id="brmSetBtn" onclick="if(typeof openBankrollPrompt==='function')openBankrollPrompt()" title="Set session budget">💰 Budget</button>
+                <button class="wg-set-btn" id="wgSetBtn" onclick="if(typeof openWinGoalPrompt==='function')openWinGoalPrompt()" title="Set win goal">🎯 Goal</button>
+                <div class="wg-tracker" id="wgTracker" style="display:none;">
+                    <div class="wg-track"><div class="wg-fill" id="wgFill"></div></div>
+                    <span class="wg-label" id="wgLabel">$0 / $0</span>
+                    <button class="wg-clear" onclick="if(typeof clearWinGoal==='function')clearWinGoal()" title="Remove goal">&times;</button>
+                </div>
                 <div class="slot-top-right">
                     <button class="buy-bonus-btn" id="buyBonusBtn" onclick="buyBonus()" style="display:none;" title="Buy Free Spins">
                         <span class="buy-bonus-icon">⚡</span>

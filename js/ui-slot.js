@@ -92,6 +92,62 @@
             if (bar) bar.style.display = 'none';
         }
 
+        /* ── Sprint 42: Session Win Goal ─────────────────── */
+        var _wgTarget = 0;
+        var _wgWinTotal = 0;
+        var _wgReached = false;
+
+        function openWinGoalPrompt() {
+            var amount = prompt('Set your session win goal ($):', '200');
+            if (!amount) return;
+            var val = parseFloat(amount);
+            if (isNaN(val) || val <= 0) return;
+            _wgTarget = val;
+            _wgWinTotal = 0;
+            _wgReached = false;
+            _updateWinGoalTracker();
+            var tracker = document.getElementById('wgTracker');
+            if (tracker) tracker.style.display = 'flex';
+        }
+
+        function clearWinGoal() {
+            _wgTarget = 0;
+            _wgWinTotal = 0;
+            _wgReached = false;
+            var tracker = document.getElementById('wgTracker');
+            if (tracker) tracker.style.display = 'none';
+        }
+
+        function _trackWinGoal(winAmount) {
+            if (_wgTarget <= 0 || _wgReached) return;
+            _wgWinTotal += winAmount;
+            _updateWinGoalTracker();
+            if (_wgWinTotal >= _wgTarget && !_wgReached) {
+                _wgReached = true;
+                showMessage('Win goal reached! $' + _wgWinTotal.toFixed(0) + ' won!', 'win');
+                if (typeof burstParticles === 'function') burstParticles(window.innerWidth / 2, window.innerHeight / 2, 40);
+            }
+        }
+
+        function _updateWinGoalTracker() {
+            var fill = document.getElementById('wgFill');
+            var label = document.getElementById('wgLabel');
+            if (!fill || !label) return;
+            var pct = Math.min(100, (_wgWinTotal / _wgTarget) * 100);
+            fill.style.width = pct + '%';
+            label.textContent = '$' + _wgWinTotal.toFixed(0) + ' / $' + _wgTarget.toFixed(0);
+            if (_wgReached) fill.className = 'wg-fill wg-gold';
+            else if (pct >= 75) fill.className = 'wg-fill wg-green';
+            else if (pct >= 50) fill.className = 'wg-fill wg-yellow';
+            else fill.className = 'wg-fill wg-blue';
+        }
+
+        function _resetWinGoalOnClose() {
+            _wgTarget = 0; _wgWinTotal = 0; _wgReached = false;
+            var tracker = document.getElementById('wgTracker');
+            if (tracker) tracker.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1876,6 +1932,7 @@
             _exitDemoMode();
             _stopSessionTimer();
             _resetBankrollOnClose();
+            _resetWinGoalOnClose();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
