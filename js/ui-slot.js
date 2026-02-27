@@ -1526,6 +1526,13 @@
                 _initRtpGauge();         // 64 — RTP gauge
                 _initBalSparkline();     // 65 — balance sparkline
                 _resetCashoutHint();     // 66 — cashout hint
+        _resetSpinCounter();     // 67 — spin counter
+        _resetRecentOutcomes();  // 68 — recent outcomes
+        _resetSessionHiLo();     // 69 — session hi-lo
+        _initBalBuffer();        // 70 — balance buffer
+        _resetSymbolHeat();      // 71 — symbol heat
+        _resetLossRecovery();    // 72 — loss recovery
+        _resetScatterAlert();    // 73 — scatter alert
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1814,6 +1821,7 @@
             _clearApProgress();
             _hideKbHints();
             _hideQuickBetPresets();  // 60
+        _showSessionSummary();   // 74 — session summary
             _resetCashoutHint();     // 66
             // Sprint 41 — hide quick switch
             var _qss = document.getElementById('quickSwitchStrip'); if (_qss) _qss.style.display = 'none';
@@ -2269,6 +2277,10 @@
             _checkBalanceMilestone();    // Sprint 58 — balance milestones
             _updateSlotNet();            // Sprint 59 — session net
             _updateBalSparkline(balance); // Sprint 65 — balance sparkline
+        _incrementSpinCounter();      // Sprint 67 — spin counter
+        _updateBalBuffer();           // Sprint 70 — balance buffer
+        _updateSessionHiLo(balance);  // Sprint 69 — session hi-lo
+        _updateLossRecovery(balance); // Sprint 72 — loss recovery
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
@@ -2929,6 +2941,9 @@
                 if (freeSpinsActive || winAmount >= currentBet * 5) _incrementFeatureTrigger(); // 61
                 _updateLossStreak(true);             // 63 — reset loss streak on win
                 _checkCashoutHint();                 // 66 — cashout hint check
+                _addRecentOutcome(true);           // Sprint 68
+                _updateSymbolHeat(currentGrid);    // Sprint 71
+                _checkScatterAlert(currentGrid);   // Sprint 73
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3067,6 +3082,8 @@
             _updateWinRate(winAmount > 0); // Sprint 56
             _updateApProgress();           // Sprint 54
             _updateLossStreak(false);   // 63 — increment loss streak on no-win spin
+                _addRecentOutcome(false);          // Sprint 68
+                _checkScatterAlert(currentGrid);   // Sprint 73
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -6464,6 +6481,9 @@
                 if (freeSpinsActive || winAmount >= currentBet * 5) _incrementFeatureTrigger(); // 61
                 _updateLossStreak(true);             // 63 — reset loss streak on win
                 _checkCashoutHint();                 // 66 — cashout hint check
+                _addRecentOutcome(true);           // Sprint 68
+                _updateSymbolHeat(currentGrid);    // Sprint 71
+                _checkScatterAlert(currentGrid);   // Sprint 73
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6567,6 +6587,8 @@
             _updateWinRate(winAmount > 0); // Sprint 56
             _updateApProgress();           // Sprint 54
             _updateLossStreak(false);   // 63 — increment loss streak on no-win spin
+                _addRecentOutcome(false);          // Sprint 68
+                _checkScatterAlert(currentGrid);   // Sprint 73
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -10652,4 +10674,212 @@ function _checkCashoutHint() {
             setTimeout(function() { el.style.display = 'none'; }, 5000);
         }
     }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 67-74: HUD ENHANCEMENTS BATCH 3
+
+var _DSN = String.fromCharCode(36);
+
+// Sprint 67: Spin Counter
+var _sessionSpinCount = 0;
+
+function _resetSpinCounter() {
+    _sessionSpinCount = 0;
+    var el = document.getElementById("spinCounter");
+    if (el) el.style.display = "none";
+}
+
+function _incrementSpinCounter() {
+    _sessionSpinCount++;
+    var el = document.getElementById("spinCounter");
+    if (!el) return;
+    el.textContent = "\uD83C\uDFB0 " + _sessionSpinCount + "x";
+    el.style.display = "";
+}
+
+// Sprint 68: Recent Outcomes
+var _recentOutcomes = [];
+var _RO_MAX = 10;
+
+function _resetRecentOutcomes() {
+    _recentOutcomes = [];
+    var el = document.getElementById("recentOutcomes");
+    if (el) { el.innerHTML = ""; el.style.display = "none"; }
+}
+
+function _addRecentOutcome(won) {
+    _recentOutcomes.push(won);
+    if (_recentOutcomes.length > _RO_MAX) _recentOutcomes.shift();
+    var el = document.getElementById("recentOutcomes");
+    if (!el) return;
+    el.innerHTML = "";
+    _recentOutcomes.forEach(function(w) {
+        var d = document.createElement("span");
+        d.className = "ro-dot " + (w ? "ro-win" : "ro-loss");
+        d.textContent = "●";
+        el.appendChild(d);
+    });
+    el.style.display = "";
+}
+
+// Sprint 69: Session Hi-Lo
+var _sessionHi = 0;
+var _sessionLo = Infinity;
+
+function _resetSessionHiLo() {
+    _sessionHi = balance;
+    _sessionLo = balance;
+    var el = document.getElementById("sessionHiLo");
+    if (el) el.style.display = "none";
+}
+
+function _updateSessionHiLo(bal) {
+    if (bal > _sessionHi) _sessionHi = bal;
+    if (bal < _sessionLo) _sessionLo = bal;
+    var el = document.getElementById("sessionHiLo");
+    if (!el) return;
+    var rangeAmt = _sessionHi - _sessionLo;
+    if (rangeAmt < 0.01) { el.style.display = "none"; return; }
+    el.textContent = "\u25B2" + _DSN + _sessionHi.toFixed(2) + " \u25BC" + _DSN + _sessionLo.toFixed(2);
+    el.style.display = "";
+}
+
+// Sprint 70: Balance Buffer
+function _initBalBuffer() {
+    _updateBalBuffer();
+}
+
+function _updateBalBuffer() {
+    var el = document.getElementById("balBuffer");
+    if (!el) return;
+    var bet = currentBet || 0;
+    if (bet <= 0) { el.style.display = "none"; return; }
+    var buf = Math.floor(balance / bet);
+    if (buf < 1) { el.style.display = "none"; return; }
+    el.textContent = "\u25A1 " + buf + "x";
+    el.style.display = "";
+}
+
+// Sprint 71: Symbol Heatmap
+var _symbolFreq = {};
+
+function _resetSymbolHeat() {
+    _symbolFreq = {};
+    var el = document.getElementById("symbolHeat");
+    if (el) { el.innerHTML = ""; el.style.display = "none"; }
+}
+
+function _updateSymbolHeat(grid) {
+    var flat = [];
+    if (Array.isArray(grid)) {
+        grid.forEach(function(col) {
+            if (Array.isArray(col)) col.forEach(function(s) { flat.push(s); });
+            else flat.push(col);
+        });
+    }
+    flat.forEach(function(sym) {
+        if (!sym) return;
+        _symbolFreq[sym] = (_symbolFreq[sym] || 0) + 1;
+    });
+    var el = document.getElementById("symbolHeat");
+    if (!el) return;
+    var entries = Object.keys(_symbolFreq).map(function(k) { return [k, _symbolFreq[k]]; });
+    entries.sort(function(a,b) { return b[1]-a[1]; });
+    var top = entries.slice(0, 3);
+    if (top.length === 0) { el.style.display = "none"; return; }
+    el.innerHTML = "";
+    top.forEach(function(kv) {
+        var badge = document.createElement("span");
+        badge.className = "sh-badge";
+        badge.textContent = kv[0] + " " + kv[1] + "x";
+        el.appendChild(badge);
+    });
+    el.style.display = "";
+}
+
+// Sprint 72: Loss Recovery
+var _sessionLowPoint = Infinity;
+
+function _resetLossRecovery() {
+    _sessionLowPoint = balance;
+    var el = document.getElementById("lossRecovery");
+    if (el) el.style.display = "none";
+}
+
+function _updateLossRecovery(bal) {
+    if (bal < _sessionLowPoint) _sessionLowPoint = bal;
+    var el = document.getElementById("lossRecovery");
+    if (!el) return;
+    if (_sessionLowPoint === Infinity || _sessionLowPoint >= bal) {
+        el.style.display = "none";
+        return;
+    }
+    var recovered = bal - _sessionLowPoint;
+    if (recovered < 0.5) { el.style.display = "none"; return; }
+    el.textContent = "+" + _DSN + recovered.toFixed(2) + " recovered";
+    el.style.display = "";
+}
+
+// Sprint 73: Scatter Alert
+var _scatterCount = 0;
+var _SCATTER_THRESH = 2;
+
+function _resetScatterAlert() {
+    _scatterCount = 0;
+    var el = document.getElementById("scatterAlert");
+    if (el) el.style.display = "none";
+}
+
+function _checkScatterAlert(grid) {
+    var flat = [];
+    if (Array.isArray(grid)) {
+        grid.forEach(function(col) {
+            if (Array.isArray(col)) col.forEach(function(s) { flat.push(s); });
+            else flat.push(col);
+        });
+    }
+    var cnt = flat.filter(function(s) {
+        return s && (s === "scatter" || s === "wild" || String(s).indexOf("bonus") !== -1);
+    }).length;
+    if (cnt < _SCATTER_THRESH) return;
+    _scatterCount++;
+    var el = document.getElementById("scatterAlert");
+    if (!el) return;
+    el.textContent = "\u26A1 Scatter! " + cnt + "x";
+    el.style.display = "";
+    setTimeout(function() { el.style.display = "none"; }, 2000);
+}
+
+// Sprint 74: Session Close Summary
+function _showSessionSummary() {
+    var el = document.getElementById("sessionSummary");
+    if (!el) return;
+    var net = balance - (_slotSessionStartBal || balance);
+    var sign = net >= 0 ? "+" + _DSN : "-" + _DSN;
+    var netStr = sign + Math.abs(net).toFixed(2);
+    var wr = (_wrTotal > 0) ? Math.round((_wrWins / _wrTotal) * 100) + "%" : "N/A";
+    var bestWin = (_maxWinMult > 0) ? _DSN + _maxWinMult.toFixed(2) : "None";
+    el.innerHTML = "";
+    var _ssRows = [
+        ["ss-title", "🎯 Session Summary"],
+        ["ss-row", "Spins: " + _sessionSpinCount],
+        ["ss-row", "Net: " + netStr],
+        ["ss-row", "Win Rate: " + wr],
+        ["ss-row", "Best Win: " + bestWin],
+    ];
+    _ssRows.forEach(function(r) {
+        var d = document.createElement("div");
+        d.className = r[0];
+        d.textContent = r[1];
+        el.appendChild(d);
+    });
+    el.style.display = "";
+    setTimeout(function() { el.style.display = "none"; }, 4000);
+}
+
+function _hideSessionSummary() {
+    var el = document.getElementById("sessionSummary");
+    if (el) el.style.display = "none";
 }

@@ -510,6 +510,9 @@
         <div class="modal-content slot-modal-fullscreen">
             <!-- Sprint 58: Keyboard Hints -->
             <div class="kb-hints" id="kbHints" style="display:none"><kbd>Space</kbd> Spin &nbsp; <kbd>Esc</kbd> Close &nbsp; <kbd>T</kbd> Turbo &nbsp; <kbd>A</kbd> Auto &nbsp; <kbd>?</kbd> Help</div>
+            <!-- Sprint 66: Cashout Hint Toast -->
+            <div class="cashout-hint" id="cashoutHint" style="display:none">💰 You're up! Consider cashing out.</div>
+            <div class="session-summary" id="sessionSummary" style="display:none"></div>
 
             <!-- Feature Popup Overlay -->
             <div id="slotFeaturePopup" class="feature-popup-overlay" style="display:none;">
@@ -584,6 +587,10 @@
                     <button class="slot-ambient-btn" id="ambientToggleBtn" onclick="if(typeof toggleAmbientSlot==='function')toggleAmbientSlot()" title="Toggle ambient music">🎵</button>
                     <!-- Sprint 52: Volatility Meter -->
                     <div class="vm-meter" id="vmMeter" style="display:none"><span class="vm-seg" id="vmS1"></span><span class="vm-seg" id="vmS2"></span><span class="vm-seg" id="vmS3"></span><span class="vm-seg" id="vmS4"></span><span class="vm-seg" id="vmS5"></span></div>
+                    <!-- Sprint 64: RTP Gauge -->
+                    <div class="rtp-gauge" id="rtpGauge" style="display:none" title="Theoretical RTP"><span id="rtpGaugeLabel">96%</span></div>
+                    <!-- Sprint 65: Balance History Sparkline -->
+                    <svg class="balance-sparkline" id="balanceSparkline" width="60" height="20" style="display:none"><polyline id="bsLine" points="" fill="none" stroke-width="1.5" stroke-linecap="round"/></svg>
                     <!-- Sprint 52: Session Timer -->
                     <span class="st-timer" id="stTimer" style="display:none">0:00</span>
                     <!-- Sprint 57: Game Nav -->
@@ -666,6 +673,15 @@
                 <div class="slot-bar-section slot-bar-balance">
                     <div class="slot-bar-label">BALANCE</div>
                     <div class="slot-bar-value">$<span id="slotBalance">5000.00</span></div>
+                    <!-- Sprint 59: Session Net -->
+                    <span class="slot-net-display" id="slotNetDisplay" style="display:none"></span>
+                    <span class="spin-counter" id="spinCounter" style="display:none"></span>
+                    <div class="recent-outcomes" id="recentOutcomes" style="display:none"></div>
+                    <span class="session-hilo" id="sessionHiLo" style="display:none"></span>
+                    <span class="balance-buffer" id="balBuffer" style="display:none"></span>
+                    <div class="symbol-heat" id="symbolHeat" style="display:none"></div>
+                    <span class="loss-recovery" id="lossRecovery" style="display:none"></span>
+                    <span class="scatter-alert" id="scatterAlert" style="display:none"></span>
                     <!-- Sprint 56: Win Rate Display -->
                     <span class="wr-display" id="wrDisplay" style="display:none"></span>
                     <!-- Sprint 44: P&L Sparkline -->
@@ -704,6 +720,12 @@
                     <button class="bankroll-dismiss" onclick="if(typeof dismissBankroll==='function')dismissBankroll()">✕</button>
                 </div>
                 <input type="range" class="bet-range" id="betRange" min="50" max="5000" step="50" value="50" style="display:none;">
+                <!-- Sprint 60: Quick Bet Presets -->
+                <div class="quick-bet-presets" id="quickBetPresets" style="display:none">
+                    <button onclick="if(typeof _quickBet==='function')_quickBet(0)" title="Minimum bet">Min</button>
+                    <button onclick="if(typeof _quickBet==='function')_quickBet(0.5)" title="Half max bet">½</button>
+                    <button onclick="if(typeof _quickBet==='function')_quickBet(1)" title="Maximum bet">Max</button>
+                </div>
                 <span id="minBet" style="display:none;">50</span>
                 <span id="maxBet" style="display:none;">5000</span>
 
@@ -720,11 +742,16 @@
 
                 <!-- Sprint 54: Autoplay Progress -->
                 <div class="ap-progress" id="apProgress" style="display:none"></div>
+                <!-- Sprint 61: Feature Trigger Counter -->
+                <span class="feature-count-badge" id="featureCountBadge" style="display:none"></span>
 
                 <!-- Sprint 46: Win Streak Badge -->
                 <div class="win-streak-badge" id="winStreakBadge" style="display:none">
                     🔥 <span id="winStreakCount">0</span>
                 </div>
+
+                <!-- Sprint 63: Loss Streak Badge -->
+                <span class="loss-streak-badge" id="lossStreakBadge" style="display:none"></span>
 
                 <!-- SPIN Button (center, large) — Pragmatic Play style -->
                 <button class="slot-spin-btn" id="spinBtn" onclick="spin()">
@@ -744,6 +771,8 @@
                 <div class="slot-bar-section slot-bar-win">
                     <div class="slot-bar-label">WIN</div>
                     <div class="slot-bar-value slot-win-value" id="slotWinDisplay">$0.00</div>
+                    <!-- Sprint 62: Max Win Seen -->
+                    <span class="max-win-seen" id="maxWinSeen" style="display:none"></span>
                 </div>
 
                 <!-- Gamble Button (shown after wins) -->

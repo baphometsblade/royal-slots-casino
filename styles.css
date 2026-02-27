@@ -15377,3 +15377,70 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
   from { box-shadow: 0 0 4px rgba(74,222,128,0.2); }
   to   { box-shadow: 0 0 12px rgba(74,222,128,0.5); }
 }
+
+/* ═══════════════════════════════════════════════════════
+   SPRINT 67-74: HUD ENHANCEMENTS BATCH 3
+   ═══════════════════════════════════════════════════════ */
+
+/* Sprint 67 — Spin Counter */
+.spin-counter {
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+  background: rgba(99,102,241,0.12); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.25);
+}
+
+/* Sprint 68 — Recent Outcomes */
+.recent-outcomes { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; }
+.ro-dot { font-size: 9px; }
+.ro-win  { color: #4ade80; }
+.ro-loss { color: #f87171; }
+
+/* Sprint 69 — Session Hi-Lo */
+.session-hilo {
+  font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px;
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.65);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Sprint 70 — Balance Buffer */
+.balance-buffer {
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+  background: rgba(14,165,233,0.1); color: #38bdf8; border: 1px solid rgba(14,165,233,0.2);
+}
+
+/* Sprint 71 — Symbol Heatmap */
+.symbol-heat { display: flex; gap: 3px; flex-wrap: wrap; }
+.sh-badge {
+  font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 5px; text-transform: capitalize;
+  background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2);
+}
+
+/* Sprint 72 — Loss Recovery */
+.loss-recovery {
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+  background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.2);
+}
+
+/* Sprint 73 — Scatter Alert */
+.scatter-alert {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px;
+  background: rgba(251,191,36,0.18); color: #fbbf24; border: 1px solid rgba(251,191,36,0.35);
+  animation: scatter-flash 0.4s ease-in-out 3;
+}
+@keyframes scatter-flash {
+  0%,100% { opacity:1; } 50% { opacity:0.4; }
+}
+
+/* Sprint 74 — Session Close Summary */
+.session-summary {
+  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: rgba(15,23,42,0.95); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 10px 16px; min-width: 180px; z-index: 200;
+  backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.ss-title {
+  font-size: 12px; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;
+}
+.ss-row {
+  font-size: 11px; color: rgba(255,255,255,0.7); padding: 2px 0;
+}
