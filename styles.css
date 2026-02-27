@@ -16108,3 +16108,11 @@ button.active .filter-tab-count {
     background: rgba(244,114,182,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* Sprint 71: Session Peak Balance */
+.spk-bal {
+    position: absolute; top: 196px; right: 14px;
+    font-size: 0.68rem; color: #4ade80; font-weight: 600;
+    background: rgba(74,222,128,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}

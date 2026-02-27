@@ -752,6 +752,8 @@
             if (typeof updateBiggestLoss === 'function') updateBiggestLoss(winAmount);
             // Sprint 70: Time since last win
             if (typeof updateTimeSinceWin === 'function') updateTimeSinceWin(winAmount > 0);
+            // Sprint 71: Peak balance
+            if (typeof updatePeakBalance === 'function') updatePeakBalance();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

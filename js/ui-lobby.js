@@ -2700,8 +2700,17 @@ function renderGames() {
             var best = s.biggestWin || 0;
             var bestDisp = best >= 1000 ? '$' + (best / 1000).toFixed(1) + 'K' : '$' + Math.round(best);
             var wr = spins > 0 ? Math.round((s.totalWins || 0) / spins * 100) : 0;
+            // Sprint 71: Count unique providers
+            var provSet = {};
+            if (typeof GAMES !== 'undefined') {
+                for (var i = 0; i < GAMES.length; i++) {
+                    if (GAMES[i].provider) provSet[GAMES[i].provider] = 1;
+                }
+            }
+            var provCount = Object.keys(provSet).length;
             el.innerHTML = '<span>Spins: ' + spins.toLocaleString() + '</span>' +
                 '<span>Best: ' + bestDisp + '</span>' +
-                '<span>Win Rate: ' + wr + '%</span>';
+                '<span>Win Rate: ' + wr + '%</span>' +
+                (provCount > 0 ? '<span>Studios: ' + provCount + '</span>' : '');
             el.style.display = '';
         }

@@ -912,6 +912,31 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 71: Session Peak Balance ── */
+        var _spkStart = 0; var _spkPeak = 0;
+        function updatePeakBalance() {
+            var bal = typeof balance !== 'undefined' ? balance : 0;
+            if (bal <= _spkPeak) return;
+            _spkPeak = bal;
+            if (_spkPeak <= _spkStart) return;
+            var el = document.getElementById('spkBal');
+            if (!el) return;
+            var disp = _spkPeak >= 1000 ? '$' + (_spkPeak / 1000).toFixed(1) + 'K' : '$' + Math.round(_spkPeak);
+            el.textContent = 'Peak: ' + disp;
+            el.style.display = '';
+        }
+        function _initPeakBalance() {
+            _spkStart = typeof balance !== 'undefined' ? balance : 0;
+            _spkPeak = _spkStart;
+            var el = document.getElementById('spkBal');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+        function _resetPeakBalance() {
+            _spkStart = 0; _spkPeak = 0;
+            var el = document.getElementById('spkBal');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2134,6 +2159,7 @@
             _resetBiggestLoss();
             _startTimeSinceWin();
             _resetBonusCount();
+            _initPeakBalance();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2765,6 +2791,7 @@
             _resetBiggestLoss();
             _stopTimeSinceWin();
             _resetBonusCount();
+            _resetPeakBalance();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
