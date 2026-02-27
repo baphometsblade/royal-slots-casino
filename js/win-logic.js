@@ -725,6 +725,8 @@
 
             // Sprint 55: Record bet for history chart
             if (typeof recordBetHistory === 'function') recordBetHistory();
+            // Sprint 56: Update win rate
+            if (typeof updateWinRate === 'function') updateWinRate(winAmount > 0);
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

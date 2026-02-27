@@ -1317,7 +1317,7 @@ function renderGames() {
                     </div>
                     <div class="game-info">
                         <div class="game-name">${game.name}${typeof getGameDifficulty === 'function' ? getGameDifficulty(game) : ''}</div>
-                        <div class="game-provider">${game.provider || ''}</div>
+                        <div class="game-provider">${game.provider || ''}${typeof getCategoryBadge === 'function' ? getCategoryBadge(game) : ''}</div>
                     </div>
                     ${_hotIds.has(game.id) ? '<span class="lobby-badge lobby-badge-hot">🔥 HOT</span>' : ''}
                     ${_newIds.has(game.id) ? '<span class="lobby-badge lobby-badge-new">✨ NEW</span>' : ''}
@@ -2628,4 +2628,20 @@ function renderGames() {
             var html = '';
             for (var i = 0; i < 3; i++) html += '<span class="dr-star' + (i < stars ? ' dr-filled' : '') + '">&#x2605;</span>';
             return '<div class="dr-rating" title="Difficulty: ' + stars + '/3">' + html + '</div>';
+        }
+
+        // Sprint 56: Category badge
+        function getCategoryBadge(game) {
+            var bt = (game.bonusType || '').toLowerCase();
+            var label = '';
+            if (bt === 'cascade' || bt === 'avalanche') label = 'Cascade';
+            else if (bt === 'hold-and-win' || bt === 'hold_and_win') label = 'H&W';
+            else if (bt === 'megaways') label = 'Megaways';
+            else if (bt === 'cluster') label = 'Cluster';
+            else if (bt === 'respin') label = 'Respin';
+            else if (bt === 'expanding') label = 'Expand';
+            else if (game.gridCols <= 3 && game.gridRows <= 3) label = 'Classic';
+            else label = '';
+            if (!label) return '';
+            return '<span class="cb-badge">' + label + '</span>';
         }

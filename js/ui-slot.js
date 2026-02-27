@@ -448,6 +448,24 @@
             if (line) line.setAttribute('points', '');
         }
 
+        // Sprint 56: Win rate display
+        var _wrWins = 0;
+        var _wrTotal = 0;
+        function updateWinRate(isWin) {
+            _wrTotal++;
+            if (isWin) _wrWins++;
+            var el = document.getElementById('wrDisplay');
+            if (!el) return;
+            var pct = _wrTotal > 0 ? Math.round((_wrWins / _wrTotal) * 100) : 0;
+            el.textContent = 'Hit: ' + pct + '%';
+            el.style.display = _wrTotal > 0 ? '' : 'none';
+        }
+        function _resetWinRate() {
+            _wrWins = 0; _wrTotal = 0;
+            var el = document.getElementById('wrDisplay');
+            if (el) { el.textContent = 'Hit: 0%'; el.style.display = 'none'; }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2262,6 +2280,7 @@
             _resetHotCold();
             _resetLuckySymbol();
             _resetBetHistory();
+            _resetWinRate();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
