@@ -675,6 +675,8 @@
                 if (winAmount >= currentBet * 2 && currentGame) {
                     _recordRecentWin(currentGame.name, winAmount);
                 }
+                // Sprint 50: Show last win preview with winning symbols
+                if (typeof showLastWinPreview === 'function') showLastWinPreview(symbols);
 
                 // Apply celebration animations based on win size (adjusted thresholds)
                 const isMegaWin = winAmount >= currentBet * 10;

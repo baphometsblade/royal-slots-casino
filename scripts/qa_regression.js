@@ -157,7 +157,7 @@ async function dismissFeaturePopupIfVisible(page) {
 
   const playButton = await page.$("#featurePopupPlayBtn");
   if (playButton) {
-    await playButton.click({ timeout: 5000 });
+    await playButton.click({ timeout: 5000, force: true });
   } else {
     await page.evaluate(() => {
       if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();

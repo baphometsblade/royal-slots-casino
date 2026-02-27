@@ -276,6 +276,22 @@
             if (badge) { badge.textContent = '0'; badge.classList.remove('sc-milestone'); }
         }
 
+        /* ── Sprint 50: Last Win Preview ── */
+        function showLastWinPreview(symbols) {
+            var el = document.getElementById('lwPreview');
+            if (!el || !symbols || symbols.length === 0) return;
+            var display = symbols.slice(0, 5).map(function(s) {
+                return '<span class="lw-sym">' + (s || '?').replace(/_/g, ' ') + '</span>';
+            }).join('');
+            el.innerHTML = 'Last Win: ' + display;
+            el.style.display = '';
+        }
+
+        function hideLastWinPreview() {
+            var el = document.getElementById('lwPreview');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1471,6 +1487,7 @@
             preloadAnimatedAssets(currentGame);
 
             addRecentlyPlayed(gameId);
+            if (typeof trackGameExplored === 'function') trackGameExplored(gameId);
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2075,6 +2092,7 @@
             _resetAmbientToggle();
             hideQuickStats();
             _resetSpinCounter();
+            hideLastWinPreview();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
@@ -2556,6 +2574,7 @@
             }
             spinning = true;
             resetIdleTimer(); // reset idle pulse at spin start
+            hideLastWinPreview(); // clear previous win preview
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
                 var _rcTurbo = document.querySelector('.reels-container') || document.querySelector('.reels');

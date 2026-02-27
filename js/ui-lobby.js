@@ -527,6 +527,8 @@ function renderGames() {
                     if (typeof renderProviderLeaderboard === 'function') renderProviderLeaderboard();
                     // Session P&L bar (Sprint 49)
                     if (typeof updateSessionPnlBar === 'function') updateSessionPnlBar();
+                    // Games explored counter (Sprint 50)
+                    if (typeof renderGamesExplored === 'function') renderGamesExplored();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -2563,3 +2565,32 @@ function renderGames() {
         }
 
         window.updateSessionPnlBar = updateSessionPnlBar;
+
+        /* ── Sprint 50: Games Explored Counter ────────────── */
+        var _GE_KEY = 'matrixGamesExplored';
+
+        function trackGameExplored(gameId) {
+            if (!gameId) return;
+            var set = [];
+            try { set = JSON.parse(localStorage.getItem(_GE_KEY) || '[]'); } catch(e) { set = []; }
+            if (set.indexOf(gameId) < 0) {
+                set.push(gameId);
+                localStorage.setItem(_GE_KEY, JSON.stringify(set));
+            }
+        }
+
+        function renderGamesExplored() {
+            var el = document.getElementById('geCounter');
+            var countEl = document.getElementById('geCount');
+            var totalEl = document.getElementById('geTotal');
+            if (!el || !countEl) return;
+            var set = [];
+            try { set = JSON.parse(localStorage.getItem(_GE_KEY) || '[]'); } catch(e) {}
+            var total = (typeof games !== 'undefined') ? games.length : 80;
+            if (totalEl) totalEl.textContent = total;
+            countEl.textContent = set.length;
+            el.style.display = set.length > 0 ? '' : 'none';
+        }
+
+        window.trackGameExplored = trackGameExplored;
+        window.renderGamesExplored = renderGamesExplored;
