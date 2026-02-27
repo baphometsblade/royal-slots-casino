@@ -2767,6 +2767,44 @@ function renderGames() {
             });
         })();
 
+        /* ── Sprint 77: Lobby Sort Toggle ──────────────── */
+        var _sortModes = ['Default', 'A-Z', 'Popular'];
+        var _sortIdx = 0;
+        (function _initLobbySort() {
+            var btn = document.getElementById('lobbySort');
+            if (!btn) return;
+            btn.addEventListener('click', function() {
+                _sortIdx = (_sortIdx + 1) % _sortModes.length;
+                btn.textContent = _sortModes[_sortIdx];
+                _applyLobbySort();
+            });
+        })();
+        function _applyLobbySort() {
+            var grid = document.getElementById('allGames');
+            if (!grid) return;
+            var cards = Array.from(grid.querySelectorAll('.game-card'));
+            if (cards.length < 2) return;
+            var mode = _sortModes[_sortIdx];
+            if (mode === 'A-Z') {
+                cards.sort(function(a, b) {
+                    var na = (a.querySelector('.game-name') || {}).textContent || '';
+                    var nb = (b.querySelector('.game-name') || {}).textContent || '';
+                    return na.localeCompare(nb);
+                });
+            } else if (mode === 'Popular') {
+                var rp = [];
+                try { rp = JSON.parse(localStorage.getItem(typeof STORAGE_KEY_RECENTLY_PLAYED !== 'undefined' ? STORAGE_KEY_RECENTLY_PLAYED : 'matrixRecentlyPlayed') || '[]'); } catch(e) {}
+                var rpMap = {};
+                for (var i = 0; i < rp.length; i++) rpMap[rp[i]] = rp.length - i;
+                cards.sort(function(a, b) {
+                    var ia = a.getAttribute('data-game-id') || '';
+                    var ib = b.getAttribute('data-game-id') || '';
+                    return (rpMap[ib] || 0) - (rpMap[ia] || 0);
+                });
+            }
+            for (var j = 0; j < cards.length; j++) grid.appendChild(cards[j]);
+        }
+
         /* ── Sprint 73: Recent Searches ──────────────── */
         var _RS_KEY = 'matrixRecentSearches';
         function _saveRecentSearch(term) {

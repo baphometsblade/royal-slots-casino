@@ -971,6 +971,30 @@
             if (el) { el.innerHTML = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 77: Session Net Position ── */
+        var _snStart = 0;
+        function updateSessNet() {
+            var el = document.getElementById('sessNet');
+            if (!el) return;
+            var bal = typeof balance !== 'undefined' ? balance : 0;
+            var net = bal - _snStart;
+            var sign = net >= 0 ? '+' : '';
+            var disp = Math.abs(net) >= 1000 ? sign + '$' + (net / 1000).toFixed(1) + 'K' : sign + '$' + Math.round(net);
+            el.textContent = disp;
+            el.className = 'sess-net ' + (net >= 0 ? 'sn-pos' : 'sn-neg');
+            el.style.display = '';
+        }
+        function _initSessNet() {
+            _snStart = typeof balance !== 'undefined' ? balance : 0;
+            var el = document.getElementById('sessNet');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+        function _resetSessNet() {
+            _snStart = 0;
+            var el = document.getElementById('sessNet');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         /* ── Sprint 73: Saved Bet Hint ── */
         var _sbhTimer = null;
         function _showSavedBetHint(betAmount) {
@@ -2209,6 +2233,7 @@
             _initPeakBalance();
             _resetBalRunway();
             _resetOutcDots();
+            _initSessNet();
             // Sprint 76: Track game played today
             if (typeof _trackGameToday === 'function' && currentGame) _trackGameToday(currentGame.id);
             _startSessionTimer();
@@ -2847,6 +2872,7 @@
             _resetPeakBalance();
             _resetBalRunway();
             _resetOutcDots();
+            _resetSessNet();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

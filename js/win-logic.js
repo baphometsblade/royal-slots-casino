@@ -758,6 +758,8 @@
             if (typeof updateBalRunway === 'function') updateBalRunway();
             // Sprint 76: Outcome dots
             if (typeof pushOutcDot === 'function') pushOutcDot(winAmount > 0);
+            // Sprint 77: Session net position
+            if (typeof updateSessNet === 'function') updateSessNet();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
