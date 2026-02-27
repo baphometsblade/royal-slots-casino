@@ -2818,3 +2818,75 @@
         window.showGameRatingPrompt = showGameRatingPrompt;
         window.rateGame = rateGame;
         window.getGameRating = getGameRating;
+
+
+        // ═══════════════════════════════════════════════════════
+        // WIN REPLAY GALLERY (Sprint 38)
+        // ═══════════════════════════════════════════════════════
+        var WR_KEY = 'matrixWinReplays';
+        var WR_MAX = 20;
+
+        function _loadReplays() {
+            try { return JSON.parse(localStorage.getItem(WR_KEY)) || []; } catch(e) { return []; }
+        }
+
+        function saveWinReplay(gameName, gameId, bet, win, symbols) {
+            if (typeof _demoMode !== 'undefined' && _demoMode) return;
+            var replays = _loadReplays();
+            replays.unshift({
+                gameName: gameName,
+                gameId: gameId,
+                bet: bet,
+                win: win,
+                mult: bet > 0 ? (win / bet).toFixed(1) : '0',
+                symbols: symbols || [],
+                ts: Date.now()
+            });
+            if (replays.length > WR_MAX) replays.length = WR_MAX;
+            try { localStorage.setItem(WR_KEY, JSON.stringify(replays)); } catch(e) {}
+        }
+
+        function autoSaveWinReplay(gameName, gameId, bet, win, symbols) {
+            if (bet > 0 && win >= bet * 10) {
+                saveWinReplay(gameName, gameId, bet, win, symbols);
+            }
+        }
+
+        function openWinReplays() {
+            var modal = document.getElementById('winReplayModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            _renderWinReplays();
+        }
+
+        function _renderWinReplays() {
+            var list = document.getElementById('wrList');
+            if (!list) return;
+            var replays = _loadReplays();
+            if (replays.length === 0) {
+                list.innerHTML = '<div class="wr-empty">No replays yet. Win 10x+ your bet to auto-save!</div>';
+                return;
+            }
+            list.innerHTML = replays.map(function(r, i) {
+                var dateStr = _timeAgo(r.ts);
+                var symHtml = (r.symbols || []).slice(0, 3).map(function(s) {
+                    return '<span class="wr-sym">' + s + '</span>';
+                }).join('');
+                return '<div class="wr-entry' + (r.win >= r.bet * 50 ? ' wr-jackpot' : r.win >= r.bet * 20 ? ' wr-mega' : '') + '">' +
+                    '<div class="wr-game">' + (r.gameName || r.gameId) + '</div>' +
+                    '<div class="wr-details">' +
+                        '<span class="wr-win">+$' + r.win.toLocaleString() + '</span>' +
+                        '<span class="wr-mult">' + r.mult + 'x</span>' +
+                        (symHtml ? '<span class="wr-syms">' + symHtml + '</span>' : '') +
+                    '</div>' +
+                    '<div class="wr-meta">' +
+                        '<span class="wr-bet">Bet: $' + r.bet + '</span>' +
+                        '<span class="wr-time">' + dateStr + '</span>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        window.openWinReplays = openWinReplays;
+        window.saveWinReplay = saveWinReplay;
+        window.autoSaveWinReplay = autoSaveWinReplay;

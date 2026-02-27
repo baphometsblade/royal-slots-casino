@@ -664,6 +664,10 @@
                 showMessage(message, 'win');
                 const xpBonus = isBigWin ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN;
                 if (typeof awardXP === 'function') awardXP(xpBonus);
+                // Auto-save big wins to replay gallery
+                if (typeof autoSaveWinReplay === 'function' && currentGame) {
+                    autoSaveWinReplay(currentGame.name, currentGame.id, currentBet, winAmount, symbols);
+                }
 
                 // Apply celebration animations based on win size (adjusted thresholds)
                 const isMegaWin = winAmount >= currentBet * 10;

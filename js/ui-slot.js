@@ -8,6 +8,40 @@
         let _demoBalance = 0;
         let _realBalanceBackup = 0;
 
+        // ── Session Timer State ───────────────────────────────
+        let _sessionStartTime = 0;
+        let _sessionTimerInterval = null;
+
+        function _startSessionTimer() {
+            _sessionStartTime = Date.now();
+            _updateSessionTimer();
+            if (_sessionTimerInterval) clearInterval(_sessionTimerInterval);
+            _sessionTimerInterval = setInterval(_updateSessionTimer, 30000); // update every 30s
+        }
+
+        function _stopSessionTimer() {
+            if (_sessionTimerInterval) { clearInterval(_sessionTimerInterval); _sessionTimerInterval = null; }
+        }
+
+        function _updateSessionTimer() {
+            var el = document.getElementById('sessionTimerValue');
+            if (!el) return;
+            var elapsed = Math.floor((Date.now() - _sessionStartTime) / 60000);
+            var timerEl = document.getElementById('sessionTimer');
+            if (elapsed < 30) {
+                el.textContent = elapsed + 'm';
+                if (timerEl) timerEl.className = 'session-timer';
+            } else if (elapsed < 60) {
+                el.textContent = elapsed + 'm';
+                if (timerEl) timerEl.className = 'session-timer st-warn';
+            } else {
+                var h = Math.floor(elapsed / 60);
+                var m = elapsed % 60;
+                el.textContent = h + 'h ' + m + 'm';
+                if (timerEl) { timerEl.className = 'session-timer st-alert'; timerEl.title = 'Consider taking a break'; }
+            }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1176,6 +1210,7 @@
             preloadAnimatedAssets(currentGame);
 
             addRecentlyPlayed(gameId);
+            _startSessionTimer();
 
             // Set game-specific CSS theme
             document.getElementById('slotModal').setAttribute('data-game-id', currentGame.id);
@@ -1761,6 +1796,7 @@
             }
             // Restore real balance if closing during demo mode
             _exitDemoMode();
+            _stopSessionTimer();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

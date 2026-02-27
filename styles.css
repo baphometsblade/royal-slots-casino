@@ -15203,3 +15203,115 @@ button.active .filter-tab-count {
     transition: all 0.3s;
 }
 .demo-close-btn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+
+/* ==================== Sprint 38: Win Replay Gallery ==================== */
+.wr-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 16px;
+    padding: 32px 24px;
+    max-width: 480px;
+    width: 90vw;
+    margin: 0 auto;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.wr-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffd700;
+    margin-bottom: 4px;
+}
+.wr-subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+.wr-list {
+    overflow-y: auto;
+    max-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+.wr-entry {
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 12px 14px;
+    border-left: 3px solid #4ade80;
+}
+.wr-entry.wr-mega { border-left-color: #f59e0b; }
+.wr-entry.wr-jackpot { border-left-color: #ef4444; background: rgba(239,68,68,0.05); }
+.wr-game {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+}
+.wr-details { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.wr-win {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4ade80;
+}
+.wr-mult {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fbbf24;
+    background: rgba(251,191,36,0.12);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+.wr-syms { display: flex; gap: 4px; }
+.wr-sym {
+    font-size: 12px;
+    background: rgba(255,255,255,0.08);
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: #94a3b8;
+}
+.wr-meta { display: flex; gap: 12px; font-size: 11px; color: #64748b; }
+.wr-empty {
+    padding: 40px 20px;
+    color: #64748b;
+    font-size: 14px;
+}
+.wr-close {
+    padding: 8px 24px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 13px;
+}
+.wr-close:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+
+/* ==================== Sprint 38: Session Timer ==================== */
+.session-timer {
+    font-size: 11px;
+    color: #64748b;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    white-space: nowrap;
+    transition: all 0.3s;
+}
+.session-timer.st-warn {
+    color: #fbbf24;
+    background: rgba(251,191,36,0.08);
+}
+.session-timer.st-alert {
+    color: #ef4444;
+    background: rgba(239,68,68,0.08);
+    animation: st-pulse 2s ease-in-out infinite;
+}
+@keyframes st-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}

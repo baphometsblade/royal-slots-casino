@@ -137,6 +137,7 @@
                         <button class="nav-btn" onclick="if(typeof openSpinHistory==='function')openSpinHistory()">📜 History</button>
                         <button class="nav-btn" onclick="if(typeof openPlayerCard==='function')openPlayerCard()">🃏 My Card</button>
                         <button class="nav-btn" onclick="if(typeof openLuckySpin==='function')openLuckySpin()">🎡 Lucky Spin</button>
+                        <button class="nav-btn" onclick="if(typeof openWinReplays==='function')openWinReplays()">🏆 Replays</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -472,6 +473,7 @@
                     <div class="slot-provider" id="slotProvider">Royal Games</div>
                     <div class="game-tag tag-jackpot" id="slotGameTag" style="display:none;">JACKPOT</div>
                 </div>
+                <div class="session-timer" id="sessionTimer" title="Session time">⏱ <span id="sessionTimerValue">0m</span></div>
                 <div class="slot-top-right">
                     <button class="buy-bonus-btn" id="buyBonusBtn" onclick="buyBonus()" style="display:none;" title="Buy Free Spins">
                         <span class="buy-bonus-icon">⚡</span>
@@ -1014,6 +1016,16 @@
             <div class="ls-status" id="lsStatus">Free spin available!</div>
             <button class="ls-spin-btn" id="lsSpinBtn" onclick="if(typeof spinLuckyWheel==='function')spinLuckyWheel()">SPIN</button>
             <button class="ls-close" onclick="document.getElementById('luckySpinModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Win Replay Gallery (Sprint 38) -->
+    <div id="winReplayModal" class="modal-overlay" style="display:none;">
+        <div class="wr-card">
+            <h2 class="wr-title">🏆 Win Replays</h2>
+            <div class="wr-subtitle">Your biggest wins, saved for posterity</div>
+            <div class="wr-list" id="wrList"></div>
+            <button class="wr-close" onclick="document.getElementById('winReplayModal').style.display='none'">Close</button>
         </div>
     </div>
 
