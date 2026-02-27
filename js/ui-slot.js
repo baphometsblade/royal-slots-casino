@@ -1590,6 +1590,14 @@
         _resetWinLossRatio();     // 136 — win/loss ratio
         _resetAvgBetBadge();      // 137 — avg bet
         _resetSessionBigWin();    // 138 — session big win
+        _resetSpinTimerBadge();   // 139 — spin timer
+        _resetBalPctBadge();      // 140 — balance %
+        _resetSessionMaxMult();   // 141 — session max mult
+        _resetSymbolDist();       // 142 — symbol dist
+        _resetAutoplayPnl();      // 143 — autoplay P&L
+        _resetFeatFreq();         // 144 — feature freq
+        _resetSessionGrade();     // 145 — session grade
+        _resetTimeEff();          // 146 — time efficiency
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -2328,6 +2336,7 @@
                 try { localStorage.setItem('lastBet_' + currentGame.id, String(currentBet)); } catch(e) {}
             }
             spinning = true;
+            if (typeof _startSpinTimer139 === 'function') _startSpinTimer139(); // 139
             _incrementSpinCounter(); // Sprint 48
             _clearLastWinPreview();  // Sprint 50 — clear on new spin
             _updateBhChart(currentBet);  // Sprint 55 — bet history
@@ -3056,6 +3065,14 @@
                 _updateWinLossRatio(true);              // 136 — win/loss ratio
                 _updateAvgBetBadge(currentBet);         // 137 — avg bet
                 _updateSessionBigWin(winAmount);        // 138 — session big win
+                _stopSpinTimer139(true);               // 139 — spin timer (win)
+                _updateBalPctBadge();                  // 140 — balance %
+                _updateSessionMaxMult(winAmount, currentBet); // 141 — session max mult
+                _updateSymbolDist(currentGrid);        // 142 — symbol dist
+                _updateAutoplayPnl();                  // 143 — autoplay P&L
+                _recordFeatFreqSpin(freeSpinsActive);  // 144 — feature freq
+                _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
+                _updateTimeEff(true);                  // 146 — time eff
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3238,6 +3255,14 @@
             _updateWinLossRatio(winAmount > 0);        // 136 — win/loss ratio
             _updateAvgBetBadge(currentBet);            // 137 — avg bet
             _updateSessionBigWin(winAmount);           // 138 — session big win
+            _stopSpinTimer139(winAmount > 0);          // 139 — spin timer
+            _updateBalPctBadge();                      // 140 — balance %
+            _updateSessionMaxMult(winAmount, currentBet); // 141 — session max mult
+            _updateSymbolDist(currentGrid);            // 142 — symbol dist
+            _updateAutoplayPnl();                      // 143 — autoplay P&L
+            _recordFeatFreqSpin(freeSpinsActive);      // 144 — feature freq
+            _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
+            _updateTimeEff(winAmount > 0);             // 146 — time eff
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6697,6 +6722,14 @@
                 _updateWinLossRatio(true);              // 136 — win/loss ratio
                 _updateAvgBetBadge(currentBet);         // 137 — avg bet
                 _updateSessionBigWin(winAmount);        // 138 — session big win
+                _stopSpinTimer139(true);               // 139 — spin timer (win)
+                _updateBalPctBadge();                  // 140 — balance %
+                _updateSessionMaxMult(winAmount, currentBet); // 141 — session max mult
+                _updateSymbolDist(currentGrid);        // 142 — symbol dist
+                _updateAutoplayPnl();                  // 143 — autoplay P&L
+                _recordFeatFreqSpin(freeSpinsActive);  // 144 — feature freq
+                _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
+                _updateTimeEff(true);                  // 146 — time eff
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6844,6 +6877,14 @@
             _updateWinLossRatio(winAmount > 0);        // 136 — win/loss ratio
             _updateAvgBetBadge(currentBet);            // 137 — avg bet
             _updateSessionBigWin(winAmount);           // 138 — session big win
+            _stopSpinTimer139(winAmount > 0);          // 139 — spin timer
+            _updateBalPctBadge();                      // 140 — balance %
+            _updateSessionMaxMult(winAmount, currentBet); // 141 — session max mult
+            _updateSymbolDist(currentGrid);            // 142 — symbol dist
+            _updateAutoplayPnl();                      // 143 — autoplay P&L
+            _recordFeatFreqSpin(freeSpinsActive);      // 144 — feature freq
+            _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
+            _updateTimeEff(winAmount > 0);             // 146 — time eff
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -12493,4 +12534,199 @@ function _updateSessionBigWin(winAmount) {
         el.textContent = '\u26A1 Session best: ' + _DSN2 + _sessionBigWin138.toFixed(2);
         el.style.display = '';
     }
+}
+
+
+// ===============================================================
+//  SPRINT 139-146 -- Spin timer, symbol streak, balance %,
+//                    scatter pos, autoplay P&L, feature freq,
+//                    symbol dist, session grade
+// ===============================================================
+
+// Sprint 139: Spin-to-win timer (ms from spin press to win reveal)
+var _spinTimerStart139 = 0;
+function _resetSpinTimerBadge() {
+    _spinTimerStart139 = 0;
+    var el = document.getElementById('spinTimerBadge');
+    if (el) el.style.display = 'none';
+}
+function _startSpinTimer139() {
+    _spinTimerStart139 = Date.now();
+}
+function _stopSpinTimer139(won) {
+    if (!_spinTimerStart139) return;
+    var elapsed = Date.now() - _spinTimerStart139;
+    _spinTimerStart139 = 0;
+    if (!won) return; // only show on wins
+    var el = document.getElementById('spinTimerBadge');
+    if (!el) return;
+    el.textContent = elapsed + 'ms spin';
+    el.style.display = '';
+}
+
+// Sprint 140: Balance % change since session start
+var _balPctStart140 = 0;
+function _resetBalPctBadge() {
+    _balPctStart140 = (typeof balance !== 'undefined') ? balance : 0;
+    var el = document.getElementById('balPctBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateBalPctBadge() {
+    var cur = (typeof balance !== 'undefined') ? balance : 0;
+    if (!_balPctStart140) return;
+    var pct = ((cur - _balPctStart140) / _balPctStart140) * 100;
+    var el = document.getElementById('balPctBadge');
+    if (!el) return;
+    var sign = pct >= 0 ? '+' : '';
+    el.textContent = sign + pct.toFixed(1) + '% balance';
+    el.className = 'bal-pct-badge' + (pct >= 0 ? ' bpb-pos' : ' bpb-neg');
+    el.style.display = '';
+}
+
+// Sprint 141: Max win multiplier this session (shown as x factor)
+var _sessionMaxMult141 = 0;
+function _resetSessionMaxMult() {
+    _sessionMaxMult141 = 0;
+    var el = document.getElementById('sessionMaxMult');
+    if (el) el.style.display = 'none';
+}
+function _updateSessionMaxMult(winAmount, betAmount) {
+    if (!winAmount || !betAmount || betAmount <= 0) return;
+    var mult = winAmount / betAmount;
+    if (mult <= 1) return;
+    if (mult > _sessionMaxMult141) {
+        _sessionMaxMult141 = mult;
+        var el = document.getElementById('sessionMaxMult');
+        if (!el) return;
+        el.textContent = '\u00D7' + Math.round(_sessionMaxMult141) + ' max mult';
+        el.style.display = '';
+    }
+}
+
+// Sprint 142: Symbol distribution tracker (top 3 symbols this session)
+var _symDistCounts142 = {};
+function _resetSymbolDist() {
+    _symDistCounts142 = {};
+    var el = document.getElementById('symbolDistBar');
+    if (el) { while (el.firstChild) el.removeChild(el.firstChild); el.style.display = 'none'; }
+}
+function _updateSymbolDist(grid) {
+    if (!grid) return;
+    for (var r = 0; r < grid.length; r++) {
+        for (var c = 0; c < (grid[r] ? grid[r].length : 0); c++) {
+            var sym = grid[r][c];
+            if (!sym) continue;
+            _symDistCounts142[sym] = (_symDistCounts142[sym] || 0) + 1;
+        }
+    }
+    var el = document.getElementById('symbolDistBar');
+    if (!el) return;
+    var syms = Object.keys(_symDistCounts142);
+    if (syms.length === 0) return;
+    syms.sort(function(a, b) { return _symDistCounts142[b] - _symDistCounts142[a]; });
+    var top3 = syms.slice(0, 3);
+    var maxCount = _symDistCounts142[top3[0]] || 1;
+    while (el.firstChild) el.removeChild(el.firstChild);
+    for (var i = 0; i < top3.length; i++) {
+        var sym2 = top3[i];
+        var pct = Math.round((_symDistCounts142[sym2] / maxCount) * 100);
+        var wrap = document.createElement('span');
+        wrap.className = 'sdb-item';
+        var bar = document.createElement('span');
+        bar.className = 'sdb-fill';
+        bar.style.width = pct + '%';
+        var label = document.createElement('span');
+        label.className = 'sdb-sym';
+        label.textContent = sym2.slice(0, 3);
+        wrap.appendChild(bar);
+        wrap.appendChild(label);
+        el.appendChild(wrap);
+    }
+    el.style.display = '';
+}
+
+// Sprint 143: Autoplay session P&L
+var _autoplayPnlStart143 = 0;
+var _autoplayTracking143 = false;
+function _resetAutoplayPnl() {
+    _autoplayPnlStart143 = 0;
+    _autoplayTracking143 = false;
+    var el = document.getElementById('autoplayPnlBadge');
+    if (el) el.style.display = 'none';
+}
+function _startAutoplayTracking143() {
+    _autoplayPnlStart143 = (typeof balance !== 'undefined') ? balance : 0;
+    _autoplayTracking143 = true;
+}
+function _updateAutoplayPnl() {
+    if (!_autoplayTracking143) return;
+    var cur = (typeof balance !== 'undefined') ? balance : 0;
+    var pnl = cur - _autoplayPnlStart143;
+    var el = document.getElementById('autoplayPnlBadge');
+    if (!el) return;
+    var _DSN2 = String.fromCharCode(36);
+    var sign = pnl >= 0 ? '+' : '';
+    el.textContent = 'Auto: ' + sign + _DSN2 + pnl.toFixed(2);
+    el.className = 'autoplay-pnl-badge' + (pnl >= 0 ? ' apb-pos' : ' apb-neg');
+    el.style.display = '';
+}
+
+// Sprint 144: Feature frequency meter (how often per spin features fire)
+var _featFreqCount144 = 0; var _featFreqSpins144 = 0;
+function _resetFeatFreq() {
+    _featFreqCount144 = 0; _featFreqSpins144 = 0;
+    var el = document.getElementById('featFreqBadge');
+    if (el) el.style.display = 'none';
+}
+function _recordFeatFreqSpin(triggered) {
+    _featFreqSpins144++;
+    if (triggered) _featFreqCount144++;
+    if (_featFreqSpins144 < 10) return;
+    var el = document.getElementById('featFreqBadge');
+    if (!el) return;
+    var rate = (_featFreqCount144 / _featFreqSpins144) * 100;
+    el.textContent = 'Feature: 1/' + Math.round(_featFreqSpins144 / Math.max(_featFreqCount144, 1));
+    el.style.display = '';
+}
+
+// Sprint 145: Session grade (A-F based on RTP performance)
+function _resetSessionGrade() {
+    var el = document.getElementById('sessionGrade');
+    if (el) el.style.display = 'none';
+}
+function _updateSessionGrade(totalWon, totalWagered) {
+    if (!totalWagered || totalWagered <= 0) return;
+    var rtp = totalWon / totalWagered;
+    var el = document.getElementById('sessionGrade');
+    if (!el) return;
+    var grade, cls;
+    if (rtp >= 1.5)      { grade = 'S'; cls = 'sg-s'; }
+    else if (rtp >= 1.2) { grade = 'A'; cls = 'sg-a'; }
+    else if (rtp >= 1.0) { grade = 'B'; cls = 'sg-b'; }
+    else if (rtp >= 0.8) { grade = 'C'; cls = 'sg-c'; }
+    else if (rtp >= 0.6) { grade = 'D'; cls = 'sg-d'; }
+    else                 { grade = 'F'; cls = 'sg-f'; }
+    el.textContent = 'Grade: ' + grade;
+    el.className = 'session-grade ' + cls;
+    el.style.display = '';
+}
+
+// Sprint 146: Session time efficiency (wins per minute)
+var _timeEffStart146 = 0; var _timeEffWins146 = 0;
+function _resetTimeEff() {
+    _timeEffStart146 = Date.now();
+    _timeEffWins146 = 0;
+    var el = document.getElementById('timeEffBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateTimeEff(won) {
+    if (won) _timeEffWins146++;
+    if (_timeEffWins146 === 0) return;
+    var mins = (Date.now() - _timeEffStart146) / 60000;
+    if (mins < 0.5) return;
+    var wpm = _timeEffWins146 / mins;
+    var el = document.getElementById('timeEffBadge');
+    if (!el) return;
+    el.textContent = wpm.toFixed(1) + ' wins/min';
+    el.style.display = '';
 }
