@@ -1567,6 +1567,13 @@
         _resetTotalBetDisplay(); // 111 — total bet display
         _resetJackpotProgress(); // 112 — jackpot progress
         _resetProfitPctBadge();  // 114 — profit % badge
+        _resetScatterProgress(); // 115 — scatter progress
+        _resetWinBreakdown();    // 116 — win breakdown
+        _updateFeatureActiveDisplay(); // 117 — feature active
+        _resetSessionMilestone(); // 118 — milestones
+        _resetNetPnl();          // 119 — net P&L
+        _resetLuckyCoins();      // 121 — lucky coins
+        _initVolumeSliderMicro(); // 122 — volume slider
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -3011,6 +3018,13 @@
                 _incrementJackpotProgress();            // 112 — jackpot bar
                 _updateAutoSpeedBadge();                // 113 — speed badge
                 _updateProfitPctBadge();                // 114 — profit %
+                _updateScatterProgress(currentGrid);    // 115 — scatter progress
+                _updateWinBreakdown('line');             // 116 — win type
+                _updateFeatureActiveDisplay();           // 117 — feature active
+                _checkSessionMilestone();               // 118 — milestone
+                _updateNetPnl();                        // 119 — net P&L
+                _updateSessionRating();                 // 120 — session rating
+                _earnLuckyCoin(true);                   // 121 — lucky coins (win)
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3172,6 +3186,12 @@
             _incrementJackpotProgress();               // 112 — jackpot bar
             _updateAutoSpeedBadge();                   // 113 — speed badge
             _updateProfitPctBadge();                   // 114 — profit %
+            _updateScatterProgress(currentGrid);       // 115 — scatter progress
+            _updateFeatureActiveDisplay();             // 117 — feature active
+            _checkSessionMilestone();                  // 118 — milestone
+            _updateNetPnl();                           // 119 — net P&L
+            _updateSessionRating();                    // 120 — session rating
+            _earnLuckyCoin(false);                     // 121 — lucky coins
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6608,6 +6628,13 @@
                 _incrementJackpotProgress();            // 112 — jackpot bar
                 _updateAutoSpeedBadge();                // 113 — speed badge
                 _updateProfitPctBadge();                // 114 — profit %
+                _updateScatterProgress(currentGrid);    // 115 — scatter progress
+                _updateWinBreakdown('line');             // 116 — win type
+                _updateFeatureActiveDisplay();           // 117 — feature active
+                _checkSessionMilestone();               // 118 — milestone
+                _updateNetPnl();                        // 119 — net P&L
+                _updateSessionRating();                 // 120 — session rating
+                _earnLuckyCoin(true);                   // 121 — lucky coins (win)
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6734,6 +6761,12 @@
             _incrementJackpotProgress();               // 112 — jackpot bar
             _updateAutoSpeedBadge();                   // 113 — speed badge
             _updateProfitPctBadge();                   // 114 — profit %
+            _updateScatterProgress(currentGrid);       // 115 — scatter progress
+            _updateFeatureActiveDisplay();             // 117 — feature active
+            _checkSessionMilestone();                  // 118 — milestone
+            _updateNetPnl();                           // 119 — net P&L
+            _updateSessionRating();                    // 120 — session rating
+            _earnLuckyCoin(false);                     // 121 — lucky coins
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -11803,4 +11836,156 @@ function _updateProfitPctBadge() {
     el.className = 'profit-pct-badge' + (pct >= 0 ? ' ppb-up' : ' ppb-down');
     el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
     el.style.display = '';
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 115-122: ENHANCED SLOT UI WIDGETS (BATCH 6)
+// ═══════════════════════════════════════════════════════
+
+// Sprint 115: Scatter progress dots (0/3 per spin)
+var _spinScatterFound115 = 0;
+function _resetScatterProgress() {
+    _spinScatterFound115 = 0;
+    var el = document.getElementById('scatterProgress');
+    if (el) { while (el.firstChild) el.removeChild(el.firstChild); el.style.display = 'none'; }
+}
+function _updateScatterProgress(grid) {
+    var el = document.getElementById('scatterProgress');
+    if (!el || !grid) return;
+    var count = 0;
+    grid.forEach(function(col) {
+        if (!Array.isArray(col)) return;
+        col.forEach(function(sym) { if (sym === 'scatter' || (sym && sym.indexOf('scatter') !== -1)) count++; });
+    });
+    _spinScatterFound115 = count;
+    while (el.firstChild) el.removeChild(el.firstChild);
+    var needed = 3;
+    for (var i = 0; i < needed; i++) {
+        var dot = document.createElement('span');
+        dot.className = 'sp-dot' + (i < count ? ' sp-active' : '');
+        el.appendChild(dot);
+    }
+    el.style.display = count > 0 ? '' : 'none';
+}
+
+// Sprint 116: Win type breakdown badge
+var _wtLine116 = 0, _wtScatter116 = 0, _wtBonus116 = 0;
+function _resetWinBreakdown() {
+    _wtLine116 = 0; _wtScatter116 = 0; _wtBonus116 = 0;
+    var el = document.getElementById('winBreakdown');
+    if (el) el.style.display = 'none';
+}
+function _updateWinBreakdown(type) {
+    if (type === 'scatter') _wtScatter116++;
+    else if (type === 'bonus' || type === 'free') _wtBonus116++;
+    else _wtLine116++;
+    var el = document.getElementById('winBreakdown');
+    if (!el) return;
+    var parts = [];
+    if (_wtLine116 > 0) parts.push(_wtLine116 + ' line');
+    if (_wtScatter116 > 0) parts.push(_wtScatter116 + ' scat');
+    if (_wtBonus116 > 0) parts.push(_wtBonus116 + ' bonus');
+    if (parts.length === 0) { el.style.display = 'none'; return; }
+    el.textContent = parts.join(' · ');
+    el.style.display = '';
+}
+
+// Sprint 117: Active bonus feature display
+function _updateFeatureActiveDisplay() {
+    var el = document.getElementById('featureActiveDisplay');
+    if (!el) return;
+    if (freeSpinsActive) {
+        el.textContent = '\u2728 FREE SPINS';
+        el.style.display = '';
+    } else if (typeof expandingWildRespinsLeft !== 'undefined' && expandingWildRespinsLeft > 0) {
+        el.textContent = '\uD83C\uDF1F EXPANDING WILD';
+        el.style.display = '';
+    } else if (typeof respinCount !== 'undefined' && respinCount > 0) {
+        el.textContent = '\uD83D\uDD04 RESPIN';
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// Sprint 118: Session milestone display
+var _lastMilestone118 = 0;
+var _milestoneSpin118 = 0;
+function _resetSessionMilestone() {
+    _lastMilestone118 = 0;
+    _milestoneSpin118 = 0;
+    var el = document.getElementById('sessionMilestone');
+    if (el) el.style.display = 'none';
+}
+function _checkSessionMilestone() {
+    _milestoneSpin118++;
+    var milestones = [10, 25, 50, 100, 250, 500];
+    var el = document.getElementById('sessionMilestone');
+    if (!el) return;
+    var milestone = milestones.find(function(m) { return _milestoneSpin118 === m; });
+    if (!milestone) return;
+    el.textContent = '\uD83C\uDFAF ' + milestone + ' spins!';
+    el.style.display = '';
+    setTimeout(function() { el.style.display = 'none'; }, 3000);
+}
+
+// Sprint 119: Net P&L display
+function _resetNetPnl() {
+    var el = document.getElementById('netPnl');
+    if (el) { el.textContent = _DSN + '0.00'; el.style.display = 'none'; }
+}
+function _updateNetPnl() {
+    var el = document.getElementById('netPnl');
+    if (!el || typeof _slotSessionStartBal === 'undefined') return;
+    var net = balance - _slotSessionStartBal;
+    el.className = 'net-pnl' + (net >= 0 ? ' pnl-up' : ' pnl-down');
+    el.textContent = (net >= 0 ? '+' : '') + _DSN + net.toFixed(2);
+    el.style.display = '';
+}
+
+// Sprint 120: Session rating (stars based on RTP performance)
+function _updateSessionRating() {
+    var el = document.getElementById('sessionRating');
+    if (!el) return;
+    var sessWag = typeof _sessWagered84 !== 'undefined' ? _sessWagered84 : 0;
+    if (sessWag < 10) { el.style.display = 'none'; return; }
+    var rtp = sessWag > 0 ? (typeof _sessWon84 !== 'undefined' ? _sessWon84 : 0) / sessWag : 0;
+    var stars = rtp >= 1.5 ? 5 : rtp >= 1.1 ? 4 : rtp >= 0.9 ? 3 : rtp >= 0.7 ? 2 : 1;
+    el.textContent = '\u2605'.repeat(stars) + '\u2606'.repeat(5 - stars);
+    el.className = 'session-rating' + (stars >= 4 ? ' sr-high' : stars >= 3 ? ' sr-mid' : ' sr-low');
+    el.style.display = '';
+}
+
+// Sprint 121: Lucky coins earned (1 per spin, cosmetic progression)
+var _luckyCoins121 = 0;
+function _resetLuckyCoins() {
+    _luckyCoins121 = 0;
+    var el = document.getElementById('luckyCoinDisplay');
+    if (el) el.style.display = 'none';
+}
+function _earnLuckyCoin(won) {
+    _luckyCoins121 += won ? 2 : 1;
+    var el = document.getElementById('luckyCoinDisplay');
+    if (!el) return;
+    el.textContent = '\uD83E\uDE99 ' + _luckyCoins121;
+    el.style.display = '';
+}
+
+// Sprint 122: Inline volume micro-control
+function _initVolumeSliderMicro() {
+    var el = document.getElementById('volumeSliderMicro');
+    if (!el) return;
+    var vol = (typeof appSettings !== 'undefined' && appSettings) ? (appSettings.volume || 50) : 50;
+    el.value = vol;
+    el.style.display = '';
+}
+function _handleVolumeSliderMicro(val) {
+    if (typeof appSettings !== 'undefined' && appSettings) {
+        appSettings.volume = parseInt(val, 10);
+        if (typeof saveSettings === 'function') saveSettings(appSettings);
+    }
+    if (typeof SoundManager !== 'undefined' && SoundManager && SoundManager.setVolume) {
+        SoundManager.setVolume(parseInt(val, 10) / 100);
+    }
 }
