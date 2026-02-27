@@ -740,6 +740,8 @@
             if (typeof updateROIMeter === 'function') updateROIMeter();
             // Sprint 62: Balance change indicator
             if (typeof showBalanceChange === 'function') showBalanceChange(winAmount);
+            // Sprint 65: Update total wagered
+            if (typeof updateTotalWagered === 'function') updateTotalWagered();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

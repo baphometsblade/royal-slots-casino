@@ -1592,6 +1592,8 @@ function renderGames() {
             if (countEl) countEl.textContent = `${filtered.length} game${filtered.length !== 1 ? 's' : ''}`;
             // Re-apply hide/show search filter after every render
             if (typeof _applyLobbySearch === 'function') _applyLobbySearch();
+            // Sprint 65: Update active filter label
+            if (typeof _updateActiveFilterLabel === 'function') _updateActiveFilterLabel();
         }
 
 
@@ -2670,4 +2672,19 @@ function renderGames() {
             var c = _popCounts[gameId] || 0;
             if (c > 0) return '';
             return '<span class="up-badge" title="You haven\'t tried this game yet!">Try!</span>';
+        }
+
+        /* ── Sprint 65: Active Filter Label ──────────────── */
+        function _updateActiveFilterLabel() {
+            var el = document.getElementById('afLabel');
+            if (!el) return;
+            var label = '';
+            if (typeof searchQuery !== 'undefined' && searchQuery) {
+                label = 'Search: "' + searchQuery.substring(0, 20) + '"';
+            } else if (typeof currentFilter !== 'undefined' && currentFilter && currentFilter !== 'all') {
+                var names = { hot: 'Hot', 'new': 'New', jackpot: 'Jackpot', favorites: 'Favorites' };
+                label = 'Filter: ' + (names[currentFilter] || currentFilter);
+            }
+            el.textContent = label;
+            el.style.display = label ? '' : 'none';
         }

@@ -700,6 +700,20 @@
             if (el) el.style.display = 'none';
         }
 
+        /* ── Sprint 65: Total Wagered Display ────────────── */
+        function updateTotalWagered() {
+            var el = document.getElementById('twDisplay');
+            if (!el) return;
+            if (_sessTotalBet <= 0) { el.style.display = 'none'; return; }
+            var disp = _sessTotalBet >= 1000 ? '$' + (_sessTotalBet / 1000).toFixed(1) + 'K' : '$' + Math.round(_sessTotalBet);
+            el.textContent = 'Wagered: ' + disp;
+            el.style.display = '';
+        }
+        function _resetTotalWagered() {
+            var el = document.getElementById('twDisplay');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1913,6 +1927,7 @@
             _showProviderLabel();
             _showGridSize();
             _startDurationWarn();
+            _resetTotalWagered();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2534,6 +2549,7 @@
             _hideGridSize();
             _stopDurationWarn();
             _resetBetRatio();
+            _resetTotalWagered();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

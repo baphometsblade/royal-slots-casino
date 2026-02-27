@@ -350,6 +350,7 @@
                 All Slots
             </h3>
             <span class="section-game-count" id="allGamesCount">122 games</span>
+            <span class="af-label" id="afLabel"></span>
             <span class="lv-toggle" id="lvToggle">
                 <button class="lv-btn lv-btn-active" data-view="grid" onclick="if(typeof setLobbyView==='function')setLobbyView('grid')" title="Grid view">⊞</button>
                 <button class="lv-btn" data-view="list" onclick="if(typeof setLobbyView==='function')setLobbyView('list')" title="List view">☰</button>
@@ -654,6 +655,8 @@
             <!-- Sprint 64: Session Duration Warning + Bet Ratio -->
             <div class="sd-warn" id="sdWarn" style="display:none;" onclick="this.style.display='none'">You've been playing 30+ min — consider a break! <span style="opacity:0.6;cursor:pointer;">[x]</span></div>
             <div class="bb-ratio" id="bbRatio" style="display:none;"></div>
+            <!-- Sprint 65: Total Wagered -->
+            <div class="tw-display" id="twDisplay" style="display:none;"></div>
 
             <!-- Pragmatic Play Bottom Bar -->
             <div class="slot-bottom-bar">
