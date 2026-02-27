@@ -200,6 +200,19 @@ router.post('/', authenticate, async (req, res) => {
             }
         }
 
+        // ── Tournament score submission (fire-and-forget) ──────────────────
+        {
+            const tournamentService = require('../services/tournament.service');
+            const _winMult = bet > 0 ? Math.round((spinResult.winAmount / bet) * 100) / 100 : 0;
+            if (_winMult > 0) {
+                tournamentService.getActive().then(function(ts) {
+                    ts.forEach(function(t) {
+                        tournamentService.submitScore(t.id, userId, _winMult).catch(function() {});
+                    });
+                }).catch(function() {});
+            }
+        }
+
         // ── Log spin ──
         await db.run(
             'INSERT INTO spins (user_id, game_id, bet_amount, result_grid, win_amount, rng_seed) VALUES (?, ?, ?, ?, ?, ?)',

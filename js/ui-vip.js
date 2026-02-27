@@ -1261,3 +1261,19 @@ function renderVipBadge() {
     badge.style.background = `linear-gradient(135deg, ${tier.color}15, ${tier.color}08)`;
     badge.innerHTML = `<span class="vip-header-badge-icon">${tier.icon}</span> ${tier.name.toUpperCase()}`;
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// VIP INLINE BADGE HELPER
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Returns HTML for a small VIP tier pill badge.
+ * tierName: e.g. 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Elite'
+ * Pass null/undefined to get an empty string (not logged in / unranked).
+ */
+function getVipBadgeHtml(tierName) {
+    if (!tierName) return '';
+    var slug = String(tierName).toLowerCase().replace(/\s+/g, '-');
+    return '<span class="vip-inline-badge vip-badge-' + slug + '">' + tierName + '</span>';
+}

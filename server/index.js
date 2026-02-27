@@ -64,6 +64,8 @@ const userRoutes = require('./routes/user.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const jackpotRoutes = require('./routes/jackpot.routes');
 const leaderboardRoutes = require('./routes/leaderboard.routes');
+const tournamentRoutes = require('./routes/tournament.routes');
+const feedRoutes = require('./routes/feed.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/spin', spinRoutes);
@@ -73,6 +75,10 @@ app.use('/api/user', userRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/jackpot', jackpotRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/tournaments', tournamentRoutes);
+app.use('/api/feed', feedRoutes);
+app.use('/api/game-of-day', require('./routes/gameofday.routes'));
+app.use('/api/game-stats', require('./routes/gamestats.routes'));
 
 // ─── Game definitions endpoint (sanitized — no payout tables) ───
 const games = require('../shared/game-definitions');
@@ -142,6 +148,11 @@ async function start() {
         console.log(`  Open: http://localhost:${config.PORT}`);
         console.log(`  Admin: http://localhost:${config.PORT}/admin`);
         console.log(`${'='.repeat(50)}\n`);
+
+        // Bootstrap tournament service
+        const tournamentService = require('./services/tournament.service');
+        tournamentService.ensureActive().catch(err => console.error('[Tournament] Bootstrap error:', err.message));
+        setInterval(() => tournamentService.tick().catch(err => console.error('[Tournament] Tick error:', err.message)), 5 * 60 * 1000);
     });
 }
 

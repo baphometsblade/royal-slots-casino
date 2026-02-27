@@ -92,6 +92,10 @@
                     <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
                     WALLET</button>
                 <button class="btn btn-user" id="soundToggle" onclick="toggleSound()" title="Toggle sound" aria-label="Toggle sound">&#x1F50A;</button>
+                <button class="btn btn-user btn-notif" id="notifBell" onclick="openNotificationPanel()" title="Notifications" aria-label="Notifications">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z"/></svg>
+                    <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                </button>
                 <button class="btn btn-user btn-settings" onclick="openSettingsModal()" title="Settings" aria-label="Settings">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
                 </button>
@@ -124,6 +128,7 @@
                     <div class="hero-buttons">
                         <button class="btn btn-play" onclick="playRandomHotGame()">PLAY NOW</button>
                         <button class="btn btn-bonus-wheel" onclick="showBonusWheelModal()">BONUS WHEEL</button>
+                        <button class="nav-btn" onclick="if(typeof openScratchCard==='function')openScratchCard()">🎰 Scratch</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -712,6 +717,14 @@
                     <!-- Achievements will be inserted here -->
                 </div>
 
+                <h4 style="margin-bottom: 10px; margin-top: 24px;">Daily Challenges</h4>
+                <div class="ch-tabs" id="challengesTabs">
+                    <button class="ch-tab ch-tab-active" data-tab="daily">Today</button>
+                    <button class="ch-tab" data-tab="weekly">Weekly</button>
+                </div>
+                <div id="dailyChallengesPanel"></div>
+                <div id="weeklyChallengesPanel" style="display:none"></div>
+
                 <div class="qa-tools" id="qaTools">
                     <div class="qa-tools-header">
                         <div class="qa-tools-title">QA Tools</div>
@@ -794,6 +807,17 @@
                 <button class="btn wheel-spin-btn" id="wheelSpinBtn" onclick="spinBonusWheel()">SPIN THE WHEEL</button>
                 <button class="btn daily-skip-btn" onclick="closeBonusWheelModal()">CLOSE</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Scratch Card Modal -->
+    <div class="modal" id="scratchCardModal">
+        <div class="modal-content scratch-modal-content">
+            <div class="modal-header">
+                <h2>🎰 Daily Scratch Card</h2>
+                <button class="modal-close" onclick="document.getElementById('scratchCardModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="scratch-content"></div>
         </div>
     </div>
 
@@ -1290,5 +1314,17 @@
             animation: nearMissNudge 0.4s ease-out;
         }
     </style>
+
+<!-- Jackpot Win Overlay -->
+<div id="jackpotWinOverlay" class="jackpot-win-overlay">
+    <div class="jackpot-win-modal">
+        <div class="jackpot-win-burst"></div>
+        <div class="jackpot-win-icon">🏆</div>
+        <div class="jackpot-win-tier">JACKPOT!</div>
+        <div class="jackpot-win-amount">+$0.00</div>
+        <div class="jackpot-win-sub">Added to your balance!</div>
+        <button class="jackpot-win-close" onclick="closeJackpotWinModal()">COLLECT!</button>
+    </div>
+</div>
 </body>
 </html>

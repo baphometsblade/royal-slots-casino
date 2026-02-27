@@ -28,6 +28,112 @@
         ];
         const CHALLENGE_STORAGE_KEY = 'matrixChallenges';
 
+        // ── Weekly Missions ──────────────────────────────────
+        const WEEKLY_MISSIONS = [
+            { id: 'weekly_spins_200', label: 'Marathon Spinner', desc: 'Complete 200 spins this week',        target: 200,  xp: 300, icon: '🏃', type: 'spins'   },
+            { id: 'weekly_games_10',  label: 'World Tour',       desc: 'Play 10 different games this week',   target: 10,   xp: 250, icon: '🌍', type: 'games'   },
+            { id: 'weekly_big_win',   label: 'Century Club',     desc: 'Land a win worth 100× your bet',      target: 1,    xp: 500, icon: '💯', type: 'winMult' },
+            { id: 'weekly_wager_2k',  label: 'High Roller Week', desc: 'Wager $2,000 total this week',        target: 2000, xp: 400, icon: '🐳', type: 'wager'   },
+        ];
+        const WEEKLY_STORAGE_KEY = typeof STORAGE_KEY_WEEKLY_MISSIONS !== 'undefined'
+            ? STORAGE_KEY_WEEKLY_MISSIONS : 'matrixWeeklyMissions';
+
+        function _getMondayIso() {
+            const d = new Date();
+            const day = d.getDay();
+            const diff = (day === 0 ? -6 : 1 - day);
+            d.setDate(d.getDate() + diff);
+            d.setHours(0, 0, 0, 0);
+            return d.toISOString().slice(0, 10);
+        }
+
+        function _loadWeeklyState() {
+            try {
+                const raw = localStorage.getItem(WEEKLY_STORAGE_KEY);
+                const state = raw ? JSON.parse(raw) : null;
+                const monday = _getMondayIso();
+                if (!state || state.weekStart !== monday) {
+                    return { weekStart: monday, progress: {}, completed: [] };
+                }
+                return state;
+            } catch (e) {
+                return { weekStart: _getMondayIso(), progress: {}, completed: [] };
+            }
+        }
+
+        function _saveWeeklyState(state) {
+            try { localStorage.setItem(WEEKLY_STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+        }
+
+        function _renderWeeklyPanel() {
+            const container = document.getElementById('weeklyChallengesPanel');
+            if (!container) return;
+            const state = _loadWeeklyState();
+            const monday = _getMondayIso();
+            const nextMonday = new Date(monday);
+            nextMonday.setDate(nextMonday.getDate() + 7);
+            const msLeft = nextMonday - Date.now();
+            const dLeft = Math.floor(msLeft / 86400000);
+            const hLeft = Math.floor((msLeft % 86400000) / 3600000);
+            container.innerHTML = '<div class="challenge-reset-info">Resets in ' + dLeft + 'd ' + hLeft + 'h</div>' +
+                WEEKLY_MISSIONS.map(m => {
+                    const prog = Math.min(state.progress[m.id] || 0, m.target);
+                    const done = state.completed.includes(m.id);
+                    const pct  = Math.round((prog / m.target) * 100);
+                    return '<div class="challenge-item' + (done ? ' challenge-done' : '') + '">' +
+                        '<div class="challenge-icon">' + m.icon + '</div>' +
+                        '<div class="challenge-info">' +
+                            '<div class="challenge-label">' + m.label + '</div>' +
+                            '<div class="challenge-desc">' + m.desc + '</div>' +
+                            '<div class="challenge-progress-bar">' +
+                                '<div class="challenge-progress-fill" style="width:' + pct + '%"></div>' +
+                            '</div>' +
+                            '<div class="challenge-progress-text">' + prog + ' / ' + m.target + (done ? ' ✓' : '') + '</div>' +
+                        '</div>' +
+                        '<div class="challenge-xp">+' + m.xp + ' XP</div>' +
+                    '</div>';
+                }).join('');
+        }
+
+        // Called from the same event pipeline as daily challenges
+        window.onWeeklyMissionEvent = function(eventType, payload) {
+            const state = _loadWeeklyState();
+            let changed = false;
+
+            if (eventType === 'spin') {
+                state.progress['weekly_spins_200'] = (state.progress['weekly_spins_200'] || 0) + 1;
+                if (payload && payload.gameId) {
+                    if (!state._games) state._games = {};
+                    state._games[payload.gameId] = true;
+                    state.progress['weekly_games_10'] = Object.keys(state._games).length;
+                }
+                if ((payload && payload.wager || 0) > 0) {
+                    state.progress['weekly_wager_2k'] = (state.progress['weekly_wager_2k'] || 0) + (payload.wager || 0);
+                }
+                if ((payload && payload.winMult || 0) >= 100) {
+                    state.progress['weekly_big_win'] = 1;
+                }
+                changed = true;
+            }
+
+            if (changed) {
+                WEEKLY_MISSIONS.forEach(m => {
+                    const prog = state.progress[m.id] || 0;
+                    if (prog >= m.target && !state.completed.includes(m.id)) {
+                        state.completed.push(m.id);
+                        if (typeof gainXP === 'function') gainXP(m.xp);
+                        _showChallengeCompleteToast({ ...m, label: '📋 Weekly: ' + m.label });
+                        if (typeof addNotification === 'function') {
+                            addNotification('weekly', 'Weekly Mission Complete!', m.label + ' — +' + m.xp + ' XP earned');
+                        }
+                    }
+                });
+                _saveWeeklyState(state);
+                _renderWeeklyPanel();
+            }
+        };
+
+
         // ── Achievements ──────────────────────────────────────────
         const ACH_STORAGE_KEY = 'matrixAchievements';
 
@@ -329,6 +435,7 @@
             _ensureDailyChallengesPanel();
             _ensureHoFPanel();
             _renderChallengesPanel();
+            _initChallengesTabs();
 
             // Update achievements
             updateAchievements();
@@ -340,6 +447,77 @@
             // ── Login Streak panel ────────────────────────────────────
             _ensureStreakPanel();
             _renderStreakPanel();
+
+            // ── All-Time Leaderboard panel ─────────────────────────────
+            _ensureLeaderboardPanel();
+        }
+
+
+        function _ensureLeaderboardPanel() {
+            if (document.getElementById('leaderboardPanelContainer')) return;
+            var wrap = document.createElement('div');
+            wrap.id = 'leaderboardPanelContainer';
+            wrap.style.cssText = 'margin-top:14px;';
+            wrap.innerHTML = '<div id="leaderboardToggle" role="button" tabindex="0"'
+                + ' style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;'
+                + 'padding:8px 12px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:8px;">'
+                + '<span style="font-size:13px;font-weight:700;color:#ffd700">\uD83C\uDFC6 All-Time Big Wins</span>'
+                + '<span id="leaderboardChevron" style="color:rgba(255,255,255,0.4);font-size:12px">\u25BC</span>'
+                + '</div>'
+                + '<div id="leaderboardBody" style="border:1px solid rgba(255,215,0,0.12);border-top:none;'
+                + 'border-radius:0 0 8px 8px;padding:8px 12px;background:rgba(0,0,0,0.25);display:none">'
+                + '<div id="leaderboardList"><div style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0">Loading\u2026</div></div>'
+                + '</div>';
+            var streak = document.getElementById('streakPanelContainer');
+            if (streak && streak.parentNode) {
+                streak.parentNode.insertBefore(wrap, streak.nextSibling);
+            } else {
+                var sc = document.querySelector('.stats-panel');
+                if (sc) sc.appendChild(wrap);
+            }
+            document.getElementById('leaderboardToggle').addEventListener('click', function() {
+                var body = document.getElementById('leaderboardBody');
+                var chev = document.getElementById('leaderboardChevron');
+                var isOpen = body.style.display !== 'none';
+                body.style.display = isOpen ? 'none' : '';
+                chev.textContent = isOpen ? '\u25BC' : '\u25B2';
+                if (!isOpen && !body.dataset.loaded) {
+                    body.dataset.loaded = '1';
+                    _fetchLeaderboard();
+                }
+            });
+        }
+
+        function _fetchLeaderboard() {
+            var list = document.getElementById('leaderboardList');
+            if (!list) return;
+            fetch('/api/leaderboard')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var entries = data.leaderboard || [];
+                    if (entries.length === 0) {
+                        list.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0">No big wins yet \u2014 be the first!</div>';
+                        return;
+                    }
+                    var medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+                    list.innerHTML = entries.map(function(e, i) {
+                        var gameName = e.gameId || 'Unknown';
+                        if (typeof games !== 'undefined') {
+                            var g = games.find(function(x) { return x.id === e.gameId; });
+                            if (g) gameName = g.name;
+                        }
+                        return '<div class="ldb-row">'
+                            + '<span class="ldb-rank">' + (medals[i] || (i + 1)) + '</span>'
+                            + '<span class="ldb-player">' + e.username + (typeof getVipBadgeHtml === 'function' ? getVipBadgeHtml(e.vip_tier || null) : '') + '</span>'
+                            + '<span class="ldb-game">' + gameName + '</span>'
+                            + '<span class="ldb-mult">' + e.mult + '\xD7</span>'
+                            + '<span class="ldb-amount">$' + Number(e.winAmount).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span>'
+                            + '</div>';
+                    }).join('');
+                })
+                .catch(function() {
+                    list.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:12px;padding:8px 0">Could not load leaderboard.</div>';
+                });
         }
 
 
@@ -499,6 +677,24 @@
         }
 
 
+        function _initChallengesTabs() {
+            const tabContainer = document.getElementById('challengesTabs');
+            if (!tabContainer || tabContainer.dataset.init) return;
+            tabContainer.dataset.init = '1';
+            tabContainer.addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-tab]');
+                if (!btn) return;
+                tabContainer.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('ch-tab-active'));
+                btn.classList.add('ch-tab-active');
+                const tab = btn.dataset.tab;
+                const daily  = document.getElementById('dailyChallengesPanel');
+                const weekly = document.getElementById('weeklyChallengesPanel');
+                if (daily)  daily.style.display  = tab === 'daily'  ? '' : 'none';
+                if (weekly) weekly.style.display  = tab === 'weekly' ? '' : 'none';
+                if (tab === 'weekly') _renderWeeklyPanel();
+            });
+        }
+
         function _ensureDailyChallengesPanel() {
             if (document.getElementById('dailyChallengesPanel')) return;
             const achievementsEl = document.getElementById('achievementsList');
@@ -563,6 +759,10 @@
 
 
         function showAchievementNotification(achievement) {
+            // Also persist in notification center
+            if (typeof addNotification === "function") {
+                addNotification("achievement", "🏆" + achievement.name, achievement.desc);
+            }
             playSound('bigwin');
 
             const notification = document.createElement('div');
@@ -1302,15 +1502,37 @@
                     wheelAngle = targetNorm;
                     const seg = WHEEL_SEGMENTS[winIndex];
 
-                    balance += seg.value;
-                    updateBalance();
-                    awardXP(seg.xp);
+                    if (seg.type === 'freespins') {
+                        // Award free spins
+                        const fsCount = seg.value;
+                        if (currentGame && !freeSpinsActive) {
+                            // Slot is open and idle — start free spins immediately
+                            triggerFreeSpins(currentGame, fsCount);
+                        } else if (currentGame && freeSpinsActive) {
+                            // Already in free spins — top them up
+                            freeSpinsRemaining += fsCount;
+                            if (typeof updateFreeSpinsDisplay === 'function') updateFreeSpinsDisplay();
+                        } else {
+                            // Not in a slot — queue free spins; they will activate when the player opens a slot
+                            freeSpinsActive = true;
+                            freeSpinsRemaining = fsCount;
+                            freeSpinsTotalWin = 0;
+                            freeSpinsMultiplier = 1;
+                        }
+                        awardXP(seg.xp);
+                        const gameLabel = (currentGame && currentGame.name) ? currentGame.name : 'your next slot';
+                        showToast(`\uD83C\uDFB0 ${fsCount} Free Spins awarded on ${gameLabel}!`, 'win');
+                    } else {
+                        balance += seg.value;
+                        updateBalance();
+                        awardXP(seg.xp);
+                        showToast(`\uD83C\uDF89 Bonus Wheel: +$${seg.value.toLocaleString()} and +${seg.xp} XP!`, 'win');
+                    }
 
                     wheelState.lastSpin = new Date().toISOString();
                     saveWheelState();
 
                     playSound('bigwin');
-                    showToast(`Bonus Wheel: +$${seg.value.toLocaleString()} and +${seg.xp} XP!`, 'win');
                     createConfetti();
 
                     drawWheel(winIndex);
@@ -1326,5 +1548,268 @@
         }
 
 
+
+        // ══════════════════════════════════════════════════════════
+        // NOTIFICATION CENTER
+        // ══════════════════════════════════════════════════════════
+
+        const _NOTIF_KEY = typeof STORAGE_KEY_NOTIFICATIONS !== 'undefined'
+            ? STORAGE_KEY_NOTIFICATIONS : 'matrixNotifications';
+        const _NOTIF_MAX = 30;
+        const _NOTIF_EXPIRE_MS = 7 * 24 * 3600 * 1000;
+
+        function _loadNotifications() {
+            try {
+                const raw = localStorage.getItem(_NOTIF_KEY);
+                if (!raw) return [];
+                const all = JSON.parse(raw);
+                const cutoff = Date.now() - _NOTIF_EXPIRE_MS;
+                return all.filter(n => new Date(n.ts).getTime() > cutoff);
+            } catch (e) { return []; }
+        }
+
+        function _saveNotifications(list) {
+            try { localStorage.setItem(_NOTIF_KEY, JSON.stringify(list.slice(0, _NOTIF_MAX))); } catch (e) {}
+        }
+
+        function _updateNotifBadge() {
+            const badge = document.getElementById('notifBadge');
+            if (!badge) return;
+            const unread = _loadNotifications().filter(n => !n.read).length;
+            badge.textContent = unread;
+            badge.style.display = unread > 0 ? '' : 'none';
+        }
+
+        window.addNotification = function(type, title, body) {
+            const icons = { achievement: '🏆', tournament: '⚡', weekly: '📋', daily: '🎯', daily_bonus: '🎁', system: '📣' };
+            const list = _loadNotifications();
+            list.unshift({
+                id:    Date.now() + Math.random(),
+                type:  type,
+                icon:  icons[type] || '📣',
+                title: title,
+                body:  body || '',
+                ts:    new Date().toISOString(),
+                read:  false,
+            });
+            _saveNotifications(list);
+            _updateNotifBadge();
+        };
+
+        window.openNotificationPanel = function() {
+            let panel = document.getElementById('notifPanel');
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'notifPanel';
+                panel.className = 'notif-panel';
+                panel.innerHTML = '<div class="notif-panel-header">'
+                    + '<span class="notif-panel-title">Notifications</span>'
+                    + '<button class="notif-mark-read" onclick="markAllNotificationsRead()">Mark all read</button>'
+                    + '<button class="notif-panel-close" onclick="closeNotificationPanel()">✕</button>'
+                    + '</div>'
+                    + '<div class="notif-panel-list" id="notifPanelList"></div>';
+                document.body.appendChild(panel);
+            }
+            _renderNotifPanel();
+            panel.classList.add('active');
+            // backdrop
+            let bd = document.getElementById('notifBackdrop');
+            if (!bd) {
+                bd = document.createElement('div');
+                bd.id = 'notifBackdrop';
+                bd.className = 'notif-backdrop';
+                bd.onclick = closeNotificationPanel;
+                document.body.appendChild(bd);
+            }
+            bd.classList.add('active');
+        };
+
+        window.closeNotificationPanel = function() {
+            const panel = document.getElementById('notifPanel');
+            const bd    = document.getElementById('notifBackdrop');
+            if (panel) panel.classList.remove('active');
+            if (bd)    bd.classList.remove('active');
+        };
+
+        window.markAllNotificationsRead = function() {
+            const list = _loadNotifications().map(n => ({ ...n, read: true }));
+            _saveNotifications(list);
+            _updateNotifBadge();
+            _renderNotifPanel();
+        };
+
+        function _timeAgo(isoStr) {
+            const diff = Date.now() - new Date(isoStr).getTime();
+            const m = Math.floor(diff / 60000);
+            if (m < 1)  return 'just now';
+            if (m < 60) return m + 'm ago';
+            const h = Math.floor(m / 60);
+            if (h < 24) return h + 'h ago';
+            return Math.floor(h / 24) + 'd ago';
+        }
+
+        function _renderNotifPanel() {
+            const list = document.getElementById('notifPanelList');
+            if (!list) return;
+            const notifs = _loadNotifications();
+            if (notifs.length === 0) {
+                list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+                return;
+            }
+            list.innerHTML = notifs.map(n =>
+                '<div class="notif-item' + (n.read ? '' : ' notif-unread') + '">' +
+                '<div class="notif-item-icon">' + n.icon + '</div>' +
+                '<div class="notif-item-body">' +
+                '<div class="notif-item-title">' + n.title + '</div>' +
+                (n.body ? '<div class="notif-item-text">' + n.body + '</div>' : '') +
+                '<div class="notif-item-time">' + _timeAgo(n.ts) + '</div>' +
+                '</div>' +
+                '</div>'
+            ).join('');
+        }
+
+        // Patch showAchievementNotification to also persist in notification center
+        const _origShowAchNotif = typeof showAchievementNotification === 'function' ? showAchievementNotification : null;
+        // Override happens at call site: see below
+
+        // Initialise badge on load
+        document.addEventListener('DOMContentLoaded', function() {
+            _updateNotifBadge();
+        });
+        // Also update now in case DOMContentLoaded already fired
+        if (document.readyState !== 'loading') {
+            setTimeout(_updateNotifBadge, 200);
+        }
+
         // ── Login streak: check once on page load (toast fires even if stats modal is never opened)
         setTimeout(function() { _checkLoginStreak(); }, 800);
+
+
+        // ═══════════════════════════════════════════════════════════════
+        // DAILY SCRATCH CARD
+        // ═══════════════════════════════════════════════════════════════
+
+        const SCRATCH_STORAGE_KEY = 'matrix_scratch_card';
+        const SCRATCH_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
+        const SCRATCH_PRIZES = [50, 100, 100, 250, 250, 500, 500, 1000, 2500];
+        const SCRATCH_SYMBOLS = { 50: '🍋', 100: '🍊', 250: '🍇', 500: '💎', 1000: '⭐', 2500: '7️⃣' };
+
+        function canPlayScratchCard() {
+            try {
+                var saved = JSON.parse(localStorage.getItem(SCRATCH_STORAGE_KEY) || '{}');
+                if (!saved.lastPlay) return true;
+                return (Date.now() - saved.lastPlay) >= SCRATCH_COOLDOWN_MS;
+            } catch(e) { return true; }
+        }
+
+        function openScratchCard() {
+            var modal = document.getElementById('scratchCardModal');
+            if (!modal) return;
+
+            if (!canPlayScratchCard()) {
+                try {
+                    var saved = JSON.parse(localStorage.getItem(SCRATCH_STORAGE_KEY) || '{}');
+                    var msLeft = SCRATCH_COOLDOWN_MS - (Date.now() - saved.lastPlay);
+                    var hoursLeft = Math.ceil(msLeft / 3600000);
+                    showToast('Next scratch card in ' + hoursLeft + ' hour' + (hoursLeft !== 1 ? 's' : '') + '!', 'info');
+                } catch(e) {}
+                return;
+            }
+
+            // Shuffle helper
+            function _shuffleArr(arr) {
+                for (var i = arr.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+                }
+                return arr;
+            }
+
+            // Generate 9-cell grid
+            var cells = [];
+            var prizes = SCRATCH_PRIZES.slice();
+            _shuffleArr(prizes);
+
+            // ~30% chance of a forced win (3 matching cells)
+            var forceWin = Math.random() < 0.30;
+            if (forceWin) {
+                var winPrize = [100, 250, 250, 500][Math.floor(Math.random() * 4)];
+                var positions = _shuffleArr([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+                var winPositions = [positions[0], positions[1], positions[2]];
+                for (var ci = 0; ci < 9; ci++) {
+                    cells[ci] = winPositions.indexOf(ci) >= 0 ? winPrize : prizes[ci % prizes.length];
+                }
+            } else {
+                for (var ni = 0; ni < 9; ni++) { cells[ni] = prizes[ni % prizes.length]; }
+                // Ensure no accidental triple
+                var counts = {};
+                cells.forEach(function(v) { counts[v] = (counts[v] || 0) + 1; });
+                Object.keys(counts).forEach(function(v) {
+                    if (counts[v] >= 3) {
+                        var replacement = SCRATCH_PRIZES.find(function(p) { return p !== Number(v); });
+                        for (var ri = 8; ri >= 0; ri--) {
+                            if (cells[ri] === Number(v)) { cells[ri] = replacement; break; }
+                        }
+                    }
+                });
+            }
+
+            // Build modal content
+            var gridHtml = cells.map(function(prize, idx) {
+                var sym = SCRATCH_SYMBOLS[prize] || '🎰';
+                return '<div class="scratch-cell" data-prize="' + prize + '" data-idx="' + idx + '">'
+                     + '<div class="scratch-cover">🎰</div>'
+                     + '<div class="scratch-reveal">' + sym + '<br><span class="scratch-amount">$' + prize + '</span></div>'
+                     + '</div>';
+            }).join('');
+
+            var content = modal.querySelector('.scratch-content');
+            if (content) {
+                content.innerHTML = '<p class="scratch-instruction">Click to reveal! Match 3 to win!</p>'
+                    + '<div class="scratch-grid">' + gridHtml + '</div>'
+                    + '<div id="scratchResult" class="scratch-result"></div>';
+
+                var revealed = [];
+                content.querySelectorAll('.scratch-cell').forEach(function(cell) {
+                    cell.addEventListener('click', function() {
+                        if (cell.classList.contains('scratched')) return;
+                        cell.classList.add('scratched');
+                        revealed.push(parseInt(cell.getAttribute('data-prize')));
+
+                        if (revealed.length === 9) {
+                            // All revealed — check for a triple match
+                            var counts2 = {};
+                            revealed.forEach(function(v) { counts2[v] = (counts2[v] || 0) + 1; });
+                            var winValue = null;
+                            Object.keys(counts2).forEach(function(v) {
+                                if (counts2[v] >= 3) winValue = Number(v);
+                            });
+
+                            var prize = winValue || 50; // consolation $50
+                            var resultEl = document.getElementById('scratchResult');
+                            if (winValue) {
+                                if (resultEl) resultEl.innerHTML = '<span class="scratch-win">🎉 You matched 3! Won <strong>$' + winValue + '</strong>!</span>';
+                                showToast('🎰 Scratch card: Won $' + winValue + '!', 'success');
+                            } else {
+                                if (resultEl) resultEl.innerHTML = '<span class="scratch-consolation">No match — consolation prize: <strong>$50</strong></span>';
+                                showToast('Scratch card: Consolation $50', 'info');
+                            }
+
+                            // Credit prize
+                            balance += prize;
+                            updateBalance();
+                            if (typeof saveBalance === 'function') saveBalance();
+                            awardXP(10);
+
+                            // Save cooldown
+                            try {
+                                localStorage.setItem(SCRATCH_STORAGE_KEY, JSON.stringify({ lastPlay: Date.now(), lastPrize: prize }));
+                            } catch(e) {}
+                        }
+                    });
+                });
+            }
+
+            modal.classList.add('active');
+            modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+        }
