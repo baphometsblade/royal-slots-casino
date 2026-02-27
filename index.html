@@ -129,6 +129,8 @@
                         <button class="btn btn-play" onclick="playRandomHotGame()">PLAY NOW</button>
                         <button class="btn btn-bonus-wheel" onclick="showBonusWheelModal()">BONUS WHEEL</button>
                         <button class="nav-btn" onclick="if(typeof openScratchCard==='function')openScratchCard()">🎰 Scratch</button>
+                        <button class="nav-btn" onclick="if(typeof openXpShop==='function')openXpShop()">⚗️ XP Shop</button>
+                        <button class="nav-btn" id="mysteryBoxNavBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox()">📦 Box</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -821,6 +823,34 @@
                 <button class="modal-close" onclick="document.getElementById('scratchCardModal').classList.remove('active')">&times;</button>
             </div>
             <div class="scratch-content"></div>
+        </div>
+    </div>
+
+    <!-- XP Shop Modal (Sprint 27) -->
+    <div class="modal" id="xpShopModal">
+        <div class="modal-content xp-shop-content">
+            <div class="modal-header">
+                <h2>⚗️ XP Shop</h2>
+                <button class="modal-close" onclick="document.getElementById('xpShopModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="xp-shop-balance">Your XP: <span id="xpShopBalance">0</span> XP</div>
+            <div class="xp-shop-grid" id="xpShopGrid"></div>
+        </div>
+    </div>
+
+    <!-- Mystery Box Modal (Sprint 27) -->
+    <div class="modal" id="mysteryBoxModal">
+        <div class="modal-content mystery-box-content">
+            <div class="modal-header">
+                <h2>📦 Mystery Box</h2>
+                <button class="modal-close" onclick="document.getElementById('mysteryBoxModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="mystery-box-body">
+                <div class="mystery-box-icon" id="mysteryBoxIcon">📦</div>
+                <div class="mystery-box-status" id="mysteryBoxStatus">Open to reveal your prize!</div>
+                <div class="mystery-box-countdown" id="mysteryBoxCountdown" style="display:none"></div>
+                <button class="btn mystery-box-open-btn" id="mysteryBoxOpenBtn" onclick="if(typeof doOpenMysteryBox==='function')doOpenMysteryBox()">OPEN BOX</button>
+            </div>
         </div>
     </div>
 

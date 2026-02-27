@@ -1189,6 +1189,15 @@
 
 
         function awardXP(amount) {
+            // 2× XP Boost check (Sprint 27)
+            try {
+                var _boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                if (_boost && _boost.remaining > 0) {
+                    amount *= 2;
+                    _boost.remaining -= 1;
+                    localStorage.setItem('matrixXpBoost', JSON.stringify(_boost));
+                }
+            } catch(e) {}
             playerXP += amount;
             let levelledUp = false;
             let needed = getXPForLevel(playerLevel);
@@ -1882,3 +1891,225 @@
             modal.classList.add('active');
             modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
         }
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 27 — THE FORGE: XP SHOP + MYSTERY BOX
+// ═══════════════════════════════════════════════════════
+
+// ── XP Shop ─────────────────────────────────────────────────────────────────
+var XP_SHOP_ITEMS = [
+    { id: 'freespins5',   label: '5 Free Spins',        icon: '🎰', cost: 100,  desc: 'Get 5 free spins on any open game' },
+    { id: 'balance500',   label: '$500 Balance Boost',  icon: '💵', cost: 250,  desc: 'Instantly add $500 to your balance' },
+    { id: 'xpboost50',    label: '2× XP Boost (50)',    icon: '⚡', cost: 500,  desc: 'Double XP on your next 50 spins' },
+    { id: 'balance2000',  label: '$2,000 Balance Boost', icon: '💰', cost: 1000, desc: 'Instantly add $2,000 to your balance' },
+];
+
+function openXpShop() {
+    var modal = document.getElementById('xpShopModal');
+    if (!modal) return;
+    var grid = document.getElementById('xpShopGrid');
+    var balEl = document.getElementById('xpShopBalance');
+    if (balEl) balEl.textContent = (typeof playerXP !== 'undefined' ? Math.floor(playerXP) : 0).toLocaleString();
+    if (grid) {
+        grid.innerHTML = '';
+        XP_SHOP_ITEMS.forEach(function(item) {
+            var canAfford = (typeof playerXP !== 'undefined') && playerXP >= item.cost;
+            var card = document.createElement('div');
+            card.className = 'xp-shop-card' + (canAfford ? '' : ' xp-shop-card--disabled');
+            card.innerHTML =
+                '<div class="xp-shop-icon">' + item.icon + '</div>' +
+                '<div class="xp-shop-label">' + item.label + '</div>' +
+                '<div class="xp-shop-desc">' + item.desc + '</div>' +
+                '<div class="xp-shop-cost">' + item.cost.toLocaleString() + ' XP</div>' +
+                '<button class="xp-shop-buy-btn"' + (canAfford ? '' : ' disabled') + '>BUY</button>';
+            card.querySelector('.xp-shop-buy-btn').addEventListener('click', function() {
+                _buyXpShopItem(item);
+                // Refresh modal after purchase
+                openXpShop();
+            });
+            grid.appendChild(card);
+        });
+    }
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function _buyXpShopItem(item) {
+    if (typeof playerXP === 'undefined' || playerXP < item.cost) {
+        if (typeof showToast === 'function') showToast('Not enough XP!', 'error');
+        return;
+    }
+    playerXP -= item.cost;
+    if (typeof saveXP === 'function') saveXP();
+    if (typeof updateXPDisplay === 'function') updateXPDisplay();
+    switch (item.id) {
+        case 'freespins5':
+            if (typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                triggerFreeSpins(currentGame, 5);
+                if (typeof showToast === 'function') showToast('5 Free Spins activated!', 'win');
+            } else if (typeof showToast === 'function') {
+                showToast('Open a slot first, then use Free Spins!', 'info');
+            }
+            break;
+        case 'balance500':
+            if (typeof balance !== 'undefined') {
+                balance += 500;
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof updateBalance === 'function') updateBalance();
+                if (typeof showToast === 'function') showToast('+$500 added to your balance!', 'win');
+            }
+            break;
+        case 'xpboost50':
+            try {
+                var existing = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                var remaining = (existing && existing.remaining > 0) ? existing.remaining + 50 : 50;
+                localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: remaining }));
+                if (typeof showToast === 'function') showToast('2× XP Boost active for ' + remaining + ' spins!', 'win');
+            } catch(e) {}
+            break;
+        case 'balance2000':
+            if (typeof balance !== 'undefined') {
+                balance += 2000;
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof updateBalance === 'function') updateBalance();
+                if (typeof showToast === 'function') showToast('+$2,000 added to your balance!', 'bigwin');
+            }
+            break;
+    }
+}
+
+// ── Mystery Box ──────────────────────────────────────────────────────────────
+var MYSTERY_BOX_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
+var MYSTERY_BOX_KEY = 'matrixMysteryBox';
+
+var MYSTERY_BOX_PRIZES = [
+    { label: 'Common',     weight: 60, cash: [50, 100],    spins: 0,  emoji: '📦' },
+    { label: 'Uncommon',   weight: 25, cash: [150, 300],   spins: 0,  emoji: '🎁' },
+    { label: 'Rare',       weight: 10, cash: [500, 1000],  spins: 0,  emoji: '💎' },
+    { label: 'Legendary',  weight: 5,  cash: [2000, 2000], spins: 10, emoji: '👑' },
+];
+
+function _pickMysteryPrize() {
+    var roll = Math.random() * 100;
+    var cumulative = 0;
+    for (var i = 0; i < MYSTERY_BOX_PRIZES.length; i++) {
+        cumulative += MYSTERY_BOX_PRIZES[i].weight;
+        if (roll < cumulative) return MYSTERY_BOX_PRIZES[i];
+    }
+    return MYSTERY_BOX_PRIZES[0];
+}
+
+function _getMysteryBoxState() {
+    try { return JSON.parse(localStorage.getItem(MYSTERY_BOX_KEY) || 'null'); } catch(e) { return null; }
+}
+
+function _updateMysteryBoxNavBtn() {
+    var btn = document.getElementById('mysteryBoxNavBtn');
+    if (!btn) return;
+    var state = _getMysteryBoxState();
+    var elapsed = state ? Date.now() - state.lastOpen : Infinity;
+    if (elapsed >= MYSTERY_BOX_COOLDOWN_MS) {
+        btn.classList.add('mystery-box-ready');
+        btn.title = 'Mystery Box ready!';
+    } else {
+        btn.classList.remove('mystery-box-ready');
+        var remaining = Math.ceil((MYSTERY_BOX_COOLDOWN_MS - elapsed) / 1000);
+        var h = Math.floor(remaining / 3600), m = Math.floor((remaining % 3600) / 60);
+        btn.title = 'Ready in ' + h + 'h ' + m + 'm';
+    }
+}
+
+function openMysteryBox() {
+    var modal = document.getElementById('mysteryBoxModal');
+    if (!modal) return;
+    _refreshMysteryBoxModal();
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+    // Tick countdown every second while open
+    if (window._mysteryBoxTick) clearInterval(window._mysteryBoxTick);
+    window._mysteryBoxTick = setInterval(function() {
+        if (!modal.classList.contains('active')) { clearInterval(window._mysteryBoxTick); return; }
+        _refreshMysteryBoxModal();
+    }, 1000);
+}
+
+function _refreshMysteryBoxModal() {
+    var icon    = document.getElementById('mysteryBoxIcon');
+    var status  = document.getElementById('mysteryBoxStatus');
+    var cd      = document.getElementById('mysteryBoxCountdown');
+    var openBtn = document.getElementById('mysteryBoxOpenBtn');
+    if (!icon) return;
+    var state = _getMysteryBoxState();
+    var elapsed = state ? Date.now() - state.lastOpen : Infinity;
+    if (elapsed >= MYSTERY_BOX_COOLDOWN_MS) {
+        icon.textContent = '📦';
+        icon.className = 'mystery-box-icon mystery-box-icon--ready';
+        status.textContent = 'Your mystery box is ready!';
+        if (cd) cd.style.display = 'none';
+        if (openBtn) { openBtn.disabled = false; openBtn.textContent = 'OPEN BOX'; }
+    } else {
+        var remaining = Math.ceil((MYSTERY_BOX_COOLDOWN_MS - elapsed) / 1000);
+        var h = Math.floor(remaining / 3600);
+        var m = Math.floor((remaining % 3600) / 60);
+        var s = remaining % 60;
+        icon.textContent = '🔒';
+        icon.className = 'mystery-box-icon mystery-box-icon--locked';
+        status.textContent = 'Next box available in:';
+        if (cd) { cd.style.display = ''; cd.textContent = h + 'h ' + m + 'm ' + s + 's'; }
+        if (openBtn) { openBtn.disabled = true; openBtn.textContent = 'LOCKED'; }
+    }
+}
+
+function doOpenMysteryBox() {
+    var state = _getMysteryBoxState();
+    var elapsed = state ? Date.now() - state.lastOpen : Infinity;
+    if (elapsed < MYSTERY_BOX_COOLDOWN_MS) return;
+
+    var prize = _pickMysteryPrize();
+    var cashMin = prize.cash[0], cashMax = prize.cash[1];
+    var cashAmt = cashMin + Math.floor(Math.random() * (cashMax - cashMin + 1));
+
+    // Save cooldown
+    localStorage.setItem(MYSTERY_BOX_KEY, JSON.stringify({ lastOpen: Date.now() }));
+
+    // Award prize
+    if (typeof balance !== 'undefined') {
+        balance += cashAmt;
+        if (typeof saveBalance === 'function') saveBalance();
+        if (typeof updateBalance === 'function') updateBalance();
+    }
+    if (prize.spins > 0 && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+        triggerFreeSpins(currentGame, prize.spins);
+    }
+
+    // Animate
+    var icon   = document.getElementById('mysteryBoxIcon');
+    var status = document.getElementById('mysteryBoxStatus');
+    var openBtn = document.getElementById('mysteryBoxOpenBtn');
+    if (icon) {
+        icon.className = 'mystery-box-icon mystery-box-icon--opening';
+        icon.textContent = '✨';
+        setTimeout(function() {
+            icon.textContent = prize.emoji;
+            icon.className = 'mystery-box-icon mystery-box-icon--revealed';
+        }, 600);
+    }
+    if (status) {
+        setTimeout(function() {
+            var msg = prize.label + '! +$' + cashAmt.toLocaleString();
+            if (prize.spins > 0) msg += ' + ' + prize.spins + ' Free Spins!';
+            status.textContent = msg;
+            if (typeof showToast === 'function') showToast(prize.emoji + ' Mystery Box: ' + msg, prize.label === 'Legendary' ? 'bigwin' : 'win');
+        }, 700);
+    }
+    if (openBtn) { openBtn.disabled = true; openBtn.textContent = 'OPENED'; }
+    _updateMysteryBoxNavBtn();
+}
+
+// Refresh nav btn state on load and every minute
+(function() {
+    function _init() { _updateMysteryBoxNavBtn(); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _init); }
+    else { _init(); }
+    setInterval(_updateMysteryBoxNavBtn, 60000);
+})();
