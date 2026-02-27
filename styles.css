@@ -15702,3 +15702,99 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     from { opacity: 0; transform: translateY(-4px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   SPRINT 91-98 STYLES
+   ═══════════════════════════════════════════════════════ */
+
+/* Sprint 91: Session clock */
+.session-clock {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: #888;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    letter-spacing: 0.5px;
+    align-self: center;
+}
+
+/* Sprint 92: Mega win badge */
+.mega-win-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,140,0,0.25));
+    color: #ffd700;
+    border: 1px solid rgba(255,215,0,0.3);
+}
+
+/* Sprint 93: Near-miss counter */
+.near-miss-count {
+    font-size: 10px;
+    color: #ff9f43;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(255,159,67,0.1);
+    font-weight: 600;
+}
+
+/* Sprint 94: Balance alert */
+.bal-alert-display {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ff4444;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: rgba(255,68,68,0.15);
+    border: 1px solid rgba(255,68,68,0.4);
+}
+@keyframes bal-alert-flash-anim {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+.bal-alert-flash { animation: bal-alert-flash-anim 0.5s ease 2; }
+
+/* Sprint 95: Cascade depth tracker */
+.cascade-depth {
+    font-size: 10px;
+    color: #a29bfe;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(162,155,254,0.1);
+    font-weight: 600;
+}
+
+/* Sprint 96: Autoplay countdown */
+.autoplay-countdown {
+    font-size: 11px;
+    color: #74b9ff;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: rgba(116,185,255,0.1);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Sprint 97: Session XP earned */
+.session-xp-earned {
+    font-size: 10px;
+    color: #fdcb6e;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(253,203,110,0.1);
+    font-weight: 600;
+}
+
+/* Sprint 98: Hot symbol */
+.hot-symbol {
+    font-size: 10px;
+    color: #ff7675;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(255,118,117,0.1);
+    font-weight: 600;
+    text-transform: capitalize;
+}

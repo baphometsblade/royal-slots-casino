@@ -1545,6 +1545,13 @@
         _resetPowerMeter();     // 88 — power meter
         _renderGameTagChips();  // 89 — game tag chips
         _resetPayoutLog();      // 90 — payout log
+        _initSessionClock();    // 91 — session clock
+        _resetMegaWinBadge();   // 92 — mega win badge
+        _resetNearMissCount();  // 93 — near-miss counter
+        _initBalAlert();        // 94 — balance alert
+        _resetCascadeDepth();   // 95 — cascade depth
+        _resetSessionXpDisplay(); // 97 — session XP
+        _resetHotSymbol();      // 98 — hot symbol
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1833,6 +1840,7 @@
             _clearApProgress();
             _hideKbHints();
             _hideQuickBetPresets();  // 60
+        _stopSessionClock();     // 91 — stop session clock on close
         _showSessionSummary();   // 74 — session summary
             _resetCashoutHint();     // 66
             // Sprint 41 — hide quick switch
@@ -2294,6 +2302,7 @@
         _updateSessionHiLo(balance);  // Sprint 69 — session hi-lo
         _updateLossRecovery(balance); // Sprint 72 — loss recovery
         _recordSpinTime();           // Sprint 87 — spin rate
+        _updateAutoplayCountdown();  // Sprint 96 — autoplay countdown
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
@@ -2971,6 +2980,10 @@
                 _checkAutoStopWin(winAmount);   // 86 — auto-stop win
                 _updatePowerMeter(true);        // 88 — power meter (reset)
                 _addPayoutLogEntry(winAmount, currentBet); // 90 — payout log
+                _checkMegaWin(winAmount, currentBet);   // 92 — mega win badge
+                _updateAutoplayCountdown();             // 96 — autoplay countdown
+                _addSessionXp(typeof XP_AWARD_BIG_WIN !== 'undefined' ? XP_AWARD_BIG_WIN : 5); // 97 — session XP
+                _updateHotSymbol(currentGrid);          // 98 — hot symbol
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3115,6 +3128,11 @@
             _updateWinStreakBadge(winAmount > 0); // 83 — win streak post-spin
             _updateSessionRtp(currentBet, winAmount); // 84 — session RTP post-spin
             _updatePowerMeter(winAmount > 0); // 88 — power meter post-spin
+            _checkNearMiss(currentGrid, winAmount);  // 93 — near-miss counter
+            _checkBalAlert(balance);                 // 94 — balance alert
+            _updateAutoplayCountdown();              // 96 — autoplay countdown
+            _addSessionXp(typeof XP_AWARD_PER_SPIN !== 'undefined' ? XP_AWARD_PER_SPIN : 1); // 97 — session XP
+            _updateHotSymbol(currentGrid);           // 98 — hot symbol
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6536,6 +6554,10 @@
                 _checkAutoStopWin(winAmount);   // 86 — auto-stop win
                 _updatePowerMeter(true);        // 88 — power meter (reset)
                 _addPayoutLogEntry(winAmount, currentBet); // 90 — payout log
+                _checkMegaWin(winAmount, currentBet);   // 92 — mega win badge
+                _updateAutoplayCountdown();             // 96 — autoplay countdown
+                _addSessionXp(typeof XP_AWARD_BIG_WIN !== 'undefined' ? XP_AWARD_BIG_WIN : 5); // 97 — session XP
+                _updateHotSymbol(currentGrid);          // 98 — hot symbol
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6645,6 +6667,11 @@
             _updateWinStreakBadge(winAmount > 0); // 83 — win streak post-spin
             _updateSessionRtp(currentBet, winAmount); // 84 — session RTP post-spin
             _updatePowerMeter(winAmount > 0); // 88 — power meter post-spin
+            _checkNearMiss(currentGrid, winAmount);  // 93 — near-miss counter
+            _checkBalAlert(balance);                 // 94 — balance alert
+            _updateAutoplayCountdown();              // 96 — autoplay countdown
+            _addSessionXp(typeof XP_AWARD_PER_SPIN !== 'undefined' ? XP_AWARD_PER_SPIN : 1); // 97 — session XP
+            _updateHotSymbol(currentGrid);           // 98 — hot symbol
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -11259,4 +11286,167 @@ function _addPayoutLogEntry(winAmount, betAmount) {
     el.style.display = '';
     _payoutLogEntries90.push({ win: winAmount, bet: betAmount, ts: Date.now() });
     if (_payoutLogEntries90.length > 50) _payoutLogEntries90.shift();
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 91-98: ENHANCED SLOT UI WIDGETS (BATCH 3)
+// ═══════════════════════════════════════════════════════
+
+// Sprint 91: Session clock (HH:MM elapsed)
+var _sessionClockStart91 = 0;
+var _sessionClockTimer91 = null;
+function _initSessionClock() {
+    _sessionClockStart91 = Date.now();
+    var el = document.getElementById('sessionClock');
+    if (el) { el.textContent = '00:00'; el.style.display = ''; }
+    if (_sessionClockTimer91) clearInterval(_sessionClockTimer91);
+    _sessionClockTimer91 = setInterval(function() {
+        var el2 = document.getElementById('sessionClock');
+        if (!el2) return;
+        var sec = Math.floor((Date.now() - _sessionClockStart91) / 1000);
+        var mm = Math.floor(sec / 60), ss = sec % 60;
+        var hh = Math.floor(mm / 60); mm = mm % 60;
+        el2.textContent = (hh > 0 ? hh + ':' : '') + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+    }, 1000);
+}
+function _stopSessionClock() {
+    if (_sessionClockTimer91) { clearInterval(_sessionClockTimer91); _sessionClockTimer91 = null; }
+    var el = document.getElementById('sessionClock');
+    if (el) el.style.display = 'none';
+}
+
+// Sprint 92: Mega win badge counter
+var _megaWinCount92 = 0;
+function _resetMegaWinBadge() {
+    _megaWinCount92 = 0;
+    var el = document.getElementById('megaWinBadge');
+    if (el) el.style.display = 'none';
+}
+function _checkMegaWin(winAmount, betAmount) {
+    if (!winAmount || !betAmount || winAmount < betAmount * 50) return;
+    _megaWinCount92++;
+    var el = document.getElementById('megaWinBadge');
+    if (!el) return;
+    el.textContent = '\uD83C\uDFC6 ' + _megaWinCount92 + ' mega' + (_megaWinCount92 > 1 ? 's' : '');
+    el.style.display = '';
+}
+
+// Sprint 93: Near-miss counter
+var _nearMissCount93 = 0;
+function _resetNearMissCount() {
+    _nearMissCount93 = 0;
+    var el = document.getElementById('nearMissCount');
+    if (el) el.style.display = 'none';
+}
+function _checkNearMiss(grid, winAmount) {
+    if (winAmount > 0 || !grid) return;
+    // Check if 2 reels show same top-tier symbol (diamond, seven, crown)
+    var topSyms = ['diamond', 'seven', 'crown', 'wild'];
+    var cols = Array.isArray(grid) ? grid : [];
+    var counts = {};
+    cols.forEach(function(col) {
+        if (!Array.isArray(col)) return;
+        var mid = col[Math.floor(col.length / 2)] || col[0];
+        if (topSyms.indexOf(mid) !== -1) counts[mid] = (counts[mid] || 0) + 1;
+    });
+    var isNearMiss = Object.keys(counts).some(function(k) { return counts[k] >= 2; });
+    if (!isNearMiss) return;
+    _nearMissCount93++;
+    var el = document.getElementById('nearMissCount');
+    if (!el) return;
+    el.textContent = '\u26A0 ' + _nearMissCount93 + ' near-' + (_nearMissCount93 === 1 ? 'miss' : 'misses');
+    el.style.display = '';
+}
+
+// Sprint 94: Balance alert threshold
+var _balAlertThreshold94 = 0;
+function _initBalAlert() {
+    _balAlertThreshold94 = 0;
+    var el = document.getElementById('balAlertDisplay');
+    if (el) el.style.display = 'none';
+}
+function _setBalAlert(threshold) {
+    _balAlertThreshold94 = threshold || 0;
+}
+function _checkBalAlert(currentBalance) {
+    var el = document.getElementById('balAlertDisplay');
+    if (!el || _balAlertThreshold94 <= 0) return;
+    if (currentBalance <= _balAlertThreshold94) {
+        el.textContent = '\u26A0\uFE0F Balance below ' + _DSN + _balAlertThreshold94.toFixed(0) + '!';
+        el.style.display = '';
+        el.classList.add('bal-alert-flash');
+        setTimeout(function() { el.classList.remove('bal-alert-flash'); }, 1000);
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// Sprint 95: Cascade depth tracker
+var _maxCascadeDepth95 = 0;
+function _resetCascadeDepth() {
+    _maxCascadeDepth95 = 0;
+    var el = document.getElementById('cascadeDepth');
+    if (el) el.style.display = 'none';
+}
+function _updateCascadeDepth(depth) {
+    if (!depth || depth <= 0) return;
+    if (depth > _maxCascadeDepth95) _maxCascadeDepth95 = depth;
+    var el = document.getElementById('cascadeDepth');
+    if (!el) return;
+    el.textContent = '\u{1F4CA} Max cascade: ' + _maxCascadeDepth95 + 'x';
+    el.style.display = '';
+}
+
+// Sprint 96: Autoplay countdown display
+function _updateAutoplayCountdown() {
+    var el = document.getElementById('autoplayCountdown');
+    if (!el) return;
+    if (autoSpinActive && autoSpinMax > 0) {
+        var left = autoSpinMax - autoSpinCount;
+        el.textContent = '\u21BB ' + Math.max(0, left) + ' spins left';
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// Sprint 97: Session XP earned display
+var _sessionXpEarned97 = 0;
+function _resetSessionXpDisplay() {
+    _sessionXpEarned97 = 0;
+    var el = document.getElementById('sessionXpEarned');
+    if (el) el.style.display = 'none';
+}
+function _addSessionXp(xp) {
+    _sessionXpEarned97 += (xp || 0);
+    var el = document.getElementById('sessionXpEarned');
+    if (!el) return;
+    el.textContent = '\u2B50 +' + _sessionXpEarned97 + ' XP';
+    el.style.display = '';
+}
+
+// Sprint 98: Hot symbol indicator
+var _symbolHitCounts98 = {};
+function _resetHotSymbol() {
+    _symbolHitCounts98 = {};
+    var el = document.getElementById('hotSymbol');
+    if (el) el.style.display = 'none';
+}
+function _updateHotSymbol(grid) {
+    if (!grid) return;
+    grid.forEach(function(col) {
+        if (!Array.isArray(col)) return;
+        col.forEach(function(sym) {
+            if (sym) _symbolHitCounts98[sym] = (_symbolHitCounts98[sym] || 0) + 1;
+        });
+    });
+    var top = null, topCount = 0;
+    Object.keys(_symbolHitCounts98).forEach(function(sym) {
+        if (_symbolHitCounts98[sym] > topCount) { top = sym; topCount = _symbolHitCounts98[sym]; }
+    });
+    var el = document.getElementById('hotSymbol');
+    if (!el || !top || topCount < 5) return;
+    el.textContent = '\uD83D\uDD25 ' + top + ' \xD7' + topCount;
+    el.style.display = '';
 }
