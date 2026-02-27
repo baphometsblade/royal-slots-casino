@@ -15978,3 +15978,17 @@ button.active .filter-tab-count {
     font-size: 0.55rem; padding: 1px 6px; border-radius: 4px;
     font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
 }
+
+/* ══ Sprint 63: Provider Label ══ */
+.pv-label {
+    text-align: center; font-size: 0.6rem; color: #64748b;
+    padding: 1px 8px; margin: 2px auto; font-style: italic;
+}
+
+/* ══ Sprint 63: Grid Size Display ══ */
+.gs-display {
+    text-align: center; font-size: 0.65rem; color: #94a3b8;
+    padding: 1px 6px; margin: 1px auto;
+    background: rgba(148,163,184,0.1); border-radius: 6px;
+    font-weight: 600; max-width: 50px;
+}

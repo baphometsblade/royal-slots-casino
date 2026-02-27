@@ -638,6 +638,32 @@
             }, 1500);
         }
 
+        /* ── Sprint 63: Provider Label ───────────────────── */
+        function _showProviderLabel() {
+            var el = document.getElementById('pvLabel');
+            if (!el || !currentGame) return;
+            el.textContent = currentGame.provider || '';
+            el.style.display = currentGame.provider ? '' : 'none';
+        }
+        function _hideProviderLabel() {
+            var el = document.getElementById('pvLabel');
+            if (el) el.style.display = 'none';
+        }
+
+        /* ── Sprint 63: Grid Size Display ────────────────── */
+        function _showGridSize() {
+            var el = document.getElementById('gsDisplay');
+            if (!el || !currentGame) return;
+            var c = currentGame.gridCols || 3;
+            var r = currentGame.gridRows || 3;
+            el.textContent = c + 'x' + r;
+            el.style.display = '';
+        }
+        function _hideGridSize() {
+            var el = document.getElementById('gsDisplay');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1848,6 +1874,8 @@
             _resetSessionBestWin();
             _initSpinPace();
             _resetROIMeter();
+            _showProviderLabel();
+            _showGridSize();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2465,6 +2493,8 @@
             _resetSessionBestWin();
             _resetSpinPace();
             _resetROIMeter();
+            _hideProviderLabel();
+            _hideGridSize();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
