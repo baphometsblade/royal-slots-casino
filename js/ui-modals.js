@@ -508,7 +508,7 @@
                         }
                         return '<div class="ldb-row">'
                             + '<span class="ldb-rank">' + (medals[i] || (i + 1)) + '</span>'
-                            + '<span class="ldb-player">' + e.username + '</span>'
+                            + '<span class="ldb-player">' + e.username + (typeof getVipBadgeHtml === 'function' ? getVipBadgeHtml(e.vip_tier || null) : '') + '</span>'
                             + '<span class="ldb-game">' + gameName + '</span>'
                             + '<span class="ldb-mult">' + e.mult + '\xD7</span>'
                             + '<span class="ldb-amount">$' + Number(e.winAmount).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span>'
@@ -1502,15 +1502,37 @@
                     wheelAngle = targetNorm;
                     const seg = WHEEL_SEGMENTS[winIndex];
 
-                    balance += seg.value;
-                    updateBalance();
-                    awardXP(seg.xp);
+                    if (seg.type === 'freespins') {
+                        // Award free spins
+                        const fsCount = seg.value;
+                        if (currentGame && !freeSpinsActive) {
+                            // Slot is open and idle — start free spins immediately
+                            triggerFreeSpins(currentGame, fsCount);
+                        } else if (currentGame && freeSpinsActive) {
+                            // Already in free spins — top them up
+                            freeSpinsRemaining += fsCount;
+                            if (typeof updateFreeSpinsDisplay === 'function') updateFreeSpinsDisplay();
+                        } else {
+                            // Not in a slot — queue free spins; they will activate when the player opens a slot
+                            freeSpinsActive = true;
+                            freeSpinsRemaining = fsCount;
+                            freeSpinsTotalWin = 0;
+                            freeSpinsMultiplier = 1;
+                        }
+                        awardXP(seg.xp);
+                        const gameLabel = (currentGame && currentGame.name) ? currentGame.name : 'your next slot';
+                        showToast(`\uD83C\uDFB0 ${fsCount} Free Spins awarded on ${gameLabel}!`, 'win');
+                    } else {
+                        balance += seg.value;
+                        updateBalance();
+                        awardXP(seg.xp);
+                        showToast(`\uD83C\uDF89 Bonus Wheel: +$${seg.value.toLocaleString()} and +${seg.xp} XP!`, 'win');
+                    }
 
                     wheelState.lastSpin = new Date().toISOString();
                     saveWheelState();
 
                     playSound('bigwin');
-                    showToast(`Bonus Wheel: +$${seg.value.toLocaleString()} and +${seg.xp} XP!`, 'win');
                     createConfetti();
 
                     drawWheel(winIndex);

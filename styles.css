@@ -13893,3 +13893,39 @@ button.active .filter-tab-count {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* ── Sprint 24: VIP Inline Rank Badges ─────────────────────────────────── */
+.vip-inline-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border-radius: 6px;
+    margin-left: 5px;
+    vertical-align: middle;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+.vip-badge-bronze   { background: #cd7f32; color: #1a1a1a; }
+.vip-badge-silver   { background: #c0c0c0; color: #1a1a1a; }
+.vip-badge-gold     { background: linear-gradient(90deg, #f59e0b, #ffd700); color: #1a1a1a; }
+.vip-badge-platinum { background: linear-gradient(90deg, #0d9488, #14b8a6); color: #fff; }
+.vip-badge-diamond  { background: linear-gradient(90deg, #0ea5e9, #38bdf8); color: #fff; }
+.vip-badge-elite    { background: linear-gradient(90deg, #7c3aed, #a855f7); color: #fff; }
+
+/* ── Sprint 24: Enhanced Bonus Wheel (Free Spin segments) ──────────────── */
+.wheel-segment-freespins {
+    position: relative;
+}
+
+.wheel-segment-freespins::after {
+    content: '✨';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 10px;
+    pointer-events: none;
+}

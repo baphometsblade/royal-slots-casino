@@ -664,13 +664,13 @@ const ACHIEVEMENT_THRESHOLD_JACKPOT_HUNTER_WIN = 25000;
  *   xp: XP bonus awarded alongside the prize
  */
 const WHEEL_SEGMENTS = [
-    { label: '$100',  value: 100,  color: '#ef4444', xp: 10  },
     { label: '$250',  value: 250,  color: '#3b82f6', xp: 20  },
+    { label: '5 FS',  value: 5,   type: 'freespins', color: '#7c3aed', xp: 15 },
     { label: '$500',  value: 500,  color: '#10b981', xp: 30  },
     { label: '$1000', value: 1000, color: '#f59e0b', xp: 50  },
     { label: '$2500', value: 2500, color: '#8b5cf6', xp: 75  },
-    { label: '$100',  value: 100,  color: '#ec4899', xp: 10  },
-    { label: '$250',  value: 250,  color: '#06b6d4', xp: 20  },
+    { label: '10 FS', value: 10,  type: 'freespins', color: '#0ea5e9', xp: 25 },
+    { label: '$250',  value: 250,  color: '#ec4899', xp: 20  },
     { label: '$5000', value: 5000, color: '#ffd700', xp: 150 }
 ];
 
