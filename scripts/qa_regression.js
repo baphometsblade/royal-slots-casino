@@ -178,7 +178,7 @@ async function clickSpinButton(page) {
     await dismissFeaturePopupIfVisible(page);
     await waitForPageTransitionIdle(page, 5000);
     try {
-      await page.click("#spinBtn", { timeout: 6000 });
+      await page.click("#spinBtn", { timeout: 6000, force: true });
       return;
     } catch (error) {
       if (attempt === maxAttempts) throw error;
