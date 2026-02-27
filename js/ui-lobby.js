@@ -972,7 +972,7 @@ function renderGames() {
             }
             _seedCount(game.id, isHot || _hotIds.has(game.id));
             return `
-                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="openSlot('${game.id}')" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
+                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="if(typeof _compareMode!=='undefined'&&_compareMode){_addToCompare('${game.id}');this.classList.toggle('compare-selected',typeof _compareGames!=='undefined'&&_compareGames.indexOf('${game.id}')>=0);}else{openSlot('${game.id}');}" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
                     <button class="fav-btn${favored ? ' fav-active' : ''}" data-game-id="${game.id}" title="${favored ? 'Remove from favourites' : 'Add to favourites'}" onclick="event.stopPropagation(); (function(btn){var nowFav=toggleFavorite('${game.id}'); btn.textContent=nowFav?'\u2764\uFE0F':'\u2661'; btn.title=nowFav?'Remove from favourites':'Add to favourites'; btn.classList.add('fav-active'); setTimeout(function(){btn.classList.remove('fav-active');},350); updateFavTabBadge();})(this)">${favIcon}</button>
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
@@ -2020,6 +2020,124 @@ function renderFavQuickBar() {
         renderGames = function() {
             _origRG.apply(this, arguments);
             renderFavQuickBar();
+            buildProviderStatsPanel();
         };
     }
 })();
+
+// ===== Sprint 39: Provider Stats Panel =====
+function buildProviderStatsPanel() {
+    var panel = document.getElementById('providerStatsPanel');
+    var body = document.getElementById('providerStatsBody');
+    if (!panel || !body) return;
+    if (!Array.isArray(typeof GAMES !== 'undefined' ? GAMES : null)) return;
+    var stats = {};
+    GAMES.forEach(function(g) {
+        var p = g.provider || 'Unknown';
+        if (!stats[p]) stats[p] = { count: 0, rtpTotal: 0, rtpCount: 0 };
+        stats[p].count++;
+        var rtp = (g.payouts && g.payouts.triple) ? g.payouts.triple : 0;
+        if (rtp > 0) { stats[p].rtpTotal += rtp; stats[p].rtpCount++; }
+    });
+    var providers = Object.keys(stats).sort(function(a, b) { return stats[b].count - stats[a].count; });
+    body.innerHTML = providers.map(function(p) {
+        var s = stats[p];
+        var avgRtp = s.rtpCount > 0 ? (s.rtpTotal / s.rtpCount).toFixed(0) + 'x' : '—';
+        return '<button class="provider-stat-row" onclick="setProviderFilter(\'' + p.replace(/'/g, "\\'") + '\')" title="Filter by ' + p + '">'
+            + '<span class="psr-name">' + p + '</span>'
+            + '<span class="psr-count">' + s.count + ' games</span>'
+            + '<span class="psr-rtp">Avg max: ' + avgRtp + '</span>'
+            + '</button>';
+    }).join('');
+    panel.style.display = '';
+}
+
+// Toggle provider stats panel visibility
+function toggleProviderStats() {
+    var panel = document.getElementById('providerStatsPanel');
+    if (!panel) return;
+    panel.style.display = panel.style.display === 'none' ? '' : 'none';
+}
+
+// ===== Sprint 40: Game Comparison Tool =====
+var _compareMode = false;
+var _compareGames = [];
+
+function toggleCompareMode() {
+    _compareMode = !_compareMode;
+    var btn = document.getElementById('compareToggleBtn');
+    if (btn) btn.classList.toggle('compare-active', _compareMode);
+    if (!_compareMode) { clearCompareSelection(); }
+    if (typeof showToast === 'function') showToast(_compareMode ? '\u2696 Click games to compare (max 3)' : 'Compare mode off', 'info');
+}
+
+function _addToCompare(gameId) {
+    if (!_compareMode) return false;
+    if (_compareGames.indexOf(gameId) >= 0) {
+        _compareGames = _compareGames.filter(function(id) { return id !== gameId; });
+    } else {
+        if (_compareGames.length >= 3) { if (typeof showToast === 'function') showToast('Max 3 games to compare', 'warn'); return true; }
+        _compareGames.push(gameId);
+    }
+    _renderCompareBar();
+    return true;
+}
+
+function _renderCompareBar() {
+    var bar = document.getElementById('compareBar');
+    var slotsEl = document.getElementById('compareBarSlots');
+    var nowBtn = document.getElementById('compareNowBtn');
+    if (!bar) return;
+    bar.style.display = _compareGames.length > 0 ? '' : 'none';
+    if (!slotsEl) return;
+    slotsEl.innerHTML = _compareGames.map(function(id) {
+        var g = typeof GAMES !== 'undefined' ? GAMES.find(function(x) { return x.id === id; }) : null;
+        if (!g) return '';
+        return '<span class="compare-pill">' + (g.emoji || '\uD83C\uDFB0') + ' ' + g.name
+            + ' <button onclick="_addToCompare(\'' + id + '\')" title="Remove">\u00d7</button></span>';
+    }).join('');
+    if (nowBtn) nowBtn.disabled = _compareGames.length < 2;
+}
+
+function clearCompareSelection() {
+    _compareGames = [];
+    _renderCompareBar();
+    document.querySelectorAll('.game-card.compare-selected').forEach(function(c) { c.classList.remove('compare-selected'); });
+}
+
+function openCompareModal() {
+    if (_compareGames.length < 2) { if (typeof showToast === 'function') showToast('Select at least 2 games', 'warn'); return; }
+    var modal = document.getElementById('gameCompareModal');
+    var wrap = document.getElementById('compareTableWrap');
+    if (!modal || !wrap) return;
+    var games = _compareGames.map(function(id) { return typeof GAMES !== 'undefined' ? GAMES.find(function(g) { return g.id === id; }) : null; }).filter(Boolean);
+    var fields = [
+        { label: 'Name', fn: function(g) { return g.name; } },
+        { label: 'Provider', fn: function(g) { return g.provider || '—'; } },
+        { label: 'Grid', fn: function(g) { return (g.reels || 5) + '\u00d7' + (g.rows || 3); } },
+        { label: 'Max Win', fn: function(g) { return (g.payouts && g.payouts.triple ? g.payouts.triple + 'x' : '—'); } },
+        { label: 'Mechanics', fn: function(g) { return (g.mechanics || []).join(', ') || '—'; } }
+    ];
+    var best = {};
+    fields.forEach(function(f) {
+        var vals = games.map(function(g) { return parseFloat(f.fn(g)); });
+        if (!isNaN(vals[0])) {
+            var max = Math.max.apply(null, vals);
+            best[f.label] = max;
+        }
+    });
+    var html = '<table class="compare-table"><thead><tr><th>Stat</th>' + games.map(function(g) { return '<th>' + (g.emoji || '') + ' ' + g.name + '</th>'; }).join('') + '</tr></thead><tbody>';
+    fields.forEach(function(f) {
+        html += '<tr><td class="compare-stat-label">' + f.label + '</td>';
+        games.forEach(function(g) {
+            var val = f.fn(g);
+            var isTop = best[f.label] !== undefined && parseFloat(val) === best[f.label];
+            html += '<td class="compare-val' + (isTop ? ' compare-best' : '') + '">' + val + '</td>';
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}

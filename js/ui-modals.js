@@ -2726,3 +2726,51 @@ function _wrRelTime(ts) {
     if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
     return Math.floor(diff / 86400000) + 'd ago';
 }
+
+// ===== Sprint 41: Avatar Picker =====
+var _AVATARS = ['🎰','🃏','🎲','🦁','🐯','🦊','🐺','🦅','🐉','⚡','🔥','💎','👑','🌟','🎯','🏆'];
+var _AVATAR_KEY = 'matrixUserAvatar';
+
+function openAvatarPicker() {
+    var modal = document.getElementById('avatarPickerModal');
+    var grid = document.getElementById('avatarGrid');
+    if (!modal || !grid) return;
+    var current = localStorage.getItem(_AVATAR_KEY) || '';
+    grid.innerHTML = _AVATARS.map(function(emoji) {
+        return '<button class="avatar-option' + (emoji === current ? ' av-selected' : '') + '" onclick="setAvatar(\'' + emoji + '\')" title="' + emoji + '">' + emoji + '</button>';
+    }).join('');
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function setAvatar(emoji) {
+    localStorage.setItem(_AVATAR_KEY, emoji);
+    _refreshAvatarDisplay();
+    var modal = document.getElementById('avatarPickerModal');
+    if (modal) modal.classList.remove('active');
+    if (typeof showToast === 'function') showToast('Avatar updated! ' + emoji, 'info');
+}
+
+function _refreshAvatarDisplay() {
+    var emoji = localStorage.getItem(_AVATAR_KEY) || '';
+    var span = document.getElementById('userAvatarDisplay');
+    var svg = document.getElementById('authBtnSvg');
+    if (!span) return;
+    if (emoji) {
+        span.textContent = emoji;
+        span.style.display = '';
+        if (svg) svg.style.display = 'none';
+    } else {
+        span.style.display = 'none';
+        if (svg) svg.style.display = '';
+    }
+}
+
+// Call on page load to apply saved avatar
+(function() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _refreshAvatarDisplay);
+    } else {
+        _refreshAvatarDisplay();
+    }
+})();

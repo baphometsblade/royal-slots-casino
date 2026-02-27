@@ -1494,6 +1494,8 @@
                 resetIdleTimer();
                 // Sprint 38 — session timer
                 _startSessionTimer();
+                // Sprint 41 — quick switch strip
+                _refreshQuickSwitch();
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1770,6 +1772,10 @@
             _closePaytable();
             // Sprint 38 — stop session timer
             _stopSessionTimer();
+            // Sprint 40+42 — reset bankroll/goal on close
+            dismissBankroll(); dismissWinGoal();
+            // Sprint 41 — hide quick switch
+            var _qss = document.getElementById('quickSwitchStrip'); if (_qss) _qss.style.display = 'none';
             // Sprint 37 — clean up demo mode if active
             if (typeof _demoMode !== 'undefined' && _demoMode) { exitDemoMode(false); return; }
             // Sprint 36 — rating prompt (after a short delay so modal closes first)
@@ -2746,6 +2752,7 @@
                 _sessSpins++;
                 _sessWins++;
                 _sessTotalBet += currentBet;
+                if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
                 _updateSessionStats();
@@ -2815,6 +2822,7 @@
                 if (typeof recordSpinHistory === 'function') recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: currentBet > 0 ? Math.round(winAmount / currentBet) : 0 });
                 if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
                 _demoOnSpinEnd();
+                if (typeof _updateWinGoal === 'function' && winAmount > 0) _updateWinGoal(winAmount);
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -2905,6 +2913,7 @@
                 }, 420);
                 _sessSpins++;
                 _sessTotalBet += currentBet;
+                if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _updateSessionHud();
                 _updateSessionStats();
                 // Dynamic layer de-escalation
@@ -6279,6 +6288,7 @@
                 _sessSpins++;
                 _sessWins++;
                 _sessTotalBet += currentBet;
+                if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
                 _updateSessionStats();
@@ -6332,6 +6342,7 @@
                 if (typeof recordSpinHistory === 'function') recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: currentBet > 0 ? Math.round(winAmount / currentBet) : 0 });
                 if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
                 _demoOnSpinEnd();
+                if (typeof _updateWinGoal === 'function' && winAmount > 0) _updateWinGoal(winAmount);
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6409,6 +6420,7 @@
                 })();
                 _sessSpins++;
                 _sessTotalBet += currentBet;
+                if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _updateSessionHud();
                 _updateSessionStats();
                 // Dynamic layer de-escalation
@@ -9713,5 +9725,155 @@
             valEl.className = 'payout-value session-timer-val';
             if (mins >= 60) valEl.classList.add('session-timer-red');
             else if (mins >= 30) valEl.classList.add('session-timer-yellow');
+        }
+
+        // ===== Sprint 39: Bet Doubler / Halver =====
+        function doubleBet() {
+            if (!currentGame || spinning) return;
+            var bounds = getBetBounds();
+            if (!bounds) return;
+            var validSteps = BET_STEPS.filter(function(v) { return v >= bounds.minBet - 0.001 && v <= bounds.maxBet + 0.001; });
+            if (!validSteps.length) return;
+            var target = currentBet * 2;
+            var next = validSteps.find(function(v) { return v >= target - 0.001; });
+            if (!next) next = validSteps[validSteps.length - 1];
+            currentBet = next;
+            var betRange = document.getElementById('betRange');
+            if (betRange) betRange.value = validSteps.indexOf(next);
+            updateBetDisplay();
+            var spinBtn = document.getElementById('spinBtn');
+            if (spinBtn) spinBtn.disabled = spinning || currentBet > balance;
+        }
+
+        function halveBet() {
+            if (!currentGame || spinning) return;
+            var bounds = getBetBounds();
+            if (!bounds) return;
+            var validSteps = BET_STEPS.filter(function(v) { return v >= bounds.minBet - 0.001 && v <= bounds.maxBet + 0.001; });
+            if (!validSteps.length) return;
+            var target = currentBet / 2;
+            var prev = validSteps[0];
+            for (var i = 0; i < validSteps.length; i++) {
+                if (validSteps[i] <= target + 0.001) prev = validSteps[i];
+                else break;
+            }
+            currentBet = prev;
+            var betRange = document.getElementById('betRange');
+            if (betRange) betRange.value = validSteps.indexOf(prev);
+            updateBetDisplay();
+            var spinBtn = document.getElementById('spinBtn');
+            if (spinBtn) spinBtn.disabled = spinning || currentBet > balance;
+        }
+
+        // ===== Sprint 40: Bankroll Manager =====
+        var _bankrollBudget = 0;
+        var _bankrollWagered = 0;
+
+        function openBankrollManager() {
+            if (!currentGame) return;
+            var input = prompt('Set session budget ($):', '500');
+            if (input === null) return;
+            var amt = parseFloat(input);
+            if (isNaN(amt) || amt <= 0) { if (typeof showToast === 'function') showToast('Invalid budget amount', 'warn'); return; }
+            _bankrollBudget = amt;
+            _bankrollWagered = 0;
+            var row = document.getElementById('bankrollBarRow');
+            if (row) row.style.display = '';
+            _updateBankrollBar();
+        }
+
+        function _updateBankrollBar() {
+            var row = document.getElementById('bankrollBarRow');
+            if (!row || !_bankrollBudget) return;
+            var pct = Math.min(100, Math.round(_bankrollWagered / _bankrollBudget * 100));
+            var bar = document.getElementById('bankrollBar');
+            var label = document.getElementById('bankrollBarLabel');
+            if (bar) {
+                bar.style.width = pct + '%';
+                bar.className = 'bankroll-bar' + (pct >= 90 ? ' bk-red' : pct >= 75 ? ' bk-orange' : pct >= 50 ? ' bk-yellow' : '');
+            }
+            var remaining = Math.max(0, _bankrollBudget - _bankrollWagered);
+            if (label) label.textContent = 'Budget: $' + remaining.toFixed(0) + ' remaining (' + pct + '% used)';
+            if (pct >= 90 && pct < 100) { if (typeof showToast === 'function') showToast('\u26a0 Budget 90% used!', 'warn'); }
+        }
+
+        function dismissBankroll() {
+            _bankrollBudget = 0; _bankrollWagered = 0;
+            var row = document.getElementById('bankrollBarRow');
+            if (row) row.style.display = 'none';
+        }
+
+        // ===== Sprint 41: Quick Game Switch Strip =====
+        function _refreshQuickSwitch() {
+            var strip = document.getElementById('quickSwitchStrip');
+            var pills = document.getElementById('quickSwitchPills');
+            if (!strip || !pills) return;
+            var recent = [];
+            try { recent = JSON.parse(localStorage.getItem(typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'matrixRecentlyPlayed') || '[]'); } catch(e) {}
+            if (recent.length < 2) { strip.style.display = 'none'; return; }
+            strip.style.display = '';
+            pills.innerHTML = '';
+            var shown = recent.slice(0, 5);
+            shown.forEach(function(gameId) {
+                if (!gameId) return;
+                var game = typeof GAMES !== 'undefined' ? GAMES.find(function(g) { return g.id === gameId; }) : null;
+                if (!game) return;
+                var pill = document.createElement('button');
+                pill.className = 'quick-switch-pill' + (currentGame && currentGame.id === gameId ? ' qs-active' : '');
+                pill.title = game.name;
+                pill.innerHTML = '<span class="qs-emoji">' + (game.emoji || '\uD83C\uDFB0') + '</span><span class="qs-name">' + game.name + '</span>';
+                pill.onclick = (function(gid) { return function() {
+                    if (currentGame && currentGame.id === gid) return;
+                    if (typeof closeSlot === 'function' && typeof openSlot === 'function') {
+                        closeSlot();
+                        setTimeout(function() { openSlot(gid); }, 350);
+                    }
+                }; })(gameId);
+                pills.appendChild(pill);
+            });
+        }
+
+        // ===== Sprint 42: Session Win Goal =====
+        var _winGoalTarget = 0;
+        var _winGoalEarned = 0;
+        var _winGoalCelebrated = false;
+
+        function openWinGoal() {
+            if (!currentGame) return;
+            var input = prompt('Set win goal ($):', '1000');
+            if (input === null) return;
+            var amt = parseFloat(input);
+            if (isNaN(amt) || amt <= 0) { if (typeof showToast === 'function') showToast('Invalid goal amount', 'warn'); return; }
+            _winGoalTarget = amt;
+            _winGoalEarned = 0;
+            _winGoalCelebrated = false;
+            var tracker = document.getElementById('winGoalTracker');
+            if (tracker) { tracker.style.display = ''; tracker.classList.remove('wgt-complete'); }
+            var targetEl = document.getElementById('wgtTarget');
+            if (targetEl) targetEl.textContent = amt.toFixed(0);
+            _updateWinGoal(0);
+        }
+
+        function _updateWinGoal(winAmt) {
+            if (!_winGoalTarget || winAmt <= 0) return;
+            _winGoalEarned += winAmt;
+            var pct = Math.min(100, Math.round(_winGoalEarned / _winGoalTarget * 100));
+            var bar = document.getElementById('wgtProgressBar');
+            var pctEl = document.getElementById('wgtPct');
+            if (bar) bar.style.width = pct + '%';
+            if (pctEl) pctEl.textContent = pct + '%';
+            if (pct >= 100 && !_winGoalCelebrated) {
+                _winGoalCelebrated = true;
+                if (typeof showToast === 'function') showToast('\uD83C\uDFAF Win goal reached! \uD83C\uDF89', 'win');
+                if (typeof triggerConfettiBurst === 'function') triggerConfettiBurst();
+                var tracker = document.getElementById('winGoalTracker');
+                if (tracker) tracker.classList.add('wgt-complete');
+            }
+        }
+
+        function dismissWinGoal() {
+            _winGoalTarget = 0; _winGoalEarned = 0; _winGoalCelebrated = false;
+            var tracker = document.getElementById('winGoalTracker');
+            if (tracker) { tracker.style.display = 'none'; tracker.classList.remove('wgt-complete'); }
         }
 

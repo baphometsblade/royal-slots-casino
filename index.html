@@ -102,7 +102,9 @@
                 <button class="btn btn-user" onclick="openStatsModal()" title="View player stats">
                     STATS</button>
                 <button class="btn btn-user btn-profile" id="authBtn" onclick="currentUser ? showProfileModal() : showAuthModal()" title="Account">
-                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                    <!-- Sprint 41: avatar display (click to change) -->
+                    <span id="userAvatarDisplay" style="display:none;font-size:16px;line-height:1;margin-right:2px" onclick="event.stopPropagation();if(typeof openAvatarPicker==='function')openAvatarPicker()" title="Change avatar"></span>
+                    <svg id="authBtnSvg" viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                     <span id="authBtnLabel">LOGIN</span></button>
             </div>
         </div>
@@ -207,6 +209,8 @@
             <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
             <input type="text" class="game-search-input" id="gameSearchInput" placeholder="Search 80+ games..." oninput="filterGamesBySearch(this.value)" aria-label="Search all games">
             <button class="search-clear-btn" id="searchClearBtn" onclick="clearGameSearch()" style="display:none;">&times;</button>
+            <!-- Sprint 40: Compare Toggle -->
+            <button class="compare-toggle-btn" id="compareToggleBtn" onclick="toggleCompareMode()" title="Compare up to 3 games">⚖ Compare</button>
             <!-- Sprint 37: Sort Dropdown -->
             <select class="game-sort-select" id="gameSortSelect" onchange="if(typeof setSortOrder==='function')setSortOrder(this.value)" title="Sort games">
                 <option value="popular">Popular</option>
@@ -276,6 +280,18 @@
             <button class="provider-chip" data-provider="SolsticeFX" onclick="setProviderFilter('SolsticeFX')">SolsticeFX</button>
             <button class="provider-chip" data-provider="PhantomWorks" onclick="setProviderFilter('PhantomWorks')">PhantomWorks</button>
             <button class="provider-chip" data-provider="ArcadeForge" onclick="setProviderFilter('ArcadeForge')">ArcadeForge</button>
+        </div>
+
+        <!-- Sprint 39: Provider Stats Panel -->
+        <div class="provider-stats-panel" id="providerStatsPanel" style="display:none">
+            <div class="provider-stats-body" id="providerStatsBody"><!-- populated by JS --></div>
+        </div>
+
+        <!-- Sprint 40: Compare bar (bottom of lobby) -->
+        <div class="compare-bar" id="compareBar" style="display:none">
+            <div class="compare-bar-slots" id="compareBarSlots"></div>
+            <button class="btn btn-compare-now" id="compareNowBtn" onclick="if(typeof openCompareModal==='function')openCompareModal()">Compare Now</button>
+            <button class="compare-bar-clear" onclick="if(typeof clearCompareSelection==='function')clearCompareSelection()">✕ Clear</button>
         </div>
 
         <!-- All Slots Section -->
@@ -503,7 +519,16 @@
                         <div class="payout-label">SESSION</div>
                         <div class="payout-value session-timer-val" id="sessionTimerVal">0m</div>
                     </div>
+                    <!-- Sprint 40: Bankroll Manager -->
+                    <button class="slot-budget-btn" id="budgetBtn" onclick="if(typeof openBankrollManager==='function')openBankrollManager()" title="Set session budget">💰 Budget</button>
+                    <!-- Sprint 42: Win Goal -->
+                    <button class="slot-goal-btn" id="goalBtn" onclick="if(typeof openWinGoal==='function')openWinGoal()" title="Set win goal">🎯 Goal</button>
                 </div>
+            </div>
+
+            <!-- Sprint 41: Quick Game Switch Strip -->
+            <div class="quick-switch-strip" id="quickSwitchStrip" style="display:none">
+                <div class="quick-switch-pills" id="quickSwitchPills"></div>
             </div>
 
             <!-- Paytable / Game Info Panel (slide-in from right) -->
@@ -562,6 +587,13 @@
                 <div class="slot-bar-section slot-bar-balance">
                     <div class="slot-bar-label">BALANCE</div>
                     <div class="slot-bar-value">$<span id="slotBalance">5000.00</span></div>
+                    <!-- Sprint 42: Win Goal Tracker -->
+                    <div class="win-goal-tracker" id="winGoalTracker" style="display:none">
+                        <div class="wgt-label">GOAL $<span id="wgtTarget">0</span></div>
+                        <div class="wgt-progress-wrap"><div class="wgt-progress-bar" id="wgtProgressBar" style="width:0%"></div></div>
+                        <div class="wgt-pct" id="wgtPct">0%</div>
+                        <button class="wgt-dismiss" onclick="if(typeof dismissWinGoal==='function')dismissWinGoal()">✕</button>
+                    </div>
                 </div>
 
                 <!-- Bet Controls -->
@@ -572,6 +604,15 @@
                         <div class="slot-bar-value">$<span id="betAmount">50</span></div>
                     </div>
                     <button class="slot-bet-btn" id="betUpBtn" onclick="adjustBet(1)">&#43;</button>
+                    <!-- Sprint 39: Bet doubler/halver -->
+                    <button class="slot-bet-btn bet-x2-btn" onclick="doubleBet()" title="Double bet">2×</button>
+                    <button class="slot-bet-btn bet-half-btn" onclick="halveBet()" title="Halve bet">½</button>
+                </div>
+                <!-- Sprint 40: Bankroll Progress Bar -->
+                <div class="bankroll-bar-row" id="bankrollBarRow" style="display:none">
+                    <div class="bankroll-bar-wrap"><div class="bankroll-bar" id="bankrollBar" style="width:0%"></div></div>
+                    <span class="bankroll-bar-label" id="bankrollBarLabel">Budget: $0 remaining</span>
+                    <button class="bankroll-dismiss" onclick="if(typeof dismissBankroll==='function')dismissBankroll()">✕</button>
                 </div>
                 <input type="range" class="bet-range" id="betRange" min="50" max="5000" step="50" value="50" style="display:none;">
                 <span id="minBet" style="display:none;">50</span>
@@ -1005,6 +1046,29 @@
                 <button class="btn btn-play" onclick="exitDemoMode(true)">Play for Real</button>
                 <button class="btn" onclick="exitDemoMode(false)">Back to Lobby</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Sprint 40: Game Compare Modal -->
+    <div class="modal" id="gameCompareModal">
+        <div class="modal-content compare-content">
+            <div class="modal-header">
+                <h2>⚖ Compare Games</h2>
+                <button class="modal-close" onclick="document.getElementById('gameCompareModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="compare-table-wrap" id="compareTableWrap"><!-- populated by JS --></div>
+        </div>
+    </div>
+
+    <!-- Sprint 41: Avatar Picker Modal -->
+    <div class="modal" id="avatarPickerModal">
+        <div class="modal-content avatar-picker-content">
+            <div class="modal-header">
+                <h2>🧑 Choose Avatar</h2>
+                <button class="modal-close" onclick="document.getElementById('avatarPickerModal').classList.remove('active')">&times;</button>
+            </div>
+            <p class="avatar-picker-hint">Your avatar appears next to your username.</p>
+            <div class="avatar-grid" id="avatarGrid"><!-- populated by JS --></div>
         </div>
     </div>
 
