@@ -523,6 +523,8 @@ function renderGames() {
                     _initSession();
                     // Recent wins feed (Sprint 45)
                     if (typeof renderRecentWins === 'function') renderRecentWins();
+                    // Provider leaderboard (Sprint 48)
+                    if (typeof renderProviderLeaderboard === 'function') renderProviderLeaderboard();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -2503,3 +2505,29 @@ function renderGames() {
         }
 
         window.toggleTagFilter = toggleTagFilter;
+
+        /* ── Sprint 48: Provider Leaderboard ────────────── */
+        function renderProviderLeaderboard() {
+            var section = document.getElementById('plSection');
+            var list = document.getElementById('plList');
+            if (!section || !list) return;
+            var recent = [];
+            try { recent = JSON.parse(localStorage.getItem(typeof STORAGE_KEY_RECENTLY_PLAYED !== 'undefined' ? STORAGE_KEY_RECENTLY_PLAYED : 'matrixRecentlyPlayed') || '[]'); } catch(e) {}
+            if (recent.length === 0) { section.style.display = 'none'; return; }
+            var provCounts = {};
+            recent.forEach(function(id) {
+                var g = (typeof games !== 'undefined' ? games : []).find(function(gm) { return gm.id === id; });
+                if (g && g.provider) { provCounts[g.provider] = (provCounts[g.provider] || 0) + 1; }
+            });
+            var sorted = Object.keys(provCounts).sort(function(a,b) { return provCounts[b] - provCounts[a]; }).slice(0, 3);
+            if (sorted.length === 0) { section.style.display = 'none'; return; }
+            section.style.display = '';
+            var medals = ['🥇', '🥈', '🥉'];
+            list.innerHTML = sorted.map(function(p, i) {
+                return '<div class="pl-item"><span class="pl-medal">' + medals[i] + '</span>' +
+                    '<span class="pl-name">' + p + '</span>' +
+                    '<span class="pl-count">' + provCounts[p] + ' plays</span></div>';
+            }).join('');
+        }
+
+        window.renderProviderLeaderboard = renderProviderLeaderboard;

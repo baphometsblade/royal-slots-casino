@@ -15710,3 +15710,37 @@ button.active .filter-tab-count {
 }
 .qs-row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 12px; color: #ccc; }
 .qs-label { color: rgba(255,255,255,0.4); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+
+/* ══ Sprint 48: Spin Counter Badge ══ */
+.sc-badge {
+    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: 600;
+    color: rgba(255,255,255,0.5); pointer-events: none; z-index: 5;
+    white-space: nowrap; transition: all 0.3s;
+}
+.sc-milestone {
+    color: #fbbf24; border-color: #fbbf24; background: rgba(251,191,36,0.15);
+    animation: scFlash 0.5s ease;
+}
+@keyframes scFlash {
+    0% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.4); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+/* ══ Sprint 48: Provider Leaderboard ══ */
+.pl-section { padding: 8px 0 4px; }
+.pl-header {
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.pl-list { display: flex; gap: 8px; }
+.pl-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 8px 12px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+}
+.pl-medal { font-size: 18px; }
+.pl-name { font-size: 11px; color: #ddd; margin-top: 2px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+.pl-count { font-size: 10px; color: rgba(255,255,255,0.35); }

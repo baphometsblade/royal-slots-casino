@@ -253,6 +253,29 @@
             clearTimeout(_qsTipTimer);
         }
 
+        /* ── Sprint 48: Spin Counter Badge ── */
+        var _scCount = 0;
+        var _SC_MILESTONES = [50, 100, 250, 500, 1000];
+
+        function _incrementSpinCounter() {
+            _scCount++;
+            var badge = document.getElementById('scBadge');
+            if (badge) {
+                badge.textContent = _scCount;
+                if (_SC_MILESTONES.indexOf(_scCount) >= 0) {
+                    badge.classList.remove('sc-milestone');
+                    void badge.offsetWidth;
+                    badge.classList.add('sc-milestone');
+                }
+            }
+        }
+
+        function _resetSpinCounter() {
+            _scCount = 0;
+            var badge = document.getElementById('scBadge');
+            if (badge) { badge.textContent = '0'; badge.classList.remove('sc-milestone'); }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2051,6 +2074,7 @@
             _resetWinStreak();
             _resetAmbientToggle();
             hideQuickStats();
+            _resetSpinCounter();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

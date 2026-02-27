@@ -713,6 +713,8 @@
 
             // Sprint 46: Update win streak display
             if (typeof _updateWinStreak === 'function') _updateWinStreak(winAmount > 0);
+            // Sprint 48: Increment spin counter
+            if (typeof _incrementSpinCounter === 'function') _incrementSpinCounter();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
