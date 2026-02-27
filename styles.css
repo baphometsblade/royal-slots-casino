@@ -16093,3 +16093,18 @@ button.active .filter-tab-count {
     background: rgba(248,113,113,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* Sprint 70: Time Since Last Win */
+.tsl-win {
+    position: absolute; top: 178px; right: 14px;
+    font-size: 0.68rem; color: #fbbf24; font-weight: 500;
+    background: rgba(251,191,36,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}
+/* Sprint 70: Bonus Count */
+.bt-count {
+    position: absolute; top: 178px; left: 14px;
+    font-size: 0.68rem; color: #f472b6; font-weight: 500;
+    background: rgba(244,114,182,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}

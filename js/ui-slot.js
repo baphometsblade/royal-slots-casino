@@ -867,6 +867,51 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 70: Time Since Last Win ── */
+        var _tslTs = 0; var _tslInterval = null;
+        function updateTimeSinceWin(isWin) {
+            if (!isWin) return;
+            _tslTs = Date.now();
+            _updateTslDisplay();
+        }
+        function _updateTslDisplay() {
+            var el = document.getElementById('tslWin');
+            if (!el || _tslTs === 0) return;
+            var sec = Math.floor((Date.now() - _tslTs) / 1000);
+            if (sec < 5) { el.textContent = 'Last win: just now'; }
+            else if (sec < 60) { el.textContent = 'Last win: ' + sec + 's ago'; }
+            else { el.textContent = 'Last win: ' + Math.floor(sec / 60) + 'm ago'; }
+            el.style.display = '';
+        }
+        function _startTimeSinceWin() {
+            _tslTs = 0;
+            if (_tslInterval) clearInterval(_tslInterval);
+            _tslInterval = setInterval(_updateTslDisplay, 10000);
+            var el = document.getElementById('tslWin');
+            if (el) el.style.display = 'none';
+        }
+        function _stopTimeSinceWin() {
+            if (_tslInterval) { clearInterval(_tslInterval); _tslInterval = null; }
+            _tslTs = 0;
+            var el = document.getElementById('tslWin');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
+        /* ── Sprint 70: Bonus Trigger Count ── */
+        var _btcCount = 0;
+        function incrementBonusCount() {
+            _btcCount++;
+            var el = document.getElementById('btCount');
+            if (!el) return;
+            el.textContent = 'Bonuses: ' + _btcCount;
+            el.style.display = '';
+        }
+        function _resetBonusCount() {
+            _btcCount = 0;
+            var el = document.getElementById('btCount');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2087,6 +2132,8 @@
             _resetAvgWin();
             _resetWinFreq();
             _resetBiggestLoss();
+            _startTimeSinceWin();
+            _resetBonusCount();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2716,6 +2763,8 @@
             _resetAvgWin();
             _resetWinFreq();
             _resetBiggestLoss();
+            _stopTimeSinceWin();
+            _resetBonusCount();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
@@ -4089,6 +4138,8 @@
         // ═══════════════════════════════════════════════════════
 
         function triggerFreeSpins(game, count) {
+            // Sprint 70: Bonus trigger count
+            if (typeof incrementBonusCount === 'function') incrementBonusCount();
             freeSpinsActive = true;
             freeSpinsRemaining = count;
             freeSpinsTotalWin = 0;
@@ -7565,6 +7616,8 @@
         // ═══════════════════════════════════════════════════════
 
         function triggerFreeSpins(game, count) {
+            // Sprint 70: Bonus trigger count
+            if (typeof incrementBonusCount === 'function') incrementBonusCount();
             freeSpinsActive = true;
             freeSpinsRemaining = count;
             freeSpinsTotalWin = 0;
