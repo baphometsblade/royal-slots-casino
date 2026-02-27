@@ -14266,3 +14266,149 @@ button.active .filter-tab-count {
     .lobby-challenge-widget { padding: 10px 12px; }
     .lc-title { font-size: 11px; }
 }
+
+/* ═══ XP Shop Modal ═══ */
+#xpShopModal {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.75); display: flex;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+}
+.xp-shop-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 16px; padding: 28px; width: 90%;
+    max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.xps-header { text-align: center; margin-bottom: 20px; }
+.xps-title { font-size: 22px; font-weight: 800; color: #c4b5fd; margin: 0 0 6px; }
+.xps-balance {
+    font-size: 15px; color: #a5b4fc;
+    background: rgba(139,92,246,0.15); padding: 6px 16px;
+    border-radius: 20px; display: inline-block;
+}
+.xps-balance span { color: #fbbf24; font-weight: 700; }
+.xps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.xps-item {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 16px; text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.xps-item:hover { transform: translateY(-2px); border-color: rgba(139,92,246,0.5); }
+.xps-icon { font-size: 32px; margin-bottom: 6px; }
+.xps-label { font-size: 13px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
+.xps-desc { font-size: 11px; color: #94a3b8; margin-bottom: 10px; min-height: 28px; }
+.xps-cost { font-size: 12px; color: #fbbf24; font-weight: 600; margin-bottom: 8px; }
+.xps-buy-btn {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff;
+    border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer;
+    font-weight: 700; font-size: 13px; transition: opacity 0.2s;
+}
+.xps-buy-btn:hover { opacity: 0.85; }
+.xps-buy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.xps-boost-status {
+    text-align: center; margin-top: 12px; padding: 8px;
+    background: rgba(251,191,36,0.1); border-radius: 8px;
+    font-size: 13px; color: #fbbf24;
+}
+.xps-close {
+    display: block; margin: 18px auto 0; background: rgba(255,255,255,0.1);
+    color: #cbd5e1; border: none; padding: 10px 32px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; transition: background 0.2s;
+}
+.xps-close:hover { background: rgba(255,255,255,0.2); }
+
+/* ═══ Mystery Box Modal ═══ */
+#mysteryBoxModal {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.8); display: flex;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+}
+.mb-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f172a 100%);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 20px; padding: 32px; width: 90%;
+    max-width: 380px; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+.mb-box-wrap {
+    width: 120px; height: 120px; margin: 0 auto 20px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+}
+.mb-box {
+    font-size: 80px; cursor: pointer;
+    transition: transform 0.3s; filter: drop-shadow(0 0 20px rgba(251,191,36,0.4));
+}
+.mb-box:hover { transform: scale(1.1); }
+.mb-box.mb-shaking { animation: mb-shaking 0.4s ease-in-out 3; }
+.mb-box.mb-opened { animation: mb-reveal 0.6s ease-out forwards; }
+.mb-box.mb-locked { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
+.mb-title {
+    font-size: 22px; font-weight: 800; color: #fbbf24; margin-bottom: 6px;
+}
+.mb-subtitle { font-size: 13px; color: #94a3b8; margin-bottom: 16px; }
+.mb-prize {
+    padding: 16px; margin: 16px 0;
+    background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1));
+    border: 1px solid rgba(251,191,36,0.3); border-radius: 12px;
+}
+.mb-prize-tier {
+    font-size: 14px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 4px;
+}
+.mb-prize-tier.common { color: #94a3b8; }
+.mb-prize-tier.uncommon { color: #34d399; }
+.mb-prize-tier.rare { color: #818cf8; }
+.mb-prize-tier.legendary { color: #fbbf24; text-shadow: 0 0 12px rgba(251,191,36,0.5); }
+.mb-prize-amount { font-size: 28px; font-weight: 900; color: #fff; }
+.mb-prize-extra { font-size: 13px; color: #6ee7b7; margin-top: 4px; }
+.mb-open-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
+    border: none; padding: 12px 32px; border-radius: 10px; cursor: pointer;
+    font-weight: 800; font-size: 16px; margin-top: 8px;
+    transition: transform 0.2s, opacity 0.2s;
+}
+.mb-open-btn:hover { transform: scale(1.05); }
+.mb-open-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.mb-close-btn {
+    background: rgba(255,255,255,0.1); color: #cbd5e1;
+    border: none; padding: 10px 28px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; margin-top: 12px;
+    transition: background 0.2s;
+}
+.mb-close-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* Mystery Box nav button states */
+.mystery-box-btn.mb-ready {
+    animation: mb-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(52,211,153,0.4);
+    border-color: #34d399 !important;
+}
+.mystery-box-btn.mb-cooldown { opacity: 0.6; }
+
+@keyframes mb-shaking {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg) scale(1.05); }
+    75% { transform: rotate(8deg) scale(1.05); }
+}
+@keyframes mb-reveal {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+    100% { transform: scale(0.8); opacity: 0; }
+}
+@keyframes mb-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(52,211,153,0.3); }
+    50% { box-shadow: 0 0 20px rgba(52,211,153,0.6); }
+}
+
+/* Responsive: XP Shop + Mystery Box */
+@media (max-width: 480px) {
+    .xp-shop-card { padding: 20px 16px; }
+    .xps-grid { grid-template-columns: 1fr; }
+    .xps-title { font-size: 18px; }
+    .mb-card { padding: 24px 16px; }
+    .mb-box { font-size: 64px; }
+    .mb-title { font-size: 18px; }
+}

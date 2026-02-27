@@ -129,6 +129,8 @@
                         <button class="btn btn-play" onclick="playRandomHotGame()">PLAY NOW</button>
                         <button class="btn btn-bonus-wheel" onclick="showBonusWheelModal()">BONUS WHEEL</button>
                         <button class="nav-btn" onclick="if(typeof openScratchCard==='function')openScratchCard()">🎰 Scratch</button>
+                        <button class="nav-btn" onclick="if(typeof openXpShop==='function')openXpShop()">💎 XP Shop</button>
+                        <button class="nav-btn mystery-box-btn" id="mysteryBoxBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox()">🎁 Mystery</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -838,6 +840,33 @@
                 <div class="lm-reward-amount" id="lmRewardAmount">$0</div>
             </div>
             <button class="lm-claim-btn" id="lmClaimBtn">Claim Reward</button>
+        </div>
+    </div>
+
+    <!-- XP Shop Modal -->
+    <div id="xpShopModal" class="modal-overlay" style="display:none;">
+        <div class="xp-shop-card">
+            <div class="xps-header">
+                <h2 class="xps-title">💎 XP Shop</h2>
+                <div class="xps-balance">Your XP: <span id="xpsCurrentXP">0</span></div>
+            </div>
+            <div class="xps-grid" id="xpsGrid"></div>
+            <div class="xps-boost-status" id="xpsBoostStatus" style="display:none;"></div>
+            <button class="xps-close" onclick="document.getElementById('xpShopModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Mystery Box Modal -->
+    <div id="mysteryBoxModal" class="modal-overlay" style="display:none;">
+        <div class="mb-card">
+            <div class="mb-box-wrap" id="mbBoxWrap">
+                <div class="mb-box" id="mbBox">🎁</div>
+            </div>
+            <div class="mb-title" id="mbTitle">Mystery Box</div>
+            <div class="mb-subtitle" id="mbSubtitle">Tap the box to reveal your prize!</div>
+            <div class="mb-prize" id="mbPrize" style="display:none;"></div>
+            <button class="mb-open-btn" id="mbOpenBtn">Open Box</button>
+            <button class="mb-close-btn" id="mbCloseBtn" style="display:none;" onclick="document.getElementById('mysteryBoxModal').style.display='none'">Collect & Close</button>
         </div>
     </div>
 

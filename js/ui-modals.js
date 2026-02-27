@@ -1189,6 +1189,16 @@
 
 
         function awardXP(amount) {
+            // Check 2x XP Boost
+            try {
+                var _boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                if (_boost && _boost.remaining > 0) {
+                    amount = amount * 2;
+                    _boost.remaining--;
+                    localStorage.setItem('matrixXpBoost', JSON.stringify(_boost));
+                    if (_boost.remaining <= 0) localStorage.removeItem('matrixXpBoost');
+                }
+            } catch(e) {}
             playerXP += amount;
             let levelledUp = false;
             let needed = getXPForLevel(playerLevel);
@@ -1882,3 +1892,248 @@
             modal.classList.add('active');
             modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
         }
+
+        // ── XP Shop ──────────────────────────────────────────────
+        const XP_SHOP_ITEMS = [
+            { id: 'free_spins_5', label: '5 Free Spins', desc: 'Free spins on current game', cost: 100, icon: '🎰', type: 'freespins', value: 5 },
+            { id: 'balance_500',  label: '$500 Boost',    desc: 'Instant balance credit',     cost: 250, icon: '💰', type: 'balance',   value: 500 },
+            { id: 'xp_boost',     label: '2× XP Boost',   desc: 'Double XP for 50 spins',     cost: 500, icon: '⚡', type: 'xpboost',   value: 50 },
+            { id: 'balance_2000', label: '$2,000 Boost',   desc: 'Big balance injection',      cost: 1000,icon: '💎', type: 'balance',   value: 2000 },
+        ];
+
+        function openXpShop() {
+            var modal = document.getElementById('xpShopModal');
+            if (!modal) return;
+            _renderXpShopGrid();
+            modal.style.display = 'flex';
+            modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
+        }
+
+        function _renderXpShopGrid() {
+            var grid = document.getElementById('xpsGrid');
+            var xpEl = document.getElementById('xpsCurrentXP');
+            var boostEl = document.getElementById('xpsBoostStatus');
+            if (!grid) return;
+            if (xpEl) xpEl.textContent = playerXP;
+
+            // Show boost status
+            try {
+                var boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                if (boost && boost.remaining > 0 && boostEl) {
+                    boostEl.style.display = 'block';
+                    boostEl.textContent = '⚡ 2× XP Boost active — ' + boost.remaining + ' spins remaining';
+                } else if (boostEl) {
+                    boostEl.style.display = 'none';
+                }
+            } catch(e) {}
+
+            grid.innerHTML = XP_SHOP_ITEMS.map(function(item) {
+                var canBuy = playerXP >= item.cost;
+                return '<div class="xps-item' + (canBuy ? '' : ' xps-locked') + '">'
+                    + '<div class="xps-icon">' + item.icon + '</div>'
+                    + '<div class="xps-label">' + item.label + '</div>'
+                    + '<div class="xps-desc">' + item.desc + '</div>'
+                    + '<button class="xps-buy-btn' + (canBuy ? '' : ' disabled') + '" '
+                    + (canBuy ? 'onclick="buyXpShopItem(\'' + item.id + '\')"' : 'disabled')
+                    + '>' + item.cost + ' XP</button>'
+                    + '</div>';
+            }).join('');
+        }
+
+        window.buyXpShopItem = function(itemId) {
+            var item = XP_SHOP_ITEMS.find(function(i) { return i.id === itemId; });
+            if (!item) return;
+            if (playerXP < item.cost) {
+                showToast('Not enough XP! Need ' + item.cost + ' XP.', 'error');
+                return;
+            }
+            // Deduct XP
+            playerXP -= item.cost;
+            saveXP();
+            updateXPDisplay();
+
+            if (item.type === 'balance') {
+                balance += item.value;
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof updateBalance === 'function') updateBalance();
+                showToast('💰 +$' + item.value.toLocaleString() + ' credited to your balance!', 'success');
+            } else if (item.type === 'freespins') {
+                if (typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                    triggerFreeSpins(currentGame, item.value);
+                    showToast('🎰 ' + item.value + ' Free Spins on ' + (currentGame.name || 'current game') + '!', 'success');
+                } else {
+                    // Not in a slot — give balance equivalent instead ($50 per spin)
+                    var equiv = item.value * 50;
+                    balance += equiv;
+                    if (typeof saveBalance === 'function') saveBalance();
+                    if (typeof updateBalance === 'function') updateBalance();
+                    showToast('🎰 No slot open — +$' + equiv + ' credited instead!', 'success');
+                }
+            } else if (item.type === 'xpboost') {
+                try {
+                    var existing = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                    var remaining = (existing && existing.remaining > 0) ? existing.remaining + item.value : item.value;
+                    localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: remaining }));
+                } catch(e) {}
+                showToast('⚡ 2× XP Boost activated for ' + item.value + ' spins!', 'success');
+            }
+
+            _renderXpShopGrid();
+            if (typeof window.refreshLobbyChallengeWidget === 'function') window.refreshLobbyChallengeWidget();
+        };
+
+        window.openXpShop = openXpShop;
+
+        // ── Mystery Box ──────────────────────────────────────────
+        const MB_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
+        const MB_STORAGE_KEY = 'matrixMysteryBox';
+        const MB_TIERS = [
+            { tier: 'Common',    color: '#6b7280', weight: 60, minPrize: 50,   maxPrize: 100 },
+            { tier: 'Uncommon',  color: '#22c55e', weight: 25, minPrize: 150,  maxPrize: 300 },
+            { tier: 'Rare',      color: '#a855f7', weight: 10, minPrize: 500,  maxPrize: 1000 },
+            { tier: 'Legendary', color: '#f59e0b', weight: 5,  minPrize: 2000, maxPrize: 2000, freeSpins: 10 },
+        ];
+
+        function _getMysteryBoxState() {
+            try {
+                var raw = localStorage.getItem(MB_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : { lastOpen: 0 };
+            } catch(e) { return { lastOpen: 0 }; }
+        }
+
+        function _mysteryBoxReady() {
+            var s = _getMysteryBoxState();
+            return (Date.now() - s.lastOpen) >= MB_COOLDOWN_MS;
+        }
+
+        function _rollMysteryTier() {
+            var roll = Math.random() * 100;
+            var cumulative = 0;
+            for (var i = 0; i < MB_TIERS.length; i++) {
+                cumulative += MB_TIERS[i].weight;
+                if (roll < cumulative) return MB_TIERS[i];
+            }
+            return MB_TIERS[0];
+        }
+
+        function openMysteryBox() {
+            var modal = document.getElementById('mysteryBoxModal');
+            if (!modal) return;
+
+            var boxEl = document.getElementById('mbBox');
+            var titleEl = document.getElementById('mbTitle');
+            var subtitleEl = document.getElementById('mbSubtitle');
+            var prizeEl = document.getElementById('mbPrize');
+            var openBtn = document.getElementById('mbOpenBtn');
+            var closeBtn = document.getElementById('mbCloseBtn');
+            var boxWrap = document.getElementById('mbBoxWrap');
+
+            // Check cooldown
+            if (!_mysteryBoxReady()) {
+                var s = _getMysteryBoxState();
+                var msLeft = MB_COOLDOWN_MS - (Date.now() - s.lastOpen);
+                var hLeft = Math.floor(msLeft / 3600000);
+                var mLeft = Math.floor((msLeft % 3600000) / 60000);
+                if (titleEl) titleEl.textContent = 'Mystery Box';
+                if (subtitleEl) subtitleEl.textContent = 'Next box in ' + hLeft + 'h ' + mLeft + 'm';
+                if (boxEl) { boxEl.textContent = '🔒'; boxEl.className = 'mb-box mb-locked'; }
+                if (openBtn) openBtn.style.display = 'none';
+                if (closeBtn) { closeBtn.style.display = 'inline-block'; closeBtn.textContent = 'Close'; }
+                if (prizeEl) prizeEl.style.display = 'none';
+                modal.style.display = 'flex';
+                modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
+                return;
+            }
+
+            // Reset UI
+            if (boxEl) { boxEl.textContent = '🎁'; boxEl.className = 'mb-box'; }
+            if (titleEl) titleEl.textContent = 'Mystery Box';
+            if (subtitleEl) subtitleEl.textContent = 'Tap the box to reveal your prize!';
+            if (prizeEl) prizeEl.style.display = 'none';
+            if (openBtn) openBtn.style.display = 'inline-block';
+            if (closeBtn) closeBtn.style.display = 'none';
+
+            modal.style.display = 'flex';
+            modal.onclick = function(e) { if (e.target === modal && closeBtn && closeBtn.style.display !== 'none') modal.style.display = 'none'; };
+
+            if (openBtn) {
+                openBtn.onclick = function() {
+                    openBtn.style.display = 'none';
+
+                    // Animate box
+                    if (boxEl) boxEl.classList.add('mb-shaking');
+
+                    setTimeout(function() {
+                        if (boxEl) boxEl.classList.remove('mb-shaking');
+
+                        // Roll prize
+                        var tier = _rollMysteryTier();
+                        var prize = tier.minPrize + Math.floor(Math.random() * (tier.maxPrize - tier.minPrize + 1));
+                        var hasFS = tier.freeSpins || 0;
+
+                        // Open animation
+                        if (boxEl) {
+                            boxEl.textContent = '✨';
+                            boxEl.className = 'mb-box mb-opened';
+                            boxEl.style.color = tier.color;
+                        }
+                        if (titleEl) titleEl.textContent = tier.tier + '!';
+                        if (titleEl) titleEl.style.color = tier.color;
+                        if (subtitleEl) subtitleEl.textContent = '';
+
+                        var prizeText = '$' + prize.toLocaleString();
+                        if (hasFS) prizeText += ' + ' + hasFS + ' Free Spins';
+
+                        if (prizeEl) {
+                            prizeEl.style.display = 'block';
+                            prizeEl.innerHTML = '<div class="mb-prize-amount" style="color:' + tier.color + '">' + prizeText + '</div>';
+                        }
+
+                        // Credit rewards
+                        balance += prize;
+                        if (typeof saveBalance === 'function') saveBalance();
+                        if (typeof updateBalance === 'function') updateBalance();
+
+                        if (hasFS && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                            triggerFreeSpins(currentGame, hasFS);
+                        } else if (hasFS) {
+                            balance += hasFS * 50;
+                            if (typeof saveBalance === 'function') saveBalance();
+                            if (typeof updateBalance === 'function') updateBalance();
+                        }
+
+                        awardXP(25);
+
+                        // Save cooldown
+                        localStorage.setItem(MB_STORAGE_KEY, JSON.stringify({ lastOpen: Date.now() }));
+
+                        // Confetti for Rare+
+                        if (tier.weight <= 10) {
+                            if (typeof triggerConfetti === 'function') triggerConfetti(60);
+                            else if (typeof burstParticles === 'function') burstParticles(60, window.innerWidth / 2, window.innerHeight / 2);
+                        }
+
+                        showToast('🎁 Mystery Box: ' + tier.tier + ' — ' + prizeText + '!', 'success');
+
+                        if (closeBtn) { closeBtn.style.display = 'inline-block'; closeBtn.textContent = 'Collect & Close'; }
+                    }, 1200); // shake duration
+                };
+            }
+        }
+
+        // Update mystery box button cooldown indicator
+        function _updateMysteryBoxBtn() {
+            var btn = document.getElementById('mysteryBoxBtn');
+            if (!btn) return;
+            if (_mysteryBoxReady()) {
+                btn.classList.add('mb-ready');
+                btn.classList.remove('mb-cooldown');
+            } else {
+                btn.classList.remove('mb-ready');
+                btn.classList.add('mb-cooldown');
+            }
+        }
+        setInterval(_updateMysteryBoxBtn, 30000);
+        setTimeout(_updateMysteryBoxBtn, 1000);
+
+        window.openMysteryBox = openMysteryBox;
