@@ -765,6 +765,8 @@
             // Sprint 79: Scatter count + best streak
             if (typeof updateScatterCount === 'function') updateScatterCount();
             if (typeof updateBestStreak === 'function') updateBestStreak(winAmount > 0);
+            // Sprint 80: Near miss counter
+            if (typeof checkNearMiss === 'function') checkNearMiss(winAmount);
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

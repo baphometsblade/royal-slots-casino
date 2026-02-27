@@ -536,6 +536,8 @@ function renderGames() {
                     if (typeof _renderRecentSearches === 'function') _renderRecentSearches();
                     // Sprint 74: Daily tip + lobby footer
                     if (typeof renderDailyTip === 'function') renderDailyTip();
+                    // Sprint 80: Day theme
+                    if (typeof renderDayTheme === 'function') renderDayTheme();
                     if (typeof renderLobbyFooter === 'function') renderLobbyFooter();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
@@ -2732,6 +2734,22 @@ function renderGames() {
                 hash = ((hash << 5) - hash + ds.charCodeAt(i)) | 0;
             }
             el.textContent = _dailyTips[Math.abs(hash) % _dailyTips.length];
+        }
+
+        /* ── Sprint 80: Lobby Day Theme ──────────────── */
+        function renderDayTheme() {
+            var el = document.getElementById('dayTheme');
+            if (!el) return;
+            var themes = [
+                'Super Sunday — relax and spin!',
+                'Monday Motivation — chase that jackpot!',
+                'Two-for-Tuesday — double the fun!',
+                'Wild Wednesday — wilds are waiting!',
+                'Throwback Thursday — try a classic!',
+                'Free Spin Friday — bonus time!',
+                'Scatter Saturday — scatters everywhere!'
+            ];
+            el.textContent = themes[new Date().getDay()];
         }
 
         /* ── Sprint 74: Lobby Footer Stats ──────────────── */

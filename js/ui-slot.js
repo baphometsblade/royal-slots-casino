@@ -1070,6 +1070,37 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 80: Near Miss Counter ── */
+        var _nmTotal = 0;
+        function checkNearMiss(winAmount) {
+            if (winAmount > 0) return; // only count on losses
+            var grid = typeof currentGrid !== 'undefined' ? currentGrid : null;
+            if (!grid || grid.length < 3) return;
+            // Check center row (row index 1 for 3-row games)
+            var rows = typeof getGridRows === 'function' && currentGame ? getGridRows(currentGame) : 3;
+            var midRow = Math.floor(rows / 2);
+            var syms = [];
+            for (var c = 0; c < Math.min(grid.length, 3); c++) {
+                if (grid[c] && grid[c][midRow]) syms.push(grid[c][midRow]);
+            }
+            if (syms.length < 3) return;
+            // Near miss: exactly 2 of 3 match
+            if ((syms[0] === syms[1] && syms[0] !== syms[2]) ||
+                (syms[0] === syms[2] && syms[0] !== syms[1]) ||
+                (syms[1] === syms[2] && syms[1] !== syms[0])) {
+                _nmTotal++;
+                var el = document.getElementById('nmCount');
+                if (!el) return;
+                el.textContent = 'Near Misses: ' + _nmTotal;
+                el.style.display = '';
+            }
+        }
+        function _resetNearMiss() {
+            _nmTotal = 0;
+            var el = document.getElementById('nmCount');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         /* ── Sprint 73: Saved Bet Hint ── */
         var _sbhTimer = null;
         function _showSavedBetHint(betAmount) {
@@ -2312,6 +2343,7 @@
             _resetWildCount();
             _resetScatterCount();
             _resetBestStreak();
+            _resetNearMiss();
             // Sprint 76: Track game played today
             if (typeof _trackGameToday === 'function' && currentGame) _trackGameToday(currentGame.id);
             _startSessionTimer();
@@ -2954,6 +2986,7 @@
             _resetWildCount();
             _resetScatterCount();
             _resetBestStreak();
+            _resetNearMiss();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

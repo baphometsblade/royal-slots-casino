@@ -16233,3 +16233,17 @@ button.active .filter-tab-count {
     background: rgba(52,211,153,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* ── Sprint 80: Lobby Day Theme ── */
+.day-theme {
+    text-align: center; font-size: 0.72rem; color: #818cf8;
+    padding: 2px 16px; margin: 0 auto 4px; font-weight: 500;
+}
+
+/* ── Sprint 80: Near Miss Counter ── */
+.nm-count {
+    position: absolute; top: 268px; left: 14px;
+    font-size: 0.68rem; color: #fb923c; font-weight: 500;
+    background: rgba(251,146,60,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}
