@@ -833,6 +833,16 @@ const STORAGE_KEY_WEEKLY_MISSIONS = 'matrixWeeklyMissions';
 /** @type {string} localStorage key for notification center entries */
 const STORAGE_KEY_NOTIFICATIONS = 'matrixNotifications';
 const STORAGE_KEY_LOGIN_STREAK = 'matrixLoginStreak';
+const STORAGE_KEY_PROMO_CODES = 'matrixPromoCodes';
+const STORAGE_KEY_CASHBACK = 'matrixCashback';
+const STORAGE_KEY_CALENDAR = 'matrixLoginCalendar';
+const STORAGE_KEY_CALENDAR_MILESTONES = 'matrixCalendarMilestones';
+const STORAGE_KEY_COMMUNITY_JACKPOT = 'matrixCommunityJackpot';
+
+/** Cashback configuration */
+const CASHBACK_RATE = 0.05;
+const CASHBACK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const CASHBACK_MIN_LOSS = 100;
 
 /**
  * VIP tier definitions ordered by wagering threshold.

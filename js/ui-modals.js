@@ -2334,3 +2334,81 @@
         };
 
         window.openLoginCalendar = openLoginCalendar;
+
+        // ══════ Promo Code System ════════════════════════════════
+        const PROMO_KEY = 'matrixPromoCodes';
+        const PROMO_CODES = {
+            'WELCOME500':  { type: 'balance', amount: 500,  xp: 0,   spins: 0,  once: true,  label: '$500 Balance Bonus' },
+            'MATRIX100':   { type: 'xp',      amount: 0,    xp: 100, spins: 0,  once: true,  label: '100 XP Bonus' },
+            'FREESPIN10':  { type: 'spins',    amount: 0,    xp: 0,   spins: 10, once: true,  label: '10 Free Spins' },
+            'DAILY200':    { type: 'balance', amount: 200,  xp: 0,   spins: 0,  once: false, label: '$200 Daily Bonus' },
+            'XPBOOST':     { type: 'boost',    amount: 0,    xp: 0,   spins: 0,  once: false, label: '2x XP Boost (20 spins)' },
+            'BIGWIN':      { type: 'balance', amount: 1000, xp: 50,  spins: 5,  once: true,  label: '$1,000 + 50 XP + 5 Free Spins' },
+        };
+
+        function _loadPromoState() {
+            try { return JSON.parse(localStorage.getItem(PROMO_KEY) || '{"used":{}}'); }
+            catch(e) { return { used: {} }; }
+        }
+
+        function _savePromoState(s) {
+            try { localStorage.setItem(PROMO_KEY, JSON.stringify(s)); } catch(e) {}
+        }
+
+        function openPromoCode() {
+            const modal = document.getElementById('promoCodeModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            const input = document.getElementById('promoInput');
+            const msg = document.getElementById('promoMsg');
+            if (input) { input.value = ''; input.focus(); }
+            if (msg) msg.textContent = '';
+        }
+
+        function redeemPromoCode() {
+            const input = document.getElementById('promoInput');
+            const msg = document.getElementById('promoMsg');
+            if (!input || !msg) return;
+            const code = input.value.trim().toUpperCase();
+            if (!code) { msg.textContent = 'Please enter a code.'; msg.style.color = '#f87171'; return; }
+
+            const promo = PROMO_CODES[code];
+            if (!promo) { msg.textContent = 'Invalid promo code.'; msg.style.color = '#f87171'; return; }
+
+            const state = _loadPromoState();
+            const today = new Date().toDateString();
+
+            if (promo.once && state.used[code]) {
+                msg.textContent = 'This code has already been used.'; msg.style.color = '#f87171'; return;
+            }
+            if (!promo.once && state.used[code] === today) {
+                msg.textContent = 'This code can only be used once per day.'; msg.style.color = '#f87171'; return;
+            }
+
+            // Redeem
+            state.used[code] = promo.once ? Date.now() : today;
+            _savePromoState(state);
+
+            if (promo.amount) {
+                balance += promo.amount;
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof updateBalance === 'function') updateBalance();
+            }
+            if (promo.xp) awardXP(promo.xp);
+            if (promo.spins && typeof triggerFreeSpins === 'function') {
+                triggerFreeSpins(currentGame || null, promo.spins);
+            }
+            if (promo.type === 'boost') {
+                try {
+                    var _boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null') || { remaining: 0 };
+                    _boost.remaining = (_boost.remaining || 0) + 20;
+                    localStorage.setItem('matrixXpBoost', JSON.stringify(_boost));
+                } catch(e) {}
+            }
+
+            msg.innerHTML = '<span style="color:#34d399;">Redeemed: ' + promo.label + '</span>';
+            input.value = '';
+        }
+
+        window.openPromoCode = openPromoCode;
+        window.redeemPromoCode = redeemPromoCode;

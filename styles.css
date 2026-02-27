@@ -14563,7 +14563,97 @@ button.active .filter-tab-count {
 }
 .cal-close:hover { background: rgba(255,255,255,0.2); }
 
-/* Responsive: all Sprint 27-30 modals */
+/* ── Sprint 31: Promo Code Modal ─────────────────────── */
+.promo-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f172a 100%);
+    border-radius: 20px; padding: 32px; max-width: 420px; width: 90vw;
+    position: relative; text-align: center;
+    border: 2px solid rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.15);
+}
+.promo-title {
+    font-size: 22px; font-weight: 800; color: #e2e8f0;
+    margin-bottom: 8px; letter-spacing: 1px;
+}
+.promo-subtitle {
+    font-size: 13px; color: #94a3b8; margin-bottom: 24px;
+}
+.promo-input-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+}
+.promo-input {
+    flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; padding: 12px 16px; color: #fff; font-size: 16px;
+    font-family: 'Courier New', monospace; letter-spacing: 2px; text-transform: uppercase;
+    text-align: center; outline: none; transition: border 0.2s;
+}
+.promo-input:focus { border-color: #a855f7; }
+.promo-input::placeholder { color: #475569; letter-spacing: 1px; text-transform: none; }
+.promo-btn {
+    background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff;
+    border: none; border-radius: 10px; padding: 12px 24px; font-weight: 700;
+    font-size: 14px; cursor: pointer; white-space: nowrap;
+    transition: transform 0.15s, box-shadow 0.2s;
+}
+.promo-btn:hover { transform: scale(1.04); box-shadow: 0 0 16px rgba(168, 85, 247, 0.4); }
+.promo-result {
+    min-height: 20px; font-size: 13px; margin-bottom: 16px;
+    color: #6ee7b7; font-weight: 600;
+}
+.promo-result.error { color: #f87171; }
+.promo-history {
+    text-align: left; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 12px;
+}
+.promo-history-title {
+    font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+.promo-history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; font-size: 12px; color: #94a3b8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.promo-history-code { font-family: monospace; color: #c084fc; font-weight: 600; }
+.promo-close {
+    display: block; margin: 16px auto 0; background: rgba(255,255,255,0.1);
+    color: #cbd5e1; border: none; padding: 10px 32px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; transition: background 0.2s;
+}
+.promo-close:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Sprint 31: Cashback Toast ───────────────────────── */
+.cashback-toast {
+    position: fixed; top: 24px; right: 24px; z-index: 99999;
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, #1a1a2e, #0f172a);
+    border: 2px solid #22c55e; border-radius: 16px;
+    padding: 16px 24px; color: #fff;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+    transform: translateX(120%); opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+}
+.cashback-toast.show { transform: translateX(0); opacity: 1; }
+.cb-icon { font-size: 28px; }
+.cb-text { font-size: 13px; line-height: 1.4; }
+.cb-text strong { color: #6ee7b7; font-size: 15px; display: block; margin-bottom: 2px; }
+
+/* ── Sprint 31: Cashback Badge ───────────────────────── */
+.cashback-badge {
+    text-align: center; padding: 6px 16px; font-size: 12px;
+    font-weight: 600; border-radius: 8px; margin: 4px auto 8px;
+    max-width: 260px; letter-spacing: 0.5px;
+}
+.cb-pending {
+    background: rgba(251, 191, 36, 0.1); color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+.cb-done {
+    background: rgba(34, 197, 94, 0.1); color: #6ee7b7;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* Responsive: all Sprint 27-31 modals */
 @media (max-width: 480px) {
     .xp-shop-card { padding: 20px 16px; }
     .xps-grid { grid-template-columns: 1fr; }
@@ -14579,4 +14669,8 @@ button.active .filter-tab-count {
     .cal-card { padding: 16px 12px; }
     .cal-title { font-size: 17px; }
     .cal-day { font-size: 11px; padding: 5px 0; }
+    .promo-card { padding: 20px 16px; }
+    .promo-title { font-size: 18px; }
+    .promo-input { font-size: 14px; padding: 10px 12px; }
+    .cashback-toast { right: 12px; left: 12px; padding: 12px 16px; }
 }

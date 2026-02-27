@@ -133,6 +133,7 @@
                         <button class="nav-btn mystery-box-btn" id="mysteryBoxBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox()">🎁 Mystery</button>
                         <button class="nav-btn" onclick="if(typeof openAchievements==='function')openAchievements()">🏆 Achievements</button>
                         <button class="nav-btn" onclick="if(typeof openLoginCalendar==='function')openLoginCalendar()">📅 Calendar</button>
+                        <button class="nav-btn" onclick="if(typeof openPromoCode==='function')openPromoCode()">🔑 Promo</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -160,6 +161,9 @@
             <span class="cj-label">🎰 COMMUNITY JACKPOT</span>
             <span class="cj-amount" id="communityJackpotAmount">$1,000</span>
         </div>
+
+        <!-- Cashback Badge (Sprint 31) -->
+        <div class="cashback-badge cb-pending" id="cashbackBadge">💰 Cashback check pending</div>
 
         <!-- Win Ticker (Pass 6) -->
         <div class="win-ticker-bar" id="winTicker">
@@ -903,6 +907,20 @@
             <div class="cal-grid" id="calGrid"></div>
             <div class="cal-milestones" id="calMilestones"></div>
             <button class="cal-close" onclick="document.getElementById('loginCalendarModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Promo Code Modal -->
+    <div id="promoCodeModal" class="modal-overlay" style="display:none;">
+        <div class="promo-card">
+            <h2 class="promo-title">🔑 Promo Code</h2>
+            <p class="promo-desc">Enter a promo code to claim your reward</p>
+            <div class="promo-input-wrap">
+                <input type="text" id="promoInput" class="promo-input" placeholder="Enter code..." maxlength="20" autocomplete="off">
+                <button class="promo-submit" id="promoSubmitBtn" onclick="if(typeof redeemPromoCode==='function')redeemPromoCode()">Redeem</button>
+            </div>
+            <div class="promo-msg" id="promoMsg"></div>
+            <button class="promo-close" onclick="document.getElementById('promoCodeModal').style.display='none'">Close</button>
         </div>
     </div>
 

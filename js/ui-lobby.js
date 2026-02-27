@@ -511,6 +511,8 @@ function renderGames() {
                     renderBalanceSparkline();
                     // Community jackpot (Sprint 30)
                     renderCommunityJackpot();
+                    // Automatic cashback (Sprint 31)
+                    checkCashback();
                     // Session summary when returning to lobby
                     showSessionSummary();
                     // Init session tracking
@@ -687,6 +689,76 @@ function renderGames() {
 
         window.contributeToCommunityJackpot = contributeToCommunityJackpot;
         window.renderCommunityJackpot = renderCommunityJackpot;
+
+        /* ── Automatic Cashback ───────────────────────────── */
+        const CB_KEY = typeof STORAGE_KEY_CASHBACK !== 'undefined' ? STORAGE_KEY_CASHBACK : 'matrixCashback';
+        const CB_RATE = typeof CASHBACK_RATE !== 'undefined' ? CASHBACK_RATE : 0.05;
+        const CB_INTERVAL = typeof CASHBACK_INTERVAL_MS !== 'undefined' ? CASHBACK_INTERVAL_MS : 86400000;
+        const CB_MIN_LOSS = typeof CASHBACK_MIN_LOSS !== 'undefined' ? CASHBACK_MIN_LOSS : 100;
+
+        function _loadCashback() {
+            try { return JSON.parse(localStorage.getItem(CB_KEY)) || null; } catch(e) { return null; }
+        }
+        function _saveCashback(state) {
+            localStorage.setItem(CB_KEY, JSON.stringify(state));
+        }
+
+        function checkCashback() {
+            const now = Date.now();
+            let state = _loadCashback();
+            if (!state) {
+                _saveCashback({ lastCheck: now, lastBalance: balance });
+                _renderCashbackBadge(null);
+                return;
+            }
+            const elapsed = now - state.lastCheck;
+            if (elapsed >= CB_INTERVAL) {
+                const loss = state.lastBalance - balance;
+                if (loss >= CB_MIN_LOSS) {
+                    const cashback = Math.round(loss * CB_RATE);
+                    balance += cashback;
+                    updateBalance();
+                    _showCashbackToast(cashback);
+                    if (typeof addNotification === 'function') {
+                        addNotification('cashback', 'Cashback Awarded!', 'You received $' + cashback.toLocaleString() + ' cashback on your losses.');
+                    }
+                }
+                _saveCashback({ lastCheck: now, lastBalance: balance });
+                _renderCashbackBadge(null);
+            } else {
+                const remaining = CB_INTERVAL - elapsed;
+                _renderCashbackBadge(remaining);
+            }
+        }
+
+        function _showCashbackToast(amount) {
+            const t = document.createElement('div');
+            t.className = 'cashback-toast';
+            t.innerHTML = '<div class="cb-icon">💰</div>'
+                + '<div class="cb-text"><strong>Cashback Awarded!</strong><br>$' + amount.toLocaleString() + ' returned to your balance</div>';
+            document.body.appendChild(t);
+            requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+            setTimeout(() => {
+                t.classList.remove('show');
+                setTimeout(() => t.remove(), 400);
+            }, 4000);
+        }
+
+        function _renderCashbackBadge(remainingMs) {
+            let badge = document.getElementById('cashbackBadge');
+            if (!badge) return;
+            if (remainingMs === null) {
+                badge.textContent = '✓ Cashback up to date';
+                badge.className = 'cashback-badge cb-done';
+            } else {
+                const hrs = Math.floor(remainingMs / 3600000);
+                const mins = Math.floor((remainingMs % 3600000) / 60000);
+                badge.textContent = '💰 Cashback in ' + hrs + 'h ' + mins + 'm';
+                badge.className = 'cashback-badge cb-pending';
+            }
+        }
+
+        window.checkCashback = checkCashback;
 
         function addRecentlyPlayed(gameId) {
             let recent = [];
