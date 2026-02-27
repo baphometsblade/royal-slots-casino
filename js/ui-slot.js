@@ -1552,6 +1552,14 @@
         _resetCascadeDepth();   // 95 — cascade depth
         _resetSessionXpDisplay(); // 97 — session XP
         _resetHotSymbol();      // 98 — hot symbol
+        _resetBonusTriggerRate(); // 99 — bonus trigger rate
+        _resetMaxMultBadge();   // 100 — max multiplier
+        _resetWinFreqBadge();   // 101 — win frequency
+        _resetDeadSpinCount();  // 102 — dead spin counter
+        _updateTurboBadge();    // 103 — turbo badge
+        _resetFsRunSummary();   // 104 — FS run summary
+        _updateNextLevelXpBar(); // 105 — next level XP bar
+        _incrementGamePlayCount(); // 106 — game play count
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -2303,6 +2311,7 @@
         _updateLossRecovery(balance); // Sprint 72 — loss recovery
         _recordSpinTime();           // Sprint 87 — spin rate
         _updateAutoplayCountdown();  // Sprint 96 — autoplay countdown
+        _updateTurboBadge();         // Sprint 103 — turbo badge
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
@@ -2984,10 +2993,16 @@
                 _updateAutoplayCountdown();             // 96 — autoplay countdown
                 _addSessionXp(typeof XP_AWARD_BIG_WIN !== 'undefined' ? XP_AWARD_BIG_WIN : 5); // 97 — session XP
                 _updateHotSymbol(currentGrid);          // 98 — hot symbol
+                _updateMaxMultBadge(winAmount, currentBet); // 100 — max multiplier
+                _updateWinFreqBadge(true);              // 101 — win frequency
+                _updateDeadSpinCount(true);             // 102 — dead spin (reset)
+                _updateBonusTriggerRate(freeSpinsActive); // 99 — bonus trigger rate
+                _updateNextLevelXpBar();                // 105 — XP bar
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
                     updateFreeSpinsDisplay();
+                    _recordFsRunWin(winAmount); // Sprint 104
                 }
 
                 // Show gamble button for wins >= 1x bet and < 100x bet (no gamble for jackpot wins)
@@ -3133,6 +3148,11 @@
             _updateAutoplayCountdown();              // 96 — autoplay countdown
             _addSessionXp(typeof XP_AWARD_PER_SPIN !== 'undefined' ? XP_AWARD_PER_SPIN : 1); // 97 — session XP
             _updateHotSymbol(currentGrid);           // 98 — hot symbol
+            _updateMaxMultBadge(winAmount, currentBet); // 100 — max multiplier
+            _updateWinFreqBadge(winAmount > 0);         // 101 — win frequency
+            _updateDeadSpinCount(winAmount > 0);        // 102 — dead spin
+            _updateBonusTriggerRate(false);             // 99 — bonus trigger
+            _updateNextLevelXpBar();                    // 105 — XP bar
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6558,10 +6578,16 @@
                 _updateAutoplayCountdown();             // 96 — autoplay countdown
                 _addSessionXp(typeof XP_AWARD_BIG_WIN !== 'undefined' ? XP_AWARD_BIG_WIN : 5); // 97 — session XP
                 _updateHotSymbol(currentGrid);          // 98 — hot symbol
+                _updateMaxMultBadge(winAmount, currentBet); // 100 — max multiplier
+                _updateWinFreqBadge(true);              // 101 — win frequency
+                _updateDeadSpinCount(true);             // 102 — dead spin (reset)
+                _updateBonusTriggerRate(freeSpinsActive); // 99 — bonus trigger rate
+                _updateNextLevelXpBar();                // 105 — XP bar
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
                     updateFreeSpinsDisplay();
+                    _recordFsRunWin(winAmount); // Sprint 104
                 }
 
                 // Show gamble button for wins >= 1x bet and < 100x bet (no gamble for jackpot wins)
@@ -6672,6 +6698,11 @@
             _updateAutoplayCountdown();              // 96 — autoplay countdown
             _addSessionXp(typeof XP_AWARD_PER_SPIN !== 'undefined' ? XP_AWARD_PER_SPIN : 1); // 97 — session XP
             _updateHotSymbol(currentGrid);           // 98 — hot symbol
+            _updateMaxMultBadge(winAmount, currentBet); // 100 — max multiplier
+            _updateWinFreqBadge(winAmount > 0);         // 101 — win frequency
+            _updateDeadSpinCount(winAmount > 0);        // 102 — dead spin
+            _updateBonusTriggerRate(false);             // 99 — bonus trigger
+            _updateNextLevelXpBar();                    // 105 — XP bar
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -11449,4 +11480,159 @@ function _updateHotSymbol(grid) {
     if (!el || !top || topCount < 5) return;
     el.textContent = '\uD83D\uDD25 ' + top + ' \xD7' + topCount;
     el.style.display = '';
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 99-106: ENHANCED SLOT UI WIDGETS (BATCH 4)
+// ═══════════════════════════════════════════════════════
+
+// Sprint 99: Bonus trigger rate
+var _bonusTriggers99 = 0;
+var _totalSpinsForBonus99 = 0;
+function _resetBonusTriggerRate() {
+    _bonusTriggers99 = 0;
+    _totalSpinsForBonus99 = 0;
+    var el = document.getElementById('bonusTriggerRate');
+    if (el) el.style.display = 'none';
+}
+function _updateBonusTriggerRate(triggered) {
+    _totalSpinsForBonus99++;
+    if (triggered) _bonusTriggers99++;
+    var el = document.getElementById('bonusTriggerRate');
+    if (!el || _totalSpinsForBonus99 < 5) return;
+    var pct = ((_bonusTriggers99 / _totalSpinsForBonus99) * 100).toFixed(1);
+    el.textContent = '\uD83C\uDFB0 ' + pct + '% bonus';
+    el.style.display = '';
+}
+
+// Sprint 100: Max multiplier badge
+var _maxMult100 = 0;
+function _resetMaxMultBadge() {
+    _maxMult100 = 0;
+    var el = document.getElementById('maxMultBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateMaxMultBadge(winAmount, betAmount) {
+    if (!winAmount || !betAmount || betAmount <= 0) return;
+    var mult = winAmount / betAmount;
+    if (mult <= _maxMult100) return;
+    _maxMult100 = mult;
+    var el = document.getElementById('maxMultBadge');
+    if (!el) return;
+    el.textContent = '\u00D7' + (mult >= 100 ? Math.round(mult) : mult.toFixed(1)) + ' best';
+    el.style.display = '';
+}
+
+// Sprint 101: Win frequency badge
+var _wfWins101 = 0;
+var _wfSpins101 = 0;
+function _resetWinFreqBadge() {
+    _wfWins101 = 0;
+    _wfSpins101 = 0;
+    var el = document.getElementById('winFreqBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateWinFreqBadge(won) {
+    _wfSpins101++;
+    if (won) _wfWins101++;
+    var el = document.getElementById('winFreqBadge');
+    if (!el || _wfSpins101 < 3) return;
+    var pct = Math.round((_wfWins101 / _wfSpins101) * 100);
+    el.textContent = pct + '% hit';
+    el.className = 'win-freq-badge' + (pct >= 40 ? ' wf-high' : pct >= 20 ? ' wf-mid' : ' wf-low');
+    el.style.display = '';
+}
+
+// Sprint 102: Dead spin counter
+var _deadSpins102 = 0;
+function _resetDeadSpinCount() {
+    _deadSpins102 = 0;
+    var el = document.getElementById('deadSpinCounter');
+    if (el) el.style.display = 'none';
+}
+function _updateDeadSpinCount(won) {
+    if (won) {
+        _deadSpins102 = 0;
+        var el = document.getElementById('deadSpinCounter');
+        if (el) el.style.display = 'none';
+    } else {
+        _deadSpins102++;
+        var el2 = document.getElementById('deadSpinCounter');
+        if (!el2 || _deadSpins102 < 3) return;
+        el2.textContent = '\uD83D\uDEAB ' + _deadSpins102 + ' dry';
+        el2.style.display = '';
+    }
+}
+
+// Sprint 103: Turbo mode badge
+function _updateTurboBadge() {
+    var el = document.getElementById('turboBadge');
+    if (!el) return;
+    if (turboMode) {
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// Sprint 104: Free spin run summary
+var _fsRunWon104 = 0;
+var _fsRunCount104 = 0;
+function _resetFsRunSummary() {
+    _fsRunWon104 = 0;
+    _fsRunCount104 = 0;
+    var el = document.getElementById('fsRunSummary');
+    if (el) el.style.display = 'none';
+}
+function _recordFsRunWin(amount) {
+    _fsRunWon104 += (amount || 0);
+    _fsRunCount104++;
+}
+function _showFsRunSummary() {
+    var el = document.getElementById('fsRunSummary');
+    if (!el || _fsRunCount104 === 0) return;
+    el.textContent = 'FS: ' + _fsRunCount104 + ' spins, ' + _DSN + _fsRunWon104.toFixed(2);
+    el.style.display = '';
+}
+
+// Sprint 105: Next level XP progress bar
+function _updateNextLevelXpBar() {
+    var el = document.getElementById('nextLevelXpBar');
+    if (!el) return;
+    if (typeof playerXP === 'undefined' || typeof XP_TIERS === 'undefined') return;
+    var tiers = XP_TIERS;
+    var curXp = playerXP || 0;
+    var curTier = null, nextTier = null;
+    for (var i = 0; i < tiers.length; i++) {
+        if (curXp >= tiers[i].minXP) curTier = tiers[i];
+        else if (!nextTier) nextTier = tiers[i];
+    }
+    if (!curTier || !nextTier) { el.style.display = 'none'; return; }
+    var range = nextTier.minXP - curTier.minXP;
+    var progress = curXp - curTier.minXP;
+    var pct = range > 0 ? Math.min(100, Math.round((progress / range) * 100)) : 100;
+    var fill = el.querySelector('.xp-bar-fill');
+    if (fill) fill.style.width = pct + '%';
+    var label = el.querySelector('.xp-bar-label');
+    if (label) label.textContent = pct + '% to ' + nextTier.name;
+    el.style.display = '';
+}
+
+// Sprint 106: Game play count badge
+function _showGamePlayCount() {
+    var el = document.getElementById('gamePlayCount');
+    if (!el || !currentGame) { if (el) el.style.display = 'none'; return; }
+    var key = 'casino_plays_' + currentGame.id;
+    var count = parseInt(localStorage.getItem(key) || '0', 10);
+    if (count <= 0) { el.style.display = 'none'; return; }
+    el.textContent = '#' + count + ' plays';
+    el.style.display = '';
+}
+function _incrementGamePlayCount() {
+    if (!currentGame) return;
+    var key = 'casino_plays_' + currentGame.id;
+    var count = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+    localStorage.setItem(key, String(count));
+    _showGamePlayCount();
 }
