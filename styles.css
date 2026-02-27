@@ -15833,3 +15833,16 @@ button.active .filter-tab-count {
     padding: 3px 0; margin-top: 2px;
 }
 .ls-tracker strong { color: #fbbf24; text-transform: capitalize; }
+
+/* ══ Sprint 54: Autoplay Progress ══ */
+.ap-progress {
+    display: none; text-align: center; font-size: 0.65rem; font-weight: 700;
+    color: #94a3b8; margin-top: 2px; letter-spacing: 0.5px;
+}
+
+/* ══ Sprint 54: Game Difficulty Rating ══ */
+.dr-rating {
+    display: inline-block; margin-left: 4px; font-size: 0.55rem; vertical-align: middle;
+}
+.dr-star { color: rgba(255,255,255,0.15); }
+.dr-star.dr-filled { color: #fbbf24; }

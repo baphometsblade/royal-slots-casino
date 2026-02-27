@@ -872,7 +872,9 @@
             });
         }
         // Autoplay (N-spin) helpers
+        var _apTotal = 0;
         function _startAutoplay(count) {
+            _apTotal = count;
             window._autoplayActive = true;
             window._autoplayRemaining = count;
             window._autoplayStopping = false;
@@ -920,18 +922,22 @@
         function _updateAutoplayBtn() {
             var _apBtn = document.getElementById("autoplayBtn");
             if (!_apBtn) return;
+            var apEl = document.getElementById('apProgress');
             if (window._autoplayActive && !window._autoplayStopping) {
                 _apBtn.className = "autoplay-btn autoplay-active";
                 _apBtn.innerHTML = "↻ Auto <span class='autoplay-count-badge'>" + window._autoplayRemaining + "</span>";
                 _apBtn.title = "Click to stop autoplay";
+                if (apEl) { apEl.textContent = (_apTotal - window._autoplayRemaining) + '/' + _apTotal; apEl.style.display = ''; }
             } else if (window._autoplayStopping) {
                 _apBtn.className = "autoplay-btn autoplay-stopping";
                 _apBtn.innerHTML = "↻ Stopping…";
                 _apBtn.title = "Stopping after this spin";
+                if (apEl) apEl.style.display = 'none';
             } else {
                 _apBtn.className = "autoplay-btn";
                 _apBtn.innerHTML = "↻ Auto";
                 _apBtn.title = "Autoplay";
+                if (apEl) apEl.style.display = 'none';
             }
         }
         function _updateTurboBtn() {

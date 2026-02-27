@@ -1316,7 +1316,7 @@ function renderGames() {
                         </div>
                     </div>
                     <div class="game-info">
-                        <div class="game-name">${game.name}</div>
+                        <div class="game-name">${game.name}${typeof getGameDifficulty === 'function' ? getGameDifficulty(game) : ''}</div>
                         <div class="game-provider">${game.provider || ''}</div>
                     </div>
                     ${_hotIds.has(game.id) ? '<span class="lobby-badge lobby-badge-hot">🔥 HOT</span>' : ''}
@@ -2614,3 +2614,18 @@ function renderGames() {
             return '';
         }
         _buildPopCounts();
+
+        // Sprint 54: Game difficulty rating
+        function getGameDifficulty(game) {
+            var vol = game.volatility || 'medium';
+            var cols = game.gridCols || 3;
+            var score = 0;
+            if (vol === 'high' || vol === 'medium-high') score += 2;
+            else if (vol === 'medium') score += 1;
+            if (cols >= 5) score += 1;
+            if (game.bonusType && game.bonusType !== 'none') score += 0;
+            var stars = Math.max(1, Math.min(3, score));
+            var html = '';
+            for (var i = 0; i < 3; i++) html += '<span class="dr-star' + (i < stars ? ' dr-filled' : '') + '">&#x2605;</span>';
+            return '<div class="dr-rating" title="Difficulty: ' + stars + '/3">' + html + '</div>';
+        }
