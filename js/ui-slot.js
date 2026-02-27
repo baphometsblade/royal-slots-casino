@@ -1533,6 +1533,10 @@
         _resetSymbolHeat();      // 71 — symbol heat
         _resetLossRecovery();    // 72 — loss recovery
         _resetScatterAlert();    // 73 — scatter alert
+        _initBetLock();          // 75 — bet lock
+        _updateQuickStats();     // 76 — quick stats
+        _updateBetSteps();       // 80 — bet steps
+        _initProfitTarget();     // 79 — profit target
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -2940,10 +2944,14 @@
                 _updateMaxWinSeen(winAmount);        // 62 — max win seen
                 if (freeSpinsActive || winAmount >= currentBet * 5) _incrementFeatureTrigger(); // 61
                 _updateLossStreak(true);             // 63 — reset loss streak on win
+                _updateQuickStats();          // 76 — quick stats on win
+                _updateProfitTarget();        // 79 — profit target on win
                 _checkCashoutHint();                 // 66 — cashout hint check
                 _addRecentOutcome(true);           // Sprint 68
                 _updateSymbolHeat(currentGrid);    // Sprint 71
                 _checkScatterAlert(currentGrid);   // Sprint 73
+                _pulseWinBalance();            // 77 — win balance pulse
+                _updateFsRemainingBadge();     // 78 — fs remaining badge
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3082,6 +3090,9 @@
             _updateWinRate(winAmount > 0); // Sprint 56
             _updateApProgress();           // Sprint 54
             _updateLossStreak(false);   // 63 — increment loss streak on no-win spin
+            _updateQuickStats();          // 76 — quick stats post-spin
+            _updateFsRemainingBadge();    // 78 — fs badge post-spin
+            _updateProfitTarget();        // 79 — profit target post-spin
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
@@ -6480,10 +6491,14 @@
                 _updateMaxWinSeen(winAmount);        // 62 — max win seen
                 if (freeSpinsActive || winAmount >= currentBet * 5) _incrementFeatureTrigger(); // 61
                 _updateLossStreak(true);             // 63 — reset loss streak on win
+                _updateQuickStats();          // 76 — quick stats on win
+                _updateProfitTarget();        // 79 — profit target on win
                 _checkCashoutHint();                 // 66 — cashout hint check
                 _addRecentOutcome(true);           // Sprint 68
                 _updateSymbolHeat(currentGrid);    // Sprint 71
                 _checkScatterAlert(currentGrid);   // Sprint 73
+                _pulseWinBalance();            // 77 — win balance pulse
+                _updateFsRemainingBadge();     // 78 — fs remaining badge
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6587,6 +6602,9 @@
             _updateWinRate(winAmount > 0); // Sprint 56
             _updateApProgress();           // Sprint 54
             _updateLossStreak(false);   // 63 — increment loss streak on no-win spin
+            _updateQuickStats();          // 76 — quick stats post-spin
+            _updateFsRemainingBadge();    // 78 — fs badge post-spin
+            _updateProfitTarget();        // 79 — profit target post-spin
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
@@ -10514,6 +10532,7 @@ function _updateSlotNet() {
 
 // ── Sprint 60: Quick Bet Presets ─────────────────────────
 function _quickBet(fraction) {
+    if (typeof _betLocked !== "undefined" && _betLocked) return; // 75 — bet lock guard
     var game = currentGame || {};
     var opts = game.betOptions;
     if (!opts || opts.length === 0) return;
@@ -10534,6 +10553,7 @@ function _quickBet(fraction) {
     }
     if (typeof updateBetDisplay === 'function') updateBetDisplay();
     if (typeof _updateBetIndicator === 'function') _updateBetIndicator();
+    _updateBetSteps();    // 80 — bet steps after quick bet
 }
 
 function _showQuickBetPresets() {
@@ -10882,4 +10902,138 @@ function _showSessionSummary() {
 function _hideSessionSummary() {
     var el = document.getElementById("sessionSummary");
     if (el) el.style.display = "none";
+}
+
+
+// -- Sprint 75: Bet Lock Toggle --
+var _betLocked = false;
+
+function _toggleBetLock() {
+    _betLocked = !_betLocked;
+    var btn = document.getElementById("betLockBtn");
+    if (btn) btn.textContent = _betLocked ? "🔒" : "🔓";
+    var slider = document.getElementById("betRange");
+    if (slider) slider.disabled = _betLocked;
+    var presets = document.getElementById("quickBetPresets");
+    if (presets) {
+        presets.querySelectorAll("button").forEach(function(b) { b.disabled = _betLocked; });
+        presets.style.opacity = _betLocked ? "0.4" : "";
+        presets.style.pointerEvents = _betLocked ? "none" : "";
+    }
+    var slotEl = document.getElementById("slotView");
+    if (slotEl) { if (_betLocked) slotEl.classList.add("bet-locked"); else slotEl.classList.remove("bet-locked"); }
+}
+
+function _initBetLock() {
+    _betLocked = false;
+    var btn = document.getElementById("betLockBtn");
+    if (btn) { btn.style.display = ""; btn.textContent = "🔓"; }
+    var slider = document.getElementById("betRange");
+    if (slider) slider.disabled = false;
+    var presets = document.getElementById("quickBetPresets");
+    if (presets) {
+        presets.style.opacity = ""; presets.style.pointerEvents = "";
+        presets.querySelectorAll("button").forEach(function(b){b.disabled=false;});
+    }
+    var slotEl = document.getElementById("slotView");
+    if (slotEl) slotEl.classList.remove("bet-locked");
+}
+
+// -- Sprint 76: Quick Stats Summary --
+function _updateQuickStats() {
+    var el = document.getElementById("quickStatsPanel");
+    if (!el) return;
+    var spins = (stats && stats.totalSpins) ? stats.totalSpins : 0;
+    var won = (stats && stats.totalWon) ? stats.totalWon : 0;
+    var best = (stats && stats.biggestWin) ? stats.biggestWin : 0;
+    el.innerHTML = "";
+    var rows = ["Spins: "+spins, "Total Won: "+_DSN+parseFloat(won).toFixed(2), "Best Win: "+_DSN+parseFloat(best).toFixed(2)];
+    rows.forEach(function(txt) { var d=document.createElement("div"); d.className="qs-row"; d.textContent=txt; el.appendChild(d); });
+    el.style.display = "";
+}
+
+// -- Sprint 77: Win Alert Pulse --
+function _pulseWinBalance() {
+    var el = document.getElementById("slotBalance");
+    if (!el) return;
+    el.classList.remove("bal-win-pulse");
+    void el.offsetWidth;
+    el.classList.add("bal-win-pulse");
+    setTimeout(function() { el.classList.remove("bal-win-pulse"); }, 600);
+}
+
+// -- Sprint 78: Free Spins Remaining Badge --
+function _updateFsRemainingBadge() {
+    var el = document.getElementById("fsRemainingBadge");
+    if (!el) return;
+    if (typeof freeSpinsActive !== "undefined" && freeSpinsActive &&
+        typeof freeSpinsRemaining !== "undefined" && freeSpinsRemaining > 0) {
+        el.textContent = "🎁 " + freeSpinsRemaining + "x free";
+        el.style.display = "";
+    } else { el.style.display = "none"; }
+}
+
+// -- Sprint 79: Profit Target Tracker --
+var _profitTargetAmount = 0;
+
+function _setProfitTarget(amount) {
+    _profitTargetAmount = parseFloat(amount) || 0;
+    var el = document.getElementById("profitTarget");
+    if (!el) return;
+    if (_profitTargetAmount > 0) { el.style.display = ""; _updateProfitTarget(); }
+    else { el.style.display = "none"; }
+}
+
+function _updateProfitTarget() {
+    var el = document.getElementById("profitTarget");
+    if (!el || _profitTargetAmount <= 0) return;
+    var bal = typeof balance !== "undefined" ? balance : 0;
+    if (bal >= _profitTargetAmount) {
+        el.innerHTML = "";
+        var span = document.createElement("span");
+        span.className = "pt-reached";
+        span.textContent = "✅ Target reached!";
+        el.appendChild(span);
+    } else {
+        var toGo = (_profitTargetAmount - bal).toFixed(2);
+        el.textContent = "Target: "+_DSN+parseFloat(_profitTargetAmount).toFixed(2)+" | "+_DSN+toGo+" to go";
+    }
+}
+
+function _initProfitTarget() {
+    _profitTargetAmount = 0;
+    var el = document.getElementById("profitTarget");
+    if (el) el.style.display = "none";
+}
+
+// -- Sprint 80: Bet Step Indicator --
+function _updateBetSteps() {
+    var el = document.getElementById("betSteps");
+    if (!el) return;
+    var game = typeof currentGame !== "undefined" ? currentGame : null;
+    if (!game || !game.betOptions || game.betOptions.length <= 1) { el.style.display = "none"; return; }
+    var sorted = game.betOptions.slice().sort(function(a,b){return a-b;});
+    var cur = typeof currentBet !== "undefined" ? currentBet : sorted[0];
+    var idx = sorted.indexOf(cur); if (idx < 0) idx = 0;
+    el.textContent = "↑" + (sorted.length-1-idx) + " ↓" + idx;
+    el.style.display = "";
+}
+
+// -- Sprint 81: Ambient Music Toggle in Slot --
+function _toggleAmbientInSlot() {
+    if (typeof SoundManager !== "undefined" && typeof SoundManager.toggleAmbient === "function") {
+        SoundManager.toggleAmbient();
+    } else if (typeof appSettings !== "undefined") {
+        appSettings.ambientMusic = !appSettings.ambientMusic;
+    }
+    var isOn = (typeof appSettings !== "undefined") ? appSettings.ambientMusic : true;
+    var btn = document.getElementById("ambientToggleBtn2");
+    if (btn) btn.textContent = isOn ? "🎵" : "🔇";
+}
+
+// -- Sprint 82: Fullscreen Toggle -- uses toggleFullscreen() already in app.js
+
+if (typeof window !== "undefined") {
+    window.casinoDebug = window.casinoDebug || {};
+    window.casinoDebug.setProfitTarget = _setProfitTarget;
 }

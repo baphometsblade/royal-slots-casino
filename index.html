@@ -513,6 +513,8 @@
             <!-- Sprint 66: Cashout Hint Toast -->
             <div class="cashout-hint" id="cashoutHint" style="display:none">💰 You're up! Consider cashing out.</div>
             <div class="session-summary" id="sessionSummary" style="display:none"></div>
+            <!-- Sprint 76: Quick Stats Panel -->
+            <div class="quick-stats-panel" id="quickStatsPanel" style="display:none"></div>
 
             <!-- Feature Popup Overlay -->
             <div id="slotFeaturePopup" class="feature-popup-overlay" style="display:none;">
@@ -679,6 +681,8 @@
                     <div class="recent-outcomes" id="recentOutcomes" style="display:none"></div>
                     <span class="session-hilo" id="sessionHiLo" style="display:none"></span>
                     <span class="balance-buffer" id="balBuffer" style="display:none"></span>
+                <!-- Sprint 79: Profit Target Tracker -->
+                <div class="profit-target" id="profitTarget" style="display:none"></div>
                     <div class="symbol-heat" id="symbolHeat" style="display:none"></div>
                     <span class="loss-recovery" id="lossRecovery" style="display:none"></span>
                     <span class="scatter-alert" id="scatterAlert" style="display:none"></span>
@@ -726,9 +730,17 @@
                     <button onclick="if(typeof _quickBet==='function')_quickBet(0.5)" title="Half max bet">½</button>
                     <button onclick="if(typeof _quickBet==='function')_quickBet(1)" title="Maximum bet">Max</button>
                 </div>
+                <!-- Sprint 75: Bet Lock Toggle -->
+                <button class="bet-lock-btn" id="betLockBtn" onclick="if(typeof _toggleBetLock==='function')_toggleBetLock()" title="Lock/unlock bet">&#x1F513;</button>
                 <span id="minBet" style="display:none;">50</span>
+                <!-- Sprint 80: Bet Step Indicator -->
+                <span class="bet-steps" id="betSteps" style="display:none"></span>
                 <span id="maxBet" style="display:none;">5000</span>
+                <!-- Sprint 81: Ambient Music Toggle -->
+                <button class="ambient-toggle-btn" id="ambientToggleBtn2" onclick="if(typeof _toggleAmbientInSlot==='function')_toggleAmbientInSlot()" title="Toggle ambient music">&#x1F3B5;</button>
 
+                <!-- Sprint 82: Fullscreen Toggle -->
+                <button class="fs-toggle-btn" id="fsToggleBtn" onclick="if(typeof toggleFullscreen==='function')toggleFullscreen()" title="Toggle fullscreen">&#x26F6;</button>
                 <!-- Turbo Toggle -->
                 <button class="slot-turbo-btn" id="turboBtn" onclick="toggleTurbo()" title="Turbo Spin">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z"/></svg>
@@ -744,6 +756,8 @@
                 <div class="ap-progress" id="apProgress" style="display:none"></div>
                 <!-- Sprint 61: Feature Trigger Counter -->
                 <span class="feature-count-badge" id="featureCountBadge" style="display:none"></span>
+                <!-- Sprint 78: Free Spins Remaining Badge -->
+                <span class="fs-remaining-badge" id="fsRemainingBadge" style="display:none"></span>
 
                 <!-- Sprint 46: Win Streak Badge -->
                 <div class="win-streak-badge" id="winStreakBadge" style="display:none">

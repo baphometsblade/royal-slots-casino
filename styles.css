@@ -15444,3 +15444,127 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .ss-row {
   font-size: 11px; color: rgba(255,255,255,0.7); padding: 2px 0;
 }
+
+/* ============================================================
+   Sprint 75-82: Slot HUD & Lobby Features
+   ============================================================ */
+
+/* Sprint 75 — Bet Lock Toggle */
+.bet-lock-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px 8px;
+    transition: background 0.2s, border-color 0.2s;
+    line-height: 1;
+}
+.bet-lock-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.4);
+}
+.bet-locked #betRange {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Sprint 76 — Quick Stats Panel */
+.quick-stats-panel {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.72rem;
+    margin-top: 6px;
+    padding: 6px 10px;
+    line-height: 1.7;
+}
+.quick-stats-panel .qs-row {
+    white-space: nowrap;
+}
+
+/* Sprint 77 — Win Balance Pulse */
+@keyframes bal-win-pulse {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    30%  { transform: scale(1.18); filter: brightness(1.6) drop-shadow(0 0 8px #ffe066); }
+    70%  { transform: scale(1.05); filter: brightness(1.2); }
+    100% { transform: scale(1);    filter: brightness(1); }
+}
+.bal-win-pulse {
+    animation: bal-win-pulse 0.6s ease-out;
+}
+
+/* Sprint 78 — Free Spins Remaining Badge */
+.fs-remaining-badge {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 20px;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(168,85,247,0.45);
+}
+
+/* Sprint 79 — Profit Target Tracker */
+.profit-target {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(74,222,128,0.35);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.72rem;
+    margin-top: 4px;
+    padding: 5px 10px;
+    white-space: nowrap;
+}
+.pt-reached {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+/* Sprint 80 — Bet Step Indicator */
+.bet-steps {
+    background: rgba(255,255,255,0.07);
+    border-radius: 5px;
+    color: rgba(255,255,255,0.55);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    padding: 3px 7px;
+    white-space: nowrap;
+}
+
+/* Sprint 81 — Ambient Toggle Button (slot HUD) */
+.ambient-toggle-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.05rem;
+    padding: 4px 8px;
+    transition: background 0.2s, border-color 0.2s;
+    line-height: 1;
+}
+.ambient-toggle-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.4);
+}
+
+/* Sprint 82 — Fullscreen Toggle Button (slot HUD) */
+.fs-toggle-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.05rem;
+    padding: 4px 8px;
+    transition: background 0.2s, border-color 0.2s;
+    line-height: 1;
+}
+.fs-toggle-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.4);
+}
