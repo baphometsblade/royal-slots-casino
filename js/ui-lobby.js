@@ -9,6 +9,11 @@
         let searchQuery = '';                      // real-time game search (compound with other filters)
         let _lobbySearchQuery = '';                // hide/show search query (Sprint 18 search bar)
 
+        // Tournament banner state
+        let _activeTournaments = [];
+        let _tournamentCountdownInterval = null;
+        let _tournamentRefreshInterval = null;
+
         // Quick-resume banner state
         var _resumeBannerTimer = null;
         var _lastPlayedGameForResume = null;
@@ -595,6 +600,8 @@ function renderGames() {
             setInterval(fetchAndUpdate, 10000);
             startCardSpotlight();
             initLeaderboard();
+            initTournamentBanner();
+            initLiveFeed();
         }
 
         // Random game-card spotlight — briefly highlights a random card every 3-5s
@@ -1393,4 +1400,258 @@ function renderGames() {
             // Use the sentinel prefix so getFilteredGames does an exact provider match
             lobbySearchQuery = '__provider__' + providerName.toLowerCase();
             renderFilteredGames();
+        }
+
+        // ================================================================
+        // TOURNAMENT BANNER
+        // ================================================================
+
+        function initTournamentBanner() {
+            // Inject banner HTML once (id guard)
+            if (document.getElementById('tournamentBanner')) return;
+
+            var banner = document.createElement('div');
+            banner.id = 'tournamentBanner';
+            banner.className = 'tournament-banner';
+            banner.innerHTML = '<div class="tourn-loading">Loading tournaments...</div>';
+
+            // Insert before game grid
+            var gamesSection = document.getElementById('games-section') || document.getElementById('gamesContainer') || document.querySelector('.games-grid') || document.querySelector('.game-grid');
+            if (gamesSection && gamesSection.parentNode) {
+                gamesSection.parentNode.insertBefore(banner, gamesSection);
+            } else {
+                var main = document.getElementById('main-content') || document.getElementById('lobby') || document.querySelector('.lobby-content');
+                if (main) main.appendChild(banner);
+            }
+
+            _fetchAndRenderTournaments();
+            _tournamentRefreshInterval = setInterval(_fetchAndRenderTournaments, 30000);
+        }
+        async function _fetchAndRenderTournaments() {
+            var banner = document.getElementById('tournamentBanner');
+            if (!banner) return;
+            try {
+                var res = await fetch('/api/tournaments');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var data = await res.json();
+                _activeTournaments = data.active || [];
+                _renderTournamentBanner(data.active || [], data.upcoming || []);
+            } catch (e) {
+                // Server may not be reachable in offline mode
+                banner.style.display = 'none';
+            }
+        }
+        function _renderTournamentBanner(active, upcoming) {
+            var banner = document.getElementById('tournamentBanner');
+            if (!banner) return;
+
+            if (active.length === 0 && upcoming.length === 0) {
+                banner.style.display = 'none';
+                return;
+            }
+
+            banner.style.display = '';
+            var t = active[0] || upcoming[0];
+            var isActive = active.length > 0;
+
+            // Prize display based on type
+            var prizes = t.type === 'daily'
+                ? '🥇 $200 &nbsp; 🥈 $100 &nbsp; 🥉 $75'
+                : '🥇 $25 &nbsp; 🥈 $15 &nbsp; 🥉 $10';
+            banner.innerHTML =
+                '<div class="tourn-header">' +
+                    '<span class="tourn-live-dot' + (isActive ? ' tourn-live-dot--active' : '') + '"></span>' +
+                    '<span class="tourn-title">' + t.name + '</span>' +
+                    '<span class="tourn-status-badge">' + (isActive ? 'LIVE' : 'UPCOMING') + '</span>' +
+                    '<span class="tourn-timer" id="tournTimer" data-ends="' + (isActive ? t.ends_at : t.starts_at) + '" data-mode="' + (isActive ? 'ends' : 'starts') + '">--:--:--</span>' +
+                '</div>' +
+                '<div class="tourn-meta">' +
+                    '<span class="tourn-prizes">' + prizes + '</span>' +
+                    '<span class="tourn-entry-count" id="tournEntryCount">' + (t.entry_count || 0) + ' players</span>' +
+                '</div>' +
+                '<div class="tourn-leaderboard-wrap" id="tournLeaderboardWrap">' +
+                    '<div class="tourn-lb-loading">Loading leaderboard...</div>' +
+                '</div>' +
+                '<div class="tourn-actions">' +
+                    '<button class="tourn-join-btn" id="tournJoinBtn" onclick="joinTournament(' + t.id + ')">' + (isActive ? 'JOIN FREE' : 'NOTIFY ME') + '</button>' +
+                    '<button class="tourn-expand-btn" onclick="_toggleTournLeaderboard(' + t.id + ')">View Leaderboard ▾</button>' +
+                '</div>';
+
+            // Start countdown
+            if (_tournamentCountdownInterval) clearInterval(_tournamentCountdownInterval);
+            _tournamentCountdownInterval = setInterval(function() { _updateTournTimer(); }, 1000);
+            _updateTournTimer();
+
+            // Load leaderboard for active tournament
+            if (isActive) _loadTournLeaderboard(t.id);
+        }
+        function _updateTournTimer() {
+            var el = document.getElementById('tournTimer');
+            if (!el) { clearInterval(_tournamentCountdownInterval); return; }
+            var endsAt = el.dataset.ends;
+            var mode = el.dataset.mode;
+            if (!endsAt) return;
+            var diff = Math.max(0, new Date(endsAt).getTime() - Date.now());
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            var label = mode === 'ends' ? '' : 'Starts in ';
+            el.textContent = label + (h > 0 ? h + ':' : '') + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+            if (diff === 0) _fetchAndRenderTournaments();
+        }
+        async function _loadTournLeaderboard(tournamentId) {
+            var wrap = document.getElementById('tournLeaderboardWrap');
+            if (!wrap) return;
+            try {
+                var res = await fetch('/api/tournaments/' + tournamentId + '/leaderboard');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var data = await res.json();
+                var board = data.leaderboard || [];
+                if (board.length === 0) {
+                    wrap.innerHTML = '<div class="tourn-lb-empty">Be the first to compete!</div>';
+                    return;
+                }
+                var medals = ['🥇','🥈','🥉'];
+                wrap.innerHTML = '<div class="tourn-lb-rows">' +
+                    board.slice(0, 5).map(function(p, i) {
+                        return '<div class="tourn-lb-row">' +
+                            '<span class="tourn-lb-rank">' + (medals[i] || '#' + p.rank) + '</span>' +
+                            '<span class="tourn-lb-name">' + escapeHtml(p.username) + '</span>' +
+                            '<span class="tourn-lb-mult">' + p.best_mult.toFixed(2) + 'x</span>' +
+                            '</div>';
+                    }).join('') +
+                    '</div>';
+                wrap.style.display = 'none'; // collapsed by default
+            } catch (e) {
+                wrap.innerHTML = '';
+            }
+        }
+        function _toggleTournLeaderboard(tournamentId) {
+            var wrap = document.getElementById('tournLeaderboardWrap');
+            var btn = document.querySelector('.tourn-expand-btn');
+            if (!wrap) return;
+            var hidden = wrap.style.display === 'none' || wrap.style.display === '';
+            wrap.style.display = hidden ? '' : 'none';
+            if (btn) btn.textContent = hidden ? 'Hide Leaderboard ▴' : 'View Leaderboard ▾';
+            if (hidden && _activeTournaments.length > 0) _loadTournLeaderboard(_activeTournaments[0].id);
+        }
+        async function joinTournament(tournamentId) {
+            var btn = document.getElementById('tournJoinBtn');
+            if (!btn) return;
+            if (!currentUser) {
+                if (typeof openAuthModal === 'function') openAuthModal();
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'Joining...';
+            try {
+                var res = await fetch('/api/tournaments/' + tournamentId + '/join', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + (authToken || ''), 'Content-Type': 'application/json' }
+                });
+                var data = await res.json();
+                if (data.ok || data.alreadyJoined) {
+                    btn.textContent = '✓ Joined!';
+                    btn.style.background = '#22c55e';
+                } else {
+                    btn.textContent = 'JOIN FREE';
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                btn.textContent = 'JOIN FREE';
+                btn.disabled = false;
+            }
+        }
+
+        // ── Live Activity Feed ────────────────────────────────────────────────
+        let _feedRefreshInterval = null;
+
+        function initLiveFeed() {
+            if (document.getElementById('liveFeedWidget')) return;
+
+            const widget = document.createElement('div');
+            widget.id = 'liveFeedWidget';
+            widget.className = 'live-feed-widget';
+            widget.innerHTML = `
+                <div class="live-feed-header">
+                    <span class="live-feed-dot"></span>
+                    <span class="live-feed-title">Live Big Wins</span>
+                </div>
+                <div class="live-feed-list" id="liveFeedList">
+                    <div class="live-feed-loading">Loading…</div>
+                </div>`;
+
+            // Insert after tournament banner (or before game grid if banner missing)
+            const banner = document.getElementById('tournamentBanner');
+            if (banner && banner.parentNode) {
+                banner.parentNode.insertBefore(widget, banner.nextSibling);
+            } else {
+                const grid = document.getElementById('games-section')
+                    || document.getElementById('gamesContainer')
+                    || document.querySelector('.games-grid')
+                    || document.querySelector('.game-grid');
+                if (grid && grid.parentNode) grid.parentNode.insertBefore(widget, grid);
+            }
+
+            _fetchLiveFeed();
+            _feedRefreshInterval = setInterval(_fetchLiveFeed, 15000);
+        }
+
+        async function _fetchLiveFeed() {
+            const listEl = document.getElementById('liveFeedList');
+            if (!listEl) return;
+            try {
+                const res = await fetch('/api/feed');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                const feed = data.feed || [];
+                _renderLiveFeed(feed);
+            } catch (e) {
+                // Hide feed widget if server unreachable
+                const widget = document.getElementById('liveFeedWidget');
+                if (widget) widget.style.display = 'none';
+            }
+        }
+
+        function _renderLiveFeed(feed) {
+            const listEl = document.getElementById('liveFeedList');
+            if (!listEl) return;
+            if (!feed || feed.length === 0) {
+                listEl.innerHTML = '<div class="live-feed-empty">No big wins yet — be the first!</div>';
+                return;
+            }
+
+            // Find game name from GAMES array if available
+            function _gameName(gameId) {
+                if (typeof GAMES !== 'undefined') {
+                    const g = GAMES.find(function(x) { return x.id === gameId; });
+                    if (g) return g.name;
+                }
+                return gameId;
+            }
+
+            function _fmtMoney(n) {
+                return '$' + Number(n).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function _timeAgo(isoStr) {
+                const diff = Date.now() - new Date(isoStr).getTime();
+                const m = Math.floor(diff / 60000);
+                if (m < 1)  return 'just now';
+                if (m < 60) return m + 'm ago';
+                const h = Math.floor(m / 60);
+                if (h < 24) return h + 'h ago';
+                return Math.floor(h / 24) + 'd ago';
+            }
+
+            listEl.innerHTML = feed.slice(0, 8).map(function(entry) {
+                return '<div class="live-feed-entry">' +
+                    '<span class="lfe-user">' + entry.username + '</span>' +
+                    ' won ' +
+                    '<span class="lfe-win">' + _fmtMoney(entry.win) + '</span>' +
+                    ' <span class="lfe-mult">(' + entry.mult + '×)</span>' +
+                    ' on <span class="lfe-game">' + _gameName(entry.gameId) + '</span>' +
+                    '<span class="lfe-time">' + _timeAgo(entry.ts) + '</span>' +
+                    '</div>';
+            }).join('');
         }

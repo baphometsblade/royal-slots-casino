@@ -13198,3 +13198,600 @@ button.active .filter-tab-count {
   color: #555;
   font-size: 10px;
 }
+
+
+/* =================================================================
+   SPRINT 21 - Jackpot Win Overlay
+   ================================================================= */
+
+.jackpot-win-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.85);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.jackpot-win-overlay.active {
+    display: flex;
+    animation: jpOverlayIn 0.35s ease-out forwards;
+}
+@keyframes jpOverlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.jackpot-win-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 48px 40px 36px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 60px rgba(255,215,0,0.4), 0 20px 60px rgba(0,0,0,0.8);
+    max-width: 420px;
+    width: 90vw;
+    text-align: center;
+    animation: jpModalIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes jpModalIn {
+    from { transform: scale(0.6) translateY(40px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.jackpot-win-modal--mini {
+    border-color: #94a3b8;
+    box-shadow: 0 0 40px rgba(148,163,184,0.35), 0 20px 60px rgba(0,0,0,0.8);
+}
+.jackpot-win-modal--major {
+    border-color: #ffd700;
+    box-shadow: 0 0 60px rgba(255,215,0,0.5), 0 20px 60px rgba(0,0,0,0.8);
+}
+.jackpot-win-modal--mega {
+    border-color: #a855f7;
+    background: linear-gradient(145deg, #1e0a3c, #0f0728);
+    box-shadow: 0 0 80px rgba(168,85,247,0.6), 0 20px 80px rgba(0,0,0,0.9);
+    animation: jpModalIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards, jpMegaPulse 1.5s 0.5s ease-in-out infinite alternate;
+}
+@keyframes jpMegaPulse {
+    from { box-shadow: 0 0 80px rgba(168,85,247,0.6), 0 20px 80px rgba(0,0,0,0.9); }
+    to   { box-shadow: 0 0 120px rgba(168,85,247,0.9), 0 20px 80px rgba(0,0,0,0.9); }
+}
+
+.jackpot-win-burst {
+    position: absolute;
+    inset: -30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%);
+    pointer-events: none;
+    animation: jpBurstPulse 0.8s ease-out forwards;
+}
+@keyframes jpBurstPulse {
+    from { transform: scale(0.5); opacity: 1; }
+    to   { transform: scale(1.4); opacity: 0; }
+}
+.jackpot-win-modal--mega .jackpot-win-burst {
+    background: radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%);
+}
+.jackpot-win-modal--mini .jackpot-win-burst {
+    background: radial-gradient(circle, rgba(148,163,184,0.2) 0%, transparent 70%);
+}
+
+.jackpot-win-icon {
+    font-size: 56px;
+    line-height: 1;
+    filter: drop-shadow(0 0 12px rgba(255,215,0,0.8));
+    animation: jpIconBounce 0.6s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes jpIconBounce {
+    from { transform: scale(0) rotate(-30deg); }
+    to   { transform: scale(1) rotate(0deg); }
+}
+
+.jackpot-win-tier {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #ffd700;
+    margin-top: 4px;
+}
+.jackpot-win-modal--mini .jackpot-win-tier { color: #94a3b8; }
+.jackpot-win-modal--mega .jackpot-win-tier { color: #c084fc; }
+
+.jackpot-win-amount {
+    font-size: 42px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255,215,0,0.6);
+    animation: jpAmountSlam 0.4s 0.35s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes jpAmountSlam {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+.jackpot-win-modal--mega .jackpot-win-amount {
+    background: linear-gradient(135deg, #c084fc, #a855f7, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.jackpot-win-sub {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: -4px;
+}
+
+.jackpot-win-close {
+    margin-top: 8px;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #000;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.5);
+}
+.jackpot-win-close:hover {
+    transform: scale(1.04);
+    box-shadow: 0 6px 28px rgba(245,158,11,0.7);
+}
+.jackpot-win-modal--mega .jackpot-win-close {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(168,85,247,0.5);
+}
+
+/* =================================================================
+   SPRINT 21 - Tournament Banner (Lobby)
+   ================================================================= */
+
+.tournament-banner {
+    margin: 0 0 16px 0;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+    border: 1px solid rgba(99,102,241,0.4);
+    box-shadow: 0 4px 24px rgba(99,102,241,0.15);
+    position: relative;
+    overflow: hidden;
+}
+.tournament-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.05), transparent);
+    animation: tournBannerShimmer 3s linear infinite;
+}
+@keyframes tournBannerShimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+}
+
+.tourn-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.tourn-live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #475569;
+    flex-shrink: 0;
+}
+.tourn-live-dot--active {
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34,197,94,0.8);
+    animation: tournDotPulse 1.4s ease-in-out infinite;
+}
+@keyframes tournDotPulse {
+    0%,100% { box-shadow: 0 0 4px rgba(34,197,94,0.6); }
+    50%      { box-shadow: 0 0 10px rgba(34,197,94,1); }
+}
+
+.tourn-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e2e8f0;
+    flex: 1;
+}
+
+.tourn-status-badge {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(34,197,94,0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34,197,94,0.3);
+}
+
+.tourn-timer {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fbbf24;
+    font-variant-numeric: tabular-nums;
+    min-width: 60px;
+    text-align: right;
+}
+
+.tourn-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 12px;
+}
+.tourn-prizes {
+    color: #fbbf24;
+    font-weight: 600;
+}
+.tourn-entry-count {
+    color: #64748b;
+}
+
+.tourn-leaderboard-wrap {
+    display: none;
+    margin-bottom: 12px;
+}
+.tourn-lb-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.tourn-lb-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    font-size: 13px;
+}
+.tourn-lb-rank { width: 24px; text-align: center; }
+.tourn-lb-name { flex: 1; color: #cbd5e1; font-weight: 500; }
+.tourn-lb-mult { color: #fbbf24; font-weight: 700; font-size: 12px; }
+.tourn-lb-empty, .tourn-lb-loading, .tourn-loading {
+    text-align: center;
+    color: #475569;
+    font-size: 13px;
+    padding: 8px 0;
+}
+
+.tourn-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.tourn-join-btn {
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 3px 12px rgba(99,102,241,0.4);
+    letter-spacing: 0.5px;
+}
+.tourn-join-btn:hover:not(:disabled) {
+    transform: scale(1.03);
+    box-shadow: 0 5px 18px rgba(99,102,241,0.6);
+}
+.tourn-join-btn:disabled { opacity: 0.6; cursor: default; }
+
+.tourn-expand-btn {
+    padding: 9px 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex: 1;
+    text-align: center;
+}
+.tourn-expand-btn:hover { background: rgba(255,255,255,0.08); }
+
+/* =================================================================
+   SPRINT 21 - Tournament Slot Badge
+   ================================================================= */
+
+.tourn-slot-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(79,70,229,0.1));
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #a5b4fc;
+    text-align: center;
+    margin: 6px 12px 0;
+    animation: tournBadgeFadeIn 0.4s ease-out;
+}
+@keyframes tournBadgeFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.tourn-slot-badge strong { color: #818cf8; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPRINT 22 — Notification Bell + Panel
+   ═══════════════════════════════════════════════════════════════════ */
+
+.btn-notif {
+    position: relative;
+}
+
+.notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 16px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.notif-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9800;
+    background: rgba(0,0,0,0.4);
+}
+.notif-backdrop.active { display: block; }
+
+.notif-panel {
+    position: fixed;
+    top: 0;
+    right: -380px;
+    width: 360px;
+    max-width: 95vw;
+    height: 100dvh;
+    background: #0f172a;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    z-index: 9900;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.32,0.72,0,1);
+    box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+}
+.notif-panel.active { right: 0; }
+
+.notif-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+}
+.notif-panel-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f1f5f9;
+    flex: 1;
+}
+.notif-mark-read {
+    background: none;
+    border: none;
+    color: #6366f1;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+.notif-mark-read:hover { background: rgba(99,102,241,0.12); }
+.notif-panel-close {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    line-height: 1;
+}
+.notif-panel-close:hover { color: #f1f5f9; }
+
+.notif-panel-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+}
+.notif-item:hover { background: rgba(255,255,255,0.03); }
+.notif-unread {
+    background: rgba(99,102,241,0.06);
+    border-left: 3px solid #6366f1;
+}
+.notif-item-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.notif-item-body { flex: 1; min-width: 0; }
+.notif-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 2px;
+}
+.notif-item-text {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+.notif-item-time {
+    font-size: 11px;
+    color: #475569;
+}
+.notif-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: #475569;
+    font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPRINT 22 — Challenge Tabs (Today / Weekly)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ch-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+.ch-tab {
+    flex: 1;
+    padding: 8px 0;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    text-align: center;
+}
+.ch-tab:hover { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+.ch-tab-active {
+    background: rgba(99,102,241,0.15);
+    border-color: rgba(99,102,241,0.5);
+    color: #a5b4fc;
+}
+
+.challenge-reset-info {
+    font-size: 11px;
+    color: #475569;
+    text-align: right;
+    margin-bottom: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPRINT 22 — Live Activity Feed
+   ═══════════════════════════════════════════════════════════════════ */
+
+.live-feed-widget {
+    margin: 0 0 16px 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(15,23,42,0.6);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.live-feed-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.live-feed-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34,197,94,0.8);
+    animation: tournDotPulse 1.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+.live-feed-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.live-feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.live-feed-entry {
+    font-size: 12px;
+    color: #94a3b8;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3px;
+    animation: lfeFadeIn 0.4s ease-out;
+}
+@keyframes lfeFadeIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.lfe-user  { color: #cbd5e1; font-weight: 600; }
+.lfe-win   { color: #22c55e; font-weight: 700; }
+.lfe-mult  { color: #fbbf24; font-size: 11px; }
+.lfe-game  { color: #818cf8; }
+.lfe-time  { color: #475569; font-size: 11px; margin-left: auto; }
+.live-feed-empty, .live-feed-loading {
+    font-size: 12px;
+    color: #475569;
+    text-align: center;
+    padding: 8px 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ALL-TIME LEADERBOARD PANEL
+   ═══════════════════════════════════════════════════════════ */
+
+.ldb-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 12px;
+}
+.ldb-row:last-child { border-bottom: none; }
+.ldb-rank  { width: 22px; text-align: center; flex-shrink: 0; }
+.ldb-player{ width: 58px; color: #ffd700; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ldb-game  { flex: 1; color: rgba(255,255,255,0.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ldb-mult  { width: 50px; text-align: right; color: #34d399; font-weight: 700; flex-shrink: 0; }
+.ldb-amount{ width: 72px; text-align: right; color: rgba(255,255,255,0.9); flex-shrink: 0; }

@@ -159,6 +159,7 @@
             }
 
             applyAuthSession(`${LOCAL_TOKEN_PREFIX}${Date.now()}`, {
+                id: user.id || null,
                 username: user.username,
                 email: user.email,
                 balance,
@@ -175,9 +176,11 @@
             if (password.length < 6) throw new Error('Password must be at least 6 characters.');
 
             const passwordHash = await hashPassword(password);
-            users[key] = { username, email, passwordHash };
+            const localId = `local_${Date.now()}`;
+            users[key] = { username, email, passwordHash, id: localId };
             localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
             applyAuthSession(`${LOCAL_TOKEN_PREFIX}${Date.now()}`, {
+                id: localId,
                 username,
                 email,
                 balance,

@@ -1,75 +1,43 @@
 'use strict';
-
 const express = require('express');
+const router = express.Router();
 const db = require('../database');
 
-const router = express.Router();
-
-function maskUsername(username) {
-    if (!username || username.length <= 3) return username;
-    return username.slice(0, 3) + '***';
-}
-
-function getPeriodFilter(period) {
-    switch (period) {
-        case 'week': return "AND s.created_at >= datetime('now', '-7 days')";
-        case 'all':  return '';
-        default:     return "AND s.created_at >= datetime('now', '-1 day')"; // today
-    }
-}
-
-// GET /api/leaderboard
+// GET /api/leaderboard — top 10 all-time wins by multiplier (>= 10x), no auth required
 router.get('/', async (req, res) => {
     try {
-        const period   = ['today', 'week', 'all'].includes(req.query.period)   ? req.query.period   : 'today';
-        const category = ['net', 'single'].includes(req.query.category) ? req.query.category : 'net';
+        const rows = await db.all([
+            'SELECT u.username,',
+            '       s.game_id,',
+            '       s.win_amount,',
+            '       s.bet_amount,',
+            '       ROUND(s.win_amount / CAST(s.bet_amount AS REAL), 1) AS mult,',
+            '       s.created_at',
+            'FROM spins s',
+            'JOIN users u ON s.user_id = u.id',
+            'WHERE s.bet_amount > 0',
+            '  AND s.win_amount >= s.bet_amount * 10',
+            'ORDER BY mult DESC',
+            'LIMIT 10'
+        ].join(' '));
 
-        const periodFilter = getPeriodFilter(period);
+        const masked = rows.map(function(r) {
+            const name = String(r.username || '');
+            const maskedName = name.length > 2 ? name.slice(0, 2) + '***' : name + '***';
+            return {
+                username: maskedName,
+                gameId: r.game_id,
+                winAmount: parseFloat(r.win_amount) || 0,
+                betAmount: parseFloat(r.bet_amount) || 0,
+                mult: parseFloat(r.mult) || 0,
+                date: r.created_at ? String(r.created_at).slice(0, 10) : ''
+            };
+        });
 
-        let rows;
-
-        if (category === 'net') {
-            rows = await db.all(
-                `SELECT u.username,
-                        SUM(s.win_amount) - SUM(s.bet_amount) AS amount,
-                        COUNT(*) AS spins
-                 FROM spins s
-                 JOIN users u ON s.user_id = u.id
-                 WHERE u.is_banned = 0
-                 ${periodFilter}
-                 GROUP BY s.user_id, u.username
-                 HAVING SUM(s.win_amount) - SUM(s.bet_amount) > 0
-                 ORDER BY SUM(s.win_amount) - SUM(s.bet_amount) DESC
-                 LIMIT 10`
-            );
-        } else {
-            // single — biggest single win
-            rows = await db.all(
-                `SELECT u.username,
-                        MAX(s.win_amount) AS amount,
-                        COUNT(*) AS spins
-                 FROM spins s
-                 JOIN users u ON s.user_id = u.id
-                 WHERE u.is_banned = 0
-                   AND s.win_amount > 0
-                 ${periodFilter}
-                 GROUP BY s.user_id, u.username
-                 ORDER BY MAX(s.win_amount) DESC
-                 LIMIT 10`
-            );
-        }
-
-        const players = rows.map((row, i) => ({
-            rank: i + 1,
-            username: maskUsername(row.username),
-            amount: Math.round(row.amount * 100) / 100,
-            spins: row.spins,
-        }));
-
-        res.json({ players, period, category });
+        res.json({ leaderboard: masked });
     } catch (err) {
-        console.error('[Leaderboard] Error:', err);
-        res.status(500).json({ error: 'Failed to fetch leaderboard' });
+        console.error('leaderboard error:', err);
+        res.status(500).json({ error: 'Failed to load leaderboard' });
     }
 });
 

@@ -137,8 +137,31 @@ const TABLES = [
         total_paid_out NUMERIC(15,2) DEFAULT 0,
         last_won_at TIMESTAMPTZ,
         last_winner_id INTEGER REFERENCES users(id)
+    )`    ,
+
+    `CREATE TABLE IF NOT EXISTS tournaments (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        prize_pool NUMERIC(15,2) DEFAULT 0,
+        entry_fee NUMERIC(15,2) DEFAULT 0,
+        status TEXT DEFAULT 'upcoming',
+        starts_at TIMESTAMPTZ NOT NULL,
+        ends_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     )`,
+
+    `CREATE TABLE IF NOT EXISTS tournament_entries (
+        id SERIAL PRIMARY KEY,
+        tournament_id INTEGER NOT NULL REFERENCES tournaments(id),
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        best_mult NUMERIC(15,4) DEFAULT 0,
+        spins INTEGER DEFAULT 0,
+        joined_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(tournament_id, user_id)
+    )`
 ];
+
 
 const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id)`,
@@ -147,8 +170,12 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_deposits_user ON deposits(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_withdrawals_user ON withdrawals(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_payment_methods_user ON payment_methods(user_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_jackpot_tier ON jackpot_pool(tier)`,
+    `CREATE INDEX IF NOT EXISTS idx_jackpot_tier ON jackpot_pool(tier)`    ,
+    `CREATE INDEX IF NOT EXISTS idx_tournament_status ON tournaments(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_tournament_entries_tid ON tournament_entries(tournament_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`
 ];
+
 
 /** Extra columns added via migrations (column name → PG definition). */
 const USER_MIGRATIONS = [

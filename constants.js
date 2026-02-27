@@ -824,6 +824,13 @@ const STORAGE_KEY_VIP = 'casinoVIP';
 /** @type {string} localStorage key for cross-session Hall of Fame best wins */
 const STORAGE_KEY_HALL_OF_FAME = 'matrixHallOfFame';
 
+/** @type {string} localStorage key for weekly mission progress */
+const STORAGE_KEY_WEEKLY_MISSIONS = 'matrixWeeklyMissions';
+
+/** @type {string} localStorage key for notification center entries */
+const STORAGE_KEY_NOTIFICATIONS = 'matrixNotifications';
+const STORAGE_KEY_LOGIN_STREAK = 'matrixLoginStreak';
+
 /**
  * VIP tier definitions ordered by wagering threshold.
  * Each tier defines: name, min/max wagered, cashback %, weekly reload %,
