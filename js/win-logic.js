@@ -699,6 +699,8 @@
                 hideGambleButton();
             }
             if (typeof awardXP === 'function') awardXP(XP_AWARD_PER_SPIN);
+            // Community Jackpot contribution (Sprint 30)
+            if (typeof communityJackpotSpin === 'function') communityJackpotSpin(currentBet);
 
             // ── Hot Chillies Respin (classic 3-reel only) ──
             if (winType === 'classic' && !freeSpinsActive && isDouble && !isTriple && game.bonusType === 'respin' && respinCount < (game.maxRespins || 3)) {

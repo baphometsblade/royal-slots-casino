@@ -2113,3 +2113,192 @@ function doOpenMysteryBox() {
     else { _init(); }
     setInterval(_updateMysteryBoxNavBtn, 60000);
 })();
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 30 — THE CALENDAR: LOGIN CALENDAR + COMMUNITY JACKPOT
+// ═══════════════════════════════════════════════════════
+
+// ── Login Calendar ───────────────────────────────────────────────────────────
+var LC_KEY       = 'matrixLoginCalendar';
+var LC_MILES_KEY = 'matrixCalendarMilestones';
+var LC_MILESTONES = [
+    { days: 7,  cash: 200,  xp: 0,   spins: 0,  label: '7 Days' },
+    { days: 14, cash: 500,  xp: 50,  spins: 0,  label: '14 Days' },
+    { days: 21, cash: 1000, xp: 100, spins: 0,  label: '21 Days' },
+    { days: 28, cash: 2500, xp: 250, spins: 5,  label: '28 Days' },
+];
+
+function _lcGetState() {
+    try { return JSON.parse(localStorage.getItem(LC_KEY) || 'null'); } catch(e) { return null; }
+}
+
+function _lcSaveState(state) {
+    localStorage.setItem(LC_KEY, JSON.stringify(state));
+}
+
+function _lcNow() {
+    var d = new Date();
+    return { month: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), day: d.getDate() };
+}
+
+function _lcMarkToday() {
+    var now = _lcNow();
+    var state = _lcGetState();
+    if (!state || state.month !== now.month) {
+        state = { month: now.month, days: [] };
+    }
+    if (!state.days.includes(now.day)) {
+        state.days.push(now.day);
+        _lcSaveState(state);
+        _lcCheckMilestones(state);
+    }
+    return state;
+}
+
+function _lcCheckMilestones(state) {
+    var milesKey = LC_MILES_KEY;
+    var claimed = {};
+    try { claimed = JSON.parse(localStorage.getItem(milesKey) || '{}'); } catch(e) {}
+    if (!claimed.month || claimed.month !== state.month) claimed = { month: state.month, days: [] };
+    var count = state.days.length;
+    LC_MILESTONES.forEach(function(m) {
+        if (count >= m.days && !claimed.days.includes(m.days)) {
+            claimed.days.push(m.days);
+            localStorage.setItem(milesKey, JSON.stringify(claimed));
+            // Award
+            if (typeof balance !== 'undefined') {
+                balance += m.cash;
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof updateBalance === 'function') updateBalance();
+            }
+            if (m.xp > 0 && typeof awardXP === 'function') awardXP(m.xp);
+            if (m.spins > 0 && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                triggerFreeSpins(currentGame, m.spins);
+            }
+            if (typeof showToast === 'function') {
+                var msg = '🏆 ' + m.label + ' Login Streak! +$' + m.cash.toLocaleString();
+                if (m.xp > 0) msg += ' + ' + m.xp + ' XP';
+                if (m.spins > 0) msg += ' + ' + m.spins + ' Free Spins';
+                showToast(msg, 'bigwin');
+            }
+        }
+    });
+}
+
+function openLoginCalendar() {
+    var modal = document.getElementById('loginCalendarModal');
+    if (!modal) return;
+    var state = _lcMarkToday();
+    _lcRender(state);
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function _lcRender(state) {
+    var now = _lcNow();
+    var titleEl = document.getElementById('lcMonthTitle');
+    var gridEl  = document.getElementById('lcGrid');
+    var milesEl = document.getElementById('lcMilestones');
+    if (!gridEl) return;
+
+    // Title
+    var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var d = new Date();
+    if (titleEl) titleEl.textContent = monthNames[d.getMonth()] + ' ' + d.getFullYear() + '  —  ' + state.days.length + ' / 30 days logged';
+
+    // Grid
+    var daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    var html = '';
+    for (var i = 1; i <= daysInMonth; i++) {
+        var isPast = i < now.day;
+        var isToday = i === now.day;
+        var isLogged = state.days.includes(i);
+        var cls = 'lc-day';
+        var icon = '';
+        if (isToday && isLogged)  { cls += ' lc-day-today'; icon = '✓'; }
+        else if (isPast && isLogged) { cls += ' lc-day-done'; icon = '✓'; }
+        else if (isPast && !isLogged) { cls += ' lc-day-missed'; icon = '✗'; }
+        else if (isToday) { cls += ' lc-day-today'; icon = '●'; }
+        else { cls += ' lc-day-future'; icon = ''; }
+        html += '<div class="' + cls + '"><span class="lc-num">' + i + '</span><span class="lc-icon">' + icon + '</span></div>';
+    }
+    gridEl.innerHTML = html;
+
+    // Milestones bar
+    var claimed = {};
+    try { claimed = JSON.parse(localStorage.getItem(LC_MILES_KEY) || '{}'); } catch(e) {}
+    var count = state.days.length;
+    if (milesEl) {
+        milesEl.innerHTML = LC_MILESTONES.map(function(m) {
+            var done = (claimed.days || []).includes(m.days);
+            var cls = 'lc-mile' + (done ? ' lc-mile-done' : count >= m.days ? ' lc-mile-ready' : '');
+            return '<div class="' + cls + '"><span class="lc-mile-days">' + m.days + 'd</span><span class="lc-mile-reward">$' + m.cash.toLocaleString() + (m.xp ? ' +' + m.xp + 'XP' : '') + '</span>' + (done ? '<span class="lc-mile-check">✓</span>' : '') + '</div>';
+        }).join('');
+    }
+}
+
+// ── Community Jackpot Pool ────────────────────────────────────────────────────
+var CJ_KEY  = 'matrixCommunityJackpot';
+var CJ_SEED = 1000;
+var CJ_MAX  = 50000;
+var CJ_CONTRIBUTION = 0.50;
+var CJ_WIN_ODDS = 10000; // 1 in N
+
+function _cjGetPool() {
+    try {
+        var s = JSON.parse(localStorage.getItem(CJ_KEY) || 'null');
+        if (!s) { s = { pool: CJ_SEED, lastReset: Date.now() }; _cjSave(s); }
+        return s;
+    } catch(e) { return { pool: CJ_SEED }; }
+}
+
+function _cjSave(s) { localStorage.setItem(CJ_KEY, JSON.stringify(s)); }
+
+function _cjUpdateTicker() {
+    var ticker = document.getElementById('communityJackpotTicker');
+    var amtEl  = document.getElementById('communityJackpotAmount');
+    if (!ticker || !amtEl) return;
+    var s = _cjGetPool();
+    ticker.style.display = '';
+    var amount = s.pool;
+    amtEl.textContent = '$' + Math.floor(amount).toLocaleString();
+    ticker.classList.toggle('cjt-large', amount > 10000);
+}
+
+// Called by spin flow to contribute to pool and check for win
+function communityJackpotSpin(bet) {
+    var s = _cjGetPool();
+    s.pool = Math.min(s.pool + CJ_CONTRIBUTION, CJ_MAX);
+    // Random win check
+    var won = Math.random() < (1 / CJ_WIN_ODDS);
+    if (won) {
+        var winAmount = s.pool;
+        s.pool = CJ_SEED;
+        s.lastReset = Date.now();
+        _cjSave(s);
+        // Award
+        if (typeof balance !== 'undefined') {
+            balance += winAmount;
+            if (typeof saveBalance === 'function') saveBalance();
+            if (typeof updateBalance === 'function') updateBalance();
+        }
+        if (typeof showToast === 'function') showToast('🌐 COMMUNITY JACKPOT! +$' + Math.floor(winAmount).toLocaleString() + '!', 'bigwin');
+        // Full-screen celebration
+        var cel = document.createElement('div');
+        cel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;cursor:pointer;';
+        cel.innerHTML = '<div style="font-size:72px;margin-bottom:16px">🌐</div><div style="font-size:36px;font-weight:900;color:#f0c040">COMMUNITY JACKPOT!</div><div style="font-size:24px;margin-top:12px">You won $' + Math.floor(winAmount).toLocaleString() + '!</div><div style="font-size:13px;margin-top:24px;opacity:0.6">Tap to continue</div>';
+        cel.onclick = function() { document.body.removeChild(cel); };
+        document.body.appendChild(cel);
+    } else {
+        _cjSave(s);
+    }
+    _cjUpdateTicker();
+}
+
+// Init ticker on load
+(function() {
+    function _cjInit() { _cjUpdateTicker(); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _cjInit); }
+    else { _cjInit(); }
+    setInterval(_cjUpdateTicker, 30000);
+})();

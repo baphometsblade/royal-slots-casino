@@ -14354,3 +14354,110 @@ button.active .filter-tab-count {
 /* — Nav btn ready pulse — */
 .mystery-box-ready { animation: nav-ready-pulse 1.8s ease-in-out infinite; color: #4ade80 !important; }
 @keyframes nav-ready-pulse { 0%,100%{box-shadow:none} 50%{box-shadow:0 0 10px 2px rgba(74,222,128,0.5)} }
+
+/* ═══════════════════════════════════════════════════════
+   SPRINT 29 — BALANCE SPARKLINE
+   ═══════════════════════════════════════════════════════ */
+.balance-sparkline-wrap {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.sparkline-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+}
+.balance-sparkline {
+    width: 120px;
+    height: 36px;
+    display: block;
+    filter: drop-shadow(0 0 4px rgba(74,222,128,0.3));
+}
+
+/* ═══════════════════════════════════════════════════════
+   SPRINT 30 — LOGIN CALENDAR + COMMUNITY JACKPOT
+   ═══════════════════════════════════════════════════════ */
+
+/* — Community Jackpot Ticker — */
+.community-jackpot-ticker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 7px 16px;
+    background: linear-gradient(90deg, rgba(99,60,180,0.25), rgba(60,120,220,0.25));
+    border-bottom: 1px solid rgba(120,80,255,0.25);
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    transition: background 0.5s;
+}
+.community-jackpot-ticker.cjt-large {
+    background: linear-gradient(90deg, rgba(180,130,0,0.3), rgba(220,160,20,0.3));
+    border-bottom-color: rgba(240,192,64,0.4);
+    animation: cjt-pulse 2s ease-in-out infinite;
+}
+@keyframes cjt-pulse { 0%,100%{opacity:1} 50%{opacity:0.75} }
+.cjt-icon { font-size: 16px; }
+.cjt-label { font-size: 12px; opacity: 0.7; }
+.cjt-amount { font-size: 15px; font-weight: 700; color: #f0c040; font-variant-numeric: tabular-nums; }
+
+/* — Login Calendar Modal — */
+.login-calendar-content { max-width: 480px; }
+.lc-month-title { text-align: center; font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 16px; font-weight: 600; }
+.lc-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 20px;
+}
+.lc-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    gap: 1px;
+}
+.lc-num { font-size: 10px; color: rgba(255,255,255,0.5); }
+.lc-icon { font-size: 12px; font-weight: 700; }
+.lc-day-done { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); }
+.lc-day-done .lc-icon { color: #4ade80; }
+.lc-day-missed { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); }
+.lc-day-missed .lc-icon { color: rgba(248,113,113,0.5); }
+.lc-day-today {
+    background: rgba(74,222,128,0.25);
+    border-color: #4ade80;
+    box-shadow: 0 0 8px rgba(74,222,128,0.4);
+}
+.lc-day-today .lc-icon { color: #4ade80; }
+.lc-day-future { opacity: 0.35; }
+.lc-milestones {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.lc-mile {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 72px;
+}
+.lc-mile-done { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.5); }
+.lc-mile-ready { background: rgba(240,192,64,0.15); border-color: rgba(240,192,64,0.5); animation: lc-ready 1.4s ease-in-out infinite; }
+@keyframes lc-ready { 0%,100%{opacity:1} 50%{opacity:0.7} }
+.lc-mile-days { font-size: 16px; font-weight: 700; color: #fff; }
+.lc-mile-reward { font-size: 10px; color: #f0c040; text-align: center; }
+.lc-mile-check { font-size: 14px; color: #4ade80; margin-top: 2px; }

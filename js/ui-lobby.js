@@ -98,6 +98,47 @@
             const slotBal = document.getElementById('slotBalance');
             if (slotBal) slotBal.textContent = formatMoney(balance);
             refreshBetControls();
+            // Balance sparkline (Sprint 29)
+            recordBalancePoint(balance);
+        }
+
+        // ── Balance History Sparkline (Sprint 29) ────────────────────────────────
+        var _BALANCE_HIST_KEY = 'matrixBalanceHistory';
+        var _BALANCE_HIST_MAX = 100;
+
+        function recordBalancePoint(bal) {
+            try {
+                var hist = JSON.parse(localStorage.getItem(_BALANCE_HIST_KEY) || '[]');
+                hist.push({ t: Date.now(), v: bal });
+                if (hist.length > _BALANCE_HIST_MAX) hist = hist.slice(-_BALANCE_HIST_MAX);
+                localStorage.setItem(_BALANCE_HIST_KEY, JSON.stringify(hist));
+            } catch(e) {}
+            renderBalanceSparkline();
+        }
+
+        function renderBalanceSparkline() {
+            var svgEl = document.getElementById('balanceSparkline');
+            var wrapEl = document.getElementById('balanceSparklineWrap');
+            if (!svgEl || !wrapEl) return;
+            var hist = [];
+            try { hist = JSON.parse(localStorage.getItem(_BALANCE_HIST_KEY) || '[]'); } catch(e) {}
+            var pts = hist.slice(-50);
+            if (pts.length < 3) { wrapEl.style.display = 'none'; return; }
+            wrapEl.style.display = '';
+            var vals = pts.map(function(p) { return p.v; });
+            var minV = Math.min.apply(null, vals);
+            var maxV = Math.max.apply(null, vals);
+            var range = maxV - minV || 1;
+            var W = 120, H = 36, pad = 3;
+            var points = vals.map(function(v, i) {
+                var x = pad + (i / (vals.length - 1)) * (W - pad * 2);
+                var y = H - pad - ((v - minV) / range) * (H - pad * 2);
+                return x.toFixed(1) + ',' + y.toFixed(1);
+            }).join(' ');
+            var isUp = vals[vals.length - 1] >= vals[0];
+            var color = isUp ? '#4ade80' : '#f87171';
+            svgEl.innerHTML =
+                '<polyline points="' + points + '" fill="none" stroke="' + color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
         }
 
 
@@ -507,6 +548,8 @@ function renderGames() {
                     setTimeout(function() { if (typeof _updateTabCounts === 'function') _updateTabCounts(); }, 0);
                     // XP level badge update (Sprint 20)
                     setTimeout(function() { if (typeof _renderXPBadge === 'function') _renderXPBadge(); }, 50);
+                    // Balance sparkline (Sprint 29)
+                    renderBalanceSparkline();
                 }, 200);
             });
         }

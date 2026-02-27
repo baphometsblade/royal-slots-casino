@@ -131,14 +131,26 @@
                         <button class="nav-btn" onclick="if(typeof openScratchCard==='function')openScratchCard()">🎰 Scratch</button>
                         <button class="nav-btn" onclick="if(typeof openXpShop==='function')openXpShop()">⚗️ XP Shop</button>
                         <button class="nav-btn" id="mysteryBoxNavBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox()">📦 Box</button>
+                        <button class="nav-btn" onclick="if(typeof openLoginCalendar==='function')openLoginCalendar()">📅 Calendar</button>
                     </div>
                 </div>
                 <div class="hero-stats">
                     <div class="stats-label">BIGGEST WIN TODAY</div>
                     <div class="stats-value">$<span id="biggestWin">0</span></div>
                     <div class="stats-info"><span id="recentWinsCount">12</span> wins in last hour</div>
+                    <div class="balance-sparkline-wrap" id="balanceSparklineWrap" style="display:none">
+                        <div class="sparkline-label">Balance Trend</div>
+                        <svg id="balanceSparkline" class="balance-sparkline" viewBox="0 0 120 36" preserveAspectRatio="none"></svg>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Community Jackpot Ticker (Sprint 30) -->
+        <div id="communityJackpotTicker" class="community-jackpot-ticker" style="display:none">
+            <span class="cjt-icon">🌐</span>
+            <span class="cjt-label">Community Jackpot</span>
+            <span class="cjt-amount" id="communityJackpotAmount">$0</span>
         </div>
 
         <!-- Jackpot Ticker -->
@@ -823,6 +835,19 @@
                 <button class="modal-close" onclick="document.getElementById('scratchCardModal').classList.remove('active')">&times;</button>
             </div>
             <div class="scratch-content"></div>
+        </div>
+    </div>
+
+    <!-- Login Calendar Modal (Sprint 30) -->
+    <div class="modal" id="loginCalendarModal">
+        <div class="modal-content login-calendar-content">
+            <div class="modal-header">
+                <h2>📅 Login Calendar</h2>
+                <button class="modal-close" onclick="document.getElementById('loginCalendarModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="lc-month-title" id="lcMonthTitle"></div>
+            <div class="lc-grid" id="lcGrid"></div>
+            <div class="lc-milestones" id="lcMilestones"></div>
         </div>
     </div>
 
