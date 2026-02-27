@@ -78,6 +78,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/game-of-day', require('./routes/gameofday.routes'));
+app.use('/api/game-stats', require('./routes/gamestats.routes'));
 
 // ─── Game definitions endpoint (sanitized — no payout tables) ───
 const games = require('../shared/game-definitions');

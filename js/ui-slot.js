@@ -2745,7 +2745,7 @@
                 saveStats();
                 updateStatsSummary();
 
-                if (typeof awardXP === "function") awardXP(winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN);
+                if (typeof awardXP === "function") { var _godMult = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round((winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN) * _godMult)); }
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -2875,7 +2875,7 @@
                 }
             })();
 
-            if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
+            if (typeof awardXP === "function") { var _godMult2 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_PER_SPIN * _godMult2)); }
 
             // Promo engagement triggers
             if (typeof checkPromoTriggers === "function") {
@@ -3483,7 +3483,7 @@
                     if (typeof updateStatsSummary === 'function') updateStatsSummary();
                 }
                 if (window.HouseEdge) window.HouseEdge.recordSpin(0, winAmount, currentGame && currentGame.id);
-                if (typeof awardXP === 'function') awardXP(XP_AWARD_BIG_WIN);
+                if (typeof awardXP === 'function') { var _godMult3 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_BIG_WIN * _godMult3)); }
                 if (winAmount >= (typeof currentBet !== 'undefined' ? currentBet : 1) * 10) {
                     setTimeout(function() { if (typeof showBigWinCelebration === 'function') showBigWinCelebration(winAmount); }, 400);
                 }
@@ -6256,7 +6256,7 @@
                 saveStats();
                 updateStatsSummary();
 
-                if (typeof awardXP === "function") awardXP(winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN);
+                if (typeof awardXP === "function") { var _godMult = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round((winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN) * _godMult)); }
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6351,7 +6351,7 @@
                     }
                 })();
             }
-            if (typeof awardXP === "function") awardXP(XP_AWARD_PER_SPIN);
+            if (typeof awardXP === "function") { var _godMult2 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_PER_SPIN * _godMult2)); }
 
             // Promo engagement triggers
             if (typeof checkPromoTriggers === "function") {
@@ -6949,7 +6949,7 @@
                     if (typeof updateStatsSummary === 'function') updateStatsSummary();
                 }
                 if (window.HouseEdge) window.HouseEdge.recordSpin(0, winAmount, currentGame && currentGame.id);
-                if (typeof awardXP === 'function') awardXP(XP_AWARD_BIG_WIN);
+                if (typeof awardXP === 'function') { var _godMult3 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_BIG_WIN * _godMult3)); }
                 if (winAmount >= (typeof currentBet !== 'undefined' ? currentBet : 1) * 10) {
                     setTimeout(function() { if (typeof showBigWinCelebration === 'function') showBigWinCelebration(winAmount); }, 400);
                 }

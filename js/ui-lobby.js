@@ -13,6 +13,9 @@
         let gameOfDayId = null;
         let gameOfDayTimer = null;
 
+        // Hot/Cold game stats cache (Sprint 25)
+        let gameStatsMap = {};  // gameId -> { actualRtp, totalSpins }
+
         // Tournament banner state
         let _activeTournaments = [];
         let _tournamentCountdownInterval = null;
@@ -367,6 +370,47 @@
                 });
         }
 
+function fetchGameStats() {
+            fetch('/api/game-stats')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data && Array.isArray(data.stats)) {
+                        gameStatsMap = {};
+                        data.stats.forEach(function(s) {
+                            gameStatsMap[s.gameId] = { actualRtp: s.actualRtp, totalSpins: s.totalSpins };
+                        });
+                        // Re-apply badges to already-rendered cards
+                        applyHotColdBadges();
+                    }
+                })
+                .catch(function() {
+                    // silently fail — hot/cold is cosmetic only
+                });
+        }
+
+        function applyHotColdBadges() {
+            // Remove any existing hot/cold badges
+            document.querySelectorAll('.game-hot-badge, .game-cold-badge').forEach(function(el) { el.remove(); });
+            document.querySelectorAll('.game-card').forEach(function(card) {
+                var gameId = card.getAttribute('data-game-id');
+                if (!gameId) return;
+                var stats = gameStatsMap[gameId];
+                if (!stats) return;
+                var badge = document.createElement('div');
+                if (stats.actualRtp > 92) {
+                    badge.className = 'game-hot-badge';
+                    badge.textContent = '🔥';
+                    badge.title = 'Hot! Recent RTP: ' + stats.actualRtp.toFixed(1) + '%';
+                    card.appendChild(badge);
+                } else if (stats.actualRtp < 84) {
+                    badge.className = 'game-cold-badge';
+                    badge.textContent = '❄️';
+                    badge.title = 'Cold. Recent RTP: ' + stats.actualRtp.toFixed(1) + '%';
+                    card.appendChild(badge);
+                }
+            });
+        }
+
 function renderGames() {
 
             // Show resume banner if returning from a slot
@@ -452,6 +496,8 @@ function renderGames() {
                     // Slot of the Day — fetch once on first render, timer handles subsequent days
                     if (!gameOfDayId) fetchGameOfDay();
                     else applyGameOfDayBadge();
+                    // Hot/Cold badges — fire-and-forget, cosmetic only
+                    fetchGameStats();
                     // Start live-count tick once, persists across re-renders
                     if (!window._liveCountsInterval) {
                         window._liveCountsInterval = setInterval(_tickLiveCounts, 15000 + Math.random() * 6000);
@@ -869,6 +915,16 @@ function renderGames() {
                 ? '<div class="game-of-day-badge">&#11088; TODAY</div>'
                 : '';
             const gameDayCardClass = isGameOfDay ? ' game-of-day-card' : '';
+            // Hot/Cold badge (Sprint 25)
+            var stats = gameStatsMap[game.id] || gameStatsMap[(game.id || '').toLowerCase()];
+            var hotColdHtml = '';
+            if (stats) {
+                if (stats.actualRtp > 92) {
+                    hotColdHtml = '<div class="game-hot-badge" title="Hot! RTP ' + stats.actualRtp.toFixed(1) + '%">🔥</div>';
+                } else if (stats.actualRtp < 84) {
+                    hotColdHtml = '<div class="game-cold-badge" title="Cold. RTP ' + stats.actualRtp.toFixed(1) + '%">❄️</div>';
+                }
+            }
             _seedCount(game.id, isHot || _hotIds.has(game.id));
             return `
                 <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="openSlot('${game.id}')" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
@@ -903,6 +959,7 @@ function renderGames() {
                     ${_hotIds.has(game.id) ? '<span class="lobby-badge lobby-badge-hot">🔥 HOT</span>' : ''}
                     ${_newIds.has(game.id) ? '<span class="lobby-badge lobby-badge-new">✨ NEW</span>' : ''}
                     ${gameDayBadgeHtml}
+                    ${hotColdHtml}
                 </div>
             `;
         }

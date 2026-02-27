@@ -12,7 +12,8 @@ router.get('/', async (req, res) => {
             '       s.win_amount,',
             '       s.bet_amount,',
             '       ROUND(s.win_amount / CAST(s.bet_amount AS REAL), 1) AS mult,',
-            '       s.created_at',
+            '       s.created_at,',
+            '       (SELECT COALESCE(SUM(s2.bet_amount), 0) FROM spins s2 WHERE s2.user_id = s.user_id) AS total_wagered',
             'FROM spins s',
             'JOIN users u ON s.user_id = u.id',
             'WHERE s.bet_amount > 0',
@@ -20,6 +21,17 @@ router.get('/', async (req, res) => {
             'ORDER BY mult DESC',
             'LIMIT 10'
         ].join(' '));
+
+        function computeVipTier(totalWagered) {
+            const w = parseFloat(totalWagered) || 0;
+            if (w >= 100000) return 'Elite';
+            if (w >= 50000)  return 'Diamond';
+            if (w >= 20000)  return 'Platinum';
+            if (w >= 10000)  return 'Gold';
+            if (w >= 5000)   return 'Silver';
+            if (w >= 1000)   return 'Bronze';
+            return null;
+        }
 
         const masked = rows.map(function(r) {
             const name = String(r.username || '');
@@ -30,7 +42,8 @@ router.get('/', async (req, res) => {
                 winAmount: parseFloat(r.win_amount) || 0,
                 betAmount: parseFloat(r.bet_amount) || 0,
                 mult: parseFloat(r.mult) || 0,
-                date: r.created_at ? String(r.created_at).slice(0, 10) : ''
+                date: r.created_at ? String(r.created_at).slice(0, 10) : '',
+                vip_tier: computeVipTier(r.total_wagered)
             };
         });
 

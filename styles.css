@@ -13929,3 +13929,113 @@ button.active .filter-tab-count {
     font-size: 10px;
     pointer-events: none;
 }
+
+/* ── Sprint 25: Hot/Cold Game Indicators ───────────────────────────────── */
+.game-hot-badge,
+.game-cold-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 16px;
+    z-index: 10;
+    pointer-events: none;
+    line-height: 1;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+    animation: hotColdPulse 2s ease-in-out infinite;
+}
+
+@keyframes hotColdPulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.18); }
+}
+
+/* ── Sprint 25: Daily Scratch Card ─────────────────────────────────────── */
+.scratch-modal-content {
+    max-width: 400px;
+    width: 95vw;
+}
+
+.scratch-instruction {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    margin: 0 0 14px;
+}
+
+.scratch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.scratch-cell {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scratch-cover,
+.scratch-reveal {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    font-size: 24px;
+    gap: 4px;
+}
+
+.scratch-cover {
+    background: linear-gradient(135deg, #374151, #1f2937);
+    border-radius: 12px;
+}
+
+.scratch-reveal {
+    background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    transform: rotateY(90deg);
+    opacity: 0;
+}
+
+.scratch-cell.scratched .scratch-cover {
+    transform: rotateY(-90deg);
+    opacity: 0;
+}
+
+.scratch-cell.scratched .scratch-reveal {
+    transform: rotateY(0deg);
+    opacity: 1;
+}
+
+.scratch-amount {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+.scratch-result {
+    text-align: center;
+    min-height: 28px;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.scratch-win {
+    color: #ffd700;
+    text-shadow: 0 0 12px rgba(255,215,0,0.5);
+}
+
+.scratch-consolation {
+    color: #9ca3af;
+}

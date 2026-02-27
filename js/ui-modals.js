@@ -1683,3 +1683,133 @@
 
         // ── Login streak: check once on page load (toast fires even if stats modal is never opened)
         setTimeout(function() { _checkLoginStreak(); }, 800);
+
+
+        // ═══════════════════════════════════════════════════════════════
+        // DAILY SCRATCH CARD
+        // ═══════════════════════════════════════════════════════════════
+
+        const SCRATCH_STORAGE_KEY = 'matrix_scratch_card';
+        const SCRATCH_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
+        const SCRATCH_PRIZES = [50, 100, 100, 250, 250, 500, 500, 1000, 2500];
+        const SCRATCH_SYMBOLS = { 50: '🍋', 100: '🍊', 250: '🍇', 500: '💎', 1000: '⭐', 2500: '7️⃣' };
+
+        function canPlayScratchCard() {
+            try {
+                var saved = JSON.parse(localStorage.getItem(SCRATCH_STORAGE_KEY) || '{}');
+                if (!saved.lastPlay) return true;
+                return (Date.now() - saved.lastPlay) >= SCRATCH_COOLDOWN_MS;
+            } catch(e) { return true; }
+        }
+
+        function openScratchCard() {
+            var modal = document.getElementById('scratchCardModal');
+            if (!modal) return;
+
+            if (!canPlayScratchCard()) {
+                try {
+                    var saved = JSON.parse(localStorage.getItem(SCRATCH_STORAGE_KEY) || '{}');
+                    var msLeft = SCRATCH_COOLDOWN_MS - (Date.now() - saved.lastPlay);
+                    var hoursLeft = Math.ceil(msLeft / 3600000);
+                    showToast('Next scratch card in ' + hoursLeft + ' hour' + (hoursLeft !== 1 ? 's' : '') + '!', 'info');
+                } catch(e) {}
+                return;
+            }
+
+            // Shuffle helper
+            function _shuffleArr(arr) {
+                for (var i = arr.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+                }
+                return arr;
+            }
+
+            // Generate 9-cell grid
+            var cells = [];
+            var prizes = SCRATCH_PRIZES.slice();
+            _shuffleArr(prizes);
+
+            // ~30% chance of a forced win (3 matching cells)
+            var forceWin = Math.random() < 0.30;
+            if (forceWin) {
+                var winPrize = [100, 250, 250, 500][Math.floor(Math.random() * 4)];
+                var positions = _shuffleArr([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+                var winPositions = [positions[0], positions[1], positions[2]];
+                for (var ci = 0; ci < 9; ci++) {
+                    cells[ci] = winPositions.indexOf(ci) >= 0 ? winPrize : prizes[ci % prizes.length];
+                }
+            } else {
+                for (var ni = 0; ni < 9; ni++) { cells[ni] = prizes[ni % prizes.length]; }
+                // Ensure no accidental triple
+                var counts = {};
+                cells.forEach(function(v) { counts[v] = (counts[v] || 0) + 1; });
+                Object.keys(counts).forEach(function(v) {
+                    if (counts[v] >= 3) {
+                        var replacement = SCRATCH_PRIZES.find(function(p) { return p !== Number(v); });
+                        for (var ri = 8; ri >= 0; ri--) {
+                            if (cells[ri] === Number(v)) { cells[ri] = replacement; break; }
+                        }
+                    }
+                });
+            }
+
+            // Build modal content
+            var gridHtml = cells.map(function(prize, idx) {
+                var sym = SCRATCH_SYMBOLS[prize] || '🎰';
+                return '<div class="scratch-cell" data-prize="' + prize + '" data-idx="' + idx + '">'
+                     + '<div class="scratch-cover">🎰</div>'
+                     + '<div class="scratch-reveal">' + sym + '<br><span class="scratch-amount">$' + prize + '</span></div>'
+                     + '</div>';
+            }).join('');
+
+            var content = modal.querySelector('.scratch-content');
+            if (content) {
+                content.innerHTML = '<p class="scratch-instruction">Click to reveal! Match 3 to win!</p>'
+                    + '<div class="scratch-grid">' + gridHtml + '</div>'
+                    + '<div id="scratchResult" class="scratch-result"></div>';
+
+                var revealed = [];
+                content.querySelectorAll('.scratch-cell').forEach(function(cell) {
+                    cell.addEventListener('click', function() {
+                        if (cell.classList.contains('scratched')) return;
+                        cell.classList.add('scratched');
+                        revealed.push(parseInt(cell.getAttribute('data-prize')));
+
+                        if (revealed.length === 9) {
+                            // All revealed — check for a triple match
+                            var counts2 = {};
+                            revealed.forEach(function(v) { counts2[v] = (counts2[v] || 0) + 1; });
+                            var winValue = null;
+                            Object.keys(counts2).forEach(function(v) {
+                                if (counts2[v] >= 3) winValue = Number(v);
+                            });
+
+                            var prize = winValue || 50; // consolation $50
+                            var resultEl = document.getElementById('scratchResult');
+                            if (winValue) {
+                                if (resultEl) resultEl.innerHTML = '<span class="scratch-win">🎉 You matched 3! Won <strong>$' + winValue + '</strong>!</span>';
+                                showToast('🎰 Scratch card: Won $' + winValue + '!', 'success');
+                            } else {
+                                if (resultEl) resultEl.innerHTML = '<span class="scratch-consolation">No match — consolation prize: <strong>$50</strong></span>';
+                                showToast('Scratch card: Consolation $50', 'info');
+                            }
+
+                            // Credit prize
+                            balance += prize;
+                            updateBalance();
+                            if (typeof saveBalance === 'function') saveBalance();
+                            awardXP(10);
+
+                            // Save cooldown
+                            try {
+                                localStorage.setItem(SCRATCH_STORAGE_KEY, JSON.stringify({ lastPlay: Date.now(), lastPrize: prize }));
+                            } catch(e) {}
+                        }
+                    });
+                });
+            }
+
+            modal.classList.add('active');
+            modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+        }

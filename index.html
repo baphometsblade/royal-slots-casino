@@ -128,6 +128,7 @@
                     <div class="hero-buttons">
                         <button class="btn btn-play" onclick="playRandomHotGame()">PLAY NOW</button>
                         <button class="btn btn-bonus-wheel" onclick="showBonusWheelModal()">BONUS WHEEL</button>
+                        <button class="nav-btn" onclick="if(typeof openScratchCard==='function')openScratchCard()">🎰 Scratch</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -806,6 +807,17 @@
                 <button class="btn wheel-spin-btn" id="wheelSpinBtn" onclick="spinBonusWheel()">SPIN THE WHEEL</button>
                 <button class="btn daily-skip-btn" onclick="closeBonusWheelModal()">CLOSE</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Scratch Card Modal -->
+    <div class="modal" id="scratchCardModal">
+        <div class="modal-content scratch-modal-content">
+            <div class="modal-header">
+                <h2>🎰 Daily Scratch Card</h2>
+                <button class="modal-close" onclick="document.getElementById('scratchCardModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="scratch-content"></div>
         </div>
     </div>
 
