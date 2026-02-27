@@ -16020,3 +16020,25 @@ button.active .filter-tab-count {
     font-size: 0.65rem; color: #6366f1; font-weight: 500;
     margin-left: 8px; display: none;
 }
+
+/* ══ Sprint 66: Wall Clock ══ */
+.wc-clock {
+    text-align: center; font-size: 0.65rem; color: #475569;
+    padding: 1px 6px; margin: 1px auto;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ══ Sprint 66: Mechanic Help ══ */
+.gm-help {
+    display: inline-block; text-align: center; font-size: 0.65rem;
+    color: #6366f1; cursor: pointer; width: 18px; height: 18px;
+    line-height: 18px; border-radius: 50%; border: 1px solid #6366f1;
+    margin: 2px auto; font-weight: 700;
+}
+.gm-help:hover { background: rgba(99,102,241,0.15); }
+.gm-tooltip {
+    text-align: center; font-size: 0.65rem; color: #cbd5e1;
+    background: rgba(30,41,59,0.95); border: 1px solid rgba(99,102,241,0.3);
+    padding: 6px 10px; margin: 4px auto; max-width: 280px;
+    border-radius: 8px; line-height: 1.4;
+}

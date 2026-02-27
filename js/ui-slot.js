@@ -714,6 +714,59 @@
             if (el) el.style.display = 'none';
         }
 
+        /* ── Sprint 66: Wall Clock Display ───────────────── */
+        var _wcInterval = null;
+        function _updateWallClock() {
+            var el = document.getElementById('wcClock');
+            if (!el) return;
+            var now = new Date();
+            var h = now.getHours(); var m = now.getMinutes();
+            el.textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+        }
+        function _startWallClock() {
+            var el = document.getElementById('wcClock');
+            if (el) el.style.display = '';
+            _updateWallClock();
+            if (_wcInterval) clearInterval(_wcInterval);
+            _wcInterval = setInterval(_updateWallClock, 30000); // every 30s
+        }
+        function _stopWallClock() {
+            if (_wcInterval) { clearInterval(_wcInterval); _wcInterval = null; }
+            var el = document.getElementById('wcClock');
+            if (el) el.style.display = 'none';
+        }
+
+        /* ── Sprint 66: Game Mechanic Help ───────────────── */
+        function _initMechanicHelp() {
+            var helpBtn = document.getElementById('gmHelp');
+            var tooltip = document.getElementById('gmTooltip');
+            if (!helpBtn || !tooltip || !currentGame) { if (helpBtn) helpBtn.style.display = 'none'; return; }
+            var mechDescs = {
+                tumble: 'Tumble: Winning symbols vanish and new ones fall from above for extra wins!',
+                hold_win: 'Hold & Win: Collect special symbols that lock in place for bonus payouts!',
+                free_spins: 'Free Spins: Land scatter symbols to trigger bonus rounds with free plays!',
+                wilds: 'Wilds: Wild symbols substitute for any other symbol to complete wins!',
+                respin: 'Respin: Near-miss doubles trigger a free respin on the non-matching reel!',
+                jackpot: 'Jackpot: This game features a progressive jackpot prize pool!'
+            };
+            var mech = currentGame.bonusType || currentGame.mechanic || '';
+            var desc = mechDescs[mech] || 'Classic slot — match symbols across the reels to win!';
+            tooltip.textContent = desc;
+            helpBtn.style.display = '';
+            tooltip.style.display = 'none';
+        }
+        function toggleMechanicHelp() {
+            var tooltip = document.getElementById('gmTooltip');
+            if (!tooltip) return;
+            tooltip.style.display = tooltip.style.display === 'none' ? '' : 'none';
+        }
+        function _hideMechanicHelp() {
+            var helpBtn = document.getElementById('gmHelp');
+            var tooltip = document.getElementById('gmTooltip');
+            if (helpBtn) helpBtn.style.display = 'none';
+            if (tooltip) tooltip.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1928,6 +1981,8 @@
             _showGridSize();
             _startDurationWarn();
             _resetTotalWagered();
+            _startWallClock();
+            _initMechanicHelp();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2550,6 +2605,8 @@
             _stopDurationWarn();
             _resetBetRatio();
             _resetTotalWagered();
+            _stopWallClock();
+            _hideMechanicHelp();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
