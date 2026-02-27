@@ -509,6 +509,12 @@
                 <div id="winAnimation"></div>
             </div>
 
+            <!-- Streak Indicator (Sprint 33) -->
+            <div class="streak-bar" id="streakBar" style="display:none;">
+                <div class="streak-dots" id="streakDots"></div>
+                <span class="streak-label" id="streakLabel"></span>
+            </div>
+
             <!-- Pragmatic Play Bottom Bar -->
             <div class="slot-bottom-bar">
                 <!-- Left: Balance -->
@@ -529,6 +535,14 @@
                 <input type="range" class="bet-range" id="betRange" min="50" max="5000" step="50" value="50" style="display:none;">
                 <span id="minBet" style="display:none;">50</span>
                 <span id="maxBet" style="display:none;">5000</span>
+
+                <!-- Bet Presets (Sprint 33) -->
+                <div class="bet-presets" id="betPresets">
+                    <button class="bp-btn" data-bet="1" onclick="if(typeof setBetPreset==='function')setBetPreset(1)">$1</button>
+                    <button class="bp-btn" data-bet="5" onclick="if(typeof setBetPreset==='function')setBetPreset(5)">$5</button>
+                    <button class="bp-btn" data-bet="25" onclick="if(typeof setBetPreset==='function')setBetPreset(25)">$25</button>
+                    <button class="bp-btn" data-bet="100" onclick="if(typeof setBetPreset==='function')setBetPreset(100)">$100</button>
+                </div>
 
                 <!-- Turbo Toggle -->
                 <button class="slot-turbo-btn" id="turboBtn" onclick="toggleTurbo()" title="Turbo Spin">

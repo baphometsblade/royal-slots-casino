@@ -14781,7 +14781,42 @@ button.active .filter-tab-count {
 }
 .pc-close:hover { background: rgba(255,255,255,0.2); }
 
-/* Responsive: all Sprint 27-32 modals */
+/* ── Sprint 33: Bet Presets ───────────────────────────── */
+.bet-presets {
+    display: flex; gap: 4px; align-items: center;
+}
+.bp-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: #94a3b8; padding: 4px 10px; border-radius: 6px; font-size: 11px;
+    font-weight: 700; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.bp-btn:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+.bp-btn.bp-active {
+    background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: #c084fc;
+}
+
+/* ── Sprint 33: Streak Indicator ─────────────────────── */
+.streak-bar {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 4px 12px; background: rgba(0,0,0,0.3); border-radius: 8px;
+    margin: 2px auto 4px; max-width: 280px;
+}
+.streak-dots { display: flex; gap: 4px; align-items: center; }
+.streak-dot {
+    width: 8px; height: 8px; border-radius: 50%; transition: all 0.2s;
+}
+.sd-win { background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.4); }
+.sd-loss { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.3); }
+.sd-current { width: 10px; height: 10px; animation: sd-pulse 1s ease infinite; }
+@keyframes sd-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+}
+.streak-label { font-size: 11px; font-weight: 700; white-space: nowrap; }
+.sl-hot { color: #fb923c; }
+.sl-cold { color: #38bdf8; }
+
+/* Responsive: all Sprint 27-33 */
 @media (max-width: 480px) {
     .xp-shop-card { padding: 20px 16px; }
     .xps-grid { grid-template-columns: 1fr; }
@@ -14807,4 +14842,7 @@ button.active .filter-tab-count {
     .pc-card { padding: 24px 16px; }
     .pc-stats-grid { grid-template-columns: repeat(2, 1fr); }
     .pc-name { font-size: 18px; }
+    .bet-presets { gap: 2px; }
+    .bp-btn { padding: 3px 7px; font-size: 10px; }
+    .streak-bar { max-width: 240px; gap: 6px; }
 }

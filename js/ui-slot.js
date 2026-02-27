@@ -1777,6 +1777,7 @@
                 var v = parseFloat(chip.dataset.betVal);
                 chip.classList.toggle('bet-chip-active', v === (typeof currentBet !== 'undefined' ? currentBet : -1));
             });
+            if (typeof _highlightBetPreset === 'function') _highlightBetPreset();
         }
 
 
@@ -1818,6 +1819,69 @@
             var _bfRefBtn = document.getElementById('buyFeatureBtn'); if (_bfRefBtn && _bfRefBtn._refreshCost) _bfRefBtn._refreshCost();
             const spinBtn = document.getElementById('spinBtn');
             if (spinBtn) spinBtn.disabled = spinning || currentBet > balance;
+        }
+
+        /* ── Sprint 33: Bet Presets ───────────────────────── */
+        function setBetPreset(amount) {
+            if (!currentGame || spinning) return;
+            var bounds = getBetBounds();
+            if (!bounds) return;
+            var clamped = Math.max(bounds.minBet, Math.min(bounds.maxBet, amount));
+            // Snap to nearest valid step
+            var best = BET_STEPS.reduce(function(prev, v) {
+                if (v < bounds.minBet - 0.001 || v > bounds.maxBet + 0.001) return prev;
+                return Math.abs(v - clamped) < Math.abs(prev - clamped) ? v : prev;
+            }, BET_STEPS[0]);
+            currentBet = best;
+            updateBetDisplay();
+            _highlightBetPreset();
+            var spinBtn = document.getElementById('spinBtn');
+            if (spinBtn) spinBtn.disabled = spinning || currentBet > balance;
+        }
+
+        function _highlightBetPreset() {
+            var btns = document.querySelectorAll('.bp-btn');
+            btns.forEach(function(btn) {
+                var val = parseFloat(btn.getAttribute('data-bet'));
+                btn.classList.toggle('bp-active', Math.abs(val - currentBet) < 0.01);
+            });
+        }
+
+        /* ── Sprint 33: Streak Indicator ─────────────────── */
+        function _updateStreakIndicator() {
+            var bar = document.getElementById('streakBar');
+            if (!bar) return;
+            if (typeof spinHistory === 'undefined' || !Array.isArray(spinHistory) || spinHistory.length === 0) {
+                bar.style.display = 'none';
+                return;
+            }
+            bar.style.display = 'flex';
+            var dots = document.getElementById('streakDots');
+            var label = document.getElementById('streakLabel');
+            // Show last 10 spins (most recent first in spinHistory, but display oldest→newest)
+            var last10 = spinHistory.slice(0, 10).reverse();
+            if (dots) {
+                dots.innerHTML = last10.map(function(s, i) {
+                    var isWin = s.win > 0;
+                    var isCurrent = (i === last10.length - 1);
+                    return '<span class="streak-dot ' + (isWin ? 'sd-win' : 'sd-loss') + (isCurrent ? ' sd-current' : '') + '"></span>';
+                }).join('');
+            }
+            // Calculate streak
+            if (label) {
+                var streak = 0;
+                var isWinStreak = spinHistory[0].win > 0;
+                for (var i = 0; i < spinHistory.length; i++) {
+                    if ((spinHistory[i].win > 0) === isWinStreak) streak++;
+                    else break;
+                }
+                if (streak >= 2) {
+                    label.textContent = isWinStreak ? '\uD83D\uDD25 ' + streak + ' Win Streak' : '\u2744\uFE0F ' + streak + ' Cold Streak';
+                    label.className = 'streak-label ' + (isWinStreak ? 'sl-hot' : 'sl-cold');
+                } else {
+                    label.textContent = '';
+                }
+            }
         }
 
         function _updateSessionHud() {
@@ -2419,6 +2483,8 @@
             }
             renderSpinHistory();
             _updateSlotSessionStats();
+            if (typeof _updateStreakIndicator === 'function') _updateStreakIndicator();
+            if (typeof _highlightBetPreset === 'function') _highlightBetPreset();
         }
 
         // ── Session Stats Mini-Bar ────────────────────────────────────────────
@@ -2645,6 +2711,8 @@
             }
             renderSpinHistory();
             _updateSlotSessionStats();
+            if (typeof _updateStreakIndicator === 'function') _updateStreakIndicator();
+            if (typeof _highlightBetPreset === 'function') _highlightBetPreset();
 
             // Clear highlights
             getAllCells().forEach(function(cell) {
@@ -6189,6 +6257,8 @@
             }
             renderSpinHistory();
             _updateSlotSessionStats();
+            if (typeof _updateStreakIndicator === 'function') _updateStreakIndicator();
+            if (typeof _highlightBetPreset === 'function') _highlightBetPreset();
 
             // Clear highlights
             getAllCells().forEach(function(cell) {
