@@ -179,6 +179,11 @@
             </div>
         </div>
 
+        <!-- Sprint 49: Session P&L Bar -->
+        <div class="session-pnl-bar" id="sessionPnlBar" style="display:none">
+            Session: <span id="sessionPnlVal" class="pnl-positive">+$0.00</span>
+        </div>
+
         <!-- Sprint 35: Favorites Quick Bar -->
         <div id="favQuickBar" class="fav-quick-bar" style="display:none">
             <div class="fav-quick-label">⭐ Quick Play</div>
@@ -212,6 +217,12 @@
             <div class="rws-scroll" id="recentWinsScroll"></div>
         </div>
 
+        <!-- Sprint 48: Provider Leaderboard -->
+        <div class="provider-leaderboard" id="providerLeaderboard" style="display:none">
+            <div class="plb-title">🏆 My Top Providers</div>
+            <div class="plb-list" id="plbList"></div>
+        </div>
+
         <!-- Sprint 43: Recommended for You -->
         <div class="section-recommendations" id="recommendedSection" style="display:none">
             <div class="section-header">
@@ -228,6 +239,8 @@
             <button class="search-clear-btn" id="searchClearBtn" onclick="clearGameSearch()" style="display:none;">&times;</button>
             <!-- Sprint 40: Compare Toggle -->
             <button class="compare-toggle-btn" id="compareToggleBtn" onclick="toggleCompareMode()" title="Compare up to 3 games">⚖ Compare</button>
+            <!-- Sprint 49: Random Game Picker -->
+            <button class="random-game-btn" id="randomGameBtn" onclick="if(typeof pickRandomGame==='function')pickRandomGame()" title="I'm feeling lucky!">🎲</button>
             <!-- Sprint 37: Sort Dropdown -->
             <select class="game-sort-select" id="gameSortSelect" onchange="if(typeof setSortOrder==='function')setSortOrder(this.value)" title="Sort games">
                 <option value="popular">Popular</option>
@@ -336,6 +349,8 @@
                 All Slots
             </h3>
             <span class="section-game-count" id="allGamesCount">122 games</span>
+            <!-- Sprint 50: Games Explored Counter -->
+            <span class="games-explored-badge" id="gamesExploredBadge" style="display:none" title="Unique games you've tried"></span>
             <!-- Sprint 45: Layout Toggle -->
             <div class="layout-toggle">
                 <button class="layout-btn layout-btn-active" id="layoutGridBtn" onclick="setLobbyLayout('grid')" title="Grid view">⊞</button>
@@ -563,8 +578,13 @@
                     <button class="slot-budget-btn" id="budgetBtn" onclick="if(typeof openBankrollManager==='function')openBankrollManager()" title="Set session budget">💰 Budget</button>
                     <!-- Sprint 42: Win Goal -->
                     <button class="slot-goal-btn" id="goalBtn" onclick="if(typeof openWinGoal==='function')openWinGoal()" title="Set win goal">🎯 Goal</button>
+                    <!-- Sprint 47: Ambient Sound Toggle -->
+                    <button class="slot-ambient-btn" id="ambientToggleBtn" onclick="if(typeof toggleAmbientSlot==='function')toggleAmbientSlot()" title="Toggle ambient music">🎵</button>
                 </div>
             </div>
+
+            <!-- Sprint 47: Quick Stats Tooltip (populated by JS on hover of info button) -->
+            <div class="quick-stats-tooltip" id="quickStatsTooltip" style="display:none"></div>
 
             <!-- Sprint 41: Quick Game Switch Strip -->
             <div class="quick-switch-strip" id="quickSwitchStrip" style="display:none">
@@ -605,6 +625,12 @@
                 <!-- Win Display Overlay -->
                 <div id="messageDisplay"></div>
                 <div id="winAnimation"></div>
+            </div>
+
+            <!-- Sprint 50: Last Win Preview -->
+            <div class="last-win-preview" id="lastWinPreview" style="display:none">
+                <span class="lwp-label">Last Win:</span>
+                <span class="lwp-symbols" id="lwpSymbols"></span>
             </div>
 
             <!-- Sprint 33: Streak Indicator + Bet Presets -->
@@ -664,6 +690,9 @@
                 <button class="slot-turbo-btn" id="turboBtn" onclick="toggleTurbo()" title="Turbo Spin">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z"/></svg>
                 </button>
+
+                <!-- Sprint 48: Spin Counter Badge -->
+                <div class="spin-counter-badge" id="spinCounterBadge">0</div>
 
                 <!-- Sprint 46: Win Streak Badge -->
                 <div class="win-streak-badge" id="winStreakBadge" style="display:none">

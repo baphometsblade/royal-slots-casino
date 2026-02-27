@@ -1499,6 +1499,15 @@
                 // Sprint 44+46 — sparkline + streak reset on open
                 if (typeof _initSparkline === 'function') _initSparkline();
                 if (typeof _resetStreak === 'function') _resetStreak();
+                // Sprint 47 — ambient button sync + stats tooltip wiring
+                _syncAmbientBtn();
+                _wireStatsTooltip();
+                // Sprint 48 — reset spin counter
+                _resetSpinCounter();
+                // Sprint 49 — record game in explored set + update lobby badge
+                _recordGameExplored(currentGame && currentGame.id);
+                // Sprint 50 — clear last win preview
+                _clearLastWinPreview();
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1779,6 +1788,9 @@
             dismissBankroll(); dismissWinGoal();
             // Sprint 46 — reset streak badge on close
             if (typeof _resetStreak === 'function') _resetStreak();
+            // Sprint 48+50 — reset spin counter + clear last win on close
+            _resetSpinCounter();
+            _clearLastWinPreview();
             // Sprint 41 — hide quick switch
             var _qss = document.getElementById('quickSwitchStrip'); if (_qss) _qss.style.display = 'none';
             // Sprint 37 — clean up demo mode if active
@@ -2177,6 +2189,8 @@
                 try { localStorage.setItem('lastBet_' + currentGame.id, String(currentBet)); } catch(e) {}
             }
             spinning = true;
+            _incrementSpinCounter(); // Sprint 48
+            _clearLastWinPreview();  // Sprint 50 — clear on new spin
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
@@ -2831,6 +2845,7 @@
                 if (typeof _incrementStreak === 'function') _incrementStreak();
                 if (typeof _updateSparkline === 'function') _updateSparkline(balance);
                 if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
+                _showLastWinPreview(currentGrid); // Sprint 50
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6356,6 +6371,7 @@
                 if (typeof _incrementStreak === 'function') _incrementStreak();
                 if (typeof _updateSparkline === 'function') _updateSparkline(balance);
                 if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
+                _showLastWinPreview(currentGrid); // Sprint 50
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -9945,5 +9961,115 @@
             _winStreak = 0;
             var badge = document.getElementById('winStreakBadge');
             if (badge) badge.style.display = 'none';
+        }
+
+        // ===== Sprint 47: Ambient Toggle + Quick Stats Tooltip =====
+        var _ambientSlotActive = false;
+
+        function _syncAmbientBtn() {
+            var btn = document.getElementById('ambientToggleBtn');
+            if (!btn) return;
+            _ambientSlotActive = !!(typeof SoundManager !== 'undefined' && SoundManager._ambientSource);
+            btn.classList.toggle('ambient-active', _ambientSlotActive);
+            btn.title = _ambientSlotActive ? 'Pause ambient music' : 'Play ambient music';
+        }
+
+        function toggleAmbientSlot() {
+            if (typeof SoundManager === 'undefined') return;
+            if (_ambientSlotActive) {
+                SoundManager.stopAmbient();
+                _ambientSlotActive = false;
+            } else {
+                if (currentGame && typeof startAmbientForGame === 'function') startAmbientForGame(currentGame);
+                else if (currentGame) SoundManager.startAmbient(currentGame.provider || 'default');
+                _ambientSlotActive = true;
+            }
+            _syncAmbientBtn();
+        }
+
+        function _wireStatsTooltip() {
+            var infoBtn = document.getElementById('infoBtn') || document.querySelector('.slot-info-btn');
+            var tooltip = document.getElementById('quickStatsTooltip');
+            if (!infoBtn || !tooltip) return;
+            var _ttTimer = null;
+            infoBtn.addEventListener('mouseenter', function() {
+                if (!currentGame) return;
+                var g = currentGame;
+                var lines = g.lines || g.ways || (g.reelRows && g.reelCols ? g.reelRows + ' rows' : '—');
+                var minBet = g.minBet || currentBet;
+                var maxBet = g.maxBet || (currentBet * 100);
+                var vol = g.volatility || '—';
+                var bonus = (g.features && g.features[0]) || '—';
+                tooltip.innerHTML =
+                '<div class="qst-row"><span>Lines/Ways</span><span>' + lines + '</span></div>' +
+                '<div class="qst-row"><span>Min Bet</span><span>$' + formatMoney(minBet) + '</span></div>' +
+                                   '<div class="qst-row"><span>Max Bet</span><span>$' + formatMoney(maxBet) + '</span></div>' +
+                '<div class="qst-row"><span>Volatility</span><span>' + vol + '</span></div>' +
+                                   '<div class="qst-row"><span>Bonus</span><span>' + bonus + '</span></div>';
+                tooltip.style.display = '';
+                clearTimeout(_ttTimer);
+                _ttTimer = setTimeout(function() { tooltip.style.display = 'none'; }, 3000);
+            });
+            infoBtn.addEventListener('mouseleave', function() {
+                clearTimeout(_ttTimer);
+                _ttTimer = setTimeout(function() { tooltip.style.display = 'none'; }, 400);
+            });
+        }
+
+        // ===== Sprint 48: Spin Counter Badge =====
+        var _spinCounter = 0;
+        var _spinMilestones = [50, 100, 250, 500, 1000];
+
+        function _resetSpinCounter() {
+            _spinCounter = 0;
+            var badge = document.getElementById('spinCounterBadge');
+            if (badge) { badge.textContent = '0'; badge.classList.remove('spin-milestone'); }
+        }
+
+        function _incrementSpinCounter() {
+            _spinCounter++;
+            var badge = document.getElementById('spinCounterBadge');
+            if (!badge) return;
+            badge.textContent = _spinCounter;
+            if (_spinMilestones.indexOf(_spinCounter) !== -1) {
+                badge.classList.remove('spin-milestone');
+                void badge.offsetWidth;
+                badge.classList.add('spin-milestone');
+                setTimeout(function() { badge.classList.remove('spin-milestone'); }, 1000);
+            }
+        }
+
+        // ===== Sprint 49: Record Game Explored (persists; updates lobby badge) =====
+        function _recordGameExplored(gameId) {
+            if (!gameId) return;
+            try {
+                var raw = localStorage.getItem('casinoGamesExplored');
+                var set = raw ? JSON.parse(raw) : [];
+                if (set.indexOf(gameId) === -1) {
+                    set.push(gameId);
+                    localStorage.setItem('casinoGamesExplored', JSON.stringify(set));
+                }
+                if (typeof updateGamesExploredBadge === 'function') updateGamesExploredBadge();
+            } catch(e) {}
+        }
+
+        // ===== Sprint 50: Last Win Preview =====
+        function _showLastWinPreview(grid) {
+            var wrap = document.getElementById('lastWinPreview');
+            var symsEl = document.getElementById('lwpSymbols');
+            if (!wrap || !symsEl || !grid) return;
+            // Flatten grid to top-row symbols (col[0] for each reel)
+            var syms = [];
+            for (var c = 0; c < grid.length; c++) {
+                if (grid[c] && grid[c].length > 0) syms.push(grid[c][0]);
+            }
+            if (!syms.length) return;
+            symsEl.textContent = syms.join(' — ');
+            wrap.style.display = '';
+        }
+
+        function _clearLastWinPreview() {
+            var wrap = document.getElementById('lastWinPreview');
+            if (wrap) wrap.style.display = 'none';
         }
 

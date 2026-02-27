@@ -2306,6 +2306,9 @@ function renderRecentWinsFeed() {
         _orig.apply(this, arguments);
         buildRecommendations();
         renderRecentWinsFeed();
+        buildProviderLeaderboard(); // Sprint 48
+        updateSessionPnlBar();     // Sprint 49
+        updateGamesExploredBadge(); // Sprint 50
         // Apply saved layout
         if (_lobbyLayout === 'list') {
             var c = document.getElementById('allGames');
@@ -2315,3 +2318,78 @@ function renderRecentWinsFeed() {
         }
     };
 })();
+
+// ===== Sprint 48: Provider Leaderboard =====
+function buildProviderLeaderboard() {
+    var wrap = document.getElementById('providerLeaderboard');
+    var list = document.getElementById('plbList');
+    if (!wrap || !list) return;
+    try {
+        var raw = localStorage.getItem('casinoRecentlyPlayed');
+        var played = raw ? JSON.parse(raw) : [];
+        if (!played.length) { wrap.style.display = 'none'; return; }
+        // Aggregate by provider
+        var counts = {};
+        played.forEach(function(g) {
+            var prov = g.provider || 'Unknown';
+            counts[prov] = (counts[prov] || 0) + 1;
+        });
+        var sorted = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; }).slice(0, 3);
+        if (!sorted.length) { wrap.style.display = 'none'; return; }
+        list.innerHTML = sorted.map(function(p, i) {
+            var medal = ['🥇','🥈','🥉'][i] || '';
+            return '<div class="plb-row"><span class="plb-medal">' + medal + '</span>'
+                + '<span class="plb-name">' + p + '</span>'
+                + '<span class="plb-count">' + counts[p] + ' plays</span></div>';
+        }).join('');
+        wrap.style.display = '';
+    } catch(e) { wrap.style.display = 'none'; }
+}
+
+// ===== Sprint 49: Random Game Picker =====
+function pickRandomGame() {
+    var btn = document.getElementById('randomGameBtn');
+    if (btn) { btn.classList.add('spinning-dice'); setTimeout(function() { btn.classList.remove('spinning-dice'); }, 600); }
+    var pool = (typeof GAMES !== 'undefined') ? GAMES.slice() : [];
+    // Apply current filter if active
+    var cf = (typeof currentFilter !== 'undefined') ? currentFilter : 'all';
+    var pf = (typeof currentProviderFilter !== 'undefined') ? currentProviderFilter : 'all';
+    if (cf && cf !== 'all') pool = pool.filter(function(g) { return g.category === cf || (g.categories && g.categories.indexOf(cf) !== -1); });
+    if (pf && pf !== 'all') pool = pool.filter(function(g) { return (g.provider || '').toLowerCase() === pf.toLowerCase(); });
+    if (!pool.length) pool = (typeof GAMES !== 'undefined') ? GAMES.slice() : [];
+    if (!pool.length) return;
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pick && typeof openSlot === 'function') openSlot(pick.id);
+}
+
+// ===== Sprint 49: Session P&L Bar =====
+var _sessionOpenBalance = null;
+
+function updateSessionPnlBar() {
+    var bar = document.getElementById('sessionPnlBar');
+    var val = document.getElementById('sessionPnlVal');
+    if (!bar || !val) return;
+    if (_sessionOpenBalance === null) {
+        _sessionOpenBalance = (typeof balance !== 'undefined') ? balance : null;
+    }
+    if (_sessionOpenBalance === null) { bar.style.display = 'none'; return; }
+    var current = (typeof balance !== 'undefined') ? balance : _sessionOpenBalance;
+    var pnl = current - _sessionOpenBalance;
+    val.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
+    val.className = pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+    bar.style.display = '';
+}
+
+// ===== Sprint 50: Games Explored Badge =====
+function updateGamesExploredBadge() {
+    var badge = document.getElementById('gamesExploredBadge');
+    if (!badge) return;
+    try {
+        var raw = localStorage.getItem('casinoGamesExplored');
+        var explored = raw ? JSON.parse(raw) : [];
+        var total = (typeof GAMES !== 'undefined') ? GAMES.length : 80;
+        if (!explored.length) { badge.style.display = 'none'; return; }
+        badge.textContent = '🗺 ' + explored.length + '/' + total + ' explored';
+        badge.style.display = '';
+    } catch(e) { badge.style.display = 'none'; }
+}

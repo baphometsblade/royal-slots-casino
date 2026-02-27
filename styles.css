@@ -15173,3 +15173,46 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .win-streak-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; background: linear-gradient(135deg, rgba(251,146,60,0.2), rgba(239,68,68,0.2)); border: 1px solid rgba(251,146,60,0.4); color: #fb923c; font-size: 13px; font-weight: 700; margin: 0 auto 8px; }
 @keyframes streak-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 .streak-pulse { animation: streak-pulse 0.4s ease; }
+
+/* ===== Sprint 47: Ambient Toggle Button ===== */
+.slot-ambient-btn { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 15px; padding: 6px 8px; transition: all 0.2s; }
+.slot-ambient-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.slot-ambient-btn.ambient-active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
+
+/* ===== Sprint 47: Quick Stats Tooltip ===== */
+.quick-stats-tooltip { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); background: rgba(15,15,25,0.96); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px 14px; min-width: 200px; z-index: 120; font-size: 12px; color: rgba(255,255,255,0.8); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+.qst-row { display: flex; justify-content: space-between; gap: 16px; padding: 3px 0; }
+.qst-row span:last-child { color: #fff; font-weight: 600; }
+
+/* ===== Sprint 48: Spin Counter Badge ===== */
+.spin-counter-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; padding: 4px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; transition: background 0.2s, color 0.2s; }
+@keyframes spin-milestone-flash { 0% { background: rgba(251,191,36,0.1); color: #fbbf24; transform: scale(1); } 50% { background: rgba(251,191,36,0.3); color: #fde68a; transform: scale(1.15); } 100% { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55); transform: scale(1); } }
+.spin-milestone { animation: spin-milestone-flash 1s ease forwards; }
+
+/* ===== Sprint 48: Provider Leaderboard ===== */
+.provider-leaderboard { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+.plb-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+.plb-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.plb-row:last-child { border-bottom: none; }
+.plb-medal { font-size: 16px; width: 22px; }
+.plb-name { flex: 1; font-size: 13px; color: rgba(255,255,255,0.8); }
+.plb-count { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+/* ===== Sprint 49: Random Game Picker ===== */
+.random-game-btn { background: rgba(147,51,234,0.12); border: 1px solid rgba(147,51,234,0.3); border-radius: 8px; color: #c084fc; cursor: pointer; font-size: 15px; padding: 7px 10px; transition: all 0.2s; }
+.random-game-btn:hover { background: rgba(147,51,234,0.25); border-color: rgba(147,51,234,0.5); transform: rotate(-10deg); }
+@keyframes dice-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.random-game-btn.spinning-dice { animation: dice-spin 0.6s ease; }
+
+/* ===== Sprint 49: Session P&L Bar ===== */
+.session-pnl-bar { text-align: center; font-size: 12px; color: rgba(255,255,255,0.5); padding: 5px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; }
+.pnl-positive { color: #22c55e; font-weight: 700; }
+.pnl-negative { color: #ef4444; font-weight: 700; }
+
+/* ===== Sprint 50: Games Explored Badge ===== */
+.games-explored-badge { font-size: 11px; color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 3px 9px; margin-left: 4px; white-space: nowrap; }
+
+/* ===== Sprint 50: Last Win Preview ===== */
+.last-win-preview { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 6px 12px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; margin: 6px 12px; font-size: 12px; color: rgba(255,255,255,0.7); }
+.lwp-label { color: rgba(34,197,94,0.8); font-weight: 600; }
+.lwp-symbols { color: #fff; font-weight: 700; letter-spacing: 0.05em; }
