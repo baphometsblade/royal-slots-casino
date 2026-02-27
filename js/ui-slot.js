@@ -311,6 +311,45 @@
             el.className = 'bi-label ' + cls;
         }
 
+        // Sprint 52: Session timer
+        var _stInterval = null;
+        var _stStart = 0;
+        function _startSessionTimerDisplay() {
+            _stStart = Date.now();
+            var el = document.getElementById('stTimer');
+            if (el) el.textContent = '00:00';
+            _stInterval = setInterval(function() {
+                var secs = Math.floor((Date.now() - _stStart) / 1000);
+                var m = String(Math.floor(secs / 60)).padStart(2, '0');
+                var s = String(secs % 60).padStart(2, '0');
+                var tel = document.getElementById('stTimer');
+                if (tel) tel.textContent = m + ':' + s;
+            }, 1000);
+        }
+        function _stopSessionTimerDisplay() {
+            if (_stInterval) { clearInterval(_stInterval); _stInterval = null; }
+            var el = document.getElementById('stTimer');
+            if (el) el.textContent = '00:00';
+        }
+
+        // Sprint 52: Volatility meter
+        function updateVolatilityMeter() {
+            var el = document.getElementById('vmMeter');
+            if (!el || !currentGame) return;
+            var vol = currentGame.volatility || 'medium';
+            var level = { low: 1, 'medium-low': 2, medium: 3, 'medium-high': 4, high: 5 }[vol] || 3;
+            var segs = el.querySelectorAll('.vm-seg');
+            for (var i = 0; i < segs.length; i++) {
+                if (i < level) {
+                    segs[i].classList.add('vm-filled');
+                    segs[i].className = 'vm-seg vm-filled' + (level <= 2 ? ' vm-green' : level <= 3 ? ' vm-yellow' : ' vm-red');
+                } else {
+                    segs[i].className = 'vm-seg';
+                }
+            }
+            el.title = 'Volatility: ' + vol;
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1507,6 +1546,8 @@
 
             addRecentlyPlayed(gameId);
             if (typeof trackGameExplored === 'function') trackGameExplored(gameId);
+            _startSessionTimerDisplay();
+            updateVolatilityMeter();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2112,6 +2153,7 @@
             hideQuickStats();
             _resetSpinCounter();
             hideLastWinPreview();
+            _stopSessionTimerDisplay();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
