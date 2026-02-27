@@ -363,6 +363,9 @@ const XP_AWARD_REGULAR_WIN = 10;
 /** XP awarded on every spin (win or lose) */
 const XP_AWARD_PER_SPIN = 5;
 
+/** XP multiplier applied when spinning the Slot of the Day (50% bonus) */
+const GAME_OF_DAY_XP_BONUS = 1.5;
+
 // ─────────────────────────────────────────────────────────────
 // 5. UI CONFIGURATION
 // ─────────────────────────────────────────────────────────────

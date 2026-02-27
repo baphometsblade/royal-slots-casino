@@ -902,3 +902,6 @@ const games = [
       bonusDesc: 'Lightning Pearl: 5x3 -- Electric wilds multiply wins 2-10x! Ocean-deep bonus rounds!',
       payouts: { triple: 80, double: 8, wildTriple: 120, scatterPay: 3 }, minBet: 0.20, maxBet: 2500, hot: false, jackpot: 0 },
 ];
+
+// Node.js CommonJS export — browser clients ignore this (module is undefined in browser scope)
+if (typeof module !== 'undefined') module.exports = games;

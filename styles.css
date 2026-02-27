@@ -13795,3 +13795,101 @@ button.active .filter-tab-count {
 .ldb-game  { flex: 1; color: rgba(255,255,255,0.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .ldb-mult  { width: 50px; text-align: right; color: #34d399; font-weight: 700; flex-shrink: 0; }
 .ldb-amount{ width: 72px; text-align: right; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+
+/* ── Sprint 24: Slot of the Day ────────────────────────────────────────── */
+.game-of-day-card {
+    position: relative;
+    box-shadow: 0 0 0 2px #ffd700, 0 0 16px 4px rgba(255, 215, 0, 0.35) !important;
+    animation: gameDayGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes gameDayGlow {
+    from { box-shadow: 0 0 0 2px #ffd700, 0 0 12px 3px rgba(255, 215, 0, 0.25) !important; }
+    to   { box-shadow: 0 0 0 2px #ffd700, 0 0 22px 7px rgba(255, 215, 0, 0.5) !important; }
+}
+
+.game-of-day-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: linear-gradient(135deg, #f59e0b, #ffd700);
+    color: #1a1a2e;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 3px 7px;
+    border-radius: 10px;
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* ── Sprint 24: Achievement Badge Gallery ──────────────────────────────── */
+.badges-container {
+    padding: 8px 0;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.badge-category-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    padding: 12px 0 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 8px;
+}
+
+.badge-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.badge-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    cursor: default;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.badge-item.earned {
+    background: rgba(255,215,0,0.07);
+    border-color: rgba(255,215,0,0.25);
+}
+
+.badge-item.earned:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+}
+
+.badge-item.locked {
+    opacity: 0.32;
+    filter: grayscale(0.8);
+}
+
+.badge-icon {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.badge-name {
+    font-size: 9px;
+    font-weight: 600;
+    text-align: center;
+    color: #e5e7eb;
+    line-height: 1.2;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

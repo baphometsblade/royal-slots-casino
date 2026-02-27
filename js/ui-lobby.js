@@ -9,6 +9,10 @@
         let searchQuery = '';                      // real-time game search (compound with other filters)
         let _lobbySearchQuery = '';                // hide/show search query (Sprint 18 search bar)
 
+        // Slot of the Day state (Sprint 24)
+        let gameOfDayId = null;
+        let gameOfDayTimer = null;
+
         // Tournament banner state
         let _activeTournaments = [];
         let _tournamentCountdownInterval = null;
@@ -317,6 +321,52 @@
             ].join('');
         }
 
+// ═══════════════════════════════════════════════════════
+        // SLOT OF THE DAY (Sprint 24)
+        // ═══════════════════════════════════════════════════════
+
+        function applyGameOfDayBadge() {
+            // Remove any stale badge first
+            var oldBadge = document.querySelector('.game-of-day-badge');
+            if (oldBadge) oldBadge.remove();
+            var oldCard = document.querySelector('.game-of-day-card');
+            if (oldCard) oldCard.classList.remove('game-of-day-card');
+            if (!gameOfDayId) return;
+            // data-game-id is stored lowercased in the DOM
+            var card = document.querySelector('[data-game-id="' + gameOfDayId.toLowerCase() + '"]');
+            if (card) {
+                card.classList.add('game-of-day-card');
+                var badge = document.createElement('div');
+                badge.className = 'game-of-day-badge';
+                badge.innerHTML = '&#11088; TODAY';
+                card.appendChild(badge);
+            }
+        }
+
+        function fetchGameOfDay() {
+            fetch('/api/game-of-day')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data && data.gameId) {
+                        gameOfDayId = data.gameId;
+                        applyGameOfDayBadge();
+                        // Set up countdown to refresh at midnight UTC
+                        if (gameOfDayTimer) clearTimeout(gameOfDayTimer);
+                        if (data.secondsUntilNext > 0) {
+                            gameOfDayTimer = setTimeout(fetchGameOfDay, data.secondsUntilNext * 1000);
+                        }
+                    }
+                })
+                .catch(function() {
+                    // Fallback: client-side deterministic selection
+                    if (typeof GAMES !== 'undefined' && GAMES && GAMES.length) {
+                        var dayIdx = Math.floor(Date.now() / 86400000);
+                        var sortedIds = GAMES.map(function(g) { return g.id; }).sort();
+                        gameOfDayId = sortedIds[dayIdx % sortedIds.length];
+                    }
+                });
+        }
+
 function renderGames() {
 
             // Show resume banner if returning from a slot
@@ -399,6 +449,9 @@ function renderGames() {
                     renderYouMightLike();
                     renderRecommendations(allGamesDiv.parentNode || document.getElementById('lobby') || allGamesDiv);
                     renderBestWins();
+                    // Slot of the Day — fetch once on first render, timer handles subsequent days
+                    if (!gameOfDayId) fetchGameOfDay();
+                    else applyGameOfDayBadge();
                     // Start live-count tick once, persists across re-renders
                     if (!window._liveCountsInterval) {
                         window._liveCountsInterval = setInterval(_tickLiveCounts, 15000 + Math.random() * 6000);
@@ -810,9 +863,15 @@ function renderGames() {
                 : '';
             const favored = isFavorite(game.id);
             const favIcon = favored ? '\u2764\uFE0F' : '\u2661';
+            // Slot of the Day badge (Sprint 24)
+            const isGameOfDay = gameOfDayId && game.id.toLowerCase() === gameOfDayId.toLowerCase();
+            const gameDayBadgeHtml = isGameOfDay
+                ? '<div class="game-of-day-badge">&#11088; TODAY</div>'
+                : '';
+            const gameDayCardClass = isGameOfDay ? ' game-of-day-card' : '';
             _seedCount(game.id, isHot || _hotIds.has(game.id));
             return `
-                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}" onclick="openSlot('${game.id}')" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
+                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="openSlot('${game.id}')" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
                     <button class="fav-btn${favored ? ' fav-active' : ''}" data-game-id="${game.id}" title="${favored ? 'Remove from favourites' : 'Add to favourites'}" onclick="event.stopPropagation(); (function(btn){var nowFav=toggleFavorite('${game.id}'); btn.textContent=nowFav?'\u2764\uFE0F':'\u2661'; btn.title=nowFav?'Remove from favourites':'Add to favourites'; btn.classList.add('fav-active'); setTimeout(function(){btn.classList.remove('fav-active');},350); updateFavTabBadge();})(this)">${favIcon}</button>
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
@@ -843,6 +902,7 @@ function renderGames() {
                     </div>
                     ${_hotIds.has(game.id) ? '<span class="lobby-badge lobby-badge-hot">🔥 HOT</span>' : ''}
                     ${_newIds.has(game.id) ? '<span class="lobby-badge lobby-badge-new">✨ NEW</span>' : ''}
+                    ${gameDayBadgeHtml}
                 </div>
             `;
         }

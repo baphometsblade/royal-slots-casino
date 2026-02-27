@@ -886,7 +886,8 @@ const PROFILE_TABS = [
     { id: 'security',     icon: '\u{1F512}', label: 'Security' },
     { id: 'verification', icon: '\u{2705}',  label: 'Verification' },
     { id: 'limits',       icon: '\u{1F6E1}\uFE0F', label: 'Responsible Play' },
-    { id: 'history',      icon: '\u{1F4CB}', label: 'History' }
+    { id: 'history',      icon: '\u{1F4CB}', label: 'History' },
+    { id: 'badges',       icon: '\u{1F3C5}', label: 'Badges' }
 ];
 
 function renderProfileSidebar() {
@@ -979,6 +980,7 @@ function renderProfileContent() {
         case 'verification':  renderVerificationTab(); break;
         case 'limits':        renderLimitsTab(); break;
         case 'history':       renderHistoryTab(); break;
+        case 'badges':        renderBadgeGallery(); break;
         default:              renderProfileOverview();
     }
 }
@@ -1686,6 +1688,110 @@ function profileHistoryNext() {
         profileHistoryPage++;
         renderHistoryTab();
     }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// BADGES TAB
+// ═══════════════════════════════════════════════════════
+
+// Canonical achievement definitions mirrored from ui-modals.js.
+// These must stay in sync with ACH_DEFS in that file.
+const BADGE_ACH_DEFS = [
+    // Spin milestones
+    { id: 'first_spin',    icon: '🎰', name: 'First Spin',       desc: 'Play your first spin',               reqType: 'spins'   },
+    { id: 'spin_10',       icon: '🔄', name: 'Getting Started',  desc: 'Complete 10 spins',                  reqType: 'spins'   },
+    { id: 'spin_100',      icon: '💫', name: 'Spin Master',      desc: 'Complete 100 spins',                 reqType: 'spins'   },
+    { id: 'spin_500',      icon: '⚡', name: 'Centurion',        desc: 'Complete 500 spins',                 reqType: 'spins'   },
+    { id: 'spin_1000',     icon: '🌀', name: 'Reel Veteran',     desc: 'Complete 1,000 spins',               reqType: 'spins'   },
+    // Win milestones
+    { id: 'first_win',     icon: '🏆', name: 'First Win',        desc: 'Win your first spin',                reqType: 'wins'    },
+    { id: 'win_10',        icon: '💰', name: 'On a Roll',        desc: 'Win 10 times',                       reqType: 'wins'    },
+    { id: 'win_50',        icon: '🤑', name: 'Lucky Streak',     desc: 'Win 50 times',                       reqType: 'wins'    },
+    { id: 'win_200',       icon: '🥇', name: 'Win Connoisseur',  desc: 'Win 200 times',                      reqType: 'wins'    },
+    // Big win multipliers
+    { id: 'big_win',       icon: '💥', name: 'Big Winner',       desc: 'Win over 100x your bet',             reqType: 'bigWin'  },
+    { id: 'mega_win',      icon: '🌟', name: 'Mega Winner',      desc: 'Win over 500x your bet',             reqType: 'bigWin'  },
+    { id: 'epic_win',      icon: '🔥', name: 'Epic Winner',      desc: 'Win over 1,000x your bet',           reqType: 'bigWin'  },
+    // Game variety
+    { id: 'games_5',       icon: '🎮', name: 'Explorer',         desc: 'Try 5 different games',              reqType: 'games'   },
+    { id: 'games_20',      icon: '🗺️', name: 'Adventurer',      desc: 'Try 20 different games',             reqType: 'games'   },
+    { id: 'games_50',      icon: '🌍', name: 'Globe Trotter',    desc: 'Try 50 different games',             reqType: 'games'   },
+    { id: 'games_all',     icon: '👑', name: 'Master of All',    desc: 'Try all 122 games',                  reqType: 'games'   },
+    // Balance milestones
+    { id: 'balance_500',   icon: '💎', name: 'Getting Rich',     desc: 'Reach a balance of $500',            reqType: 'balance' },
+    { id: 'balance_1000',  icon: '💰', name: 'High Balance',     desc: 'Reach a balance of $1,000',          reqType: 'balance' },
+    { id: 'balance_5000',  icon: '🏦', name: 'Bank Breaker',     desc: 'Reach a balance of $5,000',          reqType: 'balance' },
+    // Wager milestones
+    { id: 'wager_1k',      icon: '📊', name: 'Regular',          desc: 'Wager $1,000 total',                 reqType: 'wager'   },
+    { id: 'wager_10k',     icon: '📈', name: 'Whale',            desc: 'Wager $10,000 total',                reqType: 'wager'   },
+    // Bonus triggers
+    { id: 'bonus_5',       icon: '🎁', name: 'Bonus Seeker',     desc: 'Trigger 5 bonus rounds',             reqType: 'bonuses' },
+    { id: 'bonus_25',      icon: '🎯', name: 'Bonus Hunter',     desc: 'Trigger 25 bonus rounds',            reqType: 'bonuses' },
+    // Win streak
+    { id: 'streak_5',      icon: '🔥', name: 'Hot Hand',         desc: 'Win 5 spins in a row',               reqType: 'streak'  },
+    { id: 'streak_10',     icon: '💠', name: 'Unstoppable',      desc: 'Win 10 spins in a row',              reqType: 'streak'  },
+];
+
+const BADGE_CATEGORY_ORDER = [
+    { key: 'spins',   label: '🎰 Spin Milestones' },
+    { key: 'wins',    label: '🏆 Win Milestones' },
+    { key: 'bigWin',  label: '💥 Big Wins' },
+    { key: 'games',   label: '🗺️ Explorer' },
+    { key: 'balance', label: '💎 Balance' },
+    { key: 'wager',   label: '📊 Wager' },
+    { key: 'bonuses', label: '🎁 Bonus Rounds' },
+    { key: 'streak',  label: '🔥 Win Streaks' },
+];
+
+function renderBadgeGallery() {
+    const el = document.getElementById('profileContent');
+
+    // Load which achievements are unlocked from localStorage
+    var unlocked = [];
+    try {
+        var saved = JSON.parse(localStorage.getItem('matrixAchievements') || '{}');
+        unlocked = Array.isArray(saved.unlocked) ? saved.unlocked : [];
+    } catch(e) {}
+
+    // Group by reqType preserving category order
+    var grouped = {};
+    BADGE_CATEGORY_ORDER.forEach(function(cat) { grouped[cat.key] = []; });
+    BADGE_ACH_DEFS.forEach(function(ach) {
+        if (grouped[ach.reqType]) grouped[ach.reqType].push(ach);
+        else { grouped[ach.reqType] = [ach]; }
+    });
+
+    var earnedCount = BADGE_ACH_DEFS.filter(function(a) { return unlocked.includes(a.id); }).length;
+
+    var html = `
+        <h3 class="profile-section-title">Achievement Badges</h3>
+        <p style="color:#94a3b8;font-size:12px;margin-bottom:16px;">
+            ${earnedCount} / ${BADGE_ACH_DEFS.length} earned
+        </p>
+        <div id="profileBadgesGrid" class="badges-container">`;
+
+    BADGE_CATEGORY_ORDER.forEach(function(cat) {
+        var achs = grouped[cat.key];
+        if (!achs || achs.length === 0) return;
+        html += `<div class="badge-category-header">${cat.label}</div>`;
+        html += `<div class="badge-grid">`;
+        achs.forEach(function(ach) {
+            var earned = unlocked.includes(ach.id);
+            var cls = 'badge-item' + (earned ? ' earned' : ' locked');
+            var tip = earned
+                ? escapeAttr(ach.name + ': ' + ach.desc)
+                : 'Keep playing to unlock!';
+            html += `<div class="${cls}" title="${tip}">`;
+            html += `<div class="badge-icon">${ach.icon}</div>`;
+            html += `<div class="badge-name">${earned ? escapeHtml(ach.name) : '???'}</div>`;
+            html += `</div>`;
+        });
+        html += `</div>`;
+    });
+
+    html += `</div>`;
+    el.innerHTML = html;
 }
 
 
