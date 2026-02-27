@@ -1367,6 +1367,7 @@
             hideFreeSpinsDisplay();
             freeSpinsActive = false;
             freeSpinsRemaining = 0;
+                if (typeof _addFsEarned === 'function') _addFsEarned(freeSpinsRemaining); // Sprint 108
 
                 document.getElementById('slotModal').classList.add('active');
                 // Show quickfire strip (Sprint 33)
@@ -1560,6 +1561,12 @@
         _resetFsRunSummary();   // 104 — FS run summary
         _updateNextLevelXpBar(); // 105 — next level XP bar
         _incrementGamePlayCount(); // 106 — game play count
+        _resetLastSpinResult();  // 107 — last spin result
+        _resetTotalFsEarned();   // 108 — total FS earned
+        _renderProviderBadge();  // 109 — provider badge
+        _resetTotalBetDisplay(); // 111 — total bet display
+        _resetJackpotProgress(); // 112 — jackpot progress
+        _resetProfitPctBadge();  // 114 — profit % badge
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -2998,6 +3005,12 @@
                 _updateDeadSpinCount(true);             // 102 — dead spin (reset)
                 _updateBonusTriggerRate(freeSpinsActive); // 99 — bonus trigger rate
                 _updateNextLevelXpBar();                // 105 — XP bar
+                _setLastSpinResult(winAmount, currentBet); // 107 — last spin
+                _updateSpinRec();                       // 110 — spin rec
+                _updateTotalBetDisplay();               // 111 — total bet
+                _incrementJackpotProgress();            // 112 — jackpot bar
+                _updateAutoSpeedBadge();                // 113 — speed badge
+                _updateProfitPctBadge();                // 114 — profit %
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3153,6 +3166,12 @@
             _updateDeadSpinCount(winAmount > 0);        // 102 — dead spin
             _updateBonusTriggerRate(false);             // 99 — bonus trigger
             _updateNextLevelXpBar();                    // 105 — XP bar
+            _setLastSpinResult(winAmount, currentBet); // 107 — last spin
+            _updateSpinRec();                          // 110 — spin rec
+            _updateTotalBetDisplay();                  // 111 — total bet
+            _incrementJackpotProgress();               // 112 — jackpot bar
+            _updateAutoSpeedBadge();                   // 113 — speed badge
+            _updateProfitPctBadge();                   // 114 — profit %
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6583,6 +6602,12 @@
                 _updateDeadSpinCount(true);             // 102 — dead spin (reset)
                 _updateBonusTriggerRate(freeSpinsActive); // 99 — bonus trigger rate
                 _updateNextLevelXpBar();                // 105 — XP bar
+                _setLastSpinResult(winAmount, currentBet); // 107 — last spin
+                _updateSpinRec();                       // 110 — spin rec
+                _updateTotalBetDisplay();               // 111 — total bet
+                _incrementJackpotProgress();            // 112 — jackpot bar
+                _updateAutoSpeedBadge();                // 113 — speed badge
+                _updateProfitPctBadge();                // 114 — profit %
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6703,6 +6728,12 @@
             _updateDeadSpinCount(winAmount > 0);        // 102 — dead spin
             _updateBonusTriggerRate(false);             // 99 — bonus trigger
             _updateNextLevelXpBar();                    // 105 — XP bar
+            _setLastSpinResult(winAmount, currentBet); // 107 — last spin
+            _updateSpinRec();                          // 110 — spin rec
+            _updateTotalBetDisplay();                  // 111 — total bet
+            _incrementJackpotProgress();               // 112 — jackpot bar
+            _updateAutoSpeedBadge();                   // 113 — speed badge
+            _updateProfitPctBadge();                   // 114 — profit %
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -11635,4 +11666,141 @@ function _incrementGamePlayCount() {
     var count = parseInt(localStorage.getItem(key) || '0', 10) + 1;
     localStorage.setItem(key, String(count));
     _showGamePlayCount();
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 107-114: ENHANCED SLOT UI WIDGETS (BATCH 5)
+// ═══════════════════════════════════════════════════════
+
+// Sprint 107: Last spin result badge
+function _resetLastSpinResult() {
+    var el = document.getElementById('lastSpinResult');
+    if (el) el.style.display = 'none';
+}
+function _setLastSpinResult(winAmount, betAmount) {
+    var el = document.getElementById('lastSpinResult');
+    if (!el) return;
+    if (winAmount > 0) {
+        el.className = 'last-spin-result lsr-win';
+        el.textContent = '+' + _DSN + winAmount.toFixed(2);
+    } else {
+        el.className = 'last-spin-result lsr-loss';
+        el.textContent = '-' + _DSN + betAmount.toFixed(2);
+    }
+    el.style.display = '';
+}
+
+// Sprint 108: Total free spins earned counter
+var _totalFsEarned108 = 0;
+function _resetTotalFsEarned() {
+    _totalFsEarned108 = 0;
+    var el = document.getElementById('totalFsEarned');
+    if (el) el.style.display = 'none';
+}
+function _addFsEarned(count) {
+    _totalFsEarned108 += (count || 0);
+    var el = document.getElementById('totalFsEarned');
+    if (!el || _totalFsEarned108 <= 0) return;
+    el.textContent = _totalFsEarned108 + ' FS earned';
+    el.style.display = '';
+}
+
+// Sprint 109: Provider name badge
+function _renderProviderBadge() {
+    var el = document.getElementById('providerBadge');
+    if (!el || !currentGame) { if (el) el.style.display = 'none'; return; }
+    var provider = currentGame.provider || '';
+    if (!provider) { el.style.display = 'none'; return; }
+    el.textContent = provider;
+    el.style.display = '';
+}
+
+// Sprint 110: Spin recommendation (based on session stats)
+function _updateSpinRec() {
+    var el = document.getElementById('spinRec');
+    if (!el) return;
+    var sessWon = typeof _sessWon84 !== 'undefined' ? _sessWon84 : 0;
+    var sessWag = typeof _sessWagered84 !== 'undefined' ? _sessWagered84 : 0;
+    if (sessWag < 10 * (currentBet || 1)) { el.style.display = 'none'; return; }
+    var rtp = sessWag > 0 ? sessWon / sessWag : 1;
+    var deadSpins = typeof _deadSpins102 !== 'undefined' ? _deadSpins102 : 0;
+    var msg = '';
+    if (deadSpins >= 10) {
+        msg = '\u26A0\uFE0F Consider stopping';
+        el.className = 'spin-rec rec-stop';
+    } else if (rtp > 1.2) {
+        msg = '\uD83D\uDCB0 Hot streak!';
+        el.className = 'spin-rec rec-hot';
+    } else if (rtp < 0.7 && sessWag > 20 * (currentBet || 1)) {
+        msg = '\uD83C\uDF0A Take a break?';
+        el.className = 'spin-rec rec-cool';
+    } else {
+        el.style.display = 'none'; return;
+    }
+    el.textContent = msg;
+    el.style.display = '';
+}
+
+// Sprint 111: Total bet (session wagered) display
+function _resetTotalBetDisplay() {
+    var el = document.getElementById('totalBetDisplay');
+    if (el) el.style.display = 'none';
+}
+function _updateTotalBetDisplay() {
+    var el = document.getElementById('totalBetDisplay');
+    if (!el) return;
+    var wagered = typeof _sessWagered84 !== 'undefined' ? _sessWagered84 : 0;
+    if (wagered < (currentBet || 1)) { el.style.display = 'none'; return; }
+    el.textContent = 'Bet: ' + _DSN + wagered.toFixed(2);
+    el.style.display = '';
+}
+
+// Sprint 112: Jackpot progress bar (cosmetic — fills over 100 spins)
+var _jackpotProgress112 = 0;
+function _resetJackpotProgress() {
+    _jackpotProgress112 = 0;
+    var el = document.getElementById('jackpotProgress');
+    if (el) { var f = el.querySelector('.jp-fill'); if (f) f.style.width = '0%'; el.style.display = 'none'; }
+}
+function _incrementJackpotProgress() {
+    _jackpotProgress112 = Math.min(_jackpotProgress112 + 1, 100);
+    var el = document.getElementById('jackpotProgress');
+    if (!el) return;
+    var fill = el.querySelector('.jp-fill');
+    if (fill) fill.style.width = _jackpotProgress112 + '%';
+    el.style.display = '';
+    if (_jackpotProgress112 >= 100) {
+        _jackpotProgress112 = 0; // reset after "jackpot"
+        if (fill) {
+            fill.classList.add('jp-flash');
+            setTimeout(function() { fill.classList.remove('jp-flash'); fill.style.width = '0%'; }, 800);
+        }
+    }
+}
+
+// Sprint 113: Auto-spin speed badge
+function _updateAutoSpeedBadge() {
+    var el = document.getElementById('autoSpeedBadge');
+    if (!el) return;
+    if (!autoSpinActive) { el.style.display = 'none'; return; }
+    var speed = (typeof appSettings !== 'undefined' && appSettings) ? (appSettings.autoSpinSpeed || 1500) : 1500;
+    var label = speed <= 500 ? 'MAX SPEED' : speed <= 1000 ? 'FAST' : speed <= 2000 ? 'NORMAL' : 'SLOW';
+    el.textContent = label;
+    el.style.display = '';
+}
+
+// Sprint 114: Session profit percentage badge
+function _resetProfitPctBadge() {
+    var el = document.getElementById('profitPctBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateProfitPctBadge() {
+    var el = document.getElementById('profitPctBadge');
+    if (!el || typeof _slotSessionStartBal === 'undefined' || _slotSessionStartBal <= 0) return;
+    var pct = ((balance - _slotSessionStartBal) / _slotSessionStartBal) * 100;
+    if (Math.abs(pct) < 1) { el.style.display = 'none'; return; }
+    el.className = 'profit-pct-badge' + (pct >= 0 ? ' ppb-up' : ' ppb-down');
+    el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+    el.style.display = '';
 }
