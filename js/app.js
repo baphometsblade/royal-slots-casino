@@ -135,6 +135,8 @@
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
             if (typeof initPromoEngine === 'function') initPromoEngine();
+            if (typeof initHourlyBonus === 'function') initHourlyBonus();
+            if (typeof renderFavQuickBar === 'function') renderFavQuickBar();
             startSessionDurationWatch();
         }
 

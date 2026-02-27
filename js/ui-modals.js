@@ -1036,6 +1036,8 @@
             if (winSoundsCheck) winSoundsCheck.checked = appSettings.winSounds !== false;
             const uiSoundsCheck = document.getElementById('settingUiSounds');
             if (uiSoundsCheck) uiSoundsCheck.checked = appSettings.uiSounds !== false;
+            const soundThemeSelect = document.getElementById('settingSoundTheme');
+            if (soundThemeSelect) soundThemeSelect.value = appSettings.soundTheme || 'auto';
             modal.classList.add('active');
             playSound('click');
         }
@@ -1129,6 +1131,11 @@
             saveSettings();
         }
 
+        // Sprint 35 — Sound Theme
+        function settingsSetSoundTheme(theme) {
+            appSettings.soundTheme = theme;
+            saveSettings();
+        }
 
         function addFunds() {
             if (typeof showWalletModal === 'function' && currentUser) {

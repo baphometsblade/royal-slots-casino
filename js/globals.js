@@ -101,7 +101,8 @@
             animationQuality: 'ultra',
             ambientMusic: false,
             winSounds: true,
-            uiSounds: true
+            uiSounds: true,
+            soundTheme: 'auto'
         };
 
         // ===== XP / Level System =====

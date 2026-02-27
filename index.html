@@ -173,6 +173,12 @@
             </div>
         </div>
 
+        <!-- Sprint 35: Favorites Quick Bar -->
+        <div id="favQuickBar" class="fav-quick-bar" style="display:none">
+            <div class="fav-quick-label">⭐ Quick Play</div>
+            <div class="fav-quick-scroll" id="favQuickScroll"></div>
+        </div>
+
         <!-- Recently Played Section (hidden until games played) -->
         <div id="recentlyPlayedSection" style="display:none">
             <div class="section-header">
@@ -270,6 +276,15 @@
             <span class="section-game-count" id="allGamesCount">122 games</span>
         </div>
         <div class="games-grid" id="allGames"></div>
+    </div>
+
+    <!-- Sprint 34: Hourly Free Bonus FAB -->
+    <div class="hourly-bonus-fab" id="hourlyBonusFab" onclick="claimHourlyBonus()" style="display:none">
+        <span class="hbf-icon">🎁</span>
+        <div class="hbf-text">
+            <div class="hbf-title">Free Bonus</div>
+            <div class="hbf-sub" id="hourlyBonusSub">Tap to claim!</div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -505,6 +520,20 @@
                 <!-- Win Display Overlay -->
                 <div id="messageDisplay"></div>
                 <div id="winAnimation"></div>
+            </div>
+
+            <!-- Sprint 33: Streak Indicator + Bet Presets -->
+            <div class="slot-quickfire-strip" id="slotQuickfireStrip" style="display:none">
+                <div class="streak-indicator" id="streakIndicator">
+                    <span class="streak-dots" id="streakDots"></span>
+                    <span class="streak-label" id="streakLabel"></span>
+                </div>
+                <div class="bet-presets" id="betPresets">
+                    <button class="bet-preset-btn" data-amount="1" onclick="setBetPresetAmount(1)">$1</button>
+                    <button class="bet-preset-btn" data-amount="5" onclick="setBetPresetAmount(5)">$5</button>
+                    <button class="bet-preset-btn" data-amount="25" onclick="setBetPresetAmount(25)">$25</button>
+                    <button class="bet-preset-btn" data-amount="100" onclick="setBetPresetAmount(100)">$100</button>
+                </div>
             </div>
 
             <!-- Pragmatic Play Bottom Bar -->
@@ -1024,6 +1053,18 @@
                             <input type="checkbox" id="settingUiSounds" checked onchange="settingsToggleUiSounds(this.checked)">
                             <span class="settings-toggle-slider"></span>
                         </label>
+                    </div>
+                    <!-- Sprint 35: Sound Theme -->
+                    <div class="settings-row">
+                        <label class="settings-label">Sound Theme</label>
+                        <select class="settings-select" id="settingSoundTheme" onchange="settingsSetSoundTheme(this.value)">
+                            <option value="auto">Auto (Provider)</option>
+                            <option value="classic">Classic Casino</option>
+                            <option value="tropical">Tropical</option>
+                            <option value="cyberpunk">Cyberpunk</option>
+                            <option value="zen">Zen</option>
+                            <option value="off">Off</option>
+                        </select>
                     </div>
                 </div>
 

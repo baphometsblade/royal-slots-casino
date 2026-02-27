@@ -1877,3 +1877,132 @@ function renderGames() {
         }
 
         window.refreshLobbyChallengeWidget = renderLobbyChallengeWidget;
+
+// ══════════════════════════════════════════════════════════
+// SPRINT 34 — Hourly Free Bonus
+// ══════════════════════════════════════════════════════════
+var _HB_KEY = 'matrixHourlyBonus';
+var _HB_COOLDOWN = 60 * 60 * 1000; // 1 hour
+
+function _hbGetState() {
+    try { return JSON.parse(localStorage.getItem(_HB_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function initHourlyBonus() {
+    var fab = document.getElementById('hourlyBonusFab');
+    if (!fab) return;
+    _hbRefresh();
+    setInterval(_hbRefresh, 30000); // refresh every 30s
+}
+
+function _hbRefresh() {
+    var fab = document.getElementById('hourlyBonusFab');
+    var sub = document.getElementById('hourlyBonusSub');
+    if (!fab) return;
+    var state = _hbGetState();
+    var now = Date.now();
+    var last = state.lastClaim || 0;
+    var elapsed = now - last;
+    if (elapsed >= _HB_COOLDOWN) {
+        fab.style.display = 'flex';
+        fab.classList.add('hbf-ready');
+        if (sub) sub.textContent = 'Tap to claim!';
+    } else {
+        fab.style.display = 'flex';
+        fab.classList.remove('hbf-ready');
+        var remaining = Math.ceil((_HB_COOLDOWN - elapsed) / 60000);
+        if (sub) sub.textContent = remaining + 'm remaining';
+    }
+}
+
+function claimHourlyBonus() {
+    var state = _hbGetState();
+    var now = Date.now();
+    var last = state.lastClaim || 0;
+    if (now - last < _HB_COOLDOWN) return; // on cooldown
+    var award = 25 + Math.floor(Math.random() * 76); // $25-$100
+    if (typeof balance !== 'undefined') balance += award;
+    if (typeof updateBalance === 'function') updateBalance();
+    if (typeof saveStats === 'function') saveStats();
+    state.lastClaim = now;
+    localStorage.setItem(_HB_KEY, JSON.stringify(state));
+    _hbRefresh();
+    if (typeof showToast === 'function') showToast('🎁 Free Bonus: $' + award + ' added!', 'success');
+    else if (typeof showMessage === 'function') showMessage('🎁 Free Bonus: $' + award + '!', 'win');
+    // coin burst
+    if (typeof createConfetti === 'function') createConfetti();
+}
+
+// ══════════════════════════════════════════════════════════
+// SPRINT 34 — Challenge Streak Multiplier
+// ══════════════════════════════════════════════════════════
+var _CS_KEY = 'matrixChallengeStreak';
+
+function getChallengeStreakMultiplier() {
+    try {
+        var s = JSON.parse(localStorage.getItem(_CS_KEY) || '{}');
+        var today = new Date().toISOString().slice(0, 10);
+        if (s.lastDay !== today) return 1; // streak not registered today yet
+        if (s.streak >= 3) return 2;
+        if (s.streak === 2) return 1.5;
+        return 1;
+    } catch(e) { return 1; }
+}
+
+function updateChallengeStreak(completed) {
+    // Call when all daily challenges are completed
+    try {
+        var s = JSON.parse(localStorage.getItem(_CS_KEY) || '{}');
+        var today = new Date().toISOString().slice(0, 10);
+        var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+        if (completed) {
+            if (s.lastDay === yesterday) {
+                s.streak = (s.streak || 0) + 1;
+            } else if (s.lastDay !== today) {
+                s.streak = 1; // reset if gap
+            }
+            s.lastDay = today;
+        } else {
+            if (s.lastDay !== today && s.lastDay !== yesterday) s.streak = 0;
+        }
+        localStorage.setItem(_CS_KEY, JSON.stringify(s));
+    } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+// SPRINT 35 — Favorites Quick Bar
+// ══════════════════════════════════════════════════════════
+function renderFavQuickBar() {
+    var bar = document.getElementById('favQuickBar');
+    var scroll = document.getElementById('favQuickScroll');
+    if (!bar || !scroll) return;
+    var favs = [];
+    try {
+        var raw = localStorage.getItem(typeof STORAGE_KEY_FAVORITES !== 'undefined' ? STORAGE_KEY_FAVORITES : 'casinoFavorites');
+        favs = JSON.parse(raw || '[]');
+    } catch(e) {}
+    if (favs.length === 0) { bar.style.display = 'none'; return; }
+    var allGames = typeof GAMES !== 'undefined' ? GAMES : [];
+    var tiles = favs.slice(0, 8).map(function(id) {
+        var g = allGames.find(function(x) { return x.id === id; });
+        if (!g) return '';
+        var color = (g.color || '#333').replace('#', '');
+        return '<div class="fqb-tile" onclick="if(typeof openSlot===\'function\')openSlot(\'' + g.id + '\')" title="' + g.name + '">'
+            + '<div class="fqb-icon" style="background:#' + color + '">' + (g.name || g.id).charAt(0).toUpperCase() + '</div>'
+            + '<div class="fqb-name">' + (g.name || g.id) + '</div>'
+            + '</div>';
+    }).join('');
+    scroll.innerHTML = tiles || '<div class="fqb-empty">Heart games to add them here</div>';
+    bar.style.display = 'flex';
+}
+
+// Hook renderFavQuickBar into renderGames
+(function() {
+    var _origRG = typeof renderGames === 'function' ? renderGames : null;
+    if (_origRG) {
+        renderGames = function() {
+            _origRG.apply(this, arguments);
+            renderFavQuickBar();
+        };
+    }
+})();

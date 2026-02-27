@@ -1369,6 +1369,8 @@
             freeSpinsRemaining = 0;
 
                 document.getElementById('slotModal').classList.add('active');
+                // Show quickfire strip (Sprint 33)
+                (function() { var _qs = document.getElementById('slotQuickfireStrip'); if (_qs) _qs.style.display = 'flex'; })();
                 // Brief open shimmer
                 (function() {
                     var _modal = document.getElementById('slotModal') || document.querySelector('.slot-modal');
@@ -1777,6 +1779,54 @@
                 var v = parseFloat(chip.dataset.betVal);
                 chip.classList.toggle('bet-chip-active', v === (typeof currentBet !== 'undefined' ? currentBet : -1));
             });
+            // Sync bet preset active state (Sprint 33)
+            document.querySelectorAll('.bet-preset-btn').forEach(function(btn) {
+                var v = parseFloat(btn.dataset.amount);
+                btn.classList.toggle('bet-preset-active', Math.abs(v - currentBet) < 0.001);
+            });
+        }
+
+        // Sprint 33 — Bet Preset: set currentBet to a fixed dollar amount (capped to game bounds)
+        function setBetPresetAmount(amount) {
+            if (!currentGame || spinning) return;
+            var bounds = (typeof getBetBounds === 'function') ? getBetBounds() : null;
+            var maxB = bounds ? bounds.maxBet : 500;
+            var minB = bounds ? bounds.minBet : 0.20;
+            // Snap to nearest BET_STEPS value that is <= the requested amount (and within game bounds)
+            var steps = typeof BET_STEPS !== 'undefined' ? BET_STEPS : [1, 5, 25, 100];
+            var candidates = steps.filter(function(s) { return s >= minB - 0.001 && s <= maxB + 0.001; });
+            if (candidates.length === 0) return;
+            // Find closest step <= requested amount
+            var target = Math.min(amount, maxB);
+            var best = candidates[0];
+            candidates.forEach(function(s) { if (s <= target + 0.001) best = s; });
+            currentBet = best;
+            updateBetDisplay();
+        }
+
+        // Sprint 33 — Streak Indicator: render last 10 spins as dots
+        function updateStreakIndicator() {
+            var strip = document.getElementById('slotQuickfireStrip');
+            var dotsEl = document.getElementById('streakDots');
+            var labelEl = document.getElementById('streakLabel');
+            if (!strip || !dotsEl || !labelEl) return;
+            strip.style.display = 'flex';
+            var recent = spinHistory.slice(0, 10);
+            if (recent.length === 0) { dotsEl.innerHTML = ''; labelEl.textContent = ''; return; }
+            dotsEl.innerHTML = recent.map(function(h) {
+                var isWin = h.win > 0;
+                return '<span class="streak-dot ' + (isWin ? 'streak-win' : 'streak-loss') + '"></span>';
+            }).join('');
+            // Count current streak (from most recent)
+            var first = recent[0].win > 0;
+            var streak = 0;
+            for (var i = 0; i < recent.length; i++) {
+                if ((recent[i].win > 0) === first) streak++;
+                else break;
+            }
+            labelEl.textContent = first
+                ? '🔥 ' + streak + ' Win Streak'
+                : (streak >= 3 ? '❄️ ' + streak + ' Cold Streak' : '');
         }
 
 
@@ -2613,6 +2663,7 @@
             };
             spinHistory.unshift(_histEntry);
             if (spinHistory.length > SPIN_HISTORY_MAX) spinHistory.pop();
+            updateStreakIndicator();
             if (typeof onChallengeEvent === 'function') {
                 const _challengeMult = currentBet > 0 ? winAmount / currentBet : 0;
                 onChallengeEvent('spin', {
@@ -6152,6 +6203,7 @@
             };
             spinHistory.unshift(_histEntry);
             if (spinHistory.length > SPIN_HISTORY_MAX) spinHistory.pop();
+            updateStreakIndicator();
             if (typeof onChallengeEvent === 'function') {
                 const _challengeMult = currentBet > 0 ? winAmount / currentBet : 0;
                 onChallengeEvent('spin', {
