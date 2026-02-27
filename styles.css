@@ -16689,3 +16689,99 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     background: rgba(255,118,117,0.08);
     font-weight: 600;
 }
+
+
+/* =====================================================
+   SPRINT 163-170 STYLES
+   ===================================================== */
+
+/* Sprint 163: Win type label */
+.win-type-label {
+    font-size: 11px;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 10px;
+    letter-spacing: 1px;
+    animation: wtl-appear 0.3s ease-out;
+}
+@keyframes wtl-appear {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+.wtl-line    { color: #00ff88; background: rgba(0,255,136,0.12); border: 1px solid rgba(0,255,136,0.25); }
+.wtl-scatter { color: #fdcb6e; background: rgba(253,203,110,0.12); border: 1px solid rgba(253,203,110,0.25); }
+.wtl-bonus   { color: #fd79a8; background: rgba(253,121,168,0.12); border: 1px solid rgba(253,121,168,0.25); }
+.wtl-respin  { color: #74b9ff; background: rgba(116,185,255,0.12); border: 1px solid rgba(116,185,255,0.25); }
+
+/* Sprint 164: Longest streak badge */
+.longest-streak-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    color: #dfe6e9;
+}
+
+/* Sprint 165: Bet change badge */
+.bet-change-badge {
+    font-size: 10px;
+    color: #b2bec3;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(178,190,195,0.07);
+    font-weight: 400;
+}
+
+/* Sprint 166: Lucky symbol badge */
+.lucky-symbol-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(253,203,110,0.15), rgba(255,234,167,0.15));
+    color: #ffeaa7;
+}
+
+/* Sprint 167: Return gap badge */
+.return-gap-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+.rgb-ahead  { color: #00ff88; background: rgba(0,255,136,0.1); }
+.rgb-behind { color: #ff7675; background: rgba(255,118,117,0.1); }
+
+/* Sprint 168: Value ratio badge */
+.value-ratio-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+.vrb-pos { color: #00ff88; background: rgba(0,255,136,0.1); }
+.vrb-mid { color: #fdcb6e; background: rgba(253,203,110,0.1); }
+.vrb-low { color: #ff7675; background: rgba(255,118,117,0.1); }
+
+/* Sprint 169: Longest drought badge */
+.longest-drought-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(99,110,114,0.1);
+    color: #636e72;
+    font-weight: 600;
+}
+.longest-drought-badge.ldb-warn   { color: #fdcb6e; background: rgba(253,203,110,0.1); }
+.longest-drought-badge.ldb-severe { color: #ff7675; background: rgba(255,118,117,0.12); }
+
+/* Sprint 170: Game session count */
+.game-session-count {
+    font-size: 10px;
+    color: #74b9ff;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(116,185,255,0.08);
+    font-weight: 500;
+}
