@@ -671,6 +671,11 @@
                 // Sprint 42: Track win goal progress
                 if (typeof _trackWinGoal === 'function') _trackWinGoal(winAmount);
 
+                // Sprint 45: Record significant wins to recent wins feed
+                if (winAmount >= currentBet * 2 && currentGame) {
+                    _recordRecentWin(currentGame.name, winAmount);
+                }
+
                 // Apply celebration animations based on win size (adjusted thresholds)
                 const isMegaWin = winAmount >= currentBet * 10;
                 const winCells = document.querySelectorAll('.reel-win-glow');

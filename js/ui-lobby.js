@@ -521,6 +521,12 @@ function renderGames() {
                     showSessionSummary();
                     // Init session tracking
                     _initSession();
+                    // Recent wins feed (Sprint 45)
+                    if (typeof renderRecentWins === 'function') renderRecentWins();
+                    // Apply saved lobby view mode (Sprint 45)
+                    if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
+                        setLobbyView('list');
+                    }
                 }, 200);
             });
         }
@@ -1541,10 +1547,23 @@ function renderGames() {
             }
             const allGamesDiv = document.getElementById('allGames');
             const filtered = getFilteredGames(currentFilter);
+            // Sprint 45: Apply view mode class
+            var _vMode = (typeof _lobbyView !== 'undefined') ? _lobbyView : 'grid';
+            allGamesDiv.className = _vMode === 'list' ? 'games-list' : 'games-grid';
             if (currentFilter === 'favorites' && filtered.length === 0) {
                 allGamesDiv.innerHTML = `<div class="games-fav-empty"><span class="fav-empty-icon">♡</span>Heart your first game to see it here!</div>`;
             } else if (filtered.length === 0 && searchQuery) {
                 allGamesDiv.innerHTML = '<div class="search-no-results">No games found for "<strong>' + searchQuery.replace(/[<>]/g, '') + '</strong>"</div>';
+            } else if (_vMode === 'list') {
+                allGamesDiv.innerHTML = filtered.map(function(g) {
+                    var vol = (typeof deriveGameVolatility === 'function') ? deriveGameVolatility(g) : '';
+                    return '<div class="gl-row" onclick="openSlot(\'' + g.id + '\')">' +
+                        '<span class="gl-name">' + g.name + '</span>' +
+                        '<span class="gl-provider">' + g.provider + '</span>' +
+                        '<span class="gl-vol">' + vol + '</span>' +
+                        '<span class="gl-bet">$' + (g.minBet || 0.20).toFixed(2) + ' – $' + (g.maxBet || 500) + '</span>' +
+                        '<button class="gl-play">Play</button></div>';
+                }).join('');
             } else {
                 allGamesDiv.innerHTML = filtered.map(g => createGameCard(g)).join('');
             }
@@ -2409,3 +2428,55 @@ function renderGames() {
         }
 
         window.setCollection = setCollection;
+
+        /* ── Sprint 45: Recent Wins Feed ────────────── */
+        var _RW_KEY = 'matrixRecentWins';
+        var _RW_MAX = 10;
+
+        function _recordRecentWin(gameName, amount) {
+            var wins = [];
+            try { wins = JSON.parse(sessionStorage.getItem(_RW_KEY) || '[]'); } catch(e) { wins = []; }
+            wins.unshift({ game: gameName, amount: amount, time: Date.now() });
+            if (wins.length > _RW_MAX) wins.length = _RW_MAX;
+            sessionStorage.setItem(_RW_KEY, JSON.stringify(wins));
+        }
+
+        function renderRecentWins() {
+            var section = document.getElementById('rwSection');
+            var strip = document.getElementById('rwStrip');
+            if (!section || !strip) return;
+            var wins = [];
+            try { wins = JSON.parse(sessionStorage.getItem(_RW_KEY) || '[]'); } catch(e) { wins = []; }
+            if (wins.length === 0) { section.style.display = 'none'; return; }
+            section.style.display = '';
+            var now = Date.now();
+            strip.innerHTML = wins.slice(0, 5).map(function(w) {
+                var ago = Math.floor((now - w.time) / 60000);
+                var timeStr = ago < 1 ? 'just now' : ago + 'm ago';
+                return '<div class="rw-card"><div class="rw-game">' + w.game + '</div>' +
+                    '<div class="rw-amount">+$' + w.amount.toFixed(2) + '</div>' +
+                    '<div class="rw-time">' + timeStr + '</div></div>';
+            }).join('');
+        }
+
+        window._recordRecentWin = _recordRecentWin;
+        window.renderRecentWins = renderRecentWins;
+
+        /* ── Sprint 45: Lobby Layout Toggle ────────────── */
+        var _lobbyView = localStorage.getItem('matrixLobbyView') || 'grid';
+
+        function setLobbyView(view) {
+            _lobbyView = view;
+            localStorage.setItem('matrixLobbyView', view);
+            var allGames = document.getElementById('allGames');
+            if (allGames) {
+                allGames.className = view === 'list' ? 'games-list' : 'games-grid';
+            }
+            document.querySelectorAll('.lv-btn').forEach(function(b) {
+                b.classList.toggle('lv-btn-active', b.getAttribute('data-view') === view);
+            });
+            // Re-render to switch card format
+            renderFilteredGames();
+        }
+
+        window.setLobbyView = setLobbyView;
