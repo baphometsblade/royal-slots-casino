@@ -2658,3 +2658,82 @@ function _renderFeaturedSpotlight() {
 
   window._initLazyThumbnails = _initLazyThumbnails;
 })();
+
+/* ── Sprint 82: Daily Win Goal bar ── */
+(function() {
+    var _DG_KEY = typeof STORAGE_KEY_DAILY_GOAL !== 'undefined' ? STORAGE_KEY_DAILY_GOAL : 'matrixDailyGoal';
+    var _DG_DEFAULT = 100;
+
+    function _today() { return new Date().toISOString().slice(0, 10); }
+
+    function _loadDG() {
+        try {
+            var raw = localStorage.getItem(_DG_KEY);
+            var s = raw ? JSON.parse(raw) : null;
+            if (!s || s.date !== _today()) return { date: _today(), goal: _DG_DEFAULT, won: 0 };
+            return s;
+        } catch(e) { return { date: _today(), goal: _DG_DEFAULT, won: 0 }; }
+    }
+
+    function _saveDG(s) {
+        try { localStorage.setItem(_DG_KEY, JSON.stringify(s)); } catch(e) {}
+    }
+
+    function renderDailyGoalBar() {
+        var bar = document.getElementById('dailyGoalBar');
+        var fill = document.getElementById('dgbFill');
+        var prog = document.getElementById('dgbProgress');
+        if (!bar || !fill || !prog) return;
+        var s = _loadDG();
+        if (!s.goal) { bar.style.display = 'none'; return; }
+        bar.style.display = 'flex';
+        var pct = Math.min(100, (s.won / s.goal) * 100);
+        fill.style.width = pct + '%';
+        var reached = s.won >= s.goal;
+        fill.classList.toggle('dgb-done', reached);
+        if (reached) {
+            prog.textContent = '🎉 Goal!';
+            prog.className = 'dgb-progress dgb-reached';
+        } else {
+            prog.textContent = '$' + Math.round(s.won) + ' / $' + Math.round(s.goal);
+            prog.className = 'dgb-progress';
+        }
+    }
+
+    function openDailyGoalEdit() {
+        var s = _loadDG();
+        var input = prompt('Set your daily win goal ($):', s.goal);
+        if (input === null) return;
+        var val = parseFloat(input);
+        if (!isNaN(val) && val > 0) {
+            s.goal = Math.round(val);
+            _saveDG(s);
+            renderDailyGoalBar();
+        }
+    }
+
+    function recordGoalWin(amount) {
+        if (!amount || amount <= 0) return;
+        var s = _loadDG();
+        s.won += amount;
+        _saveDG(s);
+        renderDailyGoalBar();
+    }
+
+    window.renderDailyGoalBar = renderDailyGoalBar;
+    window.openDailyGoalEdit  = openDailyGoalEdit;
+    window.recordGoalWin      = recordGoalWin;
+
+    // Hook into renderGames chain
+    (function() {
+        var _prevRG82 = typeof renderGames === 'function' ? renderGames : null;
+        if (!_prevRG82) return;
+        renderGames = function() {
+            _prevRG82.apply(this, arguments);
+            if (typeof renderDailyGoalBar === 'function') renderDailyGoalBar();
+        };
+    })();
+
+    // Initial render
+    renderDailyGoalBar();
+})();

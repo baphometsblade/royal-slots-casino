@@ -7,7 +7,28 @@
         // Session stats tracking (reset each time a new game opens)
         let _sessSpins = 0, _sessTotalBet = 0, _sessTotalWon = 0;
         let _sessWins = 0;
+        // Sprint 82: Bonus drought tracker (reset each openSlot)
+        let _bonusDrought = 0;        // consecutive non-bonus spins since last bonus
+        let _bonusDroughtTotal = 0;   // sum of all completed droughts (for avg)
+        let _bonusDroughtRounds = 0;  // number of bonuses triggered this session
         const SPIN_HISTORY_MAX = 15;
+
+        /* ── Sprint 82: Bonus Drought tracker helpers ── */
+        function _updateDroughtStat(justTriggered) {
+            var el = document.getElementById('statDrought');
+            if (!el) return;
+            if (justTriggered) {
+                var avg = _bonusDroughtRounds > 0
+                    ? Math.round(_bonusDroughtTotal / _bonusDroughtRounds) : 0;
+                el.textContent = avg > 0 ? ('avg ' + avg) : '0';
+                el.className = 'session-stat-value';
+                return;
+            }
+            el.textContent = _bonusDrought + ' dry';
+            el.className = 'session-stat-value' +
+                (_bonusDrought >= 60 ? ' stat-drought-hot' :
+                 _bonusDrought >= 30 ? ' stat-drought-warn' : '');
+        }
         // Build symbol image HTML for any game symbol
         function getSymbolHtml(symbolName, gameId) {
             var useAnimated = window.appSettings &&
@@ -1112,6 +1133,8 @@
             spinHistory = [];
             // Reset session stats HUD
             _sessSpins = 0; _sessTotalBet = 0; _sessTotalWon = 0; _sessWins = 0;
+            // Sprint 82: reset bonus drought
+            _bonusDrought = 0; _bonusDroughtTotal = 0; _bonusDroughtRounds = 0;
             var _sb0 = document.getElementById('spinBtn');
             if (_sb0) _sb0.classList.remove('spin-btn-fire');
             var _oldHud = document.getElementById('slotSessionHud');
@@ -1414,6 +1437,11 @@
                             '<span class="session-stat-icon">📈</span>',
                             '<span class="session-stat-value" id="statPnl">$0.00</span>',
                             '<span class="session-stat-label">P&amp;L</span>',
+                        '</div>',
+                        '<div class="session-stat-item">',
+                            '<span class="session-stat-icon">🎁</span>',
+                            '<span class="session-stat-value" id="statDrought">—</span>',
+                            '<span class="session-stat-label">dry</span>',
                         '</div>'
                     ].join('');
                     // Insert before the existing slot-session-stats bar, or before slot-bottom-bar
@@ -2960,6 +2988,9 @@
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
                 _updateSessionStats();
+                // Sprint 82: bonus drought (only on non-free-spin spins) + goal win
+                if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
+                if (typeof window.recordGoalWin === 'function' && !freeSpinsActive) window.recordGoalWin(winAmount);
                 // Dynamic layer escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     var _streak = window._winStreak || 0;
@@ -3218,6 +3249,8 @@
                 if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _updateSessionHud();
                 _updateSessionStats();
+                // Sprint 82: bonus drought on loss
+                if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
                 // Dynamic layer de-escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     SoundManager.playDynamicLayer(0);
@@ -3443,6 +3476,11 @@
         // ═══════════════════════════════════════════════════════
 
         function triggerFreeSpins(game, count) {
+            // Sprint 82: record drought length then reset
+            _bonusDroughtRounds++;
+            _bonusDroughtTotal += _bonusDrought;
+            _bonusDrought = 0;
+            _updateDroughtStat(true);
             freeSpinsActive = true;
             if (typeof _recordBonusTrigger126 === 'function') _recordBonusTrigger126(); // 126
             if (typeof _incrementBonusRound === 'function') _incrementBonusRound(); // 150
@@ -6678,6 +6716,9 @@
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
                 _updateSessionStats();
+                // Sprint 82: bonus drought (only on non-free-spin spins) + goal win
+                if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
+                if (typeof window.recordGoalWin === 'function' && !freeSpinsActive) window.recordGoalWin(winAmount);
                 // Dynamic layer escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     var _streak = window._winStreak || 0;
@@ -6907,6 +6948,8 @@
                 if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _updateSessionHud();
                 _updateSessionStats();
+                // Sprint 82: bonus drought on loss
+                if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
                 // Dynamic layer de-escalation
                 if (typeof SoundManager !== 'undefined' && typeof SoundManager.playDynamicLayer === 'function') {
                     SoundManager.playDynamicLayer(0);
@@ -7101,6 +7144,11 @@
         // ═══════════════════════════════════════════════════════
 
         function triggerFreeSpins(game, count) {
+            // Sprint 82: record drought length then reset
+            _bonusDroughtRounds++;
+            _bonusDroughtTotal += _bonusDrought;
+            _bonusDrought = 0;
+            _updateDroughtStat(true);
             freeSpinsActive = true;
             if (typeof _recordBonusTrigger126 === 'function') _recordBonusTrigger126(); // 126
             if (typeof _incrementBonusRound === 'function') _incrementBonusRound(); // 150

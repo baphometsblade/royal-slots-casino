@@ -298,6 +298,15 @@
             <button class="tag-pill" data-tag="popular" onclick="toggleTagFilter('popular')">👥 Popular</button>
         </div>
 
+        <!-- Sprint 82: Daily Win Goal Bar -->
+        <div class="daily-goal-bar" id="dailyGoalBar" style="display:none">
+            <span class="dgb-icon">🎯</span>
+            <span class="dgb-label">Win Goal</span>
+            <div class="dgb-track"><div class="dgb-fill" id="dgbFill"></div></div>
+            <span class="dgb-progress" id="dgbProgress">$0</span>
+            <button class="dgb-edit" onclick="if(typeof openDailyGoalEdit==='function')openDailyGoalEdit()" title="Set daily win goal">✏</button>
+        </div>
+
         <!-- Filter Tabs -->
         <div class="filter-tabs" id="filterTabs">
             <button class="filter-tab filter-tab-active" data-filter="all" onclick="setFilter('all')">

@@ -565,6 +565,9 @@ const STORAGE_KEY_DAILY_BONUS = 'casinoDailyBonus';
 /** Bonus wheel last-spin timestamp (JSON) */
 const STORAGE_KEY_BONUS_WHEEL = 'casinoBonusWheel';
 
+/** Daily win goal progress (JSON) — Sprint 82 */
+const STORAGE_KEY_DAILY_GOAL = 'matrixDailyGoal';
+
 /** User settings (JSON) */
 const STORAGE_KEY_SETTINGS = 'casinoSettings';
 
