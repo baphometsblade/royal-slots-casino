@@ -1622,6 +1622,7 @@
         _resetValueRatio();       // 168 — value ratio
         _resetLongestDrought();   // 169 — longest drought
         _resetGameSessionCount(); // 170 — game session count
+        if (typeof _initCinematicUI === 'function') _initCinematicUI(); // cinematic
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -3074,6 +3075,7 @@
                 _updateNetPnl();                        // 119 — net P&L
                 _updateSessionRating();                 // 120 — session rating
                 _earnLuckyCoin(true);                   // 121 — lucky coins (win)
+                if (typeof _dispatchSpinToasts === 'function') _dispatchSpinToasts(true, winAmount, currentBet, { bonusTriggered: (typeof freeSpinsActive !== 'undefined' && freeSpinsActive) }); // cinematic
                 _updateHighWinBadge(winAmount);         // 123 — highest win
                 _updateLossStreak(true);                // 124 — loss streak
                 _updateSparkline(winAmount);            // 125 — sparkline
@@ -3289,6 +3291,7 @@
             _updateNetPnl();                           // 119 — net P&L
             _updateSessionRating();                    // 120 — session rating
             _earnLuckyCoin(false);                     // 121 — lucky coins
+            if (typeof _dispatchSpinToasts === 'function') _dispatchSpinToasts(winAmount > 0, winAmount, currentBet, {}); // cinematic
             _updateHighWinBadge(winAmount);             // 123 — highest win
             _updateLossStreak(winAmount > 0);           // 124 — loss streak
             _updateSparkline(winAmount);                // 125 — sparkline
@@ -6774,6 +6777,7 @@
                 _updateNetPnl();                        // 119 — net P&L
                 _updateSessionRating();                 // 120 — session rating
                 _earnLuckyCoin(true);                   // 121 — lucky coins (win)
+                if (typeof _dispatchSpinToasts === 'function') _dispatchSpinToasts(true, winAmount, currentBet, { bonusTriggered: (typeof freeSpinsActive !== 'undefined' && freeSpinsActive) }); // cinematic
                 _updateHighWinBadge(winAmount);         // 123 — highest win
                 _updateLossStreak(true);                // 124 — loss streak
                 _updateSparkline(winAmount);            // 125 — sparkline
@@ -6954,6 +6958,7 @@
             _updateNetPnl();                           // 119 — net P&L
             _updateSessionRating();                    // 120 — session rating
             _earnLuckyCoin(false);                     // 121 — lucky coins
+            if (typeof _dispatchSpinToasts === 'function') _dispatchSpinToasts(winAmount > 0, winAmount, currentBet, {}); // cinematic
             _updateHighWinBadge(winAmount);             // 123 — highest win
             _updateLossStreak(winAmount > 0);           // 124 — loss streak
             _updateSparkline(winAmount);                // 125 — sparkline
@@ -13413,4 +13418,242 @@ function _resetGameSessionCount() {
     try { localStorage.setItem(key, String(prev)); } catch(e) {}
     el.textContent = 'Session #' + prev + ' on this game';
     el.style.display = '';
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CINEMATIC REDESIGN — Toast System + Stats Report Panel
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Toast System ─────────────────────────────────────────────────────────────
+var _cineToastMax = 4;
+
+function showCinematicToast(text, type, duration) {
+    var container = document.getElementById('toastContainer');
+    if (!container) return;
+    var dur = typeof duration === 'number' ? duration : 2500;
+
+    // Evict oldest if at limit
+    var existing = container.querySelectorAll('.cine-toast:not(.toast-exiting)');
+    if (existing.length >= _cineToastMax) {
+        var oldest = existing[0];
+        oldest.classList.add('toast-exiting');
+        setTimeout(function () { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 230);
+    }
+
+    var el = document.createElement('div');
+    el.className = 'cine-toast ct-' + (type || 'info');
+    el.textContent = text;
+    container.appendChild(el);
+
+    // Auto-remove
+    setTimeout(function () {
+        el.classList.add('toast-exiting');
+        setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 230);
+    }, dur);
+}
+
+function _dispatchSpinToasts(won, winAmount, betAmount, extras) {
+    var ex = extras || {};
+    var bet = betAmount || 1;
+    var mult = winAmount / Math.max(bet, 0.01);
+
+    if (winAmount >= bet * 100) {
+        showCinematicToast('$$$ MEGA WIN  ×' + Math.round(mult), 'mega', 4000);
+    } else if (winAmount >= bet * 25) {
+        showCinematicToast('⚡ BIG WIN  ×' + Math.round(mult), 'mega', 3200);
+    } else if (won && winAmount >= bet * 5) {
+        showCinematicToast('★ Win  ×' + mult.toFixed(1), 'win', 2600);
+    } else if (won && winAmount > 0) {
+        showCinematicToast('✓ Win  +' + String.fromCharCode(36) + winAmount.toFixed(2), 'win', 2000);
+    }
+
+    // Win streak milestone (check outcomeStreak)
+    if (typeof _outcomeStreak147 !== 'undefined' && _outcomeStreak147 >= 5 && _outcomeStreak147 % 5 === 0) {
+        showCinematicToast('🔥 ' + _outcomeStreak147 + '-Win Streak!', 'streak', 2800);
+    }
+    // Loss streak warning (every 10 dry spins)
+    if (typeof _lossStreak124 !== 'undefined' && _lossStreak124 > 0 && _lossStreak124 % 10 === 0) {
+        showCinematicToast('❄ ' + _lossStreak124 + ' spins no win', 'loss', 2400);
+    }
+    // Bonus triggered
+    if (ex.bonusTriggered) {
+        showCinematicToast('🎉 FREE SPINS TRIGGERED!', 'bonus', 3500);
+    }
+    // Near miss
+    if (ex.nearMiss) {
+        showCinematicToast('😮 Near miss…', 'info', 1800);
+    }
+    // Scatter progress hint
+    if (typeof _spinScatterFound115 !== 'undefined' && _spinScatterFound115 === 2) {
+        showCinematicToast('🔵 2 scatters — one more!', 'info', 2000);
+    }
+    // Lucky coin milestone
+    if (typeof _luckyCoins121 !== 'undefined' && _luckyCoins121 > 0 && _luckyCoins121 % 20 === 0) {
+        showCinematicToast('🪙 ' + _luckyCoins121 + ' lucky coins!', 'info', 2200);
+    }
+}
+
+// ── Stats Report Panel ────────────────────────────────────────────────────────
+var _statsReportOpen  = false;
+var _cineAutoInterval = null;
+var _cineLastAutoSpin = 0;
+
+// Badge catalogue — {cat, rows[{id, label}]}
+var _srpCfg = [
+    { cat: '📊 Session', rows: [
+        { id: 'spinCounter',       label: 'Total Spins' },
+        { id: 'netPnl',            label: 'Net P&L' },
+        { id: 'sessionRating',     label: 'Rating' },
+        { id: 'sessionGrade',      label: 'Grade' },
+        { id: 'sessStartTime',     label: 'Started' },
+        { id: 'timeEffBadge',      label: 'Efficiency' },
+        { id: 'balPctBadge',       label: 'Balance Δ' },
+        { id: 'gameSessionCount',  label: 'Session #' },
+    ]},
+    { cat: '🏆 Wins', rows: [
+        { id: 'maxWinSeen',        label: 'Biggest Win' },
+        { id: 'sessionBigWin',     label: 'Session Best' },
+        { id: 'sessionMaxMult',    label: 'Max Mult' },
+        { id: 'rtpConvergence',    label: 'RTP' },
+        { id: 'returnGapBadge',    label: 'vs House' },
+        { id: 'valueRatioBadge',   label: 'Return Ratio' },
+        { id: 'cinematicCount',    label: 'Big Wins' },
+        { id: 'winBreakdown',      label: 'Win Types' },
+    ]},
+    { cat: '💰 Balance', rows: [
+        { id: 'peakBalanceDisplay',label: 'Peak' },
+        { id: 'profitBadge156',    label: 'Profit/Loss' },
+        { id: 'spinCostTotal',     label: 'Total Wagered' },
+        { id: 'biggestLossBadge',  label: 'Biggest Loss' },
+    ]},
+    { cat: '🎲 Bets', rows: [
+        { id: 'avgBetBadge',       label: 'Avg Bet' },
+        { id: 'betEfficiencyBadge',label: 'Efficiency' },
+        { id: 'betRecommendBadge', label: 'Risk Level' },
+        { id: 'betChangeBadge',    label: 'Bet Changes' },
+    ]},
+    { cat: '🔥 Streaks', rows: [
+        { id: 'outcomeStreakBadge', label: 'Current' },
+        { id: 'longestStreakBadge', label: 'Longest' },
+        { id: 'longestDroughtBadge',label: 'Drought Record' },
+        { id: 'winLossRatio',      label: 'W/L Ratio' },
+        { id: 'luckyStreakFire',   label: 'Lucky Streak' },
+        { id: 'nearMissHeat',      label: 'Near Miss %' },
+        { id: 'lossStreakAlert',   label: 'Loss Alert' },
+    ]},
+    { cat: '🎮 Game', rows: [
+        { id: 'bonusRoundCount',   label: 'Bonuses Hit' },
+        { id: 'featFreqBadge',     label: 'Feature Rate' },
+        { id: 'scatterGapBadge',   label: 'Scatter Gap' },
+        { id: 'reelHitFreq',       label: 'Hottest Reel' },
+        { id: 'luckySymbolBadge',  label: 'Lucky Symbol' },
+        { id: 'varianceBadge',     label: 'Variance' },
+        { id: 'hotColdIndicator',  label: 'Hot / Cold' },
+    ]},
+    { cat: '📈 History', rows: [
+        { id: 'spinPaceBadge',     label: 'Spin Pace' },
+        { id: 'spinDistBadge',     label: 'Spin Distance' },
+        { id: 'cumulativeXpBadge', label: 'XP Earned' },
+        { id: 'sessCompareBadge',  label: 'vs Last Session' },
+        { id: 'winTrendBadge',     label: 'Win Trend' },
+        { id: 'rtpConvergence',    label: 'RTP Convergence' },
+    ]},
+];
+
+function _populateStatsPanel() {
+    var body = document.getElementById('srpBody');
+    if (!body) return;
+    // Clear old content
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    var totalRows = 0;
+    _srpCfg.forEach(function (cat) {
+        var rows = [];
+        cat.rows.forEach(function (r) {
+            var el = document.getElementById(r.id);
+            var txt = el ? el.textContent.trim() : '';
+            if (txt) rows.push({ label: r.label, txt: txt });
+        });
+        if (!rows.length) return;
+        totalRows += rows.length;
+
+        var card = document.createElement('div');
+        card.className = 'srp-category';
+
+        var hdr = document.createElement('div');
+        hdr.className = 'srp-cat-title';
+        hdr.textContent = cat.cat;
+        card.appendChild(hdr);
+
+        rows.forEach(function (r) {
+            var row = document.createElement('div');
+            row.className = 'srp-row';
+
+            var lbl = document.createElement('span');
+            lbl.className = 'srp-label';
+            lbl.textContent = r.label;
+
+            var val = document.createElement('span');
+            val.className = 'srp-value';
+            // Colour coding
+            if (/[+]/.test(r.txt) && !/[A-Za-z]{5}/.test(r.txt)) val.classList.add('srp-pos');
+            else if (/^[-−]|[-]s*[$]/.test(r.txt)) val.classList.add('srp-neg');
+            else if (/[🔥]|HOT/.test(r.txt)) val.classList.add('srp-hot');
+            else if (/^[SABCDF]$/.test(r.txt.trim())) val.classList.add('srp-grade');
+            val.textContent = r.txt;
+            val.title = r.txt;
+
+            row.appendChild(lbl);
+            row.appendChild(val);
+            card.appendChild(row);
+        });
+
+        body.appendChild(card);
+    });
+
+    // Update subtitle
+    var sub = document.getElementById('srpSubtitle');
+    if (sub) {
+        var sc = document.getElementById('spinCounter');
+        var scTxt = sc ? sc.textContent.trim() : '';
+        sub.textContent = scTxt ? 'After ' + scTxt + ' • ' + totalRows + ' data points' : 'Live session data';
+    }
+}
+
+function openStatsPanel() {
+    var panel = document.getElementById('statsReportPanel');
+    if (!panel) return;
+    _populateStatsPanel();
+    panel.style.display = 'flex';
+    panel.classList.remove('srp-closing');
+    _statsReportOpen = true;
+}
+
+function closeStatsPanel() {
+    var panel = document.getElementById('statsReportPanel');
+    if (!panel) return;
+    panel.classList.add('srp-closing');
+    setTimeout(function () {
+        panel.style.display = 'none';
+        panel.classList.remove('srp-closing');
+    }, 280);
+    _statsReportOpen = false;
+}
+
+function _initCinematicUI() {
+    // Auto-open stats panel every 25 spins (check every 2s)
+    if (_cineAutoInterval) clearInterval(_cineAutoInterval);
+    _cineLastAutoSpin = 0;
+    _cineAutoInterval = setInterval(function () {
+        if (_statsReportOpen) return;
+        var sc = document.getElementById('spinCounter');
+        if (!sc) return;
+        var n = parseInt(sc.textContent) || 0;
+        if (n >= 25 && n !== _cineLastAutoSpin && n % 25 === 0) {
+            _cineLastAutoSpin = n;
+            openStatsPanel();
+            showCinematicToast('📊 ' + n + '-spin report ready', 'info', 2500);
+        }
+    }, 1800);
 }

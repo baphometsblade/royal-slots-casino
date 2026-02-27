@@ -16785,3 +16785,399 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     background: rgba(116,185,255,0.08);
     font-weight: 500;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CINEMATIC REDESIGN — layout overrides, toast system, stats panel, polish
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Slim top bar ──────────────────────────────────────────────────────── */
+.slot-top-bar {
+  min-height: 36px !important;
+  padding: 3px 10px !important;
+}
+
+/* Hide cluttered top-bar widgets — data still lives in DOM for stats panel */
+#budgetBtn,
+#goalBtn,
+.slot-payout,
+#sessionTimer,
+#vmMeter,
+#rtpGauge,
+#balanceSparkline,
+#stTimer,
+#gsNavPrev,
+#gsNavNext,
+#qvSlider {
+  display: none !important;
+}
+
+/* Compact the ambient toggle in top bar */
+#ambientToggleBtn { font-size: 13px; padding: 2px 5px; }
+
+/* Shrink game tag pill */
+#slotGameTag { font-size: 8px !important; padding: 1px 5px !important; }
+
+/* ── 📊 Stats button ───────────────────────────────────────────────────── */
+.cine-stats-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 4px 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.cine-stats-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.28);
+  color: #e2e8f0;
+  transform: scale(1.05);
+}
+.cine-stats-btn:active { transform: scale(0.97); }
+
+/* ── Expand reel area to fill available height ─────────────────────────── */
+.slot-reel-area {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  position: relative;
+}
+
+/* ── Slim bottom bar ───────────────────────────────────────────────────── */
+.slot-bottom-bar {
+  min-height: 58px !important;
+  padding: 5px 14px !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Hide secondary bottom-bar widgets (data still in DOM) */
+#slotNetDisplay,
+#recentOutcomes,
+#sessionHiLo,
+#balBuffer,
+#profitTarget,
+#symbolHeat,
+#lossRecovery,
+#scatterAlert,
+#scatterCollect,
+#nearMissCount,
+#balAlertDisplay,
+#sessionXpEarned,
+#hotSymbol,
+#spinRateDisplay,
+#cascadeDepth,
+#autoplayCountdown,
+#deadSpinCounter,
+#turboBadge,
+#jackpotProgress,
+#autoSpeedBadge,
+#scatterProgress,
+#featureActiveDisplay,
+#volumeSliderMicro,
+#spinSparkline,
+#wrDisplay,
+#pnlSparkline,
+#winGoalTracker,
+#bankrollBarRow,
+#betRange,
+#quickBetPresets,
+#betLockBtn,
+#autoStopWinBtn,
+#betSteps,
+#betIndicator,
+#bhChart,
+#abDisplay,
+#apProgress,
+#featureCountBadge,
+#powerMeter,
+#gameTagChips,
+#winBreakdown,
+#sessionMilestone,
+#netPnl,
+#sessionRating,
+#luckyCoinDisplay,
+#highWinBadge,
+#lossStreakAlert,
+#bonusTimerDisplay,
+#peakBalanceDisplay,
+#multHistoryDisplay,
+#betEfficiencyBadge,
+#luckyStreakFire,
+#scatterHuntMeter,
+#varianceBadge,
+#spinCostTotal,
+#winTrendBadge,
+#hotColdIndicator,
+#winLossRatio,
+#avgBetBadge,
+#sessionBigWin,
+#spinTimerBadge,
+#balPctBadge,
+#sessionMaxMult,
+#symbolDistBar,
+#autoplayPnlBadge,
+#featFreqBadge,
+#sessionGrade,
+#timeEffBadge,
+#outcomeStreakBadge,
+#rtpConvergence,
+#scatterGapBadge,
+#bonusRoundCount,
+#reelHitFreq,
+#sessStartTime,
+#spinPaceBadge,
+#cumulativeXpBadge,
+#resultHistoryList,
+#profitBadge156,
+#betRecommendBadge,
+#nearMissHeat,
+#cinematicCount,
+#sessCompareBadge,
+#spinDistBadge,
+#biggestLossBadge,
+#winTypeLabel,
+#longestStreakBadge,
+#betChangeBadge,
+#luckySymbolBadge,
+#returnGapBadge,
+#valueRatioBadge,
+#longestDroughtBadge,
+#gameSessionCount,
+#megaWinBadge,
+#winFreqBadge,
+#totalBetDisplay,
+#hcBadge,
+#lsTracker,
+#lastWinPreview,
+#slotQuickfireStrip,
+#quickSwitchStrip,
+#winStreakBadge,
+#lossStreakBadge,
+#fsRemainingBadge,
+#maxWinSeen {
+  display: none !important;
+}
+
+/* Keep the spin counter visible in the balance section */
+#spinCounter { display: inline !important; font-size: 10px; color: #64748b; }
+
+/* ── Bottom bar visual polish ──────────────────────────────────────────── */
+.slot-bar-label {
+  font-size: 8px !important;
+  letter-spacing: 1.5px !important;
+  color: #475569 !important;
+}
+.slot-bar-value {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+}
+/* Make spin button slightly larger for the cinematic look */
+.slot-spin-btn {
+  width: 74px !important;
+  height: 74px !important;
+  box-shadow: 0 0 28px rgba(16,185,129,0.45), 0 4px 16px rgba(0,0,0,0.5) !important;
+}
+
+/* ── Reel visual polish ────────────────────────────────────────────────── */
+/* Win-cell golden glow */
+.reel-cell.win-cell {
+  box-shadow: 0 0 0 2px rgba(255,200,0,0.85), 0 0 22px rgba(255,200,0,0.4) !important;
+  border-radius: 6px;
+  z-index: 2;
+  position: relative;
+}
+/* Mega win shimmer pulse */
+@keyframes cine-win-shimmer {
+  0%   { box-shadow: 0 0 0 2px rgba(255,185,0,0.8),  0 0 24px rgba(255,185,0,0.4); }
+  50%  { box-shadow: 0 0 0 3px rgba(255,230,0,1.0),  0 0 48px rgba(255,230,0,0.7); }
+  100% { box-shadow: 0 0 0 2px rgba(255,185,0,0.8),  0 0 24px rgba(255,185,0,0.4); }
+}
+.reel-cell.win-cell-mega {
+  animation: cine-win-shimmer 0.65s ease-in-out infinite !important;
+  border-radius: 7px;
+  z-index: 3;
+  position: relative;
+}
+/* Subtle depth on the reels container */
+.reels-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* ── Toast notification system ─────────────────────────────────────────── */
+.toast-container {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 55;
+  pointer-events: none;
+  max-width: 175px;
+}
+
+@keyframes cine-toast-in {
+  from { opacity: 0; transform: translateX(110%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes cine-toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(110%); }
+}
+
+.cine-toast {
+  background: rgba(8,8,20,0.93);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 9px;
+  padding: 6px 11px;
+  font-size: 11px;
+  font-family: "Trebuchet MS","Segoe UI",sans-serif;
+  color: #cbd5e1;
+  animation: cine-toast-in 0.22s cubic-bezier(0.22,1,0.36,1) forwards;
+  backdrop-filter: blur(6px);
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 175px;
+}
+.cine-toast.toast-exiting {
+  animation: cine-toast-out 0.22s ease forwards;
+}
+
+/* Toast type colours */
+.cine-toast.ct-win    { border-color: rgba(16,185,129,0.50); color: #6ee7b7; }
+.cine-toast.ct-mega   { border-color: rgba(245,158,11,0.65); color: #fcd34d; font-weight: 700; font-size: 12px; }
+.cine-toast.ct-streak { border-color: rgba(239,68,68,0.50);  color: #fca5a5; }
+.cine-toast.ct-info   { border-color: rgba(99,102,241,0.45); color: #a5b4fc; }
+.cine-toast.ct-bonus  { border-color: rgba(168,85,247,0.60); color: #d8b4fe; font-weight: 600; }
+.cine-toast.ct-loss   { border-color: rgba(100,116,139,0.35); color: #94a3b8; }
+
+/* ── Stats Report Panel ────────────────────────────────────────────────── */
+@keyframes srp-slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes srp-slide-down {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(100%); opacity: 0; }
+}
+
+.stats-report-panel {
+  position: absolute;
+  inset: 0;
+  background: rgba(4,4,14,0.97);
+  backdrop-filter: blur(18px) saturate(0.5);
+  z-index: 180;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: srp-slide-up 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
+  border-radius: inherit;
+}
+.stats-report-panel.srp-closing {
+  animation: srp-slide-down 0.26s ease forwards;
+}
+
+.srp-header {
+  display: flex;
+  align-items: center;
+  padding: 11px 18px 9px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+  gap: 10px;
+  background: rgba(255,255,255,0.02);
+}
+.srp-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: 0.3px;
+}
+.srp-subtitle {
+  font-size: 10px;
+  color: #475569;
+  flex: 1;
+}
+.srp-close-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: 7px;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.14s, color 0.14s;
+  flex-shrink: 0;
+}
+.srp-close-btn:hover { background: rgba(255,255,255,0.13); color: #e2e8f0; }
+
+.srp-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+
+/* Category card */
+.srp-category {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.065);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.srp-cat-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  margin-bottom: 3px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.srp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.srp-label {
+  font-size: 10px;
+  color: #4b5563;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.srp-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: right;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.srp-value.srp-pos { color: #34d399; }
+.srp-value.srp-neg { color: #f87171; }
+.srp-value.srp-hot { color: #fbbf24; }
+.srp-value.srp-grade { color: #818cf8; font-size: 13px; font-weight: 800; }

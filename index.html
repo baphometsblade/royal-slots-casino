@@ -735,6 +735,8 @@
                     <button class="gs-nav-btn" id="gsNavPrev" onclick="if(typeof _gsNavTo==='function')_gsNavTo(-1)" title="Previous game">&lsaquo;</button><button class="gs-nav-btn" id="gsNavNext" onclick="if(typeof _gsNavTo==='function')_gsNavTo(1)" title="Next game">&rsaquo;</button>
                     <!-- Sprint 55: Volume Quick-Slider -->
                     <input type="range" class="qv-slider" id="qvSlider" min="0" max="100" value="50" oninput="if(typeof _qvSliderInput==='function')_qvSliderInput(this.value)" title="Volume">
+                    <!-- Cinematic: Stats Report Button -->
+                    <button class="cine-stats-btn" id="statsReportBtn" onclick="if(typeof openStatsPanel==='function')openStatsPanel()" title="Session Stats (S)">&#x1F4CA;</button>
                 </div>
             </div>
 
@@ -780,6 +782,8 @@
                 <!-- Win Display Overlay -->
                 <div id="messageDisplay"></div>
                 <div id="winAnimation"></div>
+                <!-- Cinematic: Spin toast feed -->
+                <div id="toastContainer" class="toast-container"></div>
             </div>
 
             <!-- Sprint 50: Last Win Preview -->
@@ -805,6 +809,15 @@
                 </div>
             </div>
 
+            <!-- Cinematic: Stats Report Panel (full overlay) -->
+            <div id="statsReportPanel" class="stats-report-panel" style="display:none">
+                <div class="srp-header">
+                    <div class="srp-title">&#x1F4CA; Session Report</div>
+                    <div class="srp-subtitle" id="srpSubtitle">Live Stats</div>
+                    <button class="srp-close-btn" onclick="if(typeof closeStatsPanel==='function')closeStatsPanel()">&#x2715;</button>
+                </div>
+                <div class="srp-body" id="srpBody"></div>
+            </div>
             <!-- Pragmatic Play Bottom Bar -->
             <div class="slot-bottom-bar">
                 <!-- Left: Balance -->
