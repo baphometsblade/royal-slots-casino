@@ -1991,11 +1991,21 @@
             }
             _winCounterRaf = requestAnimationFrame(tick);
         }
-        // Payline colours — cycle through for multiple simultaneous wins
+        // Payline colours — fallback when game has no accent colour
         const PAYLINE_COLORS = [
             '#34d399', '#f472b6', '#60a5fa', '#fbbf24',
             '#a78bfa', '#fb923c', '#2dd4bf', '#f87171'
         ];
+
+        // Build a themed set of line colours from the current game's accent colour
+        function _buildPaylineColorSet(baseColor) {
+            if (!baseColor) return PAYLINE_COLORS;
+            // Derive 4–8 colours: the base, then lightened/complementary variants
+            // Simple approach: use the base + 3 preset offsets in HSL space via CSS filter tricks
+            // We'll just vary the alpha/brightness across 8 entries
+            var c = baseColor;
+            return [c, '#ffffff', c, '#ffe066', c, '#ffffff', c, '#ffe066'];
+        }
 
         // Draw SVG lines through winning cell centres
         function showPaylinePaths() {
@@ -2009,16 +2019,21 @@
 
             var areaRect = reelArea.getBoundingClientRect();
 
+            // Use game-themed colours if available, else fall back to defaults
+            var accentColor = (currentGame && currentGame.accentColor) || null;
+            var themedColors = _buildPaylineColorSet(accentColor);
+
             var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('class', 'payline-svg');
             svg.setAttribute('viewBox', '0 0 ' + areaRect.width + ' ' + areaRect.height);
+            svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15;';
 
-            // Blur filter for glow
+            // Blur + animateDash filter for glow
             var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
             var filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
             filter.setAttribute('id', 'plBlur');
             var blur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
-            blur.setAttribute('stdDeviation', '4');
+            blur.setAttribute('stdDeviation', '6');
             filter.appendChild(blur);
             defs.appendChild(filter);
             svg.appendChild(defs);
@@ -2027,7 +2042,8 @@
                 var cells = winLine.cells;
                 if (!cells || cells.length < 2) return;
 
-                var color = PAYLINE_COLORS[idx % PAYLINE_COLORS.length];
+                // Primary line: game accent; secondary/tertiary lines: lighter or complementary
+                var color = themedColors[idx % themedColors.length];
                 var points = [];
 
                 for (var i = 0; i < cells.length; i++) {
@@ -2041,53 +2057,86 @@
                 }
                 if (points.length < 2) return;
 
-                // Build path string
-                var d = 'M' + points[0].x + ',' + points[0].y;
-                for (var j = 1; j < points.length; j++) {
-                    d += ' L' + points[j].x + ',' + points[j].y;
+                // Build smooth path (cubic bezier through midpoints for a flowing look)
+                var d;
+                if (points.length === 2) {
+                    d = 'M' + points[0].x + ',' + points[0].y + ' L' + points[1].x + ',' + points[1].y;
+                } else {
+                    d = 'M' + points[0].x + ',' + points[0].y;
+                    for (var j = 1; j < points.length - 1; j++) {
+                        var mx = (points[j].x + points[j + 1].x) / 2;
+                        var my = (points[j].y + points[j + 1].y) / 2;
+                        d += ' Q' + points[j].x + ',' + points[j].y + ' ' + mx + ',' + my;
+                    }
+                    d += ' L' + points[points.length - 1].x + ',' + points[points.length - 1].y;
                 }
 
-                // Glow layer (wide, blurred)
+                var delay = idx * 0.06; // stagger each payline slightly
+
+                // Wide outer glow (blurred, semi-transparent)
                 var glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 glow.setAttribute('d', d);
                 glow.setAttribute('stroke', color);
-                glow.setAttribute('stroke-width', '10');
+                glow.setAttribute('stroke-width', '14');
                 glow.setAttribute('fill', 'none');
                 glow.setAttribute('stroke-linecap', 'round');
                 glow.setAttribute('stroke-linejoin', 'round');
-                glow.setAttribute('opacity', '0.35');
+                glow.setAttribute('opacity', '0.4');
                 glow.setAttribute('filter', 'url(#plBlur)');
+                glow.style.animationDelay = delay + 's';
                 svg.appendChild(glow);
 
-                // Main crisp line
+                // Main crisp line (thicker and more opaque for visibility)
                 var line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 line.setAttribute('d', d);
                 line.setAttribute('stroke', color);
-                line.setAttribute('stroke-width', '3');
+                line.setAttribute('stroke-width', '4');
                 line.setAttribute('fill', 'none');
                 line.setAttribute('stroke-linecap', 'round');
                 line.setAttribute('stroke-linejoin', 'round');
-                line.setAttribute('opacity', '0.9');
+                line.setAttribute('opacity', '1');
+                line.setAttribute('class', 'payline-trace');
+                line.style.animationDelay = delay + 's';
                 svg.appendChild(line);
 
-                // Dots at each cell centre
+                // White inner highlight line (thin, centred on main line)
+                var highlight = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                highlight.setAttribute('d', d);
+                highlight.setAttribute('stroke', '#ffffff');
+                highlight.setAttribute('stroke-width', '1.5');
+                highlight.setAttribute('fill', 'none');
+                highlight.setAttribute('stroke-linecap', 'round');
+                highlight.setAttribute('opacity', '0.55');
+                highlight.style.animationDelay = delay + 's';
+                svg.appendChild(highlight);
+
+                // Dots at each cell centre (larger for visibility)
                 for (var p = 0; p < points.length; p++) {
+                    // Outer halo
+                    var halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    halo.setAttribute('cx', points[p].x);
+                    halo.setAttribute('cy', points[p].y);
+                    halo.setAttribute('r', '10');
+                    halo.setAttribute('fill', color);
+                    halo.setAttribute('opacity', '0.2');
+                    svg.appendChild(halo);
+                    // Core dot
                     var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                     dot.setAttribute('cx', points[p].x);
                     dot.setAttribute('cy', points[p].y);
-                    dot.setAttribute('r', '5');
+                    dot.setAttribute('r', '6');
                     dot.setAttribute('fill', color);
                     dot.setAttribute('stroke', '#fff');
-                    dot.setAttribute('stroke-width', '1.5');
-                    dot.setAttribute('opacity', '0.9');
+                    dot.setAttribute('stroke-width', '2');
+                    dot.setAttribute('opacity', '1');
                     svg.appendChild(dot);
                 }
             });
 
             reelArea.appendChild(svg);
 
-            // Auto-remove after CSS fade-out completes (2.8s)
-            setTimeout(function() { if (svg.parentNode) svg.remove(); }, 3000);
+            // Auto-remove after animation completes
+            setTimeout(function() { if (svg.parentNode) svg.remove(); }, 2800);
         }
 
 

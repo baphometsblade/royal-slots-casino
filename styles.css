@@ -9602,6 +9602,18 @@
     100% { opacity: 0; }
 }
 
+/* Animated line-draw effect on the main payline path */
+@keyframes paylineTrace {
+    from { stroke-dashoffset: 1000; opacity: 0.3; }
+    15%  { opacity: 1; }
+    to   { stroke-dashoffset: 0; opacity: 1; }
+}
+.payline-trace {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: paylineTrace 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    PER-PROVIDER BOTTOM BAR v2  —  Dramatic distinct styling per studio
    ═══════════════════════════════════════════════════════════════════════ */
