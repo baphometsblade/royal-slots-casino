@@ -679,6 +679,9 @@
                 if (typeof showLastWinPreview === 'function') showLastWinPreview(symbols);
                 // Sprint 60: Track session best win
                 if (typeof updateSessionBestWin === 'function') updateSessionBestWin(winAmount);
+                // Sprint 68: Last win multiplier + average win
+                if (typeof updateLastWinMult === 'function') updateLastWinMult(winAmount);
+                if (typeof updateAvgWin === 'function') updateAvgWin(winAmount);
 
                 // Apply celebration animations based on win size (adjusted thresholds)
                 const isMegaWin = winAmount >= currentBet * 10;

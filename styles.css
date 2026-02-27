@@ -16063,3 +16063,18 @@ button.active .filter-tab-count {
     margin-bottom: 8px;
 }
 .lq-stats span { font-weight: 500; }
+
+/* Sprint 68: Last Win Multiplier */
+.lw-mult {
+    position: absolute; top: 142px; right: 14px;
+    font-size: 0.68rem; color: #22c55e; font-weight: 600;
+    background: rgba(34,197,94,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}
+/* Sprint 68: Average Win */
+.aw-display {
+    position: absolute; top: 142px; left: 14px;
+    font-size: 0.68rem; color: #a78bfa; font-weight: 500;
+    background: rgba(167,139,250,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}

@@ -796,6 +796,41 @@
             if (el) el.style.display = 'none';
         }
 
+        /* ── Sprint 68: Last Win Multiplier Display ── */
+        function updateLastWinMult(winAmount) {
+            var el = document.getElementById('lwMult');
+            if (!el || !winAmount) return;
+            var bet = typeof currentBet !== 'undefined' ? currentBet : 0;
+            if (bet <= 0) return;
+            var mult = (winAmount / bet).toFixed(1);
+            el.textContent = 'Last: ' + mult + 'x';
+            el.style.display = '';
+        }
+        function _resetLastWinMult() {
+            var el = document.getElementById('lwMult');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
+        /* ── Sprint 68: Average Win Display ── */
+        var _awTotal = 0; var _awCount = 0;
+        function updateAvgWin(winAmount) {
+            if (!winAmount || winAmount <= 0) return;
+            _awTotal += winAmount;
+            _awCount++;
+            if (_awCount < 3) return;
+            var el = document.getElementById('awDisplay');
+            if (!el) return;
+            var avg = _awTotal / _awCount;
+            var disp = avg >= 1000 ? '$' + (avg / 1000).toFixed(1) + 'K' : '$' + Math.round(avg);
+            el.textContent = 'Avg Win: ' + disp;
+            el.style.display = '';
+        }
+        function _resetAvgWin() {
+            _awTotal = 0; _awCount = 0;
+            var el = document.getElementById('awDisplay');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2012,6 +2047,8 @@
             _resetTotalWagered();
             _startWallClock();
             _initMechanicHelp();
+            _resetLastWinMult();
+            _resetAvgWin();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2637,6 +2674,8 @@
             _stopWallClock();
             _hideMechanicHelp();
             _resetDrySpell();
+            _resetLastWinMult();
+            _resetAvgWin();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
