@@ -15894,3 +15894,22 @@ button.active .filter-tab-count {
     transition: background 0.15s;
 }
 .gs-nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* ══ Sprint 58: Keyboard Shortcut Hints ══ */
+.kb-hints {
+    display: none; text-align: center; font-size: 0.7rem; color: #64748b;
+    padding: 6px 12px; background: rgba(0,0,0,0.4); border-radius: 8px;
+    margin: 4px auto; max-width: 220px; transition: opacity 0.3s;
+}
+.kb-hints kbd {
+    display: inline-block; padding: 1px 5px; border-radius: 3px;
+    background: rgba(255,255,255,0.1); color: #94a3b8; font-size: 0.65rem;
+    font-family: monospace; border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* ══ Sprint 58: Balance Milestone ══ */
+@keyframes bmCelebrate {
+    0%, 100% { text-shadow: none; }
+    50% { text-shadow: 0 0 12px #fbbf24, 0 0 24px #f59e0b; color: #fbbf24; }
+}
+.bm-celebrate { animation: bmCelebrate 0.75s ease 2; }

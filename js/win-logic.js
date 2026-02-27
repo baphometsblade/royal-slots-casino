@@ -728,6 +728,9 @@
             // Sprint 56: Update win rate
             if (typeof updateWinRate === 'function') updateWinRate(winAmount > 0);
 
+            // Sprint 58: Balance milestone check
+            if (typeof checkBalanceMilestone === 'function') checkBalanceMilestone();
+
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
 

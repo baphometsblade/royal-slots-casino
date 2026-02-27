@@ -494,6 +494,42 @@
             setTimeout(function() { openSlot(nextId); }, 300);
         }
 
+        // Sprint 58: Keyboard shortcut hints
+        var _kbHintTimer = null;
+        function showKbHints() {
+            var el = document.getElementById('kbHints');
+            if (!el) return;
+            el.style.display = '';
+            el.style.opacity = '1';
+            _kbHintTimer = setTimeout(function() { hideKbHints(); }, 5000);
+        }
+        function hideKbHints() {
+            if (_kbHintTimer) { clearTimeout(_kbHintTimer); _kbHintTimer = null; }
+            var el = document.getElementById('kbHints');
+            if (el) { el.style.opacity = '0'; setTimeout(function() { el.style.display = 'none'; }, 300); }
+        }
+
+        // Sprint 58: Balance milestone celebration
+        var _bmMilestones = [1000, 5000, 10000, 25000, 50000];
+        var _bmLastCrossed = 0;
+        function checkBalanceMilestone() {
+            if (typeof balance === 'undefined') return;
+            for (var i = _bmMilestones.length - 1; i >= 0; i--) {
+                if (balance >= _bmMilestones[i] && _bmMilestones[i] > _bmLastCrossed) {
+                    _bmLastCrossed = _bmMilestones[i];
+                    var balEl = document.getElementById('balanceAmount');
+                    if (balEl) {
+                        balEl.classList.add('bm-celebrate');
+                        setTimeout(function() { balEl.classList.remove('bm-celebrate'); }, 1500);
+                    }
+                    break;
+                }
+            }
+        }
+        function _resetBalanceMilestone() {
+            _bmLastCrossed = 0;
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1699,6 +1735,7 @@
             _startSessionTimerDisplay();
             updateVolatilityMeter();
             _initQuickVolume();
+            showKbHints();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2310,6 +2347,8 @@
             _resetBetHistory();
             _resetWinRate();
             _resetAvgBet();
+            hideKbHints();
+            _resetBalanceMilestone();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
