@@ -15744,3 +15744,19 @@ button.active .filter-tab-count {
 .pl-medal { font-size: 18px; }
 .pl-name { font-size: 11px; color: #ddd; margin-top: 2px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
 .pl-count { font-size: 10px; color: rgba(255,255,255,0.35); }
+
+/* ══ Sprint 49: Random Game Picker ══ */
+.btn-lucky {
+    font-size: 18px; padding: 4px 8px; cursor: pointer;
+    transition: transform 0.2s;
+}
+.btn-lucky:hover { transform: scale(1.15) rotate(15deg); }
+
+/* ══ Sprint 49: Session P&L Bar ══ */
+.sp-bar {
+    padding: 6px 14px; border-radius: 8px; font-size: 12px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 8px;
+}
+.sp-positive { color: #4ade80; font-weight: 600; }
+.sp-negative { color: #ef4444; font-weight: 600; }

@@ -525,6 +525,8 @@ function renderGames() {
                     if (typeof renderRecentWins === 'function') renderRecentWins();
                     // Provider leaderboard (Sprint 48)
                     if (typeof renderProviderLeaderboard === 'function') renderProviderLeaderboard();
+                    // Session P&L bar (Sprint 49)
+                    if (typeof updateSessionPnlBar === 'function') updateSessionPnlBar();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -2531,3 +2533,33 @@ function renderGames() {
         }
 
         window.renderProviderLeaderboard = renderProviderLeaderboard;
+
+        /* ── Sprint 49: Random Game Picker ────────────── */
+        function pickRandomGame() {
+            var pool = (typeof getFilteredGames === 'function') ? getFilteredGames(currentFilter) : games;
+            if (!pool || pool.length === 0) pool = games;
+            var picked = pool[Math.floor(Math.random() * pool.length)];
+            if (picked && typeof openSlot === 'function') openSlot(picked.id);
+        }
+
+        window.pickRandomGame = pickRandomGame;
+
+        /* ── Sprint 49: Session P&L Summary Bar ────────────── */
+        var _spOpenBalance = null;
+
+        function updateSessionPnlBar() {
+            var bar = document.getElementById('spBar');
+            var val = document.getElementById('spValue');
+            if (!bar || !val) return;
+            if (_spOpenBalance === null) {
+                _spOpenBalance = (typeof balance !== 'undefined') ? balance : 0;
+            }
+            var current = (typeof balance !== 'undefined') ? balance : 0;
+            var pnl = current - _spOpenBalance;
+            var sign = pnl >= 0 ? '+' : '';
+            val.textContent = sign + '$' + Math.abs(pnl).toFixed(2);
+            val.className = pnl >= 0 ? 'sp-positive' : 'sp-negative';
+            bar.style.display = '';
+        }
+
+        window.updateSessionPnlBar = updateSessionPnlBar;
