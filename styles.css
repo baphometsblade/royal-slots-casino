@@ -16181,3 +16181,14 @@ button.active .filter-tab-count {
     backdrop-filter: blur(6px); transition: opacity 0.2s;
 }
 .lobby-btt:hover { background: rgba(50,50,65,0.95); }
+
+/* ── Sprint 76: Outcome Dots ── */
+.outc-dots {
+    position: absolute; top: 214px; right: 14px;
+    display: flex; gap: 4px; z-index: 3;
+}
+.outc-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+}
+.outc-win { background: #4ade80; }
+.outc-loss { background: #f87171; }

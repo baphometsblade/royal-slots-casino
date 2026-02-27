@@ -2810,6 +2810,23 @@ function renderGames() {
         }
 
         /* ── Sprint 67: Lobby Quick Stats Bar ────────────── */
+        /* ── Sprint 76: Games Played Today ──────────────── */
+        var _GPT_KEY = 'matrixGamesToday';
+        function _getGamesToday() {
+            try {
+                var raw = JSON.parse(localStorage.getItem(_GPT_KEY) || '{}');
+                if (raw.date !== new Date().toDateString()) return { date: new Date().toDateString(), ids: [] };
+                return raw;
+            } catch(e) { return { date: new Date().toDateString(), ids: [] }; }
+        }
+        function _trackGameToday(gameId) {
+            var data = _getGamesToday();
+            if (data.ids.indexOf(gameId) === -1) {
+                data.ids.push(gameId);
+                try { localStorage.setItem(_GPT_KEY, JSON.stringify(data)); } catch(e) {}
+            }
+        }
+
         function renderLobbyQuickStats() {
             var el = document.getElementById('lqStats');
             if (!el) return;
@@ -2827,9 +2844,13 @@ function renderGames() {
                 }
             }
             var provCount = Object.keys(provSet).length;
+            // Sprint 76: Games played today
+            var gpt = _getGamesToday();
+            var todayCount = gpt.ids.length;
             el.innerHTML = '<span>Spins: ' + spins.toLocaleString() + '</span>' +
                 '<span>Best: ' + bestDisp + '</span>' +
                 '<span>Win Rate: ' + wr + '%</span>' +
-                (provCount > 0 ? '<span>Studios: ' + provCount + '</span>' : '');
+                (provCount > 0 ? '<span>Studios: ' + provCount + '</span>' : '') +
+                (todayCount > 0 ? '<span>Today: ' + todayCount + ' games</span>' : '');
             el.style.display = '';
         }

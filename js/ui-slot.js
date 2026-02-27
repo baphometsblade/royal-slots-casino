@@ -953,6 +953,24 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 76: Spin Outcome Dots ── */
+        var _outcDots = [];
+        function pushOutcDot(isWin) {
+            _outcDots.push(isWin);
+            if (_outcDots.length > 5) _outcDots.shift();
+            var el = document.getElementById('outcDots');
+            if (!el) return;
+            el.innerHTML = _outcDots.map(function(w) {
+                return '<span class="outc-dot ' + (w ? 'outc-win' : 'outc-loss') + '"></span>';
+            }).join('');
+            el.style.display = '';
+        }
+        function _resetOutcDots() {
+            _outcDots = [];
+            var el = document.getElementById('outcDots');
+            if (el) { el.innerHTML = ''; el.style.display = 'none'; }
+        }
+
         /* ── Sprint 73: Saved Bet Hint ── */
         var _sbhTimer = null;
         function _showSavedBetHint(betAmount) {
@@ -2190,6 +2208,9 @@
             _resetBonusCount();
             _initPeakBalance();
             _resetBalRunway();
+            _resetOutcDots();
+            // Sprint 76: Track game played today
+            if (typeof _trackGameToday === 'function' && currentGame) _trackGameToday(currentGame.id);
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2825,6 +2846,7 @@
             _resetBonusCount();
             _resetPeakBalance();
             _resetBalRunway();
+            _resetOutcDots();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
