@@ -1537,6 +1537,14 @@
         _updateQuickStats();     // 76 — quick stats
         _updateBetSteps();       // 80 — bet steps
         _initProfitTarget();     // 79 — profit target
+        _resetWinStreakBadge(); // 83 — win streak badge
+        _resetSessionRtp();     // 84 — session actual RTP
+        _resetScatterCollect(); // 85 — scatter counter
+        _initAutoStopWin();     // 86 — auto-stop on win
+        _resetSpinRate();       // 87 — spin rate
+        _resetPowerMeter();     // 88 — power meter
+        _renderGameTagChips();  // 89 — game tag chips
+        _resetPayoutLog();      // 90 — payout log
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -2285,6 +2293,7 @@
         _updateBalBuffer();           // Sprint 70 — balance buffer
         _updateSessionHiLo(balance);  // Sprint 69 — session hi-lo
         _updateLossRecovery(balance); // Sprint 72 — loss recovery
+        _recordSpinTime();           // Sprint 87 — spin rate
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
@@ -2950,8 +2959,18 @@
                 _addRecentOutcome(true);           // Sprint 68
                 _updateSymbolHeat(currentGrid);    // Sprint 71
                 _checkScatterAlert(currentGrid);   // Sprint 73
+                if (typeof currentGrid !== 'undefined' && currentGrid) {
+                    var _scts = 0;
+                    currentGrid.forEach(function(col) { col.forEach(function(sym) { if (sym === 'scatter' || sym === 'wild_scatter') _scts++; }); });
+                    if (_scts > 0) _incrementScatterCollect(_scts);
+                }
                 _pulseWinBalance();            // 77 — win balance pulse
                 _updateFsRemainingBadge();     // 78 — fs remaining badge
+                _updateWinStreakBadge(true);    // 83 — win streak
+                _updateSessionRtp(currentBet, winAmount); // 84 — session RTP
+                _checkAutoStopWin(winAmount);   // 86 — auto-stop win
+                _updatePowerMeter(true);        // 88 — power meter (reset)
+                _addPayoutLogEntry(winAmount, currentBet); // 90 — payout log
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3093,8 +3112,16 @@
             _updateQuickStats();          // 76 — quick stats post-spin
             _updateFsRemainingBadge();    // 78 — fs badge post-spin
             _updateProfitTarget();        // 79 — profit target post-spin
+            _updateWinStreakBadge(winAmount > 0); // 83 — win streak post-spin
+            _updateSessionRtp(currentBet, winAmount); // 84 — session RTP post-spin
+            _updatePowerMeter(winAmount > 0); // 88 — power meter post-spin
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
+                if (typeof currentGrid !== 'undefined' && currentGrid) {
+                    var _scts = 0;
+                    currentGrid.forEach(function(col) { col.forEach(function(sym) { if (sym === 'scatter' || sym === 'wild_scatter') _scts++; }); });
+                    if (_scts > 0) _incrementScatterCollect(_scts);
+                }
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -6497,8 +6524,18 @@
                 _addRecentOutcome(true);           // Sprint 68
                 _updateSymbolHeat(currentGrid);    // Sprint 71
                 _checkScatterAlert(currentGrid);   // Sprint 73
+                if (typeof currentGrid !== 'undefined' && currentGrid) {
+                    var _scts = 0;
+                    currentGrid.forEach(function(col) { col.forEach(function(sym) { if (sym === 'scatter' || sym === 'wild_scatter') _scts++; }); });
+                    if (_scts > 0) _incrementScatterCollect(_scts);
+                }
                 _pulseWinBalance();            // 77 — win balance pulse
                 _updateFsRemainingBadge();     // 78 — fs remaining badge
+                _updateWinStreakBadge(true);    // 83 — win streak
+                _updateSessionRtp(currentBet, winAmount); // 84 — session RTP
+                _checkAutoStopWin(winAmount);   // 86 — auto-stop win
+                _updatePowerMeter(true);        // 88 — power meter (reset)
+                _addPayoutLogEntry(winAmount, currentBet); // 90 — payout log
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6605,8 +6642,16 @@
             _updateQuickStats();          // 76 — quick stats post-spin
             _updateFsRemainingBadge();    // 78 — fs badge post-spin
             _updateProfitTarget();        // 79 — profit target post-spin
+            _updateWinStreakBadge(winAmount > 0); // 83 — win streak post-spin
+            _updateSessionRtp(currentBet, winAmount); // 84 — session RTP post-spin
+            _updatePowerMeter(winAmount > 0); // 88 — power meter post-spin
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
+                if (typeof currentGrid !== 'undefined' && currentGrid) {
+                    var _scts = 0;
+                    currentGrid.forEach(function(col) { col.forEach(function(sym) { if (sym === 'scatter' || sym === 'wild_scatter') _scts++; }); });
+                    if (_scts > 0) _incrementScatterCollect(_scts);
+                }
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -11036,4 +11081,182 @@ function _toggleAmbientInSlot() {
 if (typeof window !== "undefined") {
     window.casinoDebug = window.casinoDebug || {};
     window.casinoDebug.setProfitTarget = _setProfitTarget;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 83-90: ENHANCED SLOT UI WIDGETS
+// ═══════════════════════════════════════════════════════
+
+// Sprint 83: Win streak badge
+var _winStreakCount83 = 0;
+function _resetWinStreakBadge() {
+    _winStreakCount83 = 0;
+    var el = document.getElementById('winStreakBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateWinStreakBadge(won) {
+    if (won) {
+        _winStreakCount83++;
+    } else {
+        _winStreakCount83 = 0;
+    }
+    var el = document.getElementById('winStreakBadge');
+    if (!el) return;
+    if (_winStreakCount83 >= 2) {
+        var cnt = el.querySelector('#winStreakCount');
+        if (cnt) cnt.textContent = _winStreakCount83;
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// Sprint 84: Session actual RTP display
+var _sessWagered84 = 0;
+var _sessWon84 = 0;
+function _resetSessionRtp() {
+    _sessWagered84 = 0;
+    _sessWon84 = 0;
+    var el = document.getElementById('sessionRtpDisplay');
+    if (el) { el.textContent = 'RTP: --'; el.style.display = 'none'; }
+}
+function _updateSessionRtp(wagered, won) {
+    _sessWagered84 += (wagered || 0);
+    _sessWon84 += (won || 0);
+    var el = document.getElementById('sessionRtpDisplay');
+    if (!el || _sessWagered84 <= 0) return;
+    var rtp = Math.round((_sessWon84 / _sessWagered84) * 100);
+    el.className = 'session-rtp-display' + (rtp >= 95 ? ' rtp-great' : rtp >= 85 ? ' rtp-ok' : ' rtp-low');
+    el.textContent = 'RTP ' + rtp + '%';
+    el.style.display = '';
+}
+
+// Sprint 85: Scatter collection counter
+var _scatterCollectCount85 = 0;
+function _resetScatterCollect() {
+    _scatterCollectCount85 = 0;
+    var el = document.getElementById('scatterCollect');
+    if (el) { el.textContent = '\u25C8 0 scatters'; el.style.display = 'none'; }
+}
+function _incrementScatterCollect(n) {
+    _scatterCollectCount85 += (n || 1);
+    var el = document.getElementById('scatterCollect');
+    if (!el) return;
+    el.textContent = '\u25C8 ' + _scatterCollectCount85 + ' scatter' + (_scatterCollectCount85 === 1 ? '' : 's');
+    el.style.display = '';
+}
+
+// Sprint 86: Auto-stop-on-win toggle
+var _autoStopWinEnabled86 = false;
+function _initAutoStopWin() {
+    _autoStopWinEnabled86 = false;
+    var el = document.getElementById('autoStopWinBtn');
+    if (el) el.textContent = '\u{1F6D1} Win: OFF';
+}
+function _toggleAutoStopWin() {
+    _autoStopWinEnabled86 = !_autoStopWinEnabled86;
+    var el = document.getElementById('autoStopWinBtn');
+    if (el) el.textContent = '\u{1F6D1} Win: ' + (_autoStopWinEnabled86 ? 'ON' : 'OFF');
+}
+function _checkAutoStopWin(winAmount) {
+    if (_autoStopWinEnabled86 && winAmount > 0 && autoSpinActive) {
+        autoSpinActive = false;
+        autoSpinCount = 0;
+    }
+}
+
+// Sprint 87: Spins-per-minute rate indicator
+var _spinTimestamps87 = [];
+function _resetSpinRate() {
+    _spinTimestamps87 = [];
+    var el = document.getElementById('spinRateDisplay');
+    if (el) { el.textContent = '-- /min'; el.style.display = 'none'; }
+}
+function _recordSpinTime() {
+    var now = Date.now();
+    _spinTimestamps87.push(now);
+    if (_spinTimestamps87.length > 20) _spinTimestamps87.shift();
+    var el = document.getElementById('spinRateDisplay');
+    if (!el || _spinTimestamps87.length < 2) { if (el) el.style.display = ''; return; }
+    var elapsed = (now - _spinTimestamps87[0]) / 60000;
+    if (elapsed <= 0) return;
+    var rate = Math.round((_spinTimestamps87.length - 1) / elapsed);
+    el.textContent = rate + ' /min';
+    el.style.display = '';
+}
+
+// Sprint 88: Power meter (cosmetic tension builder)
+var _powerLevel88 = 0;
+var _POWER_MAX = 10;
+function _resetPowerMeter() {
+    _powerLevel88 = 0;
+    var el = document.getElementById('powerMeter');
+    if (!el) return;
+    var fill = el.querySelector('.pm-fill');
+    if (fill) { fill.style.width = '0%'; fill.classList.remove('pm-charged'); }
+    el.style.display = 'none';
+}
+function _updatePowerMeter(won) {
+    var el = document.getElementById('powerMeter');
+    if (!el) return;
+    if (won) {
+        _powerLevel88 = 0;
+    } else {
+        _powerLevel88 = Math.min(_powerLevel88 + 1, _POWER_MAX);
+    }
+    el.style.display = '';
+    var fill = el.querySelector('.pm-fill');
+    if (!fill) return;
+    fill.style.width = Math.round((_powerLevel88 / _POWER_MAX) * 100) + '%';
+    if (_powerLevel88 >= _POWER_MAX) fill.classList.add('pm-charged');
+    else fill.classList.remove('pm-charged');
+}
+
+// Sprint 89: Game feature tag chips
+function _renderGameTagChips() {
+    var el = document.getElementById('gameTagChips');
+    if (!el || !currentGame) return;
+    while (el.firstChild) el.removeChild(el.firstChild);
+    var tags = (currentGame.features || []).slice(0, 5);
+    if (tags.length === 0) { el.style.display = 'none'; return; }
+    tags.forEach(function(tag) {
+        var chip = document.createElement('span');
+        chip.className = 'gtc-chip';
+        var info = (typeof featureInfo !== 'undefined') ? featureInfo[tag] : null;
+        chip.textContent = info ? (info.icon + ' ' + info.title) : tag;
+        el.appendChild(chip);
+    });
+    el.style.display = '';
+}
+
+// Sprint 90: Mini payout log
+var _payoutLogEntries90 = [];
+function _resetPayoutLog() {
+    _payoutLogEntries90 = [];
+    var el = document.getElementById('payoutLog');
+    if (!el) return;
+    while (el.firstChild) el.removeChild(el.firstChild);
+    el.style.display = 'none';
+}
+function _addPayoutLogEntry(winAmount, betAmount) {
+    if (!winAmount || winAmount <= 0) return;
+    var el = document.getElementById('payoutLog');
+    if (!el) return;
+    var mult = betAmount > 0 ? (winAmount / betAmount).toFixed(1) : '?';
+    var entry = document.createElement('div');
+    entry.className = 'pl-entry' + (winAmount >= betAmount * 10 ? ' pl-big' : '');
+    var spanMult = document.createElement('span');
+    spanMult.className = 'pl-mult';
+    spanMult.textContent = mult + 'x';
+    var spanAmt = document.createElement('span');
+    spanAmt.className = 'pl-amt';
+    spanAmt.textContent = _DSN + winAmount.toFixed(2);
+    entry.appendChild(spanMult);
+    entry.appendChild(spanAmt);
+    el.insertBefore(entry, el.firstChild);
+    while (el.children.length > 8) el.removeChild(el.lastChild);
+    el.style.display = '';
+    _payoutLogEntries90.push({ win: winAmount, bet: betAmount, ts: Date.now() });
+    if (_payoutLogEntries90.length > 50) _payoutLogEntries90.shift();
 }

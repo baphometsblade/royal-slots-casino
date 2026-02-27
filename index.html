@@ -515,6 +515,10 @@
             <div class="session-summary" id="sessionSummary" style="display:none"></div>
             <!-- Sprint 76: Quick Stats Panel -->
             <div class="quick-stats-panel" id="quickStatsPanel" style="display:none"></div>
+            <!-- Sprint 84: Session actual RTP -->
+            <span class="session-rtp-display" id="sessionRtpDisplay" style="display:none">RTP --</span>
+            <!-- Sprint 90: Mini payout log -->
+            <div class="payout-log" id="payoutLog" style="display:none"></div>
 
             <!-- Feature Popup Overlay -->
             <div id="slotFeaturePopup" class="feature-popup-overlay" style="display:none;">
@@ -686,6 +690,10 @@
                     <div class="symbol-heat" id="symbolHeat" style="display:none"></div>
                     <span class="loss-recovery" id="lossRecovery" style="display:none"></span>
                     <span class="scatter-alert" id="scatterAlert" style="display:none"></span>
+                    <!-- Sprint 85: Scatter collection counter -->
+                    <span class="scatter-collect" id="scatterCollect" style="display:none"></span>
+                    <!-- Sprint 87: Spin rate display -->
+                    <span class="spin-rate-display" id="spinRateDisplay" style="display:none"></span>
                     <!-- Sprint 56: Win Rate Display -->
                     <span class="wr-display" id="wrDisplay" style="display:none"></span>
                     <!-- Sprint 44: P&L Sparkline -->
@@ -732,6 +740,8 @@
                 </div>
                 <!-- Sprint 75: Bet Lock Toggle -->
                 <button class="bet-lock-btn" id="betLockBtn" onclick="if(typeof _toggleBetLock==='function')_toggleBetLock()" title="Lock/unlock bet">&#x1F513;</button>
+                <!-- Sprint 86: Auto-stop-on-win -->
+                <button class="auto-stop-win-btn" id="autoStopWinBtn" onclick="_toggleAutoStopWin()">&#x1F6D1; Win: OFF</button>
                 <span id="minBet" style="display:none;">50</span>
                 <!-- Sprint 80: Bet Step Indicator -->
                 <span class="bet-steps" id="betSteps" style="display:none"></span>
@@ -751,6 +761,10 @@
 
                 <!-- Sprint 48: Spin Counter Badge -->
                 <div class="spin-counter-badge" id="spinCounterBadge">0</div>
+                <!-- Sprint 88: Power meter -->
+                <div class="power-meter" id="powerMeter" style="display:none"><div class="pm-fill"></div></div>
+                <!-- Sprint 89: Game feature tags -->
+                <div class="game-tag-chips" id="gameTagChips" style="display:none"></div>
 
                 <!-- Sprint 54: Autoplay Progress -->
                 <div class="ap-progress" id="apProgress" style="display:none"></div>
