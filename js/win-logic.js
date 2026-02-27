@@ -711,6 +711,9 @@
             }
             if (typeof awardXP === 'function') awardXP(XP_AWARD_PER_SPIN);
 
+            // Sprint 46: Update win streak display
+            if (typeof _updateWinStreak === 'function') _updateWinStreak(winAmount > 0);
+
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
 

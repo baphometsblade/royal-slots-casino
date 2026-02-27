@@ -322,6 +322,14 @@
             <button class="gc-col-btn" data-col="adventure" onclick="if(typeof setCollection==='function')setCollection('adventure')">Adventure</button>
         </div>
 
+        <!-- Sprint 46: Tag Filter Pills -->
+        <div class="tf-pills" id="tfPills">
+            <button class="tf-pill tf-hot" data-tag="HOT" onclick="if(typeof toggleTagFilter==='function')toggleTagFilter('HOT')">HOT</button>
+            <button class="tf-pill tf-new" data-tag="NEW" onclick="if(typeof toggleTagFilter==='function')toggleTagFilter('NEW')">NEW</button>
+            <button class="tf-pill tf-jackpot" data-tag="JACKPOT" onclick="if(typeof toggleTagFilter==='function')toggleTagFilter('JACKPOT')">JACKPOT</button>
+            <button class="tf-pill tf-popular" data-tag="POPULAR" onclick="if(typeof toggleTagFilter==='function')toggleTagFilter('POPULAR')">POPULAR</button>
+        </div>
+
         <!-- All Slots Section -->
         <div class="section-header">
             <h3 class="section-title" id="allSlotsTitle">
@@ -658,6 +666,9 @@
                     </svg>
                     <span class="spin-btn-text" style="display:none;">SPIN</span>
                 </button>
+
+                <!-- Sprint 46: Win Streak Badge -->
+                <div class="ws-badge" id="wsBadge" style="display:none;"><span id="wsCount">0</span></div>
 
                 <!-- Autoplay Button -->
                 <button class="slot-auto-btn" id="autoSpinBtn" onclick="openAutoplayModal()">

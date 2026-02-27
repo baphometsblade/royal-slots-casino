@@ -1400,6 +1400,14 @@ function renderGames() {
             if (typeof _currentCollection !== 'undefined' && _currentCollection !== 'all' && _collectionDefs[_currentCollection]) {
                 list = list.filter(_collectionDefs[_currentCollection]);
             }
+            // Apply tag filter (Sprint 46)
+            if (typeof _activeTagFilters !== 'undefined' && _activeTagFilters.length > 0) {
+                list = list.filter(function(g) {
+                    return _activeTagFilters.some(function(t) {
+                        return (g.tag || '').toUpperCase() === t || (g.tagClass || '').indexOf(t.toLowerCase()) >= 0;
+                    });
+                });
+            }
             // Apply inline search bar query (compound with all other filters)
             if (searchQuery) {
                 var _sq = searchQuery.toLowerCase();
@@ -2480,3 +2488,18 @@ function renderGames() {
         }
 
         window.setLobbyView = setLobbyView;
+
+        /* ── Sprint 46: Tag Filter Pills ────────────── */
+        var _activeTagFilters = [];
+
+        function toggleTagFilter(tag) {
+            var idx = _activeTagFilters.indexOf(tag);
+            if (idx >= 0) { _activeTagFilters.splice(idx, 1); }
+            else { _activeTagFilters.push(tag); }
+            document.querySelectorAll('.tf-pill').forEach(function(b) {
+                b.classList.toggle('tf-active', _activeTagFilters.indexOf(b.getAttribute('data-tag')) >= 0);
+            });
+            renderFilteredGames();
+        }
+
+        window.toggleTagFilter = toggleTagFilter;

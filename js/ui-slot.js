@@ -182,6 +182,32 @@
             if (line) line.setAttribute('points', '');
         }
 
+        /* ── Sprint 46: Win Multiplier Streak Display ── */
+        var _wsCount = 0;
+
+        function _updateWinStreak(isWin) {
+            var badge = document.getElementById('wsBadge');
+            var countEl = document.getElementById('wsCount');
+            if (!badge || !countEl) return;
+            if (isWin) {
+                _wsCount++;
+                countEl.textContent = _wsCount;
+                badge.style.display = '';
+                badge.classList.remove('ws-pulse');
+                void badge.offsetWidth; // trigger reflow
+                badge.classList.add('ws-pulse');
+            } else {
+                _wsCount = 0;
+                badge.style.display = 'none';
+            }
+        }
+
+        function _resetWinStreak() {
+            _wsCount = 0;
+            var badge = document.getElementById('wsBadge');
+            if (badge) badge.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1970,6 +1996,7 @@
             _resetBankrollOnClose();
             _resetWinGoalOnClose();
             _resetPnlSparkline();
+            _resetWinStreak();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
