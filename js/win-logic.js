@@ -742,6 +742,8 @@
             if (typeof showBalanceChange === 'function') showBalanceChange(winAmount);
             // Sprint 65: Update total wagered
             if (typeof updateTotalWagered === 'function') updateTotalWagered();
+            // Sprint 67: Dry spell encouragement
+            if (typeof checkDrySpell === 'function') checkDrySpell(winAmount > 0);
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

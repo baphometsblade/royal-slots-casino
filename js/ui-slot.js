@@ -767,6 +767,35 @@
             if (tooltip) tooltip.style.display = 'none';
         }
 
+        /* ── Sprint 67: Dry Spell Encouragement ──────────── */
+        var _dsLosses = 0;
+        var _dsTimer = null;
+        var _dsMessages = [
+            "Luck's brewing!",
+            "Stay patient!",
+            "The tide will turn!",
+            "Keep going!",
+            "Big win incoming!"
+        ];
+        function checkDrySpell(isWin) {
+            if (isWin) { _dsLosses = 0; return; }
+            _dsLosses++;
+            if (_dsLosses >= 5 && _dsLosses % 3 === 2) {
+                var el = document.getElementById('dsMsg');
+                if (!el) return;
+                el.textContent = _dsMessages[Math.floor(Math.random() * _dsMessages.length)];
+                el.style.display = '';
+                if (_dsTimer) clearTimeout(_dsTimer);
+                _dsTimer = setTimeout(function() { el.style.display = 'none'; }, 3000);
+            }
+        }
+        function _resetDrySpell() {
+            _dsLosses = 0;
+            if (_dsTimer) { clearTimeout(_dsTimer); _dsTimer = null; }
+            var el = document.getElementById('dsMsg');
+            if (el) el.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2607,6 +2636,7 @@
             _resetTotalWagered();
             _stopWallClock();
             _hideMechanicHelp();
+            _resetDrySpell();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

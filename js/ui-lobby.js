@@ -531,6 +531,7 @@ function renderGames() {
                     if (typeof renderGamesExplored === 'function') renderGamesExplored();
                     // Rebuild popularity counts (Sprint 51)
                     if (typeof _buildPopCounts === 'function') _buildPopCounts();
+                    if (typeof renderLobbyQuickStats === 'function') renderLobbyQuickStats();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -2687,4 +2688,20 @@ function renderGames() {
             }
             el.textContent = label;
             el.style.display = label ? '' : 'none';
+        }
+
+        /* ── Sprint 67: Lobby Quick Stats Bar ────────────── */
+        function renderLobbyQuickStats() {
+            var el = document.getElementById('lqStats');
+            if (!el) return;
+            var s = typeof stats !== 'undefined' ? stats : {};
+            var spins = s.totalSpins || 0;
+            if (spins < 1) { el.style.display = 'none'; return; }
+            var best = s.biggestWin || 0;
+            var bestDisp = best >= 1000 ? '$' + (best / 1000).toFixed(1) + 'K' : '$' + Math.round(best);
+            var wr = spins > 0 ? Math.round((s.totalWins || 0) / spins * 100) : 0;
+            el.innerHTML = '<span>Spins: ' + spins.toLocaleString() + '</span>' +
+                '<span>Best: ' + bestDisp + '</span>' +
+                '<span>Win Rate: ' + wr + '%</span>';
+            el.style.display = '';
         }

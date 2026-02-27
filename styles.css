@@ -16042,3 +16042,24 @@ button.active .filter-tab-count {
     padding: 6px 10px; margin: 4px auto; max-width: 280px;
     border-radius: 8px; line-height: 1.4;
 }
+
+/* ══ Sprint 67: Dry Spell Encouragement ══ */
+.ds-msg {
+    text-align: center; font-size: 0.75rem; color: #34d399;
+    background: rgba(52,211,153,0.1); border-radius: 8px;
+    padding: 4px 12px; margin: 4px auto; max-width: 200px;
+    font-weight: 600; animation: dsPulse 0.5s ease;
+}
+@keyframes dsPulse {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* ══ Sprint 67: Lobby Quick Stats ══ */
+.lq-stats {
+    display: flex; justify-content: center; gap: 16px;
+    font-size: 0.7rem; color: #64748b; padding: 6px 0;
+    border-bottom: 1px solid rgba(148,163,184,0.1);
+    margin-bottom: 8px;
+}
+.lq-stats span { font-weight: 500; }
