@@ -266,7 +266,7 @@
                     }
                     break;
                 default:
-                    if ((e.key === '?' || e.key === '/') && slotOpen) {
+                    if (e.key === '?' || e.key === '/') {
                         if (typeof _toggleHotkeySheet === 'function') _toggleHotkeySheet();
                         return;
                     }

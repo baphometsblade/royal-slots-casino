@@ -2141,3 +2141,177 @@ function openCompareModal() {
     modal.classList.add('active');
     modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
 }
+
+// ===== Sprint 43: Game Recommendations =====
+var _recommendedHidden = false;
+
+function buildRecommendations() {
+    var section = document.getElementById('recommendedSection');
+    var grid = document.getElementById('recommendedGames');
+    if (!section || !grid) return;
+    var recent = [];
+    try { recent = JSON.parse(localStorage.getItem(typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'matrixRecentlyPlayed') || '[]'); } catch(e) {}
+    if (recent.length < 3) { section.style.display = 'none'; return; }
+    var playedSet = new Set(recent);
+    // Gather providers and mechanics from recently played
+    var providerFreq = {}, mechFreq = {};
+    recent.forEach(function(id) {
+        var g = typeof GAMES !== 'undefined' ? GAMES.find(function(x) { return x.id === id; }) : null;
+        if (!g) return;
+        if (g.provider) providerFreq[g.provider] = (providerFreq[g.provider] || 0) + 1;
+        (g.mechanics || []).forEach(function(m) { mechFreq[m] = (mechFreq[m] || 0) + 1; });
+    });
+    // Score unplayed games
+    var scored = (typeof GAMES !== 'undefined' ? GAMES : []).filter(function(g) { return !playedSet.has(g.id); }).map(function(g) {
+        var score = 0;
+        if (g.provider && providerFreq[g.provider]) score += providerFreq[g.provider] * 2;
+        (g.mechanics || []).forEach(function(m) { if (mechFreq[m]) score += mechFreq[m]; });
+        return { game: g, score: score };
+    }).filter(function(x) { return x.score > 0; });
+    scored.sort(function(a, b) { return b.score - a.score; });
+    var top = scored.slice(0, 6).map(function(x) { return x.game; });
+    if (top.length < 2) { section.style.display = 'none'; return; }
+    grid.innerHTML = top.map(function(g) { return typeof createGameCard === 'function' ? createGameCard(g) : ''; }).join('');
+    section.style.display = _recommendedHidden ? 'none' : '';
+}
+
+function toggleRecommended() {
+    _recommendedHidden = !_recommendedHidden;
+    var section = document.getElementById('recommendedSection');
+    var btn = section && section.querySelector('.section-see-all');
+    if (section) section.style.display = _recommendedHidden ? 'none' : '';
+    if (btn) btn.textContent = _recommendedHidden ? 'Show ▼' : 'Hide ▲';
+}
+
+// ===== Sprint 44: Game Collections =====
+var _activeCollection = 'all';
+
+var _COLLECTIONS = {
+    all: null,
+    highroller: function(g) { return (g.payouts && g.payouts.triple && g.payouts.triple >= 200) || (g.maxBet && g.maxBet >= 500); },
+    quick: function(g) { return (g.reels || 5) <= 3 || (g.rows || 3) <= 3; },
+    jackpot: function(g) { return g.jackpot || (g.tags && g.tags.indexOf('jackpot') >= 0) || (g.mechanics && g.mechanics.indexOf('jackpot') >= 0); },
+    newbie: function(g) { return (g.payouts && g.payouts.triple && g.payouts.triple <= 100) && !(g.mechanics && g.mechanics.length > 2); }
+};
+
+function setCollection(name) {
+    _activeCollection = name || 'all';
+    document.querySelectorAll('.collection-tab').forEach(function(btn) {
+        btn.classList.toggle('collection-tab-active', btn.dataset.collection === _activeCollection);
+    });
+    if (typeof renderFilteredGames === 'function') renderFilteredGames();
+}
+
+// ===== Sprint 46: Tag Filters =====
+var _activeTags = new Set();
+
+function toggleTagFilter(tag) {
+    if (_activeTags.has(tag)) _activeTags.delete(tag);
+    else _activeTags.add(tag);
+    document.querySelectorAll('.tag-pill').forEach(function(btn) {
+        btn.classList.toggle('tag-pill-active', _activeTags.has(btn.dataset.tag));
+    });
+    if (typeof renderFilteredGames === 'function') renderFilteredGames();
+}
+
+// ===== Sprint 45: Lobby Layout Toggle =====
+var _lobbyLayout = (function() { try { return localStorage.getItem('matrixLobbyLayout') || 'grid'; } catch(e) { return 'grid'; } })();
+
+function setLobbyLayout(layout) {
+    _lobbyLayout = layout;
+    try { localStorage.setItem('matrixLobbyLayout', layout); } catch(e) {}
+    document.getElementById('layoutGridBtn') && document.getElementById('layoutGridBtn').classList.toggle('layout-btn-active', layout === 'grid');
+    document.getElementById('layoutListBtn') && document.getElementById('layoutListBtn').classList.toggle('layout-btn-active', layout === 'list');
+    var allGamesDiv = document.getElementById('allGames');
+    if (allGamesDiv) {
+        allGamesDiv.classList.toggle('games-list-view', layout === 'list');
+        if (layout === 'list') _renderListView(allGamesDiv);
+        else if (typeof renderFilteredGames === 'function') renderFilteredGames();
+    }
+}
+
+function _renderListView(container) {
+    var games = typeof getFilteredGames === 'function' ? getFilteredGames() : [];
+    container.innerHTML = games.map(function(g) {
+        var rtp = (g.payouts && g.payouts.triple) ? g.payouts.triple + 'x' : '—';
+        return '<div class="game-list-row" onclick="if(typeof _compareMode!==\'undefined\'&&_compareMode){_addToCompare(\'' + g.id + '\');}else{openSlot(\'' + g.id + '\');}">'
+            + '<span class="glr-emoji">' + (g.emoji || '🎰') + '</span>'
+            + '<span class="glr-name">' + g.name + '</span>'
+            + '<span class="glr-provider">' + (g.provider || '') + '</span>'
+            + '<span class="glr-rtp">Max: ' + rtp + '</span>'
+            + '<button class="glr-play btn">Play</button>'
+            + '</div>';
+    }).join('');
+}
+
+// Patch getFilteredGames to apply collection + tag filters
+(function() {
+    var _origGFG = typeof getFilteredGames === 'function' ? getFilteredGames : null;
+    if (!_origGFG) return;
+    getFilteredGames = function() {
+        var list = _origGFG.apply(this, arguments);
+        // Sprint 44: collection filter
+        if (_activeCollection && _activeCollection !== 'all' && _COLLECTIONS[_activeCollection]) {
+            list = list.filter(_COLLECTIONS[_activeCollection]);
+        }
+        // Sprint 46: tag filter
+        if (typeof _activeTags !== 'undefined' && _activeTags.size > 0) {
+            list = list.filter(function(g) {
+                return Array.from(_activeTags).every(function(tag) {
+                    if (tag === 'hot') return g.hot || (g.tags && g.tags.indexOf('hot') >= 0);
+                    if (tag === 'new') return g.new || (g.tags && g.tags.indexOf('new') >= 0);
+                    if (tag === 'jackpot') return g.jackpot || (g.mechanics && g.mechanics.indexOf('jackpot') >= 0);
+                    if (tag === 'megaways') return g.mechanics && g.mechanics.indexOf('megaways') >= 0;
+                    if (tag === 'popular') return g.popular || (g.tags && g.tags.indexOf('popular') >= 0);
+                    return true;
+                });
+            });
+        }
+        return list;
+    };
+})();
+
+// ===== Sprint 45: Recent Wins Feed =====
+var _recentWinsSession = [];
+
+function recordRecentWin(gameName, gameId, winAmount, betAmount) {
+    if (winAmount < betAmount * 2) return;
+    _recentWinsSession.unshift({ gameName: gameName, gameId: gameId, winAmount: winAmount, ts: Date.now() });
+    if (_recentWinsSession.length > 10) _recentWinsSession.length = 10;
+    renderRecentWinsFeed();
+}
+
+function renderRecentWinsFeed() {
+    var strip = document.getElementById('recentWinsStrip');
+    var scroll = document.getElementById('recentWinsScroll');
+    if (!strip || !scroll) return;
+    if (_recentWinsSession.length === 0) { strip.style.display = 'none'; return; }
+    strip.style.display = '';
+    scroll.innerHTML = _recentWinsSession.map(function(w) {
+        var mins = Math.floor((Date.now() - w.ts) / 60000);
+        var ago = mins < 1 ? 'just now' : mins + 'm ago';
+        return '<div class="rws-card" onclick="if(typeof openSlot!==\'undefined\')openSlot(\'' + w.gameId + '\')" title="Play ' + w.gameName + '">'
+            + '<div class="rws-game">' + w.gameName + '</div>'
+            + '<div class="rws-win">$' + w.winAmount.toFixed(0) + '</div>'
+            + '<div class="rws-time">' + ago + '</div>'
+            + '</div>';
+    }).join('');
+}
+
+// Hook into renderGames to also update recommendations and recent wins
+(function() {
+    var _orig = typeof renderGames === 'function' ? renderGames : null;
+    if (!_orig) return;
+    renderGames = function() {
+        _orig.apply(this, arguments);
+        buildRecommendations();
+        renderRecentWinsFeed();
+        // Apply saved layout
+        if (_lobbyLayout === 'list') {
+            var c = document.getElementById('allGames');
+            if (c) { c.classList.add('games-list-view'); _renderListView(c); }
+            document.getElementById('layoutListBtn') && document.getElementById('layoutListBtn').classList.add('layout-btn-active');
+            document.getElementById('layoutGridBtn') && document.getElementById('layoutGridBtn').classList.remove('layout-btn-active');
+        }
+    };
+})();

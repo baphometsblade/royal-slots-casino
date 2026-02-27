@@ -2774,3 +2774,21 @@ function _refreshAvatarDisplay() {
         _refreshAvatarDisplay();
     }
 })();
+
+// ===== Sprint 43: Keyboard Shortcuts Modal =====
+function openShortcutsModal() {
+    var modal = document.getElementById('shortcutsModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function _toggleHotkeySheet() {
+    var modal = document.getElementById('shortcutsModal');
+    if (!modal) return;
+    if (modal.classList.contains('active')) {
+        modal.classList.remove('active');
+    } else {
+        openShortcutsModal();
+    }
+}

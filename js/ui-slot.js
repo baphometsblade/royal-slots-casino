@@ -1496,6 +1496,9 @@
                 _startSessionTimer();
                 // Sprint 41 — quick switch strip
                 _refreshQuickSwitch();
+                // Sprint 44+46 — sparkline + streak reset on open
+                if (typeof _initSparkline === 'function') _initSparkline();
+                if (typeof _resetStreak === 'function') _resetStreak();
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1774,6 +1777,8 @@
             _stopSessionTimer();
             // Sprint 40+42 — reset bankroll/goal on close
             dismissBankroll(); dismissWinGoal();
+            // Sprint 46 — reset streak badge on close
+            if (typeof _resetStreak === 'function') _resetStreak();
             // Sprint 41 — hide quick switch
             var _qss = document.getElementById('quickSwitchStrip'); if (_qss) _qss.style.display = 'none';
             // Sprint 37 — clean up demo mode if active
@@ -2823,6 +2828,9 @@
                 if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
                 _demoOnSpinEnd();
                 if (typeof _updateWinGoal === 'function' && winAmount > 0) _updateWinGoal(winAmount);
+                if (typeof _incrementStreak === 'function') _incrementStreak();
+                if (typeof _updateSparkline === 'function') _updateSparkline(balance);
+                if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -2956,6 +2964,8 @@
             if (typeof awardXP === "function") { var _godMult2 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_PER_SPIN * _godMult2)); }
             if (typeof recordSpinHistory === 'function' && winAmount <= 0) recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: 0, mult: 0 });
             if (winAmount <= 0) _demoOnSpinEnd();
+            if (winAmount <= 0 && typeof _resetStreak === 'function') _resetStreak();
+            if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
             if (typeof checkPromoTriggers === "function") {
@@ -6343,6 +6353,9 @@
                 if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
                 _demoOnSpinEnd();
                 if (typeof _updateWinGoal === 'function' && winAmount > 0) _updateWinGoal(winAmount);
+                if (typeof _incrementStreak === 'function') _incrementStreak();
+                if (typeof _updateSparkline === 'function') _updateSparkline(balance);
+                if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6441,6 +6454,8 @@
             if (typeof awardXP === "function") { var _godMult2 = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round(XP_AWARD_PER_SPIN * _godMult2)); }
             if (typeof recordSpinHistory === 'function' && winAmount <= 0) recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: 0, mult: 0 });
             if (winAmount <= 0) _demoOnSpinEnd();
+            if (winAmount <= 0 && typeof _resetStreak === 'function') _resetStreak();
+            if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
             if (typeof checkPromoTriggers === "function") {
@@ -9875,5 +9890,60 @@
             _winGoalTarget = 0; _winGoalEarned = 0; _winGoalCelebrated = false;
             var tracker = document.getElementById('winGoalTracker');
             if (tracker) { tracker.style.display = 'none'; tracker.classList.remove('wgt-complete'); }
+        }
+
+        // ===== Sprint 44: P&L Sparkline =====
+        var _sparklineData = [];
+        var _sparklineMaxPoints = 20;
+
+        function _initSparkline() {
+            _sparklineData = [];
+            var svg = document.getElementById('pnlSparkline');
+            var line = document.getElementById('pnlLine');
+            if (!svg || !line) return;
+            svg.style.display = 'none';
+            line.setAttribute('points', '');
+        }
+
+        function _updateSparkline(currentBalance) {
+            _sparklineData.push(currentBalance);
+            if (_sparklineData.length > _sparklineMaxPoints) _sparklineData.shift();
+            var svg = document.getElementById('pnlSparkline');
+            var line = document.getElementById('pnlLine');
+            if (!svg || !line || _sparklineData.length < 2) return;
+            svg.style.display = '';
+            var W = 80, H = 22, pad = 2;
+            var min = Math.min.apply(null, _sparklineData);
+            var max = Math.max.apply(null, _sparklineData);
+            var range = max - min || 1;
+            var pts = _sparklineData.map(function(v, i) {
+                var x = pad + (i / (_sparklineData.length - 1)) * (W - 2 * pad);
+                var y = H - pad - ((v - min) / range) * (H - 2 * pad);
+                return x.toFixed(1) + ',' + y.toFixed(1);
+            }).join(' ');
+            line.setAttribute('points', pts);
+            var isUp = _sparklineData[_sparklineData.length - 1] >= _sparklineData[0];
+            line.setAttribute('stroke', isUp ? '#22c55e' : '#ef4444');
+        }
+
+        // ===== Sprint 46: Win Multiplier Streak =====
+        // Note: _winStreak is already declared in globals.js — no re-declaration needed
+
+        function _incrementStreak() {
+            _winStreak++;
+            var badge = document.getElementById('winStreakBadge');
+            var count = document.getElementById('winStreakCount');
+            if (!badge) return;
+            badge.style.display = '';
+            if (count) count.textContent = _winStreak;
+            badge.classList.remove('streak-pulse');
+            void badge.offsetWidth;
+            badge.classList.add('streak-pulse');
+        }
+
+        function _resetStreak() {
+            _winStreak = 0;
+            var badge = document.getElementById('winStreakBadge');
+            if (badge) badge.style.display = 'none';
         }
 

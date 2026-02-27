@@ -15111,3 +15111,65 @@ button.active .filter-tab-count {
 .win-goal-tracker.wgt-complete .wgt-progress-bar { background: linear-gradient(90deg, #22c55e, #f0c040); }
 .win-goal-tracker.wgt-complete .wgt-pct { color: #22c55e; font-weight: 700; }
 .game-card.compare-selected { outline: 2px solid rgba(240,192,64,0.7); outline-offset: -2px; }
+
+/* ===== Sprint 43: Keyboard Shortcuts Modal ===== */
+.btn-shortcuts { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 14px; font-weight: 700; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-shortcuts:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.shortcuts-content { background: linear-gradient(135deg, #12121f 0%, #1c1c2e 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 28px; max-width: 380px; width: 90%; }
+.shortcuts-grid { display: flex; flex-direction: column; gap: 10px; }
+.sc-row { display: flex; align-items: center; gap: 14px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.04); }
+kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 28px; padding: 0 8px; border-radius: 6px; background: rgba(240,192,64,0.15); border: 1px solid rgba(240,192,64,0.35); color: #f0c040; font-size: 12px; font-weight: 700; font-family: monospace; }
+.sc-row span { color: rgba(255,255,255,0.8); font-size: 14px; }
+
+/* ===== Sprint 43: Recommendations Section ===== */
+.section-recommendations { margin: 0 0 18px; }
+.section-recommendations .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.section-recommendations h3 { font-size: 15px; font-weight: 700; color: #f0c040; margin: 0; }
+.rec-toggle-btn { font-size: 11px; background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: rgba(255,255,255,0.5); padding: 3px 8px; cursor: pointer; }
+.rec-toggle-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+.rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+
+/* ===== Sprint 44: Collection Tabs ===== */
+.collection-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.collection-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.65); font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.collection-tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.collection-tab.collection-tab-active { background: rgba(240,192,64,0.18); border-color: rgba(240,192,64,0.45); color: #f0c040; font-weight: 600; }
+
+/* ===== Sprint 44: P&L Sparkline ===== */
+.pnl-sparkline { vertical-align: middle; opacity: 0.85; flex-shrink: 0; }
+
+/* ===== Sprint 45: Recent Wins Feed ===== */
+.recent-wins-strip { margin: 0 0 16px; padding: 0; }
+.rws-label { font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.rws-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.rws-scroll::-webkit-scrollbar { display: none; }
+.rws-card { flex-shrink: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 12px; min-width: 120px; cursor: pointer; transition: background 0.15s; }
+.rws-card:hover { background: rgba(255,255,255,0.1); }
+.rws-game { font-size: 11px; color: rgba(255,255,255,0.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+.rws-amount { font-size: 15px; font-weight: 700; color: #4ade80; }
+.rws-time { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+
+/* ===== Sprint 45: Layout Toggle ===== */
+.layout-toggle { display: flex; gap: 4px; }
+.layout-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; transition: all 0.15s; }
+.layout-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.layout-btn.layout-btn-active { background: rgba(240,192,64,0.15); border-color: rgba(240,192,64,0.4); color: #f0c040; }
+.games-list-view { display: flex; flex-direction: column; gap: 6px; }
+.game-list-row { display: flex; align-items: center; gap: 14px; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+.game-list-row:hover { background: rgba(255,255,255,0.08); }
+.glr-name { font-size: 14px; font-weight: 600; color: #fff; flex: 1; }
+.glr-provider { font-size: 11px; color: rgba(255,255,255,0.45); min-width: 80px; }
+.glr-rtp { font-size: 11px; color: rgba(255,255,255,0.45); min-width: 60px; }
+.glr-play { padding: 5px 14px; border-radius: 6px; background: rgba(240,192,64,0.15); border: 1px solid rgba(240,192,64,0.35); color: #f0c040; font-size: 12px; font-weight: 600; cursor: pointer; }
+.glr-play:hover { background: rgba(240,192,64,0.25); }
+
+/* ===== Sprint 46: Tag Filter Pills ===== */
+.tag-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.tag-pill { padding: 5px 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6); font-size: 11px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.tag-pill:hover { background: rgba(255,255,255,0.09); color: #fff; }
+.tag-pill.tag-pill-active { background: rgba(147,51,234,0.2); border-color: rgba(147,51,234,0.5); color: #c084fc; font-weight: 600; }
+
+/* ===== Sprint 46: Win Streak Badge ===== */
+.win-streak-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; background: linear-gradient(135deg, rgba(251,146,60,0.2), rgba(239,68,68,0.2)); border: 1px solid rgba(251,146,60,0.4); color: #fb923c; font-size: 13px; font-weight: 700; margin: 0 auto 8px; }
+@keyframes streak-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.streak-pulse { animation: streak-pulse 0.4s ease; }
