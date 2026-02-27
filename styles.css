@@ -15818,3 +15818,18 @@ button.active .filter-tab-count {
 .vm-filled.vm-green { background: #4ade80; }
 .vm-filled.vm-yellow { background: #facc15; }
 .vm-filled.vm-red { background: #ef4444; }
+
+/* ══ Sprint 53: Hot/Cold Indicator ══ */
+.hc-badge {
+    display: none; text-align: center; font-size: 0.75rem; font-weight: 600;
+    padding: 4px 10px; border-radius: 12px; margin: 4px auto; max-width: 120px;
+}
+.hc-hot { background: rgba(251,146,60,0.15); color: #fb923c; }
+.hc-cold { background: rgba(96,165,250,0.15); color: #60a5fa; }
+
+/* ══ Sprint 53: Lucky Symbol Tracker ══ */
+.ls-tracker {
+    display: none; text-align: center; font-size: 0.75rem; color: #94a3b8;
+    padding: 3px 0; margin-top: 2px;
+}
+.ls-tracker strong { color: #fbbf24; text-transform: capitalize; }

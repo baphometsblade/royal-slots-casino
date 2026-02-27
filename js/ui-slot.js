@@ -350,6 +350,56 @@
             el.title = 'Volatility: ' + vol;
         }
 
+        // Sprint 53: Hot/Cold indicator
+        var _hcWins = 0;
+        var _hcLosses = 0;
+        function updateHotCold(isWin) {
+            if (isWin) { _hcWins++; _hcLosses = 0; }
+            else { _hcLosses++; _hcWins = 0; }
+            var el = document.getElementById('hcBadge');
+            if (!el) return;
+            if (_hcWins >= 2) {
+                el.innerHTML = '&#x1F525; ' + _hcWins + ' hot';
+                el.className = 'hc-badge hc-hot';
+                el.style.display = '';
+            } else if (_hcLosses >= 3) {
+                el.innerHTML = '&#x2744;&#xFE0F; ' + _hcLosses + ' cold';
+                el.className = 'hc-badge hc-cold';
+                el.style.display = '';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+        function _resetHotCold() {
+            _hcWins = 0; _hcLosses = 0;
+            var el = document.getElementById('hcBadge');
+            if (el) el.style.display = 'none';
+        }
+
+        // Sprint 53: Lucky symbol tracker
+        var _lsSymCounts = {};
+        function trackLuckySymbol(symbols) {
+            if (!symbols || !Array.isArray(symbols)) return;
+            symbols.forEach(function(s) {
+                if (s) _lsSymCounts[s] = (_lsSymCounts[s] || 0) + 1;
+            });
+            var el = document.getElementById('lsTracker');
+            if (!el) return;
+            var best = '', bestN = 0;
+            for (var k in _lsSymCounts) {
+                if (_lsSymCounts[k] > bestN) { best = k; bestN = _lsSymCounts[k]; }
+            }
+            if (best && bestN >= 2) {
+                el.innerHTML = '&#x2B50; Lucky: <strong>' + best.replace(/_/g, ' ') + '</strong> (' + bestN + 'x)';
+                el.style.display = '';
+            }
+        }
+        function _resetLuckySymbol() {
+            _lsSymCounts = {};
+            var el = document.getElementById('lsTracker');
+            if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2154,6 +2204,8 @@
             _resetSpinCounter();
             hideLastWinPreview();
             _stopSessionTimerDisplay();
+            _resetHotCold();
+            _resetLuckySymbol();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

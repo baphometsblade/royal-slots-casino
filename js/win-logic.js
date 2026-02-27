@@ -718,6 +718,11 @@
             // Sprint 48: Increment spin counter
             if (typeof _incrementSpinCounter === 'function') _incrementSpinCounter();
 
+            // Sprint 53: Hot/cold indicator
+            if (typeof updateHotCold === 'function') updateHotCold(winAmount > 0);
+            // Sprint 53: Lucky symbol tracker (wins only)
+            if (winAmount > 0 && typeof trackLuckySymbol === 'function') trackLuckySymbol(symbols);
+
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
 
