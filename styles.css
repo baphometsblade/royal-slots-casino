@@ -16162,3 +16162,22 @@ button.active .filter-tab-count {
     border-top: 1px solid rgba(255,255,255,0.06); margin-top: 16px;
 }
 .lobby-footer span { opacity: 0.8; }
+
+/* ── Sprint 75: Balance Runway ── */
+.bal-runway {
+    position: absolute; top: 214px; left: 14px;
+    font-size: 0.68rem; color: #60a5fa; font-weight: 500;
+    background: rgba(96,165,250,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}
+
+/* ── Sprint 75: Lobby Back-to-Top ── */
+.lobby-btt {
+    position: fixed; bottom: 24px; right: 24px; z-index: 50;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(30,30,40,0.85); color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,0.12);
+    font-size: 1.3rem; cursor: pointer; line-height: 1;
+    backdrop-filter: blur(6px); transition: opacity 0.2s;
+}
+.lobby-btt:hover { background: rgba(50,50,65,0.95); }

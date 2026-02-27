@@ -2755,6 +2755,18 @@ function renderGames() {
             }
         }
 
+        /* ── Sprint 75: Lobby Back-to-Top ──────────────── */
+        (function _initBtt() {
+            var btn = document.getElementById('lobbyBtt');
+            if (!btn) return;
+            window.addEventListener('scroll', function() {
+                btn.style.display = window.scrollY > 400 ? '' : 'none';
+            });
+            btn.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+
         /* ── Sprint 73: Recent Searches ──────────────── */
         var _RS_KEY = 'matrixRecentSearches';
         function _saveRecentSearch(term) {

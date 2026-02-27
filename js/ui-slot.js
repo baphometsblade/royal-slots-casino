@@ -937,6 +937,22 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 75: Balance Runway ── */
+        function updateBalRunway() {
+            var el = document.getElementById('balRunway');
+            if (!el) return;
+            var bet = typeof currentBet !== 'undefined' ? currentBet : 0;
+            var bal = typeof balance !== 'undefined' ? balance : 0;
+            if (bet <= 0) return;
+            var runway = Math.floor(bal / bet);
+            el.textContent = 'Runway: ~' + runway + ' spins';
+            el.style.display = '';
+        }
+        function _resetBalRunway() {
+            var el = document.getElementById('balRunway');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         /* ── Sprint 73: Saved Bet Hint ── */
         var _sbhTimer = null;
         function _showSavedBetHint(betAmount) {
@@ -2173,6 +2189,7 @@
             _startTimeSinceWin();
             _resetBonusCount();
             _initPeakBalance();
+            _resetBalRunway();
             _startSessionTimer();
             _renderQuickSwitch();
             _resetPnlSparkline();
@@ -2807,6 +2824,7 @@
             _stopTimeSinceWin();
             _resetBonusCount();
             _resetPeakBalance();
+            _resetBalRunway();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

@@ -754,6 +754,8 @@
             if (typeof updateTimeSinceWin === 'function') updateTimeSinceWin(winAmount > 0);
             // Sprint 71: Peak balance
             if (typeof updatePeakBalance === 'function') updatePeakBalance();
+            // Sprint 75: Balance runway
+            if (typeof updateBalRunway === 'function') updateBalRunway();
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
