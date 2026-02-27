@@ -292,6 +292,25 @@
             if (el) el.style.display = 'none';
         }
 
+        // Sprint 51: Bet size indicator
+        function updateBetIndicator() {
+            var el = document.getElementById('biLabel');
+            if (!el || !currentGame) return;
+            var min = currentGame.minBet || 1;
+            var max = currentGame.maxBet || 500;
+            var range = max - min;
+            if (range <= 0) { el.textContent = ''; return; }
+            var pct = (currentBet - min) / range;
+            var label, cls;
+            if (currentBet <= min) { label = 'Min'; cls = 'bi-min'; }
+            else if (pct <= 0.25) { label = 'Low'; cls = 'bi-low'; }
+            else if (pct <= 0.6) { label = 'Med'; cls = 'bi-med'; }
+            else if (currentBet >= max) { label = 'Max'; cls = 'bi-max'; }
+            else { label = 'High'; cls = 'bi-high'; }
+            el.textContent = label;
+            el.className = 'bi-label ' + cls;
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -2170,6 +2189,7 @@
                 chip.classList.toggle('bet-chip-active', v === (typeof currentBet !== 'undefined' ? currentBet : -1));
             });
             if (typeof _highlightBetPreset === 'function') _highlightBetPreset();
+            updateBetIndicator();
         }
 
 

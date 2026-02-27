@@ -529,6 +529,8 @@ function renderGames() {
                     if (typeof updateSessionPnlBar === 'function') updateSessionPnlBar();
                     // Games explored counter (Sprint 50)
                     if (typeof renderGamesExplored === 'function') renderGamesExplored();
+                    // Rebuild popularity counts (Sprint 51)
+                    if (typeof _buildPopCounts === 'function') _buildPopCounts();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -1296,6 +1298,7 @@ function renderGames() {
                         ${topTag}
                         ${jackpotBadge}
                         <div class="card-players-live" data-game="${game.id}"> ${_getLiveCount(game.id)} playing</div>
+                        ${typeof getPopBadge === 'function' ? getPopBadge(game.id) : ''}
                         ${(function() { try { var _v = parseFloat(localStorage.getItem('personalBest_' + game.id) || '0'); if (_v > 0) { var _disp = _v >= 1000 ? ('$' + (_v/1000).toFixed(1) + 'K') : ('$' + Math.round(_v)); return '<div class="card-personal-best">\u{1F3C6} PB ' + _disp + '</div>'; } } catch(e) {} return ''; })()}
                         <div class="game-vol-badge ${volClass}" title="Volatility: ${vol}">
                             ${dotsHtml}
@@ -2594,3 +2597,20 @@ function renderGames() {
 
         window.trackGameExplored = trackGameExplored;
         window.renderGamesExplored = renderGamesExplored;
+
+        // Sprint 51: Game popularity badge
+        var _popCounts = {};
+        function _buildPopCounts() {
+            _popCounts = {};
+            try {
+                var recent = JSON.parse(localStorage.getItem(typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'recentlyPlayed') || '[]');
+                recent.forEach(function(id) { _popCounts[id] = (_popCounts[id] || 0) + 1; });
+            } catch(e) {}
+        }
+        function getPopBadge(gameId) {
+            var c = _popCounts[gameId] || 0;
+            if (c >= 5) return '<span class="pop-badge pop-fav" title="Favourite">&#x2764; Fav</span>';
+            if (c >= 3) return '<span class="pop-badge pop-hot" title="Hot">&#x1F525; Hot</span>';
+            return '';
+        }
+        _buildPopCounts();

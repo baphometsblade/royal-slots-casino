@@ -15780,3 +15780,23 @@ button.active .filter-tab-count {
     background: rgba(251,191,36,0.12); border-radius: 4px;
     color: #fbbf24; font-weight: 600; text-transform: capitalize;
 }
+
+/* ══ Sprint 51: Bet Size Indicator ══ */
+.bi-label {
+    display: inline-block; font-size: 0.6rem; font-weight: 700;
+    margin-left: 4px; padding: 1px 5px; border-radius: 4px;
+    vertical-align: middle; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.bi-min, .bi-low { background: rgba(74,222,128,0.15); color: #4ade80; }
+.bi-med { background: rgba(250,204,21,0.15); color: #facc15; }
+.bi-high { background: rgba(251,146,60,0.15); color: #fb923c; }
+.bi-max { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+/* ══ Sprint 51: Game Popularity Badge ══ */
+.pop-badge {
+    position: absolute; top: 6px; right: 6px; z-index: 3;
+    font-size: 0.65rem; font-weight: 700; padding: 2px 6px;
+    border-radius: 6px; pointer-events: none;
+}
+.pop-hot { background: rgba(251,146,60,0.85); color: #fff; }
+.pop-fav { background: rgba(236,72,153,0.85); color: #fff; }
