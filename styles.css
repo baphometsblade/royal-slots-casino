@@ -17181,3 +17181,265 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .srp-value.srp-neg { color: #f87171; }
 .srp-value.srp-hot { color: #fbbf24; }
 .srp-value.srp-grade { color: #818cf8; font-size: 13px; font-weight: 800; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   LOBBY VISUAL OVERHAUL — 2026-02-27
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Game card: richer hover with tag-colour glow ── */
+.game-card {
+  transition: transform 0.22s cubic-bezier(.22,1,.36,1), box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+.game-card:hover {
+  transform: translateY(-8px) scale(1.03) !important;
+  box-shadow: 0 12px 32px rgba(23,145,99,0.35), 0 0 0 1.5px rgba(23,145,99,0.6) !important;
+  border-color: rgba(23,145,99,0.7) !important;
+  z-index: 5;
+}
+.game-card-hot:hover {
+  box-shadow: 0 12px 32px rgba(239,68,68,0.4), 0 0 0 1.5px rgba(239,68,68,0.7) !important;
+  border-color: rgba(239,68,68,0.7) !important;
+}
+.game-card-jackpot:hover {
+  box-shadow: 0 12px 32px rgba(245,158,11,0.4), 0 0 0 1.5px rgba(245,158,11,0.7) !important;
+  border-color: rgba(245,158,11,0.7) !important;
+}
+
+/* ── Thumbnail shimmer sweep on hover ── */
+.game-thumbnail {
+  overflow: hidden;
+  position: relative;
+}
+.game-thumbnail::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: none;
+  pointer-events: none;
+  z-index: 3;
+}
+.game-card:hover .game-thumbnail::after {
+  transform: translateX(100%);
+  transition: transform 0.55s ease;
+}
+
+/* ── Hover overlay: bigger play circle ── */
+.game-hover-overlay .game-play-svg {
+  width: 60px !important;
+  height: 60px !important;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  transition: transform 0.2s ease;
+}
+.game-card:hover .game-play-svg {
+  transform: scale(1.08);
+}
+
+/* ── Section title: coloured left border accent ── */
+.section-title {
+  position: relative;
+  padding-left: 14px !important;
+}
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #17916380, #17916300);
+}
+
+/* ── Filter tab count badge ── */
+.tab-count {
+  display: inline-block;
+  background: rgba(255,255,255,0.12);
+  border-radius: 9px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 4px;
+  color: rgba(255,255,255,0.65);
+  vertical-align: middle;
+  line-height: 14px;
+}
+.filter-tab-active .tab-count {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+/* ── Provider chip count badge ── */
+.chip-count {
+  display: inline-block;
+  background: rgba(255,255,255,0.1);
+  border-radius: 7px;
+  padding: 0px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+  color: rgba(255,255,255,0.55);
+  vertical-align: middle;
+  line-height: 13px;
+}
+.provider-chip-active .chip-count {
+  background: rgba(251,191,36,0.2);
+  color: rgba(251,191,36,0.9);
+}
+
+/* ── Featured Spotlight Strip ── */
+.featured-spotlight {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 0 18px 0;
+  margin-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  display: flex;
+  gap: 12px;
+}
+.featured-spotlight::-webkit-scrollbar { display: none; }
+.featured-spotlight:empty { display: none; }
+
+.featured-card {
+  flex: 0 0 160px;
+  height: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  background-size: cover;
+  background-position: center;
+  background-color: #1a2233;
+}
+.featured-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.5);
+  border-color: rgba(255,255,255,0.25);
+}
+.featured-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+}
+.featured-card-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.featured-badge-jackpot {
+  background: linear-gradient(135deg,#b45309,#fbbf24);
+  color: #fff;
+}
+.featured-badge-hot {
+  background: linear-gradient(135deg,#991b1b,#ef4444);
+  color: #fff;
+}
+.featured-badge-new {
+  background: linear-gradient(135deg,#166534,#22c55e);
+  color: #fff;
+}
+.featured-badge-popular {
+  background: linear-gradient(135deg,#1e40af,#60a5fa);
+  color: #fff;
+}
+.featured-card-name {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 2;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.featured-card-provider {
+  position: absolute;
+  bottom: 26px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 9px;
+  color: rgba(255,255,255,0.55);
+  z-index: 2;
+}
+.featured-card-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 3;
+}
+.featured-card:hover .featured-card-play {
+  opacity: 1;
+}
+.featured-play-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(23,145,99,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.featured-play-circle svg {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
+  margin-left: 2px;
+}
+
+/* ── Section game count badge ── */
+.section-game-count {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: rgba(255,255,255,0.4) !important;
+  background: rgba(255,255,255,0.06) !important;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+  align-self: center;
+}
+
+/* ─ END LOBBY VISUAL OVERHAUL ─ */
+
+/* Lobby overhaul count dedup — hide redundant badges added by prior sprints */
+/* .filter-count (sprint N) is the canonical one; hide .filter-tab-count + .tab-count */
+.filter-tab-count { display: none !important; }
+.tab-count { display: none !important; }
+/* Style the surviving .filter-count to match overhaul design */
+.filter-count {
+  background: rgba(255,255,255,0.12) !important;
+  border-radius: 9px !important;
+  padding: 1px 6px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: rgba(255,255,255,0.65) !important;
+}
+.filter-tab-active .filter-count {
+  background: rgba(255,255,255,0.25) !important;
+  color: #fff !important;
+}

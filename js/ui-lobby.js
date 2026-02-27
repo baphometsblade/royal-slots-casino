@@ -536,6 +536,8 @@ function renderGames() {
                     renderYouMightLike();
                     renderRecommendations(allGamesDiv.parentNode || document.getElementById('lobby') || allGamesDiv);
                     renderBestWins();
+                    if (typeof _injectFilterCounts === 'function') _injectFilterCounts();
+                    if (typeof _renderFeaturedSpotlight === 'function') _renderFeaturedSpotlight();
                     // Slot of the Day — fetch once on first render, timer handles subsequent days
                     if (!gameOfDayId) fetchGameOfDay();
                     else applyGameOfDayBadge();
@@ -2454,3 +2456,142 @@ function updateGamesExploredBadge() {
         };
     })();
 })();
+
+
+/* ═══════════════════════════════════════════════════════════════
+   LOBBY VISUAL OVERHAUL — 2026-02-27
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Inject game-count badges into filter tabs and provider chips */
+function _injectFilterCounts() {
+  if (typeof games === 'undefined') return;
+
+  var _favKey = (typeof STORAGE_KEY_FAVORITES !== 'undefined') ? STORAGE_KEY_FAVORITES : 'favorites';
+  var _counts = { all: games.length, hot: 0, new: 0, jackpot: 0, popular: 0, megaways: 0, favorites: 0 };
+  var _favs = (function() {
+    try { return JSON.parse(localStorage.getItem(_favKey) || '[]'); } catch(e) { return []; }
+  })();
+  games.forEach(function(g) {
+    var tag = (g.tag || '').toLowerCase();
+    if (tag === 'hot')     _counts.hot++;
+    if (tag === 'new')     _counts.new++;
+    if (tag === 'jackpot') _counts.jackpot++;
+    if (tag === 'popular') _counts.popular++;
+    if (g.mechanic === 'megaways') _counts.megaways++;
+    if (_favs.indexOf(g.id) >= 0) _counts.favorites++;
+  });
+
+  document.querySelectorAll('.tab-count').forEach(function(el){el.remove();});
+  document.querySelectorAll('.chip-count').forEach(function(el){el.remove();});
+  document.querySelectorAll('.filter-tab').forEach(function(btn) {
+    var filter = btn.dataset.filter;
+    if (!filter || !(_counts.hasOwnProperty(filter))) return;
+    var badge = btn.querySelector('.tab-count');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'tab-count';
+      btn.appendChild(badge);
+    }
+    badge.textContent = _counts[filter];
+  });
+
+  var _provCounts = {};
+  games.forEach(function(g) {
+    var p = g.provider || 'Unknown';
+    _provCounts[p] = (_provCounts[p] || 0) + 1;
+  });
+  document.querySelectorAll('.provider-chip').forEach(function(chip) {
+    var provider = chip.dataset.provider;
+    if (!provider) return;
+    var n = (provider === 'all') ? games.length : (_provCounts[provider] || 0);
+    if (n === 0) return;
+    var badge = chip.querySelector('.chip-count');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'chip-count';
+      chip.appendChild(badge);
+    }
+    badge.textContent = n;
+  });
+}
+
+/** Render the featured spotlight strip above Top Picks */
+function _renderFeaturedSpotlight() {
+  var container = document.getElementById('featuredSpotlight');
+  if (!container || typeof games === 'undefined') return;
+  container.innerHTML = '';
+
+  // Pick: 2 jackpot, 3 hot, 2 new, 2 popular
+  function pickRandom(arr, n) {
+    return arr.slice().sort(function() { return Math.random() - 0.5; }).slice(0, n);
+  }
+  var jackpots = games.filter(function(g) { return (g.tag||'').toLowerCase() === 'jackpot'; });
+  var hots     = games.filter(function(g) { return (g.tag||'').toLowerCase() === 'hot'; });
+  var news     = games.filter(function(g) { return (g.tag||'').toLowerCase() === 'new'; });
+  var pops     = games.filter(function(g) { return (g.tag||'').toLowerCase() === 'popular'; });
+
+  var featured = pickRandom(jackpots, 2)
+    .concat(pickRandom(hots, 3))
+    .concat(pickRandom(news, 2))
+    .concat(pickRandom(pops, 2))
+    .slice(0, 9);
+
+  if (!featured.length) return;
+
+  featured.forEach(function(game) {
+    var tag = (game.tag || '').toLowerCase();
+    var badgeClass = tag === 'jackpot' ? 'featured-badge-jackpot'
+                   : tag === 'hot'     ? 'featured-badge-hot'
+                   : tag === 'new'     ? 'featured-badge-new'
+                                       : 'featured-badge-popular';
+    var badgeLabel = tag === 'jackpot' ? '💰 JACKPOT'
+                   : tag === 'hot'     ? '🔥 HOT'
+                   : tag === 'new'     ? '✨ NEW'
+                                       : '🤝 POPULAR';
+
+    var card = document.createElement('div');
+    card.className = 'featured-card';
+    card.style.backgroundImage = 'url(\'assets/thumbnails/' + game.id + '.png\')';
+    card.setAttribute('data-game-id', game.id);
+    card.title = game.name;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'featured-card-overlay';
+
+    var badge = document.createElement('div');
+    badge.className = 'featured-card-badge ' + badgeClass;
+    badge.textContent = badgeLabel;
+
+    var playDiv = document.createElement('div');
+    playDiv.className = 'featured-card-play';
+    var circle = document.createElement('div');
+    circle.className = 'featured-play-circle';
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 24 24');
+    var poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points','5,3 19,12 5,21');
+    svg.appendChild(poly);
+    circle.appendChild(svg);
+    playDiv.appendChild(circle);
+
+    var nameEl = document.createElement('div');
+    nameEl.className = 'featured-card-name';
+    nameEl.textContent = game.name;
+
+    var provEl = document.createElement('div');
+    provEl.className = 'featured-card-provider';
+    provEl.textContent = game.provider || '';
+
+    card.appendChild(overlay);
+    card.appendChild(badge);
+    card.appendChild(playDiv);
+    card.appendChild(nameEl);
+    card.appendChild(provEl);
+    card.onclick = function() {
+      if (typeof openSlot === 'function') openSlot(game.id);
+    };
+    container.appendChild(card);
+  });
+}
+
+/* ─ END LOBBY VISUAL OVERHAUL ─ */
