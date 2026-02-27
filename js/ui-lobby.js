@@ -2393,3 +2393,64 @@ function updateGamesExploredBadge() {
         badge.style.display = '';
     } catch(e) { badge.style.display = 'none'; }
 }
+
+
+// ===== Sprint 51/54/56: Lobby Card Extra Badges =====
+(function() {
+    function _addLobbyCardBadges() {
+        if (typeof GAMES === 'undefined') return;
+        var playedMap = {};
+        try {
+            var raw = localStorage.getItem('casinoSpinHistory');
+            if (raw) JSON.parse(raw).forEach(function(h) {
+                if (h.gameId) playedMap[h.gameId] = (playedMap[h.gameId] || 0) + 1;
+            });
+        } catch(e) {}
+
+        document.querySelectorAll('.game-card[data-game-id]').forEach(function(card) {
+            var gameId = card.dataset.gameId;
+            var game = GAMES.find(function(g) { return (g.id || '').toLowerCase() === gameId; });
+            if (!game) return;
+
+            // Remove stale badges from previous renders
+            card.querySelectorAll('.lb51-badge,.lb54-badge,.lb56-badge').forEach(function(b) { b.remove(); });
+
+            // Sprint 51: Popularity badge (10+ plays)
+            var plays = playedMap[game.id] || 0;
+            if (plays >= 10) {
+                var pb = document.createElement('span');
+                var popCls = plays >= 100 ? 'lb51-mega' : plays >= 50 ? 'lb51-fan' : 'lb51-regular';
+                pb.className = 'lobby-badge lb51-badge ' + popCls;
+                pb.textContent = plays >= 100 ? '\u2B50 Fave' : plays >= 50 ? '\u2665 Fan' : '\u25B6 ' + plays + 'x';
+                card.appendChild(pb);
+            }
+
+            // Sprint 54: Difficulty badge
+            var volMap = { low: ['Easy','lb54-easy'], medium: ['Med','lb54-med'], 'medium-high': ['Med+','lb54-medhard'], high: ['Hard','lb54-hard'], 'very-high': ['Expert','lb54-expert'] };
+            var vd = volMap[game.volatility || 'medium'] || ['Med','lb54-med'];
+            var db = document.createElement('span');
+            db.className = 'lobby-badge lb54-badge ' + vd[1];
+            db.textContent = vd[0];
+            card.appendChild(db);
+
+            // Sprint 56: Category badge
+            var cat = game.category || game.gameType || '';
+            if (cat) {
+                var cb = document.createElement('span');
+                cb.className = 'lobby-badge lb56-badge';
+                cb.textContent = String(cat).charAt(0).toUpperCase() + String(cat).slice(1).replace(/-/g,' ');
+                card.appendChild(cb);
+            }
+        });
+    }
+
+    // Hook into renderGames chain (append-only, safe for multiple hooks)
+    (function() {
+        var _prevRG56 = typeof renderGames === 'function' ? renderGames : null;
+        if (!_prevRG56) return;
+        renderGames = function() {
+            _prevRG56.apply(this, arguments);
+            setTimeout(_addLobbyCardBadges, 50);
+        };
+    })();
+})();

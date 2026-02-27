@@ -508,6 +508,8 @@
     <!-- Slot Machine Modal — Pragmatic Play Style -->
     <div class="modal" id="slotModal">
         <div class="modal-content slot-modal-fullscreen">
+            <!-- Sprint 58: Keyboard Hints -->
+            <div class="kb-hints" id="kbHints" style="display:none"><kbd>Space</kbd> Spin &nbsp; <kbd>Esc</kbd> Close &nbsp; <kbd>T</kbd> Turbo &nbsp; <kbd>A</kbd> Auto &nbsp; <kbd>?</kbd> Help</div>
 
             <!-- Feature Popup Overlay -->
             <div id="slotFeaturePopup" class="feature-popup-overlay" style="display:none;">
@@ -580,6 +582,14 @@
                     <button class="slot-goal-btn" id="goalBtn" onclick="if(typeof openWinGoal==='function')openWinGoal()" title="Set win goal">🎯 Goal</button>
                     <!-- Sprint 47: Ambient Sound Toggle -->
                     <button class="slot-ambient-btn" id="ambientToggleBtn" onclick="if(typeof toggleAmbientSlot==='function')toggleAmbientSlot()" title="Toggle ambient music">🎵</button>
+                    <!-- Sprint 52: Volatility Meter -->
+                    <div class="vm-meter" id="vmMeter" style="display:none"><span class="vm-seg" id="vmS1"></span><span class="vm-seg" id="vmS2"></span><span class="vm-seg" id="vmS3"></span><span class="vm-seg" id="vmS4"></span><span class="vm-seg" id="vmS5"></span></div>
+                    <!-- Sprint 52: Session Timer -->
+                    <span class="st-timer" id="stTimer" style="display:none">0:00</span>
+                    <!-- Sprint 57: Game Nav -->
+                    <button class="gs-nav-btn" id="gsNavPrev" onclick="if(typeof _gsNavTo==='function')_gsNavTo(-1)" title="Previous game">&lsaquo;</button><button class="gs-nav-btn" id="gsNavNext" onclick="if(typeof _gsNavTo==='function')_gsNavTo(1)" title="Next game">&rsaquo;</button>
+                    <!-- Sprint 55: Volume Quick-Slider -->
+                    <input type="range" class="qv-slider" id="qvSlider" min="0" max="100" value="50" oninput="if(typeof _qvSliderInput==='function')_qvSliderInput(this.value)" title="Volume">
                 </div>
             </div>
 
@@ -633,6 +643,9 @@
                 <span class="lwp-symbols" id="lwpSymbols"></span>
             </div>
 
+            <!-- Sprint 53: Lucky Symbol Tracker -->
+            <div class="ls-tracker" id="lsTracker" style="display:none">Lucky: <span id="lsSymbol"></span></div>
+
             <!-- Sprint 33: Streak Indicator + Bet Presets -->
             <div class="slot-quickfire-strip" id="slotQuickfireStrip" style="display:none">
                 <div class="streak-indicator" id="streakIndicator">
@@ -653,6 +666,8 @@
                 <div class="slot-bar-section slot-bar-balance">
                     <div class="slot-bar-label">BALANCE</div>
                     <div class="slot-bar-value">$<span id="slotBalance">5000.00</span></div>
+                    <!-- Sprint 56: Win Rate Display -->
+                    <span class="wr-display" id="wrDisplay" style="display:none"></span>
                     <!-- Sprint 44: P&L Sparkline -->
                     <svg class="pnl-sparkline" id="pnlSparkline" width="80" height="22" viewBox="0 0 80 22" style="display:none"><polyline id="pnlLine" points="" fill="none" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
                     <!-- Sprint 42: Win Goal Tracker -->
@@ -676,6 +691,12 @@
                     <button class="slot-bet-btn bet-x2-btn" onclick="doubleBet()" title="Double bet">2×</button>
                     <button class="slot-bet-btn bet-half-btn" onclick="halveBet()" title="Halve bet">½</button>
                 </div>
+                <!-- Sprint 51: Bet Size Indicator -->
+                <span class="bet-indicator" id="betIndicator" style="display:none">Med</span>
+                <!-- Sprint 55: Bet History Chart -->
+                <svg class="bh-chart" id="bhChart" width="60" height="20" style="display:none"><polyline id="bhLine" points="" fill="none" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <!-- Sprint 57: Avg Bet -->
+                <span class="ab-display" id="abDisplay" style="display:none"></span>
                 <!-- Sprint 40: Bankroll Progress Bar -->
                 <div class="bankroll-bar-row" id="bankrollBarRow" style="display:none">
                     <div class="bankroll-bar-wrap"><div class="bankroll-bar" id="bankrollBar" style="width:0%"></div></div>
@@ -691,8 +712,14 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z"/></svg>
                 </button>
 
+                <!-- Sprint 53: Hot/Cold Indicator -->
+                <div class="hc-badge" id="hcBadge" style="display:none"></div>
+
                 <!-- Sprint 48: Spin Counter Badge -->
                 <div class="spin-counter-badge" id="spinCounterBadge">0</div>
+
+                <!-- Sprint 54: Autoplay Progress -->
+                <div class="ap-progress" id="apProgress" style="display:none"></div>
 
                 <!-- Sprint 46: Win Streak Badge -->
                 <div class="win-streak-badge" id="winStreakBadge" style="display:none">

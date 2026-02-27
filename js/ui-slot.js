@@ -1508,6 +1508,16 @@
                 _recordGameExplored(currentGame && currentGame.id);
                 // Sprint 50 — clear last win preview
                 _clearLastWinPreview();
+                // Sprint 51-58 inits
+                _updateBetIndicator();   // 51 — bet label
+                _initVolatilityMeter();  // 52 — volatility meter
+                _startStTimer();         // 52 — session timer
+                _resetHotCold();         // 53 — hot/cold badge
+                _resetLuckySymbol();     // 53 — lucky symbol
+                _clearApProgress();      // 54 — auto-play progress
+                _initBhChart();          // 55 — bet history chart
+                _resetWinRate();         // 56 — win rate display
+                _initAvgBet();           // 57 — average bet
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1791,6 +1801,10 @@
             // Sprint 48+50 — reset spin counter + clear last win on close
             _resetSpinCounter();
             _clearLastWinPreview();
+            // Sprint 52/54/58 — stop timer, clear progress, hide hints
+            _stopStTimer();
+            _clearApProgress();
+            _hideKbHints();
             // Sprint 41 — hide quick switch
             var _qss = document.getElementById('quickSwitchStrip'); if (_qss) _qss.style.display = 'none';
             // Sprint 37 — clean up demo mode if active
@@ -2240,6 +2254,9 @@
             spinning = true;
             _incrementSpinCounter(); // Sprint 48
             _clearLastWinPreview();  // Sprint 50 — clear on new spin
+            _updateBhChart(currentBet);  // Sprint 55 — bet history
+            _updateAvgBet(currentBet);   // Sprint 57 — avg bet
+            _checkBalanceMilestone();    // Sprint 58 — balance milestones
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
@@ -2895,6 +2912,7 @@
                 if (typeof _updateSparkline === 'function') _updateSparkline(balance);
                 if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
                 _showLastWinPreview(currentGrid); // Sprint 50
+                _updateLuckySymbol(currentGrid); // Sprint 53 — lucky symbol
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3029,6 +3047,9 @@
             if (typeof recordSpinHistory === 'function' && winAmount <= 0) recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: 0, mult: 0 });
             if (winAmount <= 0) _demoOnSpinEnd();
             if (winAmount <= 0 && typeof _resetStreak === 'function') _resetStreak();
+            _updateHotCold(winAmount > 0); // Sprint 53
+            _updateWinRate(winAmount > 0); // Sprint 56
+            _updateApProgress();           // Sprint 54
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -6421,6 +6442,7 @@
                 if (typeof _updateSparkline === 'function') _updateSparkline(balance);
                 if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
                 _showLastWinPreview(currentGrid); // Sprint 50
+                _updateLuckySymbol(currentGrid); // Sprint 53 — lucky symbol
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6520,6 +6542,9 @@
             if (typeof recordSpinHistory === 'function' && winAmount <= 0) recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: 0, mult: 0 });
             if (winAmount <= 0) _demoOnSpinEnd();
             if (winAmount <= 0 && typeof _resetStreak === 'function') _resetStreak();
+            _updateHotCold(winAmount > 0); // Sprint 53
+            _updateWinRate(winAmount > 0); // Sprint 56
+            _updateApProgress();           // Sprint 54
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -10121,4 +10146,299 @@
             var wrap = document.getElementById('lastWinPreview');
             if (wrap) wrap.style.display = 'none';
         }
-
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 51: Bet Indicator (Min/Low/Med/High/Max label)
+        // ═══════════════════════════════════════════════════════
+        function _updateBetIndicator() {
+            var el = document.getElementById('betIndicator');
+            if (!el) return;
+            var game = currentGame || {};
+            var bets = (game.betOptions && game.betOptions.length)
+                ? game.betOptions
+                : [0.10, 0.25, 0.50, 1.00, 2.00, 5.00];
+            var min = bets[0];
+            var max = bets[bets.length - 1];
+            var range = max - min || 1;
+            var pct = (currentBet - min) / range;
+            var label;
+            if (pct <= 0.1) label = 'Min';
+            else if (pct <= 0.35) label = 'Low';
+            else if (pct <= 0.65) label = 'Med';
+            else if (pct <= 0.9) label = 'High';
+            else label = 'Max';
+            el.textContent = label;
+            el.style.display = '';
+            el.className = 'bet-indicator bet-' + label.toLowerCase();
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 52: Volatility Meter + Session Timer
+        // ═══════════════════════════════════════════════════════
+        var _stInterval = null;
+        var _stStartTime = 0;
+
+        function _initVolatilityMeter() {
+            var wrap = document.getElementById('vmMeter');
+            if (!wrap) return;
+            var game = currentGame || {};
+            var vol = game.volatility || 'medium';
+            var levels = { low: 1, medium: 2, 'medium-high': 3, high: 4, 'very-high': 5 };
+            var fill = levels[vol] || 2;
+            for (var i = 1; i <= 5; i++) {
+                var seg = document.getElementById('vmS' + i);
+                if (seg) {
+                    seg.className = 'vm-seg' + (i <= fill ? ' vm-filled vm-lv' + fill : '');
+                }
+            }
+            wrap.style.display = '';
+        }
+
+        function _startStTimer() {
+            _stStartTime = Date.now();
+            _stopStTimer();
+            var el = document.getElementById('stTimer');
+            if (!el) return;
+            el.style.display = '';
+            el.textContent = '0:00';
+            _stInterval = setInterval(function() {
+                var secs = Math.floor((Date.now() - _stStartTime) / 1000);
+                var m = Math.floor(secs / 60);
+                var s = secs % 60;
+                el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+            }, 1000);
+        }
+
+        function _stopStTimer() {
+            if (_stInterval) { clearInterval(_stInterval); _stInterval = null; }
+            var el = document.getElementById('stTimer');
+            if (el) el.style.display = 'none';
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 53: Hot/Cold Badge + Lucky Symbol Tracker
+        // ═══════════════════════════════════════════════════════
+        var _hcWins = 0;
+        var _hcLosses = 0;
+        var _lsSymbols = {};
+
+        function _resetHotCold() {
+            _hcWins = 0; _hcLosses = 0;
+            var el = document.getElementById('hcBadge');
+            if (el) el.style.display = 'none';
+        }
+
+        function _updateHotCold(won) {
+            if (won) _hcWins++; else _hcLosses++;
+            var total = _hcWins + _hcLosses;
+            if (total < 5) return;
+            var el = document.getElementById('hcBadge');
+            if (!el) return;
+            var ratio = _hcWins / total;
+            if (ratio >= 0.4) {
+                el.textContent = '🔥 Hot';
+                el.className = 'hc-badge hc-hot';
+            } else {
+                el.textContent = '❄️ Cold';
+                el.className = 'hc-badge hc-cold';
+            }
+            el.style.display = '';
+        }
+
+        function _resetLuckySymbol() {
+            _lsSymbols = {};
+            var wrap = document.getElementById('lsTracker');
+            if (wrap) wrap.style.display = 'none';
+        }
+
+        function _updateLuckySymbol(grid) {
+            if (!grid) return;
+            for (var c = 0; c < grid.length; c++) {
+                for (var r = 0; r < (grid[c] || []).length; r++) {
+                    var sym = grid[c][r];
+                    if (sym) _lsSymbols[sym] = (_lsSymbols[sym] || 0) + 1;
+                }
+            }
+            var best = null, bestCount = 0;
+            Object.keys(_lsSymbols).forEach(function(k) {
+                if (_lsSymbols[k] > bestCount) { bestCount = _lsSymbols[k]; best = k; }
+            });
+            if (!best) return;
+            var wrap = document.getElementById('lsTracker');
+            var symEl = document.getElementById('lsSymbol');
+            if (!wrap || !symEl) return;
+            symEl.textContent = best;
+            wrap.style.display = '';
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 54: Auto-Play Progress Bar
+        // ═══════════════════════════════════════════════════════
+        function _updateApProgress() {
+            var el = document.getElementById('apProgress');
+            if (!el) return;
+            if (!autoSpinActive || autoSpinMax <= 0) { el.style.display = 'none'; return; }
+            var done = autoSpinMax - autoSpinCount;
+            var pct = Math.min(100, Math.round((done / autoSpinMax) * 100));
+            el.style.display = '';
+            el.style.setProperty('--ap-pct', pct + '%');
+            el.setAttribute('title', done + '/' + autoSpinMax + ' auto spins done');
+        }
+
+        function _clearApProgress() {
+            var el = document.getElementById('apProgress');
+            if (el) el.style.display = 'none';
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 55: Quick Volume Slider + Bet History Sparkline
+        // ═══════════════════════════════════════════════════════
+        var _bhData = [];
+        var BH_MAX_POINTS = 20;
+
+        function _qvSliderInput(val) {
+            var v = parseInt(val, 10);
+            if (isNaN(v)) return;
+            if (typeof SoundManager !== 'undefined' && SoundManager.setVolume) {
+                SoundManager.setVolume(v / 100);
+            }
+            if (appSettings) { appSettings.volume = v; saveSettings(); }
+        }
+
+        function _initBhChart() {
+            _bhData = [];
+            var line = document.getElementById('bhLine');
+            var chart = document.getElementById('bhChart');
+            if (line) line.setAttribute('points', '');
+            if (chart) chart.style.display = 'none';
+        }
+
+        function _updateBhChart(bet) {
+            _bhData.push(bet);
+            if (_bhData.length > BH_MAX_POINTS) _bhData.shift();
+            var chart = document.getElementById('bhChart');
+            var line = document.getElementById('bhLine');
+            if (!chart || !line || _bhData.length < 2) return;
+            chart.style.display = '';
+            var W = 60, H = 20;
+            var mn = Math.min.apply(null, _bhData);
+            var mx = Math.max.apply(null, _bhData);
+            var range = mx - mn || 1;
+            var pts = _bhData.map(function(b, i) {
+                var x = (i / (_bhData.length - 1)) * W;
+                var y = H - ((b - mn) / range) * (H - 2) - 1;
+                return x.toFixed(1) + ',' + y.toFixed(1);
+            });
+            line.setAttribute('points', pts.join(' '));
+            var accent = (currentGame && currentGame.accentColor) ? currentGame.accentColor : '#00e5ff';
+            line.setAttribute('stroke', accent);
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 56: Win Rate Display
+        // ═══════════════════════════════════════════════════════
+        var _wrWins = 0;
+        var _wrTotal = 0;
+
+        function _resetWinRate() {
+            _wrWins = 0; _wrTotal = 0;
+            var el = document.getElementById('wrDisplay');
+            if (el) el.style.display = 'none';
+        }
+
+        function _updateWinRate(won) {
+            _wrTotal++;
+            if (won) _wrWins++;
+            var el = document.getElementById('wrDisplay');
+            if (!el || _wrTotal < 3) return;
+            var pct = Math.round((_wrWins / _wrTotal) * 100);
+            el.textContent = pct + '%';
+            el.style.display = '';
+            el.className = 'wr-display' + (pct >= 40 ? ' wr-good' : ' wr-low');
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 57: Average Bet Display + Game Switcher Nav
+        // ═══════════════════════════════════════════════════════
+        var _avgBetSum = 0;
+        var _avgBetCount = 0;
+
+        function _initAvgBet() {
+            _avgBetSum = 0; _avgBetCount = 0;
+            var el = document.getElementById('abDisplay');
+            if (el) el.style.display = 'none';
+        }
+
+        function _updateAvgBet(bet) {
+            _avgBetSum += bet;
+            _avgBetCount++;
+            var el = document.getElementById('abDisplay');
+            if (!el || _avgBetCount < 2) return;
+            var avg = _avgBetSum / _avgBetCount;
+            el.textContent = 'Avg $' + avg.toFixed(2);
+            el.style.display = '';
+        }
+
+        function _gsNavTo(dir) {
+            if (!currentGame) return;
+            var filtered = (typeof GAMES !== 'undefined') ? GAMES : [];
+            if (!filtered.length) return;
+            var idx = -1;
+            for (var i = 0; i < filtered.length; i++) {
+                if (filtered[i].id === currentGame.id) { idx = i; break; }
+            }
+            if (idx === -1) return;
+            var next = filtered[(idx + dir + filtered.length) % filtered.length];
+            if (next && next.id && typeof openSlot === 'function') {
+                closeSlot();
+                setTimeout(function() { openSlot(next.id); }, 200);
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 58: Keyboard Hints + Balance Milestone Toast
+        // ═══════════════════════════════════════════════════════
+        var _lastMilestone = 0;
+        var _kbHintsVisible = false;
+
+        function _showKbHints() {
+            var el = document.getElementById('kbHints');
+            if (!el) return;
+            _kbHintsVisible = true;
+            el.style.display = '';
+            el.classList.add('kb-visible');
+        }
+
+        function _hideKbHints() {
+            var el = document.getElementById('kbHints');
+            if (!el) return;
+            _kbHintsVisible = false;
+            el.style.display = 'none';
+            el.classList.remove('kb-visible');
+        }
+
+        function _toggleKbHints() {
+            if (_kbHintsVisible) _hideKbHints(); else _showKbHints();
+        }
+        window._toggleHotkeySheet = _toggleKbHints;
+
+        function _checkBalanceMilestone() {
+            var milestones = [100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000];
+            for (var i = milestones.length - 1; i >= 0; i--) {
+                var m = milestones[i];
+                if (balance >= m && _lastMilestone < m) {
+                    _lastMilestone = m;
+                    if (typeof showMessage === 'function') {
+                        showMessage('Balance milestone: $' + m.toLocaleString() + '!', 'win');
+                    }
+                    break;
+                }
+            }
+        }
