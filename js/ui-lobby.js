@@ -5,7 +5,7 @@
         // Module-level search state — persists across filter tab switches
         let lobbySearchQuery = '';
         let currentMechanicFilter = 'all'; // 'all' | 'tumble' | 'hold_win' | 'free_spins' | 'wilds' | 'jackpot'
-        let currentSortMode = 'default';    // 'default' | 'vol_asc' | 'vol_desc'
+        let currentSortMode = 'default';    // 'default' | 'az' | 'za' | 'rtp' | 'vol_asc' | 'vol_desc'
         let searchQuery = '';                      // real-time game search (compound with other filters)
         let _lobbySearchQuery = '';                // hide/show search query (Sprint 18 search bar)
 
@@ -1290,6 +1290,7 @@ function renderGames() {
                         </div>
                         <div class="game-hover-overlay">
                             <svg class="game-play-svg" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" fill="rgba(23,145,99,0.9)" stroke="rgba(86,210,160,0.6)" stroke-width="2"/><polygon points="19,14 19,34 35,24" fill="#fff"/></svg>
+                            <button class="demo-try-btn" onclick="event.stopPropagation(); openSlot('${game.id}', {demo:true});" title="Try 3 free demo spins">DEMO</button>
                             ${metaPills ? `<div class="game-hover-pills">${metaPills}</div>` : ''}
                             ${shortDesc}
                         </div>
@@ -1395,7 +1396,13 @@ function renderGames() {
                 list = list.filter(function(g) { return g.name.toLowerCase().includes(_sq); });
             }
             // Apply sort
-            if (currentSortMode === 'vol_asc') {
+            if (currentSortMode === 'az') {
+                list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+            } else if (currentSortMode === 'za') {
+                list = [...list].sort((a, b) => b.name.localeCompare(a.name));
+            } else if (currentSortMode === 'rtp') {
+                list = [...list].sort((a, b) => (b.rtp || 0) - (a.rtp || 0));
+            } else if (currentSortMode === 'vol_asc') {
                 list = [...list].sort((a, b) => _getVolatility(a) - _getVolatility(b));
             } else if (currentSortMode === 'vol_desc') {
                 list = [...list].sort((a, b) => _getVolatility(b) - _getVolatility(a));
@@ -1426,6 +1433,18 @@ function renderGames() {
             document.querySelectorAll('.sort-btn').forEach(b => {
                 b.classList.toggle('sort-btn-active', b.dataset.sort === mode);
             });
+            // Sync dropdown if present
+            var sortSel = document.getElementById('gameSortSelect');
+            if (sortSel) {
+                var map = { default: 'popular', az: 'az', za: 'za', rtp: 'rtp', vol_asc: 'vol-low', vol_desc: 'vol-high' };
+                sortSel.value = map[mode] || 'popular';
+            }
+            renderFilteredGames();
+        }
+
+        function sortGamesBy(val) {
+            var map = { popular: 'default', az: 'az', za: 'za', rtp: 'rtp', 'vol-high': 'vol_desc', 'vol-low': 'vol_asc' };
+            currentSortMode = map[val] || 'default';
             renderFilteredGames();
         }
 

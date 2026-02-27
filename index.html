@@ -208,6 +208,14 @@
             <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
             <input type="text" class="game-search-input" id="gameSearchInput" placeholder="Search 80+ games..." oninput="filterGamesBySearch(this.value)" aria-label="Search all games">
             <button class="search-clear-btn" id="searchClearBtn" onclick="clearGameSearch()" style="display:none;">&times;</button>
+            <select class="game-sort-select" id="gameSortSelect" onchange="sortGamesBy(this.value)" aria-label="Sort games">
+                <option value="popular">Popular</option>
+                <option value="az">A-Z</option>
+                <option value="za">Z-A</option>
+                <option value="rtp">Highest RTP</option>
+                <option value="vol-high">Most Volatile</option>
+                <option value="vol-low">Least Volatile</option>
+            </select>
         </div>
 
         <!-- Leaderboard -->
@@ -476,6 +484,22 @@
                     <div class="slot-payout">
                         <div class="payout-label">MAX WIN</div>
                         <div class="payout-value"><span id="slotMaxPayout">150</span>x</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Demo Mode Banner -->
+            <div class="demo-banner" id="demoBanner" style="display:none;">
+                <span class="demo-banner-icon">🎮</span>
+                <span class="demo-banner-text">DEMO MODE — <span id="demoSpinsLeft">3</span> spins remaining</span>
+            </div>
+            <!-- Demo Over Prompt -->
+            <div class="demo-over-prompt" id="demoOverPrompt" style="display:none;">
+                <div class="demo-over-card">
+                    <div class="demo-over-title">Demo Complete!</div>
+                    <div class="demo-over-sub">Ready to play for real?</div>
+                    <div class="demo-over-btns">
+                        <button class="demo-play-btn" onclick="switchDemoToReal()">Play for Real</button>
+                        <button class="demo-close-btn" onclick="closeSlot()">Back to Lobby</button>
                     </div>
                 </div>
             </div>

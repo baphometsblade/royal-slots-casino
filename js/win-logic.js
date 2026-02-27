@@ -732,6 +732,9 @@
                 return;
             }
 
+            // ── Demo mode: count down spins ──
+            if (typeof _handleDemoSpinEnd === 'function') _handleDemoSpinEnd();
+
             // ── Process free spin advancement ──
             if (freeSpinsActive) {
                 advanceFreeSpins(game);

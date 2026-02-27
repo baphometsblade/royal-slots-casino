@@ -38,11 +38,13 @@
 
 
         function saveBalance() {
+            if (typeof _demoMode !== 'undefined' && _demoMode) return;
             localStorage.setItem(STORAGE_KEY_BALANCE, balance.toString());
         }
 
 
         function saveStats() {
+            if (typeof _demoMode !== 'undefined' && _demoMode) return;
             localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(stats));
         }
 

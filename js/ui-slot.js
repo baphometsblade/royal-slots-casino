@@ -2,6 +2,42 @@
 // UI-SLOT MODULE
 // ═══════════════════════════════════════════════════════
 
+        // ── Demo Mode State ────────────────────────────────────
+        let _demoMode = false;
+        let _demoSpinsLeft = 0;
+        let _demoBalance = 0;
+        let _realBalanceBackup = 0;
+
+        function _handleDemoSpinEnd() {
+            if (!_demoMode) return;
+            _demoSpinsLeft--;
+            var _dsl = document.getElementById('demoSpinsLeft');
+            if (_dsl) _dsl.textContent = String(Math.max(0, _demoSpinsLeft));
+            if (_demoSpinsLeft <= 0) {
+                setTimeout(function() {
+                    var p = document.getElementById('demoOverPrompt');
+                    if (p) p.style.display = 'flex';
+                }, 1200);
+            }
+        }
+
+        function switchDemoToReal() {
+            var p = document.getElementById('demoOverPrompt');
+            if (p) p.style.display = 'none';
+            var b = document.getElementById('demoBanner');
+            if (b) b.style.display = 'none';
+            _demoMode = false;
+            balance = _realBalanceBackup;
+            updateBalance();
+        }
+
+        function _exitDemoMode() {
+            if (!_demoMode) return;
+            _demoMode = false;
+            balance = _realBalanceBackup;
+            updateBalance();
+        }
+
         // ── Spin History State ──────────────────────────────────
         let spinHistory = []; // [{win, bet, isNearMiss, timestamp}, ...]
         // Session stats tracking (reset each time a new game opens)
@@ -1104,9 +1140,29 @@
             }, 12000);
         }
 
-        function openSlot(gameId) {
+        function openSlot(gameId, opts) {
             currentGame = games.find(g => g.id === gameId);
             if (!currentGame) return;
+
+            // Demo mode setup
+            var isDemo = opts && opts.demo;
+            _demoMode = !!isDemo;
+            _demoSpinsLeft = isDemo ? 3 : 0;
+            if (isDemo) {
+                _realBalanceBackup = balance;
+                _demoBalance = 10000;
+                balance = _demoBalance;
+                updateBalance();
+            }
+            // Show/hide demo banner
+            var _demoBanner = document.getElementById('demoBanner');
+            if (_demoBanner) {
+                _demoBanner.style.display = isDemo ? 'flex' : 'none';
+                var _dsl = document.getElementById('demoSpinsLeft');
+                if (_dsl) _dsl.textContent = '3';
+            }
+            var _demoPrompt = document.getElementById('demoOverPrompt');
+            if (_demoPrompt) _demoPrompt.style.display = 'none';
 
             // Reset spin history for the new game session
             spinHistory = [];
@@ -1703,6 +1759,8 @@
                 showMessage('Free spins in progress! Wait for them to finish.', 'lose');
                 return;
             }
+            // Restore real balance if closing during demo mode
+            _exitDemoMode();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
@@ -2148,6 +2206,11 @@
         async function spin() {
             if (spinning || !currentGame) return;
             if (freeSpinsActive) return;
+            if (_demoMode && _demoSpinsLeft <= 0) {
+                var p = document.getElementById('demoOverPrompt');
+                if (p) p.style.display = 'flex';
+                return;
+            }
             if (currentBet > balance) {
                 showMessage('Insufficient balance. Deposit funds to continue.', 'lose');
                 return;
@@ -2188,7 +2251,7 @@
 
             const spinGame = currentGame;
             const cols = getGridCols(spinGame);
-            const useServerSpin = canUseServerSpin(spinGame);
+            const useServerSpin = _demoMode ? false : canUseServerSpin(spinGame);
 
             // Start reel strip scrolling animation (real rolling)
             startReelScrolling(turboMode);
@@ -2217,7 +2280,7 @@
                     finalGrid = generateSpinResult(spinGame);
                     balance -= currentBet;
                     updateBalance();
-                    saveBalance();
+                    if (!_demoMode) saveBalance();
                 }
             } catch (error) {
                 stopReelScrollingImmediately();

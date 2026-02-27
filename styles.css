@@ -15088,3 +15088,118 @@ button.active .filter-tab-count {
     color: #94a3b8;
     margin-top: 6px;
 }
+
+/* ==================== Sprint 37: Game Sort Dropdown ==================== */
+.game-sort-select {
+    padding: 7px 28px 7px 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    color: #fff;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 110px;
+}
+.game-sort-select option { background: #1a1a2e; color: #fff; }
+
+/* ==================== Sprint 37: Demo Try Button ==================== */
+.demo-try-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    background: rgba(0,0,0,0.5);
+    color: #4ade80;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    z-index: 2;
+}
+.demo-try-btn:hover {
+    background: rgba(74, 222, 128, 0.2);
+    border-color: #4ade80;
+    transform: scale(1.05);
+}
+
+/* ==================== Sprint 37: Demo Mode Banner ==================== */
+.demo-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(90deg, rgba(74,222,128,0.15), rgba(74,222,128,0.05));
+    border-bottom: 1px solid rgba(74,222,128,0.3);
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4ade80;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.demo-banner-icon { font-size: 16px; }
+
+/* ==================== Sprint 37: Demo Over Prompt ==================== */
+.demo-over-prompt {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+.demo-over-card {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 16px;
+    padding: 32px 40px;
+    text-align: center;
+    border: 1px solid rgba(74,222,128,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.demo-over-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #4ade80;
+    margin-bottom: 8px;
+}
+.demo-over-sub {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+.demo-over-btns { display: flex; gap: 12px; justify-content: center; }
+.demo-play-btn {
+    padding: 10px 28px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: #1a1a2e;
+    transition: all 0.3s;
+}
+.demo-play-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(74,222,128,0.3); }
+.demo-close-btn {
+    padding: 10px 28px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #94a3b8;
+    transition: all 0.3s;
+}
+.demo-close-btn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
