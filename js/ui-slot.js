@@ -1582,6 +1582,14 @@
         _resetMultHistory();      // 128 — mult history
         _resetBetEfficiency();    // 129 — bet efficiency
         _resetLuckyStreakFire();  // 130 — lucky streak fire
+        _resetScatterHunt();      // 131 — scatter hunt meter
+        _resetVarianceBadge();    // 132 — variance badge
+        _resetSpinCostTotal();    // 133 — spin cost total
+        _resetWinTrend();         // 134 — win trend
+        _resetHotColdIndicator(); // 135 — hot/cold
+        _resetWinLossRatio();     // 136 — win/loss ratio
+        _resetAvgBetBadge();      // 137 — avg bet
+        _resetSessionBigWin();    // 138 — session big win
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -3040,6 +3048,14 @@
                 _addMultHistory(winAmount, currentBet); // 128 — mult history
                 _updateBetEfficiency(winAmount, currentBet); // 129 — bet efficiency
                 _updateLuckyStreakFire(true);            // 130 — lucky streak fire
+                _updateScatterHunt(currentGrid);        // 131 — scatter hunt
+                _updateVarianceBadge(winAmount, currentBet); // 132 — variance
+                _updateSpinCostTotal(currentBet);       // 133 — spin cost
+                _updateWinTrend(true);                  // 134 — win trend
+                _updateHotColdIndicator(winAmount, currentBet); // 135 — hot/cold
+                _updateWinLossRatio(true);              // 136 — win/loss ratio
+                _updateAvgBetBadge(currentBet);         // 137 — avg bet
+                _updateSessionBigWin(winAmount);        // 138 — session big win
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3214,6 +3230,14 @@
             _addMultHistory(winAmount, currentBet);     // 128 — mult history
             _updateBetEfficiency(winAmount, currentBet); // 129 — bet efficiency
             _updateLuckyStreakFire(winAmount > 0);      // 130 — lucky streak fire
+            _updateScatterHunt(currentGrid);           // 131 — scatter hunt
+            _updateVarianceBadge(winAmount, currentBet); // 132 — variance
+            _updateSpinCostTotal(currentBet);          // 133 — spin cost
+            _updateWinTrend(winAmount > 0);            // 134 — win trend
+            _updateHotColdIndicator(winAmount, currentBet); // 135 — hot/cold
+            _updateWinLossRatio(winAmount > 0);        // 136 — win/loss ratio
+            _updateAvgBetBadge(currentBet);            // 137 — avg bet
+            _updateSessionBigWin(winAmount);           // 138 — session big win
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6665,6 +6689,14 @@
                 _addMultHistory(winAmount, currentBet); // 128 — mult history
                 _updateBetEfficiency(winAmount, currentBet); // 129 — bet efficiency
                 _updateLuckyStreakFire(true);            // 130 — lucky streak fire
+                _updateScatterHunt(currentGrid);        // 131 — scatter hunt
+                _updateVarianceBadge(winAmount, currentBet); // 132 — variance
+                _updateSpinCostTotal(currentBet);       // 133 — spin cost
+                _updateWinTrend(true);                  // 134 — win trend
+                _updateHotColdIndicator(winAmount, currentBet); // 135 — hot/cold
+                _updateWinLossRatio(true);              // 136 — win/loss ratio
+                _updateAvgBetBadge(currentBet);         // 137 — avg bet
+                _updateSessionBigWin(winAmount);        // 138 — session big win
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6804,6 +6836,14 @@
             _addMultHistory(winAmount, currentBet);     // 128 — mult history
             _updateBetEfficiency(winAmount, currentBet); // 129 — bet efficiency
             _updateLuckyStreakFire(winAmount > 0);      // 130 — lucky streak fire
+            _updateScatterHunt(currentGrid);           // 131 — scatter hunt
+            _updateVarianceBadge(winAmount, currentBet); // 132 — variance
+            _updateSpinCostTotal(currentBet);          // 133 — spin cost
+            _updateWinTrend(winAmount > 0);            // 134 — win trend
+            _updateHotColdIndicator(winAmount, currentBet); // 135 — hot/cold
+            _updateWinLossRatio(winAmount > 0);        // 136 — win/loss ratio
+            _updateAvgBetBadge(currentBet);            // 137 — avg bet
+            _updateSessionBigWin(winAmount);           // 138 — session big win
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -12232,5 +12272,225 @@ function _updateLuckyStreakFire(won) {
         el.style.display = '';
     } else {
         el.style.display = 'none';
+    }
+}
+
+
+// ===============================================================
+//  SPRINT 131-138 -- Scatter hunt, variance badge, spin cost,
+//                    win trend, reel lock, jackpot dist,
+//                    session compare, provider win rate
+// ===============================================================
+
+// Sprint 131: Scatter hunt meter (progress toward 3 scatters)
+var _scatterHuntCount131 = 0;
+function _resetScatterHunt() {
+    _scatterHuntCount131 = 0;
+    var el = document.getElementById('scatterHuntMeter');
+    if (!el) return;
+    var fill = el.querySelector('.sht-fill');
+    if (fill) fill.style.width = '0%';
+    var label = el.querySelector('.sht-label');
+    if (label) label.textContent = '0/3 scatter';
+    el.style.display = '';
+}
+function _updateScatterHunt(grid) {
+    if (!grid) return;
+    var count = 0;
+    var symKey = (typeof currentGame !== 'undefined' && currentGame && currentGame.scatterSymbol)
+        ? currentGame.scatterSymbol : 'scatter';
+    for (var r = 0; r < grid.length; r++) {
+        for (var c = 0; c < (grid[r] ? grid[r].length : 0); c++) {
+            if (grid[r][c] === symKey) count++;
+        }
+    }
+    if (count > _scatterHuntCount131) _scatterHuntCount131 = count;
+    var el = document.getElementById('scatterHuntMeter');
+    if (!el) return;
+    var fill = el.querySelector('.sht-fill');
+    var label = el.querySelector('.sht-label');
+    var pct = Math.min(100, Math.round((_scatterHuntCount131 / 3) * 100));
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = _scatterHuntCount131 + '/3 scatter';
+    el.className = 'scatter-hunt-meter' + (pct >= 100 ? ' sht-complete' : '');
+    el.style.display = '';
+}
+
+// Sprint 132: Session variance badge
+var _varWins132 = [];
+function _resetVarianceBadge() {
+    _varWins132 = [];
+    var el = document.getElementById('varianceBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateVarianceBadge(winAmount, betAmount) {
+    if (!betAmount || betAmount <= 0) return;
+    var mult = winAmount / betAmount;
+    _varWins132.push(mult);
+    if (_varWins132.length < 10) return; // need enough data
+    var n = _varWins132.length;
+    var mean = 0;
+    for (var i = 0; i < n; i++) mean += _varWins132[i];
+    mean /= n;
+    var variance = 0;
+    for (var j = 0; j < n; j++) {
+        var d = _varWins132[j] - mean;
+        variance += d * d;
+    }
+    variance /= n;
+    var el = document.getElementById('varianceBadge');
+    if (!el) return;
+    var label, cls;
+    if (variance > 5) { label = 'HIGH VAR'; cls = 'var-high'; }
+    else if (variance > 1.5) { label = 'MED VAR'; cls = 'var-med'; }
+    else { label = 'LOW VAR'; cls = 'var-low'; }
+    el.textContent = label;
+    el.className = 'variance-badge ' + cls;
+    el.style.display = '';
+}
+
+// Sprint 133: Spin cost total (clear readable wagered display)
+var _spinCostTotal133 = 0;
+function _resetSpinCostTotal() {
+    _spinCostTotal133 = 0;
+    var el = document.getElementById('spinCostTotal');
+    if (el) el.style.display = 'none';
+}
+function _updateSpinCostTotal(betAmount) {
+    if (!betAmount || betAmount <= 0) return;
+    _spinCostTotal133 += betAmount;
+    var el = document.getElementById('spinCostTotal');
+    if (!el) return;
+    var _DSN2 = String.fromCharCode(36);
+    el.textContent = 'Wagered: ' + _DSN2 + _spinCostTotal133.toFixed(2);
+    el.style.display = '';
+}
+
+// Sprint 134: Win rate trend (is win% improving or declining?)
+var _trendWinsA134 = 0; var _trendSpinsA134 = 0; // older half
+var _trendWinsB134 = 0; var _trendSpinsB134 = 0; // recent half
+var _trendTotal134 = 0;
+function _resetWinTrend() {
+    _trendWinsA134 = 0; _trendSpinsA134 = 0;
+    _trendWinsB134 = 0; _trendSpinsB134 = 0;
+    _trendTotal134 = 0;
+    var el = document.getElementById('winTrendBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateWinTrend(won) {
+    _trendTotal134++;
+    if (_trendTotal134 <= 20) {
+        _trendSpinsA134++;
+        if (won) _trendWinsA134++;
+    } else {
+        _trendSpinsB134++;
+        if (won) _trendWinsB134++;
+        if (_trendSpinsB134 >= 20) {
+            // Roll window
+            _trendWinsA134 = _trendWinsB134;
+            _trendSpinsA134 = _trendSpinsB134;
+            _trendWinsB134 = 0;
+            _trendSpinsB134 = 0;
+        }
+    }
+    if (_trendSpinsA134 < 10 || _trendSpinsB134 < 5) return;
+    var rateA = _trendWinsA134 / _trendSpinsA134;
+    var rateB = _trendWinsB134 / _trendSpinsB134;
+    var el = document.getElementById('winTrendBadge');
+    if (!el) return;
+    if (rateB > rateA + 0.05) {
+        el.textContent = '\u2197 Trending up';
+        el.className = 'win-trend-badge wt-up';
+    } else if (rateB < rateA - 0.05) {
+        el.textContent = '\u2198 Trending down';
+        el.className = 'win-trend-badge wt-down';
+    } else {
+        el.textContent = '\u2192 Stable';
+        el.className = 'win-trend-badge wt-flat';
+    }
+    el.style.display = '';
+}
+
+// Sprint 135: Hot/cold game indicator (based on recent 20 spins)
+var _hotColdSpins135 = [];
+function _resetHotColdIndicator() {
+    _hotColdSpins135 = [];
+    var el = document.getElementById('hotColdIndicator');
+    if (el) el.style.display = 'none';
+}
+function _updateHotColdIndicator(winAmount, betAmount) {
+    if (!betAmount || betAmount <= 0) return;
+    _hotColdSpins135.push(winAmount > betAmount ? 1 : 0);
+    if (_hotColdSpins135.length > 20) _hotColdSpins135.shift();
+    if (_hotColdSpins135.length < 10) return;
+    var wins = 0;
+    for (var i = 0; i < _hotColdSpins135.length; i++) wins += _hotColdSpins135[i];
+    var rate = wins / _hotColdSpins135.length;
+    var el = document.getElementById('hotColdIndicator');
+    if (!el) return;
+    if (rate >= 0.45) {
+        el.textContent = '\uD83D\uDD25 HOT';
+        el.className = 'hot-cold-indicator hci-hot';
+    } else if (rate <= 0.2) {
+        el.textContent = '\u2744 COLD';
+        el.className = 'hot-cold-indicator hci-cold';
+    } else {
+        el.textContent = '\u007E Neutral';
+        el.className = 'hot-cold-indicator hci-neutral';
+    }
+    el.style.display = '';
+}
+
+// Sprint 136: Session win/loss ratio display
+var _ratioWins136 = 0; var _ratioTotal136 = 0;
+function _resetWinLossRatio() {
+    _ratioWins136 = 0; _ratioTotal136 = 0;
+    var el = document.getElementById('winLossRatio');
+    if (el) el.style.display = 'none';
+}
+function _updateWinLossRatio(won) {
+    _ratioTotal136++;
+    if (won) _ratioWins136++;
+    var el = document.getElementById('winLossRatio');
+    if (!el || _ratioTotal136 < 5) return;
+    el.textContent = _ratioWins136 + 'W/' + (_ratioTotal136 - _ratioWins136) + 'L';
+    el.style.display = '';
+}
+
+// Sprint 137: Average bet badge
+var _avgBetSum137 = 0; var _avgBetCount137 = 0;
+function _resetAvgBetBadge() {
+    _avgBetSum137 = 0; _avgBetCount137 = 0;
+    var el = document.getElementById('avgBetBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateAvgBetBadge(betAmount) {
+    if (!betAmount || betAmount <= 0) return;
+    _avgBetSum137 += betAmount;
+    _avgBetCount137++;
+    var el = document.getElementById('avgBetBadge');
+    if (!el) return;
+    var avg = _avgBetSum137 / _avgBetCount137;
+    var _DSN2 = String.fromCharCode(36);
+    el.textContent = 'Avg bet: ' + _DSN2 + avg.toFixed(2);
+    el.style.display = '';
+}
+
+// Sprint 138: Biggest win this session badge (reset per slot session unlike 123)
+var _sessionBigWin138 = 0;
+function _resetSessionBigWin() {
+    _sessionBigWin138 = 0;
+    var el = document.getElementById('sessionBigWin');
+    if (el) el.style.display = 'none';
+}
+function _updateSessionBigWin(winAmount) {
+    if (!winAmount || winAmount <= 0) return;
+    if (winAmount > _sessionBigWin138) {
+        _sessionBigWin138 = winAmount;
+        var el = document.getElementById('sessionBigWin');
+        if (!el) return;
+        var _DSN2 = String.fromCharCode(36);
+        el.textContent = '\u26A1 Session best: ' + _DSN2 + _sessionBigWin138.toFixed(2);
+        el.style.display = '';
     }
 }
