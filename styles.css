@@ -16116,3 +16116,16 @@ button.active .filter-tab-count {
     background: rgba(74,222,128,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* Sprint 72: Game of the Day Badge */
+.gotd-badge {
+    position: absolute; top: 4px; left: 4px;
+    font-size: 0.55rem; font-weight: 700; color: #fbbf24;
+    background: rgba(251,191,36,0.15); padding: 1px 5px;
+    border-radius: 4px; letter-spacing: 0.5px; z-index: 2;
+}
+/* Sprint 72: Lobby Greeting */
+.lobby-greet {
+    text-align: center; font-size: 0.75rem; color: #94a3b8;
+    padding: 4px 0; font-style: italic;
+}

@@ -532,6 +532,7 @@ function renderGames() {
                     // Rebuild popularity counts (Sprint 51)
                     if (typeof _buildPopCounts === 'function') _buildPopCounts();
                     if (typeof renderLobbyQuickStats === 'function') renderLobbyQuickStats();
+                    if (typeof renderLobbyGreeting === 'function') renderLobbyGreeting();
                     // Apply saved lobby view mode (Sprint 45)
                     if (typeof _lobbyView !== 'undefined' && _lobbyView === 'list') {
                         setLobbyView('list');
@@ -1302,6 +1303,7 @@ function renderGames() {
                         ${typeof getPopBadge === 'function' ? getPopBadge(game.id) : ''}
                         ${typeof getPlayCount === 'function' ? getPlayCount(game.id) : ''}
                         ${typeof getUnplayedBadge === 'function' ? getUnplayedBadge(game.id) : ''}
+                        ${typeof getGotdBadge === 'function' ? getGotdBadge(game.id) : ''}
                         ${(function() { try { var _v = parseFloat(localStorage.getItem('personalBest_' + game.id) || '0'); if (_v > 0) { var _disp = _v >= 1000 ? ('$' + (_v/1000).toFixed(1) + 'K') : ('$' + Math.round(_v)); return '<div class="card-personal-best">\u{1F3C6} PB ' + _disp + '</div>'; } } catch(e) {} return ''; })()}
                         <div class="game-vol-badge ${volClass}" title="Volatility: ${vol}">
                             ${dotsHtml}
@@ -2673,6 +2675,33 @@ function renderGames() {
             var c = _popCounts[gameId] || 0;
             if (c > 0) return '';
             return '<span class="up-badge" title="You haven\'t tried this game yet!">Try!</span>';
+        }
+
+        /* ── Sprint 72: Game of the Day Badge ──────────────── */
+        var _gotdId = null;
+        function _computeGotd() {
+            if (_gotdId !== null) return;
+            if (typeof GAMES === 'undefined' || GAMES.length === 0) return;
+            var ds = new Date().toDateString();
+            var hash = 0;
+            for (var i = 0; i < ds.length; i++) {
+                hash = ((hash << 5) - hash + ds.charCodeAt(i)) | 0;
+            }
+            _gotdId = GAMES[Math.abs(hash) % GAMES.length].id;
+        }
+        function getGotdBadge(gameId) {
+            _computeGotd();
+            if (gameId !== _gotdId) return '';
+            return '<span class="gotd-badge" title="Game of the Day!">GOTD</span>';
+        }
+
+        /* ── Sprint 72: Lobby Time Greeting ──────────────── */
+        function renderLobbyGreeting() {
+            var el = document.getElementById('lobbyGreet');
+            if (!el) return;
+            var h = new Date().getHours();
+            var msg = h < 12 ? 'Good morning!' : h < 17 ? 'Good afternoon!' : 'Good evening!';
+            el.textContent = msg;
         }
 
         /* ── Sprint 65: Active Filter Label ──────────────── */
