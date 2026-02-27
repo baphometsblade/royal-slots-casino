@@ -15353,3 +15353,91 @@ button.active .filter-tab-count {
 }
 .bd-btn:hover { background: rgba(255,215,0,0.15); border-color: rgba(255,215,0,0.4); color: #ffd700; }
 .bd-btn:active { transform: scale(0.95); }
+
+/* ═══ Sprint 40: Bankroll Manager ═══ */
+.brm-set-btn {
+    background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 6px; padding: 4px 10px; color: #ffd700; font-size: 0.75rem;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.brm-set-btn:hover { background: rgba(255,215,0,0.2); }
+.brm-bar {
+    display: flex; align-items: center; gap: 8px; margin: 6px 0;
+    padding: 4px 12px; background: rgba(0,0,0,0.3); border-radius: 6px;
+}
+.brm-track {
+    flex: 1; height: 6px; background: rgba(255,255,255,0.08);
+    border-radius: 3px; overflow: hidden;
+}
+.brm-fill {
+    height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s;
+}
+.brm-green { background: #4ade80; }
+.brm-yellow { background: #facc15; }
+.brm-orange { background: #fb923c; }
+.brm-red { background: #ef4444; }
+.brm-label { color: #aaa; font-size: 0.7rem; white-space: nowrap; }
+.brm-clear {
+    background: none; border: none; color: #666; font-size: 1rem;
+    cursor: pointer; padding: 0 4px; line-height: 1;
+}
+.brm-clear:hover { color: #ef4444; }
+
+/* ═══ Sprint 40: Game Comparison Tool ═══ */
+.gc-toggle {
+    display: flex; align-items: center; gap: 4px; cursor: pointer;
+    color: #aaa; font-size: 0.8rem; margin-left: 8px; white-space: nowrap;
+}
+.gc-toggle input { accent-color: #ffd700; }
+.gc-toggle-label { user-select: none; }
+.gc-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 1200;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; background: rgba(15,20,30,0.95);
+    border-top: 1px solid rgba(255,215,0,0.3); backdrop-filter: blur(8px);
+}
+.gc-bar-games { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
+.gc-bar-chip {
+    background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 12px; padding: 4px 10px; color: #ffd700; font-size: 0.8rem;
+    display: flex; align-items: center; gap: 4px;
+}
+.gc-bar-chip-x {
+    cursor: pointer; font-size: 0.9rem; opacity: 0.6;
+}
+.gc-bar-chip-x:hover { opacity: 1; color: #ef4444; }
+.gc-compare-btn {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border: none; border-radius: 8px; padding: 8px 16px;
+    color: #000; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+}
+.gc-compare-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.gc-clear-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; padding: 8px 12px; color: #aaa; font-size: 0.8rem;
+    cursor: pointer;
+}
+.gc-clear-btn:hover { color: #fff; }
+.gc-card {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(255,215,0,0.2); border-radius: 16px;
+    padding: 24px; max-width: 700px; width: 90%; max-height: 80vh;
+    overflow-y: auto; color: #e0e0e0;
+}
+.gc-title { color: #ffd700; font-size: 1.3rem; margin-bottom: 16px; text-align: center; }
+.gc-header-row, .gc-row {
+    display: grid; gap: 8px; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.gc-header-row { grid-template-columns: 100px repeat(3, 1fr); }
+.gc-row { grid-template-columns: 100px repeat(3, 1fr); }
+.gc-col-head { font-weight: 600; color: #ffd700; font-size: 0.85rem; text-align: center; }
+.gc-row-label { color: #888; font-size: 0.8rem; }
+.gc-cell { text-align: center; font-size: 0.85rem; }
+.gc-best { color: #4ade80; font-weight: 600; }
+.gc-close {
+    display: block; margin: 16px auto 0; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    padding: 8px 24px; color: #aaa; cursor: pointer; font-size: 0.85rem;
+}
+.gc-close:hover { color: #fff; }

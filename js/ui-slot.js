@@ -42,6 +42,56 @@
             }
         }
 
+        /* ── Sprint 40: Bankroll Manager ─────────────────── */
+        var _brmBudget = 0;
+        var _brmSpent = 0;
+
+        function openBankrollPrompt() {
+            var amount = prompt('Set your session budget ($):', '500');
+            if (!amount) return;
+            var val = parseFloat(amount);
+            if (isNaN(val) || val <= 0) return;
+            _brmBudget = val;
+            _brmSpent = 0;
+            _updateBankrollBar();
+            var bar = document.getElementById('brmBar');
+            if (bar) bar.style.display = 'flex';
+        }
+
+        function clearBankroll() {
+            _brmBudget = 0;
+            _brmSpent = 0;
+            var bar = document.getElementById('brmBar');
+            if (bar) bar.style.display = 'none';
+        }
+
+        function _trackBankrollWager(amount) {
+            if (_brmBudget <= 0) return;
+            _brmSpent += amount;
+            _updateBankrollBar();
+        }
+
+        function _updateBankrollBar() {
+            var fill = document.getElementById('brmFill');
+            var label = document.getElementById('brmLabel');
+            if (!fill || !label) return;
+            var pct = Math.min(100, (_brmSpent / _brmBudget) * 100);
+            fill.style.width = pct + '%';
+            label.textContent = '$' + _brmSpent.toFixed(0) + ' / $' + _brmBudget.toFixed(0);
+            // Color based on usage
+            if (pct < 50) fill.className = 'brm-fill brm-green';
+            else if (pct < 75) fill.className = 'brm-fill brm-yellow';
+            else if (pct < 90) fill.className = 'brm-fill brm-orange';
+            else fill.className = 'brm-fill brm-red';
+        }
+
+        function _resetBankrollOnClose() {
+            _brmBudget = 0;
+            _brmSpent = 0;
+            var bar = document.getElementById('brmBar');
+            if (bar) bar.style.display = 'none';
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
@@ -1797,6 +1847,7 @@
             // Restore real balance if closing during demo mode
             _exitDemoMode();
             _stopSessionTimer();
+            _resetBankrollOnClose();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
@@ -2326,6 +2377,7 @@
                 } else {
                     finalGrid = generateSpinResult(spinGame);
                     balance -= currentBet;
+                    if (typeof _trackBankrollWager === 'function') _trackBankrollWager(currentBet);
                     updateBalance();
                     if (!_demoMode) saveBalance();
                 }

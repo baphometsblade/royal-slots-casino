@@ -1274,7 +1274,7 @@ function renderGames() {
             }
             _seedCount(game.id, isHot || _hotIds.has(game.id));
             return `
-                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="openSlot('${game.id}')" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
+                <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="if(typeof _compareMode!=='undefined'&&_compareMode){addToCompare('${game.id}')}else{openSlot('${game.id}')}" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
                     <button class="fav-btn${favored ? ' fav-active' : ''}" data-game-id="${game.id}" title="${favored ? 'Remove from favourites' : 'Add to favourites'}" onclick="event.stopPropagation(); (function(btn){var nowFav=toggleFavorite('${game.id}'); btn.textContent=nowFav?'\u2764\uFE0F':'\u2661'; btn.title=nowFav?'Remove from favourites':'Add to favourites'; btn.classList.add('fav-active'); setTimeout(function(){btn.classList.remove('fav-active');},350); updateFavTabBadge();})(this)">${favIcon}</button>
                     <div class="game-thumbnail" style="${thumbStyle}">
                         ${!game.thumbnail && game.asset ? (assetTemplates[game.asset] || '') : ''}
@@ -2235,3 +2235,86 @@ function renderGames() {
         }
 
         window.refreshLobbyChallengeWidget = renderLobbyChallengeWidget;
+
+        /* ── Sprint 40: Game Comparison Tool ─────────────── */
+        var _compareMode = false;
+        var _compareList = []; // game IDs, max 3
+
+        function toggleCompareMode(on) {
+            _compareMode = on;
+            var bar = document.getElementById('gcBar');
+            if (bar) bar.style.display = on ? 'flex' : 'none';
+            if (!on) _compareList = [];
+            _renderCompareBar();
+        }
+
+        function addToCompare(gameId) {
+            if (!_compareMode) return;
+            var idx = _compareList.indexOf(gameId);
+            if (idx >= 0) { _compareList.splice(idx, 1); }
+            else if (_compareList.length < 3) { _compareList.push(gameId); }
+            _renderCompareBar();
+        }
+
+        function clearComparison() {
+            _compareList = [];
+            _renderCompareBar();
+        }
+
+        function _renderCompareBar() {
+            var gamesDiv = document.getElementById('gcBarGames');
+            var btn = document.getElementById('gcCompareBtn');
+            if (!gamesDiv) return;
+            gamesDiv.innerHTML = _compareList.map(function(id) {
+                var g = GAMES.find(function(x) { return x.id === id; });
+                return '<span class="gc-bar-chip">' + (g ? g.name : id) +
+                    '<span class="gc-bar-chip-x" onclick="event.stopPropagation(); if(typeof addToCompare===\'function\')addToCompare(\'' + id + '\')">&times;</span></span>';
+            }).join('');
+            if (btn) btn.disabled = _compareList.length < 2;
+        }
+
+        function openComparison() {
+            if (_compareList.length < 2) return;
+            var modal = document.getElementById('gcModal');
+            var table = document.getElementById('gcTable');
+            if (!modal || !table) return;
+            var games = _compareList.map(function(id) {
+                return GAMES.find(function(x) { return x.id === id; });
+            }).filter(Boolean);
+            var rows = [
+                { label: 'Provider', get: function(g) { return g.provider || '-'; } },
+                { label: 'RTP', get: function(g) { return (g.rtp || 96) + '%'; }, best: 'max' },
+                { label: 'Grid', get: function(g) { return g.gridCols + '×' + g.gridRows; } },
+                { label: 'Paylines', get: function(g) { return g.paylines || g.ways || '-'; } },
+                { label: 'Volatility', get: function(g) { return g.volatility || 'Medium'; } },
+                { label: 'Mechanics', get: function(g) {
+                    var m = [];
+                    if (g.hasFreeSpins) m.push('Free Spins');
+                    if (g.hasWilds) m.push('Wilds');
+                    if (g.tumble) m.push('Tumble');
+                    if (g.holdAndWin) m.push('Hold & Win');
+                    return m.join(', ') || 'Standard';
+                }}
+            ];
+            var html = '<div class="gc-header-row"><div class="gc-row-label"></div>' +
+                games.map(function(g) { return '<div class="gc-col-head">' + g.name + '</div>'; }).join('') + '</div>';
+            rows.forEach(function(row) {
+                var vals = games.map(function(g) { return row.get(g); });
+                var bestIdx = -1;
+                if (row.best === 'max') {
+                    var nums = vals.map(function(v) { return parseFloat(v) || 0; });
+                    bestIdx = nums.indexOf(Math.max.apply(null, nums));
+                }
+                html += '<div class="gc-row"><div class="gc-row-label">' + row.label + '</div>' +
+                    vals.map(function(v, i) {
+                        return '<div class="gc-cell' + (i === bestIdx ? ' gc-best' : '') + '">' + v + '</div>';
+                    }).join('') + '</div>';
+            });
+            table.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+
+        window.toggleCompareMode = toggleCompareMode;
+        window.addToCompare = addToCompare;
+        window.clearComparison = clearComparison;
+        window.openComparison = openComparison;

@@ -217,6 +217,10 @@
                 <option value="vol-high">Most Volatile</option>
                 <option value="vol-low">Least Volatile</option>
             </select>
+            <label class="gc-toggle" title="Compare games side-by-side">
+                <input type="checkbox" id="gcToggle" onchange="if(typeof toggleCompareMode==='function')toggleCompareMode(this.checked)">
+                <span class="gc-toggle-label">Compare</span>
+            </label>
         </div>
 
         <!-- Leaderboard -->
@@ -485,6 +489,7 @@
                     <div class="game-tag tag-jackpot" id="slotGameTag" style="display:none;">JACKPOT</div>
                 </div>
                 <div class="session-timer" id="sessionTimer" title="Session time">⏱ <span id="sessionTimerValue">0m</span></div>
+                <button class="brm-set-btn" id="brmSetBtn" onclick="if(typeof openBankrollPrompt==='function')openBankrollPrompt()" title="Set session budget">💰 Budget</button>
                 <div class="slot-top-right">
                     <button class="buy-bonus-btn" id="buyBonusBtn" onclick="buyBonus()" style="display:none;" title="Buy Free Spins">
                         <span class="buy-bonus-icon">⚡</span>
@@ -588,6 +593,15 @@
                     <button class="bp-btn" data-bet="100" onclick="if(typeof setBetPreset==='function')setBetPreset(100)">$100</button>
                     <button class="bp-btn bp-half" onclick="if(typeof betHalf==='function')betHalf()" title="Halve bet">½</button>
                     <button class="bp-btn bp-double" onclick="if(typeof betDouble==='function')betDouble()" title="Double bet">2x</button>
+                </div>
+
+                <!-- Sprint 40: Bankroll Manager Bar -->
+                <div class="brm-bar" id="brmBar" style="display:none;">
+                    <div class="brm-track">
+                        <div class="brm-fill" id="brmFill"></div>
+                    </div>
+                    <span class="brm-label" id="brmLabel">$0 / $0</span>
+                    <button class="brm-clear" onclick="if(typeof clearBankroll==='function')clearBankroll()" title="Remove budget">&times;</button>
                 </div>
 
                 <!-- Turbo Toggle -->
@@ -1053,6 +1067,22 @@
             <span class="grp-star" data-val="5" onclick="if(typeof rateGame==='function')rateGame(5)">★</span>
         </div>
         <button class="grp-dismiss" onclick="document.getElementById('gameRatingPrompt').style.display='none'">Skip</button>
+    </div>
+
+    <!-- Sprint 40: Game Comparison Bar -->
+    <div class="gc-bar" id="gcBar" style="display:none;">
+        <div class="gc-bar-games" id="gcBarGames"></div>
+        <button class="gc-compare-btn" id="gcCompareBtn" onclick="if(typeof openComparison==='function')openComparison()" disabled>Compare</button>
+        <button class="gc-clear-btn" onclick="if(typeof clearComparison==='function')clearComparison()">Clear</button>
+    </div>
+
+    <!-- Sprint 40: Game Comparison Modal -->
+    <div id="gcModal" class="modal-overlay" style="display:none;">
+        <div class="gc-card">
+            <h2 class="gc-title">Game Comparison</h2>
+            <div class="gc-table" id="gcTable"></div>
+            <button class="gc-close" onclick="document.getElementById('gcModal').style.display='none'">Close</button>
+        </div>
     </div>
 
     <!-- Deposit Modal -->
