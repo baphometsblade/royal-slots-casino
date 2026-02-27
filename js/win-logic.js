@@ -738,6 +738,8 @@
             if (typeof updateSpinPace === 'function') updateSpinPace();
             // Sprint 61: Update ROI meter
             if (typeof updateROIMeter === 'function') updateROIMeter();
+            // Sprint 62: Balance change indicator
+            if (typeof showBalanceChange === 'function') showBalanceChange(winAmount);
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

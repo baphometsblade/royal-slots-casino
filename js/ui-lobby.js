@@ -1300,6 +1300,7 @@ function renderGames() {
                         <div class="card-players-live" data-game="${game.id}"> ${_getLiveCount(game.id)} playing</div>
                         ${typeof getPopBadge === 'function' ? getPopBadge(game.id) : ''}
                         ${typeof getPlayCount === 'function' ? getPlayCount(game.id) : ''}
+                        ${typeof getUnplayedBadge === 'function' ? getUnplayedBadge(game.id) : ''}
                         ${(function() { try { var _v = parseFloat(localStorage.getItem('personalBest_' + game.id) || '0'); if (_v > 0) { var _disp = _v >= 1000 ? ('$' + (_v/1000).toFixed(1) + 'K') : ('$' + Math.round(_v)); return '<div class="card-personal-best">\u{1F3C6} PB ' + _disp + '</div>'; } } catch(e) {} return ''; })()}
                         <div class="game-vol-badge ${volClass}" title="Volatility: ${vol}">
                             ${dotsHtml}
@@ -2662,4 +2663,11 @@ function renderGames() {
             var c = _popCounts[gameId] || 0;
             if (c < 1) return '';
             return '<span class="pc-count" title="Played ' + c + ' times">' + c + 'p</span>';
+        }
+
+        /* ── Sprint 62: Unplayed Game Badge ──────────────── */
+        function getUnplayedBadge(gameId) {
+            var c = _popCounts[gameId] || 0;
+            if (c > 0) return '';
+            return '<span class="up-badge" title="You haven\'t tried this game yet!">Try!</span>';
         }

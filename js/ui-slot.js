@@ -618,6 +618,26 @@
             if (el) el.style.display = 'none';
         }
 
+        /* ── Sprint 62: Balance Change Indicator ─────────── */
+        var _bcTimer = null;
+        function showBalanceChange(winAmount) {
+            var el = document.getElementById('bcDelta');
+            if (!el) return;
+            if (_bcTimer) clearTimeout(_bcTimer);
+            var bet = typeof currentBet !== 'undefined' ? currentBet : 0;
+            if (winAmount > 0) {
+                el.textContent = '+$' + winAmount.toFixed(0);
+                el.className = 'bc-delta bc-pos bc-show';
+            } else {
+                el.textContent = '-$' + bet.toFixed(0);
+                el.className = 'bc-delta bc-neg bc-show';
+            }
+            _bcTimer = setTimeout(function() {
+                el.className = 'bc-delta';
+                _bcTimer = null;
+            }, 1500);
+        }
+
         function _handleDemoSpinEnd() {
             if (!_demoMode) return;
             _demoSpinsLeft--;
