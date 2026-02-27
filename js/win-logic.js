@@ -762,6 +762,9 @@
             if (typeof updateSessNet === 'function') updateSessNet();
             // Sprint 78: Wild count
             if (typeof updateWildCount === 'function') updateWildCount();
+            // Sprint 79: Scatter count + best streak
+            if (typeof updateScatterCount === 'function') updateScatterCount();
+            if (typeof updateBestStreak === 'function') updateBestStreak(winAmount > 0);
 
             // Sprint 44: Record balance for P&L sparkline
             if (typeof _recordPnlPoint === 'function') _recordPnlPoint();

@@ -1022,6 +1022,54 @@
             if (el) { el.textContent = ''; el.style.display = 'none'; }
         }
 
+        /* ── Sprint 79: Session Scatter Count ── */
+        var _sscTotal = 0;
+        function updateScatterCount() {
+            if (!currentGame || !currentGame.scatterSymbol) return;
+            var grid = typeof currentGrid !== 'undefined' ? currentGrid : null;
+            if (!grid) return;
+            var sc = currentGame.scatterSymbol;
+            var found = 0;
+            for (var c = 0; c < grid.length; c++) {
+                if (!grid[c]) continue;
+                for (var r = 0; r < grid[c].length; r++) {
+                    if (grid[c][r] === sc) found++;
+                }
+            }
+            if (found === 0) return;
+            _sscTotal += found;
+            var el = document.getElementById('sscCount');
+            if (!el) return;
+            el.textContent = 'Scatters: ' + _sscTotal;
+            el.style.display = '';
+        }
+        function _resetScatterCount() {
+            _sscTotal = 0;
+            var el = document.getElementById('sscCount');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
+        /* ── Sprint 79: Best Win Streak (Session) ── */
+        var _bwsCur = 0; var _bwsBest = 0;
+        function updateBestStreak(isWin) {
+            if (isWin) {
+                _bwsCur++;
+                if (_bwsCur > _bwsBest) _bwsBest = _bwsCur;
+            } else {
+                _bwsCur = 0;
+            }
+            if (_bwsBest < 2) return;
+            var el = document.getElementById('bwStreak');
+            if (!el) return;
+            el.textContent = 'Best Streak: ' + _bwsBest;
+            el.style.display = '';
+        }
+        function _resetBestStreak() {
+            _bwsCur = 0; _bwsBest = 0;
+            var el = document.getElementById('bwStreak');
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+
         /* ── Sprint 73: Saved Bet Hint ── */
         var _sbhTimer = null;
         function _showSavedBetHint(betAmount) {
@@ -2262,6 +2310,8 @@
             _resetOutcDots();
             _initSessNet();
             _resetWildCount();
+            _resetScatterCount();
+            _resetBestStreak();
             // Sprint 76: Track game played today
             if (typeof _trackGameToday === 'function' && currentGame) _trackGameToday(currentGame.id);
             _startSessionTimer();
@@ -2902,6 +2952,8 @@
             _resetOutcDots();
             _resetSessNet();
             _resetWildCount();
+            _resetScatterCount();
+            _resetBestStreak();
             // Stop auto-spin if active
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state

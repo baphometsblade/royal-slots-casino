@@ -16217,3 +16217,19 @@ button.active .filter-tab-count {
     background: rgba(167,139,250,0.08); padding: 2px 7px;
     border-radius: 6px; pointer-events: none; z-index: 3;
 }
+
+/* ── Sprint 79: Session Scatter Count ── */
+.ssc-count {
+    position: absolute; top: 250px; left: 14px;
+    font-size: 0.68rem; color: #f59e0b; font-weight: 500;
+    background: rgba(245,158,11,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}
+
+/* ── Sprint 79: Best Win Streak ── */
+.bw-streak {
+    position: absolute; top: 250px; right: 14px;
+    font-size: 0.68rem; color: #34d399; font-weight: 500;
+    background: rgba(52,211,153,0.08); padding: 2px 7px;
+    border-radius: 6px; pointer-events: none; z-index: 3;
+}
