@@ -1598,6 +1598,14 @@
         _resetFeatFreq();         // 144 — feature freq
         _resetSessionGrade();     // 145 — session grade
         _resetTimeEff();          // 146 — time efficiency
+        _resetOutcomeStreak();    // 147 — outcome streak
+        _resetRtpConvergence();   // 148 — RTP convergence
+        _resetScatterGap();       // 149 — scatter gap
+        _resetBonusRoundCount();  // 150 — bonus count
+        _resetReelHitFreq();      // 151 — reel hit freq
+        _initSessStartTime();     // 152 — session start time
+        _resetSpinPace();         // 153 — spin pace
+        _resetCumulativeXp();     // 154 — cumulative XP
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -3073,6 +3081,11 @@
                 _recordFeatFreqSpin(freeSpinsActive);  // 144 — feature freq
                 _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
                 _updateTimeEff(true);                  // 146 — time eff
+                _updateOutcomeStreak(true);            // 147 — outcome streak
+                _updateRtpConvergence(winAmount, currentBet); // 148 — RTP conv
+                _updateScatterGap(currentGrid);        // 149 — scatter gap
+                _updateSpinPace();                     // 153 — spin pace
+                _refreshCumulativeXp();                // 154 — cumulative XP
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3263,6 +3276,11 @@
             _recordFeatFreqSpin(freeSpinsActive);      // 144 — feature freq
             _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
             _updateTimeEff(winAmount > 0);             // 146 — time eff
+            _updateOutcomeStreak(winAmount > 0);       // 147 — outcome streak
+            _updateRtpConvergence(winAmount, currentBet); // 148 — RTP conv
+            _updateScatterGap(currentGrid);            // 149 — scatter gap
+            _updateSpinPace();                         // 153 — spin pace
+            _refreshCumulativeXp();                    // 154 — cumulative XP
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -3376,6 +3394,7 @@
         function triggerFreeSpins(game, count) {
             freeSpinsActive = true;
             if (typeof _recordBonusTrigger126 === 'function') _recordBonusTrigger126(); // 126
+            if (typeof _incrementBonusRound === 'function') _incrementBonusRound(); // 150
             freeSpinsRemaining = count;
             freeSpinsTotalWin = 0;
             freeSpinsMultiplier = 1;
@@ -6730,6 +6749,11 @@
                 _recordFeatFreqSpin(freeSpinsActive);  // 144 — feature freq
                 _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
                 _updateTimeEff(true);                  // 146 — time eff
+                _updateOutcomeStreak(true);            // 147 — outcome streak
+                _updateRtpConvergence(winAmount, currentBet); // 148 — RTP conv
+                _updateScatterGap(currentGrid);        // 149 — scatter gap
+                _updateSpinPace();                     // 153 — spin pace
+                _refreshCumulativeXp();                // 154 — cumulative XP
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6885,6 +6909,11 @@
             _recordFeatFreqSpin(freeSpinsActive);      // 144 — feature freq
             _updateSessionGrade(_sessWon84, _sessWagered84); // 145 — grade
             _updateTimeEff(winAmount > 0);             // 146 — time eff
+            _updateOutcomeStreak(winAmount > 0);       // 147 — outcome streak
+            _updateRtpConvergence(winAmount, currentBet); // 148 — RTP conv
+            _updateScatterGap(currentGrid);            // 149 — scatter gap
+            _updateSpinPace();                         // 153 — spin pace
+            _refreshCumulativeXp();                    // 154 — cumulative XP
                 _addRecentOutcome(false);          // Sprint 68
                 _checkScatterAlert(currentGrid);   // Sprint 73
                 if (typeof currentGrid !== 'undefined' && currentGrid) {
@@ -6989,6 +7018,7 @@
         function triggerFreeSpins(game, count) {
             freeSpinsActive = true;
             if (typeof _recordBonusTrigger126 === 'function') _recordBonusTrigger126(); // 126
+            if (typeof _incrementBonusRound === 'function') _incrementBonusRound(); // 150
             freeSpinsRemaining = count;
             freeSpinsTotalWin = 0;
             freeSpinsMultiplier = 1;
@@ -12729,4 +12759,199 @@ function _updateTimeEff(won) {
     if (!el) return;
     el.textContent = wpm.toFixed(1) + ' wins/min';
     el.style.display = '';
+}
+
+
+// ===============================================================
+//  SPRINT 147-154 -- Outcome streak, RTP convergence, scatter gap,
+//                    bonus depth, reel hit freq, session start time,
+//                    spin pace, cumulative XP
+// ===============================================================
+
+// Sprint 147: Current outcome streak (wins or losses in a row)
+var _outcomeStreak147 = 0; // positive = wins, negative = losses
+function _resetOutcomeStreak() {
+    _outcomeStreak147 = 0;
+    var el = document.getElementById('outcomeStreakBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateOutcomeStreak(won) {
+    if (won) {
+        _outcomeStreak147 = _outcomeStreak147 > 0 ? _outcomeStreak147 + 1 : 1;
+    } else {
+        _outcomeStreak147 = _outcomeStreak147 < 0 ? _outcomeStreak147 - 1 : -1;
+    }
+    var el = document.getElementById('outcomeStreakBadge');
+    if (!el) return;
+    var abs = Math.abs(_outcomeStreak147);
+    if (abs < 2) { el.style.display = 'none'; return; }
+    if (_outcomeStreak147 > 0) {
+        el.textContent = abs + 'x win streak';
+        el.className = 'outcome-streak-badge osb-win';
+    } else {
+        el.textContent = abs + 'x cold streak';
+        el.className = 'outcome-streak-badge osb-loss';
+    }
+    el.style.display = '';
+}
+
+// Sprint 148: RTP convergence meter (how close to 88% theoretical)
+var _rtpConvWon148 = 0; var _rtpConvWag148 = 0;
+function _resetRtpConvergence() {
+    _rtpConvWon148 = 0; _rtpConvWag148 = 0;
+    var el = document.getElementById('rtpConvergence');
+    if (el) el.style.display = 'none';
+}
+function _updateRtpConvergence(winAmount, betAmount) {
+    if (!betAmount || betAmount <= 0) return;
+    _rtpConvWag148 += betAmount;
+    _rtpConvWon148 += (winAmount || 0);
+    if (_rtpConvWag148 < 10) return;
+    var sessionRtp = (_rtpConvWon148 / _rtpConvWag148) * 100;
+    var theoretical = 88;
+    var diff = Math.abs(sessionRtp - theoretical);
+    var el = document.getElementById('rtpConvergence');
+    if (!el) return;
+    el.textContent = 'RTP ' + sessionRtp.toFixed(0) + '% (target ' + theoretical + '%)';
+    el.className = 'rtp-convergence' + (diff <= 5 ? ' rtpc-near' : diff <= 15 ? ' rtpc-mid' : ' rtpc-far');
+    el.style.display = '';
+}
+
+// Sprint 149: Scatter gap tracker (spins since last scatter)
+var _scatterGap149 = 0; var _scatterGapSeen149 = false;
+function _resetScatterGap() {
+    _scatterGap149 = 0; _scatterGapSeen149 = false;
+    var el = document.getElementById('scatterGapBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateScatterGap(grid) {
+    if (!grid) return;
+    var found = false;
+    var symKey = (typeof currentGame !== 'undefined' && currentGame && currentGame.scatterSymbol)
+        ? currentGame.scatterSymbol : 'scatter';
+    for (var r = 0; r < grid.length; r++) {
+        for (var c = 0; c < (grid[r] ? grid[r].length : 0); c++) {
+            if (grid[r][c] === symKey) { found = true; break; }
+        }
+        if (found) break;
+    }
+    if (found) {
+        _scatterGapSeen149 = true;
+        _scatterGap149 = 0;
+    } else {
+        _scatterGap149++;
+    }
+    if (!_scatterGapSeen149) return;
+    var el = document.getElementById('scatterGapBadge');
+    if (!el) return;
+    if (_scatterGap149 >= 5) {
+        el.textContent = _scatterGap149 + ' since scatter';
+        el.className = 'scatter-gap-badge' + (_scatterGap149 >= 30 ? ' sgb-long' : _scatterGap149 >= 15 ? ' sgb-mid' : '');
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// Sprint 150: Bonus rounds counter
+var _bonusRoundCount150 = 0;
+function _resetBonusRoundCount() {
+    _bonusRoundCount150 = 0;
+    var el = document.getElementById('bonusRoundCount');
+    if (el) el.style.display = 'none';
+}
+function _incrementBonusRound() {
+    _bonusRoundCount150++;
+    var el = document.getElementById('bonusRoundCount');
+    if (!el) return;
+    el.textContent = _bonusRoundCount150 + ' bonus' + (_bonusRoundCount150 !== 1 ? 'es' : '');
+    el.style.display = '';
+}
+
+// Sprint 151: Reel hit frequency (which column wins most)
+var _reelHits151 = [0, 0, 0, 0, 0];
+function _resetReelHitFreq() {
+    _reelHits151 = [0, 0, 0, 0, 0];
+    var el = document.getElementById('reelHitFreq');
+    if (el) el.style.display = 'none';
+}
+function _updateReelHitFreq(winningPositions) {
+    if (!winningPositions || !winningPositions.length) return;
+    for (var i = 0; i < winningPositions.length; i++) {
+        var pos = winningPositions[i];
+        if (Array.isArray(pos) && pos.length >= 2) {
+            var col = pos[1];
+            if (col >= 0 && col < _reelHits151.length) _reelHits151[col]++;
+        }
+    }
+    var bestCol = 0;
+    for (var j = 1; j < _reelHits151.length; j++) {
+        if (_reelHits151[j] > _reelHits151[bestCol]) bestCol = j;
+    }
+    var totalHits = 0;
+    for (var k = 0; k < _reelHits151.length; k++) totalHits += _reelHits151[k];
+    if (!totalHits) return;
+    var el = document.getElementById('reelHitFreq');
+    if (!el) return;
+    el.textContent = 'Reel ' + (bestCol + 1) + ' hottest';
+    el.style.display = '';
+}
+
+// Sprint 152: Session start time display
+var _sessStartTime152 = 0;
+function _initSessStartTime() {
+    _sessStartTime152 = Date.now();
+    var el = document.getElementById('sessStartTime');
+    if (!el) return;
+    var d = new Date(_sessStartTime152);
+    var h = d.getHours();
+    var m = String(d.getMinutes()).padStart(2, '0');
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    el.textContent = 'Started ' + h + ':' + m + ' ' + ampm;
+    el.style.display = '';
+}
+
+// Sprint 153: Spin pace vs average
+var _paceSpins153 = 0; var _paceStart153 = 0; var _paceWindowSpins153 = 0; var _paceWindowStart153 = 0;
+function _resetSpinPace() {
+    _paceSpins153 = 0; _paceStart153 = Date.now();
+    _paceWindowSpins153 = 0; _paceWindowStart153 = Date.now();
+    var el = document.getElementById('spinPaceBadge');
+    if (el) el.style.display = 'none';
+}
+function _updateSpinPace() {
+    _paceSpins153++;
+    _paceWindowSpins153++;
+    var now = Date.now();
+    var totalMins = (now - _paceStart153) / 60000;
+    var windowMins = (now - _paceWindowStart153) / 60000;
+    if (windowMins >= 1) {
+        _paceWindowSpins153 = 0;
+        _paceWindowStart153 = now;
+    }
+    if (totalMins < 0.5 || _paceSpins153 < 10) return;
+    var avgSpm = _paceSpins153 / totalMins;
+    var curSpm = windowMins > 0.1 ? (_paceWindowSpins153 / windowMins) : avgSpm;
+    var el = document.getElementById('spinPaceBadge');
+    if (!el) return;
+    el.textContent = Math.round(curSpm) + '/min pace';
+    el.style.display = '';
+}
+
+// Sprint 154: Cumulative XP display (all-time from localStorage)
+var _xpStorKey154 = (typeof STORAGE_KEY_XP !== 'undefined') ? STORAGE_KEY_XP : 'casino_xp';
+function _resetCumulativeXp() {
+    var el = document.getElementById('cumulativeXpBadge');
+    if (!el) return;
+    try {
+        var xpData = JSON.parse(localStorage.getItem(_xpStorKey154) || '{}');
+        var total = xpData.total || xpData.xp || 0;
+        el.textContent = total.toLocaleString() + ' XP total';
+        el.style.display = total > 0 ? '' : 'none';
+    } catch(e) { el.style.display = 'none'; }
+}
+function _refreshCumulativeXp() {
+    // call after XP award to refresh
+    _resetCumulativeXp();
 }

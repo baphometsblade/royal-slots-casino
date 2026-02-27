@@ -16495,3 +16495,96 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     background: rgba(0,206,201,0.08);
     font-weight: 500;
 }
+
+
+/* =====================================================
+   SPRINT 147-154 STYLES
+   ===================================================== */
+
+/* Sprint 147: Outcome streak badge */
+.outcome-streak-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+.osb-win  { color: #00ff88; background: rgba(0,255,136,0.12); }
+.osb-loss { color: #ff7675; background: rgba(255,118,117,0.12); }
+
+/* Sprint 148: RTP convergence */
+.rtp-convergence {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+.rtpc-near { color: #00ff88; background: rgba(0,255,136,0.1); }
+.rtpc-mid  { color: #fdcb6e; background: rgba(253,203,110,0.1); }
+.rtpc-far  { color: #ff7675; background: rgba(255,118,117,0.1); }
+
+/* Sprint 149: Scatter gap badge */
+.scatter-gap-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(162,155,254,0.08);
+    color: #a29bfe;
+    font-weight: 600;
+}
+.scatter-gap-badge.sgb-mid  { color: #fdcb6e; background: rgba(253,203,110,0.1); }
+.scatter-gap-badge.sgb-long { color: #ff7675; background: rgba(255,118,117,0.1); animation: sgb-pulse 1.2s ease-in-out infinite alternate; }
+@keyframes sgb-pulse {
+    from { opacity: 0.8; }
+    to   { opacity: 1; box-shadow: 0 0 5px rgba(255,118,117,0.3); }
+}
+
+/* Sprint 150: Bonus round count */
+.bonus-round-count {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(253,203,110,0.15), rgba(253,121,168,0.15));
+    color: #fdcb6e;
+}
+
+/* Sprint 151: Reel hit frequency */
+.reel-hit-freq {
+    font-size: 10px;
+    color: #74b9ff;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(116,185,255,0.08);
+    font-weight: 500;
+}
+
+/* Sprint 152: Session start time */
+.sess-start-time {
+    font-size: 10px;
+    color: #636e72;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(99,110,114,0.08);
+    font-weight: 400;
+}
+
+/* Sprint 153: Spin pace badge */
+.spin-pace-badge {
+    font-size: 10px;
+    color: #00cec9;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(0,206,201,0.08);
+    font-weight: 500;
+}
+
+/* Sprint 154: Cumulative XP badge */
+.cumulative-xp-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(108,92,231,0.15), rgba(162,155,254,0.15));
+    color: #a29bfe;
+    border: 1px solid rgba(108,92,231,0.25);
+}
