@@ -1727,6 +1727,8 @@
             slotModalEl.removeAttribute('data-slot-theme');
             // Capture last played game before clearing, so lobby can show resume banner
             if (typeof captureLastPlayedGame === 'function') captureLastPlayedGame();
+            // Prompt player to rate the game they just played
+            if (typeof showGameRatingPrompt === 'function' && currentGame) showGameRatingPrompt(currentGame.id);
             currentGame = null;
             // Clean up reel strip animation loops
             reelStripData.forEach(data => {

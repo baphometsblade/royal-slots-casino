@@ -136,6 +136,7 @@
                         <button class="nav-btn" onclick="if(typeof openPromoCode==='function')openPromoCode()">🔑 Promo</button>
                         <button class="nav-btn" onclick="if(typeof openSpinHistory==='function')openSpinHistory()">📜 History</button>
                         <button class="nav-btn" onclick="if(typeof openPlayerCard==='function')openPlayerCard()">🃏 My Card</button>
+                        <button class="nav-btn" onclick="if(typeof openLuckySpin==='function')openLuckySpin()">🎡 Lucky Spin</button>
                     </div>
                 </div>
                 <div class="hero-stats">
@@ -976,6 +977,33 @@
             <div class="pc-footer" id="pcFooter"></div>
             <button class="pc-close" onclick="document.getElementById('playerCardModal').style.display='none'">Close</button>
         </div>
+    </div>
+
+    <!-- Lucky Spin Modal (Sprint 36) -->
+    <div id="luckySpinModal" class="modal-overlay" style="display:none;">
+        <div class="ls-card">
+            <h2 class="ls-title">🎡 Lucky Spin</h2>
+            <div class="ls-wheel-wrap">
+                <div class="ls-wheel" id="lsWheel"></div>
+                <div class="ls-pointer">▼</div>
+            </div>
+            <div class="ls-status" id="lsStatus">Free spin available!</div>
+            <button class="ls-spin-btn" id="lsSpinBtn" onclick="if(typeof spinLuckyWheel==='function')spinLuckyWheel()">SPIN</button>
+            <button class="ls-close" onclick="document.getElementById('luckySpinModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Game Rating Prompt (Sprint 36) -->
+    <div class="game-rating-prompt" id="gameRatingPrompt" style="display:none;">
+        <div class="grp-text">Rate this game</div>
+        <div class="grp-stars" id="grpStars">
+            <span class="grp-star" data-val="1" onclick="if(typeof rateGame==='function')rateGame(1)">★</span>
+            <span class="grp-star" data-val="2" onclick="if(typeof rateGame==='function')rateGame(2)">★</span>
+            <span class="grp-star" data-val="3" onclick="if(typeof rateGame==='function')rateGame(3)">★</span>
+            <span class="grp-star" data-val="4" onclick="if(typeof rateGame==='function')rateGame(4)">★</span>
+            <span class="grp-star" data-val="5" onclick="if(typeof rateGame==='function')rateGame(5)">★</span>
+        </div>
+        <button class="grp-dismiss" onclick="document.getElementById('gameRatingPrompt').style.display='none'">Skip</button>
     </div>
 
     <!-- Deposit Modal -->

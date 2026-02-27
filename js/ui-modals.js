@@ -2643,3 +2643,178 @@
 
         window.getChallengeStreakMultiplier = getChallengeStreakMultiplier;
         window.recordChallengeStreakDay = recordChallengeStreakDay;
+
+        /* ── Sprint 36: Lucky Spin Mini-Game ─────────────── */
+        const LS_KEY = 'matrixLuckySpin';
+        const LS_COOLDOWN = 86400000; // 24h
+        const LS_COST = 50;
+        const LS_SEGMENTS = [
+            { label: '$50', value: 50, type: 'cash', color: '#22c55e' },
+            { label: '50 XP', value: 50, type: 'xp', color: '#a855f7' },
+            { label: '$100', value: 100, type: 'cash', color: '#3b82f6' },
+            { label: '$250', value: 250, type: 'cash', color: '#f59e0b' },
+            { label: '$50', value: 50, type: 'cash', color: '#22c55e' },
+            { label: '100 XP', value: 100, type: 'xp', color: '#c084fc' },
+            { label: '$100', value: 100, type: 'cash', color: '#3b82f6' },
+            { label: '$500', value: 500, type: 'cash', color: '#ef4444' }
+        ];
+
+        function openLuckySpin() {
+            var modal = document.getElementById('luckySpinModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            _renderLuckyWheel();
+            _updateLuckySpinStatus();
+        }
+
+        function _renderLuckyWheel() {
+            var wheel = document.getElementById('lsWheel');
+            if (!wheel) return;
+            var segAngle = 360 / LS_SEGMENTS.length;
+            var html = '';
+            LS_SEGMENTS.forEach(function(seg, i) {
+                var rotation = segAngle * i;
+                html += '<div class="ls-seg" style="transform:rotate(' + rotation + 'deg);'
+                    + 'background:' + seg.color + ';">'
+                    + '<span class="ls-seg-label">' + seg.label + '</span></div>';
+            });
+            wheel.innerHTML = html;
+        }
+
+        function _updateLuckySpinStatus() {
+            var status = document.getElementById('lsStatus');
+            var btn = document.getElementById('lsSpinBtn');
+            if (!status || !btn) return;
+            var state = null;
+            try { state = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
+            var now = Date.now();
+            var isFree = !state || (now - state.lastFree) >= LS_COOLDOWN;
+            if (isFree) {
+                status.textContent = '✨ Free spin available!';
+                status.className = 'ls-status ls-free';
+                btn.textContent = 'SPIN FREE';
+                btn.disabled = false;
+            } else {
+                var remaining = LS_COOLDOWN - (now - state.lastFree);
+                var hrs = Math.floor(remaining / 3600000);
+                var mins = Math.floor((remaining % 3600000) / 60000);
+                status.textContent = 'Next free spin in ' + hrs + 'h ' + mins + 'm — or spin for $' + LS_COST;
+                status.className = 'ls-status';
+                btn.textContent = 'SPIN ($' + LS_COST + ')';
+                btn.disabled = balance < LS_COST;
+            }
+        }
+
+        function spinLuckyWheel() {
+            var btn = document.getElementById('lsSpinBtn');
+            if (!btn || btn.disabled) return;
+            var state = null;
+            try { state = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
+            var now = Date.now();
+            var isFree = !state || (now - state.lastFree) >= LS_COOLDOWN;
+            if (!isFree) {
+                if (balance < LS_COST) return;
+                balance -= LS_COST;
+                updateBalance();
+            }
+            btn.disabled = true;
+            // Pick random segment
+            var idx = Math.floor(Math.random() * LS_SEGMENTS.length);
+            var prize = LS_SEGMENTS[idx];
+            // Animate wheel rotation
+            var wheel = document.getElementById('lsWheel');
+            var segAngle = 360 / LS_SEGMENTS.length;
+            var targetAngle = 360 * 5 + (360 - segAngle * idx - segAngle / 2);
+            if (wheel) {
+                wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
+                wheel.style.transform = 'rotate(' + targetAngle + 'deg)';
+            }
+            setTimeout(function() {
+                // Award prize
+                if (prize.type === 'cash') {
+                    balance += prize.value;
+                    updateBalance();
+                } else if (prize.type === 'xp' && typeof awardXP === 'function') {
+                    awardXP(prize.value);
+                }
+                // Update state
+                if (!state) state = { lastFree: 0, totalSpins: 0 };
+                if (isFree) state.lastFree = now;
+                state.totalSpins = (state.totalSpins || 0) + 1;
+                localStorage.setItem(LS_KEY, JSON.stringify(state));
+                // Show result
+                var status = document.getElementById('lsStatus');
+                if (status) {
+                    status.textContent = '🎉 You won ' + prize.label + '!';
+                    status.className = 'ls-status ls-won';
+                }
+                setTimeout(function() {
+                    if (wheel) {
+                        wheel.style.transition = 'none';
+                        wheel.style.transform = 'rotate(0deg)';
+                    }
+                    _updateLuckySpinStatus();
+                }, 2000);
+            }, 4200);
+        }
+
+        window.openLuckySpin = openLuckySpin;
+        window.spinLuckyWheel = spinLuckyWheel;
+
+        /* ── Sprint 36: Game Rating System ───────────────── */
+        const GR_KEY = 'matrixGameRatings';
+        const MR_KEY = 'matrixMyRatings';
+
+        function showGameRatingPrompt(gameId) {
+            var prompt = document.getElementById('gameRatingPrompt');
+            if (!prompt || !gameId) return;
+            // Check if already rated
+            var myRatings = {};
+            try { myRatings = JSON.parse(localStorage.getItem(MR_KEY)) || {}; } catch(e) {}
+            if (myRatings[gameId]) return; // already rated
+            prompt.style.display = 'flex';
+            prompt.dataset.gameId = gameId;
+            // Reset stars
+            var stars = prompt.querySelectorAll('.grp-star');
+            stars.forEach(function(s) { s.classList.remove('grp-active'); });
+        }
+
+        function rateGame(rating) {
+            var prompt = document.getElementById('gameRatingPrompt');
+            if (!prompt) return;
+            var gameId = prompt.dataset.gameId;
+            if (!gameId) return;
+            // Save personal rating
+            var myRatings = {};
+            try { myRatings = JSON.parse(localStorage.getItem(MR_KEY)) || {}; } catch(e) {}
+            myRatings[gameId] = rating;
+            localStorage.setItem(MR_KEY, JSON.stringify(myRatings));
+            // Update aggregate
+            var allRatings = {};
+            try { allRatings = JSON.parse(localStorage.getItem(GR_KEY)) || {}; } catch(e) {}
+            if (!allRatings[gameId]) allRatings[gameId] = { total: 0, count: 0 };
+            allRatings[gameId].total += rating;
+            allRatings[gameId].count += 1;
+            localStorage.setItem(GR_KEY, JSON.stringify(allRatings));
+            // Highlight stars
+            var stars = prompt.querySelectorAll('.grp-star');
+            stars.forEach(function(s) {
+                s.classList.toggle('grp-active', parseInt(s.getAttribute('data-val')) <= rating);
+            });
+            // Dismiss after brief delay
+            setTimeout(function() { prompt.style.display = 'none'; }, 800);
+            if (typeof showToast === 'function') showToast('Thanks for rating!', 'success');
+        }
+
+        function getGameRating(gameId) {
+            try {
+                var allRatings = JSON.parse(localStorage.getItem(GR_KEY)) || {};
+                var r = allRatings[gameId];
+                if (r && r.count > 0) return (r.total / r.count).toFixed(1);
+            } catch(e) {}
+            return null;
+        }
+
+        window.showGameRatingPrompt = showGameRatingPrompt;
+        window.rateGame = rateGame;
+        window.getGameRating = getGameRating;

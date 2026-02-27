@@ -10,7 +10,7 @@
     'use strict';
 
     // ── State ────────────────────────────────────────────────────────────
-    var soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+    var soundEnabled = localStorage.getItem('soundEnabled') === 'true';
 
     var soundVolume = (function () {
         var stored = parseFloat(localStorage.getItem('casinoSoundVolume'));

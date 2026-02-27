@@ -141,6 +141,12 @@ async function waitForPageTransitionIdle(page, timeout = 10000) {
 }
 
 async function dismissFeaturePopupIfVisible(page) {
+  // Dismiss intro splash if still visible (blocks pointer events for up to 1.85s)
+  await page.evaluate(() => {
+    const splash = document.querySelector('.slot-intro-splash');
+    if (splash) splash.remove();
+  });
+
   const popupVisible = await page.evaluate(() => {
     const overlay = document.getElementById("slotFeaturePopup");
     if (!overlay) return false;

@@ -14932,4 +14932,159 @@ button.active .filter-tab-count {
     .fqb-tile { width: 50px; }
     .fqb-icon { width: 34px; height: 34px; font-size: 16px; }
     .fqb-name { font-size: 8px; max-width: 50px; }
+    .ls-card { padding: 24px 16px; }
+    .ls-wheel-wrap { width: 240px; height: 240px; }
+    .ls-pointer { font-size: 22px; }
+    .grp-card { padding: 16px 12px; }
+    .grp-stars { gap: 6px; }
+    .grp-star { font-size: 28px; }
+}
+
+/* ==================== Sprint 36: Lucky Spin Modal ==================== */
+.ls-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 16px;
+    padding: 32px 24px;
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+}
+.ls-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffd700;
+    margin-bottom: 6px;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+}
+.ls-subtitle {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+.ls-wheel-wrap {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 0 auto 20px;
+}
+.ls-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid #ffd700;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(0,0,0,0.4);
+    transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+}
+.ls-seg {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.ls-seg:nth-child(odd) { background: linear-gradient(135deg, #e63946, #c2185b); }
+.ls-seg:nth-child(even) { background: linear-gradient(135deg, #1d3557, #0d47a1); }
+.ls-seg:nth-child(3n) { background: linear-gradient(135deg, #2a9d8f, #00695c); }
+.ls-pointer {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    z-index: 2;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+.ls-status {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 14px;
+}
+.ls-status .ls-free { color: #4ade80; font-weight: 600; }
+.ls-spin-btn {
+    padding: 12px 36px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
+    color: #1a1a2e;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+.ls-spin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4); }
+.ls-spin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.ls-result {
+    margin-top: 16px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    min-height: 30px;
+}
+
+/* ==================== Sprint 36: Game Rating Prompt ==================== */
+.game-rating-prompt {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    z-index: 10001;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.game-rating-prompt.active { transform: translateX(-50%) translateY(0); }
+.grp-card {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 14px;
+    padding: 20px 24px;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    min-width: 260px;
+}
+.grp-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 12px;
+}
+.grp-stars {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.grp-star {
+    font-size: 32px;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+    filter: grayscale(1) brightness(0.5);
+}
+.grp-star:hover, .grp-star.grp-lit {
+    filter: grayscale(0) brightness(1);
+    transform: scale(1.2);
+}
+.grp-dismiss {
+    font-size: 12px;
+    color: #64748b;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: color 0.2s;
+}
+.grp-dismiss:hover { color: #94a3b8; }
+.grp-avg {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 6px;
 }
