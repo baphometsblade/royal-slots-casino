@@ -1518,6 +1518,14 @@
                 _initBhChart();          // 55 — bet history chart
                 _resetWinRate();         // 56 — win rate display
                 _initAvgBet();           // 57 — average bet
+                _initSlotNet();          // 59 — session net
+                _showQuickBetPresets();  // 60 — quick bet presets
+                _resetFeatureTrigger();  // 61 — feature count
+                _resetMaxWinSeen();      // 62 — max win
+                _resetLossStreak();      // 63 — loss streak
+                _initRtpGauge();         // 64 — RTP gauge
+                _initBalSparkline();     // 65 — balance sparkline
+                _resetCashoutHint();     // 66 — cashout hint
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -1805,6 +1813,8 @@
             _stopStTimer();
             _clearApProgress();
             _hideKbHints();
+            _hideQuickBetPresets();  // 60
+            _resetCashoutHint();     // 66
             // Sprint 41 — hide quick switch
             var _qss = document.getElementById('quickSwitchStrip'); if (_qss) _qss.style.display = 'none';
             // Sprint 37 — clean up demo mode if active
@@ -2257,6 +2267,8 @@
             _updateBhChart(currentBet);  // Sprint 55 — bet history
             _updateAvgBet(currentBet);   // Sprint 57 — avg bet
             _checkBalanceMilestone();    // Sprint 58 — balance milestones
+            _updateSlotNet();            // Sprint 59 — session net
+            _updateBalSparkline(balance); // Sprint 65 — balance sparkline
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
             if (window._turboSpinEnabled) {
@@ -2913,6 +2925,10 @@
                 if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
                 _showLastWinPreview(currentGrid); // Sprint 50
                 _updateLuckySymbol(currentGrid); // Sprint 53 — lucky symbol
+                _updateMaxWinSeen(winAmount);        // 62 — max win seen
+                if (freeSpinsActive || winAmount >= currentBet * 5) _incrementFeatureTrigger(); // 61
+                _updateLossStreak(true);             // 63 — reset loss streak on win
+                _checkCashoutHint();                 // 66 — cashout hint check
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -3050,6 +3066,7 @@
             _updateHotCold(winAmount > 0); // Sprint 53
             _updateWinRate(winAmount > 0); // Sprint 56
             _updateApProgress();           // Sprint 54
+            _updateLossStreak(false);   // 63 — increment loss streak on no-win spin
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -6443,6 +6460,10 @@
                 if (typeof recordRecentWin === 'function' && winAmount >= currentBet * 2) recordRecentWin((game && game.name) || '', (game && game.id) || '', winAmount, currentBet);
                 _showLastWinPreview(currentGrid); // Sprint 50
                 _updateLuckySymbol(currentGrid); // Sprint 53 — lucky symbol
+                _updateMaxWinSeen(winAmount);        // 62 — max win seen
+                if (freeSpinsActive || winAmount >= currentBet * 5) _incrementFeatureTrigger(); // 61
+                _updateLossStreak(true);             // 63 — reset loss streak on win
+                _checkCashoutHint();                 // 66 — cashout hint check
 
                 if (freeSpinsActive) {
                     freeSpinsTotalWin += winAmount;
@@ -6545,6 +6566,7 @@
             _updateHotCold(winAmount > 0); // Sprint 53
             _updateWinRate(winAmount > 0); // Sprint 56
             _updateApProgress();           // Sprint 54
+            _updateLossStreak(false);   // 63 — increment loss streak on no-win spin
             if (typeof _updateSparkline === 'function') _updateSparkline(balance);
 
             // Promo engagement triggers
@@ -10442,3 +10464,192 @@
                 }
             }
         }
+
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 59-66: ADVANCED HUD ELEMENTS
+// ═══════════════════════════════════════════════════════
+
+// ── Sprint 59: Session Net Display ──────────────────────
+var _slotSessionStartBal = 0;
+
+function _initSlotNet() {
+    _slotSessionStartBal = balance;
+    var el = document.getElementById('slotNetDisplay');
+    if (el) el.style.display = 'none';
+}
+
+function _updateSlotNet() {
+    var el = document.getElementById('slotNetDisplay');
+    if (!el) return;
+    var net = balance - _slotSessionStartBal;
+    if (net === 0) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    var sign = net > 0 ? '+' : '';
+    el.textContent = sign + '$' + Math.abs(net).toFixed(2);
+    el.className = 'slot-net-display ' + (net > 0 ? 'snd-up' : 'snd-down');
+}
+
+// ── Sprint 60: Quick Bet Presets ─────────────────────────
+function _quickBet(fraction) {
+    var game = currentGame || {};
+    var opts = game.betOptions;
+    if (!opts || opts.length === 0) return;
+    var sorted = opts.slice().sort(function(a,b){return a-b;});
+    var idx;
+    if (fraction <= 0) {
+        idx = 0;
+    } else if (fraction >= 1) {
+        idx = sorted.length - 1;
+    } else {
+        idx = Math.round(fraction * (sorted.length - 1));
+    }
+    currentBet = sorted[Math.max(0, Math.min(idx, sorted.length-1))];
+    var slider = document.getElementById('betRange');
+    if (slider) {
+        slider.value = currentBet;
+        slider.dispatchEvent(new Event('input'));
+    }
+    if (typeof updateBetDisplay === 'function') updateBetDisplay();
+    if (typeof _updateBetIndicator === 'function') _updateBetIndicator();
+}
+
+function _showQuickBetPresets() {
+    var el = document.getElementById('quickBetPresets');
+    if (el) el.style.display = '';
+}
+
+function _hideQuickBetPresets() {
+    var el = document.getElementById('quickBetPresets');
+    if (el) el.style.display = 'none';
+}
+
+// ── Sprint 61: Feature Trigger Counter ──────────────────
+var _featureTriggerCount = 0;
+
+function _resetFeatureTrigger() {
+    _featureTriggerCount = 0;
+    var el = document.getElementById('featureCountBadge');
+    if (el) el.style.display = 'none';
+}
+
+function _incrementFeatureTrigger() {
+    _featureTriggerCount++;
+    var el = document.getElementById('featureCountBadge');
+    if (!el) return;
+    el.textContent = '🎯 ' + _featureTriggerCount + 'x';
+    el.style.display = '';
+}
+
+// ── Sprint 62: Max Win Seen ──────────────────────────────
+var _maxWinMult = 0;
+
+function _resetMaxWinSeen() {
+    _maxWinMult = 0;
+    var el = document.getElementById('maxWinSeen');
+    if (el) el.style.display = 'none';
+}
+
+function _updateMaxWinSeen(amount) {
+    if (!amount || amount <= 0) return;
+    if (amount <= _maxWinMult) return;
+    _maxWinMult = amount;
+    var el = document.getElementById('maxWinSeen');
+    if (!el) return;
+    el.textContent = '🏆 ' + '$' + amount.toFixed(2);
+    el.style.display = '';
+}
+
+// ── Sprint 63: Loss Streak Badge ─────────────────────────
+var _lossStreak = 0;
+
+function _resetLossStreak() {
+    _lossStreak = 0;
+    var el = document.getElementById('lossStreakBadge');
+    if (el) el.style.display = 'none';
+}
+
+function _updateLossStreak(won) {
+    if (won) {
+        _lossStreak = 0;
+        var el = document.getElementById('lossStreakBadge');
+        if (el) el.style.display = 'none';
+        return;
+    }
+    _lossStreak++;
+    var el = document.getElementById('lossStreakBadge');
+    if (!el) return;
+    if (_lossStreak >= 3) {
+        el.textContent = '🔴 ' + _lossStreak + 'x';
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// ── Sprint 64: RTP Gauge ─────────────────────────────────
+function _initRtpGauge() {
+    var game = currentGame || {};
+    var rtp = game.rtp;
+    var el = document.getElementById('rtpGauge');
+    var lbl = document.getElementById('rtpGaugeLabel');
+    if (!el) return;
+    if (!rtp) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    el.style.setProperty('--rtp-pct', rtp + '%');
+    if (lbl) lbl.textContent = rtp + '%';
+}
+
+// ── Sprint 65: Balance History Sparkline ─────────────────
+var _balSparkData = [];
+var _BS_MAX = 30;
+
+function _initBalSparkline() {
+    _balSparkData = [];
+    var el = document.getElementById('balanceSparkline');
+    if (el) el.style.display = 'none';
+}
+
+function _updateBalSparkline(bal) {
+    _balSparkData.push(bal);
+    if (_balSparkData.length > _BS_MAX) _balSparkData.shift();
+    if (_balSparkData.length < 2) return;
+    var el = document.getElementById('balanceSparkline');
+    var line = document.getElementById('bsLine');
+    if (!el || !line) return;
+    el.style.display = '';
+    var data = _balSparkData;
+    var minVal = Math.min.apply(null, data);
+    var maxVal = Math.max.apply(null, data);
+    var range = maxVal - minVal || 1;
+    var pts = data.map(function(v, i) {
+        var x = i * (120 / (data.length - 1));
+        var y = 30 - ((v - minVal) / range) * 28 + 1;
+        return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    line.setAttribute('points', pts.join(' '));
+    var color = data[data.length-1] >= data[0] ? '#4ade80' : '#f87171';
+    line.setAttribute('stroke', color);
+}
+
+// ── Sprint 66: Cashout Hint ──────────────────────────────
+var _cashoutHintShown = false;
+
+function _resetCashoutHint() {
+    _cashoutHintShown = false;
+    var el = document.getElementById('cashoutHint');
+    if (el) el.style.display = 'none';
+}
+
+function _checkCashoutHint() {
+    if (_cashoutHintShown) return;
+    if (!_slotSessionStartBal || _slotSessionStartBal <= 0) return;
+    if (balance >= _slotSessionStartBal * 1.5) {
+        _cashoutHintShown = true;
+        var el = document.getElementById('cashoutHint');
+        if (el) {
+            el.style.display = '';
+            setTimeout(function() { el.style.display = 'none'; }, 5000);
+        }
+    }
+}
