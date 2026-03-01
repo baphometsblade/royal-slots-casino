@@ -143,7 +143,8 @@ async function showDashboard() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     const me = await apiFetch('/auth/me');
-    if (me) document.getElementById('adminName').textContent = me.user.username + ' (admin)';
+    if (!me) return; // token expired or invalid — apiFetch already called logout()
+    document.getElementById('adminName').textContent = me.user.username + ' (admin)';
     loadStats();
 }
 
