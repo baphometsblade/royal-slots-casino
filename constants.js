@@ -847,6 +847,8 @@ const REFERRAL_BONUS_REFERRER = 500;
 const REFERRAL_BONUS_REFEREE = 250;
 /** Minimum first-deposit amount to trigger referral bonuses */
 const REFERRAL_MIN_DEPOSIT = 10;
+const WAGERING_MULTIPLIER_DEFAULT = 30;
+const WAGERING_MULTIPLIER_RELOAD = 25;
 
 /**
  * VIP tier definitions ordered by wagering threshold.

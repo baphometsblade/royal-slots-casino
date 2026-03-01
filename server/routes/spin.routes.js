@@ -222,6 +222,62 @@ router.post('/', authenticate, async (req, res) => {
         // ── Update game stats (house edge tracking) ──
         await houseEdge.updateGameStats(db, gameId, usedFreeSpin ? 0 : bet, spinResult.winAmount);
 
+        // ── Wagering progress tracking ──
+        if (!usedFreeSpin && bet > 0) {
+            try {
+                const wagerUser = await db.get(
+                    'SELECT wagering_requirement, wagering_progress, bonus_balance FROM users WHERE id = ?',
+                    [userId]
+                );
+                if (wagerUser && wagerUser.wagering_requirement > 0 && wagerUser.wagering_progress < wagerUser.wagering_requirement) {
+                    const newProgress = Math.min(
+                        wagerUser.wagering_progress + bet,
+                        wagerUser.wagering_requirement
+                    );
+                    if (newProgress >= wagerUser.wagering_requirement && wagerUser.bonus_balance > 0) {
+                        // Wagering complete — convert bonus to real balance
+                        const userNow = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [userId]);
+                        const convertAmount = userNow.bonus_balance;
+                        await db.run(
+                            'UPDATE users SET wagering_progress = ?, bonus_balance = 0, balance = balance + ? WHERE id = ?',
+                            [newProgress, convertAmount, userId]
+                        );
+                        finalBalance += convertAmount;
+                        await db.run(
+                            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                            [userId, 'bonus_conversion', convertAmount, finalBalance - convertAmount, finalBalance, 'Wagering requirement completed']
+                        );
+                    } else {
+                        await db.run(
+                            'UPDATE users SET wagering_progress = ? WHERE id = ?',
+                            [newProgress, userId]
+                        );
+                    }
+                }
+            } catch (wagerErr) {
+                console.error('[Spin] Wagering progress error:', wagerErr);
+                // Non-blocking — don't fail the spin
+            }
+        }
+
+        // Include wagering status in response
+        let wageringStatus = null;
+        try {
+            const wu = await db.get(
+                'SELECT bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?',
+                [userId]
+            );
+            if (wu && wu.wagering_requirement > 0) {
+                wageringStatus = {
+                    bonusBalance: wu.bonus_balance,
+                    requirement: wu.wagering_requirement,
+                    progress: wu.wagering_progress,
+                    complete: wu.wagering_progress >= wu.wagering_requirement,
+                    pct: Math.min(100, Math.round((wu.wagering_progress / wu.wagering_requirement) * 100)),
+                };
+            }
+        } catch (_) {}
+
         // ── Response ──
         res.json({
             grid: spinResult.grid,
@@ -233,6 +289,7 @@ router.post('/', authenticate, async (req, res) => {
             freeSpinsAwarded: spinResult.freeSpinsAwarded,
             usedFreeSpin,
             jackpotWon: spinResult.jackpotWon || null,
+            wageringStatus,
         });
 
     } catch (err) {

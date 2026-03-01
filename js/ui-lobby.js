@@ -103,6 +103,37 @@
             recordBalancePoint(balance);
         }
 
+        // ── Wagering Progress Display ────────────────────────────────
+        var _lastWageringStatus = null;
+
+        function updateWageringDisplay(wagerStatus) {
+            _lastWageringStatus = wagerStatus;
+            var wrap = document.getElementById('wageringBarWrap');
+            var fill = document.getElementById('wageringBarFill');
+            var label = document.getElementById('wageringBarLabel');
+            if (!wrap) return;
+            if (!wagerStatus || !wagerStatus.active) {
+                wrap.style.display = 'none';
+                return;
+            }
+            wrap.style.display = '';
+            if (fill) fill.style.width = Math.min(100, wagerStatus.pct || 0) + '%';
+            if (label) label.textContent = 'Bonus: $' + (wagerStatus.bonusBalance || 0).toFixed(0) + ' (' + (wagerStatus.pct || 0) + '% wagered)';
+
+            // Also update wallet display if visible
+            var walletBonus = document.getElementById('walletBonusDisplay');
+            if (walletBonus) {
+                walletBonus.style.display = '';
+                var bonusBal = document.getElementById('walletBonusBalance');
+                if (bonusBal) bonusBal.textContent = (wagerStatus.bonusBalance || 0).toFixed(2);
+                var info = document.getElementById('walletWageringInfo');
+                if (info) {
+                    var remaining = (wagerStatus.requirement - wagerStatus.progress).toFixed(0);
+                    info.textContent = 'Wager $' + remaining + ' more to unlock (' + wagerStatus.pct + '% complete)';
+                }
+            }
+        }
+
         // ── Balance History Sparkline (Sprint 29) ────────────────────────────────
         var _BALANCE_HIST_KEY = 'matrixBalanceHistory';
         var _BALANCE_HIST_MAX = 100;

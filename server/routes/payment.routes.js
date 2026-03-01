@@ -432,7 +432,7 @@ router.post('/withdraw', authenticate, async (req, res) => {
             return res.status(403).json({ error: exclusion });
         }
 
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        const user = await db.get('SELECT balance, bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?', [req.user.id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -459,6 +459,22 @@ router.post('/withdraw', authenticate, async (req, res) => {
                 wagerRequired: deposited,
                 wagerCompleted: wagered,
                 wagerRemaining: deposited - wagered
+            });
+        }
+
+        // Block withdrawal if active bonus wagering is incomplete
+        if (user.wagering_requirement > 0 && user.wagering_progress < user.wagering_requirement) {
+            const remaining = (user.wagering_requirement - user.wagering_progress).toFixed(2);
+            const pct = Math.round((user.wagering_progress / user.wagering_requirement) * 100);
+            return res.status(400).json({
+                error: `Bonus wagering requirement not met. Wager $${remaining} more to unlock your $${(user.bonus_balance || 0).toFixed(2)} bonus. (${pct}% complete)`,
+                bonusWagering: {
+                    requirement: user.wagering_requirement,
+                    progress: user.wagering_progress,
+                    remaining: user.wagering_requirement - user.wagering_progress,
+                    bonusBalance: user.bonus_balance || 0,
+                    pct
+                }
             });
         }
 
@@ -750,7 +766,7 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
             return res.status(400).json({ error: `Deposit already ${deposit.status}` });
         }
 
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
+        const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [deposit.user_id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -758,15 +774,22 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
         const balanceBefore = user.balance;
         let balanceAfter = balanceBefore + deposit.amount;
 
-        // First-deposit bonus: 100% match up to $500
+        // Determine bonus: first deposit or reload
         let bonusAmount = 0;
+        let wageringMult = 0;
+        let bonusType = '';
         const priorDeposits = await db.get(
             "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
             [deposit.user_id]
         );
         if (priorDeposits && priorDeposits.count === 0) {
             bonusAmount = Math.min(deposit.amount * (config.FIRST_DEPOSIT_BONUS_PCT / 100), config.FIRST_DEPOSIT_BONUS_MAX);
-            balanceAfter += bonusAmount;
+            wageringMult = config.FIRST_DEPOSIT_WAGERING_MULT || 30;
+            bonusType = 'first_deposit_bonus';
+        } else {
+            bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 50) / 100), config.RELOAD_BONUS_MAX || 250);
+            wageringMult = config.RELOAD_WAGERING_MULT || 25;
+            bonusType = 'reload_bonus';
         }
 
         await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
@@ -782,9 +805,17 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
         );
 
         if (bonusAmount > 0) {
+            const wagerReq = bonusAmount * wageringMult;
+            await db.run(
+                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                [bonusAmount, wagerReq, deposit.user_id]
+            );
+            const refLabel = bonusType === 'first_deposit_bonus'
+                ? `FIRST-DEPOSIT-MATCH (${wageringMult}x wagering)`
+                : `RELOAD-MATCH (${wageringMult}x wagering)`;
             await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                [deposit.user_id, 'first_deposit_bonus', bonusAmount, balanceAfter - bonusAmount, balanceAfter, 'FIRST-DEPOSIT-100PCT-MATCH']
+                [deposit.user_id, bonusType, bonusAmount, balanceAfter, balanceAfter, refLabel]
             );
         }
 
@@ -833,7 +864,7 @@ router.post('/webhook/confirm', async (req, res) => {
             return res.status(200).json({ message: `Deposit already ${deposit.status}`, depositId: deposit.id });
         }
 
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
+        const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [deposit.user_id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -841,15 +872,22 @@ router.post('/webhook/confirm', async (req, res) => {
         const balanceBefore = user.balance;
         let balanceAfter = balanceBefore + deposit.amount;
 
-        // First-deposit bonus
+        // Determine bonus: first deposit or reload
         let bonusAmount = 0;
+        let wageringMult = 0;
+        let bonusType = '';
         const priorDeposits = await db.get(
             "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
             [deposit.user_id]
         );
         if (priorDeposits && priorDeposits.count === 0) {
             bonusAmount = Math.min(deposit.amount * (config.FIRST_DEPOSIT_BONUS_PCT / 100), config.FIRST_DEPOSIT_BONUS_MAX);
-            balanceAfter += bonusAmount;
+            wageringMult = config.FIRST_DEPOSIT_WAGERING_MULT || 30;
+            bonusType = 'first_deposit_bonus';
+        } else {
+            bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 50) / 100), config.RELOAD_BONUS_MAX || 250);
+            wageringMult = config.RELOAD_WAGERING_MULT || 25;
+            bonusType = 'reload_bonus';
         }
 
         await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
@@ -860,9 +898,17 @@ router.post('/webhook/confirm', async (req, res) => {
         );
 
         if (bonusAmount > 0) {
+            const wagerReq = bonusAmount * wageringMult;
+            await db.run(
+                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                [bonusAmount, wagerReq, deposit.user_id]
+            );
+            const refLabel = bonusType === 'first_deposit_bonus'
+                ? `FIRST-DEPOSIT-MATCH (${wageringMult}x wagering)`
+                : `RELOAD-MATCH (${wageringMult}x wagering)`;
             await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                [deposit.user_id, 'first_deposit_bonus', bonusAmount, balanceAfter - bonusAmount, balanceAfter, 'FIRST-DEPOSIT-100PCT-MATCH']
+                [deposit.user_id, bonusType, bonusAmount, balanceAfter, balanceAfter, refLabel]
             );
         }
 

@@ -198,6 +198,9 @@ const USER_MIGRATIONS = [
     ['referral_code', 'TEXT'],
     ['referred_by', 'INTEGER'],
     ['referral_bonus_paid', 'INTEGER DEFAULT 0'],
+    ['bonus_balance', 'NUMERIC(15,2) DEFAULT 0'],
+    ['wagering_requirement', 'NUMERIC(15,2) DEFAULT 0'],
+    ['wagering_progress', 'NUMERIC(15,2) DEFAULT 0'],
 ];
 
 module.exports = { TABLES, INDEXES, USER_MIGRATIONS };

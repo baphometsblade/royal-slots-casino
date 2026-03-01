@@ -443,7 +443,7 @@ router.get('/pending-deposits', async (req, res) => {
     }
 });
 
-// POST /api/admin/approve-deposit — Approve a pending deposit (credit player balance)
+// POST /api/admin/approve-deposit — Approve a pending deposit (credit player balance + bonus to bonus_balance)
 router.post('/approve-deposit', async (req, res) => {
     try {
         const { depositId } = req.body;
@@ -453,24 +453,34 @@ router.post('/approve-deposit', async (req, res) => {
         if (!deposit) return res.status(404).json({ error: 'Deposit not found' });
         if (deposit.status !== 'pending') return res.status(400).json({ error: `Deposit is already ${deposit.status}` });
 
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
+        const user = await db.get('SELECT balance, bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?', [deposit.user_id]);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
+        const cfg = require('../config');
         const balanceBefore = user.balance;
         let balanceAfter = balanceBefore + deposit.amount;
 
-        // First-deposit bonus: 100% match up to $500
+        // Determine bonus: first deposit or reload
         let bonusAmount = 0;
+        let wageringMult = 0;
+        let bonusType = '';
         const priorDeposits = await db.get(
             "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
             [deposit.user_id]
         );
         if (priorDeposits && priorDeposits.count === 0) {
-            const cfg = require('../config');
+            // First deposit: 100% match up to $500
             bonusAmount = Math.min(deposit.amount * (cfg.FIRST_DEPOSIT_BONUS_PCT / 100), cfg.FIRST_DEPOSIT_BONUS_MAX);
-            balanceAfter += bonusAmount;
+            wageringMult = cfg.FIRST_DEPOSIT_WAGERING_MULT || 30;
+            bonusType = 'first_deposit_bonus';
+        } else {
+            // Reload deposit: 50% match up to $250
+            bonusAmount = Math.min(deposit.amount * ((cfg.RELOAD_BONUS_PCT || 50) / 100), cfg.RELOAD_BONUS_MAX || 250);
+            wageringMult = cfg.RELOAD_WAGERING_MULT || 25;
+            bonusType = 'reload_bonus';
         }
 
+        // Credit deposit to real balance
         await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
         await db.run("UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?", [depositId]);
         await db.run(
@@ -478,18 +488,26 @@ router.post('/approve-deposit', async (req, res) => {
             [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference || 'admin-approved']
         );
 
-        // Log bonus as separate transaction if awarded
+        // Credit bonus to bonus_balance with wagering requirement
         if (bonusAmount > 0) {
+            const wagerReq = bonusAmount * wageringMult;
+            await db.run(
+                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                [bonusAmount, wagerReq, deposit.user_id]
+            );
+            const refLabel = bonusType === 'first_deposit_bonus'
+                ? `FIRST-DEPOSIT-${cfg.FIRST_DEPOSIT_BONUS_PCT}PCT-MATCH (${wageringMult}x wagering)`
+                : `RELOAD-${cfg.RELOAD_BONUS_PCT || 50}PCT-MATCH (${wageringMult}x wagering)`;
             await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                [deposit.user_id, 'first_deposit_bonus', bonusAmount, balanceAfter - bonusAmount, balanceAfter, 'FIRST-DEPOSIT-100PCT-MATCH']
+                [deposit.user_id, bonusType, bonusAmount, balanceAfter, balanceAfter, refLabel]
             );
         }
 
         const msg = bonusAmount > 0
-            ? `Deposit approved + $${bonusAmount.toFixed(2)} first-deposit bonus!`
+            ? `Deposit approved + $${bonusAmount.toFixed(2)} ${bonusType.replace(/_/g, ' ')} (${wageringMult}x wagering required)`
             : 'Deposit approved';
-        res.json({ message: msg, depositId, amount: deposit.amount, bonus: bonusAmount, newBalance: balanceAfter });
+        res.json({ message: msg, depositId, amount: deposit.amount, bonus: bonusAmount, wageringRequired: bonusAmount * wageringMult, newBalance: balanceAfter });
     } catch (err) {
         console.error('[Admin] Approve deposit error:', err);
         res.status(500).json({ error: 'Failed to approve deposit' });
@@ -628,6 +646,65 @@ router.post('/reject-withdrawal', async (req, res) => {
     } catch (err) {
         console.error('[Admin] Reject withdrawal error:', err);
         res.status(500).json({ error: 'Failed to reject withdrawal' });
+    }
+});
+
+
+// GET /api/admin/lapsed-players — Detect inactive players for re-engagement campaigns
+router.get('/lapsed-players', async (req, res) => {
+    try {
+        const daysThreshold = Math.max(1, parseInt(req.query.days) || 7);
+
+        // Find users who haven't spun in N+ days but have deposited before
+        const lapsedPlayers = await db.all(`
+            SELECT u.id, u.username, u.email, u.balance, u.created_at,
+                COALESCE(d.total_deposited, 0) as total_deposited,
+                COALESCE(s.total_wagered, 0) as total_wagered,
+                COALESCE(s.total_spins, 0) as total_spins,
+                s.last_spin
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id, SUM(amount) as total_deposited
+                FROM deposits WHERE status = 'completed'
+                GROUP BY user_id
+            ) d ON d.user_id = u.id
+            LEFT JOIN (
+                SELECT user_id, SUM(bet_amount) as total_wagered, COUNT(*) as total_spins,
+                       MAX(created_at) as last_spin
+                FROM spins GROUP BY user_id
+            ) s ON s.user_id = u.id
+            WHERE u.is_banned = 0
+            AND (s.last_spin IS NULL OR s.last_spin < datetime('now', '-' || ? || ' days'))
+            AND COALESCE(d.total_deposited, 0) > 0
+            ORDER BY COALESCE(d.total_deposited, 0) DESC
+            LIMIT 100
+        `, [daysThreshold]);
+
+        // Calculate suggested bonus based on player value
+        const enriched = lapsedPlayers.map(p => {
+            const daysSinceActive = p.last_spin
+                ? Math.floor((Date.now() - new Date(p.last_spin).getTime()) / 86400000)
+                : 999;
+            let suggestedBonus = 50; // base
+            if (p.total_deposited > 1000) suggestedBonus = 200;
+            else if (p.total_deposited > 500) suggestedBonus = 100;
+            if (daysSinceActive > 30) suggestedBonus = Math.round(suggestedBonus * 1.5);
+            return {
+                ...p,
+                daysSinceActive,
+                suggestedBonus: Math.min(suggestedBonus, 500),
+                tier: p.total_deposited > 1000 ? 'whale' : p.total_deposited > 500 ? 'regular' : 'casual',
+            };
+        });
+
+        res.json({
+            lapsedPlayers: enriched,
+            count: enriched.length,
+            daysThreshold,
+        });
+    } catch (err) {
+        console.error('[Admin] Lapsed players error:', err);
+        res.status(500).json({ error: 'Failed to load lapsed players' });
     }
 });
 

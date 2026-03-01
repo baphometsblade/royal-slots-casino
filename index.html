@@ -76,6 +76,10 @@
                 <div class="balance-display">
                     <div class="balance-label">BALANCE</div>
                     <div class="balance-amount">$<span id="balance">5000.00</span></div>
+                    <div class="wagering-bar-wrap" id="wageringBarWrap" style="display:none">
+                        <div class="wagering-bar-track"><div class="wagering-bar-fill" id="wageringBarFill" style="width:0%"></div></div>
+                        <div class="wagering-bar-label" id="wageringBarLabel">Bonus: $0 (0%)</div>
+                    </div>
                 </div>
                 <!-- XP Display (Pass 3) -->
                 <div class="xp-level-display" id="xpDisplay">
@@ -1679,6 +1683,11 @@
                     <div class="wallet-balance-display">
                         <span class="wallet-balance-label">Available Balance</span>
                         <span class="wallet-balance-amount">$<span id="walletBalance">0.00</span></span>
+                    </div>
+                    <div class="wallet-bonus-display" id="walletBonusDisplay" style="display:none">
+                        <span class="wallet-bonus-label">Bonus Balance</span>
+                        <span class="wallet-bonus-amount">$<span id="walletBonusBalance">0.00</span></span>
+                        <div class="wallet-wagering-info" id="walletWageringInfo"></div>
                     </div>
                 </div>
                 <div class="wallet-tabs">

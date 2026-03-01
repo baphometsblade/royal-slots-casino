@@ -2463,6 +2463,10 @@
                         updateBalance();
                         saveBalance();
                     }
+                    // Update wagering progress display from server response
+                    if (typeof updateWageringDisplay === 'function') {
+                        updateWageringDisplay(serverResult.wageringStatus || null);
+                    }
                 } else {
                     finalGrid = generateSpinResult(spinGame);
                     balance -= currentBet;
@@ -12359,14 +12363,26 @@ function _resetSessionMilestone() {
 }
 function _checkSessionMilestone() {
     _milestoneSpin118++;
-    var milestones = [10, 25, 50, 100, 250, 500];
+    var milestoneRewards = { 25: 25, 50: 50, 100: 150, 250: 300, 500: 500 };
     var el = document.getElementById('sessionMilestone');
     if (!el) return;
-    var milestone = milestones.find(function(m) { return _milestoneSpin118 === m; });
-    if (!milestone) return;
-    el.textContent = '\uD83C\uDFAF ' + milestone + ' spins!';
+    var reward = milestoneRewards[_milestoneSpin118];
+    if (!reward) return;
+    // Award milestone bonus
+    balance += reward;
+    updateBalance();
+    saveBalance();
+    if (typeof stats !== 'undefined') {
+        stats.totalWon = (stats.totalWon || 0) + reward;
+        saveStats();
+    }
+    el.textContent = '\uD83C\uDFAF ' + _milestoneSpin118 + ' spins! +$' + reward + ' bonus!';
+    el.className = 'session-milestone milestone-reward';
     el.style.display = '';
-    setTimeout(function() { el.style.display = 'none'; }, 3000);
+    if (typeof showToast === 'function') {
+        showToast('Session milestone: ' + _milestoneSpin118 + ' spins! +$' + reward + ' bonus!', 'success');
+    }
+    setTimeout(function() { el.style.display = 'none'; el.className = 'session-milestone'; }, 5000);
 }
 
 // Sprint 119: Net P&L display

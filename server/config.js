@@ -37,6 +37,10 @@ module.exports = {
     // First-deposit bonus
     FIRST_DEPOSIT_BONUS_PCT: 100,    // 100% match
     FIRST_DEPOSIT_BONUS_MAX: 500,    // cap at $500
+    FIRST_DEPOSIT_WAGERING_MULT: 30,  // 30x playthrough on first deposit bonus
+    RELOAD_BONUS_PCT: 50,             // 50% match on reload deposits
+    RELOAD_BONUS_MAX: 250,            // cap reload bonus at $250
+    RELOAD_WAGERING_MULT: 25,         // 25x playthrough on reload bonus
 
     // Password reset
     PASSWORD_RESET_EXPIRY_HOURS: 1,

@@ -505,6 +505,73 @@ router.post('/claim-referral-bonus', authenticate, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+//  WAGERING STATUS
+// ═══════════════════════════════════════════════════════════
+
+// GET /api/user/wagering — get current wagering requirement status
+router.get('/wagering', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const active = user.wagering_requirement > 0 && user.wagering_progress < user.wagering_requirement;
+        const pct = user.wagering_requirement > 0
+            ? Math.min(100, Math.round((user.wagering_progress / user.wagering_requirement) * 100))
+            : 0;
+
+        res.json({
+            bonusBalance: user.bonus_balance || 0,
+            wageringRequirement: user.wagering_requirement || 0,
+            wageringProgress: user.wagering_progress || 0,
+            wageringRemaining: Math.max(0, (user.wagering_requirement || 0) - (user.wagering_progress || 0)),
+            percentComplete: pct,
+            active,
+            complete: user.wagering_requirement > 0 && user.wagering_progress >= user.wagering_requirement,
+        });
+    } catch (err) {
+        console.error('[User] Wagering status error:', err);
+        res.status(500).json({ error: 'Failed to fetch wagering status' });
+    }
+});
+
+// POST /api/user/forfeit-bonus — voluntarily forfeit bonus balance to withdraw real balance
+router.post('/forfeit-bonus', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT balance, bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (!user.bonus_balance || user.bonus_balance <= 0) {
+            return res.status(400).json({ error: 'No bonus balance to forfeit' });
+        }
+
+        const forfeited = user.bonus_balance;
+        await db.run(
+            'UPDATE users SET bonus_balance = 0, wagering_requirement = 0, wagering_progress = 0 WHERE id = ?',
+            [req.user.id]
+        );
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [req.user.id, 'bonus_forfeit', -forfeited, user.balance, user.balance, 'Voluntarily forfeited bonus balance']
+        );
+
+        res.json({
+            forfeited,
+            message: `Forfeited $${forfeited.toFixed(2)} bonus balance. You can now withdraw your real balance.`,
+            balance: user.balance,
+        });
+    } catch (err) {
+        console.error('[User] Forfeit bonus error:', err);
+        res.status(500).json({ error: 'Failed to forfeit bonus' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 //  PASSWORD MANAGEMENT
 // ═══════════════════════════════════════════════════════════
 
