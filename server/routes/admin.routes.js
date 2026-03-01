@@ -232,4 +232,71 @@ router.post('/house-edge/config', async (req, res) => {
     }
 });
 
+// GET /api/admin/pending-deposits — List deposits awaiting admin approval
+router.get('/pending-deposits', async (req, res) => {
+    try {
+        const deposits = await db.all(
+            `SELECT d.id, d.user_id, d.amount, d.currency, d.status, d.reference, d.created_at,
+                    u.username, u.email
+             FROM deposits d
+             JOIN users u ON d.user_id = u.id
+             WHERE d.status = 'pending'
+             ORDER BY d.created_at ASC`
+        );
+        res.json({ deposits });
+    } catch (err) {
+        console.error('[Admin] Pending deposits error:', err);
+        res.status(500).json({ error: 'Failed to load pending deposits' });
+    }
+});
+
+// POST /api/admin/approve-deposit — Approve a pending deposit (credit player balance)
+router.post('/approve-deposit', async (req, res) => {
+    try {
+        const { depositId } = req.body;
+        if (!depositId) return res.status(400).json({ error: 'depositId is required' });
+
+        const deposit = await db.get('SELECT * FROM deposits WHERE id = ?', [depositId]);
+        if (!deposit) return res.status(404).json({ error: 'Deposit not found' });
+        if (deposit.status !== 'pending') return res.status(400).json({ error: `Deposit is already ${deposit.status}` });
+
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const balanceBefore = user.balance;
+        const balanceAfter = balanceBefore + deposit.amount;
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
+        await db.run("UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?", [depositId]);
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference || 'admin-approved']
+        );
+
+        res.json({ message: 'Deposit approved', depositId, amount: deposit.amount, newBalance: balanceAfter });
+    } catch (err) {
+        console.error('[Admin] Approve deposit error:', err);
+        res.status(500).json({ error: 'Failed to approve deposit' });
+    }
+});
+
+// POST /api/admin/reject-deposit — Reject a pending deposit
+router.post('/reject-deposit', async (req, res) => {
+    try {
+        const { depositId, reason } = req.body;
+        if (!depositId) return res.status(400).json({ error: 'depositId is required' });
+
+        const deposit = await db.get('SELECT * FROM deposits WHERE id = ?', [depositId]);
+        if (!deposit) return res.status(404).json({ error: 'Deposit not found' });
+        if (deposit.status !== 'pending') return res.status(400).json({ error: `Deposit is already ${deposit.status}` });
+
+        await db.run("UPDATE deposits SET status = 'rejected', completed_at = datetime('now') WHERE id = ?", [depositId]);
+
+        res.json({ message: 'Deposit rejected', depositId, reason: reason || 'No reason provided' });
+    } catch (err) {
+        console.error('[Admin] Reject deposit error:', err);
+        res.status(500).json({ error: 'Failed to reject deposit' });
+    }
+});
+
 module.exports = router;

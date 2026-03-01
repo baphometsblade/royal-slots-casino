@@ -71,6 +71,7 @@
 
         <div class="tabs">
             <div class="tab active" onclick="switchTab('games')">Game RTP</div>
+            <div class="tab" onclick="switchTab('deposits')">Deposits <span id="depositBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
             <div class="tab" onclick="switchTab('users')">Users</div>
             <div class="tab" onclick="switchTab('spins')">Recent Spins</div>
         </div>
@@ -79,6 +80,14 @@
             <div class="section">
                 <h3>Game Statistics & RTP</h3>
                 <table><thead><tr><th>Game</th><th>Spins</th><th>Wagered</th><th>Paid</th><th>RTP</th><th>House Profit</th></tr></thead><tbody id="gameStatsBody"></tbody></table>
+            </div>
+        </div>
+
+        <div id="tab-deposits" class="tab-content">
+            <div class="section">
+                <h3>Pending Deposits — Awaiting Approval</h3>
+                <div id="noDeposits" style="padding:20px;text-align:center;color:#94a3b8;display:none;">No pending deposits.</div>
+                <table id="depositsTable"><thead><tr><th>ID</th><th>Player</th><th>Email</th><th>Amount</th><th>Currency</th><th>Reference</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="depositsBody"></tbody></table>
             </div>
         </div>
 
@@ -158,6 +167,7 @@ async function loadStats() {
     }).join('');
     loadUsers();
     loadSpins();
+    loadDeposits();
 }
 
 async function loadUsers() {
@@ -197,6 +207,99 @@ function switchTab(name) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'deposits') loadDeposits();
+}
+
+// Note: Admin panel is behind authentication (admin JWT required) and serves
+// only admin-controlled data from trusted API endpoints. The deposit data
+// (id, username, email, amount) comes from our own database — not user-supplied
+// HTML. XSS risk is minimal here since admins are trusted and all values are
+// numeric/alphanumeric DB fields, but we escape for defense-in-depth.
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+}
+
+async function loadDeposits() {
+    const data = await apiFetch('/admin/pending-deposits');
+    if (!data) return;
+    const badge = document.getElementById('depositBadge');
+    const tbody = document.getElementById('depositsBody');
+    tbody.textContent = ''; // clear safely
+    if (data.deposits.length === 0) {
+        document.getElementById('noDeposits').style.display = 'block';
+        document.getElementById('depositsTable').style.display = 'none';
+        if (badge) { badge.style.display = 'none'; }
+        return;
+    }
+    document.getElementById('noDeposits').style.display = 'none';
+    document.getElementById('depositsTable').style.display = '';
+    if (badge) { badge.textContent = data.deposits.length; badge.style.display = 'inline-block'; }
+    data.deposits.forEach(function(d) {
+        var tr = document.createElement('tr');
+        var cells = [
+            d.id,
+            esc(d.username),
+            esc(d.email),
+            '$' + Number(d.amount).toLocaleString(),
+            esc(d.currency || 'AUD'),
+            esc(d.reference || '-'),
+            new Date(d.created_at).toLocaleString()
+        ];
+        cells.forEach(function(text, i) {
+            var td = document.createElement('td');
+            if (i === 3) { td.style.color = '#10b981'; td.style.fontWeight = '700'; }
+            td.textContent = text;
+            tr.appendChild(td);
+        });
+        var actionTd = document.createElement('td');
+        var approveBtn = document.createElement('button');
+        approveBtn.className = 'btn btn-success';
+        approveBtn.textContent = 'Approve';
+        approveBtn.onclick = function() { approveDeposit(d.id); };
+        var rejectBtn = document.createElement('button');
+        rejectBtn.className = 'btn btn-danger';
+        rejectBtn.textContent = 'Reject';
+        rejectBtn.style.marginLeft = '4px';
+        rejectBtn.onclick = function() { rejectDeposit(d.id); };
+        actionTd.appendChild(approveBtn);
+        actionTd.appendChild(rejectBtn);
+        tr.appendChild(actionTd);
+        tbody.appendChild(tr);
+    });
+}
+
+async function approveDeposit(id) {
+    if (!confirm('Approve this deposit and credit the player?')) return;
+    try {
+        const res = await fetch(API + '/admin/approve-deposit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ depositId: id }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert('Deposit #' + id + ' approved — $' + data.amount + ' credited. New balance: $' + data.newBalance);
+        loadDeposits();
+        loadStats();
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function rejectDeposit(id) {
+    const reason = prompt('Reason for rejection (optional):');
+    if (reason === null) return; // cancelled
+    try {
+        const res = await fetch(API + '/admin/reject-deposit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ depositId: id, reason }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert('Deposit #' + id + ' rejected.');
+        loadDeposits();
+    } catch (e) { alert('Error: ' + e.message); }
 }
 </script>
 </body>
