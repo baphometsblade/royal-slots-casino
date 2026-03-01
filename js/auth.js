@@ -281,7 +281,19 @@
         }
 
 
-        function logout() {
+        async function logout() {
+            // Push stats to server before clearing session
+            if (isServerAuthToken()) {
+                try {
+                    await apiRequest('/api/user/stats', {
+                        method: 'PUT',
+                        body: { stats: stats },
+                        requireAuth: true
+                    });
+                } catch (err) {
+                    // Best-effort — don't block logout
+                }
+            }
             clearAuthSession();
             updateAuthButton();
             showToast('Logged out successfully.', 'info');

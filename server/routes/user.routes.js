@@ -137,6 +137,58 @@ router.put('/profile/avatar', authenticate, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+//  PLAYER STATS (server-persisted)
+// ═══════════════════════════════════════════════════════════
+
+// GET /api/user/stats — load user stats from server
+router.get('/stats', authenticate, async (req, res) => {
+    try {
+        const row = await db.get('SELECT stats_json FROM users WHERE id = ?', [req.user.id]);
+        if (!row || !row.stats_json) {
+            return res.json({ stats: null });
+        }
+        try {
+            res.json({ stats: JSON.parse(row.stats_json) });
+        } catch (parseErr) {
+            // Corrupted JSON — return null so client sends fresh stats
+            res.json({ stats: null });
+        }
+    } catch (err) {
+        console.error('[User] Stats fetch error:', err);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
+// PUT /api/user/stats — save user stats to server
+router.put('/stats', authenticate, async (req, res) => {
+    try {
+        const { stats } = req.body;
+        if (!stats || typeof stats !== 'object') {
+            return res.status(400).json({ error: 'stats object is required' });
+        }
+        // Sanitize — only allow known numeric fields + safe objects
+        const safe = {
+            totalSpins: Math.max(0, Number(stats.totalSpins) || 0),
+            totalWagered: Math.max(0, Number(stats.totalWagered) || 0),
+            totalWon: Math.max(0, Number(stats.totalWon) || 0),
+            biggestWin: Math.max(0, Number(stats.biggestWin) || 0),
+            gamesPlayed: (stats.gamesPlayed && typeof stats.gamesPlayed === 'object') ? stats.gamesPlayed : {},
+            gameStats: (stats.gameStats && typeof stats.gameStats === 'object') ? stats.gameStats : {},
+            achievements: Array.isArray(stats.achievements) ? stats.achievements : [],
+        };
+        const json = JSON.stringify(safe);
+        await db.run(
+            "UPDATE users SET stats_json = ?, updated_at = datetime('now') WHERE id = ?",
+            [json, req.user.id]
+        );
+        res.json({ message: 'Stats saved' });
+    } catch (err) {
+        console.error('[User] Stats save error:', err);
+        res.status(500).json({ error: 'Failed to save stats' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 //  PASSWORD MANAGEMENT
 // ═══════════════════════════════════════════════════════════
 

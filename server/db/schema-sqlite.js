@@ -198,6 +198,7 @@ const USER_MIGRATIONS = [
     ['phone_verified', 'INTEGER DEFAULT 0'],
     ['kyc_status', "TEXT DEFAULT 'unverified'"],
     ['updated_at', 'TEXT'],
+    ['stats_json', 'TEXT'],
 ];
 
 module.exports = { TABLES, INDEXES, USER_MIGRATIONS };

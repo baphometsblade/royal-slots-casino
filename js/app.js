@@ -18,11 +18,27 @@
         }
 
 
+        function _statsStorageKey() {
+            const uid = currentUser ? (currentUser.id || currentUser.username) : null;
+            return uid ? STORAGE_KEY_STATS + '_' + uid : STORAGE_KEY_STATS;
+        }
+
         function loadState() {
             const savedBalance = localStorage.getItem(STORAGE_KEY_BALANCE);
             if (savedBalance !== null) balance = parseFloat(savedBalance);
 
-            const savedStats = localStorage.getItem(STORAGE_KEY_STATS);
+            // Per-user stats key — try user-specific first, then legacy global
+            const perUserKey = _statsStorageKey();
+            let savedStats = localStorage.getItem(perUserKey);
+
+            if (!savedStats && perUserKey !== STORAGE_KEY_STATS) {
+                // Migrate from legacy global key on first per-user load
+                savedStats = localStorage.getItem(STORAGE_KEY_STATS);
+                if (savedStats) {
+                    localStorage.setItem(perUserKey, savedStats);
+                }
+            }
+
             if (savedStats) {
                 try {
                     const parsed = JSON.parse(savedStats);
@@ -33,7 +49,6 @@
             } else {
                 stats = createDefaultStats();
             }
-
         }
 
 
@@ -43,7 +58,53 @@
 
 
         function saveStats() {
-            localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(stats));
+            localStorage.setItem(_statsStorageKey(), JSON.stringify(stats));
+            // Debounced server sync for server-authenticated users
+            if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+                _debouncedStatsSync();
+            }
+        }
+
+        // ── Server Stats Sync ──────────────────────────────
+        let _statsSyncTimer = null;
+        function _debouncedStatsSync() {
+            if (_statsSyncTimer) clearTimeout(_statsSyncTimer);
+            _statsSyncTimer = setTimeout(function () {
+                _statsSyncTimer = null;
+                _pushStatsToServer();
+            }, 10000); // batch at most once per 10 seconds
+        }
+
+        async function _pushStatsToServer() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            try {
+                await apiRequest('/api/user/stats', {
+                    method: 'PUT',
+                    body: { stats: stats },
+                    requireAuth: true
+                });
+            } catch (err) {
+                // Silently fail — localStorage is the fallback
+                console.warn('Stats server sync failed:', err.message);
+            }
+        }
+
+        async function _loadServerStats() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            try {
+                const res = await apiRequest('/api/user/stats', { requireAuth: true });
+                if (res && res.stats) {
+                    // Server stats take precedence — merge with defaults for any new fields
+                    stats = { ...createDefaultStats(), ...res.stats };
+                    localStorage.setItem(_statsStorageKey(), JSON.stringify(stats));
+                    if (typeof updateStatsSummary === 'function') updateStatsSummary();
+                } else {
+                    // No server stats yet — push current local stats to server
+                    _pushStatsToServer();
+                }
+            } catch (err) {
+                console.warn('Unable to load server stats:', err.message);
+            }
         }
 
 
@@ -126,6 +187,8 @@
         // Post-auth initialization — runs after login or on page load if already authenticated
         function onPostAuthInit() {
             checkDailyBonusReset();
+            // Load stats from server (overrides localStorage if server has data)
+            _loadServerStats();
             // Popups and engagement features only for verified (registered) users — not guests
             if (!currentUser || currentUser.isGuest) return;
             const urlParams = new URLSearchParams(window.location.search);
@@ -163,6 +226,12 @@
             if (window._sessionDurationTimer) {
                 clearInterval(window._sessionDurationTimer);
                 window._sessionDurationTimer = null;
+            }
+            // Flush any pending debounced stats sync immediately
+            if (_statsSyncTimer) {
+                clearTimeout(_statsSyncTimer);
+                _statsSyncTimer = null;
+                _pushStatsToServer(); // fire-and-forget on unload
             }
         });
 
