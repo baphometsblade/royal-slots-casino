@@ -271,8 +271,9 @@
                 return;
             }
 
-            // Always refresh guest balance to $1,000 on page load
-            if (currentUser.isGuest) {
+            // Guest balance: only grant $1,000 if they have zero or no saved balance
+            // (prevents infinite-reload exploit while still giving new guests starter funds)
+            if (currentUser.isGuest && (!balance || balance <= 0)) {
                 balance = 1000;
                 updateBalance();
                 saveBalance();

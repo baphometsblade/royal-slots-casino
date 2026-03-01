@@ -1430,23 +1430,50 @@
         }
 
 
-        function claimDailyBonus() {
+        async function claimDailyBonus() {
             if (dailyBonusState.claimedToday) return;
 
-            const dayIndex = Math.min(dailyBonusState.streak, DAILY_REWARDS.length - 1);
-            const reward = DAILY_REWARDS[dayIndex];
-
-            balance += reward.amount;
-            updateBalance();
-            awardXP(reward.xp);
-
-            dailyBonusState.streak++;
-            if (dailyBonusState.streak > 7) dailyBonusState.streak = 7;
-            dailyBonusState.lastClaim = getTodayStr();
-            dailyBonusState.claimedToday = true;
-            saveDailyBonus();
+            // Server-validated claim for authenticated users
+            if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+                try {
+                    const res = await apiRequest('/api/user/claim-daily-bonus', {
+                        method: 'POST',
+                        requireAuth: true
+                    });
+                    if (!res.awarded) return;
+                    balance = res.newBalance;
+                    updateBalance();
+                    saveBalance();
+                    awardXP(res.xp);
+                    dailyBonusState.streak = res.streak;
+                    dailyBonusState.lastClaim = getTodayStr();
+                    dailyBonusState.claimedToday = true;
+                    saveDailyBonus();
+                } catch (err) {
+                    if (err.status === 400) {
+                        dailyBonusState.claimedToday = true;
+                        saveDailyBonus();
+                        renderDailyCalendar();
+                    }
+                    return;
+                }
+            } else {
+                // Local fallback (guest / offline)
+                const dayIndex = Math.min(dailyBonusState.streak, DAILY_REWARDS.length - 1);
+                const reward = DAILY_REWARDS[dayIndex];
+                balance += reward.amount;
+                updateBalance();
+                awardXP(reward.xp);
+                dailyBonusState.streak++;
+                if (dailyBonusState.streak > 7) dailyBonusState.streak = 7;
+                dailyBonusState.lastClaim = getTodayStr();
+                dailyBonusState.claimedToday = true;
+                saveDailyBonus();
+            }
 
             playSound('bigwin');
+            const dayIndex = Math.min(Math.max(dailyBonusState.streak - 1, 0), DAILY_REWARDS.length - 1);
+            const reward = DAILY_REWARDS[dayIndex];
             showToast(`Daily Bonus: +$${reward.amount.toLocaleString()} and +${reward.xp} XP!`, 'win');
             createConfetti();
 
@@ -1545,7 +1572,7 @@
         }
 
 
-        function spinBonusWheel() {
+        async function spinBonusWheel() {
             if (wheelSpinning || !canSpinWheel()) return;
             wheelSpinning = true;
 
@@ -1555,7 +1582,40 @@
 
             playSound('spin');
 
-            const winIndex = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
+            let winIndex;
+            let serverBalance = null;
+            let serverXP = null;
+
+            // Server-validated spin for authenticated users
+            if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+                try {
+                    const res = await apiRequest('/api/user/spin-wheel', {
+                        method: 'POST',
+                        requireAuth: true,
+                    });
+                    winIndex = res.winIndex;
+                    serverBalance = res.newBalance;
+                    serverXP = res.xp;
+                } catch (err) {
+                    wheelSpinning = false;
+                    if (err.status === 400) {
+                        // Cooldown enforced server-side — sync local state
+                        wheelState.lastSpin = new Date().toISOString();
+                        saveWheelState();
+                        spinBtn.textContent = 'NEXT SPIN IN A FEW HOURS';
+                        showToast('Wheel cooldown still active!', 'info');
+                    } else {
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = 'SPIN THE WHEEL';
+                        showToast('Wheel spin failed — try again.', 'info');
+                    }
+                    return;
+                }
+            } else {
+                // Guest / offline — client-side RNG
+                winIndex = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
+            }
+
             const segAngle = (2 * Math.PI) / WHEEL_SEGMENTS.length;
             // We want the winning segment at the top (270deg / -PI/2)
             // The pointer is at top, reading from angle -PI/2
@@ -1591,27 +1651,29 @@
                         // Award free spins
                         const fsCount = seg.value;
                         if (currentGame && !freeSpinsActive) {
-                            // Slot is open and idle — start free spins immediately
                             triggerFreeSpins(currentGame, fsCount);
                         } else if (currentGame && freeSpinsActive) {
-                            // Already in free spins — top them up
                             freeSpinsRemaining += fsCount;
                             if (typeof updateFreeSpinsDisplay === 'function') updateFreeSpinsDisplay();
                         } else {
-                            // Not in a slot — queue free spins; they will activate when the player opens a slot
                             freeSpinsActive = true;
                             freeSpinsRemaining = fsCount;
                             freeSpinsTotalWin = 0;
                             freeSpinsMultiplier = 1;
                         }
-                        awardXP(seg.xp);
+                        awardXP(serverXP != null ? serverXP : seg.xp);
                         const gameLabel = (currentGame && currentGame.name) ? currentGame.name : 'your next slot';
                         showToast(`\uD83C\uDFB0 ${fsCount} Free Spins awarded on ${gameLabel}!`, 'win');
                     } else {
-                        balance += seg.value;
+                        // Cash prize — use server balance if available
+                        if (serverBalance != null) {
+                            balance = serverBalance;
+                        } else {
+                            balance += seg.value;
+                        }
                         updateBalance();
-                        awardXP(seg.xp);
-                        showToast(`\uD83C\uDF89 Bonus Wheel: +$${seg.value.toLocaleString()} and +${seg.xp} XP!`, 'win');
+                        awardXP(serverXP != null ? serverXP : seg.xp);
+                        showToast(`\uD83C\uDF89 Bonus Wheel: +$${seg.value.toLocaleString()} and +${(serverXP != null ? serverXP : seg.xp)} XP!`, 'win');
                     }
 
                     wheelState.lastSpin = new Date().toISOString();

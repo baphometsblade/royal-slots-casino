@@ -189,6 +189,147 @@ router.put('/stats', authenticate, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+//  DAILY BONUS (server-validated)
+// ═══════════════════════════════════════════════════════════
+
+const DAILY_REWARDS_SERVER = [
+    { amount: 500,  xp: 25  },
+    { amount: 750,  xp: 35  },
+    { amount: 1000, xp: 50  },
+    { amount: 1500, xp: 75  },
+    { amount: 2000, xp: 100 },
+    { amount: 3000, xp: 150 },
+    { amount: 5000, xp: 250 },
+];
+
+function getTodayStr() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+// POST /api/user/claim-daily-bonus — server-validated daily bonus
+router.post('/claim-daily-bonus', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT id, balance, last_daily_claim, daily_streak FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const today = getTodayStr();
+        if (user.last_daily_claim === today) {
+            return res.status(400).json({ error: 'Already claimed today', claimedToday: true });
+        }
+
+        // Streak logic: reset if missed a day
+        let streak = user.daily_streak || 0;
+        if (user.last_daily_claim) {
+            const last = new Date(user.last_daily_claim);
+            const now = new Date(today);
+            const diffDays = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+            if (diffDays > 1) streak = 0;
+        }
+
+        const dayIndex = Math.min(streak, DAILY_REWARDS_SERVER.length - 1);
+        const reward = DAILY_REWARDS_SERVER[dayIndex];
+        const newStreak = Math.min(streak + 1, 7);
+        const newBalance = (user.balance || 0) + reward.amount;
+
+        await db.run(
+            "UPDATE users SET balance = ?, last_daily_claim = ?, daily_streak = ?, updated_at = datetime('now') WHERE id = ?",
+            [newBalance, today, newStreak, user.id]
+        );
+
+        // Log as a transaction
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [user.id, 'bonus', reward.amount, user.balance, newBalance, `Daily bonus day ${dayIndex + 1}`]
+        );
+
+        res.json({
+            awarded: true,
+            amount: reward.amount,
+            xp: reward.xp,
+            streak: newStreak,
+            newBalance: newBalance,
+        });
+    } catch (err) {
+        console.error('[User] Daily bonus error:', err);
+        res.status(500).json({ error: 'Failed to claim daily bonus' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BONUS WHEEL (server-validated)
+// ═══════════════════════════════════════════════════════════
+
+const WHEEL_SEGMENTS_SERVER = [
+    { label: '$250',  value: 250,  xp: 20  },
+    { label: '5 FS',  value: 5, type: 'freespins', xp: 15 },
+    { label: '$500',  value: 500,  xp: 30  },
+    { label: '$1000', value: 1000, xp: 50  },
+    { label: '$2500', value: 2500, xp: 75  },
+    { label: '10 FS', value: 10, type: 'freespins', xp: 25 },
+    { label: '$250',  value: 250,  xp: 20  },
+    { label: '$5000', value: 5000, xp: 150 },
+];
+const WHEEL_COOLDOWN_HOURS = 4;
+
+// POST /api/user/spin-wheel — server-validated bonus wheel
+router.post('/spin-wheel', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT id, balance, last_wheel_spin FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Validate cooldown
+        if (user.last_wheel_spin) {
+            const last = new Date(user.last_wheel_spin);
+            const diffHours = (Date.now() - last.getTime()) / (1000 * 60 * 60);
+            if (diffHours < WHEEL_COOLDOWN_HOURS) {
+                const nextSpinAt = new Date(last.getTime() + WHEEL_COOLDOWN_HOURS * 3600000).toISOString();
+                return res.status(400).json({ error: 'Wheel cooldown active', nextSpinAt });
+            }
+        }
+
+        // Server determines the prize (RNG server-side)
+        const winIndex = Math.floor(Math.random() * WHEEL_SEGMENTS_SERVER.length);
+        const seg = WHEEL_SEGMENTS_SERVER[winIndex];
+
+        let newBalance = user.balance;
+        if (!seg.type) {
+            // Cash prize
+            newBalance = (user.balance || 0) + seg.value;
+            await db.run(
+                "UPDATE users SET balance = ?, last_wheel_spin = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+                [newBalance, user.id]
+            );
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [user.id, 'bonus', seg.value, user.balance, newBalance, 'Bonus wheel prize']
+            );
+        } else {
+            // Free spins — just record the spin time, no balance change
+            await db.run(
+                "UPDATE users SET last_wheel_spin = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+                [user.id]
+            );
+        }
+
+        res.json({
+            winIndex,
+            segment: seg,
+            newBalance,
+            xp: seg.xp,
+        });
+    } catch (err) {
+        console.error('[User] Wheel spin error:', err);
+        res.status(500).json({ error: 'Failed to spin wheel' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 //  PASSWORD MANAGEMENT
 // ═══════════════════════════════════════════════════════════
 

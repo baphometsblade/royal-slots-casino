@@ -199,6 +199,9 @@ const USER_MIGRATIONS = [
     ['kyc_status', "TEXT DEFAULT 'unverified'"],
     ['updated_at', 'TEXT'],
     ['stats_json', 'TEXT'],
+    ['last_daily_claim', 'TEXT'],
+    ['daily_streak', 'INTEGER DEFAULT 0'],
+    ['last_wheel_spin', 'TEXT'],
 ];
 
 module.exports = { TABLES, INDEXES, USER_MIGRATIONS };
