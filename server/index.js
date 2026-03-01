@@ -60,8 +60,8 @@ const paymentLimiter = rateLimit({
     max: 3, // 3 per minute per IP
     message: { error: 'Too many payment requests. Please wait.' },
 });
-app.use('/api/payments/deposit', paymentLimiter);
-app.use('/api/payments/withdraw', paymentLimiter);
+app.use('/api/payment/deposit', paymentLimiter);
+app.use('/api/payment/withdraw', paymentLimiter);
 app.use('/api/balance/deposit', paymentLimiter);
 
 // ─── Health Check (used by Render / load balancers) ───

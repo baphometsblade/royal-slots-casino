@@ -1326,7 +1326,7 @@
 
 
         // ===== Toast System =====
-        function showToast(message, type = 'info') {
+        function showToast(message, type = 'info', duration = 3500) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
 
@@ -1338,7 +1338,7 @@
             setTimeout(() => {
                 toast.classList.add('toast-exit');
                 setTimeout(() => toast.remove(), 400);
-            }, 3500);
+            }, duration);
         }
 
 

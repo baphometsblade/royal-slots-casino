@@ -2598,6 +2598,16 @@
             if (typeof sessionSpins !== 'undefined') sessionSpins++;
             saveStats();
             updateStatsSummary();
+
+            // Guest-to-registered conversion prompt — every 10 spins
+            if (currentUser && currentUser.isGuest && stats.totalSpins % 10 === 0) {
+                setTimeout(() => {
+                    showToast(
+                        'Create a free account to save your progress and unlock deposits!',
+                        'info', 6000
+                    );
+                }, 2000);
+            }
         }
 
 

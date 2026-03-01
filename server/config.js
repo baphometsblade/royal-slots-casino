@@ -13,7 +13,7 @@ module.exports = {
     MAX_SPINS_PER_SECOND: 2,
     MIN_BET: 0.20,
     MAX_BET: 50000,
-    DEFAULT_BALANCE: 0,
+    DEFAULT_BALANCE: 1000,
     DEMO_BALANCE: 5000,
 
     // House edge — guaranteed profit

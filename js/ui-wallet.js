@@ -397,17 +397,23 @@ async function submitDeposit() {
             requireAuth: true
         });
 
-        const newBalance = Number(res.balance);
-        if (Number.isFinite(newBalance)) {
-            balance = newBalance;
-            updateBalance();
+        // If the server returned an updated balance (admin-approved or instant),
+        // update locally. Otherwise the deposit is pending — do NOT fake-add balance.
+        if (res.deposit && res.deposit.status === 'pending') {
+            showToast(
+                `$${formatMoney(amount)} deposit submitted! Funds will appear once payment is confirmed.`,
+                'success'
+            );
         } else {
-            balance += amount;
-            updateBalance();
+            const newBalance = Number(res.balance);
+            if (Number.isFinite(newBalance)) {
+                balance = newBalance;
+                updateBalance();
+            }
+            showToast(`$${formatMoney(amount)} deposited successfully!`, 'success');
         }
-
-        showToast(`$${formatMoney(amount)} deposited successfully!`, 'success');
-        renderDepositForm(); // refresh to show new balance
+        if (amountInput) amountInput.value = '';
+        renderDepositForm(); // refresh to show updated state
     } catch (err) {
         showToast(err.message || 'Deposit failed. Please try again.', 'error');
     }

@@ -238,6 +238,18 @@
 
         // ===== Update init to include new systems =====
         async function initAllSystems() {
+            // Check for password reset token in URL before anything else
+            if (typeof checkResetTokenOnLoad === 'function' && checkResetTokenOnLoad()) {
+                // Reset flow is active — show auth modal with reset form
+                document.body.classList.add('auth-gate');
+                loadXP();
+                loadDailyBonus();
+                loadWheelState();
+                initBase();
+                updateAuthButton();
+                return;
+            }
+
             // Fast-path: if no session exists, show auth immediately.
             // currentUser is already restored from localStorage by globals.js.
             if (!currentUser) {

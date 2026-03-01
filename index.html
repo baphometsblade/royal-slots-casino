@@ -1739,6 +1739,23 @@
                     </div>
                 </div>
 
+                <!-- Reset Password Form (shown when ?resetToken= is in URL) -->
+                <div id="resetPasswordForm" class="auth-form" style="display:none;">
+                    <p class="auth-forgot-desc">Enter your new password below.</p>
+                    <div class="auth-field">
+                        <label>New Password</label>
+                        <input type="password" id="resetNewPassword" placeholder="Min 6 characters" autocomplete="new-password">
+                    </div>
+                    <div class="auth-field">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="resetConfirmPassword" placeholder="Confirm new password" autocomplete="new-password">
+                    </div>
+                    <button class="auth-submit" onclick="handleResetPassword()">RESET PASSWORD</button>
+                    <div class="auth-forgot-link">
+                        <a href="#" onclick="event.preventDefault(); showResetPassword(false)">Back to login</a>
+                    </div>
+                </div>
+
                 <!-- Register Form -->
                 <div id="registerForm" class="auth-form" style="display:none;">
                     <div class="auth-field">
