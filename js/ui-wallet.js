@@ -566,7 +566,10 @@ async function submitWithdrawal() {
             updateBalance();
         }
 
-        showToast(`Withdrawal of $${formatMoney(amount)} submitted.`, 'success');
+        const processingDays = res.estimatedDays || 3;
+        const eta = new Date(Date.now() + processingDays * 86400000);
+        const etaStr = eta.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        showToast(`Withdrawal of $${formatMoney(amount)} submitted. Expected by ${etaStr}.`, 'success', 6000);
 
         // Add to pending list
         if (res.withdrawal) {

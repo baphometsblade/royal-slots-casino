@@ -2371,7 +2371,20 @@
             if (spinning || !currentGame) return;
             if (freeSpinsActive) return;
             if (currentBet > balance) {
-                showMessage('Insufficient balance. Deposit funds to continue.', 'lose');
+                if (currentUser && !currentUser.isGuest) {
+                    const msgDiv = document.getElementById('messageDisplay');
+                    if (msgDiv) {
+                        msgDiv.innerHTML = '<div class="message-display message-lose" style="display:flex;align-items:center;gap:12px;justify-content:center;">'
+                            + '<span>Insufficient balance</span>'
+                            + '<button onclick="if(typeof openWalletModal===\'function\')openWalletModal()" style="'
+                            + 'background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;border:none;padding:8px 20px;'
+                            + 'border-radius:8px;font-weight:800;font-size:0.95rem;cursor:pointer;'
+                            + 'box-shadow:0 0 12px rgba(255,215,0,0.5);animation:pulse 1.5s infinite;">DEPOSIT NOW</button>'
+                            + '</div>';
+                    }
+                } else {
+                    showMessage('Insufficient balance. Create an account to deposit!', 'lose');
+                }
                 return;
             }
 
@@ -3396,8 +3409,10 @@
             (function() {
                 var threshold = Math.max(50, currentBet * 3);
                 if (balance < threshold && spinHistory.length > 0 && spinHistory.length % 10 === 1) {
-                    if (typeof showMessage === 'function') {
-                        showMessage('⚠️ Balance running low — consider adding funds', 'near-miss');
+                    if (currentUser && !currentUser.isGuest) {
+                        showToast('Balance running low — tap WALLET to add funds!', 'warning', 5000);
+                    } else {
+                        showToast('Running low! Create an account to deposit and keep playing.', 'warning', 5000);
                     }
                 }
             })();
