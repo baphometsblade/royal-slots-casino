@@ -97,6 +97,41 @@ async function checkDepositLimits(userId, amount) {
     return null;
 }
 
+// ─── Deposit velocity fraud detection ───
+// Blocks rapid-fire deposits that indicate automated abuse or stolen cards
+async function checkDepositVelocity(userId) {
+    // Max 3 deposits per hour
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const hourly = await db.get(
+        "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND created_at >= ?",
+        [userId, hourAgo]
+    );
+    if (hourly && hourly.count >= 3) {
+        return 'Too many deposit attempts. Please wait before trying again.';
+    }
+
+    // Max 5 deposits per 24 hours
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const daily = await db.get(
+        "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND created_at >= ?",
+        [userId, dayAgo]
+    );
+    if (daily && daily.count >= 5) {
+        return 'Daily deposit attempt limit reached. Please try again tomorrow.';
+    }
+
+    // Max 3 pending deposits at once (prevents queue flooding)
+    const pending = await db.get(
+        "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'pending'",
+        [userId]
+    );
+    if (pending && pending.count >= 3) {
+        return 'You have too many pending deposits. Please wait for them to process.';
+    }
+
+    return null;
+}
+
 // ═══════════════════════════════════════════════════
 //  PAYMENT METHODS
 // ═══════════════════════════════════════════════════
@@ -302,6 +337,12 @@ router.post('/deposit', authenticate, async (req, res) => {
         const limitError = await checkDepositLimits(req.user.id, deposit);
         if (limitError) {
             return res.status(400).json({ error: limitError });
+        }
+
+        // Deposit velocity fraud check
+        const velocityError = await checkDepositVelocity(req.user.id);
+        if (velocityError) {
+            return res.status(429).json({ error: velocityError });
         }
 
         // Validate payment method ownership if provided

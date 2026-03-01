@@ -47,6 +47,109 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+// GET /api/admin/fraud-alerts — Flag suspicious user patterns
+router.get('/fraud-alerts', async (req, res) => {
+    try {
+        const alerts = [];
+
+        // 1. Users with high withdrawal-to-deposit ratio (potential bonus abuse)
+        const wdRatio = await db.all(`
+            SELECT u.id, u.username, u.balance,
+                COALESCE(d.total_dep, 0) as total_deposited,
+                COALESCE(w.total_wd, 0) as total_withdrawn,
+                COALESCE(s.total_wagered, 0) as total_wagered
+            FROM users u
+            LEFT JOIN (SELECT user_id, SUM(amount) as total_dep FROM deposits WHERE status = 'completed' GROUP BY user_id) d ON d.user_id = u.id
+            LEFT JOIN (SELECT user_id, SUM(amount) as total_wd FROM withdrawals WHERE status = 'completed' GROUP BY user_id) w ON w.user_id = u.id
+            LEFT JOIN (SELECT user_id, SUM(bet_amount) as total_wagered FROM spins GROUP BY user_id) s ON s.user_id = u.id
+            WHERE COALESCE(w.total_wd, 0) > COALESCE(d.total_dep, 0) * 1.5
+            AND COALESCE(d.total_dep, 0) > 0
+            ORDER BY COALESCE(w.total_wd, 0) DESC
+            LIMIT 20
+        `);
+        wdRatio.forEach(u => {
+            alerts.push({
+                type: 'withdrawal_ratio',
+                severity: 'high',
+                userId: u.id,
+                username: u.username,
+                message: `Withdrew $${(u.total_withdrawn || 0).toFixed(2)} on $${(u.total_deposited || 0).toFixed(2)} deposits (${((u.total_withdrawn / u.total_deposited) * 100).toFixed(0)}% ratio)`,
+                data: { deposited: u.total_deposited, withdrawn: u.total_withdrawn, wagered: u.total_wagered }
+            });
+        });
+
+        // 2. Rapid deposit velocity (3+ deposits in last hour)
+        const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const rapidDeps = await db.all(`
+            SELECT user_id, COUNT(*) as count, SUM(amount) as total
+            FROM deposits
+            WHERE created_at >= ?
+            GROUP BY user_id
+            HAVING COUNT(*) >= 3
+        `, [hourAgo]);
+        for (const rd of rapidDeps) {
+            const user = await db.get('SELECT username FROM users WHERE id = ?', [rd.user_id]);
+            alerts.push({
+                type: 'rapid_deposits',
+                severity: 'medium',
+                userId: rd.user_id,
+                username: user ? user.username : 'Unknown',
+                message: `${rd.count} deposits in the last hour totaling $${(rd.total || 0).toFixed(2)}`,
+                data: { count: rd.count, total: rd.total }
+            });
+        }
+
+        // 3. Users with suspiciously high win rate (potential exploit)
+        const highWinRate = await db.all(`
+            SELECT user_id, COUNT(*) as total_spins,
+                SUM(CASE WHEN win_amount > 0 THEN 1 ELSE 0 END) as wins,
+                SUM(bet_amount) as wagered, SUM(win_amount) as won
+            FROM spins
+            GROUP BY user_id
+            HAVING COUNT(*) >= 50
+            AND (SUM(win_amount) * 1.0 / SUM(bet_amount)) > 1.2
+            ORDER BY (SUM(win_amount) * 1.0 / SUM(bet_amount)) DESC
+            LIMIT 10
+        `);
+        for (const hw of highWinRate) {
+            const user = await db.get('SELECT username FROM users WHERE id = ?', [hw.user_id]);
+            const rtp = hw.wagered > 0 ? ((hw.won / hw.wagered) * 100).toFixed(1) : '0';
+            alerts.push({
+                type: 'high_win_rate',
+                severity: 'high',
+                userId: hw.user_id,
+                username: user ? user.username : 'Unknown',
+                message: `RTP ${rtp}% over ${hw.total_spins} spins ($${(hw.wagered || 0).toFixed(2)} wagered, $${(hw.won || 0).toFixed(2)} won)`,
+                data: { spins: hw.total_spins, wagered: hw.wagered, won: hw.won, rtp: parseFloat(rtp) }
+            });
+        }
+
+        // 4. Large pending withdrawals
+        const largePending = await db.all(`
+            SELECT w.id, w.user_id, w.amount, w.created_at, u.username
+            FROM withdrawals w
+            JOIN users u ON u.id = w.user_id
+            WHERE w.status = 'pending' AND w.amount >= 1000
+            ORDER BY w.amount DESC
+        `);
+        largePending.forEach(wp => {
+            alerts.push({
+                type: 'large_withdrawal',
+                severity: 'medium',
+                userId: wp.user_id,
+                username: wp.username,
+                message: `Pending withdrawal of $${(wp.amount || 0).toFixed(2)} since ${wp.created_at}`,
+                data: { withdrawalId: wp.id, amount: wp.amount }
+            });
+        });
+
+        res.json({ alerts, count: alerts.length });
+    } catch (err) {
+        console.error('[Admin] Fraud alerts error:', err);
+        res.status(500).json({ error: 'Failed to load fraud alerts' });
+    }
+});
+
 // GET /api/admin/users — User list
 router.get('/users', async (req, res) => {
     try {

@@ -1332,6 +1332,24 @@
             }
             if (fill) fill.style.width = pct + '%';
             if (text) text.textContent = `${playerXP} / ${needed} XP`;
+
+            // Update VIP mini progress bar in header
+            if (typeof getVipProgress === 'function' && typeof getVipTier === 'function') {
+                const vipFill = document.getElementById('vipMiniFill');
+                const vipText = document.getElementById('vipMiniText');
+                const vipBar = document.getElementById('vipMiniBar');
+                if (vipFill && vipText) {
+                    const vipPct = getVipProgress();
+                    const vipTier = getVipTier();
+                    const nextTier = typeof getNextVipTier === 'function' ? getNextVipTier() : null;
+                    vipFill.style.width = vipPct.toFixed(1) + '%';
+                    vipFill.style.background = 'linear-gradient(90deg, ' + (vipTier.colorDark || vipTier.color) + ', ' + (nextTier ? nextTier.color : vipTier.color) + ')';
+                    vipText.textContent = nextTier ? (vipPct.toFixed(0) + '% to ' + nextTier.name) : ('VIP ' + vipTier.name);
+                }
+                if (vipBar) {
+                    vipBar.onclick = function() { if (typeof openVipModal === 'function') openVipModal(); };
+                }
+            }
         }
 
 

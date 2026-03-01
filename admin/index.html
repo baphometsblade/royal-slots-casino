@@ -75,6 +75,7 @@
             <div class="tab" onclick="switchTab('withdrawals')">Withdrawals <span id="withdrawalBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
             <div class="tab" onclick="switchTab('users')">Users</div>
             <div class="tab" onclick="switchTab('spins')">Recent Spins</div>
+            <div class="tab" onclick="switchTab('fraud')">Fraud Alerts <span id="fraudBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
         </div>
 
         <div id="tab-games" class="tab-content active">
@@ -111,6 +112,14 @@
             <div class="section">
                 <h3>Recent Spin Activity</h3>
                 <table><thead><tr><th>ID</th><th>Player</th><th>Game</th><th>Bet</th><th>Win</th><th>Profit</th><th>Time</th></tr></thead><tbody id="spinsBody"></tbody></table>
+            </div>
+        </div>
+
+        <div id="tab-fraud" class="tab-content">
+            <div class="section">
+                <h3>Fraud & Risk Alerts</h3>
+                <div id="noFraudAlerts" style="padding:20px;text-align:center;color:#94a3b8;display:none;">No fraud alerts. All clear!</div>
+                <div id="fraudAlertsList"></div>
             </div>
         </div>
     </div>
@@ -181,6 +190,7 @@ async function loadStats() {
     loadSpins();
     loadDeposits();
     loadWithdrawals();
+    loadFraudAlerts();
 }
 
 async function loadUsers() {
@@ -206,6 +216,43 @@ async function loadSpins() {
     }).join('');
 }
 
+async function loadFraudAlerts() {
+    const data = await apiFetch('/admin/fraud-alerts');
+    if (!data) return;
+    const container = document.getElementById('fraudAlertsList');
+    const noAlerts = document.getElementById('noFraudAlerts');
+    if (!data.alerts || data.alerts.length === 0) {
+        if (container) container.innerHTML = '';
+        if (noAlerts) noAlerts.style.display = 'block';
+        return;
+    }
+    if (noAlerts) noAlerts.style.display = 'none';
+    const badge = document.getElementById('fraudBadge');
+    if (badge) { badge.textContent = data.count; badge.style.display = data.count > 0 ? 'inline' : 'none'; }
+    if (container) {
+        container.innerHTML = '';
+        data.alerts.forEach(function(a) {
+            var card = document.createElement('div');
+            card.style.cssText = 'background:rgba(255,255,255,0.05);border-left:4px solid ' + (a.severity === 'high' ? '#ef4444' : '#f59e0b') + ';padding:12px 16px;margin-bottom:8px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;';
+            var info = document.createElement('div');
+            var typeLabel = document.createElement('span');
+            typeLabel.style.cssText = 'font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:' + (a.severity === 'high' ? '#ef4444' : '#f59e0b') + ';';
+            typeLabel.textContent = a.type.replace(/_/g, ' ');
+            var user = document.createElement('div');
+            user.style.cssText = 'font-weight:600;margin:4px 0 2px;';
+            user.textContent = a.username + ' (ID: ' + a.userId + ')';
+            var msg = document.createElement('div');
+            msg.style.cssText = 'font-size:13px;color:#94a3b8;';
+            msg.textContent = a.message;
+            info.appendChild(typeLabel);
+            info.appendChild(user);
+            info.appendChild(msg);
+            card.appendChild(info);
+            container.appendChild(card);
+        });
+    }
+}
+
 async function banUser(id) {
     await fetch(API + `/admin/user/${id}/ban`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
     loadUsers();
@@ -222,6 +269,7 @@ function switchTab(name) {
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'deposits') loadDeposits();
     if (name === 'withdrawals') loadWithdrawals();
+    if (name === 'fraud') loadFraudAlerts();
 }
 
 // Note: Admin panel is behind authentication (admin JWT required) and serves
