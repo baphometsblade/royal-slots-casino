@@ -170,6 +170,8 @@ async function loadStats() {
         <div class="stat-card"><div class="label">Overall RTP</div><div class="value">${o.overallRtp}</div></div>
         <div class="stat-card"><div class="label">Total Deposits</div><div class="value green">$${o.totalDeposits.toLocaleString()}</div></div>
         <div class="stat-card"><div class="label">Total Withdrawals</div><div class="value red">$${o.totalWithdrawals.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">Pending Deposits</div><div class="value" style="color:#fbbf24">${o.pendingDeposits || 0} ($${(o.pendingDepositAmount || 0).toLocaleString()})</div></div>
+        <div class="stat-card"><div class="label">Pending Withdrawals</div><div class="value" style="color:#f97316">${o.pendingWithdrawals || 0} ($${(o.pendingWithdrawalAmount || 0).toLocaleString()})</div></div>
     `;
     document.getElementById('gameStatsBody').innerHTML = data.gameStats.map(g => {
         const profit = g.total_wagered - g.total_paid;

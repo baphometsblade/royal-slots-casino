@@ -1205,6 +1205,16 @@
                     localStorage.setItem('matrixXpBoost', JSON.stringify(_boost));
                 }
             } catch(e) {}
+            // Session streak XP multiplier: 2x after 30 spins, 3x after 60
+            if (typeof _sessionSpinCount !== 'undefined') {
+                if (_sessionSpinCount >= 60) {
+                    amount = Math.round(amount * 3);
+                    if (_sessionSpinCount === 60) showToast('3x XP STREAK! Keep the momentum going!', 'success', 4000);
+                } else if (_sessionSpinCount >= 30) {
+                    amount = Math.round(amount * 2);
+                    if (_sessionSpinCount === 30) showToast('2x XP STREAK! 30 spins in a row!', 'success', 4000);
+                }
+            }
             playerXP += amount;
             let levelledUp = false;
             let needed = getXPForLevel(playerLevel);

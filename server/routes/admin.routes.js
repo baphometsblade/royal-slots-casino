@@ -14,6 +14,8 @@ router.get('/stats', async (req, res) => {
         const spins = await db.get('SELECT COUNT(*) as count, SUM(bet_amount) as totalWagered, SUM(win_amount) as totalPaid FROM spins');
         const deposits = await db.get("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'deposit'");
         const withdrawals = await db.get("SELECT COALESCE(ABS(SUM(amount)), 0) as total FROM transactions WHERE type = 'withdrawal'");
+        const pendingDeps = await db.get("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM deposits WHERE status = 'pending'");
+        const pendingWds = await db.get("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status = 'pending'");
         const gameStats = await db.all('SELECT * FROM game_stats ORDER BY total_spins DESC');
 
         const totalWagered = spins ? spins.totalWagered || 0 : 0;
@@ -32,6 +34,10 @@ router.get('/stats', async (req, res) => {
                 overallRtp: (overallRtp * 100).toFixed(2) + '%',
                 totalDeposits: deposits ? deposits.total : 0,
                 totalWithdrawals: withdrawals ? withdrawals.total : 0,
+                pendingDeposits: pendingDeps ? pendingDeps.count : 0,
+                pendingDepositAmount: pendingDeps ? pendingDeps.total : 0,
+                pendingWithdrawals: pendingWds ? pendingWds.count : 0,
+                pendingWithdrawalAmount: pendingWds ? pendingWds.total : 0,
             },
             gameStats,
         });

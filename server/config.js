@@ -27,7 +27,7 @@ module.exports = {
 
     // Payment configuration
     CURRENCY: 'AUD',
-    MIN_DEPOSIT: 10,
+    MIN_DEPOSIT: 5,
     MAX_DEPOSIT: 100000,
     MIN_WITHDRAWAL: 20,
     MAX_WITHDRAWAL: 50000,
