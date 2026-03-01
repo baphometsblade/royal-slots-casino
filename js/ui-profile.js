@@ -883,6 +883,7 @@ function hideProfileModal() {
 
 const PROFILE_TABS = [
     { id: 'overview',     icon: '\u{1F464}', label: 'Overview' },
+    { id: 'referrals',    icon: '\u{1F517}', label: 'Referrals' },
     { id: 'security',     icon: '\u{1F512}', label: 'Security' },
     { id: 'verification', icon: '\u{2705}',  label: 'Verification' },
     { id: 'limits',       icon: '\u{1F6E1}\uFE0F', label: 'Responsible Play' },
@@ -976,6 +977,7 @@ async function loadProfile() {
 function renderProfileContent() {
     switch (profileActiveTab) {
         case 'overview':      renderProfileOverview(); break;
+        case 'referrals':     renderReferralsTab(); break;
         case 'security':      renderSecurityTab(); break;
         case 'verification':  renderVerificationTab(); break;
         case 'limits':        renderLimitsTab(); break;
@@ -985,6 +987,151 @@ function renderProfileContent() {
     }
 }
 
+
+// ═══════════════════════════════════════════════════════
+// REFERRALS TAB
+// ═══════════════════════════════════════════════════════
+
+function _makeRewardCard(amount, label) {
+    var card = document.createElement('div');
+    card.className = 'referral-reward-card';
+    var amtEl = document.createElement('div');
+    amtEl.className = 'referral-reward-amount';
+    amtEl.textContent = '$' + formatMoney(amount);
+    card.appendChild(amtEl);
+    var lblEl = document.createElement('div');
+    lblEl.className = 'referral-reward-label';
+    lblEl.textContent = label;
+    card.appendChild(lblEl);
+    return card;
+}
+
+function _makeStatCard(value, label) {
+    var card = document.createElement('div');
+    card.className = 'referral-stat-card';
+    var valEl = document.createElement('div');
+    valEl.className = 'referral-stat-value';
+    valEl.textContent = value;
+    card.appendChild(valEl);
+    var lblEl = document.createElement('div');
+    lblEl.className = 'referral-stat-label';
+    lblEl.textContent = label;
+    card.appendChild(lblEl);
+    return card;
+}
+
+async function renderReferralsTab() {
+    var el = document.getElementById('profileContent');
+    el.textContent = '';
+    var spinner = document.createElement('div');
+    spinner.className = 'profile-loading';
+    var sp = document.createElement('div');
+    sp.className = 'profile-spinner';
+    spinner.appendChild(sp);
+    el.appendChild(spinner);
+
+    var data = null;
+    try {
+        data = await apiRequest('/api/user/referral', { requireAuth: true });
+    } catch (e) { /* offline */ }
+
+    var code = (data && data.referralCode) ? data.referralCode : '---';
+    var count = (data && data.referralCount) ? data.referralCount : 0;
+    var earned = (data && data.totalEarned) ? data.totalEarned : 0;
+    var perRef = (data && data.bonusPerReferral) ? data.bonusPerReferral : 500;
+    var refBonus = (data && data.refereeBonusAmount) ? data.refereeBonusAmount : 250;
+    var origin = window.location.origin || 'https://www.msaart.online';
+    var shareLink = origin + '?ref=' + code;
+
+    el.textContent = '';
+
+    var header = document.createElement('h2');
+    header.className = 'profile-section-title';
+    header.textContent = 'Invite Friends & Earn';
+    el.appendChild(header);
+
+    var desc = document.createElement('p');
+    desc.style.cssText = 'color:#94a3b8; margin-bottom:20px; font-size:14px; line-height:1.5;';
+    desc.textContent = 'Share your referral code with friends. When they sign up and make their first deposit ($' +
+        (typeof REFERRAL_MIN_DEPOSIT !== 'undefined' ? REFERRAL_MIN_DEPOSIT : 10) + '+), you both earn bonus cash!';
+    el.appendChild(desc);
+
+    // Rewards info cards
+    var rewardsRow = document.createElement('div');
+    rewardsRow.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;';
+    rewardsRow.appendChild(_makeRewardCard(perRef, 'You receive'));
+    rewardsRow.appendChild(_makeRewardCard(refBonus, 'Friend receives'));
+    el.appendChild(rewardsRow);
+
+    // Referral code display + copy button
+    var codeSection = document.createElement('div');
+    codeSection.className = 'referral-code-section';
+
+    var codeLabel = document.createElement('label');
+    codeLabel.textContent = 'Your Referral Code';
+    codeLabel.style.cssText = 'color:#e2e8f0; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:block;';
+    codeSection.appendChild(codeLabel);
+
+    var codeRow = document.createElement('div');
+    codeRow.style.cssText = 'display:flex; gap:8px; align-items:center;';
+
+    var codeDisplay = document.createElement('div');
+    codeDisplay.className = 'referral-code-display';
+    codeDisplay.textContent = code;
+    codeRow.appendChild(codeDisplay);
+
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'referral-copy-btn';
+    copyBtn.textContent = 'COPY';
+    copyBtn.onclick = function() {
+        navigator.clipboard.writeText(code).then(function() {
+            copyBtn.textContent = 'COPIED!';
+            setTimeout(function() { copyBtn.textContent = 'COPY'; }, 2000);
+        });
+    };
+    codeRow.appendChild(copyBtn);
+    codeSection.appendChild(codeRow);
+    el.appendChild(codeSection);
+
+    // Share link
+    var linkSection = document.createElement('div');
+    linkSection.style.cssText = 'margin-top:16px;';
+
+    var linkLabel = document.createElement('label');
+    linkLabel.textContent = 'Share Link';
+    linkLabel.style.cssText = 'color:#e2e8f0; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:block;';
+    linkSection.appendChild(linkLabel);
+
+    var linkRow = document.createElement('div');
+    linkRow.style.cssText = 'display:flex; gap:8px; align-items:center;';
+
+    var linkInput = document.createElement('input');
+    linkInput.type = 'text';
+    linkInput.readOnly = true;
+    linkInput.value = shareLink;
+    linkInput.className = 'referral-link-input';
+    linkRow.appendChild(linkInput);
+
+    var linkCopy = document.createElement('button');
+    linkCopy.className = 'referral-copy-btn';
+    linkCopy.textContent = 'COPY';
+    linkCopy.onclick = function() {
+        navigator.clipboard.writeText(shareLink).then(function() {
+            linkCopy.textContent = 'COPIED!';
+            setTimeout(function() { linkCopy.textContent = 'COPY'; }, 2000);
+        });
+    };
+    linkRow.appendChild(linkCopy);
+    linkSection.appendChild(linkRow);
+    el.appendChild(linkSection);
+
+    // Stats
+    var statsSection = document.createElement('div');
+    statsSection.style.cssText = 'margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:12px;';
+    statsSection.appendChild(_makeStatCard(String(count), 'Friends Referred'));
+    statsSection.appendChild(_makeStatCard('$' + formatMoney(earned), 'Total Earned'));
+    el.appendChild(statsSection);
+}
 
 // ═══════════════════════════════════════════════════════
 // OVERVIEW TAB

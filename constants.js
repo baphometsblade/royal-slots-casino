@@ -836,6 +836,17 @@ const STORAGE_KEY_WEEKLY_MISSIONS = 'matrixWeeklyMissions';
 /** @type {string} localStorage key for notification center entries */
 const STORAGE_KEY_NOTIFICATIONS = 'matrixNotifications';
 const STORAGE_KEY_LOGIN_STREAK = 'matrixLoginStreak';
+const STORAGE_KEY_REFERRAL = 'casinoReferral';
+
+// ─────────────────────────────────────────────────────────────
+// REFERRAL SYSTEM
+// ─────────────────────────────────────────────────────────────
+/** Bonus awarded to the referring player when their referral makes first deposit */
+const REFERRAL_BONUS_REFERRER = 500;
+/** Bonus awarded to the referred player on their first deposit */
+const REFERRAL_BONUS_REFEREE = 250;
+/** Minimum first-deposit amount to trigger referral bonuses */
+const REFERRAL_MIN_DEPOSIT = 10;
 
 /**
  * VIP tier definitions ordered by wagering threshold.

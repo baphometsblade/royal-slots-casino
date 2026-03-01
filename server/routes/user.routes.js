@@ -406,6 +406,105 @@ router.post('/redeem-promo', authenticate, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+//  REFERRAL SYSTEM
+// ═══════════════════════════════════════════════════════════
+
+const REFERRAL_BONUS_REFERRER = 500;
+const REFERRAL_BONUS_REFEREE = 250;
+const REFERRAL_MIN_DEPOSIT = 10;
+
+// GET /api/user/referral — get referral code & stats
+router.get('/referral', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT referral_code, referred_by FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Count referrals
+        const countResult = await db.get(
+            'SELECT COUNT(*) as count FROM users WHERE referred_by = ?',
+            [req.user.id]
+        );
+        const referralCount = countResult ? countResult.count : 0;
+
+        // Sum bonuses earned from referrals
+        const bonusResult = await db.get(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND reference LIKE 'Referral bonus%'",
+            [req.user.id]
+        );
+        const totalEarned = bonusResult ? bonusResult.total : 0;
+
+        res.json({
+            referralCode: user.referral_code,
+            referralCount,
+            totalEarned,
+            bonusPerReferral: REFERRAL_BONUS_REFERRER,
+            refereeBonusAmount: REFERRAL_BONUS_REFEREE,
+            minDeposit: REFERRAL_MIN_DEPOSIT,
+        });
+    } catch (err) {
+        console.error('[User] Referral info error:', err);
+        res.status(500).json({ error: 'Failed to fetch referral info' });
+    }
+});
+
+// POST /api/user/claim-referral-bonus — called after first qualifying deposit
+// Awards bonus to both referrer and referee
+router.post('/claim-referral-bonus', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT id, balance, referred_by, referral_bonus_paid FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user.referred_by) return res.status(400).json({ error: 'No referral to claim' });
+        if (user.referral_bonus_paid) return res.status(400).json({ error: 'Referral bonus already claimed' });
+
+        // Verify first qualifying deposit exists
+        const deposit = await db.get(
+            "SELECT id FROM deposits WHERE user_id = ? AND status = 'completed' AND amount >= ?",
+            [user.id, REFERRAL_MIN_DEPOSIT]
+        );
+        if (!deposit) {
+            return res.status(400).json({ error: 'Qualifying deposit required', minDeposit: REFERRAL_MIN_DEPOSIT });
+        }
+
+        // Award bonus to referee
+        const newBalance = (user.balance || 0) + REFERRAL_BONUS_REFEREE;
+        await db.run('UPDATE users SET balance = ?, referral_bonus_paid = 1 WHERE id = ?',
+            [newBalance, user.id]);
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [user.id, 'bonus', REFERRAL_BONUS_REFEREE, user.balance, newBalance, 'Referral bonus — welcome reward']
+        );
+
+        // Award bonus to referrer
+        const referrer = await db.get('SELECT id, balance FROM users WHERE id = ?', [user.referred_by]);
+        if (referrer) {
+            const referrerNewBalance = (referrer.balance || 0) + REFERRAL_BONUS_REFERRER;
+            await db.run('UPDATE users SET balance = ? WHERE id = ?',
+                [referrerNewBalance, referrer.id]);
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [referrer.id, 'bonus', REFERRAL_BONUS_REFERRER, referrer.balance, referrerNewBalance,
+                 'Referral bonus — friend joined']
+            );
+        }
+
+        res.json({
+            awarded: true,
+            bonusAmount: REFERRAL_BONUS_REFEREE,
+            newBalance,
+        });
+    } catch (err) {
+        console.error('[User] Referral bonus error:', err);
+        res.status(500).json({ error: 'Failed to claim referral bonus' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 //  PASSWORD MANAGEMENT
 // ═══════════════════════════════════════════════════════════
 

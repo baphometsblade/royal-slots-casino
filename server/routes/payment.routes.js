@@ -493,8 +493,11 @@ router.post('/withdraw', authenticate, async (req, res) => {
             [req.user.id, 'withdrawal', -withdrawal, balanceBefore, balanceAfter, reference]
         );
 
+        // Calculate when cooling-off ends (24h from now)
+        var coolingOffEnds = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
         res.json({
-            message: `Withdrawal of $${withdrawal.toFixed(2)} submitted for processing`,
+            message: `Withdrawal of $${withdrawal.toFixed(2)} submitted. 24-hour review period before processing.`,
             balance: balanceAfter,
             withdrawal: {
                 id: withdrawalId,
@@ -502,7 +505,8 @@ router.post('/withdraw', authenticate, async (req, res) => {
                 currency: config.CURRENCY,
                 status: 'pending',
                 reference,
-                estimatedDays: config.WITHDRAWAL_PROCESSING_DAYS
+                coolingOffEnds: coolingOffEnds,
+                estimatedDays: config.WITHDRAWAL_PROCESSING_DAYS + 1
             }
         });
     } catch (err) {

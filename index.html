@@ -1778,6 +1778,10 @@
                         <label>Confirm Password</label>
                         <input type="password" id="regConfirm" placeholder="Confirm password" autocomplete="new-password">
                     </div>
+                    <div class="auth-field" id="referralField">
+                        <label>Referral Code <span style="color:#64748b;font-weight:400">(optional)</span></label>
+                        <input type="text" id="regReferral" placeholder="Enter friend's code for bonus" autocomplete="off" maxlength="8" style="text-transform:uppercase">
+                    </div>
                     <button class="auth-submit" id="registerBtn" onclick="handleRegister()">CREATE ACCOUNT</button>
                 </div>
 
@@ -1906,6 +1910,7 @@
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirm = document.getElementById('regConfirm').value;
+            const refCode = (document.getElementById('regReferral')?.value || '').trim().toUpperCase();
             const errEl = document.getElementById('authError');
             errEl.textContent = '';
             if (!username || !email || !password) { errEl.textContent = 'All fields are required'; return; }
@@ -1913,7 +1918,7 @@
             if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters'; return; }
             btn.disabled = true; btn.textContent = 'CREATING ACCOUNT...';
             try {
-                await register(username, email, password);
+                await register(username, email, password, refCode || null);
                 document.getElementById('authBtn').textContent = currentUser.username.toUpperCase();
             } catch (e) { errEl.textContent = e.message; }
             btn.disabled = false; btn.textContent = 'CREATE ACCOUNT';

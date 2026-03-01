@@ -250,6 +250,13 @@
                 return;
             }
 
+            // Pre-fill referral code from ?ref= URL parameter
+            var _refParam = new URLSearchParams(window.location.search).get('ref');
+            if (_refParam) {
+                var refInput = document.getElementById('regReferral');
+                if (refInput) refInput.value = _refParam.toUpperCase();
+            }
+
             // Fast-path: if no session exists, show auth immediately.
             // currentUser is already restored from localStorage by globals.js.
             if (!currentUser) {
@@ -261,6 +268,8 @@
                 initBase();
                 updateAuthButton();
                 showAuthModal();
+                // If a referral code is in the URL, auto-switch to register tab
+                if (_refParam) switchAuthTab('register');
                 return;
             }
 

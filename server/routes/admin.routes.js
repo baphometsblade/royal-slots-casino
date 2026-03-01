@@ -251,6 +251,90 @@ router.post('/user/:id/adjust-balance', async (req, res) => {
     }
 });
 
+// POST /api/admin/user/:id/send-bonus — Send a targeted bonus to a player
+router.post('/user/:id/send-bonus', async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        const { amount, reason } = req.body;
+        const bonusAmount = parseFloat(amount);
+
+        if (isNaN(bonusAmount) || bonusAmount <= 0) {
+            return res.status(400).json({ error: 'Bonus amount must be a positive number' });
+        }
+        if (bonusAmount > 50000) {
+            return res.status(400).json({ error: 'Bonus cannot exceed $50,000' });
+        }
+
+        const user = await db.get('SELECT id, username, balance FROM users WHERE id = ?', [userId]);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const balanceBefore = user.balance || 0;
+        const balanceAfter = balanceBefore + bonusAmount;
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, userId]);
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, 'bonus', bonusAmount, balanceBefore, balanceAfter, reason || 'Admin bonus']
+        );
+
+        res.json({
+            message: 'Bonus sent successfully',
+            userId,
+            username: user.username,
+            bonusAmount,
+            newBalance: balanceAfter,
+        });
+    } catch (err) {
+        console.error('[Admin] Send bonus error:', err);
+        res.status(500).json({ error: 'Failed to send bonus' });
+    }
+});
+
+// POST /api/admin/bulk-bonus — Send bonus to multiple users
+router.post('/bulk-bonus', async (req, res) => {
+    try {
+        const { userIds, amount, reason } = req.body;
+        const bonusAmount = parseFloat(amount);
+
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+            return res.status(400).json({ error: 'userIds array is required' });
+        }
+        if (isNaN(bonusAmount) || bonusAmount <= 0) {
+            return res.status(400).json({ error: 'Bonus amount must be a positive number' });
+        }
+        if (bonusAmount > 10000) {
+            return res.status(400).json({ error: 'Bulk bonus cannot exceed $10,000 per user' });
+        }
+        if (userIds.length > 100) {
+            return res.status(400).json({ error: 'Maximum 100 users per bulk bonus' });
+        }
+
+        let credited = 0;
+        for (const uid of userIds) {
+            const userId = parseInt(uid);
+            if (isNaN(userId)) continue;
+
+            const user = await db.get('SELECT id, balance FROM users WHERE id = ?', [userId]);
+            if (!user) continue;
+
+            const balanceBefore = user.balance || 0;
+            const balanceAfter = balanceBefore + bonusAmount;
+
+            await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, userId]);
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [userId, 'bonus', bonusAmount, balanceBefore, balanceAfter, reason || 'Admin bulk bonus']
+            );
+            credited++;
+        }
+
+        res.json({ message: 'Bulk bonus sent', credited, totalAmount: credited * bonusAmount });
+    } catch (err) {
+        console.error('[Admin] Bulk bonus error:', err);
+        res.status(500).json({ error: 'Failed to send bulk bonus' });
+    }
+});
+
 // GET /api/admin/recent-spins
 router.get('/recent-spins', async (req, res) => {
     try {
@@ -460,6 +544,11 @@ router.get('/pending-withdrawals', async (req, res) => {
             w.totalDeposited = deposits ? deposits.total : 0;
             w.totalWagered = wagered ? wagered.total : 0;
             w.wagerRatio = w.totalDeposited > 0 ? (w.totalWagered / w.totalDeposited).toFixed(1) : 'N/A';
+            // Cooling-off status
+            var createdTime = new Date(w.created_at).getTime();
+            var hoursSince = (Date.now() - createdTime) / (1000 * 60 * 60);
+            w.coolingOff = hoursSince < 24;
+            w.hoursUntilEligible = w.coolingOff ? Math.ceil(24 - hoursSince) : 0;
         }
 
         res.json({ withdrawals });
@@ -470,14 +559,30 @@ router.get('/pending-withdrawals', async (req, res) => {
 });
 
 // POST /api/admin/approve-withdrawal — Process and approve a pending withdrawal
+// Enforces 24h cooling-off period — withdrawals cannot be approved until 24h after creation
 router.post('/approve-withdrawal', async (req, res) => {
     try {
-        const { withdrawalId } = req.body;
+        const { withdrawalId, forceApprove } = req.body;
         if (!withdrawalId) return res.status(400).json({ error: 'withdrawalId is required' });
 
         const wd = await db.get('SELECT * FROM withdrawals WHERE id = ?', [withdrawalId]);
         if (!wd) return res.status(404).json({ error: 'Withdrawal not found' });
         if (wd.status !== 'pending') return res.status(400).json({ error: `Withdrawal is already ${wd.status}` });
+
+        // 24h cooling-off enforcement (admin can override with forceApprove)
+        if (!forceApprove && wd.created_at) {
+            var createdTime = new Date(wd.created_at).getTime();
+            var hoursSince = (Date.now() - createdTime) / (1000 * 60 * 60);
+            if (hoursSince < 24) {
+                var hoursLeft = Math.ceil(24 - hoursSince);
+                return res.status(400).json({
+                    error: 'Cooling-off period active. Withdrawal can be processed in ' + hoursLeft + ' hour(s).',
+                    coolingOff: true,
+                    hoursRemaining: hoursLeft,
+                    eligibleAt: new Date(createdTime + 24 * 60 * 60 * 1000).toISOString()
+                });
+            }
+        }
 
         // Mark as completed (balance was already deducted at request time)
         await db.run(

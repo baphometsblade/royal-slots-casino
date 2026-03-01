@@ -225,12 +225,14 @@
         }
 
 
-        async function register(username, email, password) {
+        async function register(username, email, password, referralCode) {
             let serverError = null;
             try {
+                const body = { username, email, password };
+                if (referralCode) body.referralCode = referralCode;
                 const response = await apiRequest('/api/auth/register', {
                     method: 'POST',
-                    body: { username, email, password },
+                    body,
                     requireAuth: false
                 });
                 if (!response.token || !response.user) {

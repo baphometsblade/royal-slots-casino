@@ -173,7 +173,8 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_jackpot_tier ON jackpot_pool(tier)`    ,
     `CREATE INDEX IF NOT EXISTS idx_tournament_status ON tournaments(status)`,
     `CREATE INDEX IF NOT EXISTS idx_tournament_entries_tid ON tournament_entries(tournament_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`
+    `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code) WHERE referral_code IS NOT NULL`
 ];
 
 
@@ -194,6 +195,9 @@ const USER_MIGRATIONS = [
     ['daily_streak', 'INTEGER DEFAULT 0'],
     ['last_wheel_spin', 'TIMESTAMPTZ'],
     ['promo_codes_used', 'TEXT'],
+    ['referral_code', 'TEXT'],
+    ['referred_by', 'INTEGER'],
+    ['referral_bonus_paid', 'INTEGER DEFAULT 0'],
 ];
 
 module.exports = { TABLES, INDEXES, USER_MIGRATIONS };
