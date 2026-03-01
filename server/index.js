@@ -44,6 +44,26 @@ const authLimiter = rateLimit({
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/login', authLimiter);
 
+// Strict rate limit for bonus/reward endpoints (prevent rapid-fire exploitation)
+const bonusLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5, // 5 attempts per minute per IP
+    message: { error: 'Too many bonus requests. Please wait.' },
+});
+app.use('/api/user/claim-daily-bonus', bonusLimiter);
+app.use('/api/user/spin-wheel', bonusLimiter);
+app.use('/api/user/redeem-promo', bonusLimiter);
+
+// Strict rate limit for deposit/withdrawal endpoints
+const paymentLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 3, // 3 per minute per IP
+    message: { error: 'Too many payment requests. Please wait.' },
+});
+app.use('/api/payments/deposit', paymentLimiter);
+app.use('/api/payments/withdraw', paymentLimiter);
+app.use('/api/balance/deposit', paymentLimiter);
+
 // ─── Health Check (used by Render / load balancers) ───
 app.get('/api/health', async (req, res) => {
     try {

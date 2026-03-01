@@ -330,6 +330,82 @@ router.post('/spin-wheel', authenticate, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+//  PROMO CODE REDEMPTION (server-validated)
+// ═══════════════════════════════════════════════════════════
+
+const PROMO_CODES_SERVER = {
+    WELCOME500: { type: 'one-time', cash: 500,  xp: 50,  spins: 0,  desc: '+$500 Balance!' },
+    MATRIX100:  { type: 'one-time', cash: 0,    xp: 100, spins: 0,  desc: '+100 XP!' },
+    FREESPIN10: { type: 'one-time', cash: 0,    xp: 0,   spins: 10, desc: '10 Free Spins!' },
+    DAILY200:   { type: 'daily',    cash: 200,  xp: 25,  spins: 0,  desc: '+$200 Balance!' },
+    XPBOOST:    { type: 'daily',    cash: 0,    xp: 0,   spins: 0,  desc: '2× XP Boost (20 spins)!' },
+};
+
+router.post('/redeem-promo', authenticate, async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code || typeof code !== 'string') {
+            return res.status(400).json({ error: 'Promo code is required' });
+        }
+        const upperCode = code.trim().toUpperCase();
+        const def = PROMO_CODES_SERVER[upperCode];
+        if (!def) {
+            return res.status(400).json({ error: 'Unknown promo code' });
+        }
+
+        const user = await db.get(
+            'SELECT id, balance, promo_codes_used FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Parse existing usage — { "CODE": true } for one-time, { "CODE": "2026-03-02" } for daily
+        let used = {};
+        try { used = JSON.parse(user.promo_codes_used || '{}'); } catch (e) { used = {}; }
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        if (def.type === 'one-time' && used[upperCode]) {
+            return res.status(400).json({ error: 'Already redeemed', alreadyUsed: true });
+        }
+        if (def.type === 'daily' && used[upperCode] === today) {
+            return res.status(400).json({ error: 'Already used today', alreadyUsed: true });
+        }
+
+        // Award cash if applicable
+        let newBalance = user.balance;
+        if (def.cash > 0) {
+            newBalance = (user.balance || 0) + def.cash;
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [user.id, 'bonus', def.cash, user.balance, newBalance, `Promo code: ${upperCode}`]
+            );
+        }
+
+        // Mark as used
+        used[upperCode] = def.type === 'daily' ? today : true;
+
+        await db.run(
+            "UPDATE users SET balance = ?, promo_codes_used = ?, updated_at = datetime('now') WHERE id = ?",
+            [newBalance, JSON.stringify(used), user.id]
+        );
+
+        res.json({
+            redeemed: true,
+            code: upperCode,
+            desc: def.desc,
+            cash: def.cash,
+            xp: def.xp,
+            spins: def.spins,
+            newBalance
+        });
+    } catch (err) {
+        console.error('[User] Promo code error:', err);
+        res.status(500).json({ error: 'Failed to redeem promo code' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 //  PASSWORD MANAGEMENT
 // ═══════════════════════════════════════════════════════════
 

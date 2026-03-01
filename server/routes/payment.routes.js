@@ -317,42 +317,23 @@ router.post('/deposit', authenticate, async (req, res) => {
 
         const reference = generateReference('DEP');
 
-        // Create deposit record as pending
+        // Create deposit record as PENDING — balance is NOT credited yet.
+        // In production, a payment processor webhook (Stripe, PayPal, etc.) calls
+        // a separate callback endpoint to confirm payment, which then credits balance.
+        // This prevents users from getting free money by calling this endpoint directly.
         const depositResult = await db.run(
             'INSERT INTO deposits (user_id, amount, currency, payment_method_id, payment_type, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [req.user.id, deposit, config.CURRENCY, paymentMethodId || null, paymentType, 'pending', reference]
         );
         const depositId = depositResult.lastInsertRowid;
 
-        // Auto-complete: in a real system, the payment processor callback would do this
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore + deposit;
-
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
-
-        await db.run(
-            "UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?",
-            [depositId]
-        );
-
-        await db.run(
-            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-            [req.user.id, 'deposit', deposit, balanceBefore, balanceAfter, reference]
-        );
-
         res.json({
-            message: `Deposited $${deposit.toFixed(2)}`,
-            balance: balanceAfter,
+            message: `Deposit of $${deposit.toFixed(2)} submitted — awaiting payment confirmation`,
             deposit: {
                 id: depositId,
                 amount: deposit,
                 currency: config.CURRENCY,
-                status: 'completed',
+                status: 'pending',
                 reference
             }
         });
@@ -673,6 +654,64 @@ router.post('/self-exclude', authenticate, async (req, res) => {
     } catch (err) {
         console.error('[Payment] Self-exclude error:', err);
         res.status(500).json({ error: 'Failed to activate self-exclusion' });
+    }
+});
+
+// ═══════════════════════════════════════════════════
+//  ADMIN: APPROVE PENDING DEPOSIT
+// ═══════════════════════════════════════════════════
+
+// POST /api/payments/admin/approve-deposit — admin-only: approve a pending deposit and credit balance
+router.post('/admin/approve-deposit', authenticate, async (req, res) => {
+    try {
+        if (!req.user.is_admin) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        const { depositId } = req.body;
+        if (!depositId) {
+            return res.status(400).json({ error: 'depositId is required' });
+        }
+
+        const deposit = await db.get(
+            'SELECT id, user_id, amount, status, reference FROM deposits WHERE id = ?',
+            [depositId]
+        );
+        if (!deposit) {
+            return res.status(404).json({ error: 'Deposit not found' });
+        }
+        if (deposit.status !== 'pending') {
+            return res.status(400).json({ error: `Deposit already ${deposit.status}` });
+        }
+
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const balanceBefore = user.balance;
+        const balanceAfter = balanceBefore + deposit.amount;
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
+
+        await db.run(
+            "UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?",
+            [deposit.id]
+        );
+
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference]
+        );
+
+        res.json({
+            message: `Deposit #${deposit.id} approved — $${deposit.amount.toFixed(2)} credited`,
+            userId: deposit.user_id,
+            balance: balanceAfter
+        });
+    } catch (err) {
+        console.error('[Payment] Approve deposit error:', err);
+        res.status(500).json({ error: 'Failed to approve deposit' });
     }
 });
 

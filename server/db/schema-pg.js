@@ -193,6 +193,7 @@ const USER_MIGRATIONS = [
     ['last_daily_claim', 'TEXT'],
     ['daily_streak', 'INTEGER DEFAULT 0'],
     ['last_wheel_spin', 'TIMESTAMPTZ'],
+    ['promo_codes_used', 'TEXT'],
 ];
 
 module.exports = { TABLES, INDEXES, USER_MIGRATIONS };

@@ -2398,29 +2398,70 @@ function openPromoCode() {
     inp && inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') redeemPromoCode(); }, { once: true });
 }
 
-function redeemPromoCode() {
+async function redeemPromoCode() {
     var inp = document.getElementById('promoCodeInput');
     var res = document.getElementById('promoResult');
     if (!inp) return;
     var code = inp.value.trim().toUpperCase();
     var def = PROMO_CODES[code];
-    var storage;
-    try { storage = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || '{}'); } catch(e) { storage = {}; }
+
     if (!def) {
-        if (res) { res.textContent = '❌ Unknown code'; res.className = 'promo-result promo-fail'; }
+        if (res) { res.textContent = '\u274C Unknown code'; res.className = 'promo-result promo-fail'; }
         return;
     }
+
+    // Server-validated redemption for authenticated users
+    if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+        try {
+            var serverRes = await apiRequest('/api/user/redeem-promo', {
+                method: 'POST',
+                body: { code: code },
+                requireAuth: true,
+            });
+            if (serverRes.redeemed) {
+                if (serverRes.cash > 0) {
+                    balance = serverRes.newBalance;
+                    if (typeof updateBalance === 'function') updateBalance();
+                    if (typeof saveBalance === 'function') saveBalance();
+                }
+                if (serverRes.xp > 0 && typeof awardXP === 'function') awardXP(serverRes.xp);
+                if (serverRes.spins > 0 && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                    triggerFreeSpins(currentGame, serverRes.spins);
+                }
+                // Also sync localStorage for display consistency
+                var storage;
+                try { storage = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || '{}'); } catch(e) { storage = {}; }
+                if (!storage.used) storage.used = {};
+                storage.used[code] = def.type === 'daily' ? new Date().toISOString().slice(0, 10) : true;
+                localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage));
+
+                if (res) { res.textContent = '\u2705 ' + serverRes.desc; res.className = 'promo-result promo-ok'; }
+                if (typeof showToast === 'function') showToast('\uD83C\uDF9F\uFE0F Code redeemed: ' + serverRes.desc, 'win');
+            }
+        } catch (err) {
+            if (err.status === 400) {
+                if (res) { res.textContent = '\u26A0\uFE0F Already redeemed'; res.className = 'promo-result promo-fail'; }
+            } else {
+                if (res) { res.textContent = '\u274C Redemption failed'; res.className = 'promo-result promo-fail'; }
+            }
+        }
+        inp.value = '';
+        return;
+    }
+
+    // Guest / offline fallback — client-side only (guests can't cash out)
+    var storage;
+    try { storage = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || '{}'); } catch(e) { storage = {}; }
     var today = new Date().toISOString().slice(0, 10);
     var used = storage.used || {};
     if (def.type === 'one-time' && used[code]) {
-        if (res) { res.textContent = '⚠️ Already redeemed'; res.className = 'promo-result promo-fail'; }
+        if (res) { res.textContent = '\u26A0\uFE0F Already redeemed'; res.className = 'promo-result promo-fail'; }
         return;
     }
     if (def.type === 'daily' && used[code] === today) {
-        if (res) { res.textContent = '⚠️ Already used today'; res.className = 'promo-result promo-fail'; }
+        if (res) { res.textContent = '\u26A0\uFE0F Already used today'; res.className = 'promo-result promo-fail'; }
         return;
     }
-    // Apply reward
     var r = def.reward;
     if (r.cash && typeof balance !== 'undefined') {
         balance += r.cash;
@@ -2438,12 +2479,11 @@ function redeemPromoCode() {
             localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: rem }));
         } catch(e) {}
     }
-    // Mark used
     if (!storage.used) storage.used = {};
     storage.used[code] = def.type === 'daily' ? today : true;
     localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage));
-    if (res) { res.textContent = '✅ ' + def.desc; res.className = 'promo-result promo-ok'; }
-    if (typeof showToast === 'function') showToast('🎟️ Code redeemed: ' + def.desc, 'win');
+    if (res) { res.textContent = '\u2705 ' + def.desc; res.className = 'promo-result promo-ok'; }
+    if (typeof showToast === 'function') showToast('\uD83C\uDF9F\uFE0F Code redeemed: ' + def.desc, 'win');
     inp.value = '';
 }
 
