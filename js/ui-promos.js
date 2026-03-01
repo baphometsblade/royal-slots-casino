@@ -866,7 +866,22 @@ function _promoCheckWelcomeBack() {
     if (!lastVisit) return; // First visit ever — no welcome back
 
     const elapsed = Date.now() - Number(lastVisit);
+    const sixHours = 6 * 60 * 60 * 1000;
     const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    // Golden hour: if away 6+ hours, auto-activate 1-hour happy hour
+    if (elapsed >= sixHours && !_promoSessionFlag('goldenHourTriggered')) {
+        _promoSetSessionFlag('goldenHourTriggered');
+        const existingEnd = localStorage.getItem(PROMO_KEY_HAPPY_HOUR_END);
+        if (!existingEnd || Date.now() >= Number(existingEnd)) {
+            const goldenEndTime = Date.now() + 60 * 60 * 1000; // 1 hour
+            localStorage.setItem(PROMO_KEY_HAPPY_HOUR_END, String(goldenEndTime));
+            _promoActivateHappyHour(goldenEndTime);
+            showToast('Golden Hour activated! All wins boosted 1.5x for 60 minutes!', 'success', 6000);
+        }
+    }
+
+    // Full welcome back bonus only after 24 hours
     if (elapsed < twentyFourHours) return;
 
     const bonusAmount = 5;

@@ -756,4 +756,77 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════
+//  WEBHOOK: PAYMENT CONFIRMATION
+// ═══════════════════════════════════════════════════
+
+// POST /api/payments/webhook/confirm — Payment processor callback
+// Validates the deposit reference and secret, then credits the player.
+// Call this from Stripe/PayPal webhook handlers or manually via curl.
+router.post('/webhook/confirm', async (req, res) => {
+    try {
+        const { reference, webhookSecret } = req.body;
+
+        // Validate webhook secret (must match WEBHOOK_SECRET env var)
+        const expectedSecret = process.env.WEBHOOK_SECRET || config.JWT_SECRET;
+        if (!webhookSecret || webhookSecret !== expectedSecret) {
+            return res.status(403).json({ error: 'Invalid webhook secret' });
+        }
+
+        if (!reference) {
+            return res.status(400).json({ error: 'reference is required' });
+        }
+
+        const deposit = await db.get(
+            'SELECT id, user_id, amount, status, reference FROM deposits WHERE reference = ?',
+            [reference]
+        );
+        if (!deposit) {
+            return res.status(404).json({ error: 'Deposit not found' });
+        }
+        if (deposit.status !== 'pending') {
+            return res.status(200).json({ message: `Deposit already ${deposit.status}`, depositId: deposit.id });
+        }
+
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const balanceBefore = user.balance;
+        let balanceAfter = balanceBefore + deposit.amount;
+
+        // First-deposit bonus
+        let bonusAmount = 0;
+        const priorDeposits = await db.get(
+            "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [deposit.user_id]
+        );
+        if (priorDeposits && priorDeposits.count === 0) {
+            bonusAmount = Math.min(deposit.amount * (config.FIRST_DEPOSIT_BONUS_PCT / 100), config.FIRST_DEPOSIT_BONUS_MAX);
+            balanceAfter += bonusAmount;
+        }
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
+        await db.run("UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?", [deposit.id]);
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference]
+        );
+
+        if (bonusAmount > 0) {
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [deposit.user_id, 'first_deposit_bonus', bonusAmount, balanceAfter - bonusAmount, balanceAfter, 'FIRST-DEPOSIT-100PCT-MATCH']
+            );
+        }
+
+        console.log(`[Webhook] Deposit ${deposit.id} confirmed — $${deposit.amount} + $${bonusAmount} bonus credited to user ${deposit.user_id}`);
+        res.json({ message: 'Deposit confirmed', depositId: deposit.id, amount: deposit.amount, bonus: bonusAmount });
+    } catch (err) {
+        console.error('[Webhook] Payment confirm error:', err);
+        res.status(500).json({ error: 'Webhook processing failed' });
+    }
+});
+
 module.exports = router;
