@@ -711,7 +711,18 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
         }
 
         const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore + deposit.amount;
+        let balanceAfter = balanceBefore + deposit.amount;
+
+        // First-deposit bonus: 100% match up to $500
+        let bonusAmount = 0;
+        const priorDeposits = await db.get(
+            "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [deposit.user_id]
+        );
+        if (priorDeposits && priorDeposits.count === 0) {
+            bonusAmount = Math.min(deposit.amount * (config.FIRST_DEPOSIT_BONUS_PCT / 100), config.FIRST_DEPOSIT_BONUS_MAX);
+            balanceAfter += bonusAmount;
+        }
 
         await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
 
@@ -725,10 +736,19 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
             [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference]
         );
 
+        if (bonusAmount > 0) {
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [deposit.user_id, 'first_deposit_bonus', bonusAmount, balanceAfter - bonusAmount, balanceAfter, 'FIRST-DEPOSIT-100PCT-MATCH']
+            );
+        }
+
+        const bonusMsg = bonusAmount > 0 ? ` + $${bonusAmount.toFixed(2)} first-deposit bonus!` : '';
         res.json({
-            message: `Deposit #${deposit.id} approved — $${deposit.amount.toFixed(2)} credited`,
+            message: `Deposit #${deposit.id} approved — $${deposit.amount.toFixed(2)} credited${bonusMsg}`,
             userId: deposit.user_id,
-            balance: balanceAfter
+            balance: balanceAfter,
+            bonus: bonusAmount
         });
     } catch (err) {
         console.error('[Payment] Approve deposit error:', err);

@@ -34,6 +34,10 @@ module.exports = {
     WITHDRAWAL_PROCESSING_DAYS: 3,
     PAYMENT_METHODS: ['visa', 'mastercard', 'payid', 'bank_transfer', 'crypto_btc', 'crypto_eth', 'crypto_usdt'],
 
+    // First-deposit bonus
+    FIRST_DEPOSIT_BONUS_PCT: 100,    // 100% match
+    FIRST_DEPOSIT_BONUS_MAX: 500,    // cap at $500
+
     // Password reset
     PASSWORD_RESET_EXPIRY_HOURS: 1,
     PASSWORD_RESET_MAX_ACTIVE: 3,

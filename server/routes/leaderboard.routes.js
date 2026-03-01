@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
             if (w >= 20000)  return 'Platinum';
             if (w >= 10000)  return 'Gold';
             if (w >= 5000)   return 'Silver';
-            if (w >= 1000)   return 'Bronze';
+            if (w >= 250)    return 'Bronze';
             return null;
         }
 

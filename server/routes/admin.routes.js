@@ -264,7 +264,19 @@ router.post('/approve-deposit', async (req, res) => {
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore + deposit.amount;
+        let balanceAfter = balanceBefore + deposit.amount;
+
+        // First-deposit bonus: 100% match up to $500
+        let bonusAmount = 0;
+        const priorDeposits = await db.get(
+            "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [deposit.user_id]
+        );
+        if (priorDeposits && priorDeposits.count === 0) {
+            const cfg = require('../config');
+            bonusAmount = Math.min(deposit.amount * (cfg.FIRST_DEPOSIT_BONUS_PCT / 100), cfg.FIRST_DEPOSIT_BONUS_MAX);
+            balanceAfter += bonusAmount;
+        }
 
         await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
         await db.run("UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?", [depositId]);
@@ -273,7 +285,18 @@ router.post('/approve-deposit', async (req, res) => {
             [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference || 'admin-approved']
         );
 
-        res.json({ message: 'Deposit approved', depositId, amount: deposit.amount, newBalance: balanceAfter });
+        // Log bonus as separate transaction if awarded
+        if (bonusAmount > 0) {
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [deposit.user_id, 'first_deposit_bonus', bonusAmount, balanceAfter - bonusAmount, balanceAfter, 'FIRST-DEPOSIT-100PCT-MATCH']
+            );
+        }
+
+        const msg = bonusAmount > 0
+            ? `Deposit approved + $${bonusAmount.toFixed(2)} first-deposit bonus!`
+            : 'Deposit approved';
+        res.json({ message: msg, depositId, amount: deposit.amount, bonus: bonusAmount, newBalance: balanceAfter });
     } catch (err) {
         console.error('[Admin] Approve deposit error:', err);
         res.status(500).json({ error: 'Failed to approve deposit' });

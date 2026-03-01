@@ -847,18 +847,18 @@ const VIP_TIERS = [
         id: 'bronze',
         name: 'Bronze',
         minWagered: 0,
-        maxWagered: 999,
+        maxWagered: 249,
         cashbackPct: 0.5,
-        weeklyReloadPct: 0,
+        weeklyReloadPct: 5,
         color: '#CD7F32',
         colorDark: '#8B5523',
         icon: '\u{1F949}',
-        benefits: ['0.5% cashback on losses', 'Access to all standard games']
+        benefits: ['0.5% cashback on losses', '5% weekly reload bonus', 'Access to all standard games']
     },
     {
         id: 'silver',
         name: 'Silver',
-        minWagered: 1000,
+        minWagered: 250,
         maxWagered: 4999,
         cashbackPct: 1.0,
         weeklyReloadPct: 10,
