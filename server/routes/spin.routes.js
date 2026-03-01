@@ -278,6 +278,18 @@ router.post('/', authenticate, async (req, res) => {
             }
         } catch (_) {}
 
+        // ── Achievement check (non-blocking) ──
+        let newAchievements = [];
+        try {
+            const achievementService = require('../services/achievement.service');
+            const spinCountRow = await db.get('SELECT COUNT(*) as cnt FROM spins WHERE user_id = ?', [userId]);
+            const distinctRow = await db.get('SELECT COUNT(DISTINCT game_id) as cnt FROM spins WHERE user_id = ?', [userId]);
+            const spinCount = spinCountRow ? spinCountRow.cnt : 0;
+            const distinctGames = distinctRow ? distinctRow.cnt : 0;
+            const winMult = bet > 0 ? spinResult.winAmount / bet : 0;
+            newAchievements = await achievementService.checkSpinAchievements(userId, spinCount, winMult, distinctGames);
+        } catch (e) { console.error('[Achievement] check error:', e.message); }
+
         // ── Response ──
         res.json({
             grid: spinResult.grid,
@@ -290,6 +302,7 @@ router.post('/', authenticate, async (req, res) => {
             usedFreeSpin,
             jackpotWon: spinResult.jackpotWon || null,
             wageringStatus,
+            newAchievements,
         });
 
     } catch (err) {

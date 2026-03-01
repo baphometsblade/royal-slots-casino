@@ -9,8 +9,10 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         await jackpotService.ensureSeeded();
+        const levels = await jackpotService.getJackpotLevels();
+        // Also include legacy flat amounts map for backward compat
         const amounts = await jackpotService.getAmounts();
-        res.json(amounts);
+        res.json({ jackpots: levels, amounts });
     } catch (err) {
         console.error('[Jackpot] Error fetching amounts:', err);
         res.status(500).json({ error: 'Failed to fetch jackpot amounts' });

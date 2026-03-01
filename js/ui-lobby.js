@@ -2768,3 +2768,145 @@ function _renderFeaturedSpotlight() {
     // Initial render
     renderDailyGoalBar();
 })();
+
+// ── Jackpot Ticker (API-driven) ─────────────────────────────────
+function loadJackpotTicker() {
+    fetch('/api/jackpots')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var bar = document.getElementById('jackpotTickerBar');
+            if (!bar || !data.jackpots) return;
+            bar.style.display = '';
+            data.jackpots.forEach(function(jp) {
+                var el = document.getElementById('jp' + jp.tier.charAt(0).toUpperCase() + jp.tier.slice(1) + 'Amt');
+                if (el) el.textContent = '$' + Number(jp.currentAmount).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            });
+        })
+        .catch(function() {});
+}
+
+// Auto-refresh jackpot amounts every 15 seconds
+var _jpInterval = null;
+function startJackpotPolling() {
+    loadJackpotTicker();
+    if (_jpInterval) clearInterval(_jpInterval);
+    _jpInterval = setInterval(loadJackpotTicker, 15000);
+}
+function stopJackpotPolling() {
+    if (_jpInterval) { clearInterval(_jpInterval); _jpInterval = null; }
+}
+
+// ── Big Win Feed ─────────────────────────────────
+function loadBigWinFeed() {
+    fetch('/api/big-wins')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var feed = document.getElementById('bigWinFeed');
+            var scroll = document.getElementById('bigWinScroll');
+            if (!feed || !scroll || !data.wins || data.wins.length === 0) return;
+            feed.style.display = '';
+            scroll.textContent = '';
+            data.wins.forEach(function(w) {
+                var gameName = w.gameId;
+                if (typeof GAMES !== 'undefined') {
+                    var g = GAMES.find(function(gg) { return gg.id === w.gameId; });
+                    if (g) gameName = g.name;
+                }
+                var ago = _timeAgo(w.time);
+                var item = document.createElement('div');
+                item.className = 'bwf-item';
+                var playerSpan = document.createElement('span');
+                playerSpan.className = 'bwf-player';
+                playerSpan.textContent = w.player || '';
+                var amountSpan = document.createElement('span');
+                amountSpan.className = 'bwf-amount';
+                amountSpan.textContent = '$' + Number(w.amount).toFixed(0);
+                var gameSpan = document.createElement('span');
+                gameSpan.className = 'bwf-game';
+                gameSpan.textContent = gameName;
+                var timeSpan = document.createElement('span');
+                timeSpan.className = 'bwf-time';
+                timeSpan.textContent = ago;
+                item.appendChild(playerSpan);
+                item.appendChild(document.createTextNode(' won '));
+                item.appendChild(amountSpan);
+                item.appendChild(document.createTextNode(' on '));
+                item.appendChild(gameSpan);
+                item.appendChild(document.createTextNode(' '));
+                item.appendChild(timeSpan);
+                scroll.appendChild(item);
+            });
+        })
+        .catch(function() {});
+}
+
+function _escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+}
+
+function _timeAgo(dateStr) {
+    if (!dateStr) return '';
+    var diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+}
+
+// ── Achievement Toast ─────────────────────────────────
+function showAchievementToast(achievement) {
+    var toast = document.getElementById('achievementToast');
+    var icon = document.getElementById('achieveIcon');
+    var title = document.getElementById('achieveTitle');
+    var desc = document.getElementById('achieveDesc');
+    if (!toast) return;
+    if (icon) icon.textContent = achievement.icon || '';
+    if (title) title.textContent = 'Achievement Unlocked: ' + (achievement.name || '');
+    if (desc) desc.textContent = (achievement.desc || '') + (achievement.xp ? ' (+' + achievement.xp + ' XP)' : '');
+    toast.style.display = 'flex';
+    toast.classList.add('achievement-show');
+    setTimeout(function() {
+        toast.classList.remove('achievement-show');
+        setTimeout(function() { toast.style.display = 'none'; }, 400);
+    }, 4000);
+}
+
+// ── Personalized Offers ─────────────────────────────────
+function loadPersonalizedOffers() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    fetch('/api/offers', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var banner = document.getElementById('offersBanner');
+            if (!banner || !data.offers || data.offers.length === 0) {
+                if (banner) banner.style.display = 'none';
+                return;
+            }
+            banner.style.display = '';
+            banner.textContent = '';
+            data.offers.forEach(function(o) {
+                var card = document.createElement('div');
+                card.className = 'offer-card offer-' + (o.type || 'default');
+                var titleEl = document.createElement('div');
+                titleEl.className = 'offer-title';
+                titleEl.textContent = o.title || '';
+                var msgEl = document.createElement('div');
+                msgEl.className = 'offer-msg';
+                msgEl.textContent = o.message || '';
+                var ctaEl = document.createElement('button');
+                ctaEl.className = 'offer-cta';
+                ctaEl.textContent = o.cta || 'Claim';
+                ctaEl.addEventListener('click', function() {
+                    document.getElementById('offersBanner').style.display = 'none';
+                });
+                card.appendChild(titleEl);
+                card.appendChild(msgEl);
+                card.appendChild(ctaEl);
+                banner.appendChild(card);
+            });
+        })
+        .catch(function() {});
+}

@@ -54,6 +54,19 @@ module.exports = {
     SMTP_PASS:   process.env.SMTP_PASS   || null,
     SMTP_FROM:   process.env.SMTP_FROM   || '"Matrix Spins" <noreply@msaart.online>',
 
+    // Jackpot pooling
+    JACKPOT_CONTRIBUTION_RATE: 0.005,   // 0.5% of every bet feeds jackpot pool
+    JACKPOT_TIERS: {
+        mini:  { seed: 100,   mustHitAt: 500 },
+        minor: { seed: 500,   mustHitAt: 2500 },
+        major: { seed: 2500,  mustHitAt: 15000 },
+        grand: { seed: 25000, mustHitAt: 100000 }
+    },
+    JACKPOT_MINI_WIN_CHANCE: 0.001,     // 0.1% per spin
+    JACKPOT_MINOR_WIN_CHANCE: 0.0002,   // 0.02% per spin
+    JACKPOT_MAJOR_WIN_CHANCE: 0.00004,  // 0.004% per spin
+    JACKPOT_GRAND_WIN_CHANCE: 0.000005, // 0.0005% per spin
+
     // Responsible gambling defaults
     DEFAULT_DAILY_DEPOSIT_LIMIT: null,   // No limit by default
     DEFAULT_SESSION_TIME_LIMIT: null,    // No limit by default

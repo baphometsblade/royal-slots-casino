@@ -179,6 +179,23 @@
           <span class="jackpot-tier jackpot-mega">👑 MEGA <span id="jackpot-mega-amount">$10,000.00</span></span>
         </div>
 
+        <!-- Jackpot Ticker V2 -->
+        <div class="jackpot-ticker-bar-v2" id="jackpotTickerBar" style="display:none">
+            <div class="jackpot-ticker-item" id="jpMini"><span class="jp-label">MINI</span><span class="jp-amount" id="jpMiniAmt">$0</span></div>
+            <div class="jackpot-ticker-item" id="jpMinor"><span class="jp-label">MINOR</span><span class="jp-amount" id="jpMinorAmt">$0</span></div>
+            <div class="jackpot-ticker-item jp-major" id="jpMajor"><span class="jp-label">MAJOR</span><span class="jp-amount" id="jpMajorAmt">$0</span></div>
+            <div class="jackpot-ticker-item jp-grand" id="jpGrand"><span class="jp-label">GRAND</span><span class="jp-amount" id="jpGrandAmt">$0</span></div>
+        </div>
+
+        <!-- Personalized Offers -->
+        <div class="offers-banner" id="offersBanner" style="display:none"></div>
+
+        <!-- Live Big Wins Feed -->
+        <div class="big-win-feed" id="bigWinFeed" style="display:none">
+            <div class="bwf-header">Recent Big Wins</div>
+            <div class="bwf-scroll" id="bigWinScroll"></div>
+        </div>
+
         <!-- Win Ticker (Pass 6) -->
         <div class="win-ticker-bar" id="winTicker">
             <span class="ticker-live-dot"></span>
@@ -2028,6 +2045,15 @@
         <div class="jackpot-win-amount">+$0.00</div>
         <div class="jackpot-win-sub">Added to your balance!</div>
         <button class="jackpot-win-close" onclick="closeJackpotWinModal()">COLLECT!</button>
+    </div>
+</div>
+
+<!-- Achievement Toast -->
+<div class="achievement-toast" id="achievementToast" style="display:none">
+    <span class="achievement-icon" id="achieveIcon"></span>
+    <div class="achievement-info">
+        <div class="achievement-title" id="achieveTitle"></div>
+        <div class="achievement-desc" id="achieveDesc"></div>
     </div>
 </div>
 </body>

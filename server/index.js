@@ -100,6 +100,42 @@ app.use('/api/feed', feedRoutes);
 app.use('/api/game-of-day', require('./routes/gameofday.routes'));
 app.use('/api/game-stats', require('./routes/gamestats.routes'));
 
+// ─── Big-win feed — recent large wins for social proof ───
+app.get('/api/big-wins', async (req, res) => {
+    try {
+        const db = require('./database');
+        const rows = await db.all(`
+            SELECT s.win_amount, s.game_id, s.created_at,
+                   u.username, u.display_name
+            FROM spins s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.win_amount >= 50
+            ORDER BY s.created_at DESC
+            LIMIT 20
+        `);
+        const wins = rows.map(r => ({
+            amount: r.win_amount,
+            gameId: r.game_id,
+            player: r.display_name || r.username,
+            time: r.created_at
+        }));
+        res.json({ wins });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch big wins' });
+    }
+});
+
+// ─── Jackpots plural alias (standalone GET endpoint) ───
+app.get('/api/jackpots', async (req, res) => {
+    try {
+        const jpService = require('./services/jackpot.service');
+        const levels = await jpService.getJackpotLevels();
+        res.json({ jackpots: levels });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch jackpots' });
+    }
+});
+
 // ─── Game definitions endpoint (sanitized — no payout tables) ───
 const games = require('../shared/game-definitions');
 app.get('/api/games', (req, res) => {
@@ -129,6 +165,31 @@ app.get('/api/games', (req, res) => {
         // NOTE: payouts, multiplier arrays, etc. are INTENTIONALLY EXCLUDED
     }));
     res.json({ games: sanitized });
+});
+
+// ─── Achievements ───
+const { authenticate: verifyToken } = require('./middleware/auth');
+app.get('/api/achievements', verifyToken, async (req, res) => {
+    try {
+        const achievementService = require('./services/achievement.service');
+        const userAchievements = await achievementService.getUserAchievements(req.user.id);
+        const allDefs = achievementService.getAllDefinitions();
+        res.json({ achievements: userAchievements, definitions: allDefs });
+    } catch (e) {
+        console.error('[Achievements] Fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch achievements' });
+    }
+});
+
+// ─── Personalized bonus offers ───
+app.get('/api/offers', verifyToken, async (req, res) => {
+    try {
+        const bonusRules = require('./services/bonus-rules.service');
+        const offers = await bonusRules.getPersonalizedOffers(req.user.id);
+        res.json({ offers });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch offers' });
+    }
 });
 
 // ─── Static Files ───
@@ -161,6 +222,11 @@ async function start() {
     }
 
     await initDatabase();
+
+    // Seed jackpot pool (4 tiers: mini, minor, major, grand)
+    const jackpotService = require('./services/jackpot.service');
+    await jackpotService.initJackpotPool();
+
     app.listen(config.PORT, () => {
         console.log(`\n${'='.repeat(50)}`);
         console.log(`  Matrix Spins Server running on port ${config.PORT}`);

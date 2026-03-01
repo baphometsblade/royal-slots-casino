@@ -2467,6 +2467,14 @@
                     if (typeof updateWageringDisplay === 'function') {
                         updateWageringDisplay(serverResult.wageringStatus || null);
                     }
+                    // Show achievement toasts
+                    if (serverResult.newAchievements && serverResult.newAchievements.length > 0) {
+                        serverResult.newAchievements.forEach(function(a, i) {
+                            setTimeout(function() {
+                                if (typeof showAchievementToast === 'function') showAchievementToast(a);
+                            }, i * 4500);
+                        });
+                    }
                 } else {
                     finalGrid = generateSpinResult(spinGame);
                     balance -= currentBet;

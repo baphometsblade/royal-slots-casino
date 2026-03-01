@@ -168,6 +168,15 @@ const TABLES = [
         UNIQUE(tournament_id, user_id),
         FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS user_achievements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        achievement_id TEXT NOT NULL,
+        unlocked_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, achievement_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 
@@ -183,7 +192,9 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_tournament_status ON tournaments(status)`,
     `CREATE INDEX IF NOT EXISTS idx_tournament_entries_tid ON tournament_entries(tournament_id)`,
     `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`,
-    `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code) WHERE referral_code IS NOT NULL`
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code) WHERE referral_code IS NOT NULL`,
+    `CREATE INDEX IF NOT EXISTS idx_spins_wins ON spins(win_amount, created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`
 ];
 
 

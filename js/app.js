@@ -200,6 +200,10 @@
             if (typeof initPromoEngine === 'function') initPromoEngine();
             if (typeof initHourlyBonus === 'function') initHourlyBonus();
             if (typeof renderFavQuickBar === 'function') renderFavQuickBar();
+            // Load lobby enhancements
+            if (typeof startJackpotPolling === 'function') startJackpotPolling();
+            if (typeof loadBigWinFeed === 'function') loadBigWinFeed();
+            if (typeof loadPersonalizedOffers === 'function') setTimeout(loadPersonalizedOffers, 2000);
             startSessionDurationWatch();
         }
 
