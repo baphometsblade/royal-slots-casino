@@ -2376,7 +2376,7 @@
                     if (msgDiv) {
                         msgDiv.innerHTML = '<div class="message-display message-lose" style="display:flex;align-items:center;gap:12px;justify-content:center;">'
                             + '<span>Insufficient balance</span>'
-                            + '<button onclick="if(typeof openWalletModal===\'function\')openWalletModal()" style="'
+                            + '<button onclick="if(typeof showWalletModal===\'function\')showWalletModal()" style="'
                             + 'background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;border:none;padding:8px 20px;'
                             + 'border-radius:8px;font-weight:800;font-size:0.95rem;cursor:pointer;'
                             + 'box-shadow:0 0 12px rgba(255,215,0,0.5);animation:pulse 1.5s infinite;">DEPOSIT NOW</button>'
