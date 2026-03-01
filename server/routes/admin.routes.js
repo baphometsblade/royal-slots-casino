@@ -299,4 +299,99 @@ router.post('/reject-deposit', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════
+//  WITHDRAWAL MANAGEMENT
+// ═══════════════════════════════════════════════════
+
+// GET /api/admin/pending-withdrawals — List withdrawals awaiting admin processing
+router.get('/pending-withdrawals', async (req, res) => {
+    try {
+        const withdrawals = await db.all(
+            `SELECT w.id, w.user_id, w.amount, w.currency, w.payment_type, w.status, w.reference, w.created_at,
+                    u.username, u.email, u.balance
+             FROM withdrawals w
+             JOIN users u ON w.user_id = u.id
+             WHERE w.status = 'pending'
+             ORDER BY w.created_at ASC`
+        );
+
+        // For each withdrawal, get wagering stats to help admin evaluate
+        for (const w of withdrawals) {
+            const deposits = await db.get(
+                "SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE user_id = ? AND status = 'completed'",
+                [w.user_id]
+            );
+            const wagered = await db.get(
+                'SELECT COALESCE(SUM(bet_amount), 0) as total FROM spins WHERE user_id = ?',
+                [w.user_id]
+            );
+            w.totalDeposited = deposits ? deposits.total : 0;
+            w.totalWagered = wagered ? wagered.total : 0;
+            w.wagerRatio = w.totalDeposited > 0 ? (w.totalWagered / w.totalDeposited).toFixed(1) : 'N/A';
+        }
+
+        res.json({ withdrawals });
+    } catch (err) {
+        console.error('[Admin] Pending withdrawals error:', err);
+        res.status(500).json({ error: 'Failed to load pending withdrawals' });
+    }
+});
+
+// POST /api/admin/approve-withdrawal — Process and approve a pending withdrawal
+router.post('/approve-withdrawal', async (req, res) => {
+    try {
+        const { withdrawalId } = req.body;
+        if (!withdrawalId) return res.status(400).json({ error: 'withdrawalId is required' });
+
+        const wd = await db.get('SELECT * FROM withdrawals WHERE id = ?', [withdrawalId]);
+        if (!wd) return res.status(404).json({ error: 'Withdrawal not found' });
+        if (wd.status !== 'pending') return res.status(400).json({ error: `Withdrawal is already ${wd.status}` });
+
+        // Mark as completed (balance was already deducted at request time)
+        await db.run(
+            "UPDATE withdrawals SET status = 'completed', processed_at = datetime('now'), admin_note = 'Approved by admin' WHERE id = ?",
+            [withdrawalId]
+        );
+
+        res.json({ message: 'Withdrawal approved and ready for payout', withdrawalId, amount: wd.amount });
+    } catch (err) {
+        console.error('[Admin] Approve withdrawal error:', err);
+        res.status(500).json({ error: 'Failed to approve withdrawal' });
+    }
+});
+
+// POST /api/admin/reject-withdrawal — Reject a withdrawal and refund balance
+router.post('/reject-withdrawal', async (req, res) => {
+    try {
+        const { withdrawalId, reason } = req.body;
+        if (!withdrawalId) return res.status(400).json({ error: 'withdrawalId is required' });
+
+        const wd = await db.get('SELECT * FROM withdrawals WHERE id = ?', [withdrawalId]);
+        if (!wd) return res.status(404).json({ error: 'Withdrawal not found' });
+        if (wd.status !== 'pending') return res.status(400).json({ error: `Withdrawal is already ${wd.status}` });
+
+        // Refund the balance back to the user
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [wd.user_id]);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const balanceBefore = user.balance;
+        const balanceAfter = balanceBefore + wd.amount;
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, wd.user_id]);
+        await db.run(
+            "UPDATE withdrawals SET status = 'rejected', processed_at = datetime('now'), admin_note = ? WHERE id = ?",
+            [reason || 'Rejected by admin', withdrawalId]
+        );
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [wd.user_id, 'withdrawal_refund', wd.amount, balanceBefore, balanceAfter, `WDR-REJECT-${withdrawalId}`]
+        );
+
+        res.json({ message: 'Withdrawal rejected and refunded', withdrawalId, amount: wd.amount, newBalance: balanceAfter });
+    } catch (err) {
+        console.error('[Admin] Reject withdrawal error:', err);
+        res.status(500).json({ error: 'Failed to reject withdrawal' });
+    }
+});
+
 module.exports = router;

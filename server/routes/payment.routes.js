@@ -400,6 +400,27 @@ router.post('/withdraw', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
+        // Wagering requirement: must wager at least 1x total deposits before withdrawing
+        const totalDeposited = await db.get(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [req.user.id]
+        );
+        const totalWagered = await db.get(
+            'SELECT COALESCE(SUM(bet_amount), 0) as total FROM spins WHERE user_id = ?',
+            [req.user.id]
+        );
+        const deposited = totalDeposited ? totalDeposited.total : 0;
+        const wagered = totalWagered ? totalWagered.total : 0;
+        if (deposited > 0 && wagered < deposited) {
+            const remaining = (deposited - wagered).toFixed(2);
+            return res.status(400).json({
+                error: `Wagering requirement not met. You must wager $${remaining} more before withdrawing. (Wagered: $${wagered.toFixed(2)} / Required: $${deposited.toFixed(2)})`,
+                wagerRequired: deposited,
+                wagerCompleted: wagered,
+                wagerRemaining: deposited - wagered
+            });
+        }
+
         // Validate payment method ownership if provided
         if (paymentMethodId) {
             const pm = await db.get(
