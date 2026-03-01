@@ -14,7 +14,11 @@
     "reasset:symbols": "py -3.10 scripts/generate_sdxl_symbols.py --force",
     "animate:symbols": "py -3.10 scripts/generate_animated_symbols_pil.py --force",
     "animate:backgrounds": "py -3.10 scripts/generate_animated_backgrounds_pil.py --force",
-    "animate:all": "npm run animate:symbols && npm run animate:backgrounds"
+    "animate:all": "npm run animate:symbols && npm run animate:backgrounds",
+    "thumbnails:regen": "py -3.10 scripts/gen_hd_all_thumbnails.py",
+    "thumbnails:regen:force": "py -3.10 scripts/gen_hd_all_thumbnails.py --force",
+    "thumbnails:webp": "py -3.10 scripts/convert_thumbnails_webp.py",
+    "thumbnails:all": "npm run thumbnails:regen && npm run thumbnails:webp"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

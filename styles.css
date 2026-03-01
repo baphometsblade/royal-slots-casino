@@ -17626,10 +17626,15 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 }
 
 /* ── Spin button goes gold during bonus mode ── */
-.bonus-mode-active #spinBtn:not(:disabled) {
+.bonus-mode-active #spinBtn:not(:disabled),
+.bonus-mode-active .slot-spin-btn:not(:disabled) {
+  --slot-spin-bg: linear-gradient(135deg, #92400e, #d97706, #fbbf24, #f59e0b) !important;
+  --slot-spin-border: rgba(251,191,36,0.8) !important;
+  --slot-spin-ring: rgba(251,191,36,0.3) !important;
+  --slot-spin-glow: 0 0 25px rgba(251,191,36,0.6), 0 2px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3) !important;
   animation: bonusModeSpinBtnGlow 1.5s ease-in-out infinite !important;
-  background: linear-gradient(135deg, #92400e, #d97706, #fbbf24, #f59e0b) !important;
-  border-color: rgba(251,191,36,0.7) !important;
+  background-image: linear-gradient(135deg, #92400e, #d97706, #fbbf24, #f59e0b) !important;
+  border-color: rgba(251,191,36,0.8) !important;
   color: #1a0d00 !important;
   text-shadow: 0 1px 0 rgba(255,255,255,0.3) !important;
 }
