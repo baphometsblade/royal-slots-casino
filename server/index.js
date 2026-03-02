@@ -103,6 +103,12 @@ app.use('/api/game-of-day', require('./routes/gameofday.routes'));
 app.use('/api/game-stats', require('./routes/gamestats.routes'));
 app.use('/api/gems', require('./routes/gems.routes'));
 app.use('/api/boosts', require('./routes/boost.routes'));
+app.use('/api/challenges', require('./routes/challenges.routes'));
+app.use('/api/battlepass', require('./routes/battlepass.routes'));
+app.use('/api/cosmetics',  require('./routes/cosmetics.routes'));
+app.use('/api/wagerace',   require('./routes/wagerace.routes'));
+app.use('/api/rentals',    require('./routes/rental.routes'));
+app.use('/api/megawheel',  require('./routes/megawheel.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
@@ -440,6 +446,18 @@ async function start() {
     // Initialise boost tables (active_boosts)
     const boostService = require('./services/boost.service');
     await boostService.initSchema();
+
+    // Initialise new feature tables (challenges, battlepass, cosmetics, wagerace, rentals, megawheel)
+    const challengesService = require('./services/challenges.service');
+    await challengesService.initSchema();
+    const cosmeticsService = require('./services/cosmetics.service');
+    await cosmeticsService.initSchema();
+    const wageraceService = require('./services/wagerace.service');
+    await wageraceService.initSchema();
+    const rentalService = require('./services/rental.service');
+    await rentalService.initSchema();
+    const megawheelService = require('./services/megawheel.service');
+    await megawheelService.initSchema();
 
     app.listen(config.PORT, () => {
         console.log(`\n${'='.repeat(50)}`);
