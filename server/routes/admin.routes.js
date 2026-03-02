@@ -889,6 +889,36 @@ router.get('/analytics/vip-distribution', async (req, res) => {
     }
 });
 
+// GET /api/admin/analytics/top-players — Top 10 players by wagered (all time)
+router.get('/analytics/top-players', async (req, res) => {
+    try {
+        const players = await db.all(`
+            SELECT u.id, u.username, u.vip_level,
+                   COALESCE(s.total_wagered, 0) as total_wagered,
+                   COALESCE(s.total_won, 0)     as total_won,
+                   COALESCE(d.total_deposited, 0) as total_deposited
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id,
+                       SUM(bet_amount) as total_wagered,
+                       SUM(win_amount) as total_won
+                FROM spins GROUP BY user_id
+            ) s ON u.id = s.user_id
+            LEFT JOIN (
+                SELECT user_id, SUM(amount) as total_deposited
+                FROM deposits WHERE status = 'completed' GROUP BY user_id
+            ) d ON u.id = d.user_id
+            WHERE u.username != 'admin'
+            ORDER BY COALESCE(s.total_wagered, 0) DESC
+            LIMIT 10
+        `);
+        res.json({ players });
+    } catch (e) {
+        console.error('[Admin] top-players error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch top players' });
+    }
+});
+
 // ═══════════════════════════════════════════════════
 //  CAMPAIGN MANAGEMENT
 // ═══════════════════════════════════════════════════

@@ -76,6 +76,7 @@
             <div class="tab" onclick="switchTab('users')">Users</div>
             <div class="tab" onclick="switchTab('spins')">Recent Spins</div>
             <div class="tab" onclick="switchTab('fraud')">Fraud Alerts <span id="fraudBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
+            <div class="tab" onclick="switchTab('revenue')">Revenue P&amp;L</div>
         </div>
 
         <div id="tab-games" class="tab-content active">
@@ -104,6 +105,10 @@
         <div id="tab-users" class="tab-content">
             <div class="section">
                 <h3>Player Accounts</h3>
+                <div style="padding:12px 20px;border-bottom:1px solid #334155;">
+                    <input type="text" id="userSearch" placeholder="Search by username or email…" oninput="filterUsers(this.value)"
+                        style="width:100%;max-width:380px;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-size:13px;">
+                </div>
                 <table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Balance</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table>
             </div>
         </div>
@@ -120,6 +125,24 @@
                 <h3>Fraud & Risk Alerts</h3>
                 <div id="noFraudAlerts" style="padding:20px;text-align:center;color:#94a3b8;display:none;">No fraud alerts. All clear!</div>
                 <div id="fraudAlertsList"></div>
+            </div>
+        </div>
+
+        <div id="tab-revenue" class="tab-content">
+            <div id="revenueKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;"></div>
+            <div class="section">
+                <h3>Revenue by Game — House Profit (All Time)</h3>
+                <table>
+                    <thead><tr><th>Game</th><th>Spins</th><th>Wagered</th><th>Paid Out</th><th>House Profit</th><th>RTP</th></tr></thead>
+                    <tbody id="revenueGameBody"></tbody>
+                </table>
+            </div>
+            <div class="section" style="margin-top:16px;">
+                <h3>Top 10 Players by Wagered</h3>
+                <table>
+                    <thead><tr><th>Username</th><th>VIP</th><th>Total Wagered</th><th>Total Won</th><th>Net Loss (Your Gain)</th><th>Deposits</th></tr></thead>
+                    <tbody id="revenueTopBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -270,6 +293,71 @@ function switchTab(name) {
     if (name === 'deposits') loadDeposits();
     if (name === 'withdrawals') loadWithdrawals();
     if (name === 'fraud') loadFraudAlerts();
+    if (name === 'revenue') loadRevenue();
+}
+
+function filterUsers(query) {
+    var q = query.toLowerCase();
+    var rows = document.querySelectorAll('#usersBody tr');
+    rows.forEach(function(row) {
+        var text = row.textContent.toLowerCase();
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+}
+
+function statCard(label, value, color) {
+    return '<div style="background:#0d0d1a;border:1px solid #1e293b;border-radius:8px;padding:14px;">' +
+        '<div style="font-size:0.7rem;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">' + label + '</div>' +
+        '<div style="font-size:1.2rem;font-weight:700;color:' + (color || '#f1f5f9') + ';">' + value + '</div>' +
+        '</div>';
+}
+
+async function loadRevenue() {
+    const kpisEl = document.getElementById('revenueKpis');
+    const gameEl = document.getElementById('revenueGameBody');
+    const topEl  = document.getElementById('revenueTopBody');
+    kpisEl.innerHTML = '<div style="color:#94a3b8;padding:8px;">Loading…</div>';
+
+    const [kpis, byGame, topPlayers] = await Promise.all([
+        apiFetch('/admin/analytics/kpis'),
+        apiFetch('/admin/analytics/revenue-by-game'),
+        apiFetch('/admin/analytics/top-players'),
+    ]);
+
+    if (!kpis || !byGame) { kpisEl.innerHTML = '<div style="color:#ef4444;padding:8px;">Failed to load revenue data.</div>'; return; }
+
+    // kpis.kpis fields: dau, wau, mau, arpu, revenue30d, wagered30d, deposits30d
+    const k = kpis.kpis || {};
+    kpisEl.innerHTML = [
+        statCard('House Profit (30d)', '$' + (k.revenue30d || 0).toLocaleString(), '#10b981'),
+        statCard('Total Wagered (30d)', '$' + (k.wagered30d || 0).toLocaleString(), '#fbbf24'),
+        statCard('ARPU (30d)', '$' + (k.arpu || 0).toFixed(2), '#a78bfa'),
+        statCard('DAU', k.dau || 0, '#38bdf8'),
+        statCard('WAU', k.wau || 0, '#38bdf8'),
+        statCard('MAU', k.mau || 0, '#38bdf8'),
+    ].join('');
+
+    // byGame.games fields: gameId, spins, wagered, won, revenue, rtp (already %)
+    gameEl.innerHTML = (byGame.games || []).map(function(g) {
+        var profit = g.revenue || 0;
+        return '<tr><td>' + esc(g.gameId) + '</td><td>' + (g.spins || 0).toLocaleString() +
+            '</td><td>$' + (g.wagered || 0).toLocaleString() +
+            '</td><td>$' + (g.won || 0).toLocaleString() +
+            '</td><td style="color:' + (profit >= 0 ? '#10b981' : '#ef4444') + ';font-weight:700;">$' + profit.toLocaleString() +
+            '</td><td>' + (g.rtp != null ? g.rtp.toFixed(1) + '%' : '-') + '</td></tr>';
+    }).join('') || '<tr><td colspan="6" style="color:#64748b;text-align:center;padding:20px;">No game data yet</td></tr>';
+
+    // topPlayers.players fields: id, username, vip_level, total_wagered, total_won, total_deposited
+    if (topPlayers && topPlayers.players) {
+        topEl.innerHTML = topPlayers.players.map(function(u) {
+            var netLoss = (parseFloat(u.total_wagered) || 0) - (parseFloat(u.total_won) || 0);
+            return '<tr><td>' + esc(u.username) + '</td><td>VIP ' + (u.vip_level || 0) +
+                '</td><td>$' + (parseFloat(u.total_wagered) || 0).toLocaleString() +
+                '</td><td>$' + (parseFloat(u.total_won) || 0).toLocaleString() +
+                '</td><td style="color:' + (netLoss >= 0 ? '#10b981' : '#ef4444') + ';font-weight:700;">$' + netLoss.toLocaleString() +
+                '</td><td>$' + (parseFloat(u.total_deposited) || 0).toLocaleString() + '</td></tr>';
+        }).join('') || '<tr><td colspan="6" style="color:#64748b;text-align:center;padding:20px;">No player data yet</td></tr>';
+    }
 }
 
 // Note: Admin panel is behind authentication (admin JWT required) and serves
