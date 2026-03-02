@@ -317,7 +317,16 @@ function renderDepositForm() {
            </div>`
         : '';
 
-    container.innerHTML = sessionTrackerHtml + `
+    const lowBalBanner = (balance > 0 && balance < 20) ? `
+    <div style="background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,140,0,0.05));border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.5rem;">&#x1F381;</span>
+        <div>
+            <div style="font-size:0.85rem;font-weight:700;color:#ffd700;margin-bottom:2px;">50% Reload Bonus Available</div>
+            <div style="font-size:0.75rem;color:#94a3b8;">Deposit now and we'll match 50% up to $250. Keep the winnings rolling!</div>
+        </div>
+    </div>` : '';
+
+    container.innerHTML = sessionTrackerHtml + lowBalBanner + `
         <div class="wallet-section">
             <div class="wallet-balance-display">
                 <span class="wallet-balance-display__label">Current Balance</span>
@@ -443,8 +452,9 @@ async function submitDeposit() {
             if (Number.isFinite(newBalance)) {
                 balance = newBalance;
                 updateBalance();
+                resetNudgeOnDeposit();
             }
-            showToast(`$${formatMoney(amount)} deposited successfully!`, 'success');
+            showToast(`${formatMoney(amount)} deposited successfully!`, 'success');
         }
         if (amountInput) amountInput.value = '';
         renderDepositForm(); // refresh to show updated state
@@ -972,4 +982,45 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+
+// ── Low Balance Nudge ─────────────────────────────────────────
+
+let _nudgeShownThisSession = false;
+let _nudgeTimer = null;
+
+function checkLowBalance() {
+    // Only show once per session, only when playing, only for logged-in users
+    if (_nudgeShownThisSession) return;
+    if (!currentUser) return;
+    if (typeof balance === 'undefined' || balance >= 20) return;
+    if (balance <= 0) return; // broke — different message not implemented yet
+
+    // Don't show if wallet is already open
+    const walletModal = document.getElementById('walletModal');
+    if (walletModal && walletModal.classList.contains('active')) return;
+
+    // Delay slightly so it doesn't interrupt spin animation
+    clearTimeout(_nudgeTimer);
+    _nudgeTimer = setTimeout(() => {
+        const nudge = document.getElementById('lowBalanceNudge');
+        if (nudge) {
+            _nudgeShownThisSession = true;
+            nudge.classList.add('nudge--visible');
+            // Auto-hide after 12 seconds
+            setTimeout(() => hideLowBalanceNudge(), 12000);
+        }
+    }, 1500);
+}
+
+function hideLowBalanceNudge() {
+    clearTimeout(_nudgeTimer);
+    const nudge = document.getElementById('lowBalanceNudge');
+    if (nudge) nudge.classList.remove('nudge--visible');
+}
+
+// Reset nudge flag when balance increases (new deposit)
+function resetNudgeOnDeposit() {
+    _nudgeShownThisSession = false;
 }

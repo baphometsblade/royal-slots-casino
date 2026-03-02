@@ -17969,3 +17969,62 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .event-multiplier { padding: 3px 10px; background: linear-gradient(135deg, #f9ca24, #f0932b); color: #000; border-radius: 12px; font-size: 13px; font-weight: 800; }
 .event-timer { font-size: 11px; color: #ff4444; font-weight: 600; width: 100%; }
 .event-games { font-size: 11px; color: #888; width: 100%; }
+
+/* ── Low-Balance Deposit Nudge ─────────────────────────────── */
+#lowBalanceNudge {
+    position: fixed;
+    bottom: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(480px, calc(100vw - 32px));
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid #ffd700;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 9500;
+    transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 -4px 32px rgba(255, 215, 0, 0.15);
+}
+#lowBalanceNudge.nudge--visible {
+    bottom: 24px;
+}
+.nudge__icon { font-size: 1.6rem; flex-shrink: 0; }
+.nudge__text { flex: 1; min-width: 0; }
+.nudge__title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffd700;
+    margin: 0 0 2px;
+}
+.nudge__sub {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0;
+}
+.nudge__btn {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #0d0d1a;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.nudge__btn:hover { filter: brightness(1.1); }
+.nudge__close {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 0 0 4px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.nudge__close:hover { color: #94a3b8; }

@@ -2097,5 +2097,16 @@
         <div class="achievement-desc" id="achieveDesc"></div>
     </div>
 </div>
+
+<!-- Low-balance deposit nudge -->
+<div id="lowBalanceNudge">
+    <span class="nudge__icon">&#x1F4B0;</span>
+    <div class="nudge__text">
+        <p class="nudge__title">Running low?</p>
+        <p class="nudge__sub">Deposit now and get a 50% reload bonus!</p>
+    </div>
+    <button class="nudge__btn" onclick="showWalletModal(); hideLowBalanceNudge();">Top Up</button>
+    <button class="nudge__close" onclick="hideLowBalanceNudge();" title="Dismiss">&#x2715;</button>
+</div>
 </body>
 </html>

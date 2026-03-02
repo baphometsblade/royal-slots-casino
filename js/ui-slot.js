@@ -7200,6 +7200,8 @@
                     betAmount: currentBet
                 });
             }
+            // Low-balance deposit nudge check (after every spin)
+            if (typeof checkLowBalance === 'function') checkLowBalance();
         }
 
 
