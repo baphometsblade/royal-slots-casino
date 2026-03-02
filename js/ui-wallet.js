@@ -77,6 +77,54 @@ function showWalletModal() {
     // Check if user has any completed deposits (for first-deposit bonus banner)
     _checkFirstDepositStatus();
     renderWalletContent();
+    // Inject gem balance badge + Gem Shop button into wallet header (once)
+    _injectWalletGemBar(modal);
+    // Refresh gem balance from server
+    if (typeof refreshGemBalance === 'function') refreshGemBalance();
+}
+
+function _injectWalletGemBar(modal) {
+    if (modal.querySelector('#walletGemBar')) return; // already injected
+    const header = modal.querySelector('.wallet-header');
+    if (!header) return;
+
+    const bar = document.createElement('div');
+    bar.id = 'walletGemBar';
+    bar.style.cssText = [
+        'display:flex',
+        'align-items:center',
+        'justify-content:space-between',
+        'padding:8px 20px',
+        'background:rgba(167,139,250,0.07)',
+        'border-top:1px solid rgba(167,139,250,0.15)',
+        'margin-top:12px'
+    ].join(';');
+
+    const gemBadge = document.createElement('span');
+    gemBadge.style.cssText = 'font-size:0.85rem;color:#a78bfa;font-weight:600;display:flex;align-items:center;gap:6px;';
+    // innerHTML used here to embed the gem icon span safely (no user input involved)
+    gemBadge.innerHTML = '\uD83D\uDC8E Gems: <span id="walletGemBalance" style="color:#c4b5fd;">...</span>';
+
+    const shopBtn = document.createElement('button');
+    shopBtn.textContent = '\uD83D\uDC8E Gem Shop';
+    shopBtn.style.cssText = [
+        'background:linear-gradient(135deg,#a78bfa,#8b5cf6)',
+        'color:#fff',
+        'border:none',
+        'border-radius:6px',
+        'padding:5px 14px',
+        'font-size:0.78rem',
+        'font-weight:700',
+        'cursor:pointer',
+        'letter-spacing:0.3px'
+    ].join(';');
+    shopBtn.addEventListener('click', function() {
+        if (typeof openGemsShop === 'function') openGemsShop();
+    });
+
+    bar.appendChild(gemBadge);
+    bar.appendChild(shopBtn);
+    header.appendChild(bar);
 }
 
 function _checkFirstDepositStatus() {
