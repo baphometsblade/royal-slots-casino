@@ -7,6 +7,60 @@ const router = express.Router();
 // All admin routes require authentication + admin role
 router.use(authenticate, requireAdmin);
 
+// GET /api/admin/revenue — Comprehensive P&L analytics (daily, lifetime, top players, WoW)
+router.get('/revenue', async (req, res) => {
+    try {
+        const dailyPnl = await db.all(
+            "SELECT DATE(created_at) as day, COUNT(*) as spins, " +
+            "ROUND(SUM(bet_amount),2) as wagered, ROUND(SUM(win_amount),2) as paid_out, " +
+            "ROUND(SUM(bet_amount)-SUM(win_amount),2) as profit " +
+            "FROM spins WHERE created_at >= datetime('now','-30 days') " +
+            "GROUP BY DATE(created_at) ORDER BY day DESC"
+        );
+        const lifetime = await db.get(
+            "SELECT COUNT(DISTINCT user_id) as unique_players, COUNT(*) as total_spins, " +
+            "ROUND(SUM(bet_amount),2) as total_wagered, ROUND(SUM(win_amount),2) as total_paid, " +
+            "ROUND(SUM(bet_amount)-SUM(win_amount),2) as gross_profit, " +
+            "ROUND(100.0*SUM(win_amount)/NULLIF(SUM(bet_amount),0),2) as actual_rtp FROM spins"
+        );
+        const depositsStats = await db.get(
+            "SELECT COUNT(*) as total_deposits, ROUND(SUM(amount),2) as total_deposited, " +
+            "COUNT(DISTINCT user_id) as depositing_players, ROUND(AVG(amount),2) as avg_deposit " +
+            "FROM deposits WHERE status='completed' AND created_at >= datetime('now','-30 days')"
+        );
+        const withdrawalsStats = await db.get(
+            "SELECT COUNT(*) as total_withdrawals, ROUND(SUM(amount),2) as total_withdrawn " +
+            "FROM withdrawals WHERE status='completed' AND created_at >= datetime('now','-30 days')"
+        );
+        const topPlayers = await db.all(
+            "SELECT u.username, u.email, COUNT(s.id) as spins, " +
+            "ROUND(SUM(s.bet_amount),2) as wagered, " +
+            "ROUND(SUM(s.bet_amount)-SUM(s.win_amount),2) as profit_generated, " +
+            "ROUND(u.balance,2) as current_balance " +
+            "FROM spins s JOIN users u ON u.id=s.user_id " +
+            "GROUP BY s.user_id ORDER BY profit_generated DESC LIMIT 10"
+        );
+        const pending = await db.get(
+            "SELECT (SELECT COUNT(*) FROM deposits WHERE status='pending') as pending_deposits, " +
+            "(SELECT COALESCE(SUM(amount),0) FROM deposits WHERE status='pending') as pending_deposit_value, " +
+            "(SELECT COUNT(*) FROM withdrawals WHERE status='pending') as pending_withdrawals, " +
+            "(SELECT COALESCE(SUM(amount),0) FROM withdrawals WHERE status='pending') as pending_withdrawal_value"
+        );
+        const thisWeek = await db.get(
+            "SELECT ROUND(SUM(bet_amount)-SUM(win_amount),2) as profit FROM spins " +
+            "WHERE created_at >= datetime('now','-7 days')"
+        );
+        const lastWeek = await db.get(
+            "SELECT ROUND(SUM(bet_amount)-SUM(win_amount),2) as profit FROM spins " +
+            "WHERE created_at >= datetime('now','-14 days') AND created_at < datetime('now','-7 days')"
+        );
+        res.json({ lifetime, dailyPnl, deposits: depositsStats, withdrawals: withdrawalsStats, topPlayers, pending, thisWeek, lastWeek });
+    } catch (e) {
+        console.error('[Admin] Revenue error:', e.message);
+        res.status(500).json({ error: 'Failed to load revenue data' });
+    }
+});
+
 // GET /api/admin/stats — Casino-wide statistics
 router.get('/stats', async (req, res) => {
     try {

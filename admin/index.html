@@ -131,16 +131,16 @@
         <div id="tab-revenue" class="tab-content">
             <div id="revenueKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;"></div>
             <div class="section">
-                <h3>Revenue by Game — House Profit (All Time)</h3>
+                <h3>Daily P&amp;L — Last 30 Days</h3>
                 <table>
-                    <thead><tr><th>Game</th><th>Spins</th><th>Wagered</th><th>Paid Out</th><th>House Profit</th><th>RTP</th></tr></thead>
+                    <thead><tr><th>Date</th><th>Spins</th><th>Wagered</th><th>Paid Out</th><th>Profit</th><th>RTP</th></tr></thead>
                     <tbody id="revenueGameBody"></tbody>
                 </table>
             </div>
             <div class="section" style="margin-top:16px;">
-                <h3>Top 10 Players by Wagered</h3>
+                <h3>Top 10 Players by Profit Generated (Your Gain)</h3>
                 <table>
-                    <thead><tr><th>Username</th><th>VIP</th><th>Total Wagered</th><th>Total Won</th><th>Net Loss (Your Gain)</th><th>Deposits</th></tr></thead>
+                    <thead><tr><th>Username</th><th>Spins</th><th>Total Wagered</th><th>Profit for House</th><th>Current Balance</th></tr></thead>
                     <tbody id="revenueTopBody"></tbody>
                 </table>
             </div>
@@ -318,46 +318,42 @@ async function loadRevenue() {
     const topEl  = document.getElementById('revenueTopBody');
     kpisEl.innerHTML = '<div style="color:#94a3b8;padding:8px;">Loading…</div>';
 
-    const [kpis, byGame, topPlayers] = await Promise.all([
-        apiFetch('/admin/analytics/kpis'),
-        apiFetch('/admin/analytics/revenue-by-game'),
-        apiFetch('/admin/analytics/top-players'),
-    ]);
+    const data = await apiFetch('/admin/revenue');
+    if (!data) { kpisEl.innerHTML = '<div style="color:#ef4444;padding:8px;">Failed to load revenue data.</div>'; return; }
 
-    if (!kpis || !byGame) { kpisEl.innerHTML = '<div style="color:#ef4444;padding:8px;">Failed to load revenue data.</div>'; return; }
+    const lt = data.lifetime || {};
+    const tw = (data.thisWeek && data.thisWeek.profit) || 0;
+    const lw = (data.lastWeek && data.lastWeek.profit) || 0;
+    const wowPct = lw > 0 ? (((tw - lw) / lw) * 100).toFixed(1) : (tw > 0 ? '+∞' : '0.0');
+    const d30 = data.deposits || {};
+    const w30 = data.withdrawals || {};
 
-    // kpis.kpis fields: dau, wau, mau, arpu, revenue30d, wagered30d, deposits30d
-    const k = kpis.kpis || {};
     kpisEl.innerHTML = [
-        statCard('House Profit (30d)', '$' + (k.revenue30d || 0).toLocaleString(), '#10b981'),
-        statCard('Total Wagered (30d)', '$' + (k.wagered30d || 0).toLocaleString(), '#fbbf24'),
-        statCard('ARPU (30d)', '$' + (k.arpu || 0).toFixed(2), '#a78bfa'),
-        statCard('DAU', k.dau || 0, '#38bdf8'),
-        statCard('WAU', k.wau || 0, '#38bdf8'),
-        statCard('MAU', k.mau || 0, '#38bdf8'),
+        statCard('All-Time Gross Profit', '$' + (lt.gross_profit || 0).toLocaleString(), lt.gross_profit >= 0 ? '#10b981' : '#ef4444'),
+        statCard('This Week Profit', '$' + (tw || 0).toLocaleString(), tw >= 0 ? '#10b981' : '#ef4444'),
+        statCard('WoW Change', (tw >= lw ? '+' : '') + wowPct + '%', tw >= lw ? '#10b981' : '#ef4444'),
+        statCard('All-Time RTP', (lt.actual_rtp || 0).toFixed(2) + '%', lt.actual_rtp <= 92 ? '#10b981' : '#f59e0b'),
+        statCard('Deposits (30d)', '$' + (d30.total_deposited || 0).toLocaleString() + ' (' + (d30.total_deposits || 0) + ')', '#fbbf24'),
+        statCard('Withdrawals (30d)', '$' + (w30.total_withdrawn || 0).toLocaleString() + ' (' + (w30.total_withdrawals || 0) + ')', '#f97316'),
+        statCard('Unique Players', lt.unique_players || 0, '#38bdf8'),
+        statCard('Total Spins', (lt.total_spins || 0).toLocaleString(), '#a78bfa'),
     ].join('');
 
-    // byGame.games fields: gameId, spins, wagered, won, revenue, rtp (already %)
-    gameEl.innerHTML = (byGame.games || []).map(function(g) {
-        var profit = g.revenue || 0;
-        return '<tr><td>' + esc(g.gameId) + '</td><td>' + (g.spins || 0).toLocaleString() +
-            '</td><td>$' + (g.wagered || 0).toLocaleString() +
-            '</td><td>$' + (g.won || 0).toLocaleString() +
-            '</td><td style="color:' + (profit >= 0 ? '#10b981' : '#ef4444') + ';font-weight:700;">$' + profit.toLocaleString() +
-            '</td><td>' + (g.rtp != null ? g.rtp.toFixed(1) + '%' : '-') + '</td></tr>';
-    }).join('') || '<tr><td colspan="6" style="color:#64748b;text-align:center;padding:20px;">No game data yet</td></tr>';
+    gameEl.innerHTML = (data.dailyPnl || []).map(function(r) {
+        var rtp = r.wagered > 0 ? (r.paid_out / r.wagered * 100).toFixed(1) : '-';
+        return '<tr><td>' + esc(r.day) + '</td><td>' + (r.spins || 0).toLocaleString() +
+            '</td><td>$' + (r.wagered || 0).toLocaleString() +
+            '</td><td>$' + (r.paid_out || 0).toLocaleString() +
+            '</td><td style="color:' + (r.profit >= 0 ? '#10b981' : '#ef4444') + ';font-weight:700;">$' + (r.profit || 0).toLocaleString() +
+            '</td><td>' + rtp + (rtp !== '-' ? '%' : '') + '</td></tr>';
+    }).join('') || '<tr><td colspan="6" style="color:#64748b;text-align:center;padding:20px;">No spin data yet</td></tr>';
 
-    // topPlayers.players fields: id, username, vip_level, total_wagered, total_won, total_deposited
-    if (topPlayers && topPlayers.players) {
-        topEl.innerHTML = topPlayers.players.map(function(u) {
-            var netLoss = (parseFloat(u.total_wagered) || 0) - (parseFloat(u.total_won) || 0);
-            return '<tr><td>' + esc(u.username) + '</td><td>VIP ' + (u.vip_level || 0) +
-                '</td><td>$' + (parseFloat(u.total_wagered) || 0).toLocaleString() +
-                '</td><td>$' + (parseFloat(u.total_won) || 0).toLocaleString() +
-                '</td><td style="color:' + (netLoss >= 0 ? '#10b981' : '#ef4444') + ';font-weight:700;">$' + netLoss.toLocaleString() +
-                '</td><td>$' + (parseFloat(u.total_deposited) || 0).toLocaleString() + '</td></tr>';
-        }).join('') || '<tr><td colspan="6" style="color:#64748b;text-align:center;padding:20px;">No player data yet</td></tr>';
-    }
+    topEl.innerHTML = (data.topPlayers || []).map(function(u) {
+        return '<tr><td>' + esc(u.username) + '</td><td>' + (u.spins || 0).toLocaleString() +
+            '</td><td>$' + (u.wagered || 0).toLocaleString() +
+            '</td><td style="color:#10b981;font-weight:700;">$' + (u.profit_generated || 0).toLocaleString() +
+            '</td><td>$' + (u.current_balance || 0).toLocaleString() + '</td></tr>';
+    }).join('') || '<tr><td colspan="5" style="color:#64748b;text-align:center;padding:20px;">No player data yet</td></tr>';
 }
 
 // Note: Admin panel is behind authentication (admin JWT required) and serves
