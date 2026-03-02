@@ -495,8 +495,8 @@
             _updateGiftBadge(count);
             if (count > 0) _showGiftToast(count);
         })
-        .catch(function (err) {
-            console.error('[Gifts] checkGiftInbox error:', err.message);
+        .catch(function () {
+            // silently swallow — gifts endpoint may not be available
         });
     }
 

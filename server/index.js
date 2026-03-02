@@ -110,6 +110,8 @@ app.use('/api/wagerace',   require('./routes/wagerace.routes'));
 app.use('/api/rentals',    require('./routes/rental.routes'));
 app.use('/api/megawheel',  require('./routes/megawheel.routes'));
 app.use('/api/referral',   require('./routes/referral.routes'));
+app.use('/api/achievements', require('./routes/achievements.routes'));
+app.use('/api/gifts',      require('./routes/gifts.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
