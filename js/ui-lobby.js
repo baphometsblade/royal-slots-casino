@@ -3809,3 +3809,92 @@ function updateLossLimitDisplay(lossStatus) {
         fill.className = 'll-fill' + (pct >= 90 ? ' ll-danger' : pct >= 70 ? ' ll-warn' : '');
     }
 }
+
+// -- Battle Pass Widget --------------------------------------------------
+function renderBattlePassWidget() {
+    if (document.getElementById('battlePassWidget')) {
+        _refreshBattlePassWidget();
+        return;
+    }
+    var allGames = document.getElementById('allGames');
+    if (!allGames || !allGames.parentNode) return;
+    var widget = document.createElement('div');
+    widget.id                   = 'battlePassWidget';
+    widget.style.background     = 'linear-gradient(135deg,#1a0a2e,#0f0a1e)';
+    widget.style.border         = '1px solid #7c3aed';
+    widget.style.borderRadius   = '8px';
+    widget.style.padding        = '10px 16px';
+    widget.style.marginBottom   = '12px';
+    widget.style.cursor         = 'pointer';
+    widget.style.display        = 'flex';
+    widget.style.justifyContent = 'space-between';
+    widget.style.alignItems     = 'center';
+    widget.style.userSelect     = 'none';
+    widget.style.transition     = 'border-color 0.2s,box-shadow 0.2s,background 0.2s';
+    widget.addEventListener('mouseover', function () {
+        widget.style.borderColor = '#a78bfa';
+        widget.style.boxShadow   = '0 0 12px rgba(124,58,237,0.4)';
+        widget.style.background  = 'linear-gradient(135deg,#1f0a38,#140a24)';
+    });
+    widget.addEventListener('mouseout', function () {
+        widget.style.borderColor = '#7c3aed';
+        widget.style.boxShadow   = '';
+        widget.style.background  = 'linear-gradient(135deg,#1a0a2e,#0f0a1e)';
+    });
+    widget.addEventListener('click', function () {
+        if (typeof window.openBattlePassModal === 'function') window.openBattlePassModal();
+    });
+    var left = document.createElement('div');
+    left.style.cssText = 'display:flex;align-items:center;gap:8px;';
+    var icon = document.createElement('span');
+    icon.style.fontSize = '16px'; icon.textContent = '⚔️';
+    var label = document.createElement('span');
+    label.style.cssText = 'font-size:13px;font-weight:700;color:#e2e8f0;'; label.textContent = 'BATTLE PASS';
+    var levelText = document.createElement('span');
+    levelText.id = 'bpWidgetLevel';
+    levelText.style.cssText = 'font-size:11px;color:#8b5cf6;font-weight:600;';
+    levelText.textContent = '';
+    left.appendChild(icon); left.appendChild(label); left.appendChild(levelText);
+    var barWrap = document.createElement('div');
+    barWrap.style.cssText = 'flex:1;margin:0 16px;height:6px;background:rgba(124,58,237,0.2);border-radius:3px;overflow:hidden;';
+    var barFill = document.createElement('div');
+    barFill.id = 'bpWidgetBar';
+    barFill.style.cssText = 'height:100%;border-radius:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa);width:0%;transition:width 0.4s ease;';
+    barWrap.appendChild(barFill);
+    var viewBtn = document.createElement('span');
+    viewBtn.style.cssText = 'font-size:12px;font-weight:700;color:#a78bfa;padding:3px 10px;border:1px solid rgba(124,58,237,0.5);border-radius:4px;white-space:nowrap;';
+    viewBtn.textContent = 'View Pass';
+    widget.appendChild(left); widget.appendChild(barWrap); widget.appendChild(viewBtn);
+    allGames.parentNode.insertBefore(widget, allGames);
+    _refreshBattlePassWidget();
+}
+
+function _refreshBattlePassWidget() {
+    var tokenKey = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
+    var token = localStorage.getItem(tokenKey);
+    if (!token) return;
+    fetch('/api/battlepass', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (!data || !data.progress) return;
+            var lvl  = data.progress.level || 0;
+            var xp   = data.progress.xp    || 0;
+            var xpN  = (lvl < 50) ? (lvl + 1) * 100 : 0;
+            var pct  = xpN > 0 ? Math.min(100, (xp / xpN) * 100) : 100;
+            var lvlEl = document.getElementById('bpWidgetLevel');
+            var barEl = document.getElementById('bpWidgetBar');
+            if (lvlEl) lvlEl.textContent = 'Lv ' + lvl + '/50';
+            if (barEl) barEl.style.width = pct + '%';
+        })
+        .catch(function () {});
+}
+
+window.renderBattlePassWidget = renderBattlePassWidget;
+
+(function () {
+    var _prevRGBP = typeof renderGames === 'function' ? renderGames : null;
+    if (!_prevRGBP) return;
+    renderGames = function () { _prevRGBP.apply(this, arguments); renderBattlePassWidget(); };
+}());
+
+renderBattlePassWidget();
