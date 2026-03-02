@@ -3664,6 +3664,133 @@ function loadActiveEvents() {
         .catch(function() {});
 }
 
+// ── Challenges Bar (injected into lobby above game grid) ──────
+//
+// Creates a slim banner with id="challengesBar" that shows the
+// current daily challenge completion count and a "View" button that
+// opens openChallengesModal() from ui-challenges.js.
+//
+// The bar is injected once (idempotent) above #allGames.
+// refreshChallengesWidget() (defined in ui-challenges.js) populates
+// the count after the API responds; we call it here on first render.
+
+function renderChallengesBar() {
+    if (document.getElementById('challengesBar')) {
+        // Already injected — just refresh the counts
+        if (typeof window.refreshChallengesWidget === 'function') {
+            window.refreshChallengesWidget();
+        }
+        return;
+    }
+
+    var allGames = document.getElementById('allGames');
+    if (!allGames || !allGames.parentNode) return;
+
+    var bar = document.createElement('div');
+    bar.id                   = 'challengesBar';
+    bar.style.background     = 'linear-gradient(135deg, #1a1a2e, #16213e)';
+    bar.style.border         = '1px solid #334155';
+    bar.style.borderRadius   = '8px';
+    bar.style.padding        = '10px 16px';
+    bar.style.marginBottom   = '12px';
+    bar.style.cursor         = 'pointer';
+    bar.style.display        = 'flex';
+    bar.style.justifyContent = 'space-between';
+    bar.style.alignItems     = 'center';
+    bar.style.userSelect     = 'none';
+    bar.style.transition     = 'border-color 0.2s, background 0.2s';
+    bar.addEventListener('mouseover', function() {
+        bar.style.borderColor = '#fbbf24';
+        bar.style.background  = 'linear-gradient(135deg, #1f1f35, #1a2540)';
+    });
+    bar.addEventListener('mouseout', function() {
+        bar.style.borderColor = '#334155';
+        bar.style.background  = 'linear-gradient(135deg, #1a1a2e, #16213e)';
+    });
+    bar.addEventListener('click', function() {
+        if (typeof window.openChallengesModal === 'function') {
+            window.openChallengesModal();
+        }
+    });
+
+    // Left side: icon + label + dot badge
+    var left = document.createElement('div');
+    left.style.display    = 'flex';
+    left.style.alignItems = 'center';
+    left.style.gap        = '8px';
+
+    var icon = document.createElement('span');
+    icon.style.fontSize = '16px';
+    icon.textContent    = '\uD83C\uDFAF';
+
+    var label = document.createElement('span');
+    label.style.fontSize   = '13px';
+    label.style.fontWeight = '600';
+    label.style.color      = '#e2e8f0';
+    label.textContent      = 'Daily Challenges';
+
+    var dot = document.createElement('span');
+    dot.id                  = 'challengesBarDot';
+    dot.style.display       = 'none';
+    dot.style.width         = '8px';
+    dot.style.height        = '8px';
+    dot.style.background    = '#10b981';
+    dot.style.borderRadius  = '50%';
+    dot.style.flexShrink    = '0';
+
+    left.appendChild(icon);
+    left.appendChild(label);
+    left.appendChild(dot);
+
+    // Right side: count + view button
+    var right = document.createElement('div');
+    right.style.display    = 'flex';
+    right.style.alignItems = 'center';
+    right.style.gap        = '12px';
+
+    var countEl = document.createElement('span');
+    countEl.id             = 'challengesBarCount';
+    countEl.style.fontSize = '12px';
+    countEl.style.color    = '#64748b';
+    countEl.textContent    = '\u2014';   // placeholder until widget refreshes
+
+    var viewBtn = document.createElement('span');
+    viewBtn.style.fontSize      = '12px';
+    viewBtn.style.fontWeight    = '700';
+    viewBtn.style.color         = '#fbbf24';
+    viewBtn.style.padding       = '3px 10px';
+    viewBtn.style.border        = '1px solid rgba(251,191,36,0.4)';
+    viewBtn.style.borderRadius  = '4px';
+    viewBtn.style.whiteSpace    = 'nowrap';
+    viewBtn.textContent         = 'View';
+
+    right.appendChild(countEl);
+    right.appendChild(viewBtn);
+
+    bar.appendChild(left);
+    bar.appendChild(right);
+
+    allGames.parentNode.insertBefore(bar, allGames);
+
+    // Populate count from API
+    if (typeof window.refreshChallengesWidget === 'function') {
+        window.refreshChallengesWidget();
+    }
+}
+
+// Hook renderChallengesBar into the renderGames chain (idempotent)
+(function() {
+    var _prevRGChall = typeof renderGames === 'function' ? renderGames : null;
+    if (!_prevRGChall) return;
+    renderGames = function() {
+        _prevRGChall.apply(this, arguments);
+        renderChallengesBar();
+    };
+})();
+
+// Expose for external callers
+window.renderChallengesBar = renderChallengesBar;
+
 // ── Loss Limit Display ─────────────────────────────────
 function updateLossLimitDisplay(lossStatus) {
     var bar = document.getElementById('lossLimitBar');
