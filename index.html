@@ -99,6 +99,7 @@
                 <button class="btn btn-deposit" onclick="currentUser ? showWalletModal() : showAuthModal()">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
                     WALLET</button>
+                <button class="shop-btn" onclick="openBundleShop()" title="Spin Pack Shop">&#x1F6D2;</button>
                 <button class="btn btn-user" id="soundToggle" onclick="toggleSound()" title="Toggle sound" aria-label="Toggle sound">&#x1F50A;</button>
                 <button class="btn btn-user btn-notif" id="notifBell" onclick="openNotificationPanel()" title="Notifications" aria-label="Notifications">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z"/></svg>
@@ -189,6 +190,9 @@
 
         <!-- Personalized Offers -->
         <div class="offers-banner" id="offersBanner" style="display:none"></div>
+
+        <!-- Active Campaigns -->
+        <div class="campaign-banner-area" id="campaignBannerArea" style="display:none"></div>
 
         <!-- Live Big Wins Feed -->
         <div class="big-win-feed" id="bigWinFeed" style="display:none">
@@ -865,6 +869,11 @@
                     <div class="recent-outcomes" id="recentOutcomes" style="display:none"></div>
                     <span class="session-hilo" id="sessionHiLo" style="display:none"></span>
                     <span class="balance-buffer" id="balBuffer" style="display:none"></span>
+                    <div class="loss-limit-bar" id="lossLimitBar" style="display:none">
+                        <span class="ll-label">Daily Budget:</span>
+                        <span class="ll-remaining" id="llRemaining">$500</span>
+                        <div class="ll-track"><div class="ll-fill" id="llFill" style="width:0%"></div></div>
+                    </div>
                 <!-- Sprint 79: Profit Target Tracker -->
                 <div class="profit-target" id="profitTarget" style="display:none"></div>
                     <div class="symbol-heat" id="symbolHeat" style="display:none"></div>
@@ -2045,6 +2054,16 @@
         <div class="jackpot-win-amount">+$0.00</div>
         <div class="jackpot-win-sub">Added to your balance!</div>
         <button class="jackpot-win-close" onclick="closeJackpotWinModal()">COLLECT!</button>
+    </div>
+</div>
+
+<!-- Bundle Shop Modal -->
+<div class="modal-overlay" id="bundleShopModal">
+    <div class="modal-content bundle-shop-content">
+        <button class="modal-close" onclick="closeBundleShop()">&times;</button>
+        <h2 class="bundle-shop-title">Spin Pack Shop</h2>
+        <div class="bundle-shop-subtitle">Get more play for less — bonus credits included!</div>
+        <div class="bundle-grid" id="bundleGrid"></div>
     </div>
 </div>
 

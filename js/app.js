@@ -204,6 +204,7 @@
             if (typeof startJackpotPolling === 'function') startJackpotPolling();
             if (typeof loadBigWinFeed === 'function') loadBigWinFeed();
             if (typeof loadPersonalizedOffers === 'function') setTimeout(loadPersonalizedOffers, 2000);
+            if (typeof loadCampaignBanners === 'function') setTimeout(loadCampaignBanners, 3000);
             startSessionDurationWatch();
         }
 

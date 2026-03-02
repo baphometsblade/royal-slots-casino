@@ -708,4 +708,227 @@ router.get('/lapsed-players', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════
+//  ANALYTICS ENDPOINTS
+// ═══════════════════════════════════════════════════
+
+// GET /api/admin/analytics/retention — Cohort retention: % of users active in subsequent weeks after registration
+router.get('/analytics/retention', async (req, res) => {
+    try {
+        const cohorts = await db.all(`
+            SELECT
+                strftime('%Y-W%W', u.created_at) as cohort_week,
+                COUNT(DISTINCT u.id) as signups,
+                COUNT(DISTINCT CASE WHEN EXISTS (
+                    SELECT 1 FROM spins s WHERE s.user_id = u.id
+                    AND s.created_at >= datetime(u.created_at, '+7 days')
+                    AND s.created_at < datetime(u.created_at, '+14 days')
+                ) THEN u.id END) as week1_active,
+                COUNT(DISTINCT CASE WHEN EXISTS (
+                    SELECT 1 FROM spins s WHERE s.user_id = u.id
+                    AND s.created_at >= datetime(u.created_at, '+14 days')
+                    AND s.created_at < datetime(u.created_at, '+21 days')
+                ) THEN u.id END) as week2_active,
+                COUNT(DISTINCT CASE WHEN EXISTS (
+                    SELECT 1 FROM spins s WHERE s.user_id = u.id
+                    AND s.created_at >= datetime(u.created_at, '+21 days')
+                    AND s.created_at < datetime(u.created_at, '+28 days')
+                ) THEN u.id END) as week3_active,
+                COUNT(DISTINCT CASE WHEN EXISTS (
+                    SELECT 1 FROM spins s WHERE s.user_id = u.id
+                    AND s.created_at >= datetime(u.created_at, '+28 days')
+                ) THEN u.id END) as week4_active
+            FROM users u
+            WHERE u.username != 'admin'
+            GROUP BY cohort_week
+            ORDER BY cohort_week DESC
+            LIMIT 12
+        `);
+
+        const formatted = cohorts.map(c => ({
+            cohort: c.cohort_week,
+            signups: c.signups,
+            retention: {
+                week1: c.signups > 0 ? Math.round(c.week1_active / c.signups * 100) : 0,
+                week2: c.signups > 0 ? Math.round(c.week2_active / c.signups * 100) : 0,
+                week3: c.signups > 0 ? Math.round(c.week3_active / c.signups * 100) : 0,
+                week4: c.signups > 0 ? Math.round(c.week4_active / c.signups * 100) : 0,
+            }
+        }));
+
+        res.json({ cohorts: formatted });
+    } catch (e) {
+        console.error('[Admin] retention analytics error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch retention data' });
+    }
+});
+
+// GET /api/admin/analytics/kpis — Key performance indicators: DAU, WAU, MAU, ARPU, revenue
+router.get('/analytics/kpis', async (req, res) => {
+    try {
+        const dau = await db.get(`SELECT COUNT(DISTINCT user_id) as cnt FROM spins WHERE created_at >= datetime('now', '-1 day')`);
+        const wau = await db.get(`SELECT COUNT(DISTINCT user_id) as cnt FROM spins WHERE created_at >= datetime('now', '-7 days')`);
+        const mau = await db.get(`SELECT COUNT(DISTINCT user_id) as cnt FROM spins WHERE created_at >= datetime('now', '-30 days')`);
+
+        const deposits30d = await db.get(`
+            SELECT COUNT(*) as cnt, COALESCE(SUM(amount), 0) as total
+            FROM deposits WHERE status = 'completed' AND created_at >= datetime('now', '-30 days')
+        `);
+
+        const wagered30d = await db.get(`
+            SELECT COALESCE(SUM(bet_amount), 0) as total, COALESCE(SUM(win_amount), 0) as won
+            FROM spins WHERE created_at >= datetime('now', '-30 days')
+        `);
+
+        const revenue30d = (wagered30d ? wagered30d.total : 0) - (wagered30d ? wagered30d.won : 0);
+        const arpu = mau && mau.cnt > 0 ? revenue30d / mau.cnt : 0;
+
+        const totalUsers = await db.get(`SELECT COUNT(*) as cnt FROM users WHERE username != 'admin'`);
+        const newUsers7d = await db.get(`SELECT COUNT(*) as cnt FROM users WHERE created_at >= datetime('now', '-7 days') AND username != 'admin'`);
+
+        res.json({
+            kpis: {
+                dau: dau ? dau.cnt : 0,
+                wau: wau ? wau.cnt : 0,
+                mau: mau ? mau.cnt : 0,
+                arpu: Math.round(arpu * 100) / 100,
+                revenue30d: Math.round(revenue30d * 100) / 100,
+                deposits30d: deposits30d ? { count: deposits30d.cnt, total: deposits30d.total } : { count: 0, total: 0 },
+                wagered30d: wagered30d ? wagered30d.total : 0,
+                totalUsers: totalUsers ? totalUsers.cnt : 0,
+                newUsers7d: newUsers7d ? newUsers7d.cnt : 0
+            }
+        });
+    } catch (e) {
+        console.error('[Admin] KPI analytics error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch KPIs' });
+    }
+});
+
+// GET /api/admin/analytics/revenue-by-game — Revenue breakdown per game (wagered - won = house take)
+router.get('/analytics/revenue-by-game', async (req, res) => {
+    try {
+        const games = await db.all(`
+            SELECT game_id,
+                   COUNT(*) as spins,
+                   COUNT(DISTINCT user_id) as players,
+                   COALESCE(SUM(bet_amount), 0) as wagered,
+                   COALESCE(SUM(win_amount), 0) as won
+            FROM spins
+            WHERE created_at >= datetime('now', '-30 days')
+            GROUP BY game_id
+            ORDER BY (COALESCE(SUM(bet_amount), 0) - COALESCE(SUM(win_amount), 0)) DESC
+            LIMIT 30
+        `);
+
+        const formatted = games.map(g => ({
+            gameId: g.game_id,
+            spins: g.spins,
+            players: g.players,
+            wagered: g.wagered,
+            won: g.won,
+            revenue: Math.round((g.wagered - g.won) * 100) / 100,
+            rtp: g.wagered > 0 ? Math.round(g.won / g.wagered * 10000) / 100 : 0
+        }));
+
+        res.json({ games: formatted });
+    } catch (e) {
+        console.error('[Admin] revenue-by-game error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch game revenue' });
+    }
+});
+
+// GET /api/admin/analytics/vip-distribution — Count and revenue by VIP tier (computed from total wagered)
+router.get('/analytics/vip-distribution', async (req, res) => {
+    try {
+        // VIP tier is computed from total wagered, not a DB column
+        const players = await db.all(`
+            SELECT u.id,
+                   COALESCE(s.total_wagered, 0) as total_wagered,
+                   COALESCE(d.total_deposited, 0) as total_deposited
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id, SUM(bet_amount) as total_wagered FROM spins GROUP BY user_id
+            ) s ON u.id = s.user_id
+            LEFT JOIN (
+                SELECT user_id, SUM(amount) as total_deposited FROM deposits WHERE status = 'completed' GROUP BY user_id
+            ) d ON u.id = d.user_id
+            WHERE u.username != 'admin'
+        `);
+
+        // Compute VIP tiers using same thresholds as leaderboard.routes.js
+        const tierBuckets = {};
+        for (const p of players) {
+            const w = parseFloat(p.total_wagered) || 0;
+            let tier;
+            if (w >= 100000) tier = 'Elite';
+            else if (w >= 50000) tier = 'Diamond';
+            else if (w >= 20000) tier = 'Platinum';
+            else if (w >= 10000) tier = 'Gold';
+            else if (w >= 5000) tier = 'Silver';
+            else tier = 'Bronze';
+
+            if (!tierBuckets[tier]) {
+                tierBuckets[tier] = { vip_tier: tier, players: 0, total_deposited: 0, total_wagered: 0 };
+            }
+            tierBuckets[tier].players++;
+            tierBuckets[tier].total_deposited += parseFloat(p.total_deposited) || 0;
+            tierBuckets[tier].total_wagered += w;
+        }
+
+        // Sort by tier rank (highest first)
+        const tierOrder = ['Elite', 'Diamond', 'Platinum', 'Gold', 'Silver', 'Bronze'];
+        const tiers = tierOrder
+            .filter(t => tierBuckets[t])
+            .map(t => tierBuckets[t]);
+
+        res.json({ tiers });
+    } catch (e) {
+        console.error('[Admin] VIP distribution error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch VIP distribution' });
+    }
+});
+
+// ═══════════════════════════════════════════════════
+//  CAMPAIGN MANAGEMENT
+// ═══════════════════════════════════════════════════
+
+// GET /api/admin/campaigns — List all campaigns
+router.get('/campaigns', async (req, res) => {
+    try {
+        const campaignService = require('../services/campaign.service');
+        const campaigns = await campaignService.getAllCampaigns();
+        res.json({ campaigns });
+    } catch (e) {
+        console.error('[Admin] Campaigns list error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch campaigns' });
+    }
+});
+
+// POST /api/admin/campaigns — Create a new campaign
+router.post('/campaigns', async (req, res) => {
+    try {
+        const campaignService = require('../services/campaign.service');
+        const { name, type, bonusPct, maxBonus, wageringMult, minDeposit, startAt, endAt, promoCode, targetSegment, maxClaims } = req.body;
+        if (!name || !startAt || !endAt) return res.status(400).json({ error: 'Name, startAt, endAt required' });
+        await campaignService.createCampaign({ name, type, bonusPct, maxBonus, wageringMult, minDeposit, startAt, endAt, promoCode, targetSegment, maxClaims });
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Admin] Create campaign error:', e.message);
+        res.status(500).json({ error: 'Failed to create campaign' });
+    }
+});
+
+// POST /api/admin/campaigns/:id/toggle — Enable/disable a campaign
+router.post('/campaigns/:id/toggle', async (req, res) => {
+    try {
+        const campaignService = require('../services/campaign.service');
+        await campaignService.toggleCampaign(req.params.id, req.body.active);
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Admin] Toggle campaign error:', e.message);
+        res.status(500).json({ error: 'Failed to toggle campaign' });
+    }
+});
+
 module.exports = router;

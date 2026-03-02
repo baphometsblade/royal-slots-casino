@@ -63,6 +63,7 @@ const paymentLimiter = rateLimit({
 app.use('/api/payment/deposit', paymentLimiter);
 app.use('/api/payment/withdraw', paymentLimiter);
 app.use('/api/balance/deposit', paymentLimiter);
+app.use('/api/bundles/purchase', paymentLimiter);
 
 // ─── Health Check (used by Render / load balancers) ───
 app.get('/api/health', async (req, res) => {
@@ -189,6 +190,41 @@ app.get('/api/offers', verifyToken, async (req, res) => {
         res.json({ offers });
     } catch (e) {
         res.status(500).json({ error: 'Failed to fetch offers' });
+    }
+});
+
+// ─── Spin-pack bundles ───
+app.get('/api/bundles', async (req, res) => {
+    try {
+        const bundleService = require('./services/bundle.service');
+        res.json({ bundles: bundleService.getAvailableBundles() });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch bundles' });
+    }
+});
+
+app.post('/api/bundles/purchase', verifyToken, async (req, res) => {
+    try {
+        const bundleService = require('./services/bundle.service');
+        const { bundleId } = req.body;
+        if (!bundleId) return res.status(400).json({ error: 'Bundle ID required' });
+        const result = await bundleService.purchaseBundle(req.user.id, bundleId);
+        res.json(result);
+    } catch (e) {
+        console.error('[Bundle] purchase error:', e.message);
+        res.status(400).json({ error: e.message });
+    }
+});
+
+// ─── Active campaigns for current user ───
+app.get('/api/campaigns', verifyToken, async (req, res) => {
+    try {
+        const campaignService = require('./services/campaign.service');
+        const campaigns = await campaignService.getActiveCampaigns(req.user.id);
+        res.json({ campaigns });
+    } catch (e) {
+        console.error('[Campaigns] Fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch campaigns' });
     }
 });
 

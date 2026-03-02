@@ -167,6 +167,33 @@ const TABLES = [
         achievement_id TEXT NOT NULL,
         unlocked_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(user_id, achievement_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS campaigns (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT DEFAULT 'deposit_match',
+        bonus_pct INTEGER DEFAULT 50,
+        max_bonus NUMERIC(15,2) DEFAULT 200,
+        wagering_mult INTEGER DEFAULT 25,
+        min_deposit NUMERIC(15,2) DEFAULT 10,
+        start_at TIMESTAMPTZ NOT NULL,
+        end_at TIMESTAMPTZ NOT NULL,
+        active INTEGER DEFAULT 1,
+        promo_code TEXT,
+        target_segment TEXT DEFAULT 'all',
+        max_claims INTEGER DEFAULT 0,
+        claims_count INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS campaign_claims (
+        id SERIAL PRIMARY KEY,
+        campaign_id INTEGER NOT NULL REFERENCES campaigns(id),
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        claimed_at TIMESTAMPTZ DEFAULT NOW(),
+        bonus_amount NUMERIC(15,2) DEFAULT 0,
+        UNIQUE(campaign_id, user_id)
     )`
 ];
 
@@ -184,7 +211,10 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`,
     `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code) WHERE referral_code IS NOT NULL`,
     `CREATE INDEX IF NOT EXISTS idx_spins_wins ON spins(win_amount, created_at)`,
-    `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`
+    `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaigns_active ON campaigns(active, start_at, end_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_cid ON campaign_claims(campaign_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_uid ON campaign_claims(user_id)`
 ];
 
 

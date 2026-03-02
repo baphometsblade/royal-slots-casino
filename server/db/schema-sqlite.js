@@ -177,6 +177,35 @@ const TABLES = [
         unlocked_at TEXT DEFAULT (datetime('now')),
         UNIQUE(user_id, achievement_id),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS campaigns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        type TEXT DEFAULT 'deposit_match',
+        bonus_pct INTEGER DEFAULT 50,
+        max_bonus REAL DEFAULT 200,
+        wagering_mult INTEGER DEFAULT 25,
+        min_deposit REAL DEFAULT 10,
+        start_at TEXT NOT NULL,
+        end_at TEXT NOT NULL,
+        active INTEGER DEFAULT 1,
+        promo_code TEXT,
+        target_segment TEXT DEFAULT 'all',
+        max_claims INTEGER DEFAULT 0,
+        claims_count INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS campaign_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaign_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        bonus_amount REAL DEFAULT 0,
+        UNIQUE(campaign_id, user_id),
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 
@@ -194,7 +223,10 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`,
     `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code) WHERE referral_code IS NOT NULL`,
     `CREATE INDEX IF NOT EXISTS idx_spins_wins ON spins(win_amount, created_at)`,
-    `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`
+    `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaigns_active ON campaigns(active, start_at, end_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_cid ON campaign_claims(campaign_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_uid ON campaign_claims(user_id)`
 ];
 
 

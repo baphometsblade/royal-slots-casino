@@ -67,6 +67,24 @@ module.exports = {
     JACKPOT_MAJOR_WIN_CHANCE: 0.00004,  // 0.004% per spin
     JACKPOT_GRAND_WIN_CHANCE: 0.000005, // 0.0005% per spin
 
+    // Loss-limit cashback
+    DAILY_LOSS_LIMIT_DEFAULT: 500,          // default daily loss limit ($)
+    LOSS_CASHBACK_RATE: 0.10,               // 10% cashback on losses when limit hit
+    LOSS_CASHBACK_MAX: 100,                 // max $100 cashback per day
+    LOSS_CASHBACK_VIP_RATES: {              // higher cashback for VIP tiers
+        0: 0.10, 1: 0.12, 2: 0.15,
+        3: 0.18, 4: 0.22, 5: 0.25
+    },
+
+    // Spin-pack bundles
+    SPIN_BUNDLES: [
+        { id: 'starter', name: 'Starter Pack', price: 9.99, credits: 15, bonusPct: 50, bonusWheelSpins: 0, badge: '' },
+        { id: 'silver', name: 'Silver Bundle', price: 24.99, credits: 40, bonusPct: 60, bonusWheelSpins: 1, badge: '🥈' },
+        { id: 'gold', name: 'Gold Bundle', price: 49.99, credits: 85, bonusPct: 70, bonusWheelSpins: 2, badge: '🥇' },
+        { id: 'diamond', name: 'Diamond Bundle', price: 99.99, credits: 180, bonusPct: 80, bonusWheelSpins: 3, badge: '💎' },
+        { id: 'whale', name: 'Whale Package', price: 249.99, credits: 500, bonusPct: 100, bonusWheelSpins: 5, badge: '🐋' },
+    ],
+
     // Responsible gambling defaults
     DEFAULT_DAILY_DEPOSIT_LIMIT: null,   // No limit by default
     DEFAULT_SESSION_TIME_LIMIT: null,    // No limit by default

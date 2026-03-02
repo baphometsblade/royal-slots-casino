@@ -2453,6 +2453,26 @@
                         body: { gameId: spinGame.id, betAmount: currentBet },
                         requireAuth: true
                     });
+                    // Handle daily loss limit reached
+                    if (serverResult && serverResult.error === 'daily_loss_limit') {
+                        stopReelScrollingImmediately();
+                        spinning = false;
+                        var _raLL = document.querySelector('.slot-reel-area');
+                        if (_raLL) _raLL.classList.remove('spinning-active');
+                        spinBtn.disabled = currentBet > balance;
+                        spinBtn.textContent = '';
+                        refreshBetControls();
+                        if (serverResult.balance !== undefined) {
+                            balance = serverResult.balance;
+                            updateBalance();
+                        }
+                        if (serverResult.cashback) {
+                            showMessage(serverResult.cashback.message, 'win');
+                        } else {
+                            showMessage('Daily loss limit reached. Take a break!', 'lose');
+                        }
+                        return;
+                    }
                     if (!serverResult || !Array.isArray(serverResult.grid)) {
                         throw new Error('Invalid spin response from server.');
                     }
@@ -2466,6 +2486,10 @@
                     // Update wagering progress display from server response
                     if (typeof updateWageringDisplay === 'function') {
                         updateWageringDisplay(serverResult.wageringStatus || null);
+                    }
+                    // Update loss limit display
+                    if (typeof updateLossLimitDisplay === 'function') {
+                        updateLossLimitDisplay(serverResult.lossStatus || null);
                     }
                     // Show achievement toasts
                     if (serverResult.newAchievements && serverResult.newAchievements.length > 0) {

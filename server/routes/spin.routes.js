@@ -91,6 +91,22 @@ router.post('/', authenticate, async (req, res) => {
         }
         lastSpinTime.set(userId, now);
 
+        // ── Daily loss limit check (before spinning) ──
+        const lossLimitService = require('../services/loss-limit.service');
+        const lossCheck = await lossLimitService.checkDailyLossLimit(userId, bet);
+        if (!lossCheck.allowed) {
+            // Re-read balance in case cashback was just credited
+            const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+            return res.json({
+                error: 'daily_loss_limit',
+                message: 'Daily loss limit reached',
+                dailyLoss: lossCheck.dailyLoss,
+                limit: lossCheck.limit,
+                cashback: lossCheck.cashback,
+                balance: updatedUser ? updatedUser.balance : undefined
+            });
+        }
+
         // ── Check balance (fresh from DB) ──
         const currentUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
         if (!currentUser) {
@@ -303,6 +319,7 @@ router.post('/', authenticate, async (req, res) => {
             jackpotWon: spinResult.jackpotWon || null,
             wageringStatus,
             newAchievements,
+            lossStatus: lossCheck ? { dailyLoss: lossCheck.dailyLoss, limit: lossCheck.limit, remaining: lossCheck.remaining } : null,
         });
 
     } catch (err) {

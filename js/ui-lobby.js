@@ -2910,3 +2910,171 @@ function loadPersonalizedOffers() {
         })
         .catch(function() {});
 }
+
+// ── Bundle Shop ─────────────────────────────────
+function openBundleShop() {
+    var modal = document.getElementById('bundleShopModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    loadBundleList();
+}
+
+function closeBundleShop() {
+    var modal = document.getElementById('bundleShopModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function loadBundleList() {
+    fetch('/api/bundles')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var grid = document.getElementById('bundleGrid');
+            if (!grid || !data.bundles) return;
+            // Clear existing
+            while (grid.firstChild) grid.removeChild(grid.firstChild);
+
+            data.bundles.forEach(function(b) {
+                var card = document.createElement('div');
+                card.className = 'bundle-card' + (b.id === 'whale' ? ' bundle-whale' : b.id === 'diamond' ? ' bundle-diamond' : '');
+
+                var badge = document.createElement('div');
+                badge.className = 'bundle-badge';
+                badge.textContent = b.badge || '';
+
+                var name = document.createElement('div');
+                name.className = 'bundle-name';
+                name.textContent = b.name;
+
+                var price = document.createElement('div');
+                price.className = 'bundle-price';
+                price.textContent = '$' + b.price.toFixed(2);
+
+                var credits = document.createElement('div');
+                credits.className = 'bundle-credits';
+                credits.textContent = '$' + b.credits + ' + $' + b.bonusCredits + ' bonus';
+
+                var total = document.createElement('div');
+                total.className = 'bundle-total';
+                total.textContent = '$' + b.totalCredits + ' total value';
+
+                var value = document.createElement('div');
+                value.className = 'bundle-value';
+                value.textContent = b.valuePerDollar + 'x value per dollar';
+
+                var btn = document.createElement('button');
+                btn.className = 'bundle-buy-btn';
+                btn.textContent = 'Buy Now';
+                btn.setAttribute('data-bundle-id', b.id);
+                btn.onclick = function() { purchaseBundle(b.id); };
+
+                card.appendChild(badge);
+                card.appendChild(name);
+                card.appendChild(price);
+                card.appendChild(credits);
+                card.appendChild(total);
+                card.appendChild(value);
+                card.appendChild(btn);
+                grid.appendChild(card);
+            });
+        })
+        .catch(function() {});
+}
+
+function purchaseBundle(bundleId) {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        if (typeof showToast === 'function') showToast('Login required to purchase bundles', 'error');
+        return;
+    }
+    fetch('/api/bundles/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ bundleId: bundleId })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) {
+            if (typeof showToast === 'function') showToast(data.error, 'error');
+            return;
+        }
+        if (typeof showToast === 'function') {
+            showToast('Purchased ' + data.bundleName + '! +$' + data.totalAdded + ' credits', 'success');
+        }
+        if (data.newBalance !== undefined) {
+            balance = data.newBalance;
+            if (typeof updateBalance === 'function') updateBalance();
+        }
+        closeBundleShop();
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') showToast('Purchase failed', 'error');
+    });
+}
+
+// ── Campaign Banners ─────────────────────────────────
+function loadCampaignBanners() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    fetch('/api/campaigns', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var area = document.getElementById('campaignBannerArea');
+            if (!area || !data.campaigns || data.campaigns.length === 0) return;
+            area.style.display = '';
+            while (area.firstChild) area.removeChild(area.firstChild);
+
+            data.campaigns.forEach(function(c) {
+                if (c.claimed) return; // skip already claimed
+                var banner = document.createElement('div');
+                banner.className = 'campaign-banner';
+
+                var title = document.createElement('div');
+                title.className = 'cb-title';
+                title.textContent = c.name;
+
+                var detail = document.createElement('div');
+                detail.className = 'cb-detail';
+                detail.textContent = c.bonusPct + '% deposit match up to $' + c.maxBonus + ' (min $' + c.minDeposit + ')';
+
+                var timer = document.createElement('div');
+                timer.className = 'cb-timer';
+                var endDate = new Date(c.endAt);
+                var hoursLeft = Math.max(0, Math.round((endDate - Date.now()) / 3600000));
+                timer.textContent = hoursLeft > 24 ? Math.floor(hoursLeft / 24) + 'd left' : hoursLeft + 'h left';
+
+                var cta = document.createElement('button');
+                cta.className = 'cb-cta';
+                cta.textContent = 'Deposit Now';
+                cta.onclick = function() {
+                    if (typeof openWalletModal === 'function') openWalletModal();
+                    else if (typeof showToast === 'function') showToast('Open Wallet to deposit', 'info');
+                };
+
+                banner.appendChild(title);
+                banner.appendChild(detail);
+                banner.appendChild(timer);
+                banner.appendChild(cta);
+                area.appendChild(banner);
+            });
+        })
+        .catch(function() {});
+}
+
+// ── Loss Limit Display ─────────────────────────────────
+function updateLossLimitDisplay(lossStatus) {
+    var bar = document.getElementById('lossLimitBar');
+    if (!bar) return;
+    if (!lossStatus || !lossStatus.limit || lossStatus.limit <= 0) {
+        bar.style.display = 'none';
+        return;
+    }
+    bar.style.display = '';
+    var remaining = document.getElementById('llRemaining');
+    var fill = document.getElementById('llFill');
+    if (remaining) remaining.textContent = '$' + Math.max(0, lossStatus.remaining || 0).toFixed(0) + ' left';
+    if (fill) {
+        var pct = lossStatus.limit > 0 ? Math.min(100, (lossStatus.dailyLoss / lossStatus.limit) * 100) : 0;
+        fill.style.width = pct + '%';
+        fill.className = 'll-fill' + (pct >= 90 ? ' ll-danger' : pct >= 70 ? ' ll-warn' : '');
+    }
+}

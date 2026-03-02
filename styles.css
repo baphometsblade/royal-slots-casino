@@ -17863,3 +17863,43 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .offer-cta:hover { filter: brightness(1.2); }
 .offer-card.offer-high_roller { border-color: rgba(255,215,0,0.4); background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,107,53,0.1)); }
 .offer-card.offer-high_roller .offer-title { color: #ffd700; }
+
+/* ── Bundle Shop Modal ─────────────────── */
+.bundle-shop-content { max-width: 700px; padding: 24px; }
+.bundle-shop-title { text-align: center; font-size: 22px; color: #ffd700; margin-bottom: 4px; }
+.bundle-shop-subtitle { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; }
+.bundle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.bundle-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; text-align: center; transition: transform 0.2s, border-color 0.2s; }
+.bundle-card:hover { transform: translateY(-2px); border-color: rgba(78,205,196,0.4); }
+.bundle-badge { font-size: 28px; margin-bottom: 4px; min-height: 36px; }
+.bundle-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.bundle-price { font-size: 20px; font-weight: 700; color: #4ecdc4; margin-bottom: 4px; }
+.bundle-credits { font-size: 12px; color: #aaa; }
+.bundle-total { font-size: 13px; color: #ffd700; font-weight: 600; margin: 4px 0; }
+.bundle-value { font-size: 11px; color: #666; margin-bottom: 8px; }
+.bundle-buy-btn { width: 100%; padding: 8px; background: linear-gradient(135deg, #4ecdc4, #44b8a8); color: #000; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; }
+.bundle-buy-btn:hover { filter: brightness(1.2); }
+.bundle-diamond { border-color: rgba(185,242,255,0.3); }
+.bundle-whale { border-color: rgba(255,215,0,0.3); background: linear-gradient(135deg, #1a1a2e, #2d1b69); }
+
+/* ── Campaign Banners ─────────────────── */
+.campaign-banner-area { display: flex; gap: 10px; padding: 0 16px; margin-bottom: 10px; overflow-x: auto; }
+.campaign-banner { min-width: 220px; padding: 12px 16px; background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,215,0,0.1)); border: 1px solid rgba(255,107,53,0.3); border-radius: 10px; flex-shrink: 0; }
+.cb-title { font-size: 14px; font-weight: 700; color: #ff6b35; margin-bottom: 4px; }
+.cb-detail { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+.cb-timer { font-size: 11px; color: #ff4444; font-weight: 600; margin-bottom: 6px; }
+.cb-cta { padding: 5px 14px; background: linear-gradient(135deg, #ff6b35, #e85d26); color: #fff; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.cb-cta:hover { filter: brightness(1.2); }
+
+/* ── Loss Limit Bar ─────────────────── */
+.loss-limit-bar { display: flex; align-items: center; gap: 8px; padding: 4px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-top: 4px; }
+.ll-label { font-size: 11px; color: #888; white-space: nowrap; }
+.ll-remaining { font-size: 12px; color: #4ecdc4; font-weight: 600; white-space: nowrap; }
+.ll-track { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.ll-fill { height: 100%; background: #4ecdc4; border-radius: 2px; transition: width 0.3s; }
+.ll-fill.ll-warn { background: #ffa500; }
+.ll-fill.ll-danger { background: #ff4444; }
+
+/* ── Shop Button ─────────────────── */
+.shop-btn { background: linear-gradient(135deg, #ffd700, #ffb700); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #000; font-weight: 700; }
+.shop-btn:hover { filter: brightness(1.2); }
