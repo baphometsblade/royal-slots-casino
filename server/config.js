@@ -89,4 +89,25 @@ module.exports = {
     DEFAULT_DAILY_DEPOSIT_LIMIT: null,   // No limit by default
     DEFAULT_SESSION_TIME_LIMIT: null,    // No limit by default
     COOLING_OFF_PERIODS: [24, 48, 72, 168, 720], // Hours: 1d, 2d, 3d, 1w, 30d
+
+    // Social gifting
+    GIFTING: {
+        MIN_AMOUNT: 10,
+        MAX_AMOUNT: 200,
+        DAILY_LIMIT: 3,
+        DAILY_MAX_TOTAL: 500,
+    },
+
+    // Weekly auto-contests
+    CONTESTS: {
+        PRIZES: {
+            1: 500,
+            2: 200, 3: 200,
+            4: 100, 5: 100, 6: 100, 7: 100, 8: 100, 9: 100, 10: 100,
+            11: 50, 12: 50, 13: 50, 14: 50, 15: 50, 16: 50, 17: 50, 18: 50, 19: 50, 20: 50,
+            21: 50, 22: 50, 23: 50, 24: 50, 25: 50
+        },
+        PRIZE_WAGERING: 10,
+        DEFAULT_METRIC: 'total_wagered'
+    },
 };

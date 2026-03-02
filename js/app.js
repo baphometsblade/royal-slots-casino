@@ -205,6 +205,7 @@
             if (typeof loadBigWinFeed === 'function') loadBigWinFeed();
             if (typeof loadPersonalizedOffers === 'function') setTimeout(loadPersonalizedOffers, 2000);
             if (typeof loadCampaignBanners === 'function') setTimeout(loadCampaignBanners, 3000);
+            if (typeof loadActiveEvents === 'function') setTimeout(loadActiveEvents, 3500);
             startSessionDurationWatch();
         }
 

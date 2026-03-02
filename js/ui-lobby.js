@@ -3060,6 +3060,610 @@ function loadCampaignBanners() {
         .catch(function() {});
 }
 
+// ── Social Gifting ─────────────────────────────────
+var _giftActiveTab = 'send';
+
+function openGiftModal() {
+    var modal = document.getElementById('giftModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    _giftActiveTab = 'send';
+    _renderGiftTabs();
+    _renderGiftSendForm();
+}
+
+function closeGiftModal() {
+    var modal = document.getElementById('giftModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function _renderGiftTabs() {
+    var tabsEl = document.getElementById('giftTabs');
+    if (!tabsEl) return;
+    while (tabsEl.firstChild) tabsEl.removeChild(tabsEl.firstChild);
+
+    var tabs = [
+        { id: 'send', label: 'Send Gift' },
+        { id: 'pending', label: 'Pending' },
+        { id: 'history', label: 'History' }
+    ];
+
+    tabs.forEach(function(tab) {
+        var btn = document.createElement('button');
+        btn.className = 'gift-tab-btn' + (_giftActiveTab === tab.id ? ' active' : '');
+        btn.textContent = tab.label;
+        btn.addEventListener('click', function() {
+            _giftActiveTab = tab.id;
+            _renderGiftTabs();
+            if (tab.id === 'send') _renderGiftSendForm();
+            else if (tab.id === 'pending') loadPendingGifts();
+            else if (tab.id === 'history') loadGiftHistory();
+        });
+        tabsEl.appendChild(btn);
+    });
+}
+
+function _renderGiftSendForm() {
+    var body = document.getElementById('giftModalBody');
+    if (!body) return;
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    var form = document.createElement('div');
+    form.className = 'gift-form';
+
+    var recipLabel = document.createElement('label');
+    recipLabel.textContent = 'Recipient Username';
+    recipLabel.className = 'gift-label';
+    var recipInput = document.createElement('input');
+    recipInput.type = 'text';
+    recipInput.id = 'giftRecipient';
+    recipInput.className = 'gift-input';
+    recipInput.placeholder = 'Enter username...';
+
+    var amountLabel = document.createElement('label');
+    amountLabel.textContent = 'Amount: $50';
+    amountLabel.className = 'gift-label';
+    amountLabel.id = 'giftAmountLabel';
+    var amountSlider = document.createElement('input');
+    amountSlider.type = 'range';
+    amountSlider.id = 'giftAmount';
+    amountSlider.className = 'gift-slider';
+    amountSlider.min = '10';
+    amountSlider.max = '200';
+    amountSlider.value = '50';
+    amountSlider.step = '10';
+    amountSlider.addEventListener('input', function() {
+        var label = document.getElementById('giftAmountLabel');
+        if (label) label.textContent = 'Amount: $' + amountSlider.value;
+    });
+
+    var msgLabel = document.createElement('label');
+    msgLabel.textContent = 'Message (optional)';
+    msgLabel.className = 'gift-label';
+    var msgInput = document.createElement('textarea');
+    msgInput.id = 'giftMessage';
+    msgInput.className = 'gift-textarea';
+    msgInput.placeholder = 'Add a note...';
+    msgInput.rows = 2;
+
+    var sendBtn = document.createElement('button');
+    sendBtn.className = 'gift-send-btn';
+    sendBtn.textContent = 'Send Gift';
+    sendBtn.addEventListener('click', function() { sendGift(); });
+
+    form.appendChild(recipLabel);
+    form.appendChild(recipInput);
+    form.appendChild(amountLabel);
+    form.appendChild(amountSlider);
+    form.appendChild(msgLabel);
+    form.appendChild(msgInput);
+    form.appendChild(sendBtn);
+    body.appendChild(form);
+}
+
+function sendGift() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        if (typeof showToast === 'function') showToast('Login required to send gifts', 'error');
+        return;
+    }
+    var recipient = (document.getElementById('giftRecipient') || {}).value || '';
+    var amount = parseInt((document.getElementById('giftAmount') || {}).value || '50', 10);
+    var message = (document.getElementById('giftMessage') || {}).value || '';
+
+    if (!recipient.trim()) {
+        if (typeof showToast === 'function') showToast('Enter a recipient username', 'error');
+        return;
+    }
+
+    fetch('/api/gifts/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ recipientUsername: recipient.trim(), amount: amount, message: message })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) {
+            if (typeof showToast === 'function') showToast(data.error, 'error');
+            return;
+        }
+        if (typeof showToast === 'function') showToast('Gift of $' + amount + ' sent to ' + recipient + '!', 'success');
+        if (data.newBalance !== undefined) {
+            balance = data.newBalance;
+            if (typeof updateBalance === 'function') updateBalance();
+        }
+        var recipEl = document.getElementById('giftRecipient');
+        if (recipEl) recipEl.value = '';
+        var msgEl = document.getElementById('giftMessage');
+        if (msgEl) msgEl.value = '';
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') showToast('Failed to send gift', 'error');
+    });
+}
+
+function loadPendingGifts() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    var body = document.getElementById('giftModalBody');
+    if (!body) return;
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    var loading = document.createElement('div');
+    loading.className = 'gift-loading';
+    loading.textContent = 'Loading pending gifts...';
+    body.appendChild(loading);
+
+    fetch('/api/gifts/pending', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            while (body.firstChild) body.removeChild(body.firstChild);
+            var gifts = data.gifts || [];
+            if (gifts.length === 0) {
+                var empty = document.createElement('div');
+                empty.className = 'gift-empty';
+                empty.textContent = 'No pending gifts';
+                body.appendChild(empty);
+                return;
+            }
+            gifts.forEach(function(g) {
+                var card = document.createElement('div');
+                card.className = 'gift-card';
+
+                var from = document.createElement('div');
+                from.className = 'gift-card-from';
+                from.textContent = 'From: ' + (g.senderUsername || 'Unknown');
+
+                var amt = document.createElement('div');
+                amt.className = 'gift-card-amount';
+                amt.textContent = '$' + (g.amount || 0);
+
+                var msg = document.createElement('div');
+                msg.className = 'gift-card-message';
+                msg.textContent = g.message || '';
+
+                var claimBtn = document.createElement('button');
+                claimBtn.className = 'gift-claim-btn';
+                claimBtn.textContent = 'Claim';
+                claimBtn.addEventListener('click', function() { claimGift(g.id); });
+
+                card.appendChild(from);
+                card.appendChild(amt);
+                if (g.message) card.appendChild(msg);
+                card.appendChild(claimBtn);
+                body.appendChild(card);
+            });
+        })
+        .catch(function() {
+            while (body.firstChild) body.removeChild(body.firstChild);
+            var err = document.createElement('div');
+            err.className = 'gift-empty';
+            err.textContent = 'Failed to load gifts';
+            body.appendChild(err);
+        });
+}
+
+function claimGift(giftId) {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    fetch('/api/gifts/' + giftId + '/claim', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) {
+            if (typeof showToast === 'function') showToast(data.error, 'error');
+            return;
+        }
+        if (typeof showToast === 'function') showToast('Gift claimed! +$' + (data.amount || 0), 'success');
+        if (data.newBalance !== undefined) {
+            balance = data.newBalance;
+            if (typeof updateBalance === 'function') updateBalance();
+        }
+        loadPendingGifts();
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') showToast('Failed to claim gift', 'error');
+    });
+}
+
+function loadGiftHistory() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    var body = document.getElementById('giftModalBody');
+    if (!body) return;
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    var loading = document.createElement('div');
+    loading.className = 'gift-loading';
+    loading.textContent = 'Loading gift history...';
+    body.appendChild(loading);
+
+    fetch('/api/gifts/history', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            while (body.firstChild) body.removeChild(body.firstChild);
+            var gifts = data.gifts || [];
+            if (gifts.length === 0) {
+                var empty = document.createElement('div');
+                empty.className = 'gift-empty';
+                empty.textContent = 'No gift history yet';
+                body.appendChild(empty);
+                return;
+            }
+            gifts.forEach(function(g) {
+                var row = document.createElement('div');
+                row.className = 'gift-history-row';
+
+                var dir = document.createElement('span');
+                dir.className = 'gift-dir ' + (g.direction === 'sent' ? 'gift-sent' : 'gift-received');
+                dir.textContent = g.direction === 'sent' ? 'Sent' : 'Received';
+
+                var user = document.createElement('span');
+                user.className = 'gift-history-user';
+                user.textContent = g.direction === 'sent'
+                    ? 'to ' + (g.recipientUsername || '?')
+                    : 'from ' + (g.senderUsername || '?');
+
+                var amt = document.createElement('span');
+                amt.className = 'gift-history-amount';
+                amt.textContent = '$' + (g.amount || 0);
+
+                var date = document.createElement('span');
+                date.className = 'gift-history-date';
+                date.textContent = g.createdAt ? new Date(g.createdAt).toLocaleDateString() : '';
+
+                row.appendChild(dir);
+                row.appendChild(user);
+                row.appendChild(amt);
+                row.appendChild(date);
+                body.appendChild(row);
+            });
+        })
+        .catch(function() {
+            while (body.firstChild) body.removeChild(body.firstChild);
+            var err = document.createElement('div');
+            err.className = 'gift-empty';
+            err.textContent = 'Failed to load history';
+            body.appendChild(err);
+        });
+}
+
+// ── Contest Leaderboard ─────────────────────────────────
+var _contestActiveTab = 'leaderboard';
+var _contestMetric = 'spins';
+
+function openContestModal() {
+    var modal = document.getElementById('contestModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    _contestActiveTab = 'leaderboard';
+    _contestMetric = 'spins';
+    _renderContestTabs();
+    loadContestLeaderboard('spins');
+}
+
+function closeContestModal() {
+    var modal = document.getElementById('contestModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function _renderContestTabs() {
+    var tabsEl = document.getElementById('contestTabs');
+    if (!tabsEl) return;
+    while (tabsEl.firstChild) tabsEl.removeChild(tabsEl.firstChild);
+
+    var tabs = [
+        { id: 'leaderboard', label: 'Leaderboard' },
+        { id: 'prizes', label: 'My Prizes' }
+    ];
+
+    tabs.forEach(function(tab) {
+        var btn = document.createElement('button');
+        btn.className = 'contest-tab-btn' + (_contestActiveTab === tab.id ? ' active' : '');
+        btn.textContent = tab.label;
+        btn.addEventListener('click', function() {
+            _contestActiveTab = tab.id;
+            _renderContestTabs();
+            if (tab.id === 'leaderboard') loadContestLeaderboard(_contestMetric);
+            else if (tab.id === 'prizes') loadContestPrizes();
+        });
+        tabsEl.appendChild(btn);
+    });
+}
+
+function loadContestLeaderboard(metric) {
+    _contestMetric = metric || 'spins';
+    var token = localStorage.getItem('token');
+    var body = document.getElementById('contestModalBody');
+    if (!body) return;
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    // Metric filter buttons
+    var filterRow = document.createElement('div');
+    filterRow.className = 'contest-metric-row';
+    var metrics = [
+        { id: 'spins', label: 'Spins' },
+        { id: 'biggest_win', label: 'Biggest Win' },
+        { id: 'total_wagered', label: 'Total Wagered' }
+    ];
+    metrics.forEach(function(m) {
+        var btn = document.createElement('button');
+        btn.className = 'contest-metric-btn' + (_contestMetric === m.id ? ' active' : '');
+        btn.textContent = m.label;
+        btn.addEventListener('click', function() { loadContestLeaderboard(m.id); });
+        filterRow.appendChild(btn);
+    });
+    body.appendChild(filterRow);
+
+    var loading = document.createElement('div');
+    loading.className = 'contest-loading';
+    loading.textContent = 'Loading leaderboard...';
+    body.appendChild(loading);
+
+    var headers = { };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    fetch('/api/contests/leaderboard?metric=' + _contestMetric, { headers: headers })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            // Remove loading indicator
+            if (loading.parentNode) loading.parentNode.removeChild(loading);
+
+            var entries = data.leaderboard || [];
+            var currentUsername = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : null;
+
+            if (entries.length === 0) {
+                var empty = document.createElement('div');
+                empty.className = 'contest-empty';
+                empty.textContent = 'No contest data yet. Start playing!';
+                body.appendChild(empty);
+                return;
+            }
+
+            var table = document.createElement('table');
+            table.className = 'leaderboard-table';
+
+            var thead = document.createElement('thead');
+            var headRow = document.createElement('tr');
+            var thRank = document.createElement('th');
+            thRank.textContent = '#';
+            var thPlayer = document.createElement('th');
+            thPlayer.textContent = 'Player';
+            var thValue = document.createElement('th');
+            thValue.textContent = _contestMetric === 'spins' ? 'Spins' :
+                _contestMetric === 'biggest_win' ? 'Biggest Win' : 'Total Wagered';
+            headRow.appendChild(thRank);
+            headRow.appendChild(thPlayer);
+            headRow.appendChild(thValue);
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+
+            var tbody = document.createElement('tbody');
+            entries.forEach(function(entry, idx) {
+                var tr = document.createElement('tr');
+                var isMe = currentUsername && entry.username === currentUsername;
+                if (isMe) tr.className = 'leaderboard-me';
+
+                var tdRank = document.createElement('td');
+                var rank = idx + 1;
+                if (rank === 1) tdRank.textContent = '\uD83E\uDD47';
+                else if (rank === 2) tdRank.textContent = '\uD83E\uDD48';
+                else if (rank === 3) tdRank.textContent = '\uD83E\uDD49';
+                else tdRank.textContent = String(rank);
+                tdRank.className = 'lb-rank';
+
+                var tdName = document.createElement('td');
+                tdName.textContent = entry.username || 'Anonymous';
+                if (isMe) tdName.textContent += ' (You)';
+
+                var tdVal = document.createElement('td');
+                var val = entry.value || 0;
+                if (_contestMetric === 'spins') {
+                    tdVal.textContent = val.toLocaleString();
+                } else {
+                    tdVal.textContent = '$' + val.toLocaleString();
+                }
+
+                tr.appendChild(tdRank);
+                tr.appendChild(tdName);
+                tr.appendChild(tdVal);
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            body.appendChild(table);
+        })
+        .catch(function() {
+            if (loading.parentNode) loading.parentNode.removeChild(loading);
+            var err = document.createElement('div');
+            err.className = 'contest-empty';
+            err.textContent = 'Failed to load leaderboard';
+            body.appendChild(err);
+        });
+}
+
+function loadContestPrizes() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        if (typeof showToast === 'function') showToast('Login required', 'error');
+        return;
+    }
+    var body = document.getElementById('contestModalBody');
+    if (!body) return;
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    var loading = document.createElement('div');
+    loading.className = 'contest-loading';
+    loading.textContent = 'Loading prizes...';
+    body.appendChild(loading);
+
+    fetch('/api/contests/prizes', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            while (body.firstChild) body.removeChild(body.firstChild);
+            var prizes = data.prizes || [];
+            if (prizes.length === 0) {
+                var empty = document.createElement('div');
+                empty.className = 'contest-empty';
+                empty.textContent = 'No prizes to claim. Keep playing to win!';
+                body.appendChild(empty);
+                return;
+            }
+            prizes.forEach(function(p) {
+                var card = document.createElement('div');
+                card.className = 'prize-card' + (p.claimed ? ' prize-claimed' : '');
+
+                var title = document.createElement('div');
+                title.className = 'prize-title';
+                title.textContent = p.title || ('Rank #' + (p.rank || '?'));
+
+                var amount = document.createElement('div');
+                amount.className = 'prize-amount';
+                amount.textContent = '$' + (p.amount || 0);
+
+                var contest = document.createElement('div');
+                contest.className = 'prize-contest';
+                contest.textContent = p.contestName || '';
+
+                card.appendChild(title);
+                card.appendChild(amount);
+                card.appendChild(contest);
+
+                if (!p.claimed) {
+                    var claimBtn = document.createElement('button');
+                    claimBtn.className = 'prize-claim-btn';
+                    claimBtn.textContent = 'Claim Prize';
+                    claimBtn.addEventListener('click', function() { claimContestPrize(p.id); });
+                    card.appendChild(claimBtn);
+                } else {
+                    var badge = document.createElement('div');
+                    badge.className = 'prize-claimed-badge';
+                    badge.textContent = 'Claimed';
+                    card.appendChild(badge);
+                }
+                body.appendChild(card);
+            });
+        })
+        .catch(function() {
+            while (body.firstChild) body.removeChild(body.firstChild);
+            var err = document.createElement('div');
+            err.className = 'contest-empty';
+            err.textContent = 'Failed to load prizes';
+            body.appendChild(err);
+        });
+}
+
+function claimContestPrize(prizeId) {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    fetch('/api/contests/prizes/' + prizeId + '/claim', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) {
+            if (typeof showToast === 'function') showToast(data.error, 'error');
+            return;
+        }
+        if (typeof showToast === 'function') showToast('Prize claimed! +$' + (data.amount || 0), 'success');
+        if (data.newBalance !== undefined) {
+            balance = data.newBalance;
+            if (typeof updateBalance === 'function') updateBalance();
+        }
+        loadContestPrizes();
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') showToast('Failed to claim prize', 'error');
+    });
+}
+
+// ── Active Events / Bonus Events ─────────────────────────────────
+var _eventTimers = [];
+
+function loadActiveEvents() {
+    var token = localStorage.getItem('token');
+    var headers = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    // Clear any running countdown timers
+    _eventTimers.forEach(function(t) { clearInterval(t); });
+    _eventTimers = [];
+
+    fetch('/api/events/active', { headers: headers })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var area = document.getElementById('campaignBannerArea');
+            if (!area) return;
+            var events = data.events || [];
+            if (events.length === 0) return;
+            area.style.display = '';
+
+            events.forEach(function(ev) {
+                var banner = document.createElement('div');
+                banner.className = 'event-banner';
+
+                var nameEl = document.createElement('div');
+                nameEl.className = 'event-name';
+                nameEl.textContent = ev.name || 'Bonus Event';
+
+                var multiplierBadge = document.createElement('span');
+                multiplierBadge.className = 'event-multiplier';
+                multiplierBadge.textContent = (ev.multiplier || 1) + 'x';
+
+                var timerEl = document.createElement('div');
+                timerEl.className = 'event-timer';
+                var endTime = new Date(ev.endAt).getTime();
+                function updateTimer() {
+                    var diff = Math.max(0, endTime - Date.now());
+                    var h = Math.floor(diff / 3600000);
+                    var m = Math.floor((diff % 3600000) / 60000);
+                    var s = Math.floor((diff % 60000) / 1000);
+                    timerEl.textContent = h + 'h ' + m + 'm ' + s + 's';
+                    if (diff <= 0) timerEl.textContent = 'Ended';
+                }
+                updateTimer();
+                var timer = setInterval(updateTimer, 1000);
+                _eventTimers.push(timer);
+
+                var gamesEl = document.createElement('div');
+                gamesEl.className = 'event-games';
+                if (ev.affectedGames && ev.affectedGames.length > 0) {
+                    gamesEl.textContent = 'Games: ' + ev.affectedGames.join(', ');
+                } else {
+                    gamesEl.textContent = 'All games';
+                }
+
+                banner.appendChild(nameEl);
+                banner.appendChild(multiplierBadge);
+                banner.appendChild(timerEl);
+                banner.appendChild(gamesEl);
+                area.appendChild(banner);
+            });
+        })
+        .catch(function() {});
+}
+
 // ── Loss Limit Display ─────────────────────────────────
 function updateLossLimitDisplay(lossStatus) {
     var bar = document.getElementById('lossLimitBar');

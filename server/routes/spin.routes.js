@@ -183,6 +183,30 @@ router.post('/', authenticate, async (req, res) => {
             freeSpinStateByUser.delete(userId);
         }
 
+        // ── Bonus event payout multiplier (fail-open — never blocks spin) ──
+        let eventBonus = null;
+        if (spinResult.winAmount > 0) {
+            try {
+                const eventService = require('../services/event.service');
+                const activeEvent = await eventService.getActiveEventForGame(gameId, 'payout_boost');
+                if (activeEvent && activeEvent.multiplier > 1) {
+                    const baseWin = spinResult.winAmount;
+                    const boostedWin = Math.round(baseWin * activeEvent.multiplier * 100) / 100;
+                    const bonusAmount = Math.round((boostedWin - baseWin) * 100) / 100;
+                    spinResult.winAmount = boostedWin;
+                    eventBonus = {
+                        eventId: activeEvent.id,
+                        eventName: activeEvent.name,
+                        multiplier: activeEvent.multiplier,
+                        bonusAmount,
+                    };
+                }
+            } catch (evtErr) {
+                console.error('[Spin] Event boost check error:', evtErr);
+                // Non-blocking — proceed without boost
+            }
+        }
+
         // ── Credit win ──
         let finalBalance = balanceAfterBet;
         if (spinResult.winAmount > 0) {
@@ -226,6 +250,16 @@ router.post('/', authenticate, async (req, res) => {
                         tournamentService.submitScore(t.id, userId, _winMult).catch(function() {});
                     });
                 }).catch(function() {});
+            }
+        }
+
+        // ── Weekly contest entry (fire-and-forget) ──────────────────────
+        if (!usedFreeSpin && bet > 0) {
+            const contestService = require('../services/contest.service');
+            contestService.recordContestEntry(userId, 'spins', 1).catch(function() {});
+            contestService.recordContestEntry(userId, 'total_wagered', bet).catch(function() {});
+            if (spinResult.winAmount > 0) {
+                contestService.recordContestEntry(userId, 'biggest_win', spinResult.winAmount).catch(function() {});
             }
         }
 
@@ -319,6 +353,7 @@ router.post('/', authenticate, async (req, res) => {
             jackpotWon: spinResult.jackpotWon || null,
             wageringStatus,
             newAchievements,
+            eventBonus,
             lossStatus: lossCheck ? { dailyLoss: lossCheck.dailyLoss, limit: lossCheck.limit, remaining: lossCheck.remaining } : null,
         });
 

@@ -64,6 +64,7 @@ app.use('/api/payment/deposit', paymentLimiter);
 app.use('/api/payment/withdraw', paymentLimiter);
 app.use('/api/balance/deposit', paymentLimiter);
 app.use('/api/bundles/purchase', paymentLimiter);
+app.use('/api/gifts/send', paymentLimiter);
 
 // ─── Health Check (used by Render / load balancers) ───
 app.get('/api/health', async (req, res) => {
@@ -228,6 +229,173 @@ app.get('/api/campaigns', verifyToken, async (req, res) => {
     }
 });
 
+// ─── Active bonus events (with countdown) ───
+app.get('/api/events/active', verifyToken, async (req, res) => {
+    try {
+        const eventService = require('./services/event.service');
+        const events = await eventService.getActiveEvents();
+        const nowMs = Date.now();
+        const enriched = events.map(function (e) {
+            const endMs = new Date(e.end_at).getTime();
+            const secondsRemaining = Math.max(0, Math.floor((endMs - nowMs) / 1000));
+            return {
+                id: e.id,
+                name: e.name,
+                description: e.description,
+                eventType: e.event_type,
+                multiplier: e.multiplier,
+                targetGames: e.target_games,
+                startAt: e.start_at,
+                endAt: e.end_at,
+                secondsRemaining,
+            };
+        });
+        res.json({ events: enriched });
+    } catch (e) {
+        console.error('[Events] Fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch active events' });
+    }
+});
+
+// ─── Social Gifting ───
+app.post('/api/gifts/send', verifyToken, async (req, res) => {
+    try {
+        const giftingService = require('./services/gifting.service');
+        const { toUsername, amount, message } = req.body;
+        if (!toUsername) return res.status(400).json({ error: 'Recipient username is required' });
+        if (!amount || typeof amount !== 'number' || amount <= 0) {
+            return res.status(400).json({ error: 'Valid gift amount is required' });
+        }
+        const result = await giftingService.sendGift(req.user.id, toUsername, amount, message);
+        res.json(result);
+    } catch (e) {
+        console.error('[Gifting] Send error:', e.message);
+        res.status(400).json({ error: e.message });
+    }
+});
+
+app.get('/api/gifts/pending', verifyToken, async (req, res) => {
+    try {
+        const giftingService = require('./services/gifting.service');
+        const gifts = await giftingService.getPendingGifts(req.user.id);
+        res.json({ gifts });
+    } catch (e) {
+        console.error('[Gifting] Pending fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch pending gifts' });
+    }
+});
+
+app.post('/api/gifts/:id/claim', verifyToken, async (req, res) => {
+    try {
+        const giftingService = require('./services/gifting.service');
+        const giftId = parseInt(req.params.id, 10);
+        if (!giftId || isNaN(giftId)) return res.status(400).json({ error: 'Invalid gift ID' });
+        const result = await giftingService.claimGift(giftId, req.user.id);
+        res.json(result);
+    } catch (e) {
+        console.error('[Gifting] Claim error:', e.message);
+        res.status(400).json({ error: e.message });
+    }
+});
+
+app.get('/api/gifts/history', verifyToken, async (req, res) => {
+    try {
+        const giftingService = require('./services/gifting.service');
+        const limit = parseInt(req.query.limit, 10) || 20;
+        const history = await giftingService.getGiftHistory(req.user.id, limit);
+        res.json({ history });
+    } catch (e) {
+        console.error('[Gifting] History fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch gift history' });
+    }
+});
+
+// ─── Weekly Auto-Contests ───
+app.get('/api/contests/current', verifyToken, async (req, res) => {
+    try {
+        const contestService = require('./services/contest.service');
+        await contestService.checkAndFinalizeExpired();
+        const contest = await contestService.getOrCreateCurrentContest();
+        if (!contest) return res.json({ contest: null });
+
+        const defaultMetric = config.CONTESTS.DEFAULT_METRIC;
+        const userRank = await contestService.getUserRank(contest.id, req.user.id, defaultMetric);
+
+        const entries = {};
+        for (const metric of contestService.VALID_METRICS) {
+            entries[metric] = await contestService.getUserRank(contest.id, req.user.id, metric);
+        }
+
+        res.json({ contest, entries, defaultMetric, userRank });
+    } catch (e) {
+        console.error('[Contest] Current fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch current contest' });
+    }
+});
+
+app.get('/api/contests/leaderboard', verifyToken, async (req, res) => {
+    try {
+        const contestService = require('./services/contest.service');
+        const metric = req.query.metric || config.CONTESTS.DEFAULT_METRIC;
+        if (!contestService.VALID_METRICS.includes(metric)) {
+            return res.status(400).json({ error: 'Invalid metric type' });
+        }
+
+        await contestService.checkAndFinalizeExpired();
+        const contest = await contestService.getOrCreateCurrentContest();
+        if (!contest) return res.json({ leaderboard: [], contest: null });
+
+        const leaderboard = await contestService.getLeaderboard(contest.id, metric, 25);
+        const userRank = await contestService.getUserRank(contest.id, req.user.id, metric);
+
+        res.json({ leaderboard, contest, metric, userRank });
+    } catch (e) {
+        console.error('[Contest] Leaderboard fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    }
+});
+
+app.get('/api/contests/prizes', verifyToken, async (req, res) => {
+    try {
+        const contestService = require('./services/contest.service');
+        const prizes = await contestService.getUserPrizes(req.user.id);
+        res.json({ prizes });
+    } catch (e) {
+        console.error('[Contest] Prizes fetch error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch prizes' });
+    }
+});
+
+app.post('/api/contests/prizes/:id/claim', verifyToken, async (req, res) => {
+    try {
+        const db = require('./database');
+        const prizeId = parseInt(req.params.id, 10);
+        if (!prizeId || isNaN(prizeId)) {
+            return res.status(400).json({ error: 'Invalid prize ID' });
+        }
+
+        const prize = await db.get(
+            'SELECT * FROM contest_prizes WHERE id = ? AND user_id = ?',
+            [prizeId, req.user.id]
+        );
+        if (!prize) return res.status(404).json({ error: 'Prize not found' });
+        if (prize.claimed) return res.status(400).json({ error: 'Prize already claimed' });
+
+        await db.run('UPDATE contest_prizes SET claimed = 1 WHERE id = ?', [prizeId]);
+
+        const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [req.user.id]);
+        res.json({
+            claimed: true,
+            prizeAmount: prize.prize_amount,
+            balance: user ? user.balance : 0,
+            bonusBalance: user ? user.bonus_balance : 0
+        });
+    } catch (e) {
+        console.error('[Contest] Prize claim error:', e.message);
+        res.status(500).json({ error: 'Failed to claim prize' });
+    }
+});
+
 // ─── Static Files ───
 // Serve the casino client from the project root
 app.use(express.static(path.join(__dirname, '..')));
@@ -275,6 +443,12 @@ async function start() {
         const tournamentService = require('./services/tournament.service');
         tournamentService.ensureActive().catch(err => console.error('[Tournament] Bootstrap error:', err.message));
         setInterval(() => tournamentService.tick().catch(err => console.error('[Tournament] Tick error:', err.message)), 5 * 60 * 1000);
+
+        // Bootstrap weekly contest service — ensure current week contest exists
+        const contestService = require('./services/contest.service');
+        contestService.getOrCreateCurrentContest().catch(err => console.error('[Contest] Bootstrap error:', err.message));
+        // Check for expired contests every 10 minutes
+        setInterval(() => contestService.checkAndFinalizeExpired().catch(err => console.error('[Contest] Finalize tick error:', err.message)), 10 * 60 * 1000);
     });
 }
 

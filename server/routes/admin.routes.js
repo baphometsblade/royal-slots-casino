@@ -931,4 +931,48 @@ router.post('/campaigns/:id/toggle', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════
+//  BONUS EVENT MANAGEMENT
+// ═══════════════════════════════════════════════════
+
+// GET /api/admin/events — List all bonus events
+router.get('/events', async (req, res) => {
+    try {
+        const eventService = require('../services/event.service');
+        const events = await eventService.getAllEvents();
+        res.json({ events });
+    } catch (e) {
+        console.error('[Admin] Events list error:', e.message);
+        res.status(500).json({ error: 'Failed to fetch events' });
+    }
+});
+
+// POST /api/admin/events — Create a new bonus event
+router.post('/events', async (req, res) => {
+    try {
+        const eventService = require('../services/event.service');
+        const { name, description, event_type, multiplier, target_games, start_at, end_at } = req.body;
+        if (!name || !event_type || !start_at || !end_at) {
+            return res.status(400).json({ error: 'name, event_type, start_at, and end_at are required' });
+        }
+        await eventService.createEvent({ name, description, event_type, multiplier, target_games, start_at, end_at });
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Admin] Create event error:', e.message);
+        res.status(400).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/events/:id/toggle — Enable/disable a bonus event
+router.post('/events/:id/toggle', async (req, res) => {
+    try {
+        const eventService = require('../services/event.service');
+        await eventService.toggleEvent(req.params.id, req.body.active);
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Admin] Toggle event error:', e.message);
+        res.status(500).json({ error: 'Failed to toggle event' });
+    }
+});
+
 module.exports = router;

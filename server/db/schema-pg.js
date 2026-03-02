@@ -194,6 +194,60 @@ const TABLES = [
         claimed_at TIMESTAMPTZ DEFAULT NOW(),
         bonus_amount NUMERIC(15,2) DEFAULT 0,
         UNIQUE(campaign_id, user_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS gifts (
+        id SERIAL PRIMARY KEY,
+        from_user_id INTEGER NOT NULL REFERENCES users(id),
+        to_user_id INTEGER NOT NULL REFERENCES users(id),
+        amount NUMERIC(15,2) NOT NULL,
+        message TEXT DEFAULT '',
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        claimed_at TIMESTAMPTZ DEFAULT NULL
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS contests (
+        id SERIAL PRIMARY KEY,
+        week_start TIMESTAMPTZ NOT NULL,
+        week_end TIMESTAMPTZ NOT NULL,
+        status TEXT DEFAULT 'active',
+        finalized_at TIMESTAMPTZ DEFAULT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS contest_entries (
+        id SERIAL PRIMARY KEY,
+        contest_id INTEGER NOT NULL REFERENCES contests(id),
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        metric_type TEXT NOT NULL,
+        metric_value NUMERIC(15,2) DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(contest_id, user_id, metric_type)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS contest_prizes (
+        id SERIAL PRIMARY KEY,
+        contest_id INTEGER NOT NULL REFERENCES contests(id),
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        rank INTEGER NOT NULL,
+        metric_type TEXT NOT NULL,
+        prize_amount NUMERIC(15,2) NOT NULL,
+        claimed INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS bonus_events (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        event_type TEXT NOT NULL,
+        multiplier NUMERIC(5,2) DEFAULT 2.0,
+        target_games TEXT DEFAULT 'all',
+        active INTEGER DEFAULT 1,
+        start_at TIMESTAMPTZ NOT NULL,
+        end_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 
@@ -214,7 +268,13 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_campaigns_active ON campaigns(active, start_at, end_at)`,
     `CREATE INDEX IF NOT EXISTS idx_campaign_claims_cid ON campaign_claims(campaign_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_uid ON campaign_claims(user_id)`
+    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_uid ON campaign_claims(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_gifts_to ON gifts(to_user_id, status)`,
+    `CREATE INDEX IF NOT EXISTS idx_gifts_from ON gifts(from_user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_contest_entries_rank ON contest_entries(contest_id, metric_type, metric_value DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_contest_prizes_user ON contest_prizes(user_id, claimed)`,
+    `CREATE INDEX IF NOT EXISTS idx_contests_status ON contests(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`
 ];
 
 

@@ -17901,5 +17901,71 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .ll-fill.ll-danger { background: #ff4444; }
 
 /* ── Shop Button ─────────────────── */
-.shop-btn { background: linear-gradient(135deg, #ffd700, #ffb700); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #000; font-weight: 700; }
-.shop-btn:hover { filter: brightness(1.2); }
+.shop-btn, .gift-btn, .contest-btn { background: linear-gradient(135deg, #ffd700, #ffb700); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #000; font-weight: 700; }
+.shop-btn:hover, .gift-btn:hover, .contest-btn:hover { filter: brightness(1.2); }
+.gift-btn { background: linear-gradient(135deg, #ff6b9d, #c44569); color: #fff; }
+.contest-btn { background: linear-gradient(135deg, #f9ca24, #f0932b); }
+
+/* ── Modal Overlay (shared) ─────────────────── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1100; overflow-y: auto; padding: 40px 20px; justify-content: center; align-items: flex-start; }
+.modal-overlay.active { display: flex; }
+.modal-overlay .modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: #888; font-size: 24px; cursor: pointer; line-height: 1; padding: 4px; }
+.modal-overlay .modal-close:hover { color: #fff; }
+
+/* ── Gift Modal ─────────────────── */
+.gift-modal { max-width: 500px; width: 100%; background: linear-gradient(180deg, #1a1a2e, #0f0f1a); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; position: relative; margin-top: 40px; }
+.gift-modal-title { text-align: center; font-size: 20px; color: #ff6b9d; margin-bottom: 12px; }
+.gift-tabs, .contest-tabs { display: flex; gap: 6px; margin-bottom: 16px; justify-content: center; }
+.gift-tab-btn, .contest-tab-btn { padding: 6px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #aaa; font-size: 13px; cursor: pointer; font-weight: 600; }
+.gift-tab-btn.active, .contest-tab-btn.active { background: rgba(78,205,196,0.15); border-color: rgba(78,205,196,0.4); color: #4ecdc4; }
+.gift-form { display: flex; flex-direction: column; gap: 10px; }
+.gift-label { font-size: 13px; color: #aaa; font-weight: 600; }
+.gift-input, .gift-textarea { width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #fff; font-size: 14px; outline: none; box-sizing: border-box; }
+.gift-input:focus, .gift-textarea:focus { border-color: rgba(78,205,196,0.5); }
+.gift-slider { width: 100%; accent-color: #4ecdc4; }
+.gift-send-btn { padding: 10px; background: linear-gradient(135deg, #ff6b9d, #c44569); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 4px; }
+.gift-send-btn:hover { filter: brightness(1.15); }
+.gift-loading, .gift-empty, .contest-loading, .contest-empty { text-align: center; color: #666; padding: 24px; font-size: 14px; }
+.gift-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
+.gift-card-from { font-size: 13px; color: #aaa; margin-bottom: 4px; }
+.gift-card-amount { font-size: 20px; font-weight: 700; color: #4ecdc4; margin-bottom: 4px; }
+.gift-card-message { font-size: 12px; color: #888; font-style: italic; margin-bottom: 8px; }
+.gift-claim-btn { padding: 6px 16px; background: linear-gradient(135deg, #4ecdc4, #44b8a8); color: #000; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.gift-claim-btn:hover { filter: brightness(1.15); }
+.gift-history-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+.gift-dir { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.gift-sent { background: rgba(255,107,157,0.15); color: #ff6b9d; }
+.gift-received { background: rgba(78,205,196,0.15); color: #4ecdc4; }
+.gift-history-user { flex: 1; color: #ccc; }
+.gift-history-amount { font-weight: 700; color: #fff; }
+.gift-history-date { color: #666; font-size: 11px; }
+
+/* ── Contest Modal ─────────────────── */
+.contest-modal { max-width: 600px; width: 100%; background: linear-gradient(180deg, #1a1a2e, #0f0f1a); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; position: relative; margin-top: 40px; }
+.contest-modal-title { text-align: center; font-size: 20px; color: #f9ca24; margin-bottom: 12px; }
+.contest-metric-row { display: flex; gap: 6px; margin-bottom: 12px; justify-content: center; }
+.contest-metric-btn { padding: 5px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; color: #aaa; font-size: 12px; cursor: pointer; font-weight: 600; }
+.contest-metric-btn.active { background: rgba(249,202,36,0.15); border-color: rgba(249,202,36,0.4); color: #f9ca24; }
+.leaderboard-table { width: 100%; border-collapse: collapse; }
+.leaderboard-table th { text-align: left; padding: 8px 12px; font-size: 12px; color: #888; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.leaderboard-table td { padding: 8px 12px; font-size: 14px; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.leaderboard-table tr.leaderboard-me { background: rgba(78,205,196,0.08); }
+.leaderboard-table tr.leaderboard-me td { color: #4ecdc4; font-weight: 700; }
+.lb-rank { font-size: 16px; min-width: 32px; }
+
+/* ── Prize Cards ─────────────────── */
+.prize-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(249,202,36,0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prize-title { font-size: 14px; font-weight: 700; color: #f9ca24; }
+.prize-amount { font-size: 18px; font-weight: 700; color: #4ecdc4; flex: 1; }
+.prize-contest { font-size: 11px; color: #888; width: 100%; }
+.prize-claim-btn { padding: 6px 16px; background: linear-gradient(135deg, #f9ca24, #f0932b); color: #000; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.prize-claim-btn:hover { filter: brightness(1.15); }
+.prize-card.prize-claimed { opacity: 0.5; }
+.prize-claimed-badge { font-size: 11px; color: #4ecdc4; font-weight: 600; text-transform: uppercase; }
+
+/* ── Event Banner ─────────────────── */
+.event-banner { min-width: 240px; padding: 12px 16px; background: linear-gradient(135deg, rgba(114,137,218,0.15), rgba(78,205,196,0.1)); border: 1px solid rgba(114,137,218,0.3); border-radius: 10px; flex-shrink: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.event-name { font-size: 14px; font-weight: 700; color: #7289da; flex: 1; }
+.event-multiplier { padding: 3px 10px; background: linear-gradient(135deg, #f9ca24, #f0932b); color: #000; border-radius: 12px; font-size: 13px; font-weight: 800; }
+.event-timer { font-size: 11px; color: #ff4444; font-weight: 600; width: 100%; }
+.event-games { font-size: 11px; color: #888; width: 100%; }

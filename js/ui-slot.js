@@ -3288,6 +3288,13 @@
                         showJackpotWinModal(result.jackpotWon.tier, result.jackpotWon.amount);
                     }, 1200); // slight delay so reel settle animation plays first
                 }
+
+                // Event bonus toast
+                if (result && result.eventBonus && typeof showToast === 'function') {
+                    var evtAmt = result.eventBonus.amount || 0;
+                    var evtMult = result.eventBonus.multiplier || 1;
+                    showToast('\uD83C\uDF89 EVENT BOOST: +$' + evtAmt.toLocaleString() + ' (' + evtMult + 'x multiplier!)', 'success', 5000);
+                }
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
@@ -7060,6 +7067,13 @@
                         _sb.classList.remove('spin-btn-fire');
                     }
                 })();
+
+                // Event bonus toast
+                if (result && result.eventBonus && typeof showToast === 'function') {
+                    var evtAmt = result.eventBonus.amount || 0;
+                    var evtMult = result.eventBonus.multiplier || 1;
+                    showToast('\uD83C\uDF89 EVENT BOOST: +$' + evtAmt.toLocaleString() + ' (' + evtMult + 'x multiplier!)', 'success', 5000);
+                }
 
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
