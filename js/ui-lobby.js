@@ -3898,3 +3898,88 @@ window.renderBattlePassWidget = renderBattlePassWidget;
 }());
 
 renderBattlePassWidget();
+
+
+// ── VIP Locked Game Overlays ─────────────────────────────────
+
+function applyLockedGameOverlays() {
+    fetch('/api/rentals/locked-games')
+        .then(function(r) { return r.ok ? r.json() : { games: [] }; })
+        .then(function(data) {
+            var lockedIds = (data && Array.isArray(data.games)) ? data.games : [];
+            lockedIds.forEach(function(gameId) {
+                var normalizedId = (gameId || '').toLowerCase();
+                var card = document.querySelector('.game-card[data-game-id="' + normalizedId + '"]');
+                if (!card) return;
+                // Skip if overlay already present
+                if (card.querySelector('.vip-lock-overlay')) return;
+                // Ensure card has relative positioning for overlay to anchor correctly
+                if (card.style.position !== 'relative') {
+                    card.style.position = 'relative';
+                }
+                // Build overlay element
+                var overlay = document.createElement('div');
+                overlay.className = 'vip-lock-overlay';
+                overlay.style.cssText = [
+                    'position:absolute',
+                    'inset:0',
+                    'z-index:10',
+                    'background:rgba(0,0,0,0.65)',
+                    'display:flex',
+                    'flex-direction:column',
+                    'align-items:center',
+                    'justify-content:center',
+                    'cursor:pointer',
+                    'border-radius:inherit',
+                    'transition:background 0.15s ease'
+                ].join(';');
+                overlay.addEventListener('mouseover', function() {
+                    overlay.style.background = 'rgba(0,0,0,0.50)';
+                });
+                overlay.addEventListener('mouseout', function() {
+                    overlay.style.background = 'rgba(0,0,0,0.65)';
+                });
+                // Lock icon
+                var lockIcon = document.createElement('span');
+                lockIcon.textContent = '🔒';
+                lockIcon.style.cssText = 'font-size:28px;color:#fbbf24;line-height:1;';
+                // VIP label
+                var vipLabel = document.createElement('span');
+                vipLabel.textContent = 'VIP';
+                vipLabel.style.cssText = [
+                    'color:#fbbf24',
+                    'font-weight:800',
+                    'font-size:11px',
+                    'letter-spacing:2px',
+                    'margin-top:4px'
+                ].join(';');
+                overlay.appendChild(lockIcon);
+                overlay.appendChild(vipLabel);
+                // Click: open rental modal, not game
+                overlay.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    if (typeof openRentalModal === 'function') {
+                        openRentalModal(gameId);
+                    } else if (typeof showToast === 'function') {
+                        showToast('This game requires VIP access. Upgrade to unlock!', 'info');
+                    }
+                });
+                card.appendChild(overlay);
+            });
+        })
+        .catch(function() {
+            // Silently ignore — rentals API may not be available in all environments
+        });
+}
+
+(function() {
+    var _prevLock = typeof renderGames === 'function' ? renderGames : null;
+    if (!_prevLock) return;
+    renderGames = function() {
+        _prevLock.apply(this, arguments);
+        setTimeout(applyLockedGameOverlays, 100); // slight delay for DOM to settle
+    };
+})();
+window.applyLockedGameOverlays = applyLockedGameOverlays;
+// Initial call
+setTimeout(applyLockedGameOverlays, 500);
