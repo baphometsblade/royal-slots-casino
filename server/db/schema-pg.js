@@ -303,4 +303,10 @@ const USER_MIGRATIONS = [
     ['wagering_progress', 'NUMERIC(15,2) DEFAULT 0'],
 ];
 
-module.exports = { TABLES, INDEXES, USER_MIGRATIONS };
+/** Extra columns added to withdrawals table via migrations (column name → PG definition). */
+const WITHDRAWAL_MIGRATIONS = [
+    ['otp_code', 'TEXT'],
+    ['otp_attempts', 'INTEGER DEFAULT 0'],
+];
+
+module.exports = { TABLES, INDEXES, USER_MIGRATIONS, WITHDRAWAL_MIGRATIONS };

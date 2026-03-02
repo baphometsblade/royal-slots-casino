@@ -101,6 +101,8 @@ app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/game-of-day', require('./routes/gameofday.routes'));
 app.use('/api/game-stats', require('./routes/gamestats.routes'));
+app.use('/api/gems', require('./routes/gems.routes'));
+app.use('/api/boosts', require('./routes/boost.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
@@ -431,6 +433,14 @@ async function start() {
     const jackpotService = require('./services/jackpot.service');
     await jackpotService.initJackpotPool();
 
+    // Initialise gem tables (gem_balances, gem_transactions)
+    const gemsService = require('./services/gems.service');
+    await gemsService.initSchema();
+
+    // Initialise boost tables (active_boosts)
+    const boostService = require('./services/boost.service');
+    await boostService.initSchema();
+
     app.listen(config.PORT, () => {
         console.log(`\n${'='.repeat(50)}`);
         console.log(`  Matrix Spins Server running on port ${config.PORT}`);
@@ -450,6 +460,14 @@ async function start() {
         // Check for expired contests every 10 minutes
         setInterval(() => contestService.checkAndFinalizeExpired().catch(err => console.error('[Contest] Finalize tick error:', err.message)), 10 * 60 * 1000);
     });
+
+    // Start background scheduler (re-engagement emails, P&L reports)
+    try {
+        const scheduler = require('./services/scheduler.service');
+        scheduler.start();
+    } catch (e) {
+        console.warn('[Scheduler] Failed to start:', e.message);
+    }
 }
 
 start().catch(err => {

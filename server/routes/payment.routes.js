@@ -3,8 +3,20 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../database');
 const config = require('../config');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+
+// ─── OTP Rate Limiter ───
+const otpLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts per window
+    keyGenerator: (req) => `otp:${req.user ? req.user.id : req.ip}`,
+    handler: (req, res) => {
+        res.status(429).json({ error: 'Too many OTP attempts. Please wait 15 minutes and request a new withdrawal.' });
+    },
+    skipSuccessfulRequests: false,
+});
 
 // ─── Helpers ───
 
@@ -543,6 +555,61 @@ router.get('/withdrawals', authenticate, async (req, res) => {
     } catch (err) {
         console.error('[Payment] List withdrawals error:', err);
         res.status(500).json({ error: 'Failed to retrieve withdrawal history' });
+    }
+});
+
+// POST /api/payments/withdraw/verify-otp — verify OTP to confirm a withdrawal
+router.post('/withdraw/verify-otp', authenticate, otpLimiter, async (req, res) => {
+    try {
+        const { withdrawal_id, otp } = req.body;
+        if (!withdrawal_id || !otp) {
+            return res.status(400).json({ error: 'withdrawal_id and otp are required' });
+        }
+
+        const wd = await db.get(
+            'SELECT id, user_id, amount, status, otp_code, otp_attempts FROM withdrawals WHERE id = ? AND user_id = ?',
+            [parseInt(withdrawal_id), req.user.id]
+        );
+        if (!wd) {
+            return res.status(404).json({ error: 'Withdrawal not found' });
+        }
+        if (wd.status !== 'pending') {
+            return res.status(400).json({ error: `Withdrawal is not pending (status: ${wd.status})` });
+        }
+        if (!wd.otp_code) {
+            return res.status(400).json({ error: 'No OTP is set for this withdrawal or it has been invalidated' });
+        }
+
+        // Check DB-level attempt count
+        const attempts = (wd.otp_attempts || 0) + 1;
+        if (otp !== wd.otp_code) {
+            if (attempts >= 5) {
+                // Invalidate the OTP and cancel the withdrawal
+                await db.run(
+                    "UPDATE withdrawals SET otp_code = NULL, otp_attempts = ?, status = 'cancelled', admin_note = 'OTP invalidated after 5 failed attempts', processed_at = datetime('now') WHERE id = ?",
+                    [attempts, wd.id]
+                );
+                // Refund balance
+                await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [wd.amount, req.user.id]);
+                await db.run(
+                    "INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) SELECT ?, 'withdrawal_cancel', ?, balance - ?, balance, ? FROM users WHERE id = ?",
+                    [req.user.id, wd.amount, wd.amount, `WDR-OTP-FAIL-${wd.id}`, req.user.id]
+                );
+                return res.status(400).json({ error: 'Too many incorrect OTP attempts — withdrawal has been cancelled and refunded' });
+            }
+            await db.run('UPDATE withdrawals SET otp_attempts = ? WHERE id = ?', [attempts, wd.id]);
+            return res.status(400).json({ error: `Incorrect OTP. ${5 - attempts} attempt(s) remaining.` });
+        }
+
+        // OTP correct — mark as otp_verified
+        await db.run(
+            "UPDATE withdrawals SET status = 'otp_verified', otp_code = NULL, otp_attempts = 0 WHERE id = ?",
+            [wd.id]
+        );
+        res.json({ message: 'OTP verified. Withdrawal approved for processing.', withdrawal_id: wd.id });
+    } catch (err) {
+        console.error('[Payment] OTP verify error:', err);
+        res.status(500).json({ error: 'Failed to verify OTP' });
     }
 });
 
