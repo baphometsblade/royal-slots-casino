@@ -113,6 +113,7 @@ app.use('/api/referral',   require('./routes/referral.routes'));
 app.use('/api/achievements', require('./routes/achievements.routes'));
 app.use('/api/gifts',      require('./routes/gifts.routes'));
 app.use('/api/rakeback',   require('./routes/rakeback.routes'));
+app.use('/api/mystery',   require('./routes/mystery.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
