@@ -886,12 +886,17 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
             );
         }
 
+        // ── Deposit Gem Reward (20 gems per $1, 25 min, 2500 max) ──
+        const depositGems = Math.max(25, Math.min(Math.floor(deposit.amount * 20), 2500));
+        await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [depositGems, deposit.user_id]).catch(function() {});
+
         const bonusMsg = bonusAmount > 0 ? ` + $${bonusAmount.toFixed(2)} first-deposit bonus!` : '';
         res.json({
             message: `Deposit #${deposit.id} approved — $${deposit.amount.toFixed(2)} credited${bonusMsg}`,
             userId: deposit.user_id,
             balance: balanceAfter,
-            bonus: bonusAmount
+            bonus: bonusAmount,
+            gemsAwarded: depositGems
         });
     } catch (err) {
         console.error('[Payment] Approve deposit error:', err);
@@ -979,8 +984,12 @@ router.post('/webhook/confirm', async (req, res) => {
             );
         }
 
+        // ── Deposit Gem Reward ──
+        const depositGems = Math.max(25, Math.min(Math.floor(deposit.amount * 20), 2500));
+        await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [depositGems, deposit.user_id]).catch(function() {});
+
         console.log(`[Webhook] Deposit ${deposit.id} confirmed — $${deposit.amount} + $${bonusAmount} bonus credited to user ${deposit.user_id}`);
-        res.json({ message: 'Deposit confirmed', depositId: deposit.id, amount: deposit.amount, bonus: bonusAmount });
+        res.json({ message: 'Deposit confirmed', depositId: deposit.id, amount: deposit.amount, bonus: bonusAmount, gemsAwarded: depositGems });
     } catch (err) {
         console.error('[Webhook] Payment confirm error:', err);
         res.status(500).json({ error: 'Webhook processing failed' });

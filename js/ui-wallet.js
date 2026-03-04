@@ -401,6 +401,9 @@ function renderDepositForm() {
         </div>
 
         <div class="wallet-section wallet-section--actions">
+            <div style="text-align:center;font-size:12px;color:#c084fc;margin-bottom:10px;font-weight:600">
+                💎 Earn gems on every deposit — $5 = 100 gems, $50 = 1000 gems, $100+ = 2500 gems
+            </div>
             <button class="wallet-btn wallet-btn--primary wallet-btn--lg" onclick="submitDeposit()">
                 <span class="wallet-btn__icon">\u2B07</span> Deposit Funds
             </button>
@@ -502,7 +505,8 @@ async function submitDeposit() {
                 updateBalance();
                 resetNudgeOnDeposit();
             }
-            showToast(`${formatMoney(amount)} deposited successfully!`, 'success');
+            const gemMsg = res.gemsAwarded ? ` + 💎 ${res.gemsAwarded} gems!` : '';
+            showToast(`${formatMoney(amount)} deposited successfully!${gemMsg}`, 'success');
         }
         if (amountInput) amountInput.value = '';
         renderDepositForm(); // refresh to show updated state

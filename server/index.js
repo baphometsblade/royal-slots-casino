@@ -204,19 +204,7 @@ app.get('/api/games', (req, res) => {
     res.json({ games: sanitized });
 });
 
-// ─── Achievements ───
 const { authenticate: verifyToken } = require('./middleware/auth');
-app.get('/api/achievements', verifyToken, async (req, res) => {
-    try {
-        const achievementService = require('./services/achievement.service');
-        const userAchievements = await achievementService.getUserAchievements(req.user.id);
-        const allDefs = achievementService.getAllDefinitions();
-        res.json({ achievements: userAchievements, definitions: allDefs });
-    } catch (e) {
-        console.error('[Achievements] Fetch error:', e.message);
-        res.status(500).json({ error: 'Failed to fetch achievements' });
-    }
-});
 
 // ─── Personalized bonus offers ───
 app.get('/api/offers', verifyToken, async (req, res) => {
