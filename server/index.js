@@ -121,6 +121,9 @@ app.use('/api/milestones',    require('./routes/milestones.routes'));
 app.use('/api/notifications', require('./routes/notifications.routes'));
 app.use('/api/freespins',     require('./routes/freespins.routes'));
 app.use('/api/scratchcard',   require('./routes/scratchcard.routes'));
+app.use('/api/promocode',    require('./routes/promocode.routes'));
+app.use('/api/socialproof',  require('./routes/socialproof.routes'));
+app.use('/api/firstdeposit', require('./routes/firstdeposit.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
