@@ -140,6 +140,7 @@
         var progress  = ch.progress  || 0;
         var target    = ch.target    || 1;
         var completed = ch.completed || false;
+        var claimed   = ch.claimed   || false;
 
         var card = document.createElement('div');
         card.style.display      = 'flex';
@@ -193,7 +194,7 @@
         card.appendChild(iconEl);
         card.appendChild(info);
 
-        if (completed) {
+        if (completed && !claimed) {
             var aside = document.createElement('div');
             aside.style.display       = 'flex';
             aside.style.flexDirection = 'column';
@@ -638,7 +639,7 @@
 
         _fetchChallenges().then(function(challenges) {
             var total    = challenges.length;
-            var complete = challenges.filter(function(c) { return c.completed; }).length;
+            var complete = challenges.filter(function(c) { return c.completed && !c.claimed; }).length;
 
             var countEl = document.getElementById('challengesBarCount');
             if (countEl) countEl.textContent = complete + '/' + total + ' complete';
