@@ -196,55 +196,40 @@
     }).catch(function() {});
   }
 
-  // ---- hook updateBalance ----
+  // ---- poll for deposit match eligibility ----
 
   var _prevBalance = null;
-  var _checkTimer = null;
-  var _origUpdateBalance = null;
+  var _pollTimer = null;
 
-  function hookUpdateBalance() {
+  function startPolling() {
     // Capture initial balance
     if (typeof balance !== 'undefined') {
       _prevBalance = balance;
     }
 
-    // Wrap window.updateBalance if it exists
-    if (typeof window.updateBalance === 'function' && !window.updateBalance._dmHooked) {
-      _origUpdateBalance = window.updateBalance;
-      window.updateBalance = function(newBal) {
-        var oldBal = _prevBalance;
-        _origUpdateBalance.apply(this, arguments);
-        _prevBalance = newBal;
-
-        // Balance increased — schedule deposit match check
-        if (oldBal !== null && newBal > oldBal) {
-          if (_checkTimer) clearTimeout(_checkTimer);
-          _checkTimer = setTimeout(function() {
-            _checkTimer = null;
-            checkAndShow();
-          }, CHECK_DELAY_MS);
+    // Poll every 8 seconds; compare balance to detect deposits
+    _pollTimer = setInterval(function() {
+      var cur = (typeof balance !== 'undefined') ? balance : null;
+      if (cur !== null && _prevBalance !== null && cur > _prevBalance) {
+        _prevBalance = cur;
+        if (!isCoolingDown()) {
+          checkAndShow();
         }
-      };
-      window.updateBalance._dmHooked = true;
-    }
+      } else if (cur !== null) {
+        _prevBalance = cur;
+      }
+    }, 8000);
   }
 
   // ---- init ----
 
   function init() {
-    // Try hooking immediately
-    hookUpdateBalance();
-
-    // Retry hook after a delay in case updateBalance is defined later
-    setTimeout(function() {
-      hookUpdateBalance();
-    }, 2000);
-
-    // Also retry after full load
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(hookUpdateBalance, 500);
+        setTimeout(startPolling, 3000);
       });
+    } else {
+      setTimeout(startPolling, 3000);
     }
   }
 
