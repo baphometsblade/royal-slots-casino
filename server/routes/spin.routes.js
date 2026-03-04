@@ -250,6 +250,30 @@ router.post('/', authenticate, async (req, res) => {
                         tournamentService.submitScore(t.id, userId, _winMult).catch(function() {});
                     });
                 }).catch(function() {});
+
+                // Also record into weekly tournament_scores leaderboard
+                (function() {
+                    try {
+                        const now = new Date();
+                        const day = now.getUTCDay();
+                        const daysBack = day === 0 ? 6 : day - 1;
+                        const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysBack));
+                        const weekStart = monday.toISOString().slice(0, 10);
+                        const initScore = (_winMult * 10) + (spinResult.winAmount * 0.001);
+                        db.run(
+                            'INSERT INTO tournament_scores' +
+                            '  (user_id, week_start, best_multiplier, total_wins, spin_count, score, updated_at)' +
+                            " VALUES (?, ?, ?, ?, 1, ?, datetime('now'))" +
+                            ' ON CONFLICT(user_id, week_start) DO UPDATE SET' +
+                            '   spin_count      = tournament_scores.spin_count + 1,' +
+                            '   total_wins      = tournament_scores.total_wins + excluded.total_wins,' +
+                            '   best_multiplier = CASE WHEN excluded.best_multiplier > tournament_scores.best_multiplier THEN excluded.best_multiplier ELSE tournament_scores.best_multiplier END,' +
+                            '   score           = (CASE WHEN excluded.best_multiplier > tournament_scores.best_multiplier THEN excluded.best_multiplier ELSE tournament_scores.best_multiplier END * 10) + ((tournament_scores.total_wins + excluded.total_wins) * 0.001),' +
+                            "   updated_at      = datetime('now')",
+                            [userId, weekStart, _winMult, spinResult.winAmount, initScore]
+                        ).catch(function() {});
+                    } catch (e) {}
+                }());
             }
         }
 

@@ -344,6 +344,51 @@
 
 }());
 
+// Live jackpot ticker — polls /api/jackpot/status and updates visible amounts
+(function() {
+    'use strict';
+
+    var TICKER_POLL_MS = 12000;
+    var AMOUNT_IDS = { mini: 'jpMiniAmt', minor: 'jpMinorAmt', major: 'jpMajorAmt', grand: 'jpGrandAmt' };
+
+    function fmtTicker(n) {
+        var v = parseFloat(n) || 0;
+        return '$' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function updateTicker(pools) {
+        pools.forEach(function(p) {
+            var elId = AMOUNT_IDS[p.tier];
+            if (!elId) return;
+            var el = document.getElementById(elId);
+            if (el) el.textContent = fmtTicker(p.currentAmount);
+        });
+    }
+
+    function fetchAndUpdate() {
+        fetch('/api/jackpot/status')
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(data) {
+                if (!data || !Array.isArray(data.pools)) return;
+                updateTicker(data.pools);
+                var bar = document.getElementById('jackpotTickerBar');
+                if (bar) bar.style.display = '';  // make visible once we have data
+            })
+            .catch(function() {});
+    }
+
+    function init() {
+        fetchAndUpdate();
+        setInterval(fetchAndUpdate, TICKER_POLL_MS);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        setTimeout(init, 0);
+    }
+}());
+
 // Make jackpot ticker bar clickable to open tracker
 (function() {
     var bar = document.getElementById('jackpotTickerBar');
