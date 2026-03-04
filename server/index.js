@@ -138,6 +138,7 @@ app.use('/api/birthday',       require('./routes/birthday.routes'));
 app.use('/api/deposit-streak', require('./routes/depositstreak.routes'));
 app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
 app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
+app.use('/api/mines',         require('./routes/mines.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
