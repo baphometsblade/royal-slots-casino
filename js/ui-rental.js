@@ -174,7 +174,7 @@
         fetch('/api/rentals/status/' + encodeURIComponent(gameId), { headers: h })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                if (data.hasAccess) {
+                if (data.unlocked) {
                     preview.classList.add('has-access');
                     lockIcon.textContent = '🔓';
                     statusDiv.className = 'rental-access-status unlocked';
@@ -206,7 +206,7 @@
         var h = Object.assign({ 'Content-Type': 'application/json' }, _authHeaders());
         fetch('/api/rentals/rent', {
             method: 'POST', headers: h,
-            body: JSON.stringify({ gameId: gameId, tier: _selectedTierId, paymentType: _paymentType })
+            body: JSON.stringify({ gameId: gameId, tierId: _selectedTierId, payWith: _paymentType })
         })
             .then(function (r) { return r.json(); })
             .then(function (data) {
