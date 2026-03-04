@@ -109,6 +109,21 @@ app.use('/api/cosmetics',  require('./routes/cosmetics.routes'));
 app.use('/api/wagerace',   require('./routes/wagerace.routes'));
 app.use('/api/rentals',    require('./routes/rental.routes'));
 app.use('/api/megawheel',  require('./routes/megawheel.routes'));
+app.use('/api/referral',   require('./routes/referral.routes'));
+app.use('/api/achievements', require('./routes/achievements.routes'));
+app.use('/api/gifts',      require('./routes/gifts.routes'));
+app.use('/api/rakeback',   require('./routes/rakeback.routes'));
+app.use('/api/mystery',      require('./routes/mystery.routes'));
+app.use('/api/streak',       require('./routes/streak.routes'));
+app.use('/api/subscription', require('./routes/subscription.routes'));
+app.use('/api/luckyhours',    require('./routes/luckyhours.routes'));
+app.use('/api/milestones',    require('./routes/milestones.routes'));
+app.use('/api/notifications', require('./routes/notifications.routes'));
+app.use('/api/freespins',     require('./routes/freespins.routes'));
+app.use('/api/scratchcard',   require('./routes/scratchcard.routes'));
+app.use('/api/promocode',    require('./routes/promocode.routes'));
+app.use('/api/socialproof',  require('./routes/socialproof.routes'));
+app.use('/api/firstdeposit', require('./routes/firstdeposit.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
