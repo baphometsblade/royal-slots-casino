@@ -1,314 +1,164 @@
-/* ui-referral.js -- Referral System modal
- * Exposes: window.openReferralModal(), window.closeReferralModal()
- * No ES modules -- runs in global scope after globals.js
- */
-(function () {
-    'use strict';
+(function() {
+  'use strict';
 
-    // -- Auth helpers --
+  var TOKEN_KEY = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
+  var _overlay = null;
+  var _stylesInjected = false;
 
-    function _getAuthToken() {
-        var key = (typeof STORAGE_KEY_TOKEN !== 'undefined')
-            ? STORAGE_KEY_TOKEN
-            : 'casinoToken';
-        return localStorage.getItem(key);
-    }
+  function getToken() {
+    try { return localStorage.getItem(TOKEN_KEY); } catch(e) { return null; }
+  }
 
-    function _authHeaders() {
-        var token = _getAuthToken();
-        if (!token) return {};
-        return { 'Authorization': 'Bearer ' + token };
-    }
+  function injectStyles() {
+    if (_stylesInjected) return;
+    _stylesInjected = true;
+    var s = document.createElement('style');
+    s.textContent = [
+      '#refOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:19200;display:none;align-items:center;justify-content:center}',
+      '#refOverlay.active{display:flex}',
+      '#refModal{background:linear-gradient(135deg,#0f172a,#1e1b4b);border:2px solid rgba(99,102,241,.4);border-radius:18px;padding:28px 32px;max-width:420px;width:90%;text-align:center}',
+      '#refModal h2{color:#818cf8;font-size:20px;margin:0 0 6px}',
+      '#refModal .ref-sub{color:rgba(255,255,255,.5);font-size:13px;margin-bottom:18px}',
+      '#refModal .ref-code-box{background:rgba(99,102,241,.1);border:2px dashed rgba(99,102,241,.4);border-radius:10px;padding:14px;margin-bottom:16px}',
+      '#refModal .ref-code{font-size:26px;font-weight:900;color:#a5b4fc;letter-spacing:3px;font-family:monospace}',
+      '#refModal .ref-count{font-size:12px;color:rgba(255,255,255,.4);margin-top:4px}',
+      '#refCopyBtn{background:linear-gradient(135deg,#4f46e5,#3730a3);color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;width:100%;margin-bottom:8px}',
+      '#refCopyBtn:active{transform:scale(0.98)}',
+      '#refMsg{font-size:13px;color:#818cf8;min-height:18px;margin-bottom:10px}',
+      '#refClose{background:none;border:none;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;text-decoration:underline}',
+      '#refModal .ref-reward{font-size:12px;color:rgba(255,255,255,.35);margin-top:12px}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
 
-    function _isLoggedIn() {
-        return !!_getAuthToken();
-    }
+  function buildModal() {
+    if (_overlay) return;
+    _overlay = document.createElement('div');
+    _overlay.id = 'refOverlay';
 
-    // -- Toast helper --
+    var modal = document.createElement('div');
+    modal.id = 'refModal';
 
-    function _toast(msg, type) {
-        if (typeof showToast === 'function') {
-            showToast(msg, type || 'info');
-        } else {
-            console.log('[Referral] ' + msg);
-        }
-    }
+    var icon = document.createElement('div');
+    icon.style.cssText = 'font-size:32px;margin-bottom:8px';
+    icon.textContent = '\uD83D\uDC65';
+    modal.appendChild(icon);
 
-    // -- DOM creation --
+    var h2 = document.createElement('h2');
+    h2.textContent = 'Refer a Friend';
+    modal.appendChild(h2);
 
-    var _overlay = null;
+    var sub = document.createElement('div');
+    sub.className = 'ref-sub';
+    sub.textContent = 'Share your code and both get $2.00 when they join';
+    modal.appendChild(sub);
 
-    function _howCard(icon, title, desc) {
-        return [
-            '<div style="flex:1;text-align:center;">',
-                '<div style="font-size:1.6rem;margin-bottom:6px;">', icon, '</div>',
-                '<div style="font-size:0.8rem;font-weight:600;color:#e2e8f0;margin-bottom:4px;">', title, '</div>',
-                '<div style="font-size:0.72rem;color:#64748b;line-height:1.4;">', desc, '</div>',
-            '</div>'
-        ].join('');
-    }
+    var codeBox = document.createElement('div');
+    codeBox.className = 'ref-code-box';
 
-    function _buildModal() {
-        if (_overlay) return;
-        _overlay = document.createElement('div');
-        _overlay.id = 'referralModalOverlay';
-        _overlay.style.cssText = [
-            'position:fixed', 'inset:0', 'z-index:10000',
-            'background:rgba(0,0,0,0.75)', 'display:none',
-            'align-items:center', 'justify-content:center',
-            'padding:16px', 'box-sizing:border-box'
-        ].join(';');
+    var codeEl = document.createElement('div');
+    codeEl.className = 'ref-code';
+    codeEl.id = 'refCode';
+    codeEl.textContent = 'Loading...';
+    codeBox.appendChild(codeEl);
 
-        _overlay.innerHTML = [
-            '<div id="referralPanel" style="',
-                'background:#1a1a2e;border:1px solid #7c3aed;border-radius:16px;',
-                'max-width:480px;width:100%;max-height:90vh;overflow-y:auto;',
-                'padding:24px;box-sizing:border-box;font-family:inherit;',
-                'color:#e2e8f0;position:relative',
-            '">',
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">',
-                '<h2 style="margin:0;font-size:1.35rem;color:#a78bfa;letter-spacing:1px;">',
-                    '&#x1F465; REFER &amp; EARN',
-                '</h2>',
-                '<button id="referralCloseBtn" style="background:none;border:none;color:#94a3b8;font-size:1.4rem;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1;">&times;</button>',
-            '</div>',
-            '<div style="display:flex;gap:12px;margin-bottom:24px;background:#0f172a;border-radius:12px;padding:16px;">',
-                _howCard('&#x1F517;', 'Share your link', 'Send your unique link to friends'),
-                _howCard('&#x1F464;', 'Friend registers', 'They sign up using your link'),
-                _howCard('&#x1F381;', 'Both earn rewards!', 'Bonus credited on first deposit'),
-            '</div>',
-            '<div style="margin-bottom:20px;">',
-                '<label style="display:block;font-size:0.8rem;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Your Referral Link</label>',
-                '<div style="display:flex;gap:8px;">',
-                    '<input id="referralLinkInput" type="text" readonly style="flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;color:#e2e8f0;font-size:0.85rem;outline:none;cursor:default;min-width:0;" value="Loading..." />',
-                    '<button id="referralCopyBtn" style="background:#7c3aed;border:none;color:#fff;border-radius:8px;padding:10px 16px;cursor:pointer;white-space:nowrap;font-size:0.85rem;">&#x1F4CB; Copy</button>',
-                '</div>',
-                '<div id="referralCopyMsg" style="font-size:0.78rem;color:#34d399;margin-top:6px;min-height:18px;"></div>',
-            '</div>',
-            '<div style="display:flex;gap:16px;margin-bottom:20px;background:#0f172a;border-radius:12px;padding:14px 16px;">',
-                '<div style="flex:1;text-align:center;">',
-                    '<div id="referralStatFriends" style="font-size:1.5rem;font-weight:700;color:#a78bfa;">&#x2014;</div>',
-                    '<div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Friends Referred</div>',
-                '</div>',
-                '<div style="width:1px;background:#1e293b;"></div>',
-                '<div style="flex:1;text-align:center;">',
-                    '<div id="referralStatEarned" style="font-size:1.5rem;font-weight:700;color:#34d399;">&#x2014;</div>',
-                    '<div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Total Earned</div>',
-                '</div>',
-            '</div>',
-            '<div style="margin-bottom:20px;">',
-                '<label style="display:block;font-size:0.8rem;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Apply a Referral Code</label>',
-                '<div style="display:flex;gap:8px;">',
-                    '<input id="referralApplyInput" type="text" placeholder="Enter code e.g. AB12CD" style="flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;color:#e2e8f0;font-size:0.85rem;outline:none;min-width:0;" maxlength="10" />',
-                    '<button id="referralApplyBtn" style="background:#0f172a;border:1px solid #7c3aed;color:#a78bfa;border-radius:8px;padding:10px 16px;cursor:pointer;white-space:nowrap;font-size:0.85rem;">Apply</button>',
-                '</div>',
-                '<div id="referralApplyMsg" style="font-size:0.78rem;margin-top:6px;min-height:18px;"></div>',
-            '</div>',
-            '<div>',
-                '<label style="display:block;font-size:0.8rem;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Referral History</label>',
-                '<div style="background:#0f172a;border-radius:10px;overflow:hidden;border:1px solid #1e293b;">',
-                    '<div id="referralHistoryBody" style="font-size:0.82rem;">',
-                        '<div style="padding:16px;text-align:center;color:#475569;">Loading&#x2026;</div>',
-                    '</div>',
-                '</div>',
-            '</div>',
-            '<div id="referralAuthWall" style="display:none;position:absolute;inset:0;background:rgba(15,23,42,0.92);border-radius:16px;align-items:center;justify-content:center;text-align:center;padding:32px;flex-direction:column;gap:12px;">',
-                '<div style="font-size:2rem;">&#x1F512;</div>',
-                '<div style="font-size:1rem;color:#94a3b8;">Log in to access your referral link</div>',
-            '</div>',
-            '</div>'
-        ].join('');
+    var countEl = document.createElement('div');
+    countEl.className = 'ref-count';
+    countEl.id = 'refCount';
+    codeBox.appendChild(countEl);
 
-        document.body.appendChild(_overlay);
-        document.getElementById('referralCloseBtn').addEventListener('click', closeReferralModal);
-        _overlay.addEventListener('click', function (e) {
-            if (e.target === _overlay) closeReferralModal();
-        });
-        document.getElementById('referralCopyBtn').addEventListener('click', _onCopy);
-        document.getElementById('referralApplyBtn').addEventListener('click', _onApply);
-        var applyInput = document.getElementById('referralApplyInput');
-        applyInput.addEventListener('input', function () {
-            var pos = applyInput.selectionStart;
-            applyInput.value = applyInput.value.toUpperCase();
-            applyInput.setSelectionRange(pos, pos);
-        });
-    }
+    modal.appendChild(codeBox);
 
-    // -- Data loading --
+    var copyBtn = document.createElement('button');
+    copyBtn.id = 'refCopyBtn';
+    copyBtn.textContent = '\uD83D\uDCCB COPY CODE';
+    copyBtn.addEventListener('click', function() {
+      var codeText = document.getElementById('refCode');
+      if (!codeText || codeText.textContent === 'Loading...') return;
+      var txt = codeText.textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function() {
+          copyBtn.textContent = '\u2705 Copied!';
+          setTimeout(function() { copyBtn.textContent = '\uD83D\uDCCB COPY CODE'; }, 2000);
+        }).catch(function() { fallbackCopy(txt, copyBtn); });
+      } else {
+        fallbackCopy(txt, copyBtn);
+      }
+    });
+    modal.appendChild(copyBtn);
 
-    function _loadInfo() {
-        fetch('/api/referral/info', {
-            headers: Object.assign({ 'Content-Type': 'application/json' }, _authHeaders())
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.error) throw new Error(data.error);
-            var input = document.getElementById('referralLinkInput');
-            if (input) input.value = data.referralUrl || '';
-            var sf = document.getElementById('referralStatFriends');
-            if (sf) sf.textContent = data.totalReferrals || 0;
-            var se = document.getElementById('referralStatEarned');
-            if (se) se.textContent = '$' + (data.totalEarned || 0).toFixed(2);
-        })
-        .catch(function (err) {
-            console.error('[Referral] loadInfo error:', err.message);
-            var input = document.getElementById('referralLinkInput');
-            if (input) input.value = 'Could not load link';
-        });
-    }
+    var msg = document.createElement('div');
+    msg.id = 'refMsg';
+    modal.appendChild(msg);
 
-    function _loadHistory() {
-        fetch('/api/referral/stats', {
-            headers: Object.assign({ 'Content-Type': 'application/json' }, _authHeaders())
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.error) throw new Error(data.error);
-            _renderHistory(data.referrals || []);
-        })
-        .catch(function (err) {
-            console.error('[Referral] loadHistory error:', err.message);
-            var body = document.getElementById('referralHistoryBody');
-            if (body) body.innerHTML = '<div style="padding:16px;text-align:center;color:#ef4444;">Failed to load history</div>';
-        });
-    }
+    var reward = document.createElement('div');
+    reward.className = 'ref-reward';
+    reward.textContent = 'Both you and your friend receive $2.00 bonus credits on registration';
+    modal.appendChild(reward);
 
-    function _escHtml(str) {
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var close = document.createElement('button');
+    close.id = 'refClose';
+    close.textContent = 'Close';
+    close.addEventListener('click', closeReferralModal);
+    modal.appendChild(close);
 
-    function _renderHistory(referrals) {
-        var body = document.getElementById('referralHistoryBody');
-        if (!body) return;
-        if (!referrals.length) {
-            body.innerHTML = '<div style="padding:16px;text-align:center;color:#475569;">No referrals yet -- share your link!</div>';
-            return;
-        }
-        var rows = referrals.map(function (r) {
-            var statusStyle = r.status === 'completed'
-                ? 'background:#14532d;color:#34d399;'
-                : 'background:#1e293b;color:#94a3b8;';
-            var bonusText = r.bonus_paid > 0
-                ? '$' + Number(r.bonus_paid).toFixed(2)
-                : '&mdash;';
-            return [
-                '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1e293b;">',
-                    '<div style="font-size:0.82rem;color:#cbd5e1;">', _escHtml(r.referee_username), '</div>',
-                    '<div style="display:flex;align-items:center;gap:10px;">',
-                        '<span style="font-size:0.7rem;padding:2px 8px;border-radius:20px;', statusStyle, '">',
-                            _escHtml(r.status),
-                        '</span>',
-                        '<span style="font-size:0.82rem;color:#a78bfa;min-width:48px;text-align:right;">',
-                            bonusText,
-                        '</span>',
-                    '</div>',
-                '</div>'
-            ].join('');
-        });
-        body.innerHTML = rows.join('');
-    }
+    _overlay.appendChild(modal);
+    _overlay.addEventListener('click', function(e) {
+      if (e.target === _overlay) closeReferralModal();
+    });
+    document.body.appendChild(_overlay);
+  }
 
-    // -- Event handlers --
+  function fallbackCopy(text, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = '\u2705 Copied!';
+      setTimeout(function() { btn.textContent = '\uD83D\uDCCB COPY CODE'; }, 2000);
+    } catch(e) {}
+    document.body.removeChild(ta);
+  }
 
-    function _onCopy() {
-        var input = document.getElementById('referralLinkInput');
-        var msg   = document.getElementById('referralCopyMsg');
-        if (!input || !input.value) return;
-        var url = input.value;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(function () {
-                _showCopyMsg(msg, 'Copied!', false);
-            }).catch(function () {
-                _fallbackCopy(input, msg);
-            });
-        } else {
-            _fallbackCopy(input, msg);
-        }
-    }
+  function openReferralModal() {
+    injectStyles();
+    buildModal();
+    var token = getToken();
+    if (!token) return;
 
-    function _fallbackCopy(input, msg) {
-        try {
-            input.select();
-            document.execCommand('copy');
-            _showCopyMsg(msg, 'Copied!', false);
-        } catch (e) {
-            _showCopyMsg(msg, 'Copy failed -- select the link manually', true);
-        }
-    }
+    var codeEl = document.getElementById('refCode');
+    var countEl = document.getElementById('refCount');
+    var msg = document.getElementById('refMsg');
+    if (msg) msg.textContent = '';
 
-    function _showCopyMsg(el, text, isError) {
-        if (!el) return;
-        el.textContent = text;
-        el.style.color = isError ? '#ef4444' : '#34d399';
-        setTimeout(function () { if (el) el.textContent = ''; }, 2000);
-    }
+    fetch('/api/referralbonus/mycode', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data) return;
+      if (codeEl) codeEl.textContent = data.code || '---';
+      if (countEl) {
+        var c = data.referralCount || 0;
+        var earned = parseFloat(data.bonusEarned || 0).toFixed(2);
+        countEl.textContent = c + ' friend' + (c === 1 ? '' : 's') + ' referred \u2022 $' + earned + ' earned';
+      }
+    })
+    .catch(function() {
+      if (codeEl) codeEl.textContent = 'Unavailable';
+    });
 
-    function _onApply() {
-        var input = document.getElementById('referralApplyInput');
-        var msg   = document.getElementById('referralApplyMsg');
-        if (!input) return;
-        var code = input.value.trim().toUpperCase();
-        if (!code) {
-            _setApplyMsg(msg, 'Please enter a referral code.', true);
-            return;
-        }
-        var btn = document.getElementById('referralApplyBtn');
-        if (btn) { btn.disabled = true; btn.textContent = 'Applying…'; }
-        fetch('/api/referral/apply', {
-            method: 'POST',
-            headers: Object.assign({ 'Content-Type': 'application/json' }, _authHeaders()),
-            body: JSON.stringify({ code: code })
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (btn) { btn.disabled = false; btn.textContent = 'Apply'; }
-            if (data.success) {
-                _setApplyMsg(msg, data.message || 'Referral code applied!', false);
-                input.value = '';
-                _toast('Referral code applied successfully!', 'success');
-            } else {
-                _setApplyMsg(msg, data.error || 'Failed to apply code.', true);
-            }
-        })
-        .catch(function (err) {
-            if (btn) { btn.disabled = false; btn.textContent = 'Apply'; }
-            _setApplyMsg(msg, 'Network error. Please try again.', true);
-            console.error('[Referral] apply error:', err.message);
-        });
-    }
+    _overlay.classList.add('active');
+  }
 
-    function _setApplyMsg(el, text, isError) {
-        if (!el) return;
-        el.textContent = text;
-        el.style.color = isError ? '#ef4444' : '#34d399';
-    }
+  function closeReferralModal() {
+    if (_overlay) _overlay.classList.remove('active');
+  }
 
-    // -- Public API --
-
-    function openReferralModal() {
-        _buildModal();
-        _overlay.style.display = 'flex';
-        var authWall = document.getElementById('referralAuthWall');
-        if (!_isLoggedIn()) {
-            if (authWall) authWall.style.display = 'flex';
-            return;
-        }
-        if (authWall) authWall.style.display = 'none';
-        _loadInfo();
-        _loadHistory();
-    }
-
-    function closeReferralModal() {
-        if (_overlay) {
-            _overlay.style.display = 'none';
-        }
-    }
-
-    window.openReferralModal  = openReferralModal;
-    window.closeReferralModal = closeReferralModal;
+  window.openReferralModal  = openReferralModal;
+  window.closeReferralModal = closeReferralModal;
 
 }());
