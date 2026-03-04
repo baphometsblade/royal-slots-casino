@@ -287,6 +287,11 @@ router.post('/', authenticate, async (req, res) => {
             }
         }
 
+        // ── Hourly wager race entry (fire-and-forget) ────────────────────
+        if (!usedFreeSpin && bet > 0) {
+            require('../services/wagerace.service').recordWager(userId, bet).catch(function() {});
+        }
+
         // ── Log spin ──
         await db.run(
             'INSERT INTO spins (user_id, game_id, bet_amount, result_grid, win_amount, rng_seed) VALUES (?, ?, ?, ?, ?, ?)',

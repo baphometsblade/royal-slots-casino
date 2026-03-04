@@ -499,6 +499,11 @@ async function start() {
         tournamentService.ensureActive().catch(err => console.error('[Tournament] Bootstrap error:', err.message));
         setInterval(() => tournamentService.tick().catch(err => console.error('[Tournament] Tick error:', err.message)), 5 * 60 * 1000);
 
+        // Bootstrap wager race service (hourly race, tick every 60s)
+        const wageraceService = require('./services/wagerace.service');
+        wageraceService.ensureActiveRace().catch(err => console.error('[WagerRace] Bootstrap error:', err.message));
+        setInterval(() => wageraceService.tick().catch(err => console.error('[WagerRace] Tick error:', err.message)), 60 * 1000);
+
         // Bootstrap weekly contest service — ensure current week contest exists
         const contestService = require('./services/contest.service');
         contestService.getOrCreateCurrentContest().catch(err => console.error('[Contest] Bootstrap error:', err.message));
