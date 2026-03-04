@@ -3,8 +3,9 @@ const router = express.Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
-// Bootstrap column
+// Bootstrap columns
 db.run("ALTER TABLE users ADD COLUMN vip_wheel_last TEXT").catch(function() {});
+db.run("ALTER TABLE users ADD COLUMN gems INTEGER DEFAULT 0").catch(function() {});
 
 var COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 var VIP_REQUIRED = 3;
