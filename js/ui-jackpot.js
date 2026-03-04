@@ -42,7 +42,7 @@
     // Helpers
     function _fmt(amount) {
         var n = parseFloat(amount) || 0;
-        return '$' + n.toFixed(2).replace(/B(?=(d{3})+(?!d))/g, ',');
+        return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     function _timeAgo(dateStr) {
@@ -58,10 +58,10 @@
 
     // Fetch jackpot data and update DOM
     function _fetchAndRender() {
-        fetch('/api/jackpots')
-            .then(function(r) { return r.ok ? r.json() : { jackpots: [] }; })
+        fetch('/api/jackpot/status')
+            .then(function(r) { return r.ok ? r.json() : { pools: [] }; })
             .then(function(data) {
-                var list = (data && Array.isArray(data.jackpots)) ? data.jackpots : [];
+                var list = (data && Array.isArray(data.pools)) ? data.pools : [];
                 var byTier = {};
                 list.forEach(function(j) {
                     if (j && j.tier) byTier[j.tier.toLowerCase()] = j;
@@ -73,8 +73,8 @@
                     var info = byTier[tier.id];
                     if (info) {
                         amountEl.textContent = _fmt(info.currentAmount);
-                        var winner = info.lastWinner ? ' by ' + info.lastWinner : '';
-                        metaEl.textContent = 'Last won: ' + _timeAgo(info.lastWonAt) + winner;
+                        var winner = info.lastWinner ? ' by ' + info.lastWinner.username : '';
+                        metaEl.textContent = 'Last won: ' + _timeAgo(info.lastWinner ? info.lastWinner.wonAt : null) + winner;
                     } else {
                         amountEl.textContent = '—';
                         metaEl.textContent = 'No winners yet';

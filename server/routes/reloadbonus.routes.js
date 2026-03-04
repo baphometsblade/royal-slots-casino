@@ -1,93 +1,169 @@
 'use strict';
 
-const router = require('express').Router();
-const { authenticate } = require('../middleware/auth');
+const express = require('express');
+const jwt = require('jsonwebtoken');
 const db = require('../database');
+const { JWT_SECRET } = require('../config');
 
-// Bootstrap column
-db.run("ALTER TABLE users ADD COLUMN reload_bonus_last TEXT").catch(function() {});
+const router = express.Router();
 
-var BALANCE_THRESHOLD = 5.00;
-var BONUS_AMOUNT      = 1.00;
-var MIN_DEPOSIT       = 10.00;
-var COOLDOWN_MS       = 24 * 60 * 60 * 1000;
+const MATCH_PERCENT = 0.25;
+const MAX_BONUS = 2.50;
+const MIN_DEPOSIT = 5.00;
+const COOLDOWN_DAYS = 7;
+
+// JWT auth middleware
+function verifyToken(req, res, next) {
+  const auth = req.headers.authorization || '';
+  const token = auth.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'No token' });
+  try { req.user = jwt.verify(token, JWT_SECRET); next(); }
+  catch(e) { return res.status(401).json({ error: 'Invalid token' }); }
+}
+
+// Lazy schema migration — adds columns if they do not exist yet
+async function ensureSchema() {
+  try {
+    await db.run(`ALTER TABLE users ADD COLUMN reload_bonus_claimed_at TEXT`);
+  } catch (e) {
+    // Column already exists — ignore
+  }
+  try {
+    await db.run(`ALTER TABLE users ADD COLUMN reload_bonus_count INTEGER DEFAULT 0`);
+  } catch (e) {
+    // Column already exists — ignore
+  }
+}
+
+let schemaReady = false;
+async function withSchema(req, res, next) {
+  if (!schemaReady) {
+    await ensureSchema();
+    schemaReady = true;
+  }
+  next();
+}
 
 // GET /api/reloadbonus/status
-router.get('/status', authenticate, async function(req, res) {
+router.get('/status', verifyToken, withSchema, async (req, res) => {
   try {
-    var userId = req.user.id;
-    var user = await db.get(
-      'SELECT balance, reload_bonus_last FROM users WHERE id = ?',
+    const userId = req.user.userId || req.user.id;
+
+    const user = await db.get(
+      `SELECT balance, reload_bonus_claimed_at, reload_bonus_count FROM users WHERE id = ?`,
       [userId]
     );
 
-    var balance      = user ? (user.balance || 0) : 0;
-    var lastClaimed  = user ? user.reload_bonus_last : null;
-    var now          = Date.now();
-    var cooldownOk   = !lastClaimed || (now - new Date(lastClaimed).getTime()) >= COOLDOWN_MS;
-    var eligible     = balance < BALANCE_THRESHOLD && cooldownOk;
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const claimedAt = user.reload_bonus_claimed_at || null;
+    let available = false;
+    let nextAvailableAt = null;
+
+    if (!claimedAt) {
+      available = true;
+    } else {
+      // Check if 7 days have elapsed since last claim
+      const claimedDate = new Date(claimedAt);
+      const nextDate = new Date(claimedDate.getTime() + COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      if (now >= nextDate) {
+        available = true;
+      } else {
+        available = false;
+        nextAvailableAt = nextDate.toISOString();
+      }
+    }
 
     return res.json({
-      eligible:    eligible,
-      balance:     balance,
-      threshold:   BALANCE_THRESHOLD,
-      bonusAmount: BONUS_AMOUNT,
-      minDeposit:  MIN_DEPOSIT
+      eligible: available,
+      available,
+      balance: parseFloat(user.balance) || 0,
+      matchPercent: Math.round(MATCH_PERCENT * 100),
+      maxBonus: MAX_BONUS,
+      minDeposit: MIN_DEPOSIT,
+      claimedAt,
+      claimsCount: user.reload_bonus_count || 0,
+      nextAvailableAt
     });
-  } catch(err) {
+  } catch (err) {
+    console.error('[reloadbonus] GET /status error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // POST /api/reloadbonus/claim
-router.post('/claim', authenticate, async function(req, res) {
+router.post('/claim', verifyToken, withSchema, async (req, res) => {
   try {
-    var userId = req.user.id;
-    var user = await db.get(
-      'SELECT balance, reload_bonus_last FROM users WHERE id = ?',
+    const userId = req.user.userId || req.user.id;
+    const { depositAmount } = req.body || {};
+
+    // If no deposit amount provided, use MIN_DEPOSIT as the basis (flat bonus mode)
+    const deposit = depositAmount ? parseFloat(depositAmount) : MIN_DEPOSIT;
+
+    const user = await db.get(
+      `SELECT balance, reload_bonus_claimed_at, reload_bonus_count FROM users WHERE id = ?`,
       [userId]
     );
 
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    var balance = user.balance || 0;
-    if (balance >= BALANCE_THRESHOLD) {
-      return res.status(400).json({ error: 'Balance too high to qualify for reload bonus' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    var lastClaimed = user.reload_bonus_last;
-    var now         = Date.now();
-    if (lastClaimed && (now - new Date(lastClaimed).getTime()) < COOLDOWN_MS) {
-      return res.status(400).json({ error: 'Reload bonus already claimed within the last 24 hours' });
+    // Check availability
+    const claimedAt = user.reload_bonus_claimed_at || null;
+    let available = false;
+
+    if (!claimedAt) {
+      available = true;
+    } else {
+      const claimedDate = new Date(claimedAt);
+      const nextDate = new Date(claimedDate.getTime() + COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      available = now >= nextDate;
     }
 
-    // Require a qualifying deposit of MIN_DEPOSIT or more
-    var qualifying = await db.get(
-      "SELECT id FROM transactions WHERE user_id = ? AND type = 'deposit' AND amount >= ? ORDER BY created_at DESC LIMIT 1",
-      [userId, MIN_DEPOSIT]
-    );
-    if (!qualifying) {
-      return res.status(400).json({ error: 'No qualifying deposit of $' + MIN_DEPOSIT.toFixed(2) + ' or more found' });
+    if (!available) {
+      const claimedDate = new Date(claimedAt);
+      const nextDate = new Date(claimedDate.getTime() + COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+      return res.status(400).json({
+        error: 'Reload bonus not available yet',
+        nextAvailableAt: nextDate.toISOString()
+      });
     }
 
-    var nowIso = new Date().toISOString();
+    // Calculate bonus
+    const bonus = parseFloat(Math.min(deposit * MATCH_PERCENT, MAX_BONUS).toFixed(2));
+    const currentBalance = parseFloat(user.balance) || 0;
+    const newBalance = parseFloat((currentBalance + bonus).toFixed(2));
 
+    // Update user: credit bonus, record claim timestamp, increment count
     await db.run(
-      'UPDATE users SET balance = balance + ?, reload_bonus_last = ? WHERE id = ?',
-      [BONUS_AMOUNT, nowIso, userId]
+      `UPDATE users
+       SET balance = ?,
+           reload_bonus_claimed_at = datetime('now'),
+           reload_bonus_count = COALESCE(reload_bonus_count, 0) + 1
+       WHERE id = ?`,
+      [newBalance, userId]
     );
 
+    // Insert transaction record
     await db.run(
-      "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-      [userId, BONUS_AMOUNT, 'Reload Bonus — $' + BONUS_AMOUNT.toFixed(2) + ' free credit']
+      `INSERT INTO transactions (user_id, type, amount, description, created_at)
+       VALUES (?, 'bonus', ?, 'Weekly reload bonus (25% match)', datetime('now'))`,
+      [userId, bonus]
     );
 
-    var updated = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({
-      success:    true,
-      newBalance: updated ? updated.balance : 0
+      success: true,
+      bonus,
+      newBalance,
+      message: `Reload bonus of $${bonus.toFixed(2)} credited to your account!`
     });
-  } catch(err) {
+  } catch (err) {
+    console.error('[reloadbonus] POST /claim error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
