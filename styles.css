@@ -1640,6 +1640,24 @@
             border-radius: 0;
         }
 
+        .reel-symbol-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 1.8em;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+            padding: 4px;
+            text-align: center;
+            line-height: 1.1;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
         /* Pass 2: Enhanced Reel cell animations with progressive blur and deceleration */
         .reel-scrolling {
             animation: reelScroll 0.06s linear infinite !important;

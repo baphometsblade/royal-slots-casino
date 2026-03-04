@@ -35,13 +35,14 @@
                 window.appSettings.animationQuality !== 'low' &&
                 window.appSettings.animationQuality !== 'off';
 
+            var txtFallback = 'var sp=document.createElement(\\\'span\\\');sp.className=\\\'reel-symbol-text\\\';sp.textContent=this.alt;this.parentNode.replaceChild(sp,this)';
             if (useAnimated) {
                 return '<img class="reel-symbol-img reel-symbol-animated" ' +
                     'src="assets/game_symbols/' + gameId + '/' + symbolName + '.webp" ' +
                     'alt="' + symbolName + '" draggable="false" ' +
-                    'onerror="this.src=\'assets/game_symbols/' + gameId + '/' + symbolName + '.png\'; this.classList.remove(\'reel-symbol-animated\'); this.onerror=null;">';
+                    'onerror="this.onerror=function(){' + txtFallback + '};this.src=\'assets/game_symbols/' + gameId + '/' + symbolName + '.png\';this.classList.remove(\'reel-symbol-animated\');">';
             }
-            return '<img class="reel-symbol-img" src="assets/game_symbols/' + gameId + '/' + symbolName + '.png" alt="' + symbolName + '" draggable="false" onerror="this.style.display=\'none\'">';
+            return '<img class="reel-symbol-img" src="assets/game_symbols/' + gameId + '/' + symbolName + '.png" alt="' + symbolName + '" draggable="false" onerror="' + txtFallback + '">';
         }
 
 
