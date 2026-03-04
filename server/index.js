@@ -134,6 +134,7 @@ app.use('/api/loyaltyshop',   require('./routes/loyaltyshop.routes'));
 app.use('/api/winstreak',     require('./routes/winstreak.routes'));
 app.use('/api/referralbonus', require('./routes/referralbonus.routes'));
 app.use('/api/levelupbonus',  require('./routes/levelupbonus.routes'));
+app.use('/api/birthday',      require('./routes/birthday.routes'));
 app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
 app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
 

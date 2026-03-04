@@ -114,7 +114,8 @@
     var headers = token ? { 'Authorization': 'Bearer ' + token } : {};
     fetch('/api/bundles', { headers: headers })
       .then(function (r) { return r.json(); })
-      .then(function (bundles) {
+      .then(function (data) {
+        var bundles = data.bundles || data;
         var b = null;
         if (Array.isArray(bundles)) {
           for (var i = 0; i < bundles.length; i++) {
