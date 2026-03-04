@@ -127,6 +127,9 @@ app.use('/api/firstdeposit', require('./routes/firstdeposit.routes'));
 app.use('/api/depositmatch', require('./routes/depositmatch.routes'));
 app.use('/api/spinstreak',   require('./routes/spinstreak.routes'));
 app.use('/api/vipwheel',     require('./routes/vipwheel.routes'));
+app.use('/api/dailycashback', require('./routes/dailycashback.routes'));
+app.use('/api/hotgame',       require('./routes/hotgame.routes'));
+app.use('/api/reloadbonus',   require('./routes/reloadbonus.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
