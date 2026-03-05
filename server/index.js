@@ -141,6 +141,7 @@ app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
 app.use('/api/mines',         require('./routes/mines.routes'));
 app.use('/api/crash',         require('./routes/crash.routes'));
 app.use('/api/plinko',        require('./routes/plinko.routes'));
+app.use('/api/hilo',          require('./routes/hilo.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
