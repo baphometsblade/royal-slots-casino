@@ -158,6 +158,7 @@ app.use('/api/casinowar',     require('./routes/casinowar.routes'));
 app.use('/api/reddog',        require('./routes/reddog.routes'));
 app.use('/api/caribbeanstud',    require('./routes/caribbeanstud.routes'));
 app.use('/api/threecardpoker',  require('./routes/threecardpoker.routes'));
+app.use('/api/letitride',       require('./routes/letitride.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
