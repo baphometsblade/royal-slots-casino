@@ -1,526 +1,394 @@
-(function () {
+(function() {
   'use strict';
 
-  // ── Hi-Lo Card Game UI ──────────────────────────────────────────────────────
-  // Cards: A(1) 2 3 4 5 6 7 8 9 10 J(11) Q(12) K(13)
-  // Guess Higher or Lower than the current card.
-  // Correct = multiplier stacks. Wrong = lose bet. Cashout = bank winnings.
-  // 97% RTP, server-validated on every guess.
+  var TOKEN_KEY = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
 
-  var SUITS = ['\u2665', '\u2666', '\u2663', '\u2660']; // ♥ ♦ ♣ ♠
-  var _suit = 0; // cycles through suits for visual variety
-
-  // ── helpers ────────────────────────────────────────────────────────────────
+  var _overlay   = null;
+  var _stylesInj = false;
+  var _playing   = false;
+  var _gameId    = null;
+  var _steps     = 0;
+  var _multiplier= 1.0;
 
   function getToken() {
-    try { return localStorage.getItem('casino_token') || localStorage.getItem('token') || null; }
-    catch (e) { return null; }
+    try { return localStorage.getItem(TOKEN_KEY); } catch(e) { return null; }
   }
 
-  function apiFetch(path, opts) {
-    var token = getToken();
-    var headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-    return fetch(path, Object.assign({ headers: headers }, opts || {}));
-  }
-
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls)  e.className = cls;
-    if (text !== undefined) e.textContent = text;
-    return e;
-  }
-
-  function clearChildren(node) {
-    while (node.firstChild) node.removeChild(node.firstChild);
-  }
-
-  function nextSuit() {
-    var s = SUITS[_suit % SUITS.length];
-    _suit++;
-    return s;
-  }
-
-  // ── state ──────────────────────────────────────────────────────────────────
-
-  var state = {
-    open:        false,
-    active:      false,
-    bet:         1.0,
-    card:        null,
-    cardLabel:   '',
-    multiplier:  1.0,
-    rounds:      0,
-    higherMult:  null,
-    lowerMult:   null,
-    history:     [],   // [{label, won}]
-    busy:        false,
-  };
-
-  // ── DOM refs (populated in buildUI) ────────────────────────────────────────
-
-  var refs = {};
-
-  // ── card display ───────────────────────────────────────────────────────────
-
-  function renderCard(label, animIn) {
-    var suit     = nextSuit();
-    var isRed    = suit === '\u2665' || suit === '\u2666';
-    var wrapper  = refs.cardFace;
-    clearChildren(wrapper);
-
-    var inner = el('div', 'hilo-card-inner');
-    inner.style.color = isRed ? '#f87171' : '#e2e8f0';
-
-    var tl = el('div', 'hilo-card-corner hilo-card-tl');
-    var cLabel1 = el('div', 'hilo-card-value', label);
-    var cSuit1  = el('div', 'hilo-card-suit',  suit);
-    tl.appendChild(cLabel1);
-    tl.appendChild(cSuit1);
-
-    var ctr = el('div', 'hilo-card-center', suit);
-    ctr.style.fontSize = '3.5rem';
-
-    var br = el('div', 'hilo-card-corner hilo-card-br');
-    br.style.transform = 'rotate(180deg)';
-    var cLabel2 = el('div', 'hilo-card-value', label);
-    var cSuit2  = el('div', 'hilo-card-suit',  suit);
-    br.appendChild(cLabel2);
-    br.appendChild(cSuit2);
-
-    inner.appendChild(tl);
-    inner.appendChild(ctr);
-    inner.appendChild(br);
-    wrapper.appendChild(inner);
-
-    if (animIn) {
-      wrapper.classList.remove('hilo-card-flip');
-      // double-RAF to trigger CSS transition
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          wrapper.classList.add('hilo-card-flip');
-        });
-      });
-    }
-  }
-
-  // ── history row ────────────────────────────────────────────────────────────
-
-  function addHistory(label, won) {
-    state.history.push({ label: label, won: won });
-    if (state.history.length > 12) state.history.shift();
-
-    clearChildren(refs.history);
-    state.history.forEach(function (h) {
-      var pill = el('span', 'hilo-hist-pill ' + (h.won ? 'hilo-hist-win' : 'hilo-hist-loss'), h.label);
-      refs.history.appendChild(pill);
-    });
-  }
-
-  // ── UI state updates ───────────────────────────────────────────────────────
-
-  function setMultDisplay(mult) {
-    refs.multDisplay.textContent = mult.toFixed(4) + 'x';
-  }
-
-  function setBetLabel(bet) {
-    refs.betLabel.textContent = '$' + bet.toFixed(2);
-  }
-
-  function updateGuessButtons() {
-    var hm = state.higherMult;
-    var lm = state.lowerMult;
-
-    clearChildren(refs.btnHigher);
-    var hIcon  = el('span', 'hilo-btn-icon', '\u2191'); // ↑
-    var hLabel = el('span', null, 'HIGHER');
-    var hOdds  = el('span', 'hilo-btn-odds', hm ? hm.toFixed(2) + 'x' : 'N/A');
-    refs.btnHigher.appendChild(hIcon);
-    refs.btnHigher.appendChild(hLabel);
-    refs.btnHigher.appendChild(hOdds);
-    refs.btnHigher.disabled = !state.active || state.busy || hm === null;
-
-    clearChildren(refs.btnLower);
-    var lIcon  = el('span', 'hilo-btn-icon', '\u2193'); // ↓
-    var lLabel = el('span', null, 'LOWER');
-    var lOdds  = el('span', 'hilo-btn-odds', lm ? lm.toFixed(2) + 'x' : 'N/A');
-    refs.btnLower.appendChild(lIcon);
-    refs.btnLower.appendChild(lLabel);
-    refs.btnLower.appendChild(lOdds);
-    refs.btnLower.disabled = !state.active || state.busy || lm === null;
-
-    refs.btnCashout.disabled = !state.active || state.busy || state.rounds < 1;
-    refs.btnDeal.disabled    = state.active || state.busy;
-  }
-
-  function setStatus(msg, cls) {
-    refs.statusMsg.textContent = msg || '';
-    refs.statusMsg.className   = 'hilo-status ' + (cls || '');
-  }
-
-  function syncBalance(newBal) {
-    if (newBal == null) return;
-    if (typeof window.updateBalanceDisplay === 'function') window.updateBalanceDisplay(newBal);
-    if (typeof window.balance !== 'undefined') window.balance = newBal;
-  }
-
-  // ── API calls ──────────────────────────────────────────────────────────────
-
-  function apiDeal() {
-    if (state.busy) return;
-    state.busy = true;
-    updateGuessButtons();
-    setStatus('Dealing\u2026');
-
-    apiFetch('/api/hilo/start', {
-      method: 'POST',
-      body: JSON.stringify({ bet: state.bet }),
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      state.busy = false;
-      if (data.error) { setStatus(data.error, 'hilo-err'); updateGuessButtons(); return; }
-
-      state.active     = true;
-      state.card       = data.card;
-      state.cardLabel  = data.cardLabel;
-      state.multiplier = 1.0;
-      state.rounds     = 0;
-      state.higherMult = data.higherMult;
-      state.lowerMult  = data.lowerMult;
-
-      renderCard(data.cardLabel, true);
-      setMultDisplay(1.0);
-      setStatus('Higher or lower than ' + data.cardLabel + '?');
-      updateGuessButtons();
-      syncBalance(data.newBalance);
-    })
-    .catch(function () {
-      state.busy = false;
-      setStatus('Network error — try again', 'hilo-err');
-      updateGuessButtons();
-    });
-  }
-
-  function apiGuess(direction) {
-    if (!state.active || state.busy) return;
-    state.busy = true;
-    updateGuessButtons();
-    setStatus('Guessing\u2026');
-
-    apiFetch('/api/hilo/guess', {
-      method: 'POST',
-      body: JSON.stringify({ direction: direction }),
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      state.busy = false;
-      if (data.error) { setStatus(data.error, 'hilo-err'); updateGuessButtons(); return; }
-
-      renderCard(data.nextCardLabel, true);
-      state.card      = data.nextCard;
-      state.cardLabel = data.nextCardLabel;
-
-      if (data.correct) {
-        state.multiplier  = data.multiplier;
-        state.rounds      = data.rounds;
-        state.higherMult  = data.higherMult;
-        state.lowerMult   = data.lowerMult;
-        setMultDisplay(data.multiplier);
-        setStatus('\u2714 Correct! Keep going or cash out.', 'hilo-ok');
-        addHistory(data.nextCardLabel, true);
-      } else {
-        state.active = false;
-        setStatus('\u2718 Wrong! The card was ' + data.nextCardLabel + '. You lost $' + state.bet.toFixed(2) + '.', 'hilo-err');
-        addHistory(data.nextCardLabel, false);
-        setMultDisplay(0);
-      }
-      updateGuessButtons();
-    })
-    .catch(function () {
-      state.busy = false;
-      setStatus('Network error — try again', 'hilo-err');
-      updateGuessButtons();
-    });
-  }
-
-  function apiCashout() {
-    if (!state.active || state.busy || state.rounds < 1) return;
-    state.busy = true;
-    updateGuessButtons();
-    setStatus('Cashing out\u2026');
-
-    apiFetch('/api/hilo/cashout', { method: 'POST' })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      state.busy   = false;
-      state.active = false;
-      if (data.error) { setStatus(data.error, 'hilo-err'); updateGuessButtons(); return; }
-
-      setStatus('\uD83D\uDCB0 Cashed out ' + data.multiplier.toFixed(4) + 'x \u2192 $' + data.payout.toFixed(2), 'hilo-ok');
-      setMultDisplay(data.multiplier);
-      updateGuessButtons();
-      syncBalance(data.newBalance);
-    })
-    .catch(function () {
-      state.busy = false;
-      setStatus('Network error — try again', 'hilo-err');
-      updateGuessButtons();
-    });
-  }
-
-  // ── bet controls ───────────────────────────────────────────────────────────
-
-  function setBet(v) {
-    state.bet = Math.max(0.10, Math.min(500, parseFloat(v) || 1.0));
-    setBetLabel(state.bet);
-  }
-
-  // ── build UI ───────────────────────────────────────────────────────────────
-
-  function buildUI() {
-    if (document.getElementById('hilo-overlay')) return; // already built
-
-    // Overlay
-    var overlay = el('div', 'hilo-overlay');
-    overlay.id  = 'hilo-overlay';
-
-    // Panel
-    var panel = el('div', 'hilo-panel');
-
-    // Header
-    var header = el('div', 'hilo-header');
-    var title  = el('h2', 'hilo-title', '\uD83C\uDCCF Hi-Lo');
-    var closeBtn = el('button', 'hilo-close-btn', '\u00D7');
-    closeBtn.setAttribute('aria-label', 'Close Hi-Lo');
-    closeBtn.addEventListener('click', closeHiLo);
-    header.appendChild(title);
-    header.appendChild(closeBtn);
-
-    // Card area
-    var cardArea  = el('div', 'hilo-card-area');
-    var cardFace  = el('div', 'hilo-card-face');
-    var placeholder = el('div', 'hilo-card-placeholder', '\uD83C\uDCCF');
-    cardFace.appendChild(placeholder);
-    cardArea.appendChild(cardFace);
-    refs.cardFace = cardFace;
-
-    // Multiplier display
-    var multRow = el('div', 'hilo-mult-row');
-    var multLbl = el('span', 'hilo-mult-label', 'Multiplier');
-    var multVal = el('span', 'hilo-mult-value', '1.0000x');
-    multRow.appendChild(multLbl);
-    multRow.appendChild(multVal);
-    refs.multDisplay = multVal;
-
-    // Status
-    var statusMsg = el('div', 'hilo-status', 'Set your bet and deal to start!');
-    refs.statusMsg = statusMsg;
-
-    // Guess buttons
-    var guessRow = el('div', 'hilo-guess-row');
-
-    var btnHigher = el('button', 'hilo-btn hilo-btn-higher');
-    var hIcon     = el('span', 'hilo-btn-icon', '\u2191');
-    var hLbl      = el('span', null, 'HIGHER');
-    var hOdds     = el('span', 'hilo-btn-odds', '---');
-    btnHigher.appendChild(hIcon);
-    btnHigher.appendChild(hLbl);
-    btnHigher.appendChild(hOdds);
-    btnHigher.disabled = true;
-    btnHigher.addEventListener('click', function () { apiGuess('higher'); });
-
-    var btnLower = el('button', 'hilo-btn hilo-btn-lower');
-    var lIcon    = el('span', 'hilo-btn-icon', '\u2193');
-    var lLbl     = el('span', null, 'LOWER');
-    var lOdds    = el('span', 'hilo-btn-odds', '---');
-    btnLower.appendChild(lIcon);
-    btnLower.appendChild(lLbl);
-    btnLower.appendChild(lOdds);
-    btnLower.disabled = true;
-    btnLower.addEventListener('click', function () { apiGuess('lower'); });
-
-    guessRow.appendChild(btnHigher);
-    guessRow.appendChild(btnLower);
-    refs.btnHigher = btnHigher;
-    refs.btnLower  = btnLower;
-
-    // Cashout button
-    var btnCashout = el('button', 'hilo-btn hilo-btn-cashout', '\uD83D\uDCB0 CASH OUT');
-    btnCashout.disabled = true;
-    btnCashout.addEventListener('click', apiCashout);
-    refs.btnCashout = btnCashout;
-
-    // Bet controls
-    var betRow = el('div', 'hilo-bet-row');
-    var betLbl = el('label', 'hilo-field-label', 'Bet');
-    var betCtrl = el('div', 'hilo-bet-ctrl');
-
-    var btnHalf = el('button', 'hilo-adj-btn', '½');
-    btnHalf.addEventListener('click', function () { setBet(state.bet / 2); });
-    var betLabel = el('span', 'hilo-bet-label', '$1.00');
-    var btnDbl   = el('button', 'hilo-adj-btn', '2×');
-    btnDbl.addEventListener('click', function () { setBet(state.bet * 2); });
-    refs.betLabel = betLabel;
-
-    betCtrl.appendChild(btnHalf);
-    betCtrl.appendChild(betLabel);
-    betCtrl.appendChild(btnDbl);
-
-    // Quick-bet chips
-    var chips = el('div', 'hilo-chips');
-    [0.10, 0.50, 1, 5, 10, 25, 100].forEach(function (v) {
-      var chip = el('button', 'hilo-chip', v < 1 ? ('$' + v.toFixed(2)) : ('$' + v));
-      chip.addEventListener('click', function () { setBet(v); });
-      chips.appendChild(chip);
-    });
-
-    betRow.appendChild(betLbl);
-    betRow.appendChild(betCtrl);
-
-    // Deal button
-    var btnDeal = el('button', 'hilo-btn hilo-btn-deal', '\uD83C\uDCCF DEAL');
-    btnDeal.addEventListener('click', apiDeal);
-    refs.btnDeal = btnDeal;
-
-    // History
-    var histSection = el('div', 'hilo-history-section');
-    var histLbl     = el('div', 'hilo-hist-label', 'History');
-    var histRow     = el('div', 'hilo-hist-row');
-    refs.history = histRow;
-    histSection.appendChild(histLbl);
-    histSection.appendChild(histRow);
-
-    // Assemble panel
-    panel.appendChild(header);
-    panel.appendChild(cardArea);
-    panel.appendChild(multRow);
-    panel.appendChild(statusMsg);
-    panel.appendChild(guessRow);
-    panel.appendChild(btnCashout);
-    panel.appendChild(betRow);
-    panel.appendChild(chips);
-    panel.appendChild(btnDeal);
-    panel.appendChild(histSection);
-
-    overlay.appendChild(panel);
-    document.body.appendChild(overlay);
-
-    // Close on backdrop click
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) closeHiLo();
-    });
-
-    // Inject styles
-    injectStyles();
-  }
-
-  // ── open / close ───────────────────────────────────────────────────────────
-
-  function openHiLo() {
-    if (!getToken()) return; // silent no-op when logged out
-    buildUI();
-    var overlay = document.getElementById('hilo-overlay');
-    if (overlay) {
-      overlay.style.display = 'flex';
-      state.open = true;
-    }
-    // Restore any existing active game from server
-    apiFetch('/api/hilo/state')
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      if (!data.active) return;
-      state.active     = true;
-      state.card       = data.card;
-      state.cardLabel  = data.cardLabel;
-      state.multiplier = data.multiplier;
-      state.rounds     = data.rounds;
-      state.higherMult = data.higherMult;
-      state.lowerMult  = data.lowerMult;
-      renderCard(data.cardLabel, false);
-      setMultDisplay(data.multiplier);
-      setStatus('Game in progress — Higher or lower than ' + data.cardLabel + '?');
-      updateGuessButtons();
-    })
-    .catch(function () {}); // ignore if server unreachable
-  }
-
-  function closeHiLo() {
-    var overlay = document.getElementById('hilo-overlay');
-    if (overlay) overlay.style.display = 'none';
-    state.open = false;
-  }
-
-  // ── CSS injection ───────────────────────────────────────────────────────────
+  // ── styles ───────────────────────────────────────────────────────────────────
 
   function injectStyles() {
-    if (document.getElementById('hilo-styles')) return;
+    if (_stylesInj) return;
+    _stylesInj = true;
     var s = document.createElement('style');
-    s.id  = 'hilo-styles';
     s.textContent = [
-      '.hilo-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9100;align-items:center;justify-content:center;padding:1rem;box-sizing:border-box}',
-      '.hilo-panel{background:#1e293b;border:1px solid #334155;border-radius:1rem;padding:1.5rem;width:100%;max-width:420px;display:flex;flex-direction:column;gap:.9rem;color:#e2e8f0;font-family:inherit;max-height:95vh;overflow-y:auto}',
-      '.hilo-header{display:flex;justify-content:space-between;align-items:center}',
-      '.hilo-title{margin:0;font-size:1.4rem;color:#f8fafc}',
-      '.hilo-close-btn{background:none;border:none;color:#94a3b8;font-size:1.6rem;cursor:pointer;line-height:1;padding:.2rem .5rem}',
-      '.hilo-close-btn:hover{color:#e2e8f0}',
-      /* Card */
-      '.hilo-card-area{display:flex;justify-content:center;perspective:600px}',
-      '.hilo-card-face{width:120px;height:168px;background:#fff;border-radius:.75rem;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .35s ease;transform:rotateY(0deg)}',
-      '.hilo-card-flip{animation:hiloFlipIn .35s ease}',
-      '@keyframes hiloFlipIn{0%{transform:rotateY(-90deg) scale(.85)}100%{transform:rotateY(0deg) scale(1)}}',
-      '.hilo-card-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.4rem;box-sizing:border-box}',
-      '.hilo-card-corner{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:1.1}',
-      '.hilo-card-tl{top:.4rem;left:.5rem}',
-      '.hilo-card-br{bottom:.4rem;right:.5rem}',
-      '.hilo-card-value{font-size:.85rem;font-weight:700}',
-      '.hilo-card-suit{font-size:.75rem}',
-      '.hilo-card-center{font-size:3.5rem;line-height:1}',
-      '.hilo-card-placeholder{font-size:4rem;opacity:.25}',
-      /* Multiplier */
-      '.hilo-mult-row{display:flex;justify-content:space-between;align-items:center;background:#0f172a;border-radius:.5rem;padding:.5rem 1rem}',
-      '.hilo-mult-label{font-size:.8rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em}',
-      '.hilo-mult-value{font-size:1.5rem;font-weight:700;color:#facc15;font-variant-numeric:tabular-nums}',
-      /* Status */
-      '.hilo-status{text-align:center;font-size:.9rem;color:#94a3b8;min-height:1.2em}',
-      '.hilo-ok{color:#4ade80}',
-      '.hilo-err{color:#f87171}',
-      /* Guess buttons */
-      '.hilo-guess-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}',
-      '.hilo-btn{border:none;border-radius:.6rem;padding:.7rem 1rem;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.2rem;transition:opacity .15s,transform .1s}',
-      '.hilo-btn:hover:not(:disabled){transform:translateY(-1px);opacity:.9}',
-      '.hilo-btn:disabled{opacity:.35;cursor:not-allowed}',
-      '.hilo-btn-icon{font-size:1.4rem;line-height:1}',
-      '.hilo-btn-odds{font-size:.75rem;opacity:.8}',
-      '.hilo-btn-higher{background:linear-gradient(135deg,#059669,#10b981);color:#fff}',
-      '.hilo-btn-lower{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}',
-      '.hilo-btn-cashout{background:linear-gradient(135deg,#92400e,#f59e0b);color:#fff;width:100%;font-size:1.05rem;padding:.75rem}',
-      '.hilo-btn-deal{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;width:100%;font-size:1rem;padding:.7rem}',
-      /* Bet row */
-      '.hilo-bet-row{display:flex;align-items:center;gap:.8rem}',
-      '.hilo-field-label{font-size:.8rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}',
-      '.hilo-bet-ctrl{display:flex;align-items:center;gap:.5rem;flex:1}',
-      '.hilo-adj-btn{background:#334155;border:none;color:#e2e8f0;border-radius:.4rem;padding:.25rem .6rem;cursor:pointer;font-size:.85rem}',
-      '.hilo-adj-btn:hover{background:#475569}',
-      '.hilo-bet-label{flex:1;text-align:center;font-weight:700;color:#f8fafc}',
-      /* Chips */
-      '.hilo-chips{display:flex;flex-wrap:wrap;gap:.35rem}',
-      '.hilo-chip{background:#0f172a;border:1px solid #334155;color:#94a3b8;border-radius:.4rem;padding:.25rem .55rem;font-size:.78rem;cursor:pointer}',
-      '.hilo-chip:hover{border-color:#60a5fa;color:#60a5fa}',
-      /* History */
-      '.hilo-history-section{display:flex;flex-direction:column;gap:.35rem}',
-      '.hilo-hist-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em}',
-      '.hilo-hist-row{display:flex;flex-wrap:wrap;gap:.3rem;min-height:1.4rem}',
-      '.hilo-hist-pill{font-size:.75rem;padding:.1rem .45rem;border-radius:.3rem;font-weight:600}',
-      '.hilo-hist-win{background:#14532d;color:#4ade80}',
-      '.hilo-hist-loss{background:#450a0a;color:#f87171}',
+      '#hiOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#hiOverlay.active{display:flex}',
+      '#hiModal{background:linear-gradient(135deg,#050a00,#0a1500);border:2px solid rgba(74,222,128,.25);border-radius:20px;padding:18px 20px;max-width:400px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
+      '#hiModal h2{color:#4ade80;font-size:20px;margin:0 0 2px;letter-spacing:2px}',
+      '#hiModal .hi-sub{color:rgba(255,255,255,.35);font-size:11px;margin-bottom:14px}',
+      '.hi-card-area{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:14px}',
+      '.hi-card{width:70px;height:96px;border-radius:10px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:26px;font-weight:900;box-shadow:0 4px 16px rgba(0,0,0,.5);transition:all .2s;position:relative}',
+      '.hi-card.hi-red{color:#e11d48}',
+      '.hi-card.hi-black{color:#1e293b}',
+      '.hi-card.hi-new{animation:hiFlip .3s ease}',
+      '.hi-card.hi-empty{background:rgba(255,255,255,.06);border:2px dashed rgba(255,255,255,.15);color:rgba(255,255,255,.2);font-size:18px}',
+      '@keyframes hiFlip{0%{transform:rotateY(90deg) scale(.8)}100%{transform:rotateY(0) scale(1)}}',
+      '.hi-card-suit{font-size:13px;position:absolute;top:6px;left:8px}',
+      '.hi-mult-display{font-size:28px;font-weight:900;color:#e0e7ff;margin-bottom:4px}',
+      '.hi-mult-sub{font-size:11px;color:rgba(255,255,255,.3);margin-bottom:14px}',
+      '.hi-btn-row{display:flex;gap:8px;margin-bottom:10px}',
+      '.hi-btn{flex:1;padding:12px 4px;border-radius:10px;border:2px solid rgba(255,255,255,.1);font-size:13px;font-weight:900;cursor:pointer;transition:all .15s;letter-spacing:.5px}',
+      '.hi-btn:hover:not(:disabled){transform:scale(1.03)}',
+      '.hi-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}',
+      '#hiHigher{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#93c5fd}',
+      '#hiLower{background:rgba(220,38,38,.15);border-color:rgba(220,38,38,.4);color:#fca5a5}',
+      '#hiCashout{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.4);color:#4ade80}',
+      '.hi-input-row{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:10px}',
+      '.hi-input-row label{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px}',
+      '.hi-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:6px 10px;font-size:14px;font-weight:700;width:90px;text-align:center}',
+      '.hi-input:focus{outline:none;border-color:rgba(74,222,128,.6)}',
+      '#hiStartBtn{background:linear-gradient(135deg,#14532d,#166534);color:#fff;border:1px solid rgba(74,222,128,.4);padding:12px 0;border-radius:12px;font-size:16px;font-weight:900;cursor:pointer;width:100%;margin-bottom:6px;letter-spacing:.5px;transition:transform .1s}',
+      '#hiStartBtn:hover:not(:disabled){transform:scale(1.02)}',
+      '#hiStartBtn:disabled{opacity:.4;cursor:not-allowed;transform:none}',
+      '#hiResult{font-size:14px;font-weight:800;min-height:20px;color:#a5b4fc;margin-bottom:8px}',
+      '#hiClose{background:none;border:none;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;text-decoration:underline}',
     ].join('\n');
     document.head.appendChild(s);
   }
 
-  // ── public API ─────────────────────────────────────────────────────────────
+  // ── helpers ───────────────────────────────────────────────────────────────────
 
-  window.openHiLo  = openHiLo;
-  window.closeHiLo = closeHiLo;
+  var SUIT_COLORS = { '\u2660': 'hi-black', '\u2663': 'hi-black', '\u2665': 'hi-red', '\u2666': 'hi-red' };
+
+  function renderCard(elId, card, isNew) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    el.className = 'hi-card' + (card ? (' ' + (SUIT_COLORS[card.suit] || 'hi-black')) : ' hi-empty') + (isNew ? ' hi-new' : '');
+    if (card) {
+      el.textContent = '';
+      var suitEl = document.createElement('span');
+      suitEl.className = 'hi-card-suit';
+      suitEl.textContent = card.suit;
+      el.appendChild(suitEl);
+      var rankNode = document.createTextNode(card.rank);
+      el.appendChild(rankNode);
+    } else {
+      el.textContent = '?';
+    }
+  }
+
+  function updateMultDisplay(mult, steps) {
+    var el = document.getElementById('hiMultDisplay');
+    if (el) el.textContent = mult.toFixed(2) + 'x';
+    var sub = document.getElementById('hiMultSub');
+    if (sub) sub.textContent = steps === 0 ? 'Make your first guess' : steps + ' correct guess' + (steps !== 1 ? 'es' : '');
+  }
+
+  function setResult(txt, col) {
+    var el = document.getElementById('hiResult');
+    if (!el) return;
+    el.textContent = txt;
+    el.style.color = col || '#a5b4fc';
+  }
+
+  function setGuessButtons(enabled, canCashout) {
+    var higher  = document.getElementById('hiHigher');
+    var lower   = document.getElementById('hiLower');
+    var cashout = document.getElementById('hiCashout');
+    if (higher)  higher.disabled  = !enabled;
+    if (lower)   lower.disabled   = !enabled;
+    if (cashout) cashout.disabled = !(enabled && canCashout);
+  }
+
+  function setPhase(phase) {
+    // phase: 'idle' | 'playing' | 'over'
+    var startBtn  = document.getElementById('hiStartBtn');
+    var inputRow  = document.getElementById('hiBetRow');
+    var guessArea = document.getElementById('hiGuessArea');
+    if (startBtn)  startBtn.style.display  = phase === 'idle' ? '' : 'none';
+    if (inputRow)  inputRow.style.display  = phase === 'idle' ? '' : 'none';
+    if (guessArea) guessArea.style.display = phase === 'playing' ? '' : 'none';
+  }
+
+  // ── start ─────────────────────────────────────────────────────────────────────
+
+  function doStart() {
+    var token = getToken();
+    if (!token) { setResult('Please log in to play.', '#f87171'); return; }
+    var betInput = document.getElementById('hiBetInput');
+    var betVal   = betInput ? parseFloat(betInput.value) : 5.00;
+    if (isNaN(betVal) || betVal < 0.25) betVal = 0.25;
+
+    var startBtn = document.getElementById('hiStartBtn');
+    if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Dealing\u2026'; }
+    setResult('', '');
+
+    fetch('/api/hilo/start', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bet: betVal }),
+    })
+    .then(function(r) { return r.ok ? r.json() : r.json().then(function(e) { throw e; }); })
+    .then(function(data) {
+      if (startBtn) { startBtn.disabled = false; startBtn.textContent = '\u25BA Start'; }
+      _gameId     = data.gameId;
+      _steps      = 0;
+      _multiplier = 1.0;
+      _playing    = true;
+
+      renderCard('hiCurrentCard', data.card, true);
+      renderCard('hiNextCard', null, false);
+      updateMultDisplay(1.0, 0);
+      setResult('\u2191 Higher or \u2193 Lower?', '#a5b4fc');
+      setGuessButtons(true, false);
+      setPhase('playing');
+    })
+    .catch(function(err) {
+      if (startBtn) { startBtn.disabled = false; startBtn.textContent = '\u25BA Start'; }
+      setResult((err && err.error) || 'Error \u2014 check balance.', '#f87171');
+    });
+  }
+
+  // ── guess ─────────────────────────────────────────────────────────────────────
+
+  function doGuess(guess) {
+    if (!_playing || !_gameId) return;
+    var token = getToken();
+    if (!token) return;
+
+    setGuessButtons(false, false);
+    setResult('', '');
+
+    fetch('/api/hilo/guess', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId: _gameId, guess: guess }),
+    })
+    .then(function(r) { return r.ok ? r.json() : r.json().then(function(e) { throw e; }); })
+    .then(function(data) {
+      renderCard('hiNextCard', data.newCard, true);
+
+      setTimeout(function() {
+        renderCard('hiCurrentCard', data.newCard, false);
+        renderCard('hiNextCard', null, false);
+
+        if (data.correct) {
+          _steps++;
+          _multiplier = data.multiplier;
+          updateMultDisplay(_multiplier, _steps);
+          setResult('\u2705 Correct! Keep going or cashout.', '#4ade80');
+          setGuessButtons(true, true);
+
+          if (typeof window.updateBalance === 'function' && data.newBalance != null) {
+            window.updateBalance(data.newBalance);
+          }
+        } else {
+          _playing = false;
+          _gameId  = null;
+          updateMultDisplay(0, _steps);
+          setResult('\u274C Wrong! You lost your bet.', '#f87171');
+          setPhase('idle');
+          var startBtn = document.getElementById('hiStartBtn');
+          if (startBtn) { startBtn.textContent = '\u25BA Play Again'; startBtn.disabled = false; }
+        }
+      }, 350);
+    })
+    .catch(function(err) {
+      setGuessButtons(true, _steps > 0);
+      setResult((err && err.error) || 'Error.', '#f87171');
+    });
+  }
+
+  // ── cashout ───────────────────────────────────────────────────────────────────
+
+  function doCashout() {
+    if (!_playing || !_gameId || _steps === 0) return;
+    var token = getToken();
+    if (!token) return;
+
+    setGuessButtons(false, false);
+
+    fetch('/api/hilo/cashout', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId: _gameId }),
+    })
+    .then(function(r) { return r.ok ? r.json() : r.json().then(function(e) { throw e; }); })
+    .then(function(data) {
+      _playing = false;
+      _gameId  = null;
+
+      if (typeof window.updateBalance === 'function' && data.newBalance != null) {
+        window.updateBalance(data.newBalance);
+      }
+
+      setResult('\uD83C\uDF89 Cashed out! +$' + data.profit.toFixed(2) + ' (' + data.multiplier + 'x)', '#4ade80');
+      setPhase('idle');
+      var startBtn = document.getElementById('hiStartBtn');
+      if (startBtn) { startBtn.textContent = '\u25BA Play Again'; startBtn.disabled = false; }
+    })
+    .catch(function(err) {
+      setGuessButtons(true, true);
+      setResult((err && err.error) || 'Error.', '#f87171');
+    });
+  }
+
+  // ── modal build ───────────────────────────────────────────────────────────────
+
+  function buildModal() {
+    if (_overlay) return;
+    _overlay = document.createElement('div');
+    _overlay.id = 'hiOverlay';
+
+    var modal = document.createElement('div');
+    modal.id = 'hiModal';
+
+    var icon = document.createElement('div');
+    icon.style.cssText = 'font-size:28px;margin-bottom:2px';
+    icon.textContent = '\u25B2\u25BC';
+    modal.appendChild(icon);
+
+    var h2 = document.createElement('h2');
+    h2.textContent = 'HI-LO';
+    modal.appendChild(h2);
+
+    var sub = document.createElement('div');
+    sub.className = 'hi-sub';
+    sub.textContent = 'Predict the next card \u2014 chain wins, cashout before you bust!';
+    modal.appendChild(sub);
+
+    // Card area
+    var cardArea = document.createElement('div');
+    cardArea.className = 'hi-card-area';
+
+    var currentCard = document.createElement('div');
+    currentCard.id = 'hiCurrentCard';
+    currentCard.className = 'hi-card hi-empty';
+    currentCard.textContent = '?';
+
+    var arrow = document.createElement('div');
+    arrow.style.cssText = 'font-size:28px;color:rgba(255,255,255,.3)';
+    arrow.textContent = '\u2192';
+
+    var nextCard = document.createElement('div');
+    nextCard.id = 'hiNextCard';
+    nextCard.className = 'hi-card hi-empty';
+    nextCard.textContent = '?';
+
+    cardArea.appendChild(currentCard);
+    cardArea.appendChild(arrow);
+    cardArea.appendChild(nextCard);
+    modal.appendChild(cardArea);
+
+    // Multiplier display
+    var multDisp = document.createElement('div');
+    multDisp.id = 'hiMultDisplay';
+    multDisp.className = 'hi-mult-display';
+    multDisp.textContent = '1.00x';
+    modal.appendChild(multDisp);
+
+    var multSub = document.createElement('div');
+    multSub.id = 'hiMultSub';
+    multSub.className = 'hi-mult-sub';
+    multSub.textContent = 'Start a game below';
+    modal.appendChild(multSub);
+
+    // Bet input row (shown only when idle)
+    var inputRow = document.createElement('div');
+    inputRow.id = 'hiBetRow';
+    inputRow.className = 'hi-input-row';
+    var lbl = document.createElement('label');
+    lbl.textContent = 'Bet ($)';
+    lbl.htmlFor = 'hiBetInput';
+    var inp = document.createElement('input');
+    inp.id = 'hiBetInput'; inp.className = 'hi-input';
+    inp.type = 'number'; inp.min = '0.25'; inp.max = '500'; inp.step = '0.25'; inp.value = '5.00';
+    inputRow.appendChild(lbl);
+    inputRow.appendChild(inp);
+    modal.appendChild(inputRow);
+
+    // Start button (shown only when idle)
+    var startBtn = document.createElement('button');
+    startBtn.id = 'hiStartBtn';
+    startBtn.textContent = '\u25BA Start';
+    startBtn.addEventListener('click', doStart);
+    modal.appendChild(startBtn);
+
+    // Guess area (shown only when playing)
+    var guessArea = document.createElement('div');
+    guessArea.id = 'hiGuessArea';
+    guessArea.style.display = 'none';
+
+    var btnRow = document.createElement('div');
+    btnRow.className = 'hi-btn-row';
+
+    var higherBtn = document.createElement('button');
+    higherBtn.id = 'hiHigher';
+    higherBtn.className = 'hi-btn';
+    higherBtn.textContent = '\u2191 Higher';
+    higherBtn.disabled = true;
+    higherBtn.addEventListener('click', function() { doGuess('higher'); });
+
+    var lowerBtn = document.createElement('button');
+    lowerBtn.id = 'hiLower';
+    lowerBtn.className = 'hi-btn';
+    lowerBtn.textContent = '\u2193 Lower';
+    lowerBtn.disabled = true;
+    lowerBtn.addEventListener('click', function() { doGuess('lower'); });
+
+    var cashoutBtn = document.createElement('button');
+    cashoutBtn.id = 'hiCashout';
+    cashoutBtn.className = 'hi-btn';
+    cashoutBtn.textContent = '\uD83D\uDCB0 Cashout';
+    cashoutBtn.disabled = true;
+    cashoutBtn.addEventListener('click', doCashout);
+
+    btnRow.appendChild(higherBtn);
+    btnRow.appendChild(lowerBtn);
+    btnRow.appendChild(cashoutBtn);
+    guessArea.appendChild(btnRow);
+    modal.appendChild(guessArea);
+
+    // Result
+    var resultEl = document.createElement('div');
+    resultEl.id = 'hiResult';
+    resultEl.textContent = 'Set your bet and start!';
+    resultEl.style.color = '#a5b4fc';
+    modal.appendChild(resultEl);
+
+    // Close
+    var closeBtn = document.createElement('button');
+    closeBtn.id = 'hiClose';
+    closeBtn.textContent = 'Close';
+    closeBtn.addEventListener('click', closeHilo);
+    modal.appendChild(closeBtn);
+
+    _overlay.appendChild(modal);
+    _overlay.addEventListener('click', function(e) { if (e.target === _overlay) closeHilo(); });
+    document.body.appendChild(_overlay);
+  }
+
+  // ── public API ────────────────────────────────────────────────────────────────
+
+  function openHilo() {
+    injectStyles();
+    buildModal();
+    _overlay.classList.add('active');
+    setResult('Set your bet and start!', '#a5b4fc');
+    setPhase('idle');
+  }
+
+  function closeHilo() {
+    if (_overlay) _overlay.classList.remove('active');
+    // Abandon in-progress game (bet already deducted — server cleans up via TTL)
+    _playing = false;
+    _gameId  = null;
+  }
+
+  window.openHilo  = openHilo;
+  window.closeHilo = closeHilo;
+  // Alias for existing nav button casing (openHiLo)
+  window.openHiLo  = openHilo;
+  window.closeHiLo = closeHilo;
 
 }());

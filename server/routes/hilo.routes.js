@@ -1,246 +1,217 @@
 'use strict';
 
-// Hi-Lo Card Game Routes — 97% RTP, server-validated guesses
+// Hilo (Higher / Lower) — a card is revealed; player bets whether the next
+// card will be higher or lower.  Each correct guess builds a multiplier chain.
+// Player can cashout at any time after at least one correct guess.
 //
-// POST /api/hilo/start    { bet }             — deal first card, deduct bet
-// POST /api/hilo/cashout                      — pay out current multiplier
-// GET  /api/hilo/state                        — active game state
+// Endpoints:
+//   POST /api/hilo/start    { bet }          → { card, gameId }
+//   POST /api/hilo/guess    { gameId, guess: 'higher'|'lower'|'skip' }
+//                                            → { newCard, correct, multiplier, canCashout, gameOver }
+//   POST /api/hilo/cashout  { gameId }       → { payout, profit, newBalance }
+//
+// Multiplier per step: (correct_probability_of_guess)^-1 * (1 - HOUSE_EDGE)
+// House edge 3% on every step; expected value = 0.97^n * bet after n steps.
 
 const express  = require('express');
 const router   = express.Router();
 const db       = require('../database');
 const { authenticate } = require('../middleware/auth');
 
-const MIN_BET = 0.10;
-const MAX_BET = 500;
-const RTP     = 0.97;
-const CARDS   = 13; // A(1) through K(13)
+const MIN_BET    = 0.25;
+const MAX_BET    = 500;
+const HOUSE_EDGE = 0.03;
 
-// Payout multiplier for a correct guess given current card value
-// higher: (13 - card) winning cards out of 13
-// lower:  (card - 1) winning cards out of 13
-// tie (equal card) counts as a loss for simplicity
-function calcMultiplier(card, direction) {
-  var wins = direction === 'higher' ? (CARDS - card) : (card - 1);
-  if (wins <= 0) return null; // impossible guess
-  return parseFloat((RTP * CARDS / wins).toFixed(4));
+// 52-card deck (infinite shoe — each card drawn independently)
+const RANKS  = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const SUITS  = ['\u2660','\u2665','\u2666','\u2663'];
+const VALUES = { '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,J:11,Q:12,K:13,A:14 };
+
+function randomCard() {
+  var rank = RANKS[Math.floor(Math.random() * RANKS.length)];
+  var suit = SUITS[Math.floor(Math.random() * SUITS.length)];
+  return { rank: rank, suit: suit, value: VALUES[rank] };
 }
 
-function dealCard() {
-  return Math.floor(Math.random() * CARDS) + 1; // 1-13
+// Probability that next card is strictly higher than current value (out of 13 ranks)
+function pHigher(val) {
+  // ranks with value > val
+  var higher = RANKS.filter(function(r) { return VALUES[r] > val; }).length;
+  return higher / RANKS.length;
+}
+function pLower(val) {
+  var lower = RANKS.filter(function(r) { return VALUES[r] < val; }).length;
+  return lower / RANKS.length;
 }
 
-function cardLabel(v) {
-  if (v === 1)  return 'A';
-  if (v === 11) return 'J';
-  if (v === 12) return 'Q';
-  if (v === 13) return 'K';
-  return String(v);
+// Step multiplier given a correct guess direction
+function stepMultiplier(guess, cardValue) {
+  var p = guess === 'higher' ? pHigher(cardValue) : pLower(cardValue);
+  if (p <= 0) return 999;  // impossible guess — shouldn't happen after client validation
+  return parseFloat(((1 / p) * (1 - HOUSE_EDGE)).toFixed(4));
 }
 
-// Schema bootstrap
-var schemaReady = false;
-async function ensureSchema() {
-  if (schemaReady) return;
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS hilo_games (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      bet REAL NOT NULL,
-      current_card INTEGER NOT NULL,
-      multiplier REAL NOT NULL DEFAULT 1.0,
-      rounds INTEGER NOT NULL DEFAULT 0,
-      status TEXT NOT NULL DEFAULT 'active',
-      payout REAL NOT NULL DEFAULT 0.0,
-      created_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-  schemaReady = true;
+// In-memory game store (TTL 10 minutes)
+var _games = {};
+var GAME_TTL = 10 * 60 * 1000;
+
+function cleanGames() {
+  var now = Date.now();
+  Object.keys(_games).forEach(function(id) {
+    if (now - _games[id].ts > GAME_TTL) delete _games[id];
+  });
 }
 
-// GET /state
-router.get('/state', authenticate, async function(req, res) {
-  try {
-    await ensureSchema();
-    var game = await db.get(
-      "SELECT * FROM hilo_games WHERE user_id = ? AND status = 'active' ORDER BY id DESC LIMIT 1",
-      [req.user.id]
-    );
-    if (!game) return res.json({ active: false });
-    return res.json({
-      active: true,
-      gameId: game.id,
-      bet: game.bet,
-      card: game.current_card,
-      cardLabel: cardLabel(game.current_card),
-      multiplier: game.multiplier,
-      rounds: game.rounds,
-      higherMult: calcMultiplier(game.current_card, 'higher'),
-      lowerMult:  calcMultiplier(game.current_card, 'lower'),
-    });
-  } catch (err) {
-    console.error('[HiLo] GET /state error:', err.message);
-    return res.status(500).json({ error: 'Failed to get state' });
-  }
-});
+function newGameId() {
+  return Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+}
 
-// POST /start
+// ── POST /start ───────────────────────────────────────────────────────────────
+
 router.post('/start', authenticate, async function(req, res) {
   try {
-    await ensureSchema();
-    var userId = req.user.id;
+    cleanGames();
+    const userId = req.user.id;
+    const bet    = parseFloat(req.body.bet);
 
-    // Forfeit any existing active game
-    await db.run(
-      "UPDATE hilo_games SET status = 'forfeited' WHERE user_id = ? AND status = 'active'",
-      [userId]
-    );
-
-    var bet = parseFloat(req.body.bet) || 1.0;
-    if (bet < MIN_BET || bet > MAX_BET) {
-      return res.status(400).json({ error: 'Bet out of range ($0.10 – $500)' });
+    if (isNaN(bet) || bet < MIN_BET || bet > MAX_BET) {
+      return res.status(400).json({ error: 'Bet must be $' + MIN_BET + ' \u2013 $' + MAX_BET });
     }
 
-    var user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    const user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    var balance = parseFloat(user.balance) || 0;
-    if (balance < bet) return res.status(400).json({ error: 'Insufficient balance' });
+    if (parseFloat(user.balance) < bet) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
 
     await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [bet, userId]);
 
-    var card   = dealCard();
-    var result = await db.run(
-      "INSERT INTO hilo_games (user_id, bet, current_card, multiplier, rounds, status, payout) VALUES (?, ?, ?, 1.0, 0, 'active', 0.0)",
-      [userId, bet, card]
-    );
+    const card   = randomCard();
+    const gameId = newGameId();
 
-    var u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
-    return res.json({
-      success: true,
-      gameId: result.lastID || result.id,
-      bet,
-      card,
-      cardLabel: cardLabel(card),
+    _games[gameId] = {
+      userId:     userId,
+      bet:        bet,
+      card:       card,
       multiplier: 1.0,
-      rounds: 0,
-      higherMult: calcMultiplier(card, 'higher'),
-      lowerMult:  calcMultiplier(card, 'lower'),
-      newBalance: u ? parseFloat(u.balance) : null,
+      steps:      0,
+      ts:         Date.now(),
+      over:       false,
+    };
+
+    return res.json({
+      success:    true,
+      gameId:     gameId,
+      card:       card,
+      multiplier: 1.0,
+      canCashout: false,
     });
   } catch (err) {
-    console.error('[HiLo] POST /start error:', err.message);
-    return res.status(500).json({ error: 'Failed to start game' });
+    console.error('[Hilo] POST /start error:', err.message);
+    return res.status(500).json({ error: 'Failed to start Hilo' });
   }
 });
 
-// POST /guess
+// ── POST /guess ───────────────────────────────────────────────────────────────
+
 router.post('/guess', authenticate, async function(req, res) {
   try {
-    await ensureSchema();
-    var userId    = req.user.id;
-    var direction = req.body.direction; // 'higher' | 'lower'
+    const userId = req.user.id;
+    const gameId = req.body.gameId;
+    const guess  = req.body.guess;  // 'higher' | 'lower'
 
-    if (direction !== 'higher' && direction !== 'lower') {
-      return res.status(400).json({ error: 'direction must be higher or lower' });
+    if (!gameId || !_games[gameId]) {
+      return res.status(400).json({ error: 'Game not found — start a new game' });
+    }
+    const game = _games[gameId];
+    if (game.userId !== userId) return res.status(403).json({ error: 'Not your game' });
+    if (game.over)              return res.status(400).json({ error: 'Game already over' });
+    if (guess !== 'higher' && guess !== 'lower') {
+      return res.status(400).json({ error: 'guess must be higher or lower' });
     }
 
-    var game = await db.get(
-      "SELECT * FROM hilo_games WHERE user_id = ? AND status = 'active' ORDER BY id DESC LIMIT 1",
-      [userId]
-    );
-    if (!game) return res.status(404).json({ error: 'No active game' });
+    const prevCard = game.card;
+    const newCard  = randomCard();
+    var correct    = false;
 
-    var mult = calcMultiplier(game.current_card, direction);
-    if (mult === null) {
-      return res.status(400).json({ error: 'That guess is impossible for this card' });
-    }
+    if (guess === 'higher' && newCard.value > prevCard.value) correct = true;
+    if (guess === 'lower'  && newCard.value < prevCard.value) correct = true;
+    // Exact same value = lose (house edge via ties)
 
-    var nextCard   = dealCard();
-    var correct    = direction === 'higher'
-      ? nextCard > game.current_card
-      : nextCard < game.current_card;
+    game.card = newCard;
+    game.ts   = Date.now();
 
-    if (!correct) {
-      // Wrong guess — lose
-      await db.run(
-        "UPDATE hilo_games SET status = 'lost', current_card = ? WHERE id = ?",
-        [nextCard, game.id]
-      );
+    if (correct) {
+      var mult   = stepMultiplier(guess, prevCard.value);
+      game.multiplier = parseFloat((game.multiplier * mult).toFixed(4));
+      game.steps++;
       return res.json({
-        correct: false,
-        nextCard,
-        nextCardLabel: cardLabel(nextCard),
-        prevCard: game.current_card,
-        direction,
-        gameOver: true,
-        payout: 0,
+        success:    true,
+        newCard:    newCard,
+        correct:    true,
+        multiplier: game.multiplier,
+        canCashout: true,
+        gameOver:   false,
+      });
+    } else {
+      // Wrong — game over, bet already deducted
+      game.over = true;
+      delete _games[gameId];
+      return res.json({
+        success:    true,
+        newCard:    newCard,
+        correct:    false,
+        multiplier: 0,
+        canCashout: false,
+        gameOver:   true,
       });
     }
-
-    // Correct — multiply
-    var newMult   = parseFloat((game.multiplier * mult).toFixed(4));
-    var newRounds = game.rounds + 1;
-
-    await db.run(
-      "UPDATE hilo_games SET current_card = ?, multiplier = ?, rounds = ? WHERE id = ?",
-      [nextCard, newMult, newRounds, game.id]
-    );
-
-    return res.json({
-      correct: true,
-      nextCard,
-      nextCardLabel: cardLabel(nextCard),
-      prevCard: game.current_card,
-      direction,
-      gameOver: false,
-      multiplier: newMult,
-      rounds: newRounds,
-      higherMult: calcMultiplier(nextCard, 'higher'),
-      lowerMult:  calcMultiplier(nextCard, 'lower'),
-    });
   } catch (err) {
-    console.error('[HiLo] POST /guess error:', err.message);
+    console.error('[Hilo] POST /guess error:', err.message);
     return res.status(500).json({ error: 'Failed to process guess' });
   }
 });
 
-// POST /cashout
+// ── POST /cashout ─────────────────────────────────────────────────────────────
+
 router.post('/cashout', authenticate, async function(req, res) {
   try {
-    await ensureSchema();
-    var userId = req.user.id;
+    const userId = req.user.id;
+    const gameId = req.body.gameId;
 
-    var game = await db.get(
-      "SELECT * FROM hilo_games WHERE user_id = ? AND status = 'active' ORDER BY id DESC LIMIT 1",
-      [userId]
-    );
-    if (!game) return res.status(404).json({ error: 'No active game' });
-    if (game.rounds === 0) {
-      return res.status(400).json({ error: 'Guess at least once before cashing out' });
+    if (!gameId || !_games[gameId]) {
+      return res.status(400).json({ error: 'Game not found' });
+    }
+    const game = _games[gameId];
+    if (game.userId !== userId) return res.status(403).json({ error: 'Not your game' });
+    if (game.over)              return res.status(400).json({ error: 'Game already over' });
+    if (game.steps === 0)       return res.status(400).json({ error: 'Make at least one correct guess first' });
+
+    const payout = parseFloat((game.bet * game.multiplier).toFixed(2));
+    const profit = parseFloat((payout - game.bet).toFixed(2));
+
+    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, userId]);
+
+    if (profit > 0) {
+      await db.run(
+        "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, ?)",
+        [userId, profit, 'Hilo: ' + game.steps + ' steps, ' + game.multiplier + 'x']
+      ).catch(function() {});
     }
 
-    var payout = parseFloat((game.bet * game.multiplier).toFixed(2));
-    await db.run(
-      "UPDATE hilo_games SET status = 'won', payout = ? WHERE id = ?",
-      [payout, game.id]
-    );
-    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, userId]);
-    await db.run(
-      "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, ?)",
-      [userId, payout, 'Hi-Lo cash out at ' + game.multiplier + 'x (' + game.rounds + ' rounds)']
-    );
+    delete _games[gameId];
 
-    var u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({
-      success: true,
+      success:    true,
+      payout:     payout,
+      profit:     profit,
       multiplier: game.multiplier,
-      payout,
-      rounds: game.rounds,
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[HiLo] POST /cashout error:', err.message);
-    return res.status(500).json({ error: 'Failed to cash out' });
+    console.error('[Hilo] POST /cashout error:', err.message);
+    return res.status(500).json({ error: 'Failed to cashout' });
   }
 });
 
