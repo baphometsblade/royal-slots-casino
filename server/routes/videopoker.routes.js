@@ -1,44 +1,40 @@
 'use strict';
 
-// Video Poker — Jacks or Better, 9/6 full-pay table (~99.5% RTP)
-// Routes:
-//   GET  /api/videopoker/state          — active game state (dealt hand, awaiting draw)
-//   POST /api/videopoker/deal   {bet}   — deal 5 cards, deduct bet
-//   POST /api/videopoker/draw   {holds} — replace non-held cards, evaluate & payout
+// Video Poker -- Jacks or Better, standard pay table, ~99.5% RTP
+// POST /api/videopoker/deal    { bet }          -- deal 5 cards, deduct bet
+// POST /api/videopoker/draw    { holds }        -- holds: array of 5 booleans
+//   Replace non-held cards, evaluate hand, pay out.
+// GET  /api/videopoker/state                    -- active game state
 
 const express = require('express');
 const router  = express.Router();
 const db      = require('../database');
 const { authenticate } = require('../middleware/auth');
 
-const MIN_BET = 0.25;
-const MAX_BET = 100;
-
-// 9/6 full-pay multipliers (applied to bet)
+const MIN_BET  = 0.25;
+const MAX_BET  = 100;
+// Bet multipliers (coins x bet)
+// Standard Jacks or Better 9/6 pay table:
 const PAY_TABLE = {
-  royal_flush:     800,
-  straight_flush:  50,
-  four_of_a_kind:  25,
-  full_house:       9,
-  flush:            6,
-  straight:         4,
-  three_of_a_kind:  3,
-  two_pair:         2,
-  jacks_or_better:  1,
-  nothing:          0,
+  'royal_flush':     800,
+  'straight_flush':  50,
+  'four_of_a_kind':  25,
+  'full_house':      9,
+  'flush':           6,
+  'straight':        4,
+  'three_of_a_kind': 3,
+  'two_pair':        2,
+  'jacks_or_better': 1,
+  'nothing':         0,
 };
 
-const SUITS  = ['H', 'D', 'C', 'S'];
-const VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-// 1=A, 11=J, 12=Q, 13=K
-
-// ── helpers ──────────────────────────────────────────────────────────────────
+const SUITS  = ['H','D','C','S'];
 
 function buildDeck() {
   var deck = [];
   for (var s = 0; s < SUITS.length; s++) {
-    for (var vi = 0; vi < VALUES.length; vi++) {
-      deck.push({ s: SUITS[s], v: VALUES[vi] });
+    for (var v = 1; v <= 13; v++) {
+      deck.push({ s: SUITS[s], v: v });
     }
   }
   // Fisher-Yates shuffle
@@ -57,107 +53,94 @@ function cardLabel(v) {
   return String(v);
 }
 
-function publicCard(c) {
-  return { s: c.s, v: c.v, l: cardLabel(c.v) };
-}
+function publicCard(c) { return { s: c.s, v: c.v, l: cardLabel(c.v) }; }
 
-// ── hand evaluator ──────────────────────────────────────────────────────────
+// -- hand evaluation ----------------------------------------------------------
 
 function evaluateHand(hand) {
-  // hand: array of 5 {s, v} objects
-  var vals   = hand.map(function(c) { return c.v; }).sort(function(a, b) { return a - b; });
-  var suits  = hand.map(function(c) { return c.s; });
-  var isFlush = suits.every(function(s) { return s === suits[0]; });
+  // hand: [{s,v}, ...]  v: 1-13
+  var vals  = hand.map(function(c) { return c.v; }).sort(function(a,b){return a-b;});
+  var suits = hand.map(function(c) { return c.s; });
 
-  // Count occurrences of each value
   var counts = {};
-  vals.forEach(function(v) { counts[v] = (counts[v] || 0) + 1; });
-  var groups = Object.values(counts).sort(function(a, b) { return b - a; });
+  vals.forEach(function(v) { counts[v] = (counts[v]||0) + 1; });
+  var groups = Object.values(counts).sort(function(a,b){return b-a;}); // e.g. [3,2] = full house
 
-  // Straight check (ace-low A-2-3-4-5 and ace-high 10-J-Q-K-A)
-  function isStraight(v) {
-    var sorted = v.slice();
-    // Ace-low: [1,2,3,4,5]
-    if (sorted[0] === 1 && sorted[1] === 2 && sorted[2] === 3 && sorted[3] === 4 && sorted[4] === 5) {
-      return true;
-    }
-    // Ace-high: [1,10,11,12,13]
-    if (sorted[0] === 1 && sorted[1] === 10 && sorted[2] === 11 && sorted[3] === 12 && sorted[4] === 13) {
-      return true;
-    }
-    // Normal sequential
-    for (var i = 1; i < sorted.length; i++) {
-      if (sorted[i] !== sorted[i - 1] + 1) return false;
-    }
-    return true;
+  var isFlush    = suits.every(function(s){return s===suits[0];});
+  var isStraight = (function() {
+    var unique = Array.from(new Set(vals)).sort(function(a,b){return a-b;});
+    if (unique.length !== 5) return false;
+    // Normal straight
+    if (unique[4] - unique[0] === 4) return true;
+    // Ace-low: A 2 3 4 5
+    if (JSON.stringify(unique) === JSON.stringify([1,2,3,4,5])) return true;
+    // Ace-high: 10 J Q K A
+    if (JSON.stringify(unique) === JSON.stringify([1,10,11,12,13])) return true;
+    return false;
+  }());
+  var isRoyal = isFlush && JSON.stringify(vals) === JSON.stringify([1,10,11,12,13]);
+
+  if (isRoyal)                          return 'royal_flush';
+  if (isFlush  && isStraight)           return 'straight_flush';
+  if (groups[0] === 4)                  return 'four_of_a_kind';
+  if (groups[0] === 3 && groups[1]===2) return 'full_house';
+  if (isFlush)                          return 'flush';
+  if (isStraight)                       return 'straight';
+  if (groups[0] === 3)                  return 'three_of_a_kind';
+  if (groups[0] === 2 && groups[1]===2) {
+    // Two pair -- check if at least one pair is J,Q,K, or A
+    var HIGH_VALS = new Set([1,11,12,13]);
+    var pairs = Object.keys(counts).filter(function(v){return counts[v]===2;}).map(Number);
+    var hasHigh = pairs.some(function(v){return HIGH_VALS.has(v);});
+    return 'two_pair'; // two_pair always pays
   }
-
-  var straight = isStraight(vals);
-
-  // Royal flush: ace-high straight flush
-  if (isFlush && vals[0] === 1 && vals[1] === 10 && vals[2] === 11 && vals[3] === 12 && vals[4] === 13) {
-    return 'royal_flush';
-  }
-  if (isFlush && straight)          return 'straight_flush';
-  if (groups[0] === 4)              return 'four_of_a_kind';
-  if (groups[0] === 3 && groups[1] === 2) return 'full_house';
-  if (isFlush)                      return 'flush';
-  if (straight)                     return 'straight';
-  if (groups[0] === 3)              return 'three_of_a_kind';
-  if (groups[0] === 2 && groups[1] === 2) return 'two_pair';
-
-  // Jacks or better: a pair of J, Q, K, or A (v===1,11,12,13)
   if (groups[0] === 2) {
-    var HIGH_VALS = { 1: true, 11: true, 12: true, 13: true };
-    var valKeys = Object.keys(counts);
-    for (var k = 0; k < valKeys.length; k++) {
-      if (counts[valKeys[k]] === 2 && HIGH_VALS[valKeys[k]]) {
-        return 'jacks_or_better';
-      }
-    }
+    // Single pair -- only JJ, QQ, KK, AA
+    var HIGH_VALS2 = new Set([1,11,12,13]);
+    var pairVal = parseInt(Object.keys(counts).find(function(v){return counts[v]===2;}), 10);
+    if (HIGH_VALS2.has(pairVal)) return 'jacks_or_better';
   }
-
   return 'nothing';
 }
 
-// ── schema ────────────────────────────────────────────────────────────────────
+// -- schema -------------------------------------------------------------------
 
 var schemaReady = false;
 async function ensureSchema() {
   if (schemaReady) return;
-  await db.run(
-    'CREATE TABLE IF NOT EXISTS vp_games (' +
-    '  id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-    '  user_id INTEGER NOT NULL,' +
-    '  bet REAL NOT NULL,' +
-    '  deck TEXT NOT NULL,' +
-    '  hand TEXT NOT NULL,' +
-    '  status TEXT NOT NULL DEFAULT \'dealt\',' +
-    '  result TEXT,' +
-    '  payout REAL NOT NULL DEFAULT 0,' +
-    '  created_at TEXT DEFAULT (datetime(\'now\'))' +
-    ')'
-  );
+  await db.run(`
+    CREATE TABLE IF NOT EXISTS vp_games (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      bet REAL NOT NULL,
+      deck TEXT NOT NULL,
+      hand TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'dealt',
+      result TEXT,
+      payout REAL NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    )
+  `);
   schemaReady = true;
 }
 
-// ── GET /state ────────────────────────────────────────────────────────────────
+// -- GET /state ---------------------------------------------------------------
 
 router.get('/state', authenticate, async function(req, res) {
   try {
     await ensureSchema();
     var game = await db.get(
-      "SELECT * FROM vp_games WHERE user_id = ? AND status = 'dealt' ORDER BY id DESC LIMIT 1",
+      "SELECT * FROM vp_games WHERE user_id=? AND status='dealt' ORDER BY id DESC LIMIT 1",
       [req.user.id]
     );
     if (!game) return res.json({ active: false });
-    var hand = JSON.parse(game.hand);
     return res.json({
       active:  true,
       gameId:  game.id,
       bet:     game.bet,
-      hand:    hand.map(publicCard),
-      holds:   [false, false, false, false, false],
+      hand:    JSON.parse(game.hand).map(publicCard),
+      status:  game.status,
+      payTable: PAY_TABLE,
     });
   } catch (err) {
     console.error('[VP] GET /state error:', err.message);
@@ -165,47 +148,46 @@ router.get('/state', authenticate, async function(req, res) {
   }
 });
 
-// ── POST /deal ────────────────────────────────────────────────────────────────
+// -- POST /deal ---------------------------------------------------------------
 
 router.post('/deal', authenticate, async function(req, res) {
   try {
     await ensureSchema();
     var userId = req.user.id;
 
-    // Forfeit any dangling dealt game (didn't draw)
+    // Forfeit any open game
     await db.run(
-      "UPDATE vp_games SET status = 'forfeited' WHERE user_id = ? AND status = 'dealt'",
+      "UPDATE vp_games SET status='forfeited ' WHERE user_id=? AND status='dealt'",
       [userId]
     );
 
     var bet = parseFloat(req.body.bet) || 1.0;
     if (bet < MIN_BET || bet > MAX_BET) {
-      return res.status(400).json({ error: 'Bet out of range ($0.25 – $100)' });
+      return res.status(400).json({ error: 'Bet out of range ($0.25 - $100)' });
     }
 
-    var user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    var user = await db.get('SELECT balance FROM users WHERE id=?', [userId]);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    var balance = parseFloat(user.balance) || 0;
-    if (balance < bet) return res.status(400).json({ error: 'Insufficient balance' });
+    if (parseFloat(user.balance) < bet) return res.status(400).json({ error: 'Insufficient balance' });
 
-    await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [bet, userId]);
+    await db.run('UPDATE users SET balance = balance - ? WHERE id=?', [bet, userId]);
 
     var deck = buildDeck();
     var hand = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
 
     var result = await db.run(
-      'INSERT INTO vp_games (user_id, bet, deck, hand, status) VALUES (?,?,?,?,?)',
-      [userId, bet, JSON.stringify(deck), JSON.stringify(hand), 'dealt']
+      "INSERT INTO vp_games (user_id, bet, deck, hand, status) VALUES (?,?,?,?,'dealt')",
+      [userId, bet, JSON.stringify(deck), JSON.stringify(hand)]
     );
-    var gameId = result.lastID || result.id;
 
-    var u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    var u = await db.get('SELECT balance FROM users WHERE id=?', [userId]);
     return res.json({
       success:    true,
-      gameId:     gameId,
-      bet:        bet,
+      gameId:     result.lastID || result.id,
+      bet,
       hand:       hand.map(publicCard),
       newBalance: u ? parseFloat(u.balance) : null,
+      payTable:   PAY_TABLE,
     });
   } catch (err) {
     console.error('[VP] POST /deal error:', err.message);
@@ -213,64 +195,65 @@ router.post('/deal', authenticate, async function(req, res) {
   }
 });
 
-// ── POST /draw ────────────────────────────────────────────────────────────────
+// -- POST /draw ---------------------------------------------------------------
 
 router.post('/draw', authenticate, async function(req, res) {
   try {
     await ensureSchema();
     var userId = req.user.id;
+    var holds  = req.body.holds; // [true/false x 5]
+
+    if (!Array.isArray(holds) || holds.length !== 5) {
+      return res.status(400).json({ error: 'holds must be an array of 5 booleans' });
+    }
 
     var game = await db.get(
-      "SELECT * FROM vp_games WHERE user_id = ? AND status = 'dealt' ORDER BY id DESC LIMIT 1",
+      "SELECT * FROM vp_games WHERE user_id=? AND status='dealt' ORDER BY id DESC LIMIT 1",
       [userId]
     );
     if (!game) return res.status(404).json({ error: 'No active game' });
-
-    var holds = req.body.holds;
-    if (!Array.isArray(holds) || holds.length !== 5) {
-      return res.status(400).json({ error: 'holds must be array of 5 booleans' });
-    }
 
     var deck = JSON.parse(game.deck);
     var hand = JSON.parse(game.hand);
 
     // Replace non-held cards
     for (var i = 0; i < 5; i++) {
-      if (!holds[i]) {
+      if (!holds[i] && deck.length > 0) {
         hand[i] = deck.pop();
       }
     }
 
-    var handResult = evaluateHand(hand);
-    var multiplier = PAY_TABLE[handResult] || 0;
-    var payout     = parseFloat((game.bet * multiplier).toFixed(2));
+    var result = evaluateHand(hand);
+    var mult   = PAY_TABLE[result] || 0;
+    var payout = parseFloat((game.bet * mult).toFixed(2));
 
     await db.run(
-      'UPDATE vp_games SET deck=?, hand=?, status=?, result=?, payout=? WHERE id=?',
-      [JSON.stringify(deck), JSON.stringify(hand), 'drawn', handResult, payout, game.id]
+      "UPDATE vp_games SET deck=?, hand=?, status='drawn', result=?, payout=? WHERE id=?",
+      [JSON.stringify(deck), JSON.stringify(hand), result, payout, game.id]
     );
 
     if (payout > 0) {
-      await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, userId]);
+      await db.run('UPDATE users SET balance = balance + ? WHERE id=?', [payout, userId]);
       var profit = parseFloat((payout - game.bet).toFixed(2));
       if (profit > 0) {
         await db.run(
-          "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, 'Video Poker win')",
-          [userId, profit]
-        ).catch(function() {});
+          "INSERT INTO transactions (user_id, type, amount, description) VALUES (?,'win',?,?)",
+          [userId, profit, 'Video Poker: ' + result + ' (' + mult + 'x)']
+        ).catch(function(){});
       }
     }
 
-    var u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    var u = await db.get('SELECT balance FROM users WHERE id=?', [userId]);
     return res.json({
       success:    true,
-      gameId:     game.id,
-      bet:        game.bet,
       hand:       hand.map(publicCard),
-      holds:      holds,
-      result:     handResult,
-      payout:     payout,
+      holds,
+      result,
+      multiplier: mult,
+      payout,
+      profit:     parseFloat((payout - game.bet).toFixed(2)),
       newBalance: u ? parseFloat(u.balance) : null,
+      payTable:   PAY_TABLE,
     });
   } catch (err) {
     console.error('[VP] POST /draw error:', err.message);
