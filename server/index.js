@@ -154,6 +154,7 @@ app.use('/api/tower',         require('./routes/tower.routes'));
 app.use('/api/wheel',         require('./routes/wheel.routes'));
 app.use('/api/coinflip',      require('./routes/coinflip.routes'));
 app.use('/api/sicbo',         require('./routes/sicbo.routes'));
+app.use('/api/casinowar',     require('./routes/casinowar.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
