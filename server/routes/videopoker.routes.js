@@ -157,7 +157,7 @@ router.post('/deal', authenticate, async function(req, res) {
 
     // Forfeit any open game
     await db.run(
-      "UPDATE vp_games SET status='forfeited ' WHERE user_id=? AND status='dealt'",
+      "UPDATE vp_games SET status='forfeited' WHERE user_id=? AND status='dealt'",
       [userId]
     );
 
