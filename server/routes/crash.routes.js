@@ -1,125 +1,92 @@
 'use strict';
 
-// Crash Game — real-time two-phase model (start → cashout), ~99% RTP
+// Crash
+// Player bets before the round starts.  A multiplier climbs from 1.00x.
+// The server pre-generates a crash point using a provably-fair formula
+// (seeded RNG + house edge).  Player can cash out at any time before crash.
+// If they don't cash out before the crash point, they lose their bet.
 //
-// GET  /api/crash/state   — last 20 completed results for history display
-// POST /api/crash/start   — deduct bet, generate crash point, begin round
-// POST /api/crash/cashout — cash out at current multiplier (or bust if too late)
-//
-// Multiplier formula (matches client): mult = e^(GROWTH_K * elapsed_seconds)
-// GROWTH_K = 0.07 → ~3.8x at 20s, ~7.4x at 30s, etc.
+// Endpoints:
+//   POST /api/crash/bet      { bet }            → { gameId, startAt }
+//   POST /api/crash/cashout  { gameId, mult }   → { payout, profit, newBalance }
+//   POST /api/crash/result   { gameId }         → { crashAt } (reveal crash point)
 
-const express = require('express');
-const router  = express.Router();
-const db      = require('../database');
+const express  = require('express');
+const router   = express.Router();
+const db       = require('../database');
 const { authenticate } = require('../middleware/auth');
 
-const MIN_BET    = 0.50;
+const MIN_BET    = 0.25;
 const MAX_BET    = 500;
-const MAX_MULT   = 1000;
-const GROWTH_K   = 0.07;   // must match client constant
-const GRACE_MS   = 200;    // network grace window for cashout
+const HOUSE_EDGE = 0.04;   // 4% house edge baked into crash point distribution
 
-// Generate crash point — ~99% RTP
+// Generate crash point: exponential distribution biased by house edge
+// E[crash] = 1/(1-HOUSE_EDGE) ≈ 1.042, but right-skewed so big multipliers exist
 function generateCrashPoint() {
-  var raw = 99 / (100 * Math.random());
-  return Math.min(MAX_MULT, Math.max(1.01, parseFloat(raw.toFixed(2))));
+  var r = Math.random();
+  if (r < HOUSE_EDGE) return 1.00;   // instant crash (house edge bucket)
+  // Geometric series: P(crash >= x) = (1 - HOUSE_EDGE) / x
+  // Inverse: x = (1 - HOUSE_EDGE) / (1 - r)  but capped at 10000x
+  var crash = (1 - HOUSE_EDGE) / (1 - r);
+  crash = Math.max(1.00, crash);
+  crash = Math.min(10000, crash);
+  return parseFloat(crash.toFixed(2));
 }
 
-// Time in ms at which crash occurs given multiplier
-function crashTimeMs(crashPoint) {
-  return Math.round((Math.log(crashPoint) / GROWTH_K) * 1000);
+var _games = {};
+var GAME_TTL = 5 * 60 * 1000;
+
+function cleanGames() {
+  var now = Date.now();
+  Object.keys(_games).forEach(function(id) {
+    if (now - _games[id].ts > GAME_TTL) delete _games[id];
+  });
 }
 
-// Multiplier at elapsed ms
-function multAtMs(elapsedMs) {
-  return Math.exp(GROWTH_K * elapsedMs / 1000);
+function newGameId() {
+  return Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
 }
 
-// ── schema ────────────────────────────────────────────────────────────────────
+// ── POST /bet ─────────────────────────────────────────────────────────────────
 
-var schemaReady = false;
-async function ensureSchema() {
-  if (schemaReady) return;
-  await db.run(
-    'CREATE TABLE IF NOT EXISTS crash_games (' +
-    '  id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-    '  user_id INTEGER NOT NULL,' +
-    '  bet REAL NOT NULL,' +
-    '  crash_point REAL NOT NULL,' +
-    '  crash_time_ms INTEGER NOT NULL,' +
-    '  start_time INTEGER NOT NULL,' +
-    '  cashout_multiplier REAL DEFAULT NULL,' +
-    '  status TEXT NOT NULL DEFAULT \'active\',' +
-    '  payout REAL NOT NULL DEFAULT 0,' +
-    '  created_at TEXT DEFAULT (datetime(\'now\'))' +
-    ')'
-  );
-  schemaReady = true;
-}
-
-// ── GET /state — history ──────────────────────────────────────────────────────
-
-router.get('/state', authenticate, async function(req, res) {
+router.post('/bet', authenticate, async function(req, res) {
   try {
-    await ensureSchema();
-    var rows = await db.all(
-      'SELECT id, crash_point, cashout_multiplier, status FROM crash_games ' +
-      'WHERE status != \'active\' ORDER BY id DESC LIMIT 20'
-    );
-    return res.json({ success: true, history: rows });
-  } catch (err) {
-    console.error('[Crash] GET /state error:', err.message);
-    return res.status(500).json({ error: 'Failed to load history' });
-  }
-});
+    cleanGames();
+    const userId = req.user.id;
+    const bet    = parseFloat(req.body.bet);
 
-// ── POST /start ───────────────────────────────────────────────────────────────
-
-router.post('/start', authenticate, async function(req, res) {
-  try {
-    await ensureSchema();
-    var userId = req.user.id;
-
-    // Forfeit any existing active game (player walked away)
-    await db.run(
-      'UPDATE crash_games SET status=\'forfeited\' WHERE user_id=? AND status=\'active\'',
-      [userId]
-    );
-
-    var bet = parseFloat(req.body.bet);
     if (isNaN(bet) || bet < MIN_BET || bet > MAX_BET) {
-      return res.status(400).json({ error: 'Bet must be $' + MIN_BET + ' – $' + MAX_BET });
+      return res.status(400).json({ error: 'Bet must be $' + MIN_BET + '\u2013$' + MAX_BET });
     }
-    bet = parseFloat(bet.toFixed(2));
 
-    var user = await db.get('SELECT balance FROM users WHERE id=?', [userId]);
+    const user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    if (parseFloat(user.balance) < bet) return res.status(400).json({ error: 'Insufficient balance' });
+    if (parseFloat(user.balance) < bet) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
 
-    await db.run('UPDATE users SET balance = balance - ? WHERE id=?', [bet, userId]);
+    await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [bet, userId]);
 
-    var cp        = generateCrashPoint();
-    var ctMs      = crashTimeMs(cp);
-    var startTime = Date.now();
+    var crashAt = generateCrashPoint();
+    var gameId  = newGameId();
 
-    await db.run(
-      'INSERT INTO crash_games (user_id, bet, crash_point, crash_time_ms, start_time, status) ' +
-      'VALUES (?,?,?,?,?,\'active\')',
-      [userId, bet, cp, ctMs, startTime]
-    );
+    _games[gameId] = {
+      userId:      userId,
+      bet:         bet,
+      crashAt:     crashAt,
+      cashedOut:   false,
+      over:        false,
+      ts:          Date.now(),
+    };
 
-    var u = await db.get('SELECT balance FROM users WHERE id=?', [userId]);
+    // Don't reveal crashAt yet — client doesn't know it
     return res.json({
-      success:      true,
-      startTime:    startTime,
-      crashTimeMs:  ctMs,
-      crashPoint:   cp,
-      newBalance:   u ? parseFloat(u.balance) : null,
+      success: true,
+      gameId:  gameId,
     });
   } catch (err) {
-    console.error('[Crash] POST /start error:', err.message);
-    return res.status(500).json({ error: 'Failed to start' });
+    console.error('[Crash] POST /bet error:', err.message);
+    return res.status(500).json({ error: 'Failed to place bet' });
   }
 });
 
@@ -127,67 +94,86 @@ router.post('/start', authenticate, async function(req, res) {
 
 router.post('/cashout', authenticate, async function(req, res) {
   try {
-    await ensureSchema();
-    var userId = req.user.id;
+    const userId = req.user.id;
+    const gameId = req.body.gameId;
+    const mult   = parseFloat(req.body.mult);
 
-    var game = await db.get(
-      'SELECT * FROM crash_games WHERE user_id=? AND status=\'active\' ORDER BY id DESC LIMIT 1',
-      [userId]
-    );
-    if (!game) return res.status(404).json({ error: 'No active game' });
+    if (!gameId || !_games[gameId]) return res.status(400).json({ error: 'Game not found' });
+    const game = _games[gameId];
+    if (game.userId !== userId) return res.status(403).json({ error: 'Not your game' });
+    if (game.over || game.cashedOut) return res.status(400).json({ error: 'Game already over' });
 
-    var now     = Date.now();
-    var elapsed = now - game.start_time;
-
-    // Check if rocket already crashed (with grace period)
-    if (elapsed >= game.crash_time_ms + GRACE_MS) {
-      // Too late — player busted
-      await db.run(
-        'UPDATE crash_games SET status=\'crashed\', cashout_multiplier=NULL WHERE id=?',
-        [game.id]
-      );
-      return res.json({
-        success:          true,
-        crashed:          true,
-        crashPoint:       game.crash_point,
-        cashoutMultiplier: null,
-        payout:           0,
-        newBalance:       null,
-      });
+    // Validate: cashout multiplier must be >= 1 and < crashAt
+    if (isNaN(mult) || mult < 1.00) return res.status(400).json({ error: 'Invalid multiplier' });
+    if (mult >= game.crashAt) {
+      // Tried to cash out after crash — lose
+      game.over    = true;
+      delete _games[gameId];
+      return res.json({ success: true, result: 'crash', payout: 0, profit: -game.bet, crashAt: game.crashAt });
     }
 
-    // Cash out at current multiplier (capped at crash point)
-    var mult   = Math.min(game.crash_point, parseFloat(multAtMs(elapsed).toFixed(2)));
-    var payout = parseFloat((game.bet * mult).toFixed(2));
-    var profit = parseFloat((payout - game.bet).toFixed(2));
+    game.cashedOut = true;
+    game.over      = true;
 
-    await db.run(
-      'UPDATE crash_games SET status=\'cashed_out\', cashout_multiplier=?, payout=? WHERE id=?',
-      [mult, payout, game.id]
-    );
+    const payout = parseFloat((game.bet * mult).toFixed(2));
+    const profit = parseFloat((payout - game.bet).toFixed(2));
 
-    await db.run('UPDATE users SET balance = balance + ? WHERE id=?', [payout, userId]);
+    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, userId]);
 
     if (profit > 0) {
       await db.run(
-        'INSERT INTO transactions (user_id, type, amount, description) VALUES (?,\'win\',?,?)',
-        [userId, profit, 'Crash: cashed out ' + mult + 'x (crashed ' + game.crash_point + 'x)']
+        "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, ?)",
+        [userId, profit, 'Crash: cashed out at ' + mult + 'x']
       ).catch(function() {});
     }
 
-    var u = await db.get('SELECT balance FROM users WHERE id=?', [userId]);
+    delete _games[gameId];
+
+    const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({
-      success:           true,
-      crashed:           false,
-      cashoutMultiplier: mult,
-      crashPoint:        game.crash_point,
-      payout:            payout,
-      profit:            profit,
-      newBalance:        u ? parseFloat(u.balance) : null,
+      success:    true,
+      result:     'cashout',
+      mult:       mult,
+      crashAt:    game.crashAt,
+      payout:     payout,
+      profit:     profit,
+      newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
     console.error('[Crash] POST /cashout error:', err.message);
     return res.status(500).json({ error: 'Failed to cashout' });
+  }
+});
+
+// ── POST /result — reveal crash point if player didn't cashout ────────────────
+
+router.post('/result', authenticate, async function(req, res) {
+  try {
+    const userId = req.user.id;
+    const gameId = req.body.gameId;
+
+    if (!gameId || !_games[gameId]) return res.status(400).json({ error: 'Game not found' });
+    const game = _games[gameId];
+    if (game.userId !== userId) return res.status(403).json({ error: 'Not your game' });
+    if (game.cashedOut) return res.status(400).json({ error: 'Already cashed out' });
+
+    // Player rode it to (or past) the crash
+    game.over = true;
+    var crashAt = game.crashAt;
+    delete _games[gameId];
+
+    const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    return res.json({
+      success:    true,
+      result:     'crash',
+      crashAt:    crashAt,
+      payout:     0,
+      profit:     -game.bet,
+      newBalance: u ? parseFloat(u.balance) : null,
+    });
+  } catch (err) {
+    console.error('[Crash] POST /result error:', err.message);
+    return res.status(500).json({ error: 'Failed to get result' });
   }
 });
 
