@@ -1,220 +1,242 @@
 'use strict';
 
-// Mines Game Routes
-// GET  /api/mines/state   -- authenticated; get active game state (no mine positions)
-// POST /api/mines/start   -- authenticated; start new game (bet + mines count)
-// POST /api/mines/reveal  -- authenticated; reveal a tile
-// POST /api/mines/cashout -- authenticated; cash out current winnings
+// Mines
+// 5x5 grid = 25 tiles.  Player chooses number of mines (1-24).
+// Server places mines randomly.  Player reveals tiles one by one.
+// Each safe reveal increases a multiplier.  Hitting a mine ends the game.
+// Player can cashout after any safe reveal.
+//
+// Multiplier per reveal step (simplified):
+//   mult_n = mult_{n-1} * ( (tiles_remaining) / (safe_remaining) ) * (1 - HOUSE_EDGE)
+// where tiles_remaining = 25 - reveals_so_far, safe_remaining = safe tiles left.
+//
+// Endpoints:
+//   POST /api/mines/start   { bet, mines }   → { gameId }
+//   POST /api/mines/reveal  { gameId, tile }  → { safe, multiplier, canCashout, gameOver, minePositions? }
+//   POST /api/mines/cashout { gameId }         → { payout, profit, newBalance, minePositions }
 
-var express=require('express');
-var router=express.Router();
-var db=require('../database');
-var authenticate=require('../middleware/auth').authenticate;
+const express  = require('express');
+const router   = express.Router();
+const db       = require('../database');
+const { authenticate } = require('../middleware/auth');
 
-var MIN_BET=0.25;
-var MAX_BET=200;
-var GRID_SIZE=25;
+const GRID_SIZE  = 25;
+const MIN_BET    = 0.25;
+const MAX_BET    = 500;
+const HOUSE_EDGE = 0.04;
 
-var schemaReady=false;
-
-async function ensureSchema(){
-  if(schemaReady)return;
-  await db.run(
-    'CREATE TABLE IF NOT EXISTS mines_games (' +
-    'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-    'user_id INTEGER NOT NULL,' +
-    'bet REAL NOT NULL,' +
-    'mines_count INTEGER NOT NULL,' +
-    'mine_positions TEXT NOT NULL,' +
-    'revealed TEXT NOT NULL DEFAULT \'[]\',' +
-    'status TEXT NOT NULL DEFAULT \'active\',' +
-    'payout REAL NOT NULL DEFAULT 0,' +
-    'created_at TEXT DEFAULT (datetime(\'now\'))' +
-    ')'
-  );
-  schemaReady=true;
-}
-
-function calcMultiplier(revealed_count,mines_count){
-  var m=1.0;
-  for(var i=0;i<revealed_count;i++){
-    m*=(25-i)/(25-mines_count-i)*0.99;
+function placeMines(count) {
+  var positions = [];
+  var pool = [];
+  for (var i = 0; i < GRID_SIZE; i++) pool.push(i);
+  // Fisher-Yates partial shuffle
+  for (var m = 0; m < count; m++) {
+    var idx = Math.floor(Math.random() * (pool.length - m)) + m;
+    var tmp = pool[m]; pool[m] = pool[idx]; pool[idx] = tmp;
+    positions.push(pool[m]);
   }
-  return parseFloat(m.toFixed(4));
+  return positions;
 }
 
-function placeMines(mines_count){
-  var indices=[];
-  for(var i=0;i<GRID_SIZE;i++){indices.push(i);}
-  for(var j2=GRID_SIZE-1;j2>0;j2--){
-    var k=Math.floor(Math.random()*(j2+1));
-    var tmp=indices[j2];indices[j2]=indices[k];indices[k]=tmp;
+// Compute multiplier after n safe reveals given total mines
+function calcMultiplier(mineCount, safeReveals) {
+  var safeTiles  = GRID_SIZE - mineCount;
+  if (safeReveals <= 0 || safeReveals > safeTiles) return 1.0;
+  // Probability of picking n safe tiles consecutively from 25 tiles
+  // P = C(safeTiles, n) * n! / (25 * 24 * ... * (25-n+1))
+  //   = (safeTiles! / (safeTiles-n)!) / (25! / (25-n)!)
+  var p = 1;
+  for (var i = 0; i < safeReveals; i++) {
+    p *= (safeTiles - i) / (GRID_SIZE - i);
   }
-  return indices.slice(0,mines_count);
+  // Fair payout would be 1/p; apply house edge
+  var mult = (1 / p) * (1 - HOUSE_EDGE);
+  return parseFloat(mult.toFixed(4));
 }
 
-router.get('/state',authenticate,async function(req,res){
-  try{
-    await ensureSchema();
-    var userId=req.user.id;
-    var game=await db.get(
-      'SELECT * FROM mines_games WHERE user_id = ? AND status = \'active\' ORDER BY id DESC LIMIT 1',
-      [userId]
-    );
-    if(!game){return res.json({active:false});}
-    var revealed=JSON.parse(game.revealed);
-    var multiplier=calcMultiplier(revealed.length,game.mines_count);
-    var potentialPayout=parseFloat((game.bet*multiplier).toFixed(2));
-    return res.json({
-      active:true,
-      gameId:game.id,
-      bet:game.bet,
-      mines_count:game.mines_count,
-      revealed:revealed,
-      multiplier:multiplier,
-      potentialPayout:potentialPayout,
-      status:game.status
-    });
-  }catch(err){
-    console.error('[mines] GET /state error:',err.message);
-    return res.status(500).json({error:'Failed to get game state'});
+var _games   = {};
+var GAME_TTL = 15 * 60 * 1000;
+
+function cleanGames() {
+  var now = Date.now();
+  Object.keys(_games).forEach(function(id) {
+    if (now - _games[id].ts > GAME_TTL) delete _games[id];
+  });
+}
+
+function newGameId() {
+  return Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+}
+
+// ── POST /start ───────────────────────────────────────────────────────────────
+
+router.post('/start', authenticate, async function(req, res) {
+  try {
+    cleanGames();
+    const userId = req.user.id;
+    const bet    = parseFloat(req.body.bet);
+    const mines  = parseInt(req.body.mines, 10);
+
+    if (isNaN(bet) || bet < MIN_BET || bet > MAX_BET) {
+      return res.status(400).json({ error: 'Bet must be $' + MIN_BET + '\u2013$' + MAX_BET });
+    }
+    if (isNaN(mines) || mines < 1 || mines > 24) {
+      return res.status(400).json({ error: 'Mines must be 1\u201324' });
+    }
+
+    const user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (parseFloat(user.balance) < bet) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
+
+    await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [bet, userId]);
+
+    var minePositions = placeMines(mines);
+    var gameId        = newGameId();
+
+    _games[gameId] = {
+      userId:        userId,
+      bet:           bet,
+      mines:         mines,
+      minePositions: minePositions,
+      revealed:      [],   // tile indices revealed so far (safe)
+      multiplier:    1.0,
+      ts:            Date.now(),
+      over:          false,
+    };
+
+    return res.json({ success: true, gameId: gameId, gridSize: GRID_SIZE, mines: mines });
+  } catch (err) {
+    console.error('[Mines] POST /start error:', err.message);
+    return res.status(500).json({ error: 'Failed to start Mines' });
   }
 });
 
-router.post('/start',authenticate,async function(req,res){
-  try{
-    await ensureSchema();
-    var userId=req.user.id;
-    var bet=parseFloat(req.body.bet);
-    var mines=parseInt(req.body.mineCount,10);  // UI sends "mineCount"
-    if(isNaN(mines))mines=3;
-    if(isNaN(bet)||bet<MIN_BET||bet>MAX_BET){
-      return res.status(400).json({error:'Bet must be between '+MIN_BET+' and '+MAX_BET});
-    }
-    if(mines<1||mines>24){
-      return res.status(400).json({error:'Mines count must be between 1 and 24'});
-    }
-    // Forfeit any active game
-    var existing=await db.get(
-      'SELECT id FROM mines_games WHERE user_id = ? AND status = \'active\' LIMIT 1',
-      [userId]
-    );
-    if(existing){
-      await db.run(
-        'UPDATE mines_games SET status = \'forfeited\' WHERE id = ?',
-        [existing.id]
-      );
-    }
-    var user=await db.get('SELECT balance FROM users WHERE id = ?',[userId]);
-    if(!user)return res.status(404).json({error:'User not found'});
-    var balance=parseFloat(user.balance)||0;
-    if(balance<bet){return res.status(400).json({error:'Insufficient balance'});}
-    await db.run('UPDATE users SET balance = balance - ? WHERE id = ?',[bet,userId]);
-    var minePositions=placeMines(mines);
-    var result=await db.run(
-      'INSERT INTO mines_games (user_id, bet, mines_count, mine_positions, revealed, status, payout) VALUES (?, ?, ?, ?, \'[]\', \'active\', 0)',
-      [userId,bet,mines,JSON.stringify(minePositions)]
-    );
-    var updatedUser=await db.get('SELECT balance FROM users WHERE id = ?',[userId]);
-    var newBalance=updatedUser?parseFloat(updatedUser.balance):(balance-bet);
-    return res.json({success:true,gameId:result.lastID||result.id,mines:mines,bet:bet,newBalance:newBalance});
-  }catch(err){
-    console.error('[mines] POST /start error:',err.message);
-    return res.status(500).json({error:'Failed to start game'});
-  }
-});
+// ── POST /reveal ──────────────────────────────────────────────────────────────
 
-router.post('/reveal',authenticate,async function(req,res){
-  try{
-    await ensureSchema();
-    var userId=req.user.id;
-    var tileIndex=parseInt(req.body.tileIndex,10);  // UI sends "tileIndex"
-    if(isNaN(tileIndex)||tileIndex<0||tileIndex>24){
-      return res.status(400).json({error:'tileIndex must be 0-24'});
+router.post('/reveal', authenticate, async function(req, res) {
+  try {
+    const userId = req.user.id;
+    const gameId = req.body.gameId;
+    const tile   = parseInt(req.body.tile, 10);
+
+    if (!gameId || !_games[gameId]) return res.status(400).json({ error: 'Game not found' });
+    const game = _games[gameId];
+    if (game.userId !== userId) return res.status(403).json({ error: 'Not your game' });
+    if (game.over) return res.status(400).json({ error: 'Game already over' });
+    if (isNaN(tile) || tile < 0 || tile >= GRID_SIZE) {
+      return res.status(400).json({ error: 'Invalid tile' });
     }
-    var game=await db.get(
-      'SELECT * FROM mines_games WHERE user_id = ? AND status = \'active\' ORDER BY id DESC LIMIT 1',
-      [userId]
-    );
-    if(!game){return res.status(404).json({error:'No active game found'});}
-    var minePositions=JSON.parse(game.mine_positions);
-    var revealed=JSON.parse(game.revealed);
-    if(revealed.indexOf(tileIndex)!==-1){
-      return res.status(400).json({error:'Tile already revealed'});
+    if (game.revealed.indexOf(tile) >= 0) {
+      return res.status(400).json({ error: 'Tile already revealed' });
     }
-    // Hit a mine
-    if(minePositions.indexOf(tileIndex)!==-1){
-      await db.run(
-        'UPDATE mines_games SET status = \'busted\', payout = 0 WHERE id = ?',
-        [game.id]
-      );
-      return res.json({success:true,result:'mine',minePositions:minePositions,payout:0,newBalance:null});
+
+    var isMine = game.minePositions.indexOf(tile) >= 0;
+
+    if (isMine) {
+      game.over = true;
+      delete _games[gameId];
+      return res.json({
+        success:       true,
+        safe:          false,
+        multiplier:    0,
+        canCashout:    false,
+        gameOver:      true,
+        minePositions: game.minePositions,
+      });
     }
+
     // Safe tile
-    revealed.push(tileIndex);
-    var gemTiles=GRID_SIZE-game.mines_count;
-    var multiplier=calcMultiplier(revealed.length,game.mines_count);
-    var payout=parseFloat((game.bet*multiplier).toFixed(2));
-    // Auto-win: all gem tiles uncovered
-    if(revealed.length>=gemTiles){
-      await db.run(
-        'UPDATE mines_games SET revealed = ?, status = \'won\', payout = ? WHERE id = ?',
-        [JSON.stringify(revealed),payout,game.id]
-      );
-      await db.run('UPDATE users SET balance = balance + ? WHERE id = ?',[payout,userId]);
-      var autoProfit=parseFloat((payout-game.bet).toFixed(2));
-      if(autoProfit>0){
+    game.revealed.push(tile);
+    var newMult = calcMultiplier(game.mines, game.revealed.length);
+    game.multiplier = newMult;
+
+    var safeTiles    = GRID_SIZE - game.mines;
+    var allSafeFound = game.revealed.length >= safeTiles;
+
+    if (allSafeFound) {
+      // Player found all safe tiles — auto cashout
+      var payout = parseFloat((game.bet * newMult).toFixed(2));
+      var profit = parseFloat((payout - game.bet).toFixed(2));
+      await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, userId]);
+      if (profit > 0) {
         await db.run(
-          'INSERT INTO transactions (user_id, type, amount, description) VALUES (?, \'win\', ?, ?)',
-          [userId,autoProfit,'Mines: auto-win '+multiplier.toFixed(2)+'x']
-        ).catch(function(){});
+          "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, ?)",
+          [userId, profit, 'Mines: ' + game.mines + ' mines, all safe found ' + newMult + 'x']
+        ).catch(function() {});
       }
-      var winUser=await db.get('SELECT balance FROM users WHERE id = ?',[userId]);
-      return res.json({success:true,result:'safe',revealed:revealed,multiplier:multiplier,payout:payout,gameOver:true,autoWin:true,newBalance:winUser?parseFloat(winUser.balance):null});
+      delete _games[gameId];
+      const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+      return res.json({
+        success:       true,
+        safe:          true,
+        multiplier:    newMult,
+        canCashout:    false,
+        gameOver:      true,
+        autoWin:       true,
+        payout:        payout,
+        profit:        profit,
+        newBalance:    u ? parseFloat(u.balance) : null,
+        minePositions: game.minePositions,
+      });
     }
-    await db.run(
-      'UPDATE mines_games SET revealed = ? WHERE id = ?',
-      [JSON.stringify(revealed),game.id]
-    );
-    return res.json({success:true,result:'safe',revealed:revealed,multiplier:multiplier,payout:payout,gameOver:false});
-  }catch(err){
-    console.error('[mines] POST /reveal error:',err.message);
-    return res.status(500).json({error:'Failed to reveal tile'});
+
+    return res.json({
+      success:    true,
+      safe:       true,
+      multiplier: newMult,
+      canCashout: true,
+      gameOver:   false,
+    });
+  } catch (err) {
+    console.error('[Mines] POST /reveal error:', err.message);
+    return res.status(500).json({ error: 'Failed to reveal tile' });
   }
 });
 
-router.post('/cashout',authenticate,async function(req,res){
-  try{
-    await ensureSchema();
-    var userId=req.user.id;
-    var game=await db.get(
-      'SELECT * FROM mines_games WHERE user_id = ? AND status = \'active\' ORDER BY id DESC LIMIT 1',
-      [userId]
-    );
-    if(!game){return res.status(404).json({error:'No active game found'});}
-    var revealed=JSON.parse(game.revealed);
-    var minePositions=JSON.parse(game.mine_positions);
-    var multiplier=calcMultiplier(revealed.length,game.mines_count);
-    var payout=parseFloat((game.bet*multiplier).toFixed(2));
-    await db.run(
-      'UPDATE mines_games SET status = \'cashed_out\', payout = ? WHERE id = ?',
-      [payout,game.id]
-    );
-    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?',[payout,userId]);
-    var profit=parseFloat((payout-game.bet).toFixed(2));
-    if(profit>0){
+// ── POST /cashout ─────────────────────────────────────────────────────────────
+
+router.post('/cashout', authenticate, async function(req, res) {
+  try {
+    const userId = req.user.id;
+    const gameId = req.body.gameId;
+
+    if (!gameId || !_games[gameId]) return res.status(400).json({ error: 'Game not found' });
+    const game = _games[gameId];
+    if (game.userId !== userId) return res.status(403).json({ error: 'Not your game' });
+    if (game.over) return res.status(400).json({ error: 'Game already over' });
+    if (game.revealed.length === 0) {
+      return res.status(400).json({ error: 'Reveal at least one tile first' });
+    }
+
+    var payout = parseFloat((game.bet * game.multiplier).toFixed(2));
+    var profit = parseFloat((payout - game.bet).toFixed(2));
+
+    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, userId]);
+    if (profit > 0) {
       await db.run(
-        'INSERT INTO transactions (user_id, type, amount, description) VALUES (?, \'win\', ?, ?)',
-        [userId,profit,'Mines: cashed out '+multiplier.toFixed(2)+'x ('+revealed.length+' gems)']
-      ).catch(function(){});
+        "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, ?)",
+        [userId, profit, 'Mines: ' + game.mines + ' mines, ' + game.revealed.length + ' safe, ' + game.multiplier + 'x']
+      ).catch(function() {});
     }
-    var updatedUser=await db.get('SELECT balance FROM users WHERE id = ?',[userId]);
-    var newBalance=updatedUser?parseFloat(updatedUser.balance):null;
-    return res.json({success:true,payout:payout,multiplier:multiplier,minePositions:minePositions,newBalance:newBalance});
-  }catch(err){
-    console.error('[mines] POST /cashout error:',err.message);
-    return res.status(500).json({error:'Failed to cash out'});
+
+    var minePositions = game.minePositions;
+    delete _games[gameId];
+
+    const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    return res.json({
+      success:       true,
+      payout:        payout,
+      profit:        profit,
+      multiplier:    game.multiplier,
+      newBalance:    u ? parseFloat(u.balance) : null,
+      minePositions: minePositions,
+    });
+  } catch (err) {
+    console.error('[Mines] POST /cashout error:', err.message);
+    return res.status(500).json({ error: 'Failed to cashout' });
   }
 });
 
-module.exports=router;
+module.exports = router;
