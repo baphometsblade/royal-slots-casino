@@ -161,6 +161,7 @@ app.use('/api/threecardpoker',  require('./routes/threecardpoker.routes'));
 app.use('/api/letitride',       require('./routes/letitride.routes'));
 app.use('/api/crash',          require('./routes/crash.routes'));
 app.use('/api/mines',          require('./routes/mines.routes'));
+app.use('/api/scratch',        require('./routes/scratch.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
