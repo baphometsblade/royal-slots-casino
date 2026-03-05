@@ -1,84 +1,86 @@
 'use strict';
 
-// Plinko Game Routes — single-request, instant result, server-side RNG
+// Plinko - ball drops through a Galton board and lands in a multiplier slot.
+// 16 rows of pegs = 17 buckets. House edge ~3% (baked into multiplier table).
 //
-// POST /api/plinko/drop  { bet, risk }
-//   → { success, path, bucket, multiplier, payout, newBalance }
-//
-// risk: 'low' | 'medium' | 'high'
-// 8-row board → 9 buckets (0-8)
-// path: array of 8 values (0=left, 1=right); bucket = sum(path)
+// POST /api/plinko/play  { bet, risk }
 
 const express  = require('express');
 const router   = express.Router();
 const db       = require('../database');
 const { authenticate } = require('../middleware/auth');
 
-const MIN_BET = 0.10;
+const MIN_BET = 0.25;
 const MAX_BET = 500;
-const ROWS    = 8;
+const ROWS    = 16;
 
-// Multiplier tables — symmetric, indexed by bucket (0..8)
-// EV verified against binomial(8, 0.5) distribution
 const MULTIPLIERS = {
-  low:    [0.5,  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
-  medium: [9.0,  2.6, 1.3, 0.9, 0.3, 0.9, 1.3, 2.6, 9.0],
-  high:   [25.0, 4.5, 1.3, 0.4, 0.1, 0.4, 1.3, 4.5, 25.0],
+  low:    [5.6, 2.1, 1.1, 1.0, 0.5, 0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 1.0, 1.1, 2.1, 5.6],
+  medium: [110,  41,  10,   5,   3, 1.5,   1, 0.5, 0.3, 0.5,   1, 1.5,   3,   5,  10,  41, 110],
+  high:   [1000,130,  26,   9,   4,   2, 0.2, 0.2, 0.2, 0.2, 0.2,   2,   4,   9,  26, 130,1000],
 };
 
-function generatePath() {
-  const path = [];
-  for (let i = 0; i < ROWS; i++) {
-    path.push(Math.random() < 0.5 ? 0 : 1);
+function dropBall() {
+  var bucket = 0;
+  var path   = [];
+  for (var r = 0; r < ROWS; r++) {
+    var goRight = Math.random() < 0.5 ? 1 : 0;
+    path.push(goRight);
+    bucket += goRight;
   }
-  return path;
+  return { bucket: bucket, path: path };
 }
 
-router.post('/drop', authenticate, async function(req, res) {
+router.post('/play', authenticate, async function(req, res) {
   try {
     const userId = req.user.id;
-    const bet    = parseFloat(req.body.bet)  || 1.0;
-    const risk   = ['low', 'medium', 'high'].includes(req.body.risk)
-      ? req.body.risk : 'medium';
+    const bet    = parseFloat(req.body.bet);
+    const risk   = req.body.risk;
 
-    if (bet < MIN_BET || bet > MAX_BET) {
-      return res.status(400).json({ error: 'Bet out of range ($0.10 – $500)' });
+    if (isNaN(bet) || bet < MIN_BET || bet > MAX_BET) {
+      return res.status(400).json({ error: 'Bet must be $' + MIN_BET + ' - $' + MAX_BET });
+    }
+    if (!MULTIPLIERS[risk]) {
+      return res.status(400).json({ error: 'Risk must be low, medium, or high' });
     }
 
     const user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    const balance = parseFloat(user.balance) || 0;
-    if (balance < bet) return res.status(400).json({ error: 'Insufficient balance' });
+    if (parseFloat(user.balance) < bet) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
 
     await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [bet, userId]);
 
-    const path       = generatePath();
-    const bucket     = path.reduce((s, v) => s + v, 0);
+    const { bucket, path } = dropBall();
     const multiplier = MULTIPLIERS[risk][bucket];
     const payout     = parseFloat((bet * multiplier).toFixed(2));
+    const profit     = parseFloat((payout - bet).toFixed(2));
 
     if (payout > 0) {
       await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, userId]);
-      if (payout > bet) {
-        await db.run(
-          "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, ?)",
-          [userId, payout, 'Plinko win ' + multiplier + 'x (' + risk + ')']
-        );
-      }
+    }
+
+    if (profit > 0) {
+      await db.run(
+        "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'win', ?, ?)",
+        [userId, profit, 'Plinko: ' + risk + ' risk, ' + multiplier + 'x (bucket ' + bucket + ')']
+      ).catch(function() {});
     }
 
     const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({
-      success: true,
-      path,
-      bucket,
-      multiplier,
-      payout,
+      success:    true,
+      bucket:     bucket,
+      multiplier: multiplier,
+      path:       path,
+      payout:     payout,
+      profit:     profit,
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[Plinko] POST /drop error:', err.message);
-    return res.status(500).json({ error: 'Failed to drop ball' });
+    console.error('[Plinko] POST /play error:', err.message);
+    return res.status(500).json({ error: 'Failed to play Plinko' });
   }
 });
 
