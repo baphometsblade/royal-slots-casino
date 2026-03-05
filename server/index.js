@@ -147,6 +147,7 @@ app.use('/api/dice',          require('./routes/dice.routes'));
 app.use('/api/blackjack',     require('./routes/blackjack.routes'));
 app.use('/api/videopoker',    require('./routes/videopoker.routes'));
 app.use('/api/keno',          require('./routes/keno.routes'));
+app.use('/api/baccarat',      require('./routes/baccarat.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
