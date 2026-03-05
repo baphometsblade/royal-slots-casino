@@ -151,6 +151,7 @@ app.use('/api/baccarat',      require('./routes/baccarat.routes'));
 app.use('/api/dragontiger',   require('./routes/dragontiger.routes'));
 app.use('/api/limbo',         require('./routes/limbo.routes'));
 app.use('/api/tower',         require('./routes/tower.routes'));
+app.use('/api/wheel',         require('./routes/wheel.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
