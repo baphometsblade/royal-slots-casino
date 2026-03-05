@@ -145,6 +145,7 @@ app.use('/api/hilo',          require('./routes/hilo.routes'));
 app.use('/api/roulette',      require('./routes/roulette.routes'));
 app.use('/api/dice',          require('./routes/dice.routes'));
 app.use('/api/blackjack',     require('./routes/blackjack.routes'));
+app.use('/api/videopoker',    require('./routes/videopoker.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
