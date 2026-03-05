@@ -164,6 +164,7 @@ app.use('/api/mines',          require('./routes/mines.routes'));
 app.use('/api/scratch',        require('./routes/scratch.routes'));
 app.use('/api/bigsixwheel',    require('./routes/bigsixwheel.routes'));
 app.use('/api/chuckaluck',     require('./routes/chuckaluck.routes'));
+app.use('/api/moneywheel',     require('./routes/moneywheel.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
