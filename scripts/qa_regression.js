@@ -151,7 +151,16 @@ async function dismissFeaturePopupIfVisible(page) {
 
   const playButton = await page.$("#featurePopupPlayBtn");
   if (playButton) {
-    await playButton.click({ timeout: 5000 });
+    try {
+      await playButton.click({ timeout: 3000, force: true });
+    } catch (_) {
+      // fallback: dismiss via JS if the click can't land
+      await page.evaluate(() => {
+        if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
+        const overlay = document.getElementById("slotFeaturePopup");
+        if (overlay) overlay.style.display = "none";
+      });
+    }
   } else {
     await page.evaluate(() => {
       if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
