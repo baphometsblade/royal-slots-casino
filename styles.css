@@ -13436,7 +13436,20 @@
   color: #bbb;
 }
 .paytable-symbol-icon {
-  font-size: 14px;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.25);
+}
+.paytable-symbol-chip .paytable-symbol-icon img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
 }
 .paytable-bonus-desc {
   font-size: 13px;
