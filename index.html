@@ -235,74 +235,140 @@
                 </button>
             </div>
 
-            <!-- Promotions -->
-            <div class="csb-section">
-                <div class="csb-section-label">&#x1F381; PROMOTIONS</div>
-                <button class="csb-item csb-item-promo" onclick="showBonusWheelModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F3A1;</span><span>Daily Bonus Wheel</span>
-                    <span class="csb-badge csb-badge-new">FREE</span>
+            <!-- Promotions (collapsible) -->
+            <div class="csb-section csb-dd" id="csbDdPromos">
+                <button class="csb-dd-hdr" onclick="toggleCsbDD(this)">
+                    <span>&#x1F381;</span><span>BONUSES &amp; PROMOS</span><span class="csb-dd-chevron">&#9660;</span>
                 </button>
-                <button class="csb-item" onclick="if(typeof openJackpotTracker==='function')openJackpotTracker();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F4B0;</span><span>Jackpots</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openTournamentModal==='function')openTournamentModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F3C6;</span><span>Tournaments</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openDailyMissions==='function')openDailyMissions();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F3AF;</span><span>Daily Missions</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openDailyCashbackModal==='function')openDailyCashbackModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F4B5;</span><span>Cashback</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openRakebackModal==='function')openRakebackModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F4B5;</span><span>Rakeback</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openReferralModal==='function')openReferralModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F465;</span><span>Refer a Friend</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openPromoCode==='function')openPromoCode();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F3DF;&#xFE0F;</span><span>Promo Code</span>
-                </button>
+                <div class="csb-dd-body">
+                    <button class="csb-item csb-item-promo" onclick="showBonusWheelModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3A1;</span><span>Daily Wheel</span>
+                        <span class="csb-badge csb-badge-new">FREE</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openJackpotTracker==='function')openJackpotTracker();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4B0;</span><span>Jackpots</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openTournamentModal==='function')openTournamentModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3C6;</span><span>Tournaments</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openDailyMissions==='function')openDailyMissions();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3AF;</span><span>Daily Missions</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openDailyCashbackModal==='function')openDailyCashbackModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4B5;</span><span>Cashback</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openRakebackModal==='function')openRakebackModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4B5;</span><span>Rakeback</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openCampaignsModal==='function')openCampaignsModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F381;</span><span>Campaigns</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openLoginCalendar==='function')openLoginCalendar();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4C5;</span><span>Login Bonus</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openReferralModal==='function')openReferralModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F465;</span><span>Refer a Friend</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openPromoCode==='function')openPromoCode();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F39F;&#xFE0F;</span><span>Promo Code</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- VIP -->
-            <div class="csb-section">
-                <div class="csb-section-label">&#x1F451; VIP</div>
-                <button class="csb-item csb-item-vip" onclick="if(typeof openVipWheelModal==='function')openVipWheelModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F451;</span><span>VIP Wheel</span>
+            <!-- VIP (collapsible) -->
+            <div class="csb-section csb-dd" id="csbDdVip">
+                <button class="csb-dd-hdr" onclick="toggleCsbDD(this)">
+                    <span>&#x1F451;</span><span>VIP</span><span class="csb-dd-chevron">&#9660;</span>
                 </button>
-                <button class="csb-item csb-item-vip" onclick="if(typeof openRentalModal==='function')openRentalModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F510;</span><span>VIP Access</span>
-                </button>
-                <button class="csb-item csb-item-vip" onclick="if(typeof openBattlePassModal==='function')openBattlePassModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x2694;&#xFE0F;</span><span>Battle Pass</span>
-                </button>
-                <button class="csb-item csb-item-vip" onclick="if(typeof openBundleStore==='function')openBundleStore();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F48E;</span><span>Bundles</span>
-                </button>
-                <button class="csb-item csb-item-vip" onclick="if(typeof openLoyaltyShop==='function')openLoyaltyShop();closeSidebarMobile()">
-                    <span class="csb-icon">&#x2B50;</span><span>Loyalty Shop</span>
-                </button>
+                <div class="csb-dd-body">
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openVipWheelModal==='function')openVipWheelModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F451;</span><span>VIP Wheel</span>
+                    </button>
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openRentalModal==='function')openRentalModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F510;</span><span>VIP Access</span>
+                    </button>
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openBattlePassModal==='function')openBattlePassModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x2694;&#xFE0F;</span><span>Battle Pass</span>
+                    </button>
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openBundleStore==='function')openBundleStore();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F48E;</span><span>Bundles</span>
+                    </button>
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openSubscriptionModal==='function')openSubscriptionModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4B3;</span><span>Subscription</span>
+                    </button>
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openCosmeticsShop==='function')openCosmeticsShop();closeSidebarMobile()">
+                        <span class="csb-icon">&#x2728;</span><span>Cosmetics</span>
+                    </button>
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openLoyaltyShop==='function')openLoyaltyShop();closeSidebarMobile()">
+                        <span class="csb-icon">&#x2B50;</span><span>Loyalty Shop</span>
+                    </button>
+                    <button class="csb-item csb-item-vip" onclick="if(typeof openBoostModal==='function')openBoostModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x26A1;</span><span>Boosts</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Account -->
-            <div class="csb-section">
-                <div class="csb-section-label">&#x1F464; ACCOUNT</div>
-                <button class="csb-item" onclick="openStatsModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F4CA;</span><span>My Stats</span>
+            <!-- Account (collapsible) -->
+            <div class="csb-section csb-dd" id="csbDdAccount">
+                <button class="csb-dd-hdr" onclick="toggleCsbDD(this)">
+                    <span>&#x1F464;</span><span>MY ACCOUNT</span><span class="csb-dd-chevron">&#9660;</span>
                 </button>
-                <button class="csb-item" onclick="if(typeof openLeaderboardModal==='function')openLeaderboardModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F3C6;</span><span>Leaderboard</span>
+                <div class="csb-dd-body">
+                    <button class="csb-item" onclick="openStatsModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4CA;</span><span>My Stats</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openLeaderboardModal==='function')openLeaderboardModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3C6;</span><span>Leaderboard</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openAchievementsModal==='function')openAchievementsModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F947;</span><span>Achievements</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openSpinHistory==='function')openSpinHistory();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4CB;</span><span>Spin History</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openPlayerCard==='function')openPlayerCard();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1FAA7;</span><span>Player Card</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openWinReplays==='function')openWinReplays();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F39E;&#xFE0F;</span><span>Win Replays</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openXpShop==='function')openXpShop();closeSidebarMobile()">
+                        <span class="csb-icon">&#x2697;&#xFE0F;</span><span>XP Shop</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Extras (collapsible) -->
+            <div class="csb-section csb-dd" id="csbDdExtras">
+                <button class="csb-dd-hdr" onclick="toggleCsbDD(this)">
+                    <span>&#x1F3AE;</span><span>EXTRAS</span><span class="csb-dd-chevron">&#9660;</span>
                 </button>
-                <button class="csb-item" onclick="if(typeof openAchievementsModal==='function')openAchievementsModal();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F947;</span><span>Achievements</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openSpinHistory==='function')openSpinHistory();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1F4CB;</span><span>Spin History</span>
-                </button>
-                <button class="csb-item" onclick="if(typeof openPlayerCard==='function')openPlayerCard();closeSidebarMobile()">
-                    <span class="csb-icon">&#x1FAA7;</span><span>Player Card</span>
-                </button>
+                <div class="csb-dd-body">
+                    <button class="csb-item" id="mysteryBoxNavBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F4E6;</span><span>Mystery Box</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openLuckySpin==='function')openLuckySpin();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3A1;</span><span>Lucky Spin</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openFortuneWheel==='function')openFortuneWheel();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F52E;</span><span>Fortune Wheel</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openMegaWheelModal==='function')openMegaWheelModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3A1;</span><span>Mega Wheel</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof toggleFeedPanel==='function')toggleFeedPanel();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F389;</span><span>Live Feed</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openGiftsModal==='function')openGiftsModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F381;</span><span>Gifts</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openScratchCard==='function')openScratchCard();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3B4;</span><span>Scratch Card</span>
+                    </button>
+                    <button class="csb-item" onclick="if(typeof openScratchCardModal==='function')openScratchCardModal();closeSidebarMobile()">
+                        <span class="csb-icon">&#x1F3B0;</span><span>Scratch 2.0</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -385,62 +451,6 @@
                     <button class="qgn-tile" style="--qgt:6" onclick="if(typeof openChuckALuck==='function')openChuckALuck()"><span class="qgn-icon">🎲</span><span>Chuck-a-Luck</span></button>
                     <button class="qgn-tile" style="--qgt:7" onclick="if(typeof openMoneyWheel==='function')openMoneyWheel()"><span class="qgn-icon">💰</span><span>Money Wheel</span></button>
                     <button class="qgn-tile" style="--qgt:8" onclick="if(typeof openScratch==='function')openScratch()"><span class="qgn-icon">🎟️</span><span>Scratch</span></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Casino Features Grid -->
-        <div class="casino-features-grid">
-            <div class="cfg-category">
-                <div class="cfg-cat-label">🎁 BONUSES</div>
-                <div class="cfg-cat-items">
-                    <button class="cfg-btn" onclick="showBonusWheelModal()"><span>🎡</span>Daily Wheel</button>
-                    <button class="cfg-btn" onclick="if(typeof openJackpotTracker==='function')openJackpotTracker()"><span>💰</span>Jackpots</button>
-                    <button class="cfg-btn" onclick="if(typeof openTournamentModal==='function')openTournamentModal()"><span>🏆</span>Tournaments</button>
-                    <button class="cfg-btn" onclick="if(typeof openDailyMissions==='function')openDailyMissions()"><span>🎯</span>Missions</button>
-                    <button class="cfg-btn" onclick="if(typeof openDailyCashbackModal==='function')openDailyCashbackModal()"><span>💰</span>Cashback</button>
-                    <button class="cfg-btn" onclick="if(typeof openRakebackModal==='function')openRakebackModal()"><span>💵</span>Rakeback</button>
-                    <button class="cfg-btn" onclick="if(typeof openCampaignsModal==='function')openCampaignsModal()"><span>🎁</span>Campaigns</button>
-                    <button class="cfg-btn" onclick="if(typeof openLoginCalendar==='function')openLoginCalendar()"><span>📅</span>Login Bonus</button>
-                </div>
-            </div>
-            <div class="cfg-category">
-                <div class="cfg-cat-label">👑 VIP</div>
-                <div class="cfg-cat-items">
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openVipWheelModal==='function')openVipWheelModal()"><span>👑</span>VIP Wheel</button>
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openRentalModal==='function')openRentalModal()"><span>🔐</span>VIP Access</button>
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openBattlePassModal==='function')openBattlePassModal()"><span>⚔️</span>Battle Pass</button>
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openBundleStore==='function')openBundleStore()"><span>💎</span>Bundles</button>
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openSubscriptionModal==='function')openSubscriptionModal()"><span>💳</span>Subscription</button>
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openCosmeticsShop==='function')openCosmeticsShop()"><span>✨</span>Cosmetics</button>
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openLoyaltyShop==='function')openLoyaltyShop()"><span>⭐</span>Loyalty Shop</button>
-                    <button class="cfg-btn cfg-vip" onclick="if(typeof openBoostModal==='function')openBoostModal()"><span>⚡</span>Boosts</button>
-                </div>
-            </div>
-            <div class="cfg-category">
-                <div class="cfg-cat-label">📊 MY ACCOUNT</div>
-                <div class="cfg-cat-items">
-                    <button class="cfg-btn" onclick="if(typeof openLeaderboardModal==='function')openLeaderboardModal()"><span>📊</span>Leaderboard</button>
-                    <button class="cfg-btn" onclick="if(typeof openAchievementsModal==='function')openAchievementsModal()"><span>🥇</span>Achievements</button>
-                    <button class="cfg-btn" onclick="if(typeof openSpinHistory==='function')openSpinHistory()"><span>📋</span>History</button>
-                    <button class="cfg-btn" onclick="if(typeof openPlayerCard==='function')openPlayerCard()"><span>🪪</span>Player Card</button>
-                    <button class="cfg-btn" onclick="if(typeof openWinReplays==='function')openWinReplays()"><span>🎞️</span>Replays</button>
-                    <button class="cfg-btn" onclick="if(typeof openReferralModal==='function')openReferralModal()"><span>👥</span>Refer a Friend</button>
-                    <button class="cfg-btn" onclick="if(typeof openXpShop==='function')openXpShop()"><span>⚗️</span>XP Shop</button>
-                    <button class="cfg-btn" onclick="if(typeof openPromoCode==='function')openPromoCode()"><span>🎟️</span>Promo Code</button>
-                </div>
-            </div>
-            <div class="cfg-category">
-                <div class="cfg-cat-label">🎮 EXTRAS</div>
-                <div class="cfg-cat-items">
-                    <button class="cfg-btn" id="mysteryBoxNavBtn" onclick="if(typeof openMysteryBox==='function')openMysteryBox()"><span>📦</span>Mystery Box</button>
-                    <button class="cfg-btn" onclick="if(typeof openLuckySpin==='function')openLuckySpin()"><span>🎡</span>Lucky Spin</button>
-                    <button class="cfg-btn" onclick="if(typeof openFortuneWheel==='function')openFortuneWheel()"><span>🔮</span>Fortune Wheel</button>
-                    <button class="cfg-btn" onclick="if(typeof openMegaWheelModal==='function')openMegaWheelModal()"><span>🎡</span>Mega Wheel</button>
-                    <button class="cfg-btn" onclick="if(typeof toggleFeedPanel==='function')toggleFeedPanel()"><span>🎉</span>Live Feed</button>
-                    <button class="cfg-btn" onclick="if(typeof openGiftsModal==='function')openGiftsModal()"><span>🎁</span>Gifts</button>
-                    <button class="cfg-btn" onclick="if(typeof openScratchCard==='function')openScratchCard()"><span>🎴</span>Scratch Card</button>
-                    <button class="cfg-btn" onclick="if(typeof openScratchCardModal==='function')openScratchCardModal()"><span>🎰</span>Scratch 2.0</button>
                 </div>
             </div>
         </div>
@@ -2291,6 +2301,11 @@
           };
           window.closeSidebarMobile = function() {
             if (window.innerWidth < 1100) window.toggleSidebar(false);
+          };
+          window.toggleCsbDD = function(btn) {
+            var section = btn ? btn.closest('.csb-dd') : null;
+            if (!section) return;
+            section.classList.toggle('csb-dd-open');
           };
           // ESC key closes sidebar
           document.addEventListener('keydown', function(e) {

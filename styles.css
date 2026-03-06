@@ -18433,3 +18433,19 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 @media (min-width: 1100px) {
     .csb-overlay { display: none !important; }
 }
+
+/* ═══ Sidebar collapsible dropdown accordion ═══ */
+.csb-dd-hdr {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; background: rgba(255,255,255,.04); border: none;
+  padding: 10px 14px; border-radius: 8px;
+  color: rgba(255,255,255,.5); font-size: 10px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+  transition: background .15s, color .15s; margin-bottom: 2px; text-align: left;
+}
+.csb-dd-hdr:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); }
+.csb-dd.csb-dd-open .csb-dd-hdr { color: rgba(255,255,255,.9); background: rgba(167,139,250,.1); }
+.csb-dd-chevron { margin-left: auto; transition: transform .3s; display: inline-block; }
+.csb-dd.csb-dd-open .csb-dd-chevron { transform: rotate(180deg); }
+.csb-dd-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+.csb-dd.csb-dd-open .csb-dd-body { max-height: 800px; }

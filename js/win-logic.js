@@ -134,7 +134,9 @@
                 // Get symbols on this payline
                 const lineSymbols = [];
                 for (let c = 0; c < Math.min(cols, line.length); c++) {
-                    lineSymbols.push(grid[c][line[c]]);
+                    const rowIdx = line[c];
+                    if (!grid[c] || rowIdx < 0 || rowIdx >= grid[c].length) continue;
+                    lineSymbols.push(grid[c][rowIdx]);
                 }
 
                 // Check for left-to-right consecutive matches
@@ -223,6 +225,80 @@
         function getWheelMultiplier(game) {
             const mults = game.wheelMultipliers || [2, 3, 5];
             return mults[Math.floor(getRandomNumber() * mults.length)];
+        }
+
+
+        // ═══ Win Payline Flash Animation ═══
+        function _flashWinLines(winLines) {
+            if (!winLines || winLines.length === 0) return;
+            var reels = document.getElementById('reels');
+            if (!reels) return;
+
+            // Create or reuse canvas overlay
+            var canvas = document.getElementById('winLineCanvas');
+            if (!canvas) {
+                canvas = document.createElement('canvas');
+                canvas.id = 'winLineCanvas';
+                canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:20;border-radius:inherit;';
+                if (getComputedStyle(reels).position === 'static') reels.style.position = 'relative';
+                reels.appendChild(canvas);
+            }
+
+            var rect = reels.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            var ctx = canvas.getContext('2d');
+
+            function getCellCenter(col, row) {
+                var cell = document.getElementById('reel_' + col + '_' + row);
+                if (!cell) return null;
+                var cr = cell.getBoundingClientRect();
+                return { x: cr.left - rect.left + cr.width / 2, y: cr.top - rect.top + cr.height / 2 };
+            }
+
+            var LINE_COLORS = ['#fbbf24','#a78bfa','#34d399','#60a5fa','#f472b6','#fb923c','#e879f9'];
+
+            function drawLines(alpha) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.globalAlpha = alpha;
+                winLines.forEach(function(win, idx) {
+                    var color = LINE_COLORS[idx % LINE_COLORS.length];
+                    var points = win.cells.map(function(pair) { return getCellCenter(pair[0], pair[1]); }).filter(Boolean);
+                    if (points.length < 2) return;
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (var i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3;
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 14;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke();
+                    // Draw endpoint dots
+                    [points[0], points[points.length - 1]].forEach(function(p) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.fill();
+                    });
+                });
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+            }
+
+            // Flash sequence: on/off pulses then fade
+            var seq = [1, 0, 1, 0, 1, 0.8, 0.5, 0.2, 0];
+            var step = 0;
+            function tick() {
+                if (step >= seq.length) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+                drawLines(seq[step]);
+                step++;
+                setTimeout(tick, step <= 4 ? 160 : 220);
+            }
+            setTimeout(tick, 80);
         }
 
 
@@ -385,6 +461,7 @@
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
                     }
 
+                    _flashWinLines(_lastWinLines);
                     { const _wm = currentBet > 0 ? winAmount / currentBet : 0;
                       playSound(_wm >= WIN_TIER_EPIC_THRESHOLD ? 'jackpot' : _wm >= WIN_TIER_MEGA_THRESHOLD ? 'megawin' : _wm >= WIN_TIER_BIG_THRESHOLD ? 'bigwin' : 'win'); }
                     showWinAnimation(winAmount); upgradeWinGlow(winAmount);
