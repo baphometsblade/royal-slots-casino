@@ -313,6 +313,39 @@ router.post('/', authenticate, async (req, res) => {
         // ── Update game stats (house edge tracking) ──
         await houseEdge.updateGameStats(db, gameId, usedFreeSpin ? 0 : bet, spinResult.winAmount);
 
+        // ── Daily challenges progress (async fire-and-forget, non-blocking) ──
+        if (!usedFreeSpin) {
+            (async function () {
+                try {
+                    const challengesService = require('../services/challenges.service');
+                    const progressCalls = [
+                        challengesService.updateProgress(userId, 'total_spins', 1)
+                    ];
+                    if (bet > 0) {
+                        progressCalls.push(challengesService.updateProgress(userId, 'total_wager', bet));
+                    }
+                    if (spinResult.winAmount > 0) {
+                        progressCalls.push(challengesService.updateProgress(userId, 'any_win', 1));
+                    }
+                    // big_win: only count wins >= $5 to track meaningful payouts
+                    if (spinResult.winAmount >= 5) {
+                        progressCalls.push(challengesService.updateProgress(userId, 'big_win', spinResult.winAmount));
+                    }
+                    // different_games: only increment on the first spin of this game today
+                    const prevToday = await db.get(
+                        "SELECT COUNT(*) as cnt FROM spins WHERE user_id = ? AND game_id = ? AND date(created_at) = date('now')",
+                        [userId, gameId]
+                    );
+                    if (prevToday && prevToday.cnt <= 1) {
+                        progressCalls.push(challengesService.updateProgress(userId, 'different_games', 1));
+                    }
+                    await Promise.all(progressCalls);
+                } catch (e) {
+                    console.error('[Challenges] Progress error:', e);
+                }
+            }());
+        }
+
         // ── Wagering progress tracking ──
         if (!usedFreeSpin && bet > 0) {
             try {
