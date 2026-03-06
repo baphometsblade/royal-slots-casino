@@ -555,10 +555,16 @@
             var minBet = "$" + (game.minBet || 0.20).toFixed(2);
             var maxBet = "$" + (game.maxBet || 500).toFixed(2);
             var payoutEntries = [];
+            // Payline payouts (5x3, 5x4 grids)
+            if (payouts.payline5)   payoutEntries.push(["5-of-a-Kind", payouts.payline5 + "x"]);
+            if (payouts.payline4)   payoutEntries.push(["4-of-a-Kind", payouts.payline4 + "x"]);
+            if (payouts.payline3)   payoutEntries.push(["3-of-a-Kind", payouts.payline3 + "x"]);
+            // Classic payouts (3-reel)
             if (payouts.triple)     payoutEntries.push(["3x Match", payouts.triple + "x"]);
             if (payouts.double)     payoutEntries.push(["2x Match", payouts.double + "x"]);
             if (payouts.wildTriple) payoutEntries.push(["3x Wild", payouts.wildTriple + "x"]);
             if (payouts.scatterPay) payoutEntries.push(["Scatter", payouts.scatterPay + "x"]);
+            // Cluster payouts (6x5, 7x7 grids)
             if (payouts.cluster5)   payoutEntries.push(["Cluster 5+", payouts.cluster5 + "x"]);
             if (payouts.cluster8)   payoutEntries.push(["Cluster 8+", payouts.cluster8 + "x"]);
             if (payouts.cluster12)  payoutEntries.push(["Cluster 12+", payouts.cluster12 + "x"]);

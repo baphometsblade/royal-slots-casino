@@ -938,6 +938,16 @@ function renderGames() {
             return { hotIds: _cachedHotIds, newIds: _cachedNewIds };
         }
 
+        function _getMaxWinMultiplier(game) {
+            var p = game.payouts || {};
+            var candidates = [
+                p.payline5, p.payline4, p.payline3,
+                p.cluster15, p.cluster12, p.cluster8, p.cluster5,
+                p.wildTriple, p.triple, p.double
+            ].filter(function(v) { return typeof v === 'number' && v > 0; });
+            return candidates.length ? Math.max.apply(null, candidates) : 0;
+        }
+
         function createGameCard(game) {
             const { hotIds: _hotIds, newIds: _newIds } = _getHotNewCached();
             // Thumbnails are lazy-loaded via IntersectionObserver (_initLazyThumbnails).
@@ -1008,6 +1018,11 @@ function renderGames() {
                     hotColdHtml = '<div class="game-cold-badge" title="Cold. RTP ' + stats.actualRtp.toFixed(1) + '%">❄️</div>';
                 }
             }
+            // Max win badge — shows the top multiplier from the game's paytable
+            var maxWin = _getMaxWinMultiplier(game);
+            var maxWinHtml = maxWin > 0
+                ? '<div class="game-max-win-badge" title="Max win multiplier">' + (maxWin >= 1000 ? (maxWin/1000).toFixed(1) + 'K' : maxWin) + 'x</div>'
+                : '';
             _seedCount(game.id, isHot || _hotIds.has(game.id));
             return `
                 <div class="game-card${isHot ? ' game-card-hot' : ''}${isJackpot ? ' game-card-jackpot' : ''}${gameDayCardClass}" onclick="if(typeof _compareMode!=='undefined'&&_compareMode){_addToCompare('${game.id}');this.classList.toggle('compare-selected',typeof _compareGames!=='undefined'&&_compareGames.indexOf('${game.id}')>=0);}else{openSlot('${game.id}');}" style="position:relative" data-game-name="${(game.name || game.id || '').toLowerCase()}" data-game-id="${(game.id || '').toLowerCase()}">
@@ -1043,6 +1058,7 @@ function renderGames() {
                     ${_newIds.has(game.id) ? '<span class="lobby-badge lobby-badge-new">✨ NEW</span>' : ''}
                     ${gameDayBadgeHtml}
                     ${hotColdHtml}
+                    ${maxWinHtml}
                 </div>
             `;
         }
