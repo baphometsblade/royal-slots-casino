@@ -654,7 +654,7 @@
             if (!game) return;
 
             const winType = getWinType(game);
-            const grid = currentGrid;
+            let grid = currentGrid;
             let winAmount = 0;
             let message = '';
             let isTriple = false;
@@ -912,15 +912,33 @@
 
             // ═══ CLASSIC 3-REEL WIN DETECTION ═══
             } else {
-                const wildCount = countWilds(symbols, game);
+                // For multi-row classic games (e.g. 3x3), check all paylines and pick the best
+                // single-row games use the symbols param directly (row 0)
+                let evalSymbols = symbols;
+                if (grid && isMultiRow(game)) {
+                    const paylines = getPaylines(game);
+                    let foundTriple = null;
+                    let foundDouble = null;
+                    for (const pl of paylines) {
+                        // pl is [rowIdx_col0, rowIdx_col1, ...] — extract symbol from each column
+                        const plSyms = pl.map((rowIdx, colIdx) => grid[colIdx] ? grid[colIdx][rowIdx] : null).filter(s => s != null);
+                        if (plSyms.length >= 3) {
+                            if (!foundTriple && isTripleMatch(plSyms, game)) foundTriple = plSyms;
+                            else if (!foundDouble && getDoubleMatch(plSyms, game)) foundDouble = plSyms;
+                        }
+                    }
+                    evalSymbols = foundTriple || foundDouble || symbols;
+                }
+
+                const wildCount = countWilds(evalSymbols, game);
                 const hasWild = wildCount > 0;
 
-                if (isTripleMatch(symbols, game)) {
+                if (isTripleMatch(evalSymbols, game)) {
                     isTriple = true;
                     isBigWin = true;
                     const allWilds = wildCount === 3;
                     // Use realistic paytable from House Edge engine
-                    const matchSym = symbols.find(s => !isWild(s, game)) || symbols[0];
+                    const matchSym = evalSymbols.find(s => !isWild(s, game)) || evalSymbols[0];
                     const symIdx = game.symbols.indexOf(matchSym);
                     let payMultiplier;
                     if (window.HouseEdge) {
@@ -1000,11 +1018,11 @@
                     _lastWinLines.push({ cells: Array.from({length: cols3}, (_, c) => [c, 0]), lineIndex: 0 });
 
                 } else {
-                    const doublePair = getDoubleMatch(symbols, game);
+                    const doublePair = getDoubleMatch(evalSymbols, game);
                     if (doublePair) {
                         isDouble = true;
                         // Use realistic paytable from House Edge engine
-                        const matchSym = symbols[doublePair[0]];
+                        const matchSym = evalSymbols[doublePair[0]];
                         const symIdx = game.symbols.indexOf(matchSym);
                         let payMultiplier;
                         if (window.HouseEdge) {
