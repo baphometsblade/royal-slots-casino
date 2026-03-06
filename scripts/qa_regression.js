@@ -141,43 +141,20 @@ async function waitForPageTransitionIdle(page, timeout = 10000) {
 }
 
 async function dismissFeaturePopupIfVisible(page) {
-  const popupVisible = await page.evaluate(() => {
+  // Always force-dismiss via JS — safe even if the popup isn't visible.
+  // Avoids waitForFunction timeouts caused by CSS transitions or re-opens.
+  await page.evaluate(() => {
+    if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
     const overlay = document.getElementById("slotFeaturePopup");
-    if (!overlay) return false;
-    const style = window.getComputedStyle(overlay);
-    return style.display !== "none" && style.visibility !== "hidden" && style.pointerEvents !== "none";
-  });
-  if (!popupVisible) return;
-
-  const playButton = await page.$("#featurePopupPlayBtn");
-  if (playButton) {
-    try {
-      await playButton.click({ timeout: 3000, force: true });
-    } catch (_) {
-      // fallback: dismiss via JS if the click can't land
-      await page.evaluate(() => {
-        if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
-        const overlay = document.getElementById("slotFeaturePopup");
-        if (overlay) overlay.style.display = "none";
-      });
+    if (overlay) {
+      overlay.style.display = "none";
+      overlay.style.visibility = "hidden";
+      overlay.style.pointerEvents = "none";
+      overlay.classList.remove("active");
     }
-  } else {
-    await page.evaluate(() => {
-      if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
-      const overlay = document.getElementById("slotFeaturePopup");
-      if (overlay) overlay.style.display = "none";
-    });
-  }
-
-  await page.waitForFunction(
-    () => {
-      const overlay = document.getElementById("slotFeaturePopup");
-      if (!overlay) return true;
-      const style = window.getComputedStyle(overlay);
-      return style.display === "none" || style.visibility === "hidden" || style.pointerEvents === "none";
-    },
-    { timeout: 5000 }
-  );
+  });
+  // Brief pause to let any CSS transitions settle
+  await page.waitForTimeout(300);
 }
 
 async function clickSpinButton(page) {
