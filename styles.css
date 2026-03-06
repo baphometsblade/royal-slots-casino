@@ -12604,7 +12604,7 @@
 .slot-shimmer-overlay {
     position: absolute;
     inset: 0;
-    z-index: 500;
+    z-index: 9000;
     pointer-events: none;
     border-radius: inherit;
     background: linear-gradient(
@@ -13181,7 +13181,7 @@
 .slot-intro-splash {
   position: absolute;
   inset: 0;
-  z-index: 9000;
+  z-index: 500;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18216,3 +18216,220 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     line-height: 1;
 }
 .nudge__close:hover { color: #94a3b8; }
+
+/* ── Casino Sidebar (5gringos-style) ─────────────────────────────────────── */
+:root { --csb-w: 220px; }
+
+.casino-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--csb-w);
+    height: 100vh;
+    background: linear-gradient(180deg, #0a0520 0%, #060312 100%);
+    border-right: 1px solid rgba(167,139,250,.15);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    overflow: hidden;
+}
+.casino-sidebar.csb-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0,0,0,.7);
+}
+
+/* Top logo row */
+.csb-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 12px 10px;
+    border-bottom: 1px solid rgba(167,139,250,.1);
+    flex-shrink: 0;
+}
+.csb-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.csb-logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg,#7c3aed,#4c1d95);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 12px; color: #ede9fe;
+    letter-spacing: 1px;
+}
+.csb-logo-text { font-size: 11px; font-weight: 900; color: #c4b5fd; line-height: 1.2; }
+.csb-logo-sub { font-size: 8px; color: rgba(196,181,253,.5); letter-spacing: 2px; }
+.csb-close-btn {
+    background: none; border: none; color: rgba(255,255,255,.3);
+    font-size: 16px; cursor: pointer; padding: 4px;
+    transition: color .15s;
+}
+.csb-close-btn:hover { color: #c4b5fd; }
+
+/* Nav scroll area */
+.csb-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 0 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(124,58,237,.3) transparent;
+}
+.csb-nav::-webkit-scrollbar { width: 3px; }
+.csb-nav::-webkit-scrollbar-track { background: transparent; }
+.csb-nav::-webkit-scrollbar-thumb { background: rgba(124,58,237,.4); border-radius: 2px; }
+
+/* Section grouping */
+.csb-section { margin-bottom: 4px; }
+.csb-section-label {
+    font-size: 9px;
+    font-weight: 900;
+    color: rgba(167,139,250,.45);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 10px 14px 4px;
+}
+
+/* Nav item */
+.csb-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 14px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.65);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background .12s, color .12s;
+    position: relative;
+}
+.csb-item:hover {
+    background: rgba(124,58,237,.18);
+    color: #ede9fe;
+}
+.csb-item-lobby {
+    font-size: 13px;
+    font-weight: 800;
+    color: #c4b5fd;
+}
+.csb-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+/* Badges */
+.csb-badge {
+    margin-left: auto;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 5px;
+    border-radius: 4px;
+    letter-spacing: .5px;
+}
+.csb-badge-hot { background: rgba(239,68,68,.25); color: #fca5a5; border: 1px solid rgba(239,68,68,.3); }
+.csb-badge-new { background: rgba(16,185,129,.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,.3); }
+.csb-badge-vip { background: rgba(251,191,36,.2); color: #fde68a; border: 1px solid rgba(251,191,36,.3); }
+
+/* Edge tag */
+.csb-edge-tag {
+    margin-left: auto;
+    font-size: 8px;
+    color: rgba(251,191,36,.6);
+    font-weight: 700;
+}
+
+/* Bottom deposit CTA */
+.csb-deposit-cta {
+    padding: 12px;
+    border-top: 1px solid rgba(167,139,250,.1);
+    flex-shrink: 0;
+}
+.csb-deposit-btn {
+    width: 100%;
+    padding: 11px 0;
+    background: linear-gradient(135deg,#7c3aed,#4c1d95);
+    color: #ede9fe;
+    border: 1px solid rgba(167,139,250,.3);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    letter-spacing: .5px;
+    transition: opacity .15s;
+}
+.csb-deposit-btn:hover { opacity: .85; }
+
+/* Overlay (mobile backdrop) */
+.csb-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 499;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+}
+.csb-overlay.csb-ov-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Main content wrapper */
+.casino-main-wrap {
+    transition: margin-left .25s cubic-bezier(.4,0,.2,1);
+}
+
+/* Hamburger button */
+.csb-hamburger-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 36px;
+    height: 36px;
+    padding: 7px 8px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s;
+}
+.csb-hamburger-btn:hover { background: rgba(124,58,237,.25); }
+.csb-ham-bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: rgba(196,181,253,.8);
+    border-radius: 1px;
+    transition: background .15s;
+}
+.csb-hamburger-btn:hover .csb-ham-bar { background: #c4b5fd; }
+
+/* ── Desktop: sidebar always-open, push content ──────────────────────────── */
+@media (min-width: 1100px) {
+    .casino-main-wrap.csb-pushed {
+        margin-left: var(--csb-w);
+    }
+    /* Hide hamburger on wide screens when sidebar is open */
+    body.csb-sidebar-open .csb-hamburger-btn { display: none; }
+    /* Always show close button on desktop when open */
+    .casino-sidebar.csb-open .csb-close-btn { display: block; }
+}
+
+/* ── Mobile: sidebar slides over content ─────────────────────────────────── */
+@media (max-width: 1099px) {
+    .casino-main-wrap.csb-pushed { margin-left: 0; }
+    .csb-close-btn { display: block; }
+}
+
+/* Desktop: never show overlay — sidebar pushes content instead */
+@media (min-width: 1100px) {
+    .csb-overlay { display: none !important; }
+}

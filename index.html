@@ -73,6 +73,11 @@
                 <span class="search-result-count" id="searchResultCount" aria-live="polite" aria-atomic="true"></span>
             </div>
             <div class="header-actions">
+                <button class="csb-hamburger-btn" id="csbHamburgerBtn" onclick="toggleSidebar(true)" aria-label="Open navigation menu" title="Menu">
+                    <span class="csb-ham-bar"></span>
+                    <span class="csb-ham-bar"></span>
+                    <span class="csb-ham-bar"></span>
+                </button>
                 <div class="balance-display">
                     <div class="balance-label">BALANCE</div>
                     <div class="balance-amount">$<span id="balance">5000.00</span></div>
@@ -123,7 +128,195 @@
         </div>
     </header>
 
+    <!-- Casino Sidebar Navigation -->
+    <aside class="casino-sidebar" id="casinoSidebar">
+        <div class="csb-top">
+            <div class="csb-logo">
+                <div class="csb-logo-icon">MS</div>
+                <div class="csb-logo-text"><div>MATRIX</div><div class="csb-logo-sub">SPINS</div></div>
+            </div>
+            <button class="csb-close-btn" id="csbCloseBtn" onclick="toggleSidebar(false)" aria-label="Close menu">&#x2715;</button>
+        </div>
+
+        <div class="csb-nav" id="csbNav">
+            <!-- Lobby -->
+            <div class="csb-section">
+                <button class="csb-item csb-item-lobby" onclick="setFilter('all');closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3E0;</span><span>Lobby</span>
+                </button>
+                <button class="csb-item" onclick="setFilter('hot');closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F525;</span><span>Hot Games</span>
+                    <span class="csb-badge csb-badge-hot">HOT</span>
+                </button>
+                <button class="csb-item" onclick="setFilter('new');closeSidebarMobile()">
+                    <span class="csb-icon">&#x2728;</span><span>New Games</span>
+                </button>
+                <button class="csb-item" onclick="setFilter('favorites');closeSidebarMobile()">
+                    <span class="csb-icon">&#x2764;&#xFE0F;</span><span>Favourites</span>
+                </button>
+            </div>
+
+            <!-- Instant Games -->
+            <div class="csb-section">
+                <div class="csb-section-label">&#x26A1; INSTANT GAMES</div>
+                <button class="csb-item" onclick="if(typeof openCrashGame==='function')openCrashGame();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F680;</span><span>Crash</span><span class="csb-edge-tag">15% edge</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openMinesGame==='function')openMinesGame();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4A3;</span><span>Mines</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openPlinko==='function')openPlinko();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3B1;</span><span>Plinko</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openHiLo==='function')openHiLo();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F0CF;</span><span>Hi-Lo</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openLimbo==='function')openLimbo();closeSidebarMobile()">
+                    <span class="csb-icon">&#x26A1;</span><span>Limbo</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openTower==='function')openTower();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3DB;&#xFE0F;</span><span>Tower</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openDice==='function')openDice();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3B2;</span><span>Dice</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openCoinflip==='function')openCoinflip();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1FA99;</span><span>Coinflip</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openWheel==='function')openWheel();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3A1;</span><span>Wheel</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openKenoTurbo==='function')openKenoTurbo();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F7E3;</span><span>Keno Turbo</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openHorseRacing==='function')openHorseRacing();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3C7;</span><span>Horse Racing</span>
+                </button>
+            </div>
+
+            <!-- Table Games -->
+            <div class="csb-section">
+                <div class="csb-section-label">&#x1F3B4; TABLE GAMES</div>
+                <button class="csb-item" onclick="if(typeof openRoulette==='function')openRoulette();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3AF;</span><span>Roulette</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openBlackjack==='function')openBlackjack();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F0CF;</span><span>Blackjack</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openBaccarat==='function')openBaccarat();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3B4;</span><span>Baccarat</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openVideoPoker==='function')openVideoPoker();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4F1;</span><span>Video Poker</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openKeno==='function')openKeno();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3B1;</span><span>Keno</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openSicBo==='function')openSicBo();closeSidebarMobile()">
+                    <span class="csb-icon">&#x2680;</span><span>Sic Bo</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openDragonTiger==='function')openDragonTiger();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F409;</span><span>Dragon Tiger</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openCasinoWar==='function')openCasinoWar();closeSidebarMobile()">
+                    <span class="csb-icon">&#x2694;&#xFE0F;</span><span>Casino War</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openBigSixWheel==='function')openBigSixWheel();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3A1;</span><span>Big Six Wheel</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openChuckALuck==='function')openChuckALuck();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3B2;</span><span>Chuck-a-Luck</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openMoneyWheel==='function')openMoneyWheel();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4B0;</span><span>Money Wheel</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openScratch==='function')openScratch();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3AB;</span><span>Scratch Cards</span>
+                </button>
+            </div>
+
+            <!-- Promotions -->
+            <div class="csb-section">
+                <div class="csb-section-label">&#x1F381; PROMOTIONS</div>
+                <button class="csb-item csb-item-promo" onclick="showBonusWheelModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3A1;</span><span>Daily Bonus Wheel</span>
+                    <span class="csb-badge csb-badge-new">FREE</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openJackpotTracker==='function')openJackpotTracker();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4B0;</span><span>Jackpots</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openTournamentModal==='function')openTournamentModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3C6;</span><span>Tournaments</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openDailyMissions==='function')openDailyMissions();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3AF;</span><span>Daily Missions</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openDailyCashbackModal==='function')openDailyCashbackModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4B5;</span><span>Cashback</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openRakebackModal==='function')openRakebackModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4B5;</span><span>Rakeback</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openReferralModal==='function')openReferralModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F465;</span><span>Refer a Friend</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openPromoCode==='function')openPromoCode();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3DF;&#xFE0F;</span><span>Promo Code</span>
+                </button>
+            </div>
+
+            <!-- VIP -->
+            <div class="csb-section">
+                <div class="csb-section-label">&#x1F451; VIP</div>
+                <button class="csb-item csb-item-vip" onclick="if(typeof openVipWheelModal==='function')openVipWheelModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F451;</span><span>VIP Wheel</span>
+                </button>
+                <button class="csb-item csb-item-vip" onclick="if(typeof openRentalModal==='function')openRentalModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F510;</span><span>VIP Access</span>
+                </button>
+                <button class="csb-item csb-item-vip" onclick="if(typeof openBattlePassModal==='function')openBattlePassModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x2694;&#xFE0F;</span><span>Battle Pass</span>
+                </button>
+                <button class="csb-item csb-item-vip" onclick="if(typeof openBundleStore==='function')openBundleStore();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F48E;</span><span>Bundles</span>
+                </button>
+                <button class="csb-item csb-item-vip" onclick="if(typeof openLoyaltyShop==='function')openLoyaltyShop();closeSidebarMobile()">
+                    <span class="csb-icon">&#x2B50;</span><span>Loyalty Shop</span>
+                </button>
+            </div>
+
+            <!-- Account -->
+            <div class="csb-section">
+                <div class="csb-section-label">&#x1F464; ACCOUNT</div>
+                <button class="csb-item" onclick="openStatsModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4CA;</span><span>My Stats</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openLeaderboardModal==='function')openLeaderboardModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F3C6;</span><span>Leaderboard</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openAchievementsModal==='function')openAchievementsModal();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F947;</span><span>Achievements</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openSpinHistory==='function')openSpinHistory();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1F4CB;</span><span>Spin History</span>
+                </button>
+                <button class="csb-item" onclick="if(typeof openPlayerCard==='function')openPlayerCard();closeSidebarMobile()">
+                    <span class="csb-icon">&#x1FAA7;</span><span>Player Card</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="csb-deposit-cta">
+            <button class="csb-deposit-btn" onclick="typeof showWalletModal==='function'?showWalletModal():null">
+                &#x1F4B3; DEPOSIT NOW
+            </button>
+        </div>
+    </aside>
+    <!-- Sidebar overlay for mobile -->
+    <div class="csb-overlay" id="csbOverlay" onclick="toggleSidebar(false)"></div>
+
     <!-- Main Content -->
+    <div class="casino-main-wrap" id="casinoMainWrap">
     <div class="container">
         <!-- Hero Banner -->
         <div class="hero-banner">
@@ -2082,6 +2275,33 @@
     </script>
 
     <script>
+        // ── Casino Sidebar ──────────────────────────────────────────────────────
+        (function() {
+          var _sidebarOpen = false;
+          window.toggleSidebar = function(open) {
+            var sb  = document.getElementById('casinoSidebar');
+            var ov  = document.getElementById('csbOverlay');
+            var mw  = document.getElementById('casinoMainWrap');
+            if (!sb) return;
+            _sidebarOpen = (open !== undefined) ? !!open : !_sidebarOpen;
+            sb.classList.toggle('csb-open', _sidebarOpen);
+            if (ov) ov.classList.toggle('csb-ov-open', _sidebarOpen);
+            if (mw) mw.classList.toggle('csb-pushed', _sidebarOpen);
+            document.body.classList.toggle('csb-sidebar-open', _sidebarOpen);
+          };
+          window.closeSidebarMobile = function() {
+            if (window.innerWidth < 1100) window.toggleSidebar(false);
+          };
+          // ESC key closes sidebar
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && _sidebarOpen) window.toggleSidebar(false);
+          });
+          // Auto-open on desktop on load
+          document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth >= 1100) window.toggleSidebar(true);
+          });
+        }());
+
         // Auth modal tab switching
         function switchAuthTab(tab) {
             document.getElementById('authError').textContent = '';
@@ -2262,6 +2482,8 @@
         <div class="achievement-desc" id="achieveDesc"></div>
     </div>
 </div>
+
+</div><!-- /.casino-main-wrap -->
 
 <!-- Low-balance deposit nudge -->
 <div id="lowBalanceNudge">
