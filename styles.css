@@ -350,6 +350,176 @@
             box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
         }
 
+        .btn-deposit-hero {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            font-weight: 900;
+            font-size: 14px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(245,158,11,0.4);
+            transition: transform .1s, box-shadow .1s;
+        }
+        .btn-deposit-hero:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(245,158,11,0.55); }
+
+        /* ── Quick Games Navigation Bar ── */
+        .quick-games-nav {
+            margin: 16px 0 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .qgn-section { display: flex; flex-direction: column; gap: 8px; }
+        .qgn-label {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase;
+        }
+        .qgn-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 2px;
+        }
+        .qgn-scroll::-webkit-scrollbar { display: none; }
+        .qgn-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.07);
+        }
+
+        /* Colour palette: --qgt 1-8 → rotating accent colours */
+        .qgn-tile {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.09);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: all .15s;
+            min-width: 64px;
+        }
+        .qgn-tile:hover {
+            background: rgba(255,255,255,0.11);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .qgn-tile[style*="--qgt:1"] { border-color: rgba(129,140,248,.25); }
+        .qgn-tile[style*="--qgt:1"]:hover { background: rgba(129,140,248,.15); border-color: rgba(129,140,248,.5); }
+        .qgn-tile[style*="--qgt:2"] { border-color: rgba(251,191,36,.25); }
+        .qgn-tile[style*="--qgt:2"]:hover { background: rgba(251,191,36,.15); border-color: rgba(251,191,36,.5); }
+        .qgn-tile[style*="--qgt:3"] { border-color: rgba(52,211,153,.25); }
+        .qgn-tile[style*="--qgt:3"]:hover { background: rgba(52,211,153,.15); border-color: rgba(52,211,153,.5); }
+        .qgn-tile[style*="--qgt:4"] { border-color: rgba(248,113,113,.25); }
+        .qgn-tile[style*="--qgt:4"]:hover { background: rgba(248,113,113,.15); border-color: rgba(248,113,113,.5); }
+        .qgn-tile[style*="--qgt:5"] { border-color: rgba(167,139,250,.25); }
+        .qgn-tile[style*="--qgt:5"]:hover { background: rgba(167,139,250,.15); border-color: rgba(167,139,250,.5); }
+        .qgn-tile[style*="--qgt:6"] { border-color: rgba(96,165,250,.25); }
+        .qgn-tile[style*="--qgt:6"]:hover { background: rgba(96,165,250,.15); border-color: rgba(96,165,250,.5); }
+        .qgn-tile[style*="--qgt:7"] { border-color: rgba(251,146,60,.25); }
+        .qgn-tile[style*="--qgt:7"]:hover { background: rgba(251,146,60,.15); border-color: rgba(251,146,60,.5); }
+        .qgn-tile[style*="--qgt:8"] { border-color: rgba(244,114,182,.25); }
+        .qgn-tile[style*="--qgt:8"]:hover { background: rgba(244,114,182,.15); border-color: rgba(244,114,182,.5); }
+
+        .qgn-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+        .qgn-tile span:last-child {
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        .qgn-tile:hover span:last-child { opacity: 1; }
+
+        /* ── Casino Features Grid ── */
+        .casino-features-grid {
+            margin: 10px 0;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .cfg-category {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px;
+            padding: 10px 10px 8px;
+        }
+        .cfg-cat-label {
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .cfg-cat-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+        }
+        .cfg-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 7px;
+            border-radius: 7px;
+            border: 1px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.65);
+            cursor: pointer;
+            transition: all .12s;
+            font-size: 9.5px;
+            font-weight: 600;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .cfg-btn span { font-size: 13px; flex-shrink: 0; }
+        .cfg-btn:hover {
+            background: rgba(255,255,255,0.09);
+            color: #fff;
+            border-color: rgba(255,255,255,0.15);
+        }
+        .cfg-btn.cfg-vip {
+            border-color: rgba(251,191,36,.15);
+            color: rgba(251,191,36,.8);
+        }
+        .cfg-btn.cfg-vip:hover {
+            background: rgba(251,191,36,.1);
+            color: #fbbf24;
+            border-color: rgba(251,191,36,.35);
+        }
+
+        @media (max-width: 900px) {
+            .casino-features-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .quick-games-nav { padding: 10px 10px; }
+            .casino-features-grid { grid-template-columns: 1fr; }
+            .qgn-tile { min-width: 56px; padding: 8px 10px; }
+        }
+
         .hero-stats {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(20px);
