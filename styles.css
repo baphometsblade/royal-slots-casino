@@ -15681,6 +15681,39 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     100% { transform: scale(1); opacity: 1; }
 }
 
+/* ===== Sprint 75: Streak Bonus Toast ===== */
+.streak-bonus-toast {
+    position: fixed; top: 50%; left: 50%; z-index: 31000;
+    transform: translate(-50%, -50%) scale(0.5); opacity: 0;
+    background: linear-gradient(160deg, #1a0a00, #2d1200);
+    border: 2px solid rgba(255,140,0,0.7); border-radius: 16px;
+    padding: 20px 32px; text-align: center;
+    box-shadow: 0 0 50px rgba(255,100,0,0.4), inset 0 0 20px rgba(255,140,0,0.05);
+    transition: all 0.5s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+}
+.streak-bonus-toast.active {
+    transform: translate(-50%, -50%) scale(1); opacity: 1;
+}
+.sbt-icon { font-size: 2.5rem; margin-bottom: 4px; animation: sbt-flame 0.8s ease-in-out infinite alternate; }
+@keyframes sbt-flame {
+    0%   { transform: scale(1) rotate(-3deg); }
+    100% { transform: scale(1.15) rotate(3deg); }
+}
+.sbt-label {
+    color: #ff8c00; font-size: 14px; font-weight: 900; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 6px; text-shadow: 0 0 10px rgba(255,140,0,0.5);
+}
+.sbt-amount {
+    color: #ffd700; font-size: 24px; font-weight: 900; letter-spacing: 1px;
+    text-shadow: 0 0 15px rgba(255,215,0,0.5), 0 2px 4px rgba(0,0,0,0.5);
+    animation: sbt-pulse 1s ease-in-out infinite alternate;
+}
+@keyframes sbt-pulse {
+    0%   { transform: scale(1); }
+    100% { transform: scale(1.05); text-shadow: 0 0 20px rgba(255,215,0,0.7), 0 2px 6px rgba(0,0,0,0.5); }
+}
+
 /* ===== Sprint 52: Volatility Meter ===== */
 .vm-meter { display: flex; align-items: center; gap: 2px; }
 .vm-seg { display: inline-block; width: 7px; height: 10px; border-radius: 2px; background: rgba(255,255,255,0.12); transition: background 0.3s; }

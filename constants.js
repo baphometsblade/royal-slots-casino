@@ -49,6 +49,20 @@ const BET_TIERS = [
     { min:   0.00, label: 'BRONZE',   emoji: '\uD83E\uDD49',  cls: 'bronze'   }
 ];
 
+/**
+ * Win-streak bonus rewards — paid at milestone streaks.
+ * bonus = currentBet × mult (small enough to keep house edge positive).
+ * Player must win N consecutive spins → wagered ≥ N×bet with ~12% edge each.
+ */
+const STREAK_BONUS_REWARDS = [
+    { at:  3, mult: 0.5,  label: 'STREAK BONUS' },
+    { at:  5, mult: 1.0,  label: 'HOT STREAK BONUS' },
+    { at:  7, mult: 2.0,  label: 'FIRE STREAK BONUS' },
+    { at: 10, mult: 5.0,  label: 'MEGA STREAK BONUS' },
+    { at: 15, mult: 10.0, label: 'LEGENDARY STREAK' },
+    { at: 20, mult: 20.0, label: 'GODLIKE STREAK' }
+];
+
 /** @type {object} Default player statistics on first load or reset */
 const DEFAULT_STATS = {
     totalSpins: 0,

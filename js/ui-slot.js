@@ -5298,6 +5298,8 @@
                             break;
                         }
                     }
+                    // Sprint 75: Award streak bonus at milestones
+                    if (typeof _awardStreakBonus === 'function') _awardStreakBonus(window._winStreak);
                 } else {
                     window._winStreak = 0;
                 }
@@ -5316,6 +5318,58 @@
             }
         })();
 
+
+        // ═══════════════════════════════════════════════════════════════
+        // SPRINT 75: Streak Bonus Awards (credits + toast)
+        // ═══════════════════════════════════════════════════════════════
+        function _awardStreakBonus(streakCount) {
+            var rewards = (typeof STREAK_BONUS_REWARDS !== 'undefined') ? STREAK_BONUS_REWARDS : [];
+            var reward = null;
+            for (var i = rewards.length - 1; i >= 0; i--) {
+                if (streakCount === rewards[i].at) { reward = rewards[i]; break; }
+            }
+            if (!reward) return;
+            var bet = (typeof currentBet !== 'undefined') ? currentBet : 1;
+            var bonusAmt = Math.round(bet * reward.mult * 100) / 100;
+            if (bonusAmt <= 0) return;
+            if (typeof balance !== 'undefined') balance += bonusAmt;
+            if (typeof updateBalance === 'function') updateBalance();
+            if (typeof saveBalance === 'function') saveBalance();
+            _showStreakBonusToast(reward.label, bonusAmt);
+            if (typeof stats !== 'undefined') {
+                stats.totalWon = (stats.totalWon || 0) + bonusAmt;
+                if (typeof saveStats === 'function') saveStats();
+            }
+        }
+
+        function _showStreakBonusToast(label, amount) {
+            var existing = document.getElementById('streakBonusToast');
+            if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+            var toast = document.createElement('div');
+            toast.id = 'streakBonusToast';
+            toast.className = 'streak-bonus-toast';
+            var fmt = '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            var iconDiv = document.createElement('div');
+            iconDiv.className = 'sbt-icon';
+            iconDiv.textContent = '\uD83D\uDD25';
+            var labelDiv = document.createElement('div');
+            labelDiv.className = 'sbt-label';
+            labelDiv.textContent = label;
+            var amtDiv = document.createElement('div');
+            amtDiv.className = 'sbt-amount';
+            amtDiv.textContent = '+' + fmt;
+            toast.appendChild(iconDiv);
+            toast.appendChild(labelDiv);
+            toast.appendChild(amtDiv);
+            document.body.appendChild(toast);
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() { toast.classList.add('active'); });
+            });
+            setTimeout(function() {
+                toast.classList.remove('active');
+                setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 500);
+            }, 4000);
+        }
 
         // ═══════════════════════════════════════════════════════════════
         // STICKY WILDS — bonusType: 'sticky_wilds'
@@ -9040,6 +9094,8 @@
                             break;
                         }
                     }
+                    // Sprint 75: Award streak bonus at milestones
+                    if (typeof _awardStreakBonus === 'function') _awardStreakBonus(window._winStreak);
                 } else {
                     window._winStreak = 0;
                 }
