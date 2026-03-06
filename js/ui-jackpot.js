@@ -350,10 +350,26 @@
 
     var TICKER_POLL_MS = 12000;
     var AMOUNT_IDS = { mini: 'jpMiniAmt', minor: 'jpMinorAmt', major: 'jpMajorAmt', grand: 'jpGrandAmt' };
+    var _prevAmounts = {};
+    var _lastWinnerTs = {};
 
     function fmtTicker(n) {
         var v = parseFloat(n) || 0;
         return '$' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function animateCount(el, from, to, duration) {
+        var start = Date.now();
+        var diff = to - from;
+        function tick() {
+            var elapsed = Date.now() - start;
+            var t = Math.min(elapsed / duration, 1);
+            var ease = 1 - Math.pow(1 - t, 3);
+            el.textContent = fmtTicker(from + diff * ease);
+            if (t < 1) requestAnimationFrame(tick);
+            else el.textContent = fmtTicker(to);
+        }
+        requestAnimationFrame(tick);
     }
 
     function updateTicker(pools) {
@@ -361,7 +377,76 @@
             var elId = AMOUNT_IDS[p.tier];
             if (!elId) return;
             var el = document.getElementById(elId);
-            if (el) el.textContent = fmtTicker(p.currentAmount);
+            if (!el) return;
+            var newVal = parseFloat(p.currentAmount) || 0;
+            var prevVal = _prevAmounts[p.tier];
+            _prevAmounts[p.tier] = newVal;
+            if (prevVal !== undefined && newVal > prevVal) {
+                animateCount(el, prevVal, newVal, 900);
+            } else {
+                el.textContent = fmtTicker(newVal);
+            }
+        });
+    }
+
+    function showWinnerToast(pool) {
+        var tier = (pool.tier || '').toUpperCase();
+        var user = (pool.lastWinner && pool.lastWinner.username) ? pool.lastWinner.username : 'A player';
+        var emojis = { MINI: '\uD83D\uDC9A', MINOR: '\uD83D\uDC99', MAJOR: '\uD83D\uDC9C', GRAND: '\uD83C\uDFC6' };
+        var emoji = emojis[tier] || '\uD83C\uDFB0';
+        if (!document.getElementById('jpToastKeyframes')) {
+            var ks = document.createElement('style');
+            ks.id = 'jpToastKeyframes';
+            ks.textContent = '@keyframes jpSlideIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}';
+            document.head.appendChild(ks);
+        }
+        var toast = document.createElement('div');
+        toast.style.cssText = [
+            'position:fixed', 'bottom:80px', 'right:20px', 'z-index:99999',
+            'background:linear-gradient(135deg,#1a0a2e,#0f0a1e)',
+            'border:2px solid #fbbf24', 'border-radius:12px',
+            'padding:14px 18px', 'max-width:300px',
+            'box-shadow:0 0 30px rgba(251,191,36,0.5)',
+            'color:#e2e8f0', 'font-family:inherit',
+            'animation:jpSlideIn 0.4s ease', 'cursor:pointer'
+        ].join(';');
+
+        var headerEl = document.createElement('div');
+        headerEl.style.cssText = 'font-size:11px;color:#fbbf24;font-weight:800;letter-spacing:1.5px;margin-bottom:6px';
+        headerEl.textContent = emoji + '\u00a0' + tier + ' JACKPOT WON!';
+
+        var bodyEl = document.createElement('div');
+        bodyEl.style.cssText = 'font-size:14px;font-weight:700';
+        bodyEl.textContent = user + ' just struck lucky!';
+
+        var subEl = document.createElement('div');
+        subEl.style.cssText = 'font-size:12px;color:#94a3b8;margin-top:3px';
+        subEl.textContent = 'Jackpot is growing again \u2014 spin now!';
+
+        toast.appendChild(headerEl);
+        toast.appendChild(bodyEl);
+        toast.appendChild(subEl);
+
+        toast.addEventListener('click', function() {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+            if (typeof openJackpotTracker === 'function') openJackpotTracker();
+        });
+        document.body.appendChild(toast);
+        setTimeout(function() {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 8000);
+    }
+
+    function checkWinners(pools) {
+        pools.forEach(function(p) {
+            if (!p.lastWinner || !p.lastWinner.wonAt) return;
+            var wonAt = new Date(p.lastWinner.wonAt).getTime();
+            if (isNaN(wonAt)) return;
+            var prev = _lastWinnerTs[p.tier];
+            _lastWinnerTs[p.tier] = wonAt;
+            if (prev && wonAt > prev && Date.now() - wonAt < 90000) {
+                showWinnerToast(p);
+            }
         });
     }
 
@@ -371,8 +456,7 @@
             .then(function(data) {
                 if (!data || !Array.isArray(data.pools)) return;
                 updateTicker(data.pools);
-                var bar = document.getElementById('jackpotTickerBar');
-                if (bar) bar.style.display = '';  // make visible once we have data
+                checkWinners(data.pools);
             })
             .catch(function() {});
     }
