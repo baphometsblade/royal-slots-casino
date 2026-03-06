@@ -823,8 +823,8 @@
                         message = `MULTI-LINE WIN! ${paylineWins.length} paylines = $${winAmount.toLocaleString()}!`;
                     }
 
-                    // Fire Joker wheel on 5-of-a-kind
-                    if (game.bonusType === 'wheel_multiplier' && !freeSpinsActive && paylineWins.some(w => w.matchCount >= getGridCols(game))) {
+                    // Fire Joker wheel on 5-of-a-kind (fires in base game and free spins)
+                    if (game.bonusType === 'wheel_multiplier' && paylineWins.some(w => w.matchCount >= getGridCols(game))) {
                         const wheelMult = getWheelMultiplier(game);
                         winAmount = Math.round(winAmount * wheelMult * 100) / 100;
                         message = `WHEEL OF FIRE! Full match x${wheelMult} = $${winAmount.toLocaleString()}!`;
@@ -962,8 +962,8 @@
                         message = `MEGA WIN! Triple match paid $${winAmount.toLocaleString()}!${bonus.bonusText}`;
                     }
 
-                    // Fire Joker: Wheel of Multipliers on triple
-                    if (game.bonusType === 'wheel_multiplier' && !freeSpinsActive) {
+                    // Fire Joker: Wheel of Multipliers on triple (fires in base game and free spins)
+                    if (game.bonusType === 'wheel_multiplier') {
                         const wheelMult = getWheelMultiplier(game);
                         winAmount = Math.round(winAmount * wheelMult * 100) / 100;
                         message = `WHEEL OF FIRE! Triple match x${wheelMult} = $${winAmount.toLocaleString()}!`;

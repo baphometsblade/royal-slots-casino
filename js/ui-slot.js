@@ -3645,6 +3645,17 @@
                 }
             }
 
+            // Expanding Wild Respin: expand any wild-containing column to full during free spins
+            if (game.bonusType === 'expanding_wild_respin' && freeSpinsActive) {
+                for (let c = 0; c < finalGrid.length; c++) {
+                    if (finalGrid[c].some(s => isWild(s, game))) {
+                        for (let r = 0; r < finalGrid[c].length; r++) {
+                            finalGrid[c][r] = game.wildSymbol;
+                        }
+                    }
+                }
+            }
+
             // Stagger stop times (free spin uses tighter timing)
             const stopDelays = calculateStopDelays(cols, turboMode, true);
 
@@ -7434,6 +7445,17 @@
                 for (let c = 0; c < finalGrid.length; c++) {
                     // Stacked: if first row of column is wild, fill entire column
                     if (getRandomNumber() < game.stackedWildChance) {
+                        for (let r = 0; r < finalGrid[c].length; r++) {
+                            finalGrid[c][r] = game.wildSymbol;
+                        }
+                    }
+                }
+            }
+
+            // Expanding Wild Respin: expand any wild-containing column to full during free spins
+            if (game.bonusType === 'expanding_wild_respin' && freeSpinsActive) {
+                for (let c = 0; c < finalGrid.length; c++) {
+                    if (finalGrid[c].some(s => isWild(s, game))) {
                         for (let r = 0; r < finalGrid[c].length; r++) {
                             finalGrid[c][r] = game.wildSymbol;
                         }
