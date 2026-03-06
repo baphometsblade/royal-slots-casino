@@ -107,6 +107,18 @@ router.post('/', authenticate, async (req, res) => {
             });
         }
 
+        // ── Session time limit check (auto-starts session on first spin) ──
+        const sessionTimer = require('../services/session-timer.service');
+        const sessionCheck = await sessionTimer.checkSession(userId);
+        if (!sessionCheck.allowed) {
+            return res.json({
+                error: 'session_time_limit',
+                message: 'Session time limit reached',
+                elapsed: sessionCheck.elapsed,
+                limit: sessionCheck.limit
+            });
+        }
+
         // ── Check balance (fresh from DB) ──
         const currentUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
         if (!currentUser) {

@@ -1003,4 +1003,167 @@ router.post('/webhook/confirm', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════
+//  STRIPE INTEGRATION
+// ═══════════════════════════════════════════════════
+
+const stripeService = require('../services/stripe.service');
+
+// GET /api/payments/stripe/status — check if Stripe is available + get publishable key
+router.get('/stripe/status', (req, res) => {
+    res.json({
+        available: stripeService.isAvailable(),
+        publishableKey: stripeService.isAvailable() ? config.STRIPE_PUBLISHABLE_KEY : null,
+    });
+});
+
+// POST /api/payments/stripe/checkout — create a Stripe Checkout Session (authenticated)
+router.post('/stripe/checkout', authenticate, async (req, res) => {
+    try {
+        if (!stripeService.isAvailable()) {
+            return res.status(503).json({ error: 'Stripe payments are not currently available' });
+        }
+
+        const { amount, currency, returnUrl } = req.body;
+        const depositAmount = parseFloat(amount);
+
+        if (isNaN(depositAmount) || depositAmount <= 0) {
+            return res.status(400).json({ error: 'Invalid deposit amount' });
+        }
+        if (depositAmount < config.MIN_DEPOSIT) {
+            return res.status(400).json({ error: `Minimum deposit is $${config.MIN_DEPOSIT.toFixed(2)}` });
+        }
+        if (depositAmount > config.MAX_DEPOSIT) {
+            return res.status(400).json({ error: `Maximum deposit is $${config.MAX_DEPOSIT.toFixed(2)}` });
+        }
+
+        // Check self-exclusion
+        const exclusion = await checkExclusion(req.user.id);
+        if (exclusion) {
+            return res.status(403).json({ error: exclusion });
+        }
+
+        // Check deposit limits
+        await ensureUserLimitsRow(req.user.id);
+        const limitError = await checkDepositLimits(req.user.id, depositAmount);
+        if (limitError) {
+            return res.status(400).json({ error: limitError });
+        }
+
+        // Deposit velocity fraud check
+        const velocityError = await checkDepositVelocity(req.user.id);
+        if (velocityError) {
+            return res.status(429).json({ error: velocityError });
+        }
+
+        const result = await stripeService.createCheckoutSession(
+            req.user.id,
+            depositAmount,
+            currency || config.CURRENCY,
+            returnUrl || null
+        );
+
+        res.json({
+            message: 'Stripe checkout session created',
+            sessionId: result.sessionId,
+            url: result.url,
+            depositId: result.depositId,
+            reference: result.reference,
+        });
+    } catch (err) {
+        console.error('[Stripe] Checkout error:', err);
+        res.status(500).json({ error: err.message || 'Failed to create Stripe checkout session' });
+    }
+});
+
+// POST /api/payments/stripe/payment-intent — create a PaymentIntent for embedded forms (authenticated)
+router.post('/stripe/payment-intent', authenticate, async (req, res) => {
+    try {
+        if (!stripeService.isAvailable()) {
+            return res.status(503).json({ error: 'Stripe payments are not currently available' });
+        }
+
+        const { amount, currency } = req.body;
+        const depositAmount = parseFloat(amount);
+
+        if (isNaN(depositAmount) || depositAmount <= 0) {
+            return res.status(400).json({ error: 'Invalid deposit amount' });
+        }
+        if (depositAmount < config.MIN_DEPOSIT) {
+            return res.status(400).json({ error: `Minimum deposit is $${config.MIN_DEPOSIT.toFixed(2)}` });
+        }
+        if (depositAmount > config.MAX_DEPOSIT) {
+            return res.status(400).json({ error: `Maximum deposit is $${config.MAX_DEPOSIT.toFixed(2)}` });
+        }
+
+        // Check self-exclusion
+        const exclusion = await checkExclusion(req.user.id);
+        if (exclusion) {
+            return res.status(403).json({ error: exclusion });
+        }
+
+        // Check deposit limits
+        await ensureUserLimitsRow(req.user.id);
+        const limitError = await checkDepositLimits(req.user.id, depositAmount);
+        if (limitError) {
+            return res.status(400).json({ error: limitError });
+        }
+
+        // Deposit velocity fraud check
+        const velocityError = await checkDepositVelocity(req.user.id);
+        if (velocityError) {
+            return res.status(429).json({ error: velocityError });
+        }
+
+        const result = await stripeService.createPaymentIntent(
+            req.user.id,
+            depositAmount,
+            currency || config.CURRENCY
+        );
+
+        res.json({
+            message: 'Payment intent created',
+            clientSecret: result.clientSecret,
+            paymentIntentId: result.paymentIntentId,
+            depositId: result.depositId,
+            reference: result.reference,
+        });
+    } catch (err) {
+        console.error('[Stripe] PaymentIntent error:', err);
+        res.status(500).json({ error: err.message || 'Failed to create payment intent' });
+    }
+});
+
+// POST /api/payments/stripe/webhook — Stripe webhook endpoint (UNAUTHENTICATED)
+// Stripe sends events here. The body must be raw (not JSON-parsed) for signature verification.
+// Raw body parsing is configured in server/index.js with express.raw() for this specific path.
+router.post('/stripe/webhook', async (req, res) => {
+    try {
+        if (!stripeService.isAvailable()) {
+            return res.status(503).json({ error: 'Stripe is not configured' });
+        }
+
+        const signature = req.headers['stripe-signature'];
+        if (!signature) {
+            return res.status(400).json({ error: 'Missing Stripe-Signature header' });
+        }
+
+        // req.body should be a raw Buffer (configured via express.raw in index.js)
+        const rawBody = req.body;
+        if (!Buffer.isBuffer(rawBody)) {
+            console.error('[Stripe Webhook] Body is not a Buffer — ensure express.raw() middleware is applied for this route');
+            return res.status(400).json({ error: 'Webhook body must be raw — check server middleware configuration' });
+        }
+
+        const result = await stripeService.handleWebhook(rawBody, signature);
+
+        console.log(`[Stripe Webhook] Processed: ${result.event.type} — handled: ${result.action.handled}`);
+        res.json({ received: true, event: result.event.type, handled: result.action.handled });
+    } catch (err) {
+        console.error('[Stripe Webhook] Error:', err.message);
+        // Stripe recommends returning 400 for signature failures so it retries
+        res.status(400).json({ error: err.message });
+    }
+});
+
 module.exports = router;

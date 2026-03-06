@@ -25,6 +25,9 @@ const corsOrigin = config.NODE_ENV === 'production'
     ? (process.env.ALLOWED_ORIGIN || false)
     : true;
 app.use(cors({ origin: corsOrigin }));
+// Stripe webhook needs the raw body (Buffer) for signature verification.
+// Mount express.raw() BEFORE express.json() so the webhook path gets raw bytes.
+app.use('/api/payment/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '1mb' }));
 
 // Global rate limiter
@@ -99,6 +102,7 @@ app.use('/api/jackpot', jackpotRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/feed', feedRoutes);
+app.use('/api/session', require('./routes/session.routes'));
 app.use('/api/game-of-day', require('./routes/gameofday.routes'));
 app.use('/api/game-stats', require('./routes/gamestats.routes'));
 app.use('/api/gems', require('./routes/gems.routes'));
@@ -167,6 +171,7 @@ app.use('/api/chuckaluck',     require('./routes/chuckaluck.routes'));
 app.use('/api/moneywheel',     require('./routes/moneywheel.routes'));
 app.use('/api/kenoturbo',      require('./routes/kenoturbo.routes'));
 app.use('/api/horseracing',    require('./routes/horseracing.routes'));
+app.use('/api/buy-feature',   require('./routes/buyfeature.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {
