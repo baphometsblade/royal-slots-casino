@@ -228,6 +228,353 @@
         }
 
 
+        // ═══ Expanding Symbol Handler ═══
+        // Book of Dead style: picks a random symbol, expands it to fill entire
+        // reels where it appears, then re-evaluates paylines with the expanded grid.
+        function applyExpandingSymbol(grid, game) {
+            if (!grid) return { grid: grid, extraWin: 0, expandedSymbol: null };
+            var cols = getGridCols(game);
+            var rows = getGridRows(game);
+
+            // Pick a random non-wild, non-scatter symbol from the grid
+            var candidates = [];
+            for (var c = 0; c < cols; c++) {
+                for (var r = 0; r < rows; r++) {
+                    if (!grid[c]) continue;
+                    var sym = grid[c][r];
+                    if (sym && !isWild(sym, game) && !isScatter(sym, game)) {
+                        if (candidates.indexOf(sym) === -1) candidates.push(sym);
+                    }
+                }
+            }
+            if (candidates.length === 0) return { grid: grid, extraWin: 0, expandedSymbol: null };
+
+            var expandSym = candidates[Math.floor(getRandomNumber() * candidates.length)];
+
+            // Find which reels contain the expanding symbol
+            var reelsWithSymbol = [];
+            for (var c2 = 0; c2 < cols; c2++) {
+                for (var r2 = 0; r2 < rows; r2++) {
+                    if (grid[c2] && grid[c2][r2] === expandSym) {
+                        if (reelsWithSymbol.indexOf(c2) === -1) reelsWithSymbol.push(c2);
+                        break;
+                    }
+                }
+            }
+
+            if (reelsWithSymbol.length === 0) return { grid: grid, extraWin: 0, expandedSymbol: expandSym };
+
+            // Create expanded grid — fill entire reels where the symbol appeared
+            var expandedGrid = [];
+            for (var c3 = 0; c3 < cols; c3++) {
+                expandedGrid[c3] = [];
+                for (var r3 = 0; r3 < rows; r3++) {
+                    if (reelsWithSymbol.indexOf(c3) !== -1) {
+                        expandedGrid[c3][r3] = expandSym;
+                    } else {
+                        expandedGrid[c3][r3] = grid[c3] ? grid[c3][r3] : null;
+                    }
+                }
+            }
+
+            // Re-evaluate paylines with the expanded grid
+            var expandedWins = checkPaylineWins(expandedGrid, game);
+            var extraWin = 0;
+            for (var w = 0; w < expandedWins.length; w++) {
+                var eWin = expandedWins[w];
+                var symIdx = game.symbols.indexOf(eWin.symbol);
+                var payMultiplier;
+                if (window.HouseEdge) {
+                    payMultiplier = window.HouseEdge.getPaylinePayMultiplier(
+                        symIdx >= 0 ? symIdx : 0, eWin.matchCount, game
+                    );
+                } else {
+                    if (eWin.matchCount >= 5) payMultiplier = 0.40;
+                    else if (eWin.matchCount >= 4) payMultiplier = 0.12;
+                    else payMultiplier = 0.04;
+                }
+                extraWin += currentBet * payMultiplier;
+            }
+
+            // Highlight expanded reel cells
+            for (var c4 = 0; c4 < reelsWithSymbol.length; c4++) {
+                for (var r4 = 0; r4 < rows; r4++) {
+                    var cell = document.getElementById('reel_' + reelsWithSymbol[c4] + '_' + r4);
+                    if (cell) {
+                        cell.classList.add('reel-wild-expand');
+                        cell.classList.add('reel-win-glow');
+                    }
+                }
+            }
+
+            return { grid: expandedGrid, extraWin: Math.round(extraWin * 100) / 100, expandedSymbol: expandSym };
+        }
+
+
+        // ═══ Multiplier Wilds Handler ═══
+        // Wilds carry random multipliers (2x 50%, 3x 35%, 5x 15%).
+        // When a wild is part of a winning payline, the highest multiplier applies.
+        function applyMultiplierWilds(grid, game, paylineWins) {
+            if (!grid || !paylineWins || paylineWins.length === 0) return 0;
+
+            var totalBonus = 0;
+            var highestMult = 1;
+            for (var w = 0; w < paylineWins.length; w++) {
+                var pWin = paylineWins[w];
+                var lineMult = 1;
+
+                // Check each cell in the winning line for wilds
+                for (var i = 0; i < pWin.cells.length; i++) {
+                    var col = pWin.cells[i][0];
+                    var row = pWin.cells[i][1];
+                    if (grid[col] && isWild(grid[col][row], game)) {
+                        // Assign random multiplier: 2x (50%), 3x (35%), 5x (15%)
+                        var roll = getRandomNumber();
+                        var wildMult;
+                        if (roll < 0.50) wildMult = 2;
+                        else if (roll < 0.85) wildMult = 3;
+                        else wildMult = 5;
+
+                        if (wildMult > lineMult) lineMult = wildMult;
+
+                        // Visual highlight on the wild cell
+                        var cell = document.getElementById('reel_' + col + '_' + row);
+                        if (cell) {
+                            cell.classList.add('reel-wild-glow');
+                        }
+                    }
+                }
+
+                if (lineMult > 1) {
+                    // Calculate the base line win to determine the bonus portion
+                    var symIdx = game.symbols.indexOf(pWin.symbol);
+                    var payMultiplier;
+                    if (window.HouseEdge) {
+                        payMultiplier = window.HouseEdge.getPaylinePayMultiplier(
+                            symIdx >= 0 ? symIdx : 0, pWin.matchCount, game
+                        );
+                    } else {
+                        if (pWin.matchCount >= 5) payMultiplier = 0.40;
+                        else if (pWin.matchCount >= 4) payMultiplier = 0.12;
+                        else payMultiplier = 0.04;
+                    }
+                    var baseLineWin = currentBet * payMultiplier;
+                    // Bonus is the extra from the multiplier (subtract the 1x already counted)
+                    totalBonus += baseLineWin * (lineMult - 1);
+                    if (lineMult > highestMult) highestMult = lineMult;
+                }
+            }
+
+            if (totalBonus > 0) {
+                showBonusEffect(highestMult + 'x WILD MULTIPLIER!', '#ff6d00');
+            }
+
+            return Math.round(totalBonus * 100) / 100;
+        }
+
+
+        // ═══ Mystery Stacks Handler ═══
+        // Picks a random non-wild symbol, replaces an entire column with
+        // the chosen symbol (mystery reveal), then re-evaluates paylines.
+        function applyMysteryStacksWinLogic(grid, game) {
+            if (!grid) return { grid: grid, extraWin: 0, mysterySymbol: null };
+            var cols = getGridCols(game);
+            var rows = getGridRows(game);
+
+            // Pick a random non-wild, non-scatter symbol to be the mystery reveal
+            var regularSyms = [];
+            for (var s = 0; s < game.symbols.length; s++) {
+                var sym = game.symbols[s];
+                if (!isWild(sym, game) && !isScatter(sym, game)) {
+                    regularSyms.push(sym);
+                }
+            }
+            if (regularSyms.length === 0) return { grid: grid, extraWin: 0, mysterySymbol: null };
+
+            var mysterySymbol = regularSyms[Math.floor(getRandomNumber() * regularSyms.length)];
+
+            // Pick a random column to be the mystery stack column
+            var mysteryCol = Math.floor(getRandomNumber() * cols);
+
+            // Build the modified grid — fill the mystery column with the chosen symbol
+            var modifiedGrid = [];
+            for (var c = 0; c < cols; c++) {
+                modifiedGrid[c] = [];
+                for (var r = 0; r < rows; r++) {
+                    if (c === mysteryCol) {
+                        modifiedGrid[c][r] = mysterySymbol;
+                    } else {
+                        modifiedGrid[c][r] = grid[c] ? grid[c][r] : null;
+                    }
+                }
+            }
+
+            // Re-evaluate paylines with the modified grid
+            var mysteryWins = checkPaylineWins(modifiedGrid, game);
+            var extraWin = 0;
+            for (var w = 0; w < mysteryWins.length; w++) {
+                var mWin = mysteryWins[w];
+                var symIdx = game.symbols.indexOf(mWin.symbol);
+                var payMultiplier;
+                if (window.HouseEdge) {
+                    payMultiplier = window.HouseEdge.getPaylinePayMultiplier(
+                        symIdx >= 0 ? symIdx : 0, mWin.matchCount, game
+                    );
+                } else {
+                    if (mWin.matchCount >= 5) payMultiplier = 0.40;
+                    else if (mWin.matchCount >= 4) payMultiplier = 0.12;
+                    else payMultiplier = 0.04;
+                }
+                extraWin += currentBet * payMultiplier;
+            }
+
+            // Highlight the mystery column
+            for (var r2 = 0; r2 < rows; r2++) {
+                var cell = document.getElementById('reel_' + mysteryCol + '_' + r2);
+                if (cell) {
+                    cell.classList.add('reel-win-glow');
+                }
+            }
+
+            return { grid: modifiedGrid, extraWin: Math.round(extraWin * 100) / 100, mysterySymbol: mysterySymbol };
+        }
+
+
+        // ═══ Stacked Wilds Handler ═══
+        // Counts consecutive wilds in each column. If 2+ found, applies a
+        // bonus multiplier: 1.5x per stack, capped at 3x total.
+        function applyStackedWilds(grid, game, baseWin) {
+            if (!grid || baseWin <= 0) return { bonusWin: 0, stackCount: 0, totalMultiplier: 1 };
+            var cols = getGridCols(game);
+            var rows = getGridRows(game);
+            var stackCount = 0;
+
+            for (var c = 0; c < cols; c++) {
+                var consecutiveWilds = 0;
+                var maxConsecutive = 0;
+                for (var r = 0; r < rows; r++) {
+                    if (grid[c] && isWild(grid[c][r], game)) {
+                        consecutiveWilds++;
+                        if (consecutiveWilds > maxConsecutive) maxConsecutive = consecutiveWilds;
+                    } else {
+                        consecutiveWilds = 0;
+                    }
+                }
+                if (maxConsecutive >= 2) {
+                    stackCount++;
+                    // Highlight the stacked wilds
+                    for (var r2 = 0; r2 < rows; r2++) {
+                        if (grid[c] && isWild(grid[c][r2], game)) {
+                            var cell = document.getElementById('reel_' + c + '_' + r2);
+                            if (cell) {
+                                cell.classList.add('reel-wild-glow');
+                                cell.classList.add('reel-wild-expand');
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (stackCount === 0) return { bonusWin: 0, stackCount: 0, totalMultiplier: 1 };
+
+            // 1.5x per stack, capped at 3x total
+            var totalMultiplier = Math.min(3, 1 + (stackCount * 0.5));
+            var bonusWin = Math.round(baseWin * (totalMultiplier - 1) * 100) / 100;
+
+            showBonusEffect('STACKED WILDS ' + totalMultiplier.toFixed(1) + 'x!', '#a855f7');
+
+            return { bonusWin: bonusWin, stackCount: stackCount, totalMultiplier: totalMultiplier };
+        }
+
+
+        // ═══ Wild Collect Handler ═══
+        // Tracks wilds across spins. After collecting 5+ wilds, triggers a bonus
+        // round placing extra wilds and re-evaluating for boosted wins.
+        var _wildCollectCount = typeof window._wildCollectCount !== 'undefined' ? window._wildCollectCount : 0;
+        var WILD_COLLECT_THRESHOLD = 5;
+
+        function applyWildCollectWinLogic(grid, game, baseWin) {
+            if (!grid) return { extraWin: 0, triggered: false };
+            var cols = getGridCols(game);
+            var rows = getGridRows(game);
+
+            // Count wilds in the current grid
+            var wildCount = 0;
+            for (var c = 0; c < cols; c++) {
+                for (var r = 0; r < rows; r++) {
+                    if (grid[c] && isWild(grid[c][r], game)) {
+                        wildCount++;
+                    }
+                }
+            }
+
+            // Accumulate wild count (persisted on window for cross-spin tracking)
+            _wildCollectCount += wildCount;
+            window._wildCollectCount = _wildCollectCount;
+
+            // Check if threshold reached
+            if (_wildCollectCount < WILD_COLLECT_THRESHOLD) {
+                return { extraWin: 0, triggered: false };
+            }
+
+            // Threshold reached — trigger bonus: place 2-3 extra wilds in optimal positions
+            var extraWildCount = 2 + Math.floor(getRandomNumber() * 2); // 2 or 3
+            var emptyPositions = [];
+            for (var c2 = 0; c2 < cols; c2++) {
+                for (var r2 = 0; r2 < rows; r2++) {
+                    if (grid[c2] && !isWild(grid[c2][r2], game) && !isScatter(grid[c2][r2], game)) {
+                        emptyPositions.push([c2, r2]);
+                    }
+                }
+            }
+
+            // Place extra wilds
+            var placed = 0;
+            while (placed < extraWildCount && emptyPositions.length > 0) {
+                var idx = Math.floor(getRandomNumber() * emptyPositions.length);
+                var pos = emptyPositions.splice(idx, 1)[0];
+                grid[pos[0]][pos[1]] = game.wildSymbol;
+                placed++;
+
+                // Highlight the bonus wild cell
+                var cell = document.getElementById('reel_' + pos[0] + '_' + pos[1]);
+                if (cell) {
+                    cell.classList.add('reel-wild-glow');
+                    cell.classList.add('reel-wild-expand');
+                }
+            }
+
+            // Re-evaluate paylines with the bonus wilds
+            var bonusWins = checkPaylineWins(grid, game);
+            var extraWin = 0;
+            for (var w = 0; w < bonusWins.length; w++) {
+                var bWin = bonusWins[w];
+                var symIdx = game.symbols.indexOf(bWin.symbol);
+                var payMultiplier;
+                if (window.HouseEdge) {
+                    payMultiplier = window.HouseEdge.getPaylinePayMultiplier(
+                        symIdx >= 0 ? symIdx : 0, bWin.matchCount, game
+                    );
+                } else {
+                    if (bWin.matchCount >= 5) payMultiplier = 0.40;
+                    else if (bWin.matchCount >= 4) payMultiplier = 0.12;
+                    else payMultiplier = 0.04;
+                }
+                extraWin += currentBet * payMultiplier;
+            }
+
+            // Reset counter after triggering
+            _wildCollectCount = 0;
+            window._wildCollectCount = 0;
+
+            if (placed > 0) {
+                showBonusEffect('WILD COLLECT BONUS! +' + placed + ' WILDS!', '#c6ff00');
+            }
+
+            return { extraWin: Math.round(extraWin * 100) / 100, triggered: true };
+        }
+
+
         // ═══ Win Payline Flash Animation ═══
         function _flashWinLines(winLines) {
             if (!winLines || winLines.length === 0) return;
@@ -396,6 +743,29 @@
 
             // ═══ PAYLINE WIN DETECTION ═══
             } else if (winType === 'payline' && grid) {
+
+                // ── Mystery Stacks: replace a column before payline evaluation ──
+                if (game.bonusType === 'mystery_stacks') {
+                    const mysteryResult = applyMysteryStacksWinLogic(grid, game);
+                    if (mysteryResult.mysterySymbol) {
+                        grid = mysteryResult.grid;
+                        if (mysteryResult.extraWin > 0) {
+                            showBonusEffect('MYSTERY REVEAL: ' + mysteryResult.mysterySymbol.replace(/^s\d+_/, '').replace(/_/g, ' ').toUpperCase() + '!', '#00bcd4');
+                        }
+                    }
+                }
+
+                // ── Expanding Symbol: expand reels before payline evaluation (during free spins) ──
+                if (game.bonusType === 'expanding_symbol' && freeSpinsActive) {
+                    const expandResult = applyExpandingSymbol(grid, game);
+                    if (expandResult.expandedSymbol) {
+                        grid = expandResult.grid;
+                        if (expandResult.extraWin > 0) {
+                            showBonusEffect('EXPANDING: ' + expandResult.expandedSymbol.replace(/^s\d+_/, '').replace(/_/g, ' ').toUpperCase() + '!', '#c7a94e');
+                        }
+                    }
+                }
+
                 const paylineWins = checkPaylineWins(grid, game);
                 let totalPaylineWin = 0;
                 let bestLine = null;
@@ -461,6 +831,63 @@
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
                     }
 
+                    // ── Multiplier Wilds: wilds in winning lines multiply the payout ──
+                    if (game.bonusType === 'multiplier_wilds') {
+                        const mwBonus = applyMultiplierWilds(grid, game, paylineWins);
+                        if (mwBonus > 0) {
+                            winAmount += mwBonus;
+                            winAmount = Math.round(winAmount * 100) / 100;
+                            message = `MULTIPLIER WILDS! $${winAmount.toLocaleString()}!`;
+                        }
+                    }
+
+                    // ── Stacked Wilds: bonus multiplier from stacked wild columns ──
+                    if (game.bonusType === 'stacked_wilds') {
+                        const swResult = applyStackedWilds(grid, game, winAmount);
+                        if (swResult.bonusWin > 0) {
+                            winAmount += swResult.bonusWin;
+                            winAmount = Math.round(winAmount * 100) / 100;
+                            message = `STACKED WILDS ${swResult.totalMultiplier.toFixed(1)}x! $${winAmount.toLocaleString()}!`;
+                        }
+                    }
+
+                    // ── Wild Collect: track wilds, bonus round on threshold ──
+                    if (game.bonusType === 'wild_collect') {
+                        const wcResult = applyWildCollectWinLogic(grid, game, winAmount);
+                        if (wcResult.triggered && wcResult.extraWin > 0) {
+                            winAmount += wcResult.extraWin;
+                            winAmount = Math.round(winAmount * 100) / 100;
+                            message = `WILD COLLECT BONUS! $${winAmount.toLocaleString()}!`;
+                        }
+                    }
+
+                    // ── Expanding Symbol: add extra payline wins from expanded grid (non-free-spin) ──
+                    if (game.bonusType === 'expanding_symbol' && !freeSpinsActive) {
+                        const expandResult = applyExpandingSymbol(grid, game);
+                        if (expandResult.extraWin > 0) {
+                            winAmount += expandResult.extraWin;
+                            winAmount = Math.round(winAmount * 100) / 100;
+                            message = `EXPANDING SYMBOL! $${winAmount.toLocaleString()}!`;
+                            showBonusEffect('EXPANDING: ' + (expandResult.expandedSymbol || '').replace(/^s\d+_/, '').replace(/_/g, ' ').toUpperCase() + '!', '#c7a94e');
+                        }
+                    }
+
+                    // ── Mystery Stacks: add bonus from re-evaluated grid ──
+                    if (game.bonusType === 'mystery_stacks') {
+                        // Mystery stacks grid modification was applied before payline evaluation;
+                        // any additional mystery multiplier chance (5% rare multiplier)
+                        if (getRandomNumber() < 0.05 && winAmount > 0) {
+                            const mysteryMults = game.mysteryRevealMultipliers || [1, 2, 5, 10];
+                            const rareIdx = 1 + Math.floor(getRandomNumber() * (mysteryMults.length - 1));
+                            const mystMult = mysteryMults[rareIdx] || 2;
+                            if (mystMult > 1) {
+                                winAmount = Math.round(winAmount * mystMult * 100) / 100;
+                                message = `MYSTERY x${mystMult}! $${winAmount.toLocaleString()}!`;
+                                showBonusEffect('MYSTERY x' + mystMult + '!', '#00bcd4');
+                            }
+                        }
+                    }
+
                     _flashWinLines(_lastWinLines);
                     { const _wm = currentBet > 0 ? winAmount / currentBet : 0;
                       playSound(_wm >= WIN_TIER_EPIC_THRESHOLD ? 'jackpot' : _wm >= WIN_TIER_MEGA_THRESHOLD ? 'megawin' : _wm >= WIN_TIER_BIG_THRESHOLD ? 'bigwin' : 'win'); }
@@ -470,6 +897,16 @@
                     playSound('lose');
                     if (freeSpinsActive && (game.bonusType === 'tumble' || game.bonusType === 'avalanche')) {
                         freeSpinsCascadeLevel = 0;
+                    }
+
+                    // ── Wild Collect: still track wilds on non-winning spins ──
+                    if (game.bonusType === 'wild_collect') {
+                        const wcLossResult = applyWildCollectWinLogic(grid, game, 0);
+                        if (wcLossResult.triggered && wcLossResult.extraWin > 0) {
+                            winAmount = wcLossResult.extraWin;
+                            winAmount = Math.round(winAmount * 100) / 100;
+                            message = `WILD COLLECT BONUS! $${winAmount.toLocaleString()}!`;
+                        }
                     }
                 }
 
@@ -513,6 +950,40 @@
                         winAmount = Math.round(winAmount * wheelMult * 100) / 100;
                         message = `WHEEL OF FIRE! Triple match x${wheelMult} = $${winAmount.toLocaleString()}!`;
                         showBonusEffect(`WHEEL ${wheelMult}x!`, '#ff0844');
+                    }
+
+                    // ── Stacked Wilds: bonus multiplier from stacked wilds (classic) ──
+                    if (game.bonusType === 'stacked_wilds' && grid) {
+                        const swResult = applyStackedWilds(grid, game, winAmount);
+                        if (swResult.bonusWin > 0) {
+                            winAmount += swResult.bonusWin;
+                            winAmount = Math.round(winAmount * 100) / 100;
+                            message = `STACKED WILDS ${swResult.totalMultiplier.toFixed(1)}x! $${winAmount.toLocaleString()}!`;
+                        }
+                    }
+
+                    // ── Multiplier Wilds: wild multiplier bonus (classic) ──
+                    if (game.bonusType === 'multiplier_wilds' && hasWild) {
+                        const mwRoll = getRandomNumber();
+                        let mwMult;
+                        if (mwRoll < 0.50) mwMult = 2;
+                        else if (mwRoll < 0.85) mwMult = 3;
+                        else mwMult = 5;
+                        const mwBonus = Math.round(winAmount * (mwMult - 1) * 100) / 100;
+                        winAmount += mwBonus;
+                        winAmount = Math.round(winAmount * 100) / 100;
+                        message = `${mwMult}x WILD MULTIPLIER! $${winAmount.toLocaleString()}!`;
+                        showBonusEffect(mwMult + 'x WILD MULTIPLIER!', '#ff6d00');
+                    }
+
+                    // ── Wild Collect: track wilds on wins (classic) ──
+                    if (game.bonusType === 'wild_collect' && grid) {
+                        const wcResult = applyWildCollectWinLogic(grid, game, winAmount);
+                        if (wcResult.triggered && wcResult.extraWin > 0) {
+                            winAmount += wcResult.extraWin;
+                            winAmount = Math.round(winAmount * 100) / 100;
+                            message = `WILD COLLECT BONUS! $${winAmount.toLocaleString()}!`;
+                        }
                     }
 
                     { const _wm = currentBet > 0 ? winAmount / currentBet : 0;
@@ -570,6 +1041,16 @@
                         message = 'No match. Try again.';
                         if (freeSpinsActive && (game.bonusType === 'tumble' || game.bonusType === 'avalanche')) {
                             freeSpinsCascadeLevel = 0;
+                        }
+
+                        // ── Wild Collect: still track wilds on non-winning classic spins ──
+                        if (game.bonusType === 'wild_collect' && grid) {
+                            const wcLossResult = applyWildCollectWinLogic(grid, game, 0);
+                            if (wcLossResult.triggered && wcLossResult.extraWin > 0) {
+                                winAmount = wcLossResult.extraWin;
+                                winAmount = Math.round(winAmount * 100) / 100;
+                                message = `WILD COLLECT BONUS! $${winAmount.toLocaleString()}!`;
+                            }
                         }
                     }
                 }
@@ -675,6 +1156,33 @@
                         triggerFreeSpins(game, game.freeSpinsCount);
                         if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     }
+                } else if (game.bonusType === 'expanding_symbol') {
+                    playSound('freespin');
+                    message = `EXPANDING SYMBOL! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                    triggerFreeSpins(game, game.freeSpinsCount);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
+                } else if (game.bonusType === 'multiplier_wilds') {
+                    playSound('freespin');
+                    message = `MULTIPLIER WILDS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                    triggerFreeSpins(game, game.freeSpinsCount);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
+                } else if (game.bonusType === 'mystery_stacks') {
+                    playSound('freespin');
+                    message = `MYSTERY STACKS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                    triggerFreeSpins(game, game.freeSpinsCount);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
+                } else if (game.bonusType === 'stacked_wilds') {
+                    playSound('freespin');
+                    message = `STACKED WILDS! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                    triggerFreeSpins(game, game.freeSpinsCount);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
+                } else if (game.bonusType === 'wild_collect') {
+                    playSound('freespin');
+                    _wildCollectCount = 0;
+                    window._wildCollectCount = 0;
+                    message = `WILD COLLECT! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                    triggerFreeSpins(game, game.freeSpinsCount);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                 } else if (game.bonusType === 'prize_wheel') {
                     if (typeof triggerPrizeWheel === 'function') {
                         playSound('freespin');
