@@ -5,10 +5,17 @@ const config = require('../config');
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
+const crypto = require('crypto');
+
 const router = express.Router();
 
 // Dummy hash for constant-time auth when user not found (prevents timing attacks)
 const DUMMY_HASH = bcrypt.hashSync('dummy-password-never-matches', 12);
+
+/** Generate an 8-char uppercase alphanumeric referral code */
+function generateReferralCode() {
+    return crypto.randomBytes(4).toString('hex').toUpperCase();
+}
 
 // Failed login tracking for account lockout
 const failedLogins = new Map(); // userId -> { count, lockedUntil }
@@ -18,7 +25,7 @@ const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, referralCode } = req.body;
 
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'Username, email, and password are required' });
@@ -42,12 +49,33 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ error: 'Username or email already taken' });
         }
 
+        // Resolve referrer if a referral code was provided
+        let referrerId = null;
+        if (referralCode && typeof referralCode === 'string') {
+            const referrer = await db.get(
+                'SELECT id FROM users WHERE referral_code = ?',
+                [referralCode.trim().toUpperCase()]
+            );
+            if (referrer) {
+                referrerId = referrer.id;
+            }
+        }
+
+        // Generate a unique referral code for the new user
+        let newReferralCode = generateReferralCode();
+        // Retry up to 5 times on collision (extremely unlikely with 4 random bytes)
+        for (let i = 0; i < 5; i++) {
+            const dup = await db.get('SELECT id FROM users WHERE referral_code = ?', [newReferralCode]);
+            if (!dup) break;
+            newReferralCode = generateReferralCode();
+        }
+
         const passwordHash = bcrypt.hashSync(password, 12);
         const startBalance = config.DEFAULT_BALANCE;
 
         const result = await db.run(
-            'INSERT INTO users (username, email, password_hash, balance) VALUES (?, ?, ?, ?)',
-            [username, email, passwordHash, startBalance]
+            'INSERT INTO users (username, email, password_hash, balance, referral_code, referred_by) VALUES (?, ?, ?, ?, ?, ?)',
+            [username, email, passwordHash, startBalance, newReferralCode, referrerId]
         );
 
         const userId = result.lastInsertRowid;
@@ -64,7 +92,7 @@ router.post('/register', async (req, res) => {
 
         res.status(201).json({
             token,
-            user: { id: userId, username, email, balance: startBalance },
+            user: { id: userId, username, email, balance: startBalance, referralCode: newReferralCode },
         });
     } catch (err) {
         console.error('[Auth] Register error:', err);
@@ -144,6 +172,7 @@ router.get('/me', authenticate, (req, res) => {
             email: req.user.email,
             balance: req.user.balance,
             is_admin: !!req.user.is_admin,
+            referralCode: req.user.referral_code || null,
         },
     });
 });

@@ -139,38 +139,38 @@
 
         const ACH_DEFS = [
             // Spin milestones
-            { id: 'first_spin',    icon: '🎰', name: 'First Spin',       desc: 'Play your first spin',               req: { type: 'spins',   target: 1      }, xp: 10,  cash: 25  },
-            { id: 'spin_10',       icon: '🔄', name: 'Getting Started',  desc: 'Complete 10 spins',                  req: { type: 'spins',   target: 10     }, xp: 20,  cash: 50  },
-            { id: 'spin_100',      icon: '💫', name: 'Spin Master',      desc: 'Complete 100 spins',                 req: { type: 'spins',   target: 100    }, xp: 50,  cash: 100 },
-            { id: 'spin_500',      icon: '⚡', name: 'Centurion',        desc: 'Complete 500 spins',                 req: { type: 'spins',   target: 500    }, xp: 100, cash: 250 },
-            { id: 'spin_1000',     icon: '🌀', name: 'Reel Veteran',     desc: 'Complete 1,000 spins',               req: { type: 'spins',   target: 1000   }, xp: 200, cash: 500 },
+            { id: 'first_spin',    icon: '🎰', name: 'First Spin',       desc: 'Play your first spin',               req: { type: 'spins',   target: 1      } },
+            { id: 'spin_10',       icon: '🔄', name: 'Getting Started',  desc: 'Complete 10 spins',                  req: { type: 'spins',   target: 10     } },
+            { id: 'spin_100',      icon: '💫', name: 'Spin Master',      desc: 'Complete 100 spins',                 req: { type: 'spins',   target: 100    } },
+            { id: 'spin_500',      icon: '⚡', name: 'Centurion',        desc: 'Complete 500 spins',                 req: { type: 'spins',   target: 500    } },
+            { id: 'spin_1000',     icon: '🌀', name: 'Reel Veteran',     desc: 'Complete 1,000 spins',               req: { type: 'spins',   target: 1000   } },
             // Win milestones
-            { id: 'first_win',     icon: '🏆', name: 'First Win',        desc: 'Win your first spin',                req: { type: 'wins',    target: 1      }, xp: 10,  cash: 25  },
-            { id: 'win_10',        icon: '💰', name: 'On a Roll',        desc: 'Win 10 times',                       req: { type: 'wins',    target: 10     }, xp: 25,  cash: 50  },
-            { id: 'win_50',        icon: '🤑', name: 'Lucky Streak',     desc: 'Win 50 times',                       req: { type: 'wins',    target: 50     }, xp: 75,  cash: 150 },
-            { id: 'win_200',       icon: '🥇', name: 'Win Connoisseur',  desc: 'Win 200 times',                      req: { type: 'wins',    target: 200    }, xp: 150, cash: 400 },
+            { id: 'first_win',     icon: '🏆', name: 'First Win',        desc: 'Win your first spin',                req: { type: 'wins',    target: 1      } },
+            { id: 'win_10',        icon: '💰', name: 'On a Roll',        desc: 'Win 10 times',                       req: { type: 'wins',    target: 10     } },
+            { id: 'win_50',        icon: '🤑', name: 'Lucky Streak',     desc: 'Win 50 times',                       req: { type: 'wins',    target: 50     } },
+            { id: 'win_200',       icon: '🥇', name: 'Win Connoisseur',  desc: 'Win 200 times',                      req: { type: 'wins',    target: 200    } },
             // Big win multipliers
-            { id: 'big_win',       icon: '💥', name: 'Big Winner',       desc: 'Win over 100x your bet',             req: { type: 'bigWin',  target: 100    }, xp: 100, cash: 300 },
-            { id: 'mega_win',      icon: '🌟', name: 'Mega Winner',      desc: 'Win over 500x your bet',             req: { type: 'bigWin',  target: 500    }, xp: 200, cash: 750 },
-            { id: 'epic_win',      icon: '🔥', name: 'Epic Winner',      desc: 'Win over 1,000x your bet',           req: { type: 'bigWin',  target: 1000   }, xp: 400, cash: 1500 },
+            { id: 'big_win',       icon: '💥', name: 'Big Winner',       desc: 'Win over 100x your bet',             req: { type: 'bigWin',  target: 100    } },
+            { id: 'mega_win',      icon: '🌟', name: 'Mega Winner',      desc: 'Win over 500x your bet',             req: { type: 'bigWin',  target: 500    } },
+            { id: 'epic_win',      icon: '🔥', name: 'Epic Winner',      desc: 'Win over 1,000x your bet',           req: { type: 'bigWin',  target: 1000   } },
             // Game variety
-            { id: 'games_5',       icon: '🎮', name: 'Explorer',         desc: 'Try 5 different games',              req: { type: 'games',   target: 5      }, xp: 30,  cash: 75  },
-            { id: 'games_20',      icon: '🗺️', name: 'Adventurer',      desc: 'Try 20 different games',             req: { type: 'games',   target: 20     }, xp: 100, cash: 250 },
-            { id: 'games_50',      icon: '🌍', name: 'Globe Trotter',    desc: 'Try 50 different games',             req: { type: 'games',   target: 50     }, xp: 250, cash: 750 },
-            { id: 'games_all',     icon: '👑', name: 'Master of All',    desc: 'Try all 122 games',                  req: { type: 'games',   target: 122    }, xp: 500, cash: 2000 },
+            { id: 'games_5',       icon: '🎮', name: 'Explorer',         desc: 'Try 5 different games',              req: { type: 'games',   target: 5      } },
+            { id: 'games_20',      icon: '🗺️', name: 'Adventurer',      desc: 'Try 20 different games',             req: { type: 'games',   target: 20     } },
+            { id: 'games_50',      icon: '🌍', name: 'Globe Trotter',    desc: 'Try 50 different games',             req: { type: 'games',   target: 50     } },
+            { id: 'games_all',     icon: '👑', name: 'Master of All',    desc: 'Try all 122 games',                  req: { type: 'games',   target: 122    } },
             // Balance milestones
-            { id: 'balance_500',   icon: '💎', name: 'Getting Rich',     desc: 'Reach a balance of $500',            req: { type: 'balance', target: 500    }, xp: 25,  cash: 0   },
-            { id: 'balance_1000',  icon: '💰', name: 'High Balance',     desc: 'Reach a balance of $1,000',          req: { type: 'balance', target: 1000   }, xp: 50,  cash: 0   },
-            { id: 'balance_5000',  icon: '🏦', name: 'Bank Breaker',     desc: 'Reach a balance of $5,000',          req: { type: 'balance', target: 5000   }, xp: 100, cash: 0   },
+            { id: 'balance_500',   icon: '💎', name: 'Getting Rich',     desc: 'Reach a balance of $500',            req: { type: 'balance', target: 500    } },
+            { id: 'balance_1000',  icon: '💰', name: 'High Balance',     desc: 'Reach a balance of $1,000',          req: { type: 'balance', target: 1000   } },
+            { id: 'balance_5000',  icon: '🏦', name: 'Bank Breaker',     desc: 'Reach a balance of $5,000',          req: { type: 'balance', target: 5000   } },
             // Wager milestones
-            { id: 'wager_1k',      icon: '📊', name: 'Regular',          desc: 'Wager $1,000 total',                 req: { type: 'wager',   target: 1000   }, xp: 50,  cash: 100 },
-            { id: 'wager_10k',     icon: '📈', name: 'Whale',            desc: 'Wager $10,000 total',                req: { type: 'wager',   target: 10000  }, xp: 150, cash: 500 },
+            { id: 'wager_1k',      icon: '📊', name: 'Regular',          desc: 'Wager $1,000 total',                 req: { type: 'wager',   target: 1000   } },
+            { id: 'wager_10k',     icon: '📈', name: 'Whale',            desc: 'Wager $10,000 total',                req: { type: 'wager',   target: 10000  } },
             // Bonus triggers
-            { id: 'bonus_5',       icon: '🎁', name: 'Bonus Seeker',     desc: 'Trigger 5 bonus rounds',             req: { type: 'bonuses', target: 5      }, xp: 75,  cash: 150 },
-            { id: 'bonus_25',      icon: '🎯', name: 'Bonus Hunter',     desc: 'Trigger 25 bonus rounds',            req: { type: 'bonuses', target: 25     }, xp: 200, cash: 500 },
+            { id: 'bonus_5',       icon: '🎁', name: 'Bonus Seeker',     desc: 'Trigger 5 bonus rounds',             req: { type: 'bonuses', target: 5      } },
+            { id: 'bonus_25',      icon: '🎯', name: 'Bonus Hunter',     desc: 'Trigger 25 bonus rounds',            req: { type: 'bonuses', target: 25     } },
             // Win streak
-            { id: 'streak_5',      icon: '🔥', name: 'Hot Hand',         desc: 'Win 5 spins in a row',               req: { type: 'streak',  target: 5      }, xp: 50,  cash: 100 },
-            { id: 'streak_10',     icon: '💠', name: 'Unstoppable',      desc: 'Win 10 spins in a row',              req: { type: 'streak',  target: 10     }, xp: 250, cash: 500 },
+            { id: 'streak_5',      icon: '🔥', name: 'Hot Hand',         desc: 'Win 5 spins in a row',               req: { type: 'streak',  target: 5      } },
+            { id: 'streak_10',     icon: '💠', name: 'Unstoppable',      desc: 'Win 10 spins in a row',              req: { type: 'streak',  target: 10     } },
         ];
 
         function _loadChallengeState() {
@@ -364,11 +364,9 @@
                     if (prog >= ch.target && !state.completed.includes(ch.id)) {
                         state.completed.push(ch.id);
                         awardXP(ch.xp);
-                        // Cash reward (with streak multiplier)
+                        // Cash reward
                         if ((ch.reward || 0) > 0) {
-                            var _csMult = (typeof getChallengeStreakMultiplier === 'function') ? getChallengeStreakMultiplier() : 1;
-                            var _csReward = Math.round(ch.reward * _csMult);
-                            balance += _csReward;
+                            balance += ch.reward;
                             if (typeof saveBalance === 'function') saveBalance();
                             if (typeof updateBalance === 'function') updateBalance();
                         }
@@ -378,10 +376,6 @@
                 });
                 _saveChallengeState(state);
                 _renderChallengesPanel();
-                // Check if all challenges completed → record streak day
-                if (state.completed.length >= DAILY_CHALLENGES.length && typeof recordChallengeStreakDay === 'function') {
-                    recordChallengeStreakDay();
-                }
             }
             _checkAchievements(eventType, payload);
         };
@@ -854,15 +848,7 @@
                 if (unlocked) { s.unlocked.push(ach.id); newUnlocks.push(ach); changed = true; }
             }
             if (changed) _saveAchState(s);
-            newUnlocks.forEach(ach => {
-                if (ach.xp) awardXP(ach.xp);
-                if (ach.cash) {
-                    balance += ach.cash;
-                    if (typeof saveBalance === 'function') saveBalance();
-                    if (typeof updateBalance === 'function') updateBalance();
-                }
-                _showAchUnlockToast(ach);
-            });
+            newUnlocks.forEach(_showAchUnlockToast);
         }
 
 
@@ -876,15 +862,10 @@
                 + 'border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;font-size:14px;'
                 + 'z-index:99999;box-shadow:0 4px 24px rgba(123,97,255,0.4);transition:all 0.4s ease;'
                 + 'pointer-events:none;max-width:320px;';
-            const rewards = [];
-            if (ach.xp) rewards.push('+' + ach.xp + ' XP');
-            if (ach.cash) rewards.push('+$' + ach.cash);
             t.innerHTML = `<span style="font-size:28px">${ach.icon}</span><div>`
                 + `<div style="font-size:10px;color:#7b61ff;font-weight:700;letter-spacing:1px;text-transform:uppercase">Achievement Unlocked!</div>`
                 + `<div style="font-weight:700;margin:2px 0">${ach.name}</div>`
-                + `<div style="font-size:11px;color:rgba(255,255,255,0.6)">${ach.desc}</div>`
-                + (rewards.length ? `<div style="font-size:11px;color:#6ee7b7;margin-top:2px">${rewards.join(' + ')}</div>` : '')
-                + `</div>`;
+                + `<div style="font-size:11px;color:rgba(255,255,255,0.6)">${ach.desc}</div></div>`;
             document.body.appendChild(t);
             requestAnimationFrame(() => requestAnimationFrame(() => {
                 t.style.transform = 'translateX(-50%) translateY(0)';
@@ -896,51 +877,6 @@
                 setTimeout(() => t.remove(), 450);
             }, 4000);
         }
-
-        // ── Achievements Modal ──────────────────────────────────────
-        function _achProgress(ach, s) {
-            const r = ach.req;
-            if (r.type === 'spins')   return Math.min(s.spins, r.target);
-            if (r.type === 'wins')    return Math.min(s.wins, r.target);
-            if (r.type === 'bigWin')  return Math.min(s.maxWinMult, r.target);
-            if (r.type === 'games')   return Math.min(s.games.length, r.target);
-            if (r.type === 'balance') return Math.min(s.maxBalance, r.target);
-            if (r.type === 'wager')   return Math.min(s.totalWagered || 0, r.target);
-            if (r.type === 'bonuses') return Math.min(s.bonusesTriggered || 0, r.target);
-            if (r.type === 'streak')  return Math.min(s.maxStreak || 0, r.target);
-            return 0;
-        }
-
-        function openAchievements() {
-            const modal = document.getElementById('achievementsModal');
-            if (!modal) return;
-            modal.style.display = 'flex';
-            const s = _loadAchState();
-            const grid = document.getElementById('achGrid');
-            const summary = document.getElementById('achSummary');
-            if (summary) summary.textContent = s.unlocked.length + ' / ' + ACH_DEFS.length + ' unlocked';
-            if (!grid) return;
-            grid.innerHTML = ACH_DEFS.map(a => {
-                const done = s.unlocked.includes(a.id);
-                const prog = _achProgress(a, s);
-                const pct = Math.min(100, Math.round((prog / a.req.target) * 100));
-                const rewards = [];
-                if (a.xp) rewards.push('+' + a.xp + ' XP');
-                if (a.cash) rewards.push('+$' + a.cash);
-                return `<div class="ach-item ${done ? 'ach-done' : ''}">
-                    <div class="ach-item-icon">${a.icon}</div>
-                    <div class="ach-item-info">
-                        <div class="ach-item-name">${a.name}</div>
-                        <div class="ach-item-desc">${a.desc}</div>
-                        ${done ? '<div class="ach-item-status">Unlocked</div>'
-                               : `<div class="ach-item-bar"><div class="ach-item-bar-fill" style="width:${pct}%"></div></div>
-                                  <div class="ach-item-prog">${prog} / ${a.req.target}</div>`}
-                        ${rewards.length ? `<div class="ach-item-reward">${rewards.join(' + ')}</div>` : ''}
-                    </div>
-                </div>`;
-            }).join('');
-        }
-        window.openAchievements = openAchievements;
 
         // ── Hall of Fame — cross-session best wins ────────────────
         const HOF_KEY = typeof STORAGE_KEY_HALL_OF_FAME !== 'undefined' ? STORAGE_KEY_HALL_OF_FAME : 'matrixHallOfFame';
@@ -1100,7 +1036,7 @@
             if (winSoundsCheck) winSoundsCheck.checked = appSettings.winSounds !== false;
             const uiSoundsCheck = document.getElementById('settingUiSounds');
             if (uiSoundsCheck) uiSoundsCheck.checked = appSettings.uiSounds !== false;
-            var soundThemeSelect = document.getElementById('settingSoundTheme');
+            const soundThemeSelect = document.getElementById('settingSoundTheme');
             if (soundThemeSelect) soundThemeSelect.value = appSettings.soundTheme || 'auto';
             modal.classList.add('active');
             playSound('click');
@@ -1195,18 +1131,11 @@
             saveSettings();
         }
 
+        // Sprint 35 — Sound Theme
         function settingsSetSoundTheme(theme) {
             appSettings.soundTheme = theme;
             saveSettings();
-            // Restart ambient with new theme if playing
-            if (typeof SoundManager !== 'undefined' && typeof SoundManager.stopAmbient === 'function') {
-                SoundManager.stopAmbient();
-                if (theme !== 'off' && appSettings.ambientMusic && appSettings.soundEnabled) {
-                    SoundManager.startAmbient();
-                }
-            }
         }
-
 
         function addFunds() {
             if (typeof showWalletModal === 'function' && currentUser) {
@@ -1267,16 +1196,25 @@
 
 
         function awardXP(amount) {
-            // Check 2x XP Boost
+            // 2× XP Boost check (Sprint 27)
             try {
                 var _boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
                 if (_boost && _boost.remaining > 0) {
-                    amount = amount * 2;
-                    _boost.remaining--;
+                    amount *= 2;
+                    _boost.remaining -= 1;
                     localStorage.setItem('matrixXpBoost', JSON.stringify(_boost));
-                    if (_boost.remaining <= 0) localStorage.removeItem('matrixXpBoost');
                 }
             } catch(e) {}
+            // Session streak XP multiplier: 2x after 30 spins, 3x after 60
+            if (typeof _sessionSpinCount !== 'undefined') {
+                if (_sessionSpinCount >= 60) {
+                    amount = Math.round(amount * 3);
+                    if (_sessionSpinCount === 60) showToast('3x XP STREAK! Keep the momentum going!', 'success', 4000);
+                } else if (_sessionSpinCount >= 30) {
+                    amount = Math.round(amount * 2);
+                    if (_sessionSpinCount === 30) showToast('2x XP STREAK! 30 spins in a row!', 'success', 4000);
+                }
+            }
             playerXP += amount;
             let levelledUp = false;
             let needed = getXPForLevel(playerLevel);
@@ -1394,11 +1332,29 @@
             }
             if (fill) fill.style.width = pct + '%';
             if (text) text.textContent = `${playerXP} / ${needed} XP`;
+
+            // Update VIP mini progress bar in header
+            if (typeof getVipProgress === 'function' && typeof getVipTier === 'function') {
+                const vipFill = document.getElementById('vipMiniFill');
+                const vipText = document.getElementById('vipMiniText');
+                const vipBar = document.getElementById('vipMiniBar');
+                if (vipFill && vipText) {
+                    const vipPct = getVipProgress();
+                    const vipTier = getVipTier();
+                    const nextTier = typeof getNextVipTier === 'function' ? getNextVipTier() : null;
+                    vipFill.style.width = vipPct.toFixed(1) + '%';
+                    vipFill.style.background = 'linear-gradient(90deg, ' + (vipTier.colorDark || vipTier.color) + ', ' + (nextTier ? nextTier.color : vipTier.color) + ')';
+                    vipText.textContent = nextTier ? (vipPct.toFixed(0) + '% to ' + nextTier.name) : ('VIP ' + vipTier.name);
+                }
+                if (vipBar) {
+                    vipBar.onclick = function() { if (typeof openVipModal === 'function') openVipModal(); };
+                }
+            }
         }
 
 
         // ===== Toast System =====
-        function showToast(message, type = 'info') {
+        function showToast(message, type = 'info', duration = 3500) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
 
@@ -1410,7 +1366,7 @@
             setTimeout(() => {
                 toast.classList.add('toast-exit');
                 setTimeout(() => toast.remove(), 400);
-            }, 3500);
+            }, duration);
         }
 
 
@@ -1502,23 +1458,50 @@
         }
 
 
-        function claimDailyBonus() {
+        async function claimDailyBonus() {
             if (dailyBonusState.claimedToday) return;
 
-            const dayIndex = Math.min(dailyBonusState.streak, DAILY_REWARDS.length - 1);
-            const reward = DAILY_REWARDS[dayIndex];
-
-            balance += reward.amount;
-            updateBalance();
-            awardXP(reward.xp);
-
-            dailyBonusState.streak++;
-            if (dailyBonusState.streak > 7) dailyBonusState.streak = 7;
-            dailyBonusState.lastClaim = getTodayStr();
-            dailyBonusState.claimedToday = true;
-            saveDailyBonus();
+            // Server-validated claim for authenticated users
+            if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+                try {
+                    const res = await apiRequest('/api/user/claim-daily-bonus', {
+                        method: 'POST',
+                        requireAuth: true
+                    });
+                    if (!res.awarded) return;
+                    balance = res.newBalance;
+                    updateBalance();
+                    saveBalance();
+                    awardXP(res.xp);
+                    dailyBonusState.streak = res.streak;
+                    dailyBonusState.lastClaim = getTodayStr();
+                    dailyBonusState.claimedToday = true;
+                    saveDailyBonus();
+                } catch (err) {
+                    if (err.status === 400) {
+                        dailyBonusState.claimedToday = true;
+                        saveDailyBonus();
+                        renderDailyCalendar();
+                    }
+                    return;
+                }
+            } else {
+                // Local fallback (guest / offline)
+                const dayIndex = Math.min(dailyBonusState.streak, DAILY_REWARDS.length - 1);
+                const reward = DAILY_REWARDS[dayIndex];
+                balance += reward.amount;
+                updateBalance();
+                awardXP(reward.xp);
+                dailyBonusState.streak++;
+                if (dailyBonusState.streak > 7) dailyBonusState.streak = 7;
+                dailyBonusState.lastClaim = getTodayStr();
+                dailyBonusState.claimedToday = true;
+                saveDailyBonus();
+            }
 
             playSound('bigwin');
+            const dayIndex = Math.min(Math.max(dailyBonusState.streak - 1, 0), DAILY_REWARDS.length - 1);
+            const reward = DAILY_REWARDS[dayIndex];
             showToast(`Daily Bonus: +$${reward.amount.toLocaleString()} and +${reward.xp} XP!`, 'win');
             createConfetti();
 
@@ -1617,7 +1600,7 @@
         }
 
 
-        function spinBonusWheel() {
+        async function spinBonusWheel() {
             if (wheelSpinning || !canSpinWheel()) return;
             wheelSpinning = true;
 
@@ -1627,7 +1610,40 @@
 
             playSound('spin');
 
-            const winIndex = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
+            let winIndex;
+            let serverBalance = null;
+            let serverXP = null;
+
+            // Server-validated spin for authenticated users
+            if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+                try {
+                    const res = await apiRequest('/api/user/spin-wheel', {
+                        method: 'POST',
+                        requireAuth: true,
+                    });
+                    winIndex = res.winIndex;
+                    serverBalance = res.newBalance;
+                    serverXP = res.xp;
+                } catch (err) {
+                    wheelSpinning = false;
+                    if (err.status === 400) {
+                        // Cooldown enforced server-side — sync local state
+                        wheelState.lastSpin = new Date().toISOString();
+                        saveWheelState();
+                        spinBtn.textContent = 'NEXT SPIN IN A FEW HOURS';
+                        showToast('Wheel cooldown still active!', 'info');
+                    } else {
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = 'SPIN THE WHEEL';
+                        showToast('Wheel spin failed — try again.', 'info');
+                    }
+                    return;
+                }
+            } else {
+                // Guest / offline — client-side RNG
+                winIndex = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
+            }
+
             const segAngle = (2 * Math.PI) / WHEEL_SEGMENTS.length;
             // We want the winning segment at the top (270deg / -PI/2)
             // The pointer is at top, reading from angle -PI/2
@@ -1663,27 +1679,29 @@
                         // Award free spins
                         const fsCount = seg.value;
                         if (currentGame && !freeSpinsActive) {
-                            // Slot is open and idle — start free spins immediately
                             triggerFreeSpins(currentGame, fsCount);
                         } else if (currentGame && freeSpinsActive) {
-                            // Already in free spins — top them up
                             freeSpinsRemaining += fsCount;
                             if (typeof updateFreeSpinsDisplay === 'function') updateFreeSpinsDisplay();
                         } else {
-                            // Not in a slot — queue free spins; they will activate when the player opens a slot
                             freeSpinsActive = true;
                             freeSpinsRemaining = fsCount;
                             freeSpinsTotalWin = 0;
                             freeSpinsMultiplier = 1;
                         }
-                        awardXP(seg.xp);
+                        awardXP(serverXP != null ? serverXP : seg.xp);
                         const gameLabel = (currentGame && currentGame.name) ? currentGame.name : 'your next slot';
                         showToast(`\uD83C\uDFB0 ${fsCount} Free Spins awarded on ${gameLabel}!`, 'win');
                     } else {
-                        balance += seg.value;
+                        // Cash prize — use server balance if available
+                        if (serverBalance != null) {
+                            balance = serverBalance;
+                        } else {
+                            balance += seg.value;
+                        }
                         updateBalance();
-                        awardXP(seg.xp);
-                        showToast(`\uD83C\uDF89 Bonus Wheel: +$${seg.value.toLocaleString()} and +${seg.xp} XP!`, 'win');
+                        awardXP(serverXP != null ? serverXP : seg.xp);
+                        showToast(`\uD83C\uDF89 Bonus Wheel: +$${seg.value.toLocaleString()} and +${(serverXP != null ? serverXP : seg.xp)} XP!`, 'win');
                     }
 
                     wheelState.lastSpin = new Date().toISOString();
@@ -1971,986 +1989,936 @@
             modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
         }
 
-        // ── XP Shop ──────────────────────────────────────────────
-        const XP_SHOP_ITEMS = [
-            { id: 'free_spins_5', label: '5 Free Spins', desc: 'Free spins on current game', cost: 100, icon: '🎰', type: 'freespins', value: 5 },
-            { id: 'balance_500',  label: '$500 Boost',    desc: 'Instant balance credit',     cost: 250, icon: '💰', type: 'balance',   value: 500 },
-            { id: 'xp_boost',     label: '2× XP Boost',   desc: 'Double XP for 50 spins',     cost: 500, icon: '⚡', type: 'xpboost',   value: 50 },
-            { id: 'balance_2000', label: '$2,000 Boost',   desc: 'Big balance injection',      cost: 1000,icon: '💎', type: 'balance',   value: 2000 },
-        ];
+// ═══════════════════════════════════════════════════════
+// SPRINT 27 — THE FORGE: XP SHOP + MYSTERY BOX
+// ═══════════════════════════════════════════════════════
 
-        function openXpShop() {
-            var modal = document.getElementById('xpShopModal');
-            if (!modal) return;
-            _renderXpShopGrid();
-            modal.style.display = 'flex';
-            modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
-        }
+// ── XP Shop ─────────────────────────────────────────────────────────────────
+var XP_SHOP_ITEMS = [
+    { id: 'freespins5',   label: '5 Free Spins',        icon: '🎰', cost: 100,  desc: 'Get 5 free spins on any open game' },
+    { id: 'balance500',   label: '$500 Balance Boost',  icon: '💵', cost: 250,  desc: 'Instantly add $500 to your balance' },
+    { id: 'xpboost50',    label: '2× XP Boost (50)',    icon: '⚡', cost: 500,  desc: 'Double XP on your next 50 spins' },
+    { id: 'balance2000',  label: '$2,000 Balance Boost', icon: '💰', cost: 1000, desc: 'Instantly add $2,000 to your balance' },
+];
 
-        function _renderXpShopGrid() {
-            var grid = document.getElementById('xpsGrid');
-            var xpEl = document.getElementById('xpsCurrentXP');
-            var boostEl = document.getElementById('xpsBoostStatus');
-            if (!grid) return;
-            if (xpEl) xpEl.textContent = playerXP;
+function openXpShop() {
+    var modal = document.getElementById('xpShopModal');
+    if (!modal) return;
+    var grid = document.getElementById('xpShopGrid');
+    var balEl = document.getElementById('xpShopBalance');
+    if (balEl) balEl.textContent = (typeof playerXP !== 'undefined' ? Math.floor(playerXP) : 0).toLocaleString();
+    if (grid) {
+        grid.innerHTML = '';
+        XP_SHOP_ITEMS.forEach(function(item) {
+            var canAfford = (typeof playerXP !== 'undefined') && playerXP >= item.cost;
+            var card = document.createElement('div');
+            card.className = 'xp-shop-card' + (canAfford ? '' : ' xp-shop-card--disabled');
+            card.innerHTML =
+                '<div class="xp-shop-icon">' + item.icon + '</div>' +
+                '<div class="xp-shop-label">' + item.label + '</div>' +
+                '<div class="xp-shop-desc">' + item.desc + '</div>' +
+                '<div class="xp-shop-cost">' + item.cost.toLocaleString() + ' XP</div>' +
+                '<button class="xp-shop-buy-btn"' + (canAfford ? '' : ' disabled') + '>BUY</button>';
+            card.querySelector('.xp-shop-buy-btn').addEventListener('click', function() {
+                _buyXpShopItem(item);
+                // Refresh modal after purchase
+                openXpShop();
+            });
+            grid.appendChild(card);
+        });
+    }
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
 
-            // Show boost status
-            try {
-                var boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
-                if (boost && boost.remaining > 0 && boostEl) {
-                    boostEl.style.display = 'block';
-                    boostEl.textContent = '⚡ 2× XP Boost active — ' + boost.remaining + ' spins remaining';
-                } else if (boostEl) {
-                    boostEl.style.display = 'none';
-                }
-            } catch(e) {}
-
-            grid.innerHTML = XP_SHOP_ITEMS.map(function(item) {
-                var canBuy = playerXP >= item.cost;
-                return '<div class="xps-item' + (canBuy ? '' : ' xps-locked') + '">'
-                    + '<div class="xps-icon">' + item.icon + '</div>'
-                    + '<div class="xps-label">' + item.label + '</div>'
-                    + '<div class="xps-desc">' + item.desc + '</div>'
-                    + '<button class="xps-buy-btn' + (canBuy ? '' : ' disabled') + '" '
-                    + (canBuy ? 'onclick="buyXpShopItem(\'' + item.id + '\')"' : 'disabled')
-                    + '>' + item.cost + ' XP</button>'
-                    + '</div>';
-            }).join('');
-        }
-
-        window.buyXpShopItem = function(itemId) {
-            var item = XP_SHOP_ITEMS.find(function(i) { return i.id === itemId; });
-            if (!item) return;
-            if (playerXP < item.cost) {
-                showToast('Not enough XP! Need ' + item.cost + ' XP.', 'error');
-                return;
+function _buyXpShopItem(item) {
+    if (typeof playerXP === 'undefined' || playerXP < item.cost) {
+        if (typeof showToast === 'function') showToast('Not enough XP!', 'error');
+        return;
+    }
+    playerXP -= item.cost;
+    if (typeof saveXP === 'function') saveXP();
+    if (typeof updateXPDisplay === 'function') updateXPDisplay();
+    switch (item.id) {
+        case 'freespins5':
+            if (typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                triggerFreeSpins(currentGame, 5);
+                if (typeof showToast === 'function') showToast('5 Free Spins activated!', 'win');
+            } else if (typeof showToast === 'function') {
+                showToast('Open a slot first, then use Free Spins!', 'info');
             }
-            // Deduct XP
-            playerXP -= item.cost;
-            saveXP();
-            updateXPDisplay();
-
-            if (item.type === 'balance') {
-                balance += item.value;
+            break;
+        case 'balance500':
+            if (typeof balance !== 'undefined') {
+                balance += 500;
                 if (typeof saveBalance === 'function') saveBalance();
                 if (typeof updateBalance === 'function') updateBalance();
-                showToast('💰 +$' + item.value.toLocaleString() + ' credited to your balance!', 'success');
-            } else if (item.type === 'freespins') {
-                if (typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
-                    triggerFreeSpins(currentGame, item.value);
-                    showToast('🎰 ' + item.value + ' Free Spins on ' + (currentGame.name || 'current game') + '!', 'success');
-                } else {
-                    // Not in a slot — give balance equivalent instead ($50 per spin)
-                    var equiv = item.value * 50;
-                    balance += equiv;
-                    if (typeof saveBalance === 'function') saveBalance();
-                    if (typeof updateBalance === 'function') updateBalance();
-                    showToast('🎰 No slot open — +$' + equiv + ' credited instead!', 'success');
-                }
-            } else if (item.type === 'xpboost') {
-                try {
-                    var existing = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
-                    var remaining = (existing && existing.remaining > 0) ? existing.remaining + item.value : item.value;
-                    localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: remaining }));
-                } catch(e) {}
-                showToast('⚡ 2× XP Boost activated for ' + item.value + ' spins!', 'success');
+                if (typeof showToast === 'function') showToast('+$500 added to your balance!', 'win');
             }
-
-            _renderXpShopGrid();
-            if (typeof window.refreshLobbyChallengeWidget === 'function') window.refreshLobbyChallengeWidget();
-        };
-
-        window.openXpShop = openXpShop;
-
-        // ── Mystery Box ──────────────────────────────────────────
-        const MB_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
-        const MB_STORAGE_KEY = 'matrixMysteryBox';
-        const MB_TIERS = [
-            { tier: 'Common',    color: '#6b7280', weight: 60, minPrize: 50,   maxPrize: 100 },
-            { tier: 'Uncommon',  color: '#22c55e', weight: 25, minPrize: 150,  maxPrize: 300 },
-            { tier: 'Rare',      color: '#a855f7', weight: 10, minPrize: 500,  maxPrize: 1000 },
-            { tier: 'Legendary', color: '#f59e0b', weight: 5,  minPrize: 2000, maxPrize: 2000, freeSpins: 10 },
-        ];
-
-        function _getMysteryBoxState() {
+            break;
+        case 'xpboost50':
             try {
-                var raw = localStorage.getItem(MB_STORAGE_KEY);
-                return raw ? JSON.parse(raw) : { lastOpen: 0 };
-            } catch(e) { return { lastOpen: 0 }; }
-        }
-
-        function _mysteryBoxReady() {
-            var s = _getMysteryBoxState();
-            return (Date.now() - s.lastOpen) >= MB_COOLDOWN_MS;
-        }
-
-        function _rollMysteryTier() {
-            var roll = Math.random() * 100;
-            var cumulative = 0;
-            for (var i = 0; i < MB_TIERS.length; i++) {
-                cumulative += MB_TIERS[i].weight;
-                if (roll < cumulative) return MB_TIERS[i];
+                var existing = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                var remaining = (existing && existing.remaining > 0) ? existing.remaining + 50 : 50;
+                localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: remaining }));
+                if (typeof showToast === 'function') showToast('2× XP Boost active for ' + remaining + ' spins!', 'win');
+            } catch(e) {}
+            break;
+        case 'balance2000':
+            if (typeof balance !== 'undefined') {
+                balance += 2000;
+                if (typeof saveBalance === 'function') saveBalance();
+                if (typeof updateBalance === 'function') updateBalance();
+                if (typeof showToast === 'function') showToast('+$2,000 added to your balance!', 'bigwin');
             }
-            return MB_TIERS[0];
-        }
+            break;
+    }
+}
 
-        function openMysteryBox() {
-            var modal = document.getElementById('mysteryBoxModal');
-            if (!modal) return;
+// ── Mystery Box ──────────────────────────────────────────────────────────────
+var MYSTERY_BOX_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
+var MYSTERY_BOX_KEY = 'matrixMysteryBox';
 
-            var boxEl = document.getElementById('mbBox');
-            var titleEl = document.getElementById('mbTitle');
-            var subtitleEl = document.getElementById('mbSubtitle');
-            var prizeEl = document.getElementById('mbPrize');
-            var openBtn = document.getElementById('mbOpenBtn');
-            var closeBtn = document.getElementById('mbCloseBtn');
-            var boxWrap = document.getElementById('mbBoxWrap');
+var MYSTERY_BOX_PRIZES = [
+    { label: 'Common',     weight: 60, cash: [50, 100],    spins: 0,  emoji: '📦' },
+    { label: 'Uncommon',   weight: 25, cash: [150, 300],   spins: 0,  emoji: '🎁' },
+    { label: 'Rare',       weight: 10, cash: [500, 1000],  spins: 0,  emoji: '💎' },
+    { label: 'Legendary',  weight: 5,  cash: [2000, 2000], spins: 10, emoji: '👑' },
+];
 
-            // Check cooldown
-            if (!_mysteryBoxReady()) {
-                var s = _getMysteryBoxState();
-                var msLeft = MB_COOLDOWN_MS - (Date.now() - s.lastOpen);
-                var hLeft = Math.floor(msLeft / 3600000);
-                var mLeft = Math.floor((msLeft % 3600000) / 60000);
-                if (titleEl) titleEl.textContent = 'Mystery Box';
-                if (subtitleEl) subtitleEl.textContent = 'Next box in ' + hLeft + 'h ' + mLeft + 'm';
-                if (boxEl) { boxEl.textContent = '🔒'; boxEl.className = 'mb-box mb-locked'; }
-                if (openBtn) openBtn.style.display = 'none';
-                if (closeBtn) { closeBtn.style.display = 'inline-block'; closeBtn.textContent = 'Close'; }
-                if (prizeEl) prizeEl.style.display = 'none';
-                modal.style.display = 'flex';
-                modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
-                return;
-            }
+function _pickMysteryPrize() {
+    var roll = Math.random() * 100;
+    var cumulative = 0;
+    for (var i = 0; i < MYSTERY_BOX_PRIZES.length; i++) {
+        cumulative += MYSTERY_BOX_PRIZES[i].weight;
+        if (roll < cumulative) return MYSTERY_BOX_PRIZES[i];
+    }
+    return MYSTERY_BOX_PRIZES[0];
+}
 
-            // Reset UI
-            if (boxEl) { boxEl.textContent = '🎁'; boxEl.className = 'mb-box'; }
-            if (titleEl) titleEl.textContent = 'Mystery Box';
-            if (subtitleEl) subtitleEl.textContent = 'Tap the box to reveal your prize!';
-            if (prizeEl) prizeEl.style.display = 'none';
-            if (openBtn) openBtn.style.display = 'inline-block';
-            if (closeBtn) closeBtn.style.display = 'none';
+function _getMysteryBoxState() {
+    try { return JSON.parse(localStorage.getItem(MYSTERY_BOX_KEY) || 'null'); } catch(e) { return null; }
+}
 
-            modal.style.display = 'flex';
-            modal.onclick = function(e) { if (e.target === modal && closeBtn && closeBtn.style.display !== 'none') modal.style.display = 'none'; };
+function _updateMysteryBoxNavBtn() {
+    var btn = document.getElementById('mysteryBoxNavBtn');
+    if (!btn) return;
+    var state = _getMysteryBoxState();
+    var elapsed = state ? Date.now() - state.lastOpen : Infinity;
+    if (elapsed >= MYSTERY_BOX_COOLDOWN_MS) {
+        btn.classList.add('mystery-box-ready');
+        btn.title = 'Mystery Box ready!';
+    } else {
+        btn.classList.remove('mystery-box-ready');
+        var remaining = Math.ceil((MYSTERY_BOX_COOLDOWN_MS - elapsed) / 1000);
+        var h = Math.floor(remaining / 3600), m = Math.floor((remaining % 3600) / 60);
+        btn.title = 'Ready in ' + h + 'h ' + m + 'm';
+    }
+}
 
-            if (openBtn) {
-                openBtn.onclick = function() {
-                    openBtn.style.display = 'none';
+function openMysteryBox() {
+    var modal = document.getElementById('mysteryBoxModal');
+    if (!modal) return;
+    _refreshMysteryBoxModal();
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+    // Tick countdown every second while open
+    if (window._mysteryBoxTick) clearInterval(window._mysteryBoxTick);
+    window._mysteryBoxTick = setInterval(function() {
+        if (!modal.classList.contains('active')) { clearInterval(window._mysteryBoxTick); return; }
+        _refreshMysteryBoxModal();
+    }, 1000);
+}
 
-                    // Animate box
-                    if (boxEl) boxEl.classList.add('mb-shaking');
+function _refreshMysteryBoxModal() {
+    var icon    = document.getElementById('mysteryBoxIcon');
+    var status  = document.getElementById('mysteryBoxStatus');
+    var cd      = document.getElementById('mysteryBoxCountdown');
+    var openBtn = document.getElementById('mysteryBoxOpenBtn');
+    if (!icon) return;
+    var state = _getMysteryBoxState();
+    var elapsed = state ? Date.now() - state.lastOpen : Infinity;
+    if (elapsed >= MYSTERY_BOX_COOLDOWN_MS) {
+        icon.textContent = '📦';
+        icon.className = 'mystery-box-icon mystery-box-icon--ready';
+        status.textContent = 'Your mystery box is ready!';
+        if (cd) cd.style.display = 'none';
+        if (openBtn) { openBtn.disabled = false; openBtn.textContent = 'OPEN BOX'; }
+    } else {
+        var remaining = Math.ceil((MYSTERY_BOX_COOLDOWN_MS - elapsed) / 1000);
+        var h = Math.floor(remaining / 3600);
+        var m = Math.floor((remaining % 3600) / 60);
+        var s = remaining % 60;
+        icon.textContent = '🔒';
+        icon.className = 'mystery-box-icon mystery-box-icon--locked';
+        status.textContent = 'Next box available in:';
+        if (cd) { cd.style.display = ''; cd.textContent = h + 'h ' + m + 'm ' + s + 's'; }
+        if (openBtn) { openBtn.disabled = true; openBtn.textContent = 'LOCKED'; }
+    }
+}
 
-                    setTimeout(function() {
-                        if (boxEl) boxEl.classList.remove('mb-shaking');
+function doOpenMysteryBox() {
+    var state = _getMysteryBoxState();
+    var elapsed = state ? Date.now() - state.lastOpen : Infinity;
+    if (elapsed < MYSTERY_BOX_COOLDOWN_MS) return;
 
-                        // Roll prize
-                        var tier = _rollMysteryTier();
-                        var prize = tier.minPrize + Math.floor(Math.random() * (tier.maxPrize - tier.minPrize + 1));
-                        var hasFS = tier.freeSpins || 0;
+    var prize = _pickMysteryPrize();
+    var cashMin = prize.cash[0], cashMax = prize.cash[1];
+    var cashAmt = cashMin + Math.floor(Math.random() * (cashMax - cashMin + 1));
 
-                        // Open animation
-                        if (boxEl) {
-                            boxEl.textContent = '✨';
-                            boxEl.className = 'mb-box mb-opened';
-                            boxEl.style.color = tier.color;
-                        }
-                        if (titleEl) titleEl.textContent = tier.tier + '!';
-                        if (titleEl) titleEl.style.color = tier.color;
-                        if (subtitleEl) subtitleEl.textContent = '';
+    // Save cooldown
+    localStorage.setItem(MYSTERY_BOX_KEY, JSON.stringify({ lastOpen: Date.now() }));
 
-                        var prizeText = '$' + prize.toLocaleString();
-                        if (hasFS) prizeText += ' + ' + hasFS + ' Free Spins';
+    // Award prize
+    if (typeof balance !== 'undefined') {
+        balance += cashAmt;
+        if (typeof saveBalance === 'function') saveBalance();
+        if (typeof updateBalance === 'function') updateBalance();
+    }
+    if (prize.spins > 0 && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+        triggerFreeSpins(currentGame, prize.spins);
+    }
 
-                        if (prizeEl) {
-                            prizeEl.style.display = 'block';
-                            prizeEl.innerHTML = '<div class="mb-prize-amount" style="color:' + tier.color + '">' + prizeText + '</div>';
-                        }
+    // Animate
+    var icon   = document.getElementById('mysteryBoxIcon');
+    var status = document.getElementById('mysteryBoxStatus');
+    var openBtn = document.getElementById('mysteryBoxOpenBtn');
+    if (icon) {
+        icon.className = 'mystery-box-icon mystery-box-icon--opening';
+        icon.textContent = '✨';
+        setTimeout(function() {
+            icon.textContent = prize.emoji;
+            icon.className = 'mystery-box-icon mystery-box-icon--revealed';
+        }, 600);
+    }
+    if (status) {
+        setTimeout(function() {
+            var msg = prize.label + '! +$' + cashAmt.toLocaleString();
+            if (prize.spins > 0) msg += ' + ' + prize.spins + ' Free Spins!';
+            status.textContent = msg;
+            if (typeof showToast === 'function') showToast(prize.emoji + ' Mystery Box: ' + msg, prize.label === 'Legendary' ? 'bigwin' : 'win');
+        }, 700);
+    }
+    if (openBtn) { openBtn.disabled = true; openBtn.textContent = 'OPENED'; }
+    _updateMysteryBoxNavBtn();
+}
 
-                        // Credit rewards
-                        balance += prize;
-                        if (typeof saveBalance === 'function') saveBalance();
-                        if (typeof updateBalance === 'function') updateBalance();
+// Refresh nav btn state on load and every minute
+(function() {
+    function _init() { _updateMysteryBoxNavBtn(); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _init); }
+    else { _init(); }
+    setInterval(_updateMysteryBoxNavBtn, 60000);
+})();
 
-                        if (hasFS && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
-                            triggerFreeSpins(currentGame, hasFS);
-                        } else if (hasFS) {
-                            balance += hasFS * 50;
-                            if (typeof saveBalance === 'function') saveBalance();
-                            if (typeof updateBalance === 'function') updateBalance();
-                        }
+// ═══════════════════════════════════════════════════════
+// SPRINT 30 — THE CALENDAR: LOGIN CALENDAR + COMMUNITY JACKPOT
+// ═══════════════════════════════════════════════════════
 
-                        awardXP(25);
+// ── Login Calendar ───────────────────────────────────────────────────────────
+var LC_KEY       = 'matrixLoginCalendar';
+var LC_MILES_KEY = 'matrixCalendarMilestones';
+var LC_MILESTONES = [
+    { days: 7,  cash: 200,  xp: 0,   spins: 0,  label: '7 Days' },
+    { days: 14, cash: 500,  xp: 50,  spins: 0,  label: '14 Days' },
+    { days: 21, cash: 1000, xp: 100, spins: 0,  label: '21 Days' },
+    { days: 28, cash: 2500, xp: 250, spins: 5,  label: '28 Days' },
+];
 
-                        // Save cooldown
-                        localStorage.setItem(MB_STORAGE_KEY, JSON.stringify({ lastOpen: Date.now() }));
+function _lcGetState() {
+    try { return JSON.parse(localStorage.getItem(LC_KEY) || 'null'); } catch(e) { return null; }
+}
 
-                        // Confetti for Rare+
-                        if (tier.weight <= 10) {
-                            if (typeof triggerConfetti === 'function') triggerConfetti(60);
-                            else if (typeof burstParticles === 'function') burstParticles(60, window.innerWidth / 2, window.innerHeight / 2);
-                        }
+function _lcSaveState(state) {
+    localStorage.setItem(LC_KEY, JSON.stringify(state));
+}
 
-                        showToast('🎁 Mystery Box: ' + tier.tier + ' — ' + prizeText + '!', 'success');
+function _lcNow() {
+    var d = new Date();
+    return { month: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), day: d.getDate() };
+}
 
-                        if (closeBtn) { closeBtn.style.display = 'inline-block'; closeBtn.textContent = 'Collect & Close'; }
-                    }, 1200); // shake duration
-                };
-            }
-        }
+function _lcMarkToday() {
+    var now = _lcNow();
+    var state = _lcGetState();
+    if (!state || state.month !== now.month) {
+        state = { month: now.month, days: [] };
+    }
+    if (!state.days.includes(now.day)) {
+        state.days.push(now.day);
+        _lcSaveState(state);
+        _lcCheckMilestones(state);
+    }
+    return state;
+}
 
-        // Update mystery box button cooldown indicator
-        function _updateMysteryBoxBtn() {
-            var btn = document.getElementById('mysteryBoxBtn');
-            if (!btn) return;
-            if (_mysteryBoxReady()) {
-                btn.classList.add('mb-ready');
-                btn.classList.remove('mb-cooldown');
-            } else {
-                btn.classList.remove('mb-ready');
-                btn.classList.add('mb-cooldown');
-            }
-        }
-        setInterval(_updateMysteryBoxBtn, 30000);
-        setTimeout(_updateMysteryBoxBtn, 1000);
-
-        window.openMysteryBox = openMysteryBox;
-
-        // ══════ Login Calendar ════════════════════════════════════
-        const CAL_KEY = 'matrixLoginCalendar';
-        const CAL_MILE_KEY = 'matrixCalendarMilestones';
-        const CAL_MILESTONES = [
-            { days: 7,  cash: 200,  xp: 0,   spins: 0, label: '7 Days' },
-            { days: 14, cash: 500,  xp: 50,  spins: 0, label: '14 Days' },
-            { days: 21, cash: 1000, xp: 100, spins: 0, label: '21 Days' },
-            { days: 28, cash: 2500, xp: 250, spins: 5, label: '28 Days' },
-        ];
-
-        function _getCalMonth() {
-            const d = new Date();
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-        }
-
-        function _loadCalState() {
-            try {
-                const d = JSON.parse(localStorage.getItem(CAL_KEY) || '{}');
-                if (d.month !== _getCalMonth()) return { month: _getCalMonth(), days: [] };
-                return d;
-            } catch(e) { return { month: _getCalMonth(), days: [] }; }
-        }
-
-        function _saveCalState(s) {
-            try { localStorage.setItem(CAL_KEY, JSON.stringify(s)); } catch(e) {}
-        }
-
-        function _loadCalMilestones() {
-            try {
-                const d = JSON.parse(localStorage.getItem(CAL_MILE_KEY) || '{}');
-                if (d.month !== _getCalMonth()) return { month: _getCalMonth(), claimed: [] };
-                return d;
-            } catch(e) { return { month: _getCalMonth(), claimed: [] }; }
-        }
-
-        function _saveCalMilestones(s) {
-            try { localStorage.setItem(CAL_MILE_KEY, JSON.stringify(s)); } catch(e) {}
-        }
-
-        function openLoginCalendar() {
-            const modal = document.getElementById('loginCalendarModal');
-            if (!modal) return;
-            modal.style.display = 'flex';
-
-            const state = _loadCalState();
-            const today = new Date().getDate();
-
-            // Mark today if not already
-            if (!state.days.includes(today)) {
-                state.days.push(today);
-                _saveCalState(state);
-            }
-
-            // Render month header
-            const now = new Date();
-            const monthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-            const monthEl = document.getElementById('calMonth');
-            if (monthEl) monthEl.textContent = monthName;
-
-            // Render calendar grid
-            const grid = document.getElementById('calGrid');
-            if (!grid) return;
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-
-            let html = '<div class="cal-weekdays">';
-            ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => { html += '<div class="cal-wk">' + d + '</div>'; });
-            html += '</div><div class="cal-days">';
-
-            // Empty cells for offset
-            for (let i = 0; i < firstDay; i++) html += '<div class="cal-day cal-empty"></div>';
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                const isToday = d === today;
-                const loggedIn = state.days.includes(d);
-                const isPast = d < today;
-                const isFuture = d > today;
-                let cls = 'cal-day';
-                if (isToday && loggedIn) cls += ' cal-today';
-                else if (loggedIn) cls += ' cal-logged';
-                else if (isPast) cls += ' cal-missed';
-                else if (isFuture) cls += ' cal-future';
-                html += '<div class="' + cls + '">' + d + '</div>';
-            }
-            html += '</div>';
-            grid.innerHTML = html;
-
-            // Render milestones
-            const milesEl = document.getElementById('calMilestones');
-            if (!milesEl) return;
-            const mileState = _loadCalMilestones();
-            const loginCount = state.days.length;
-
-            milesEl.innerHTML = CAL_MILESTONES.map(m => {
-                const done = loginCount >= m.days;
-                const claimed = mileState.claimed.includes(m.days);
-                const rewards = [];
-                if (m.cash) rewards.push('$' + m.cash);
-                if (m.xp) rewards.push(m.xp + ' XP');
-                if (m.spins) rewards.push(m.spins + ' Free Spins');
-                return '<div class="cal-mile ' + (done ? 'cal-mile-done' : '') + (claimed ? ' cal-mile-claimed' : '') + '">'
-                    + '<div class="cal-mile-label">' + m.label + '</div>'
-                    + '<div class="cal-mile-reward">' + rewards.join(' + ') + '</div>'
-                    + (done && !claimed
-                        ? '<button class="cal-mile-btn" onclick="claimCalendarMilestone(' + m.days + ')">Claim</button>'
-                        : (claimed ? '<span class="cal-mile-check">Claimed</span>' : '<span class="cal-mile-lock">' + loginCount + '/' + m.days + '</span>'))
-                    + '</div>';
-            }).join('');
-        }
-
-        window.claimCalendarMilestone = function(days) {
-            const m = CAL_MILESTONES.find(x => x.days === days);
-            if (!m) return;
-            const state = _loadCalState();
-            if (state.days.length < days) return;
-            const mileState = _loadCalMilestones();
-            if (mileState.claimed.includes(days)) return;
-
-            mileState.claimed.push(days);
-            _saveCalMilestones(mileState);
-
-            if (m.cash) {
+function _lcCheckMilestones(state) {
+    var milesKey = LC_MILES_KEY;
+    var claimed = {};
+    try { claimed = JSON.parse(localStorage.getItem(milesKey) || '{}'); } catch(e) {}
+    if (!claimed.month || claimed.month !== state.month) claimed = { month: state.month, days: [] };
+    var count = state.days.length;
+    LC_MILESTONES.forEach(function(m) {
+        if (count >= m.days && !claimed.days.includes(m.days)) {
+            claimed.days.push(m.days);
+            localStorage.setItem(milesKey, JSON.stringify(claimed));
+            // Award
+            if (typeof balance !== 'undefined') {
                 balance += m.cash;
                 if (typeof saveBalance === 'function') saveBalance();
                 if (typeof updateBalance === 'function') updateBalance();
             }
-            if (m.xp) awardXP(m.xp);
-            if (m.spins && typeof triggerFreeSpins === 'function') {
-                triggerFreeSpins(currentGame || null, m.spins);
+            if (m.xp > 0 && typeof awardXP === 'function') awardXP(m.xp);
+            if (m.spins > 0 && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                triggerFreeSpins(currentGame, m.spins);
             }
-
             if (typeof showToast === 'function') {
-                showToast('Calendar milestone claimed! ' + (m.cash ? '+$' + m.cash : '') + (m.xp ? ' +' + m.xp + ' XP' : ''), 'success');
+                var msg = '🏆 ' + m.label + ' Login Streak! +$' + m.cash.toLocaleString();
+                if (m.xp > 0) msg += ' + ' + m.xp + ' XP';
+                if (m.spins > 0) msg += ' + ' + m.spins + ' Free Spins';
+                showToast(msg, 'bigwin');
             }
-            openLoginCalendar(); // Re-render
-        };
-
-        window.openLoginCalendar = openLoginCalendar;
-
-        // ══════ Promo Code System ════════════════════════════════
-        const PROMO_KEY = 'matrixPromoCodes';
-        const PROMO_CODES = {
-            'WELCOME500':  { type: 'balance', amount: 500,  xp: 0,   spins: 0,  once: true,  label: '$500 Balance Bonus' },
-            'MATRIX100':   { type: 'xp',      amount: 0,    xp: 100, spins: 0,  once: true,  label: '100 XP Bonus' },
-            'FREESPIN10':  { type: 'spins',    amount: 0,    xp: 0,   spins: 10, once: true,  label: '10 Free Spins' },
-            'DAILY200':    { type: 'balance', amount: 200,  xp: 0,   spins: 0,  once: false, label: '$200 Daily Bonus' },
-            'XPBOOST':     { type: 'boost',    amount: 0,    xp: 0,   spins: 0,  once: false, label: '2x XP Boost (20 spins)' },
-            'BIGWIN':      { type: 'balance', amount: 1000, xp: 50,  spins: 5,  once: true,  label: '$1,000 + 50 XP + 5 Free Spins' },
-        };
-
-        function _loadPromoState() {
-            try { return JSON.parse(localStorage.getItem(PROMO_KEY) || '{"used":{}}'); }
-            catch(e) { return { used: {} }; }
         }
+    });
+}
 
-        function _savePromoState(s) {
-            try { localStorage.setItem(PROMO_KEY, JSON.stringify(s)); } catch(e) {}
+function openLoginCalendar() {
+    var modal = document.getElementById('loginCalendarModal');
+    if (!modal) return;
+    var state = _lcMarkToday();
+    _lcRender(state);
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function _lcRender(state) {
+    var now = _lcNow();
+    var titleEl = document.getElementById('lcMonthTitle');
+    var gridEl  = document.getElementById('lcGrid');
+    var milesEl = document.getElementById('lcMilestones');
+    if (!gridEl) return;
+
+    // Title
+    var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var d = new Date();
+    if (titleEl) titleEl.textContent = monthNames[d.getMonth()] + ' ' + d.getFullYear() + '  —  ' + state.days.length + ' / 30 days logged';
+
+    // Grid
+    var daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    var html = '';
+    for (var i = 1; i <= daysInMonth; i++) {
+        var isPast = i < now.day;
+        var isToday = i === now.day;
+        var isLogged = state.days.includes(i);
+        var cls = 'lc-day';
+        var icon = '';
+        if (isToday && isLogged)  { cls += ' lc-day-today'; icon = '✓'; }
+        else if (isPast && isLogged) { cls += ' lc-day-done'; icon = '✓'; }
+        else if (isPast && !isLogged) { cls += ' lc-day-missed'; icon = '✗'; }
+        else if (isToday) { cls += ' lc-day-today'; icon = '●'; }
+        else { cls += ' lc-day-future'; icon = ''; }
+        html += '<div class="' + cls + '"><span class="lc-num">' + i + '</span><span class="lc-icon">' + icon + '</span></div>';
+    }
+    gridEl.innerHTML = html;
+
+    // Milestones bar
+    var claimed = {};
+    try { claimed = JSON.parse(localStorage.getItem(LC_MILES_KEY) || '{}'); } catch(e) {}
+    var count = state.days.length;
+    if (milesEl) {
+        milesEl.innerHTML = LC_MILESTONES.map(function(m) {
+            var done = (claimed.days || []).includes(m.days);
+            var cls = 'lc-mile' + (done ? ' lc-mile-done' : count >= m.days ? ' lc-mile-ready' : '');
+            return '<div class="' + cls + '"><span class="lc-mile-days">' + m.days + 'd</span><span class="lc-mile-reward">$' + m.cash.toLocaleString() + (m.xp ? ' +' + m.xp + 'XP' : '') + '</span>' + (done ? '<span class="lc-mile-check">✓</span>' : '') + '</div>';
+        }).join('');
+    }
+}
+
+// ── Community Jackpot Pool ────────────────────────────────────────────────────
+var CJ_KEY  = 'matrixCommunityJackpot';
+var CJ_SEED = 1000;
+var CJ_MAX  = 50000;
+var CJ_CONTRIBUTION = 0.50;
+var CJ_WIN_ODDS = 10000; // 1 in N
+
+function _cjGetPool() {
+    try {
+        var s = JSON.parse(localStorage.getItem(CJ_KEY) || 'null');
+        if (!s) { s = { pool: CJ_SEED, lastReset: Date.now() }; _cjSave(s); }
+        return s;
+    } catch(e) { return { pool: CJ_SEED }; }
+}
+
+function _cjSave(s) { localStorage.setItem(CJ_KEY, JSON.stringify(s)); }
+
+function _cjUpdateTicker() {
+    var ticker = document.getElementById('communityJackpotTicker');
+    var amtEl  = document.getElementById('communityJackpotAmount');
+    if (!ticker || !amtEl) return;
+    var s = _cjGetPool();
+    ticker.style.display = '';
+    var amount = s.pool;
+    amtEl.textContent = '$' + Math.floor(amount).toLocaleString();
+    ticker.classList.toggle('cjt-large', amount > 10000);
+}
+
+// Called by spin flow to contribute to pool and check for win
+function communityJackpotSpin(bet) {
+    var s = _cjGetPool();
+    s.pool = Math.min(s.pool + CJ_CONTRIBUTION, CJ_MAX);
+    // Random win check
+    var won = Math.random() < (1 / CJ_WIN_ODDS);
+    if (won) {
+        var winAmount = s.pool;
+        s.pool = CJ_SEED;
+        s.lastReset = Date.now();
+        _cjSave(s);
+        // Award
+        if (typeof balance !== 'undefined') {
+            balance += winAmount;
+            if (typeof saveBalance === 'function') saveBalance();
+            if (typeof updateBalance === 'function') updateBalance();
         }
+        if (typeof showToast === 'function') showToast('🌐 COMMUNITY JACKPOT! +$' + Math.floor(winAmount).toLocaleString() + '!', 'bigwin');
+        // Full-screen celebration
+        var cel = document.createElement('div');
+        cel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;cursor:pointer;';
+        cel.innerHTML = '<div style="font-size:72px;margin-bottom:16px">🌐</div><div style="font-size:36px;font-weight:900;color:#f0c040">COMMUNITY JACKPOT!</div><div style="font-size:24px;margin-top:12px">You won $' + Math.floor(winAmount).toLocaleString() + '!</div><div style="font-size:13px;margin-top:24px;opacity:0.6">Tap to continue</div>';
+        cel.onclick = function() { document.body.removeChild(cel); };
+        document.body.appendChild(cel);
+    } else {
+        _cjSave(s);
+    }
+    _cjUpdateTicker();
+}
 
-        function openPromoCode() {
-            const modal = document.getElementById('promoCodeModal');
-            if (!modal) return;
-            modal.style.display = 'flex';
-            const input = document.getElementById('promoInput');
-            const msg = document.getElementById('promoMsg');
-            if (input) { input.value = ''; input.focus(); }
-            if (msg) msg.textContent = '';
-        }
+// Init ticker on load
+(function() {
+    function _cjInit() { _cjUpdateTicker(); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _cjInit); }
+    else { _cjInit(); }
+    setInterval(_cjUpdateTicker, 30000);
+})();
 
-        function redeemPromoCode() {
-            const input = document.getElementById('promoInput');
-            const msg = document.getElementById('promoMsg');
-            if (!input || !msg) return;
-            const code = input.value.trim().toUpperCase();
-            if (!code) { msg.textContent = 'Please enter a code.'; msg.style.color = '#f87171'; return; }
+// ═══════════════════════════════════════════════════════
+// SPRINT 31 — PROMO CODES + AUTOMATIC CASHBACK
+// ═══════════════════════════════════════════════════════
 
-            const promo = PROMO_CODES[code];
-            if (!promo) { msg.textContent = 'Invalid promo code.'; msg.style.color = '#f87171'; return; }
+var PROMO_CODES = {
+    WELCOME500: { type: 'one-time', reward: { cash: 500 },              desc: '+$500 Balance!' },
+    MATRIX100:  { type: 'one-time', reward: { xp: 100 },                desc: '+100 XP!' },
+    FREESPIN10: { type: 'one-time', reward: { spins: 10 },              desc: '10 Free Spins!' },
+    DAILY200:   { type: 'daily',    reward: { cash: 200 },              desc: '+$200 Balance!' },
+    XPBOOST:    { type: 'daily',    reward: { xpboost: 20 },            desc: '2× XP Boost (20 spins)!' },
+};
+var PROMO_STORAGE_KEY = 'matrixPromoCodes';
 
-            const state = _loadPromoState();
-            const today = new Date().toDateString();
+function openPromoCode() {
+    var modal = document.getElementById('promoCodeModal');
+    if (!modal) return;
+    var inp = document.getElementById('promoCodeInput');
+    var res = document.getElementById('promoResult');
+    if (inp) inp.value = '';
+    if (res) res.textContent = '';
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+    if (inp) setTimeout(function() { inp.focus(); }, 80);
+    inp && inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') redeemPromoCode(); }, { once: true });
+}
 
-            if (promo.once && state.used[code]) {
-                msg.textContent = 'This code has already been used.'; msg.style.color = '#f87171'; return;
-            }
-            if (!promo.once && state.used[code] === today) {
-                msg.textContent = 'This code can only be used once per day.'; msg.style.color = '#f87171'; return;
-            }
+async function redeemPromoCode() {
+    var inp = document.getElementById('promoCodeInput');
+    var res = document.getElementById('promoResult');
+    if (!inp) return;
+    var code = inp.value.trim().toUpperCase();
+    var def = PROMO_CODES[code];
 
-            // Redeem
-            state.used[code] = promo.once ? Date.now() : today;
-            _savePromoState(state);
+    if (!def) {
+        if (res) { res.textContent = '\u274C Unknown code'; res.className = 'promo-result promo-fail'; }
+        return;
+    }
 
-            if (promo.amount) {
-                balance += promo.amount;
-                if (typeof saveBalance === 'function') saveBalance();
-                if (typeof updateBalance === 'function') updateBalance();
-            }
-            if (promo.xp) awardXP(promo.xp);
-            if (promo.spins && typeof triggerFreeSpins === 'function') {
-                triggerFreeSpins(currentGame || null, promo.spins);
-            }
-            if (promo.type === 'boost') {
-                try {
-                    var _boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null') || { remaining: 0 };
-                    _boost.remaining = (_boost.remaining || 0) + 20;
-                    localStorage.setItem('matrixXpBoost', JSON.stringify(_boost));
-                } catch(e) {}
-            }
-
-            msg.innerHTML = '<span style="color:#34d399;">Redeemed: ' + promo.label + '</span>';
-            input.value = '';
-        }
-
-        window.openPromoCode = openPromoCode;
-        window.redeemPromoCode = redeemPromoCode;
-
-        /* ── Sprint 32: Spin History Browser ─────────────── */
-        const SH_KEY = 'matrixSpinHistory';
-        const SH_MAX = 100;
-
-        function recordSpinToHistory(gameName, gameId, betAmt, winAmt, mult) {
-            let log = [];
-            try { log = JSON.parse(localStorage.getItem(SH_KEY)) || []; } catch(e) {}
-            log.unshift({ ts: Date.now(), game: gameName, gameId: gameId, bet: betAmt, win: winAmt, mult: mult || 1 });
-            if (log.length > SH_MAX) log = log.slice(0, SH_MAX);
-            localStorage.setItem(SH_KEY, JSON.stringify(log));
-        }
-
-        function openSpinHistory() {
-            const modal = document.getElementById('spinHistoryModal');
-            if (!modal) return;
-            modal.style.display = 'flex';
-            _renderSpinHistoryList('all');
-            const filters = document.querySelectorAll('#shFilters .sh-filter');
-            filters.forEach(function(btn) {
-                btn.onclick = function() {
-                    filters.forEach(function(b) { b.classList.remove('active'); });
-                    btn.classList.add('active');
-                    _renderSpinHistoryList(btn.getAttribute('data-filter'));
-                };
+    // Server-validated redemption for authenticated users
+    if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+        try {
+            var serverRes = await apiRequest('/api/user/redeem-promo', {
+                method: 'POST',
+                body: { code: code },
+                requireAuth: true,
             });
-        }
-
-        function _renderSpinHistoryList(filter) {
-            const list = document.getElementById('shList');
-            if (!list) return;
-            let log = [];
-            try { log = JSON.parse(localStorage.getItem(SH_KEY)) || []; } catch(e) {}
-            if (filter === 'wins') log = log.filter(function(e) { return e.win > e.bet; });
-            else if (filter === 'losses') log = log.filter(function(e) { return e.win <= 0; });
-            if (log.length === 0) {
-                list.innerHTML = '<div class="sh-empty">No spin history yet. Play some games!</div>';
-                return;
-            }
-            list.innerHTML = log.map(function(e) {
-                var isWin = e.win > 0;
-                var net = e.win - e.bet;
-                var ago = _timeAgo(e.ts);
-                var multBadge = e.mult > 1 ? '<span class="sh-mult">' + e.mult.toFixed(1) + 'x</span>' : '';
-                return '<div class="sh-entry ' + (isWin ? 'sh-win' : 'sh-loss') + '">'
-                    + '<div class="sh-entry-top">'
-                    + '<span class="sh-game">' + (e.game || 'Unknown') + '</span>'
-                    + '<span class="sh-time">' + ago + '</span>'
-                    + '</div>'
-                    + '<div class="sh-entry-bot">'
-                    + '<span class="sh-bet">Bet: $' + (e.bet || 0).toLocaleString() + '</span>'
-                    + '<span class="sh-result ' + (isWin ? 'sh-pos' : 'sh-neg') + '">'
-                    + (isWin ? '+$' + e.win.toLocaleString() : '-$' + e.bet.toLocaleString())
-                    + '</span>'
-                    + multBadge
-                    + '</div></div>';
-            }).join('');
-        }
-
-        function _timeAgo(ts) {
-            var diff = Date.now() - ts;
-            if (diff < 60000) return 'just now';
-            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
-            return Math.floor(diff / 86400000) + 'd ago';
-        }
-
-        window.openSpinHistory = openSpinHistory;
-        window.recordSpinToHistory = recordSpinToHistory;
-
-        /* ── Sprint 32: Player Stats Card ────────────────── */
-        function openPlayerCard() {
-            var modal = document.getElementById('playerCardModal');
-            if (!modal) return;
-            modal.style.display = 'flex';
-
-            var name = (currentUser && currentUser.username) ? currentUser.username : 'Guest';
-            var avatar = document.getElementById('pcAvatar');
-            var nameEl = document.getElementById('pcName');
-            var vipEl = document.getElementById('pcVip');
-            var levelEl = document.getElementById('pcLevel');
-            var xpFill = document.getElementById('pcXpFill');
-            var grid = document.getElementById('pcStatsGrid');
-            var footer = document.getElementById('pcFooter');
-
-            if (avatar) avatar.textContent = name.charAt(0).toUpperCase();
-            if (nameEl) nameEl.textContent = name;
-
-            // VIP tier
-            var vipTier = 'Bronze';
-            if (typeof VIP_TIERS !== 'undefined' && typeof stats !== 'undefined') {
-                var wagered = stats.totalBet || 0;
-                for (var i = VIP_TIERS.length - 1; i >= 0; i--) {
-                    if (wagered >= VIP_TIERS[i].minWagered) { vipTier = VIP_TIERS[i].name; break; }
+            if (serverRes.redeemed) {
+                if (serverRes.cash > 0) {
+                    balance = serverRes.newBalance;
+                    if (typeof updateBalance === 'function') updateBalance();
+                    if (typeof saveBalance === 'function') saveBalance();
                 }
-            }
-            if (vipEl) {
-                vipEl.textContent = vipTier;
-                vipEl.className = 'pc-vip pc-vip-' + vipTier.toLowerCase();
-            }
-
-            // Level + XP
-            var xpData = null;
-            try { xpData = JSON.parse(localStorage.getItem(typeof STORAGE_KEY_XP !== 'undefined' ? STORAGE_KEY_XP : 'casinoXP')); } catch(e) {}
-            var lv = (xpData && xpData.level) ? xpData.level : 1;
-            var xp = (xpData && xpData.xp) ? xpData.xp : 0;
-            var xpNeeded = lv * 100;
-            var pct = Math.min(100, Math.round((xp / xpNeeded) * 100));
-            if (levelEl) levelEl.textContent = 'Level ' + lv;
-            if (xpFill) xpFill.style.width = pct + '%';
-
-            // Stats
-            var s = (typeof stats !== 'undefined') ? stats : {};
-            var totalSpins = s.totalSpins || 0;
-            var totalWon = s.totalWon || 0;
-            var bigWin = s.biggestWin || 0;
-            var gamesPlayed = s.gamesPlayed || 0;
-
-            // Achievement count
-            var achCount = 0;
-            try {
-                var achData = JSON.parse(localStorage.getItem('matrixAchievements'));
-                if (achData && achData.unlocked) achCount = achData.unlocked.length;
-            } catch(e) {}
-
-            // Favorite game
-            var favGame = 'None yet';
-            try {
-                var recent = JSON.parse(localStorage.getItem(typeof STORAGE_KEY_RECENTLY_PLAYED !== 'undefined' ? STORAGE_KEY_RECENTLY_PLAYED : 'casinoRecentlyPlayed'));
-                if (recent && recent.length > 0 && typeof GAMES !== 'undefined') {
-                    var g = GAMES.find(function(gm) { return gm.id === recent[0]; });
-                    if (g) favGame = g.name;
+                if (serverRes.xp > 0 && typeof awardXP === 'function') awardXP(serverRes.xp);
+                if (serverRes.spins > 0 && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                    triggerFreeSpins(currentGame, serverRes.spins);
                 }
-            } catch(e) {}
+                // Also sync localStorage for display consistency
+                var storage;
+                try { storage = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || '{}'); } catch(e) { storage = {}; }
+                if (!storage.used) storage.used = {};
+                storage.used[code] = def.type === 'daily' ? new Date().toISOString().slice(0, 10) : true;
+                localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage));
 
-            if (grid) {
-                grid.innerHTML = ''
-                    + _pcStat('🎰', 'Total Spins', totalSpins.toLocaleString())
-                    + _pcStat('💰', 'Total Won', '$' + totalWon.toLocaleString())
-                    + _pcStat('🏆', 'Biggest Win', '$' + bigWin.toLocaleString())
-                    + _pcStat('🎮', 'Games Played', gamesPlayed.toLocaleString())
-                    + _pcStat('⭐', 'Achievements', achCount.toString())
-                    + _pcStat('❤️', 'Favorite', favGame);
+                if (res) { res.textContent = '\u2705 ' + serverRes.desc; res.className = 'promo-result promo-ok'; }
+                if (typeof showToast === 'function') showToast('\uD83C\uDF9F\uFE0F Code redeemed: ' + serverRes.desc, 'win');
             }
-
-            if (footer) {
-                var joined = (currentUser && currentUser.createdAt) ? new Date(currentUser.createdAt).toLocaleDateString() : 'Today';
-                footer.textContent = 'Member since ' + joined;
-            }
-        }
-
-        function _pcStat(icon, label, value) {
-            return '<div class="pc-stat">'
-                + '<div class="pc-stat-icon">' + icon + '</div>'
-                + '<div class="pc-stat-val">' + value + '</div>'
-                + '<div class="pc-stat-label">' + label + '</div>'
-                + '</div>';
-        }
-
-        window.openPlayerCard = openPlayerCard;
-
-        /* ── Sprint 34: Challenge Streak Multiplier ──────── */
-        const CS_KEY = 'matrixChallengeStreak';
-
-        function _getChallengeStreak() {
-            try {
-                var d = JSON.parse(localStorage.getItem(CS_KEY));
-                if (!d) return { lastDay: '', streak: 0 };
-                return d;
-            } catch(e) { return { lastDay: '', streak: 0 }; }
-        }
-
-        function _getTodayStr() {
-            var d = new Date();
-            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-        }
-
-        function getChallengeStreakMultiplier() {
-            var cs = _getChallengeStreak();
-            var today = _getTodayStr();
-            // Check if streak is current
-            var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            var yStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
-            if (cs.lastDay !== today && cs.lastDay !== yStr) {
-                // Streak broken
-                return 1;
-            }
-            if (cs.streak >= 3) return 2;
-            if (cs.streak >= 2) return 1.5;
-            return 1;
-        }
-
-        function recordChallengeStreakDay() {
-            var cs = _getChallengeStreak();
-            var today = _getTodayStr();
-            if (cs.lastDay === today) return; // already recorded today
-            var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            var yStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
-            if (cs.lastDay === yStr) {
-                cs.streak += 1;
+        } catch (err) {
+            if (err.status === 400) {
+                if (res) { res.textContent = '\u26A0\uFE0F Already redeemed'; res.className = 'promo-result promo-fail'; }
             } else {
-                cs.streak = 1;
-            }
-            cs.lastDay = today;
-            localStorage.setItem(CS_KEY, JSON.stringify(cs));
-        }
-
-        window.getChallengeStreakMultiplier = getChallengeStreakMultiplier;
-        window.recordChallengeStreakDay = recordChallengeStreakDay;
-
-        /* ── Sprint 36: Lucky Spin Mini-Game ─────────────── */
-        const LS_KEY = 'matrixLuckySpin';
-        const LS_COOLDOWN = 86400000; // 24h
-        const LS_COST = 50;
-        const LS_SEGMENTS = [
-            { label: '$50', value: 50, type: 'cash', color: '#22c55e' },
-            { label: '50 XP', value: 50, type: 'xp', color: '#a855f7' },
-            { label: '$100', value: 100, type: 'cash', color: '#3b82f6' },
-            { label: '$250', value: 250, type: 'cash', color: '#f59e0b' },
-            { label: '$50', value: 50, type: 'cash', color: '#22c55e' },
-            { label: '100 XP', value: 100, type: 'xp', color: '#c084fc' },
-            { label: '$100', value: 100, type: 'cash', color: '#3b82f6' },
-            { label: '$500', value: 500, type: 'cash', color: '#ef4444' }
-        ];
-
-        function openLuckySpin() {
-            var modal = document.getElementById('luckySpinModal');
-            if (!modal) return;
-            modal.style.display = 'flex';
-            _renderLuckyWheel();
-            _updateLuckySpinStatus();
-        }
-
-        function _renderLuckyWheel() {
-            var wheel = document.getElementById('lsWheel');
-            if (!wheel) return;
-            var segAngle = 360 / LS_SEGMENTS.length;
-            var html = '';
-            LS_SEGMENTS.forEach(function(seg, i) {
-                var rotation = segAngle * i;
-                html += '<div class="ls-seg" style="transform:rotate(' + rotation + 'deg);'
-                    + 'background:' + seg.color + ';">'
-                    + '<span class="ls-seg-label">' + seg.label + '</span></div>';
-            });
-            wheel.innerHTML = html;
-        }
-
-        function _updateLuckySpinStatus() {
-            var status = document.getElementById('lsStatus');
-            var btn = document.getElementById('lsSpinBtn');
-            if (!status || !btn) return;
-            var state = null;
-            try { state = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
-            var now = Date.now();
-            var isFree = !state || (now - state.lastFree) >= LS_COOLDOWN;
-            if (isFree) {
-                status.textContent = '✨ Free spin available!';
-                status.className = 'ls-status ls-free';
-                btn.textContent = 'SPIN FREE';
-                btn.disabled = false;
-            } else {
-                var remaining = LS_COOLDOWN - (now - state.lastFree);
-                var hrs = Math.floor(remaining / 3600000);
-                var mins = Math.floor((remaining % 3600000) / 60000);
-                status.textContent = 'Next free spin in ' + hrs + 'h ' + mins + 'm — or spin for $' + LS_COST;
-                status.className = 'ls-status';
-                btn.textContent = 'SPIN ($' + LS_COST + ')';
-                btn.disabled = balance < LS_COST;
+                if (res) { res.textContent = '\u274C Redemption failed'; res.className = 'promo-result promo-fail'; }
             }
         }
+        inp.value = '';
+        return;
+    }
 
-        function spinLuckyWheel() {
-            var btn = document.getElementById('lsSpinBtn');
-            if (!btn || btn.disabled) return;
-            var state = null;
-            try { state = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
-            var now = Date.now();
-            var isFree = !state || (now - state.lastFree) >= LS_COOLDOWN;
-            if (!isFree) {
-                if (balance < LS_COST) return;
-                balance -= LS_COST;
-                updateBalance();
-            }
-            btn.disabled = true;
-            // Pick random segment
-            var idx = Math.floor(Math.random() * LS_SEGMENTS.length);
-            var prize = LS_SEGMENTS[idx];
-            // Animate wheel rotation
-            var wheel = document.getElementById('lsWheel');
-            var segAngle = 360 / LS_SEGMENTS.length;
-            var targetAngle = 360 * 5 + (360 - segAngle * idx - segAngle / 2);
-            if (wheel) {
-                wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
-                wheel.style.transform = 'rotate(' + targetAngle + 'deg)';
-            }
-            setTimeout(function() {
-                // Award prize
-                if (prize.type === 'cash') {
-                    balance += prize.value;
-                    updateBalance();
-                } else if (prize.type === 'xp' && typeof awardXP === 'function') {
-                    awardXP(prize.value);
-                }
-                // Update state
-                if (!state) state = { lastFree: 0, totalSpins: 0 };
-                if (isFree) state.lastFree = now;
-                state.totalSpins = (state.totalSpins || 0) + 1;
-                localStorage.setItem(LS_KEY, JSON.stringify(state));
-                // Show result
-                var status = document.getElementById('lsStatus');
-                if (status) {
-                    status.textContent = '🎉 You won ' + prize.label + '!';
-                    status.className = 'ls-status ls-won';
-                }
-                setTimeout(function() {
-                    if (wheel) {
-                        wheel.style.transition = 'none';
-                        wheel.style.transform = 'rotate(0deg)';
-                    }
-                    _updateLuckySpinStatus();
-                }, 2000);
-            }, 4200);
+    // Guest / offline fallback — client-side only (guests can't cash out)
+    var storage;
+    try { storage = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || '{}'); } catch(e) { storage = {}; }
+    var today = new Date().toISOString().slice(0, 10);
+    var used = storage.used || {};
+    if (def.type === 'one-time' && used[code]) {
+        if (res) { res.textContent = '\u26A0\uFE0F Already redeemed'; res.className = 'promo-result promo-fail'; }
+        return;
+    }
+    if (def.type === 'daily' && used[code] === today) {
+        if (res) { res.textContent = '\u26A0\uFE0F Already used today'; res.className = 'promo-result promo-fail'; }
+        return;
+    }
+    var r = def.reward;
+    if (r.cash && typeof balance !== 'undefined') {
+        balance += r.cash;
+        if (typeof saveBalance === 'function') saveBalance();
+        if (typeof updateBalance === 'function') updateBalance();
+    }
+    if (r.xp && typeof awardXP === 'function') awardXP(r.xp);
+    if (r.spins && typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+        triggerFreeSpins(currentGame, r.spins);
+    }
+    if (r.xpboost) {
+        try {
+            var boost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+            var rem = (boost && boost.remaining > 0) ? boost.remaining + r.xpboost : r.xpboost;
+            localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: rem }));
+        } catch(e) {}
+    }
+    if (!storage.used) storage.used = {};
+    storage.used[code] = def.type === 'daily' ? today : true;
+    localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage));
+    if (res) { res.textContent = '\u2705 ' + def.desc; res.className = 'promo-result promo-ok'; }
+    if (typeof showToast === 'function') showToast('\uD83C\uDF9F\uFE0F Code redeemed: ' + def.desc, 'win');
+    inp.value = '';
+}
+
+// ── Automatic Cashback ───────────────────────────────────────────────────────
+var CASHBACK_KEY  = 'matrixCashback';
+var CASHBACK_RATE = 0.05; // 5%
+var CASHBACK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24h
+
+function checkCashback() {
+    if (typeof balance === 'undefined') return;
+    var s;
+    try { s = JSON.parse(localStorage.getItem(CASHBACK_KEY) || 'null'); } catch(e) { s = null; }
+    var now = Date.now();
+    if (!s) {
+        localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance }));
+        return;
+    }
+    if (now - s.lastCheck < CASHBACK_INTERVAL_MS) return;
+    var loss = s.lastBalance - balance;
+    if (loss > 0) {
+        var cashback = Math.round(loss * CASHBACK_RATE * 100) / 100;
+        balance += cashback;
+        if (typeof saveBalance === 'function') saveBalance();
+        if (typeof updateBalance === 'function') updateBalance();
+        if (typeof showToast === 'function') showToast('💰 5% Daily Cashback: +$' + cashback.toFixed(2), 'win');
+    }
+    localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance }));
+}
+
+(function() {
+    function _cbInit() { if (typeof checkCashback === 'function') checkCashback(); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _cbInit); }
+    else { setTimeout(_cbInit, 1000); } // Delay so balance is loaded first
+})();
+
+// ═══════════════════════════════════════════════════════
+// SPRINT 32 — SPIN HISTORY + PLAYER CARD
+// ═══════════════════════════════════════════════════════
+
+// ── Spin History ─────────────────────────────────────────────────────────────
+var SH_KEY     = 'matrixSpinHistory';
+var SH_MAX     = 100;
+var _shFilter  = 'all';
+
+function recordSpinHistory(entry) {
+    // entry: { game, gameId, bet, win }
+    try {
+        var hist = JSON.parse(localStorage.getItem(SH_KEY) || '[]');
+        hist.unshift({ ts: Date.now(), game: entry.game || '', gameId: entry.gameId || '', bet: entry.bet || 0, win: entry.win || 0, mult: entry.bet > 0 ? Math.round((entry.win / entry.bet) * 10) / 10 : 0 });
+        if (hist.length > SH_MAX) hist = hist.slice(0, SH_MAX);
+        localStorage.setItem(SH_KEY, JSON.stringify(hist));
+    } catch(e) {}
+}
+
+function _shRelTime(ts) {
+    var diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+}
+
+function shSetFilter(f, btn) {
+    _shFilter = f;
+    document.querySelectorAll('.sh-filter-btn').forEach(function(b) { b.classList.toggle('sh-filter-active', b === btn); });
+    _shRenderList();
+}
+
+function _shRenderList() {
+    var listEl = document.getElementById('shList');
+    if (!listEl) return;
+    var hist = [];
+    try { hist = JSON.parse(localStorage.getItem(SH_KEY) || '[]'); } catch(e) {}
+    var filtered = hist.filter(function(e) {
+        if (_shFilter === 'wins')   return e.win > e.bet;
+        if (_shFilter === 'losses') return e.win <= e.bet;
+        return true;
+    });
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="sh-empty">No spins recorded yet.</div>';
+        return;
+    }
+    listEl.innerHTML = filtered.map(function(e) {
+        var isWin = e.win > e.bet;
+        var net = e.win - e.bet;
+        var netStr = (net >= 0 ? '+$' : '-$') + Math.abs(net).toFixed(2);
+        var multBadge = e.mult >= 2 ? '<span class="sh-mult">' + e.mult + 'x</span>' : '';
+        return '<div class="sh-entry' + (isWin ? ' sh-win' : ' sh-loss') + '">' +
+            '<div class="sh-game">' + (e.game || e.gameId || 'Unknown') + '</div>' +
+            '<div class="sh-amounts"><span class="sh-bet">$' + (e.bet || 0).toFixed(2) + '</span>' + multBadge + '<span class="sh-net ' + (isWin ? 'sh-net-win' : 'sh-net-loss') + '">' + netStr + '</span></div>' +
+            '<div class="sh-time">' + _shRelTime(e.ts) + '</div></div>';
+    }).join('');
+}
+
+function openSpinHistory() {
+    var modal = document.getElementById('spinHistoryModal');
+    if (!modal) return;
+    _shFilter = 'all';
+    document.querySelectorAll('.sh-filter-btn').forEach(function(b) { b.classList.toggle('sh-filter-active', b.dataset.f === 'all'); });
+    _shRenderList();
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+// ── Player Stats Card ─────────────────────────────────────────────────────────
+function openPlayerCard() {
+    var modal = document.getElementById('playerCardModal');
+    var inner = document.getElementById('playerCardInner');
+    if (!modal || !inner) return;
+
+    var username = (typeof currentUser !== 'undefined' && currentUser && currentUser.username) ? currentUser.username : 'Guest';
+    var level    = (typeof playerLevel !== 'undefined') ? playerLevel : 1;
+    var xp       = (typeof playerXP !== 'undefined') ? Math.floor(playerXP) : 0;
+    var totalSpins = (typeof stats !== 'undefined' && stats.totalSpins) ? stats.totalSpins : 0;
+    var biggestWin = (typeof stats !== 'undefined' && stats.biggestWin) ? stats.biggestWin : 0;
+    var totalWon   = (typeof stats !== 'undefined' && stats.totalWon) ? stats.totalWon : 0;
+
+    // VIP tier
+    var vipTier = 'Bronze';
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.vipTier) vipTier = currentUser.vipTier;
+    else if (totalSpins >= 5000) vipTier = 'Platinum';
+    else if (totalSpins >= 1000) vipTier = 'Gold';
+    else if (totalSpins >= 200) vipTier = 'Silver';
+
+    // Favorite game
+    var favGame = 'None yet';
+    try {
+        var recent = JSON.parse(localStorage.getItem(typeof RECENTLY_PLAYED_KEY !== 'undefined' ? RECENTLY_PLAYED_KEY : 'recentlyPlayed') || '[]');
+        if (recent.length > 0) {
+            var allGames = typeof GAMES !== 'undefined' ? GAMES : [];
+            var g = allGames.find(function(x) { return x.id === recent[0]; });
+            if (g) favGame = g.name || g.id;
         }
+    } catch(e) {}
 
-        window.openLuckySpin = openLuckySpin;
-        window.spinLuckyWheel = spinLuckyWheel;
+    // Achievement count
+    var achCount = 0;
+    try { var achData = JSON.parse(localStorage.getItem('matrixAchievements') || '{}'); achCount = (achData.unlocked || []).length; } catch(e) {}
 
-        /* ── Sprint 36: Game Rating System ───────────────── */
-        const GR_KEY = 'matrixGameRatings';
-        const MR_KEY = 'matrixMyRatings';
+    // XP needed for next level
+    var xpNeeded = (typeof getXPForLevel === 'function') ? getXPForLevel(level) : (level * 100);
+    var xpPct = Math.min(100, Math.round((xp / xpNeeded) * 100));
 
-        function showGameRatingPrompt(gameId) {
-            var prompt = document.getElementById('gameRatingPrompt');
-            if (!prompt || !gameId) return;
-            // Check if already rated
-            var myRatings = {};
-            try { myRatings = JSON.parse(localStorage.getItem(MR_KEY)) || {}; } catch(e) {}
-            if (myRatings[gameId]) return; // already rated
-            prompt.style.display = 'flex';
-            prompt.dataset.gameId = gameId;
-            // Reset stars
-            var stars = prompt.querySelectorAll('.grp-star');
-            stars.forEach(function(s) { s.classList.remove('grp-active'); });
+    var vipColors = { Bronze: '#cd7f32', Silver: '#c0c0c0', Gold: '#ffd700', Platinum: '#e5e4e2' };
+    var vipColor = vipColors[vipTier] || '#ffd700';
+
+    inner.innerHTML =
+        '<div class="pc-header">' +
+            '<div class="pc-avatar">' + username.charAt(0).toUpperCase() + '</div>' +
+            '<div class="pc-identity">' +
+                '<div class="pc-username">' + username + '</div>' +
+                '<div class="pc-vip" style="color:' + vipColor + '">' + vipTier + ' Member</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="pc-level-wrap">' +
+            '<div class="pc-level-label">Level ' + level + '</div>' +
+            '<div class="pc-xp-bar"><div class="pc-xp-fill" style="width:' + xpPct + '%"></div></div>' +
+            '<div class="pc-xp-text">' + xp.toLocaleString() + ' / ' + xpNeeded.toLocaleString() + ' XP</div>' +
+        '</div>' +
+        '<div class="pc-stats-grid">' +
+            '<div class="pc-stat"><div class="pc-stat-val">' + totalSpins.toLocaleString() + '</div><div class="pc-stat-label">Spins</div></div>' +
+            '<div class="pc-stat"><div class="pc-stat-val">$' + (biggestWin >= 1000 ? (biggestWin / 1000).toFixed(1) + 'K' : biggestWin.toFixed(0)) + '</div><div class="pc-stat-label">Best Win</div></div>' +
+            '<div class="pc-stat"><div class="pc-stat-val">$' + (totalWon >= 1000 ? (totalWon / 1000).toFixed(1) + 'K' : totalWon.toFixed(0)) + '</div><div class="pc-stat-label">Total Won</div></div>' +
+            '<div class="pc-stat"><div class="pc-stat-val">' + achCount + '</div><div class="pc-stat-label">Badges</div></div>' +
+        '</div>' +
+        '<div class="pc-footer-row"><span class="pc-fav-label">Favorite:</span><span class="pc-fav-game">' + favGame + '</span></div>';
+
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+// ══════════════════════════════════════════════════════════
+// SPRINT 36 — Lucky Spin Mini-Game
+// ══════════════════════════════════════════════════════════
+var _LS_KEY = 'matrixLuckySpin';
+var _LS_SEGMENTS = [
+    { label: '$50',    type: 'cash',  value: 50  },
+    { label: '100 XP', type: 'xp',   value: 100 },
+    { label: '$100',   type: 'cash',  value: 100 },
+    { label: '$50',    type: 'cash',  value: 50  },
+    { label: '$500',   type: 'cash',  value: 500 },
+    { label: '$100',   type: 'cash',  value: 100 },
+    { label: '$250',   type: 'cash',  value: 250 },
+    { label: '50 XP',  type: 'xp',   value: 50  }
+];
+var _lsSpinning = false;
+
+function _lsGetState() { try { return JSON.parse(localStorage.getItem(_LS_KEY) || '{}'); } catch(e) { return {}; } }
+
+function openLuckySpin() {
+    var modal = document.getElementById('luckySpinModal');
+    if (!modal) return;
+    _lsRefreshStatus();
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
+
+function _lsRefreshStatus() {
+    var state = _lsGetState();
+    var today = new Date().toDateString();
+    var statusEl = document.getElementById('lsStatus');
+    var btnEl = document.getElementById('lsSpinBtn');
+    var freeAvail = state.lastFreeDay !== today;
+    if (statusEl) statusEl.textContent = freeAvail ? '1 free spin available today!' : 'Free spin used — Extra spins cost $50';
+    if (btnEl) {
+        if (freeAvail) {
+            btnEl.textContent = '🎡 SPIN (Free!)';
+            btnEl.disabled = false;
+        } else {
+            var canAfford = typeof balance !== 'undefined' && balance >= 50;
+            btnEl.textContent = '🎡 SPIN ($50)';
+            btnEl.disabled = !canAfford;
         }
+    }
+}
 
-        function rateGame(rating) {
-            var prompt = document.getElementById('gameRatingPrompt');
-            if (!prompt) return;
-            var gameId = prompt.dataset.gameId;
-            if (!gameId) return;
-            // Save personal rating
-            var myRatings = {};
-            try { myRatings = JSON.parse(localStorage.getItem(MR_KEY)) || {}; } catch(e) {}
-            myRatings[gameId] = rating;
-            localStorage.setItem(MR_KEY, JSON.stringify(myRatings));
-            // Update aggregate
-            var allRatings = {};
-            try { allRatings = JSON.parse(localStorage.getItem(GR_KEY)) || {}; } catch(e) {}
-            if (!allRatings[gameId]) allRatings[gameId] = { total: 0, count: 0 };
-            allRatings[gameId].total += rating;
-            allRatings[gameId].count += 1;
-            localStorage.setItem(GR_KEY, JSON.stringify(allRatings));
-            // Highlight stars
-            var stars = prompt.querySelectorAll('.grp-star');
-            stars.forEach(function(s) {
-                s.classList.toggle('grp-active', parseInt(s.getAttribute('data-val')) <= rating);
-            });
-            // Dismiss after brief delay
-            setTimeout(function() { prompt.style.display = 'none'; }, 800);
-            if (typeof showToast === 'function') showToast('Thanks for rating!', 'success');
+function doLuckySpin() {
+    if (_lsSpinning) return;
+    var state = _lsGetState();
+    var today = new Date().toDateString();
+    var freeAvail = state.lastFreeDay !== today;
+    if (!freeAvail) {
+        if (typeof balance === 'undefined' || balance < 50) return;
+        balance -= 50;
+        if (typeof updateBalance === 'function') updateBalance();
+    }
+    _lsSpinning = true;
+    var btnEl = document.getElementById('lsSpinBtn');
+    var resultEl = document.getElementById('lsResult');
+    if (btnEl) btnEl.disabled = true;
+    if (resultEl) resultEl.textContent = '';
+    var segIdx = Math.floor(Math.random() * _LS_SEGMENTS.length);
+    var seg = _LS_SEGMENTS[segIdx];
+    var wheel = document.getElementById('lsWheel');
+    var segDeg = 360 / _LS_SEGMENTS.length;
+    var landAngle = 360 - (segIdx * segDeg) - segDeg / 2;
+    var totalRotation = 1440 + landAngle;
+    if (wheel) {
+        wheel.style.transition = 'transform 3s cubic-bezier(0.17,0.67,0.12,0.99)';
+        wheel.style.transform = 'rotate(' + totalRotation + 'deg)';
+    }
+    setTimeout(function() {
+        _lsSpinning = false;
+        if (seg.type === 'cash') {
+            if (typeof balance !== 'undefined') balance += seg.value;
+            if (typeof updateBalance === 'function') updateBalance();
+        } else if (seg.type === 'xp') {
+            if (typeof awardXP === 'function') awardXP(seg.value);
         }
+        if (resultEl) resultEl.textContent = '🎉 You won ' + seg.label + '!';
+        if (freeAvail) state.lastFreeDay = today;
+        state.totalSpins = (state.totalSpins || 0) + 1;
+        localStorage.setItem(_LS_KEY, JSON.stringify(state));
+        _lsRefreshStatus();
+    }, 3100);
+}
 
-        function getGameRating(gameId) {
-            try {
-                var allRatings = JSON.parse(localStorage.getItem(GR_KEY)) || {};
-                var r = allRatings[gameId];
-                if (r && r.count > 0) return (r.total / r.count).toFixed(1);
-            } catch(e) {}
-            return null;
-        }
+// ══════════════════════════════════════════════════════════
+// SPRINT 36 — Game Rating System
+// ══════════════════════════════════════════════════════════
+var _GR_KEY = 'matrixGameRatings';
+var _MY_RATINGS_KEY = 'matrixMyRatings';
+var _ratingGameId = null;
 
-        window.showGameRatingPrompt = showGameRatingPrompt;
-        window.rateGame = rateGame;
-        window.getGameRating = getGameRating;
+function showRatingPrompt(gameId, gameName) {
+    _ratingGameId = gameId;
+    var prompt = document.getElementById('ratingPrompt');
+    var nameEl = document.getElementById('ratingGameName');
+    if (!prompt) return;
+    try {
+        var myRatings = JSON.parse(localStorage.getItem(_MY_RATINGS_KEY) || '{}');
+        if (myRatings[gameId]) return;
+    } catch(e) {}
+    if (nameEl) nameEl.textContent = gameName || 'this game';
+    document.querySelectorAll('.rp-star').forEach(function(s) { s.classList.remove('rp-active'); });
+    prompt.style.display = 'flex';
+    setTimeout(function() { dismissRating(); }, 10000);
+}
 
+function submitRating(val) {
+    if (!_ratingGameId) return;
+    try {
+        var ratings = JSON.parse(localStorage.getItem(_GR_KEY) || '{}');
+        var myRatings = JSON.parse(localStorage.getItem(_MY_RATINGS_KEY) || '{}');
+        if (!ratings[_ratingGameId]) ratings[_ratingGameId] = { rating: 0, count: 0 };
+        var r = ratings[_ratingGameId];
+        r.rating = ((r.rating * r.count) + val) / (r.count + 1);
+        r.count += 1;
+        myRatings[_ratingGameId] = val;
+        localStorage.setItem(_GR_KEY, JSON.stringify(ratings));
+        localStorage.setItem(_MY_RATINGS_KEY, JSON.stringify(myRatings));
+    } catch(e) {}
+    dismissRating();
+}
 
-        // ═══════════════════════════════════════════════════════
-        // WIN REPLAY GALLERY (Sprint 38)
-        // ═══════════════════════════════════════════════════════
-        var WR_KEY = 'matrixWinReplays';
-        var WR_MAX = 20;
+function dismissRating() {
+    var prompt = document.getElementById('ratingPrompt');
+    if (prompt) prompt.style.display = 'none';
+}
 
-        function _loadReplays() {
-            try { return JSON.parse(localStorage.getItem(WR_KEY)) || []; } catch(e) { return []; }
-        }
+// ══════════════════════════════════════════════════════════
+// SPRINT 38 — Win Replay Gallery
+// ══════════════════════════════════════════════════════════
+var _WR_KEY = 'matrixWinReplays';
+var _WR_MAX = 20;
 
-        function saveWinReplay(gameName, gameId, bet, win, symbols) {
-            if (typeof _demoMode !== 'undefined' && _demoMode) return;
-            var replays = _loadReplays();
-            replays.unshift({
-                gameName: gameName,
-                gameId: gameId,
-                bet: bet,
-                win: win,
-                mult: bet > 0 ? (win / bet).toFixed(1) : '0',
-                symbols: symbols || [],
-                ts: Date.now()
-            });
-            if (replays.length > WR_MAX) replays.length = WR_MAX;
-            try { localStorage.setItem(WR_KEY, JSON.stringify(replays)); } catch(e) {}
-        }
+function saveWinReplay(entry) {
+    try {
+        var replays = JSON.parse(localStorage.getItem(_WR_KEY) || '[]');
+        replays.unshift(entry);
+        if (replays.length > _WR_MAX) replays = replays.slice(0, _WR_MAX);
+        localStorage.setItem(_WR_KEY, JSON.stringify(replays));
+    } catch(e) {}
+}
 
-        function autoSaveWinReplay(gameName, gameId, bet, win, symbols) {
-            if (bet > 0 && win >= bet * 10) {
-                saveWinReplay(gameName, gameId, bet, win, symbols);
-            }
-        }
-
-        function openWinReplays() {
-            var modal = document.getElementById('winReplayModal');
-            if (!modal) return;
-            modal.style.display = 'flex';
-            _renderWinReplays();
-        }
-
-        function _renderWinReplays() {
-            var list = document.getElementById('wrList');
-            if (!list) return;
-            var replays = _loadReplays();
-            if (replays.length === 0) {
-                list.innerHTML = '<div class="wr-empty">No replays yet. Win 10x+ your bet to auto-save!</div>';
-                return;
-            }
-            list.innerHTML = replays.map(function(r, i) {
-                var dateStr = _timeAgo(r.ts);
-                var symHtml = (r.symbols || []).slice(0, 3).map(function(s) {
-                    return '<span class="wr-sym">' + s + '</span>';
-                }).join('');
-                return '<div class="wr-entry' + (r.win >= r.bet * 50 ? ' wr-jackpot' : r.win >= r.bet * 20 ? ' wr-mega' : '') + '">' +
-                    '<div class="wr-game">' + (r.gameName || r.gameId) + '</div>' +
-                    '<div class="wr-details">' +
-                        '<span class="wr-win">+$' + r.win.toLocaleString() + '</span>' +
-                        '<span class="wr-mult">' + r.mult + 'x</span>' +
-                        (symHtml ? '<span class="wr-syms">' + symHtml + '</span>' : '') +
-                    '</div>' +
-                    '<div class="wr-meta">' +
-                        '<span class="wr-bet">Bet: $' + r.bet + '</span>' +
-                        '<span class="wr-time">' + dateStr + '</span>' +
-                    '</div>' +
+function openWinReplays() {
+    var modal = document.getElementById('winReplayModal');
+    var list = document.getElementById('wrList');
+    if (!modal || !list) return;
+    var replays = [];
+    try { replays = JSON.parse(localStorage.getItem(_WR_KEY) || '[]'); } catch(e) {}
+    if (replays.length === 0) {
+        list.innerHTML = '<div class="wr-empty">No replays yet. Wins of 10x+ bet are auto-saved.</div>';
+    } else {
+        list.innerHTML = replays.map(function(r) {
+            var mult = r.bet > 0 ? (r.win / r.bet).toFixed(1) : '?';
+            return '<div class="wr-entry">' +
+                '<div class="wr-game">' + (r.game || r.gameId || 'Unknown') + '</div>' +
+                '<div class="wr-win">$' + (r.win || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' <span class="wr-mult">' + mult + 'x</span></div>' +
+                '<div class="wr-time">' + _wrRelTime(r.ts) + '</div>' +
                 '</div>';
-            }).join('');
-        }
+        }).join('');
+    }
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
 
-        window.openWinReplays = openWinReplays;
-        window.saveWinReplay = saveWinReplay;
-        window.autoSaveWinReplay = autoSaveWinReplay;
+function _wrRelTime(ts) {
+    var diff = Date.now() - ts;
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    return Math.floor(diff / 86400000) + 'd ago';
+}
 
-        /* ── Sprint 41: Avatar Picker ────────────────────── */
-        var AVP_KEY = 'matrixUserAvatar';
-        var AVP_AVATARS = ['🎰', '🃏', '💎', '🎲', '🔥', '⚡', '🌟', '🎯', '🦊', '🐉', '👑', '🎭'];
+// ===== Sprint 41: Avatar Picker =====
+var _AVATARS = ['🎰','🃏','🎲','🦁','🐯','🦊','🐺','🦅','🐉','⚡','🔥','💎','👑','🌟','🎯','🏆'];
+var _AVATAR_KEY = 'matrixUserAvatar';
 
-        function openAvatarPicker() {
-            var modal = document.getElementById('avatarPickerModal');
-            var grid = document.getElementById('avpGrid');
-            if (!modal || !grid) return;
-            var current = getAvatar();
-            grid.innerHTML = AVP_AVATARS.map(function(a) {
-                var sel = a === current ? ' avp-selected' : '';
-                return '<button class="avp-option' + sel + '" onclick="selectAvatar(\'' + a + '\')">' + a + '</button>';
-            }).join('');
-            modal.style.display = 'flex';
-        }
+function openAvatarPicker() {
+    var modal = document.getElementById('avatarPickerModal');
+    var grid = document.getElementById('avatarGrid');
+    if (!modal || !grid) return;
+    var current = localStorage.getItem(_AVATAR_KEY) || '';
+    grid.innerHTML = _AVATARS.map(function(emoji) {
+        return '<button class="avatar-option' + (emoji === current ? ' av-selected' : '') + '" onclick="setAvatar(\'' + emoji + '\')" title="' + emoji + '">' + emoji + '</button>';
+    }).join('');
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
 
-        function selectAvatar(emoji) {
-            localStorage.setItem(AVP_KEY, emoji);
-            _updateAvatarDisplay();
-            document.getElementById('avatarPickerModal').style.display = 'none';
-        }
+function setAvatar(emoji) {
+    localStorage.setItem(_AVATAR_KEY, emoji);
+    _refreshAvatarDisplay();
+    var modal = document.getElementById('avatarPickerModal');
+    if (modal) modal.classList.remove('active');
+    if (typeof showToast === 'function') showToast('Avatar updated! ' + emoji, 'info');
+}
 
-        function getAvatar() {
-            return localStorage.getItem(AVP_KEY) || '🎰';
-        }
+function _refreshAvatarDisplay() {
+    var emoji = localStorage.getItem(_AVATAR_KEY) || '';
+    var span = document.getElementById('userAvatarDisplay');
+    var svg = document.getElementById('authBtnSvg');
+    if (!span) return;
+    if (emoji) {
+        span.textContent = emoji;
+        span.style.display = '';
+        if (svg) svg.style.display = 'none';
+    } else {
+        span.style.display = 'none';
+        if (svg) svg.style.display = '';
+    }
+}
 
-        function _updateAvatarDisplay() {
-            var el = document.getElementById('userAvatar');
-            if (el) el.textContent = getAvatar();
-        }
+// Call on page load to apply saved avatar
+(function() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _refreshAvatarDisplay);
+    } else {
+        _refreshAvatarDisplay();
+    }
+})();
 
-        // Initialize on load
-        setTimeout(_updateAvatarDisplay, 500);
+// ===== Sprint 43: Keyboard Shortcuts Modal =====
+function openShortcutsModal() {
+    var modal = document.getElementById('shortcutsModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.onclick = function(e) { if (e.target === modal) modal.classList.remove('active'); };
+}
 
-        window.openAvatarPicker = openAvatarPicker;
-        window.selectAvatar = selectAvatar;
-        window.getAvatar = getAvatar;
-
-        /* ── Sprint 43: Keyboard Shortcuts Overlay ───────── */
-        var KB_SHORTCUTS = [
-            { key: 'Space', desc: 'Spin / Stop reels' },
-            { key: 'T', desc: 'Toggle turbo mode' },
-            { key: 'M', desc: 'Toggle sound on/off' },
-            { key: 'I', desc: 'Toggle paytable/game info' },
-            { key: 'Esc', desc: 'Close current modal / Back to lobby' },
-            { key: 'F', desc: 'Toggle fullscreen' },
-            { key: '1-5', desc: 'Bet preset shortcuts' },
-            { key: '?', desc: 'Show this shortcuts overlay' },
-            { key: 'S', desc: 'Open stats modal' },
-            { key: 'Q', desc: 'Toggle QA tools (dev)' }
-        ];
-
-        function openShortcutsModal() {
-            var modal = document.getElementById('shortcutsModal');
-            var grid = document.getElementById('kbGrid');
-            if (!modal || !grid) return;
-            grid.innerHTML = KB_SHORTCUTS.map(function(s) {
-                return '<div class="kb-row"><kbd class="kb-key">' + s.key + '</kbd><span class="kb-desc">' + s.desc + '</span></div>';
-            }).join('');
-            modal.style.display = 'flex';
-        }
-
-        window.openShortcutsModal = openShortcutsModal;
+function _toggleHotkeySheet() {
+    var modal = document.getElementById('shortcutsModal');
+    if (!modal) return;
+    if (modal.classList.contains('active')) {
+        modal.classList.remove('active');
+    } else {
+        openShortcutsModal();
+    }
+}

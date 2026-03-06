@@ -130,12 +130,12 @@ const GAME_CHROME_STYLES = {
     'demon_chambers':    'phantomworks', // Demon Chambers
     'norse_vaults':      'novaspin',     // Norse Vaults
     'crystal_chambers':  'celestial',    // Crystal Chambers
-    jade_temple:       { provider: 'Orient Reels' },
-    arctic_foxes:      { provider: 'FrostByte Gaming' },
-    neon_viper:        { provider: 'NeonCore Labs' },
-    midnight_drifter:  { provider: 'NeonCore Labs' },
-    pharaoh_march:     { provider: 'Desert Gold Studios' },
-    iron_stampede:     { provider: 'IronReel Entertainment' },
+    jade_temple:       'celestial',    // Orient Reels — eastern jade/temple
+    arctic_foxes:      'solstice',     // FrostByte Gaming — ice/frost nature
+    neon_viper:        'novaspin',     // NeonCore Labs — neon/cyber
+    midnight_drifter:  'novaspin',     // NeonCore Labs — dark neon
+    pharaoh_march:     'goldenedge',   // Desert Gold Studios — Egyptian gold
+    iron_stampede:     'ironreel',     // IronReel Entertainment — classic reels
     golden_jaguar:     'goldenedge',  // GoldenEdge Gaming — jungle gold/wildlife
     lightning_pearl:   'novaspin',    // NovaSpin Studios — electric ocean
     samurai_blade:     'celestial',   // Orient Reels — eastern mythic
@@ -179,9 +179,11 @@ const TEMPLATE_CHROME_FALLBACK = {
  */
 function getGameChromeStyle(game) {
     if (!game) return 'ironreel';
-    return GAME_CHROME_STYLES[game.id]
-        || TEMPLATE_CHROME_FALLBACK[game.template]
-        || 'ironreel';
+    var style = GAME_CHROME_STYLES[game.id];
+    if (typeof style === 'string') return style;
+    var tmpl = TEMPLATE_CHROME_FALLBACK[game.template];
+    if (typeof tmpl === 'string') return tmpl;
+    return 'ironreel';
 }
 
 // ═══════════════════════════════════════════════════════════════════

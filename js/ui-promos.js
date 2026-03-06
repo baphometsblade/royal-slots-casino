@@ -782,30 +782,61 @@ function _promoStartCountdown(promoId, deadline) {
 }
 
 
-// ── 4b. Loss Recovery Offer ──────────────────────────────────────────
+// ── 4b. Loss Recovery Offer (escalating tiers) ──────────────────────
 function _promoCheckLossRecovery() {
-    const promoId = 'lossRecovery';
-    if (_promoIsSuppressed(promoId)) return;
-    if (_promoSessionFlag('lossRecoveryClaimed')) return;
-    if (_promoState.consecutiveLosses < 5) return;
+    const losses = _promoState.consecutiveLosses;
+    if (losses < 5) return;
 
-    const cashback = Math.max(1, Math.floor(_promoState.sessionLosses * 0.10 * 100) / 100);
+    // Determine tier: 5 losses = tier 1, 10 = tier 2, 15 = tier 3
+    var tier = 0;
+    if (losses >= 15 && !_promoSessionFlag('lossRecoveryT3')) tier = 3;
+    else if (losses >= 10 && !_promoSessionFlag('lossRecoveryT2')) tier = 2;
+    else if (losses >= 5 && !_promoSessionFlag('lossRecoveryT1')) tier = 1;
+    else return;
+
+    var promoId = 'lossRecovery';
+    if (_promoIsSuppressed(promoId)) return;
+
+    var pct = tier === 3 ? 0.20 : tier === 2 ? 0.15 : 0.10;
+    var cashback = Math.max(1, Math.floor(_promoState.sessionLosses * pct * 100) / 100);
+    var titles = ['', 'Cashback Offer!', 'Double Down Recovery!', 'Lucky Charm Rescue!'];
+    var icons = ['', '\uD83D\uDCAA', '\u2728', '\uD83C\uDF1F'];
+    var bodies = [
+        '',
+        'Rough streak! Here\'s <span class="promo-highlight">' + (pct * 100) + '% cashback</span> on your session losses!',
+        losses + ' dry spins! Take <span class="promo-highlight">' + (pct * 100) + '% cashback</span> plus <span class="promo-highlight">3 free spins</span>!',
+        'Hang in there! <span class="promo-highlight">' + (pct * 100) + '% cashback</span> plus your next win is <span class="promo-highlight">2x boosted</span>!'
+    ];
 
     showPromoPopup({
         id: promoId,
-        icon: '\uD83D\uDCAA',
+        icon: icons[tier],
         promoType: 'cashback',
-        title: 'Cashback Offer!',
-        body: 'Looks like luck isn\'t on your side right now. Here\'s <span class="promo-highlight">10% cashback</span> on your session losses!',
+        title: titles[tier],
+        body: bodies[tier],
         extraHtml: '<div class="promo-win-amount">$' + formatMoney(cashback) + '</div>',
-        cta: 'Claim $' + formatMoney(cashback) + ' Cashback',
+        cta: 'Claim $' + formatMoney(cashback) + (tier >= 2 ? ' + Bonus' : ''),
         onCta: function() {
             balance += cashback;
             updateBalance();
             saveBalance();
             showToast('Cashback of $' + formatMoney(cashback) + ' added!', 'success');
-            _promoSetSessionFlag('lossRecoveryClaimed');
+            _promoSetSessionFlag('lossRecoveryT' + tier);
             _promoState.consecutiveLosses = 0;
+
+            // Tier 2: award 3 free spins
+            if (tier >= 2 && typeof freeSpinsRemaining !== 'undefined') {
+                freeSpinsActive = true;
+                freeSpinsRemaining += 3;
+                freeSpinsMultiplier = 1;
+                freeSpinsTotalWin = 0;
+                showToast('3 Free Spins added!', 'success', 3000);
+            }
+            // Tier 3: activate 2x win boost for next 5 spins
+            if (tier >= 3) {
+                window._luckCharmSpins = 5;
+                showToast('Lucky Charm active — next 5 wins are 2x!', 'success', 4000);
+            }
         }
     });
 }
@@ -866,7 +897,22 @@ function _promoCheckWelcomeBack() {
     if (!lastVisit) return; // First visit ever — no welcome back
 
     const elapsed = Date.now() - Number(lastVisit);
+    const sixHours = 6 * 60 * 60 * 1000;
     const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    // Golden hour: if away 6+ hours, auto-activate 1-hour happy hour
+    if (elapsed >= sixHours && !_promoSessionFlag('goldenHourTriggered')) {
+        _promoSetSessionFlag('goldenHourTriggered');
+        const existingEnd = localStorage.getItem(PROMO_KEY_HAPPY_HOUR_END);
+        if (!existingEnd || Date.now() >= Number(existingEnd)) {
+            const goldenEndTime = Date.now() + 60 * 60 * 1000; // 1 hour
+            localStorage.setItem(PROMO_KEY_HAPPY_HOUR_END, String(goldenEndTime));
+            _promoActivateHappyHour(goldenEndTime);
+            showToast('Golden Hour activated! All wins boosted 1.5x for 60 minutes!', 'success', 6000);
+        }
+    }
+
+    // Full welcome back bonus only after 24 hours
     if (elapsed < twentyFourHours) return;
 
     const bonusAmount = 5;
@@ -1083,15 +1129,32 @@ function checkPromoTriggers(event, data) {
         case 'spin_result':
             if (d.won) {
                 _promoState.consecutiveLosses = 0;
+                // Lucky charm 2x boost (from tier 3 loss recovery)
+                if (window._luckCharmSpins && window._luckCharmSpins > 0 && d.winAmount > 0) {
+                    var charmBonus = d.winAmount; // double the win
+                    balance += charmBonus;
+                    if (typeof updateBalance === 'function') updateBalance();
+                    if (typeof saveBalance === 'function') saveBalance();
+                    showToast('Lucky Charm 2x! +$' + formatMoney(charmBonus) + ' bonus!', 'success', 3000);
+                    window._luckCharmSpins--;
+                    if (window._luckCharmSpins <= 0) {
+                        showToast('Lucky Charm expired', 'info', 2000);
+                    }
+                }
                 _promoCheckPostWin(d.winAmount, d.betAmount);
             } else {
                 _promoState.consecutiveLosses++;
                 _promoState.sessionLosses += (d.betAmount || 0);
                 _promoState.lastSpinWasLoss = true;
 
-                // Loss recovery after 5 consecutive losses
+                // Loss recovery — escalating tiers at 5, 10, 15 losses
                 if (_promoState.consecutiveLosses >= 5) {
                     _promoCheckLossRecovery();
+                }
+                // Lucky charm win boost (set by tier 3 loss recovery)
+                if (window._luckCharmSpins && window._luckCharmSpins > 0) {
+                    // decrement on loss too so it doesn't last forever
+                    window._luckCharmSpins--;
                 }
             }
             // Low balance after any spin

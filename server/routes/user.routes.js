@@ -137,6 +137,441 @@ router.put('/profile/avatar', authenticate, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+//  PLAYER STATS (server-persisted)
+// ═══════════════════════════════════════════════════════════
+
+// GET /api/user/stats — load user stats from server
+router.get('/stats', authenticate, async (req, res) => {
+    try {
+        const row = await db.get('SELECT stats_json FROM users WHERE id = ?', [req.user.id]);
+        if (!row || !row.stats_json) {
+            return res.json({ stats: null });
+        }
+        try {
+            res.json({ stats: JSON.parse(row.stats_json) });
+        } catch (parseErr) {
+            // Corrupted JSON — return null so client sends fresh stats
+            res.json({ stats: null });
+        }
+    } catch (err) {
+        console.error('[User] Stats fetch error:', err);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
+// PUT /api/user/stats — save user stats to server
+router.put('/stats', authenticate, async (req, res) => {
+    try {
+        const { stats } = req.body;
+        if (!stats || typeof stats !== 'object') {
+            return res.status(400).json({ error: 'stats object is required' });
+        }
+        // Sanitize — only allow known numeric fields + safe objects
+        const safe = {
+            totalSpins: Math.max(0, Number(stats.totalSpins) || 0),
+            totalWagered: Math.max(0, Number(stats.totalWagered) || 0),
+            totalWon: Math.max(0, Number(stats.totalWon) || 0),
+            biggestWin: Math.max(0, Number(stats.biggestWin) || 0),
+            gamesPlayed: (stats.gamesPlayed && typeof stats.gamesPlayed === 'object') ? stats.gamesPlayed : {},
+            gameStats: (stats.gameStats && typeof stats.gameStats === 'object') ? stats.gameStats : {},
+            achievements: Array.isArray(stats.achievements) ? stats.achievements : [],
+        };
+        const json = JSON.stringify(safe);
+        await db.run(
+            "UPDATE users SET stats_json = ?, updated_at = datetime('now') WHERE id = ?",
+            [json, req.user.id]
+        );
+        res.json({ message: 'Stats saved' });
+    } catch (err) {
+        console.error('[User] Stats save error:', err);
+        res.status(500).json({ error: 'Failed to save stats' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  DAILY BONUS (server-validated)
+// ═══════════════════════════════════════════════════════════
+
+const DAILY_REWARDS_SERVER = [
+    { amount: 500,  xp: 25  },
+    { amount: 750,  xp: 35  },
+    { amount: 1000, xp: 50  },
+    { amount: 1500, xp: 75  },
+    { amount: 2000, xp: 100 },
+    { amount: 3000, xp: 150 },
+    { amount: 5000, xp: 250 },
+];
+
+function getTodayStr() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+// POST /api/user/claim-daily-bonus — server-validated daily bonus
+router.post('/claim-daily-bonus', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT id, balance, last_daily_claim, daily_streak FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const today = getTodayStr();
+        if (user.last_daily_claim === today) {
+            return res.status(400).json({ error: 'Already claimed today', claimedToday: true });
+        }
+
+        // Streak logic: reset if missed a day
+        let streak = user.daily_streak || 0;
+        if (user.last_daily_claim) {
+            const last = new Date(user.last_daily_claim);
+            const now = new Date(today);
+            const diffDays = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+            if (diffDays > 1) streak = 0;
+        }
+
+        const dayIndex = Math.min(streak, DAILY_REWARDS_SERVER.length - 1);
+        const reward = DAILY_REWARDS_SERVER[dayIndex];
+        const newStreak = Math.min(streak + 1, 7);
+        const newBalance = (user.balance || 0) + reward.amount;
+
+        await db.run(
+            "UPDATE users SET balance = ?, last_daily_claim = ?, daily_streak = ?, updated_at = datetime('now') WHERE id = ?",
+            [newBalance, today, newStreak, user.id]
+        );
+
+        // Log as a transaction
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [user.id, 'bonus', reward.amount, user.balance, newBalance, `Daily bonus day ${dayIndex + 1}`]
+        );
+
+        res.json({
+            awarded: true,
+            amount: reward.amount,
+            xp: reward.xp,
+            streak: newStreak,
+            newBalance: newBalance,
+        });
+    } catch (err) {
+        console.error('[User] Daily bonus error:', err);
+        res.status(500).json({ error: 'Failed to claim daily bonus' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BONUS WHEEL (server-validated)
+// ═══════════════════════════════════════════════════════════
+
+const WHEEL_SEGMENTS_SERVER = [
+    { label: '$250',  value: 250,  xp: 20  },
+    { label: '5 FS',  value: 5, type: 'freespins', xp: 15 },
+    { label: '$500',  value: 500,  xp: 30  },
+    { label: '$1000', value: 1000, xp: 50  },
+    { label: '$2500', value: 2500, xp: 75  },
+    { label: '10 FS', value: 10, type: 'freespins', xp: 25 },
+    { label: '$250',  value: 250,  xp: 20  },
+    { label: '$5000', value: 5000, xp: 150 },
+];
+const WHEEL_COOLDOWN_HOURS = 4;
+
+// POST /api/user/spin-wheel — server-validated bonus wheel
+router.post('/spin-wheel', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT id, balance, last_wheel_spin FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Validate cooldown
+        if (user.last_wheel_spin) {
+            const last = new Date(user.last_wheel_spin);
+            const diffHours = (Date.now() - last.getTime()) / (1000 * 60 * 60);
+            if (diffHours < WHEEL_COOLDOWN_HOURS) {
+                const nextSpinAt = new Date(last.getTime() + WHEEL_COOLDOWN_HOURS * 3600000).toISOString();
+                return res.status(400).json({ error: 'Wheel cooldown active', nextSpinAt });
+            }
+        }
+
+        // Server determines the prize (RNG server-side)
+        const winIndex = Math.floor(Math.random() * WHEEL_SEGMENTS_SERVER.length);
+        const seg = WHEEL_SEGMENTS_SERVER[winIndex];
+
+        let newBalance = user.balance;
+        if (!seg.type) {
+            // Cash prize
+            newBalance = (user.balance || 0) + seg.value;
+            await db.run(
+                "UPDATE users SET balance = ?, last_wheel_spin = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+                [newBalance, user.id]
+            );
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [user.id, 'bonus', seg.value, user.balance, newBalance, 'Bonus wheel prize']
+            );
+        } else {
+            // Free spins — just record the spin time, no balance change
+            await db.run(
+                "UPDATE users SET last_wheel_spin = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+                [user.id]
+            );
+        }
+
+        res.json({
+            winIndex,
+            segment: seg,
+            newBalance,
+            xp: seg.xp,
+        });
+    } catch (err) {
+        console.error('[User] Wheel spin error:', err);
+        res.status(500).json({ error: 'Failed to spin wheel' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  PROMO CODE REDEMPTION (server-validated)
+// ═══════════════════════════════════════════════════════════
+
+const PROMO_CODES_SERVER = {
+    WELCOME500: { type: 'one-time', cash: 500,  xp: 50,  spins: 0,  desc: '+$500 Balance!' },
+    MATRIX100:  { type: 'one-time', cash: 0,    xp: 100, spins: 0,  desc: '+100 XP!' },
+    FREESPIN10: { type: 'one-time', cash: 0,    xp: 0,   spins: 10, desc: '10 Free Spins!' },
+    DAILY200:   { type: 'daily',    cash: 200,  xp: 25,  spins: 0,  desc: '+$200 Balance!' },
+    XPBOOST:    { type: 'daily',    cash: 0,    xp: 0,   spins: 0,  desc: '2× XP Boost (20 spins)!' },
+};
+
+router.post('/redeem-promo', authenticate, async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code || typeof code !== 'string') {
+            return res.status(400).json({ error: 'Promo code is required' });
+        }
+        const upperCode = code.trim().toUpperCase();
+        const def = PROMO_CODES_SERVER[upperCode];
+        if (!def) {
+            return res.status(400).json({ error: 'Unknown promo code' });
+        }
+
+        const user = await db.get(
+            'SELECT id, balance, promo_codes_used FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Parse existing usage — { "CODE": true } for one-time, { "CODE": "2026-03-02" } for daily
+        let used = {};
+        try { used = JSON.parse(user.promo_codes_used || '{}'); } catch (e) { used = {}; }
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        if (def.type === 'one-time' && used[upperCode]) {
+            return res.status(400).json({ error: 'Already redeemed', alreadyUsed: true });
+        }
+        if (def.type === 'daily' && used[upperCode] === today) {
+            return res.status(400).json({ error: 'Already used today', alreadyUsed: true });
+        }
+
+        // Award cash if applicable
+        let newBalance = user.balance;
+        if (def.cash > 0) {
+            newBalance = (user.balance || 0) + def.cash;
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [user.id, 'bonus', def.cash, user.balance, newBalance, `Promo code: ${upperCode}`]
+            );
+        }
+
+        // Mark as used
+        used[upperCode] = def.type === 'daily' ? today : true;
+
+        await db.run(
+            "UPDATE users SET balance = ?, promo_codes_used = ?, updated_at = datetime('now') WHERE id = ?",
+            [newBalance, JSON.stringify(used), user.id]
+        );
+
+        res.json({
+            redeemed: true,
+            code: upperCode,
+            desc: def.desc,
+            cash: def.cash,
+            xp: def.xp,
+            spins: def.spins,
+            newBalance
+        });
+    } catch (err) {
+        console.error('[User] Promo code error:', err);
+        res.status(500).json({ error: 'Failed to redeem promo code' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  REFERRAL SYSTEM
+// ═══════════════════════════════════════════════════════════
+
+const REFERRAL_BONUS_REFERRER = 500;
+const REFERRAL_BONUS_REFEREE = 250;
+const REFERRAL_MIN_DEPOSIT = 10;
+
+// GET /api/user/referral — get referral code & stats
+router.get('/referral', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT referral_code, referred_by FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Count referrals
+        const countResult = await db.get(
+            'SELECT COUNT(*) as count FROM users WHERE referred_by = ?',
+            [req.user.id]
+        );
+        const referralCount = countResult ? countResult.count : 0;
+
+        // Sum bonuses earned from referrals
+        const bonusResult = await db.get(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND reference LIKE 'Referral bonus%'",
+            [req.user.id]
+        );
+        const totalEarned = bonusResult ? bonusResult.total : 0;
+
+        res.json({
+            referralCode: user.referral_code,
+            referralCount,
+            totalEarned,
+            bonusPerReferral: REFERRAL_BONUS_REFERRER,
+            refereeBonusAmount: REFERRAL_BONUS_REFEREE,
+            minDeposit: REFERRAL_MIN_DEPOSIT,
+        });
+    } catch (err) {
+        console.error('[User] Referral info error:', err);
+        res.status(500).json({ error: 'Failed to fetch referral info' });
+    }
+});
+
+// POST /api/user/claim-referral-bonus — called after first qualifying deposit
+// Awards bonus to both referrer and referee
+router.post('/claim-referral-bonus', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT id, balance, referred_by, referral_bonus_paid FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user.referred_by) return res.status(400).json({ error: 'No referral to claim' });
+        if (user.referral_bonus_paid) return res.status(400).json({ error: 'Referral bonus already claimed' });
+
+        // Verify first qualifying deposit exists
+        const deposit = await db.get(
+            "SELECT id FROM deposits WHERE user_id = ? AND status = 'completed' AND amount >= ?",
+            [user.id, REFERRAL_MIN_DEPOSIT]
+        );
+        if (!deposit) {
+            return res.status(400).json({ error: 'Qualifying deposit required', minDeposit: REFERRAL_MIN_DEPOSIT });
+        }
+
+        // Award bonus to referee
+        const newBalance = (user.balance || 0) + REFERRAL_BONUS_REFEREE;
+        await db.run('UPDATE users SET balance = ?, referral_bonus_paid = 1 WHERE id = ?',
+            [newBalance, user.id]);
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [user.id, 'bonus', REFERRAL_BONUS_REFEREE, user.balance, newBalance, 'Referral bonus — welcome reward']
+        );
+
+        // Award bonus to referrer
+        const referrer = await db.get('SELECT id, balance FROM users WHERE id = ?', [user.referred_by]);
+        if (referrer) {
+            const referrerNewBalance = (referrer.balance || 0) + REFERRAL_BONUS_REFERRER;
+            await db.run('UPDATE users SET balance = ? WHERE id = ?',
+                [referrerNewBalance, referrer.id]);
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [referrer.id, 'bonus', REFERRAL_BONUS_REFERRER, referrer.balance, referrerNewBalance,
+                 'Referral bonus — friend joined']
+            );
+        }
+
+        res.json({
+            awarded: true,
+            bonusAmount: REFERRAL_BONUS_REFEREE,
+            newBalance,
+        });
+    } catch (err) {
+        console.error('[User] Referral bonus error:', err);
+        res.status(500).json({ error: 'Failed to claim referral bonus' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  WAGERING STATUS
+// ═══════════════════════════════════════════════════════════
+
+// GET /api/user/wagering — get current wagering requirement status
+router.get('/wagering', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const active = user.wagering_requirement > 0 && user.wagering_progress < user.wagering_requirement;
+        const pct = user.wagering_requirement > 0
+            ? Math.min(100, Math.round((user.wagering_progress / user.wagering_requirement) * 100))
+            : 0;
+
+        res.json({
+            bonusBalance: user.bonus_balance || 0,
+            wageringRequirement: user.wagering_requirement || 0,
+            wageringProgress: user.wagering_progress || 0,
+            wageringRemaining: Math.max(0, (user.wagering_requirement || 0) - (user.wagering_progress || 0)),
+            percentComplete: pct,
+            active,
+            complete: user.wagering_requirement > 0 && user.wagering_progress >= user.wagering_requirement,
+        });
+    } catch (err) {
+        console.error('[User] Wagering status error:', err);
+        res.status(500).json({ error: 'Failed to fetch wagering status' });
+    }
+});
+
+// POST /api/user/forfeit-bonus — voluntarily forfeit bonus balance to withdraw real balance
+router.post('/forfeit-bonus', authenticate, async (req, res) => {
+    try {
+        const user = await db.get(
+            'SELECT balance, bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (!user.bonus_balance || user.bonus_balance <= 0) {
+            return res.status(400).json({ error: 'No bonus balance to forfeit' });
+        }
+
+        const forfeited = user.bonus_balance;
+        await db.run(
+            'UPDATE users SET bonus_balance = 0, wagering_requirement = 0, wagering_progress = 0 WHERE id = ?',
+            [req.user.id]
+        );
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [req.user.id, 'bonus_forfeit', -forfeited, user.balance, user.balance, 'Voluntarily forfeited bonus balance']
+        );
+
+        res.json({
+            forfeited,
+            message: `Forfeited $${forfeited.toFixed(2)} bonus balance. You can now withdraw your real balance.`,
+            balance: user.balance,
+        });
+    } catch (err) {
+        console.error('[User] Forfeit bonus error:', err);
+        res.status(500).json({ error: 'Failed to forfeit bonus' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 //  PASSWORD MANAGEMENT
 // ═══════════════════════════════════════════════════════════
 

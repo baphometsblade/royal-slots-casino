@@ -74,7 +74,74 @@ function showWalletModal() {
     const walletBal = document.getElementById('walletBalance');
     if (walletBal) walletBal.textContent = formatMoney(balance);
     loadPaymentMethods();
+    // Check if user has any completed deposits (for first-deposit bonus banner)
+    _checkFirstDepositStatus();
     renderWalletContent();
+    // Inject gem balance badge + Gem Shop button into wallet header (once)
+    _injectWalletGemBar(modal);
+    // Refresh gem balance from server
+    if (typeof refreshGemBalance === 'function') refreshGemBalance();
+}
+
+function _injectWalletGemBar(modal) {
+    if (modal.querySelector('#walletGemBar')) return; // already injected
+    const header = modal.querySelector('.wallet-header');
+    if (!header) return;
+
+    const bar = document.createElement('div');
+    bar.id = 'walletGemBar';
+    bar.style.cssText = [
+        'display:flex',
+        'align-items:center',
+        'justify-content:space-between',
+        'padding:8px 20px',
+        'background:rgba(167,139,250,0.07)',
+        'border-top:1px solid rgba(167,139,250,0.15)',
+        'margin-top:12px'
+    ].join(';');
+
+    const gemBadge = document.createElement('span');
+    gemBadge.style.cssText = 'font-size:0.85rem;color:#a78bfa;font-weight:600;display:flex;align-items:center;gap:6px;';
+    // innerHTML used here to embed the gem icon span safely (no user input involved)
+    gemBadge.innerHTML = '\uD83D\uDC8E Gems: <span id="walletGemBalance" style="color:#c4b5fd;">...</span>';
+
+    const shopBtn = document.createElement('button');
+    shopBtn.textContent = '\uD83D\uDC8E Gem Shop';
+    shopBtn.style.cssText = [
+        'background:linear-gradient(135deg,#a78bfa,#8b5cf6)',
+        'color:#fff',
+        'border:none',
+        'border-radius:6px',
+        'padding:5px 14px',
+        'font-size:0.78rem',
+        'font-weight:700',
+        'cursor:pointer',
+        'letter-spacing:0.3px'
+    ].join(';');
+    shopBtn.addEventListener('click', function() {
+        if (typeof openGemsShop === 'function') openGemsShop();
+    });
+
+    bar.appendChild(gemBadge);
+    bar.appendChild(shopBtn);
+    header.appendChild(bar);
+}
+
+function _checkFirstDepositStatus() {
+    if (window._walletHasCompletedDeposit !== undefined) return; // already checked
+    const token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token || !isServerAuthToken(token)) { window._walletHasCompletedDeposit = false; return; }
+    fetch('/api/payment/deposits?limit=200', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            if (data && data.deposits) {
+                const completed = data.deposits.filter(d => d.status === 'completed');
+                window._walletHasCompletedDeposit = completed.length > 0;
+                window._walletTotalDeposited = completed.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
+                renderWalletContent(); // re-render with updated info
+            }
+        })
+        .catch(() => {});
 }
 
 
@@ -298,7 +365,16 @@ function renderDepositForm() {
            </div>`
         : '';
 
-    container.innerHTML = sessionTrackerHtml + `
+    const lowBalBanner = (balance > 0 && balance < 20) ? `
+    <div style="background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,140,0,0.05));border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.5rem;">&#x1F381;</span>
+        <div>
+            <div style="font-size:0.85rem;font-weight:700;color:#ffd700;margin-bottom:2px;">50% Reload Bonus Available</div>
+            <div style="font-size:0.75rem;color:#94a3b8;">Deposit now and we'll match 50% up to $250. Keep the winnings rolling!</div>
+        </div>
+    </div>` : '';
+
+    container.innerHTML = sessionTrackerHtml + lowBalBanner + `
         <div class="wallet-section">
             <div class="wallet-balance-display">
                 <span class="wallet-balance-display__label">Current Balance</span>
@@ -325,6 +401,9 @@ function renderDepositForm() {
         </div>
 
         <div class="wallet-section wallet-section--actions">
+            <div style="text-align:center;font-size:12px;color:#c084fc;margin-bottom:10px;font-weight:600">
+                💎 Earn gems on every deposit — $5 = 100 gems, $50 = 1000 gems, $100+ = 2500 gems
+            </div>
             <button class="wallet-btn wallet-btn--primary wallet-btn--lg" onclick="submitDeposit()">
                 <span class="wallet-btn__icon">\u2B07</span> Deposit Funds
             </button>
@@ -344,6 +423,21 @@ function renderDepositForm() {
             if (radio.checked) radio.closest('.wallet-pay-card').classList.add('wallet-pay-card--selected');
         });
     });
+
+    // First-deposit bonus banner (DOM-safe)
+    if (!window._walletHasCompletedDeposit) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;padding:14px 18px;border-radius:10px;margin-bottom:16px;text-align:center;font-weight:700;box-shadow:0 0 20px rgba(255,215,0,0.4);';
+        const title = document.createElement('div');
+        title.style.cssText = 'font-size:1.3rem;margin-bottom:4px;';
+        title.textContent = '100% FIRST DEPOSIT BONUS';
+        const desc = document.createElement('div');
+        desc.style.cssText = 'font-weight:500;font-size:0.85rem;';
+        desc.textContent = 'Deposit up to $500 and we match it dollar for dollar!';
+        banner.appendChild(title);
+        banner.appendChild(desc);
+        container.insertBefore(banner, container.firstChild);
+    }
 }
 
 
@@ -397,17 +491,25 @@ async function submitDeposit() {
             requireAuth: true
         });
 
-        const newBalance = Number(res.balance);
-        if (Number.isFinite(newBalance)) {
-            balance = newBalance;
-            updateBalance();
+        // If the server returned an updated balance (admin-approved or instant),
+        // update locally. Otherwise the deposit is pending — do NOT fake-add balance.
+        if (res.deposit && res.deposit.status === 'pending') {
+            showToast(
+                `$${formatMoney(amount)} deposit submitted! Funds will appear once payment is confirmed.`,
+                'success'
+            );
         } else {
-            balance += amount;
-            updateBalance();
+            const newBalance = Number(res.balance);
+            if (Number.isFinite(newBalance)) {
+                balance = newBalance;
+                updateBalance();
+                resetNudgeOnDeposit();
+            }
+            const gemMsg = res.gemsAwarded ? ` + 💎 ${res.gemsAwarded} gems!` : '';
+            showToast(`${formatMoney(amount)} deposited successfully!${gemMsg}`, 'success');
         }
-
-        showToast(`$${formatMoney(amount)} deposited successfully!`, 'success');
-        renderDepositForm(); // refresh to show new balance
+        if (amountInput) amountInput.value = '';
+        renderDepositForm(); // refresh to show updated state
     } catch (err) {
         showToast(err.message || 'Deposit failed. Please try again.', 'error');
     }
@@ -514,6 +616,33 @@ function renderWithdrawForm() {
             if (radio.checked) radio.closest('.wallet-pay-card').classList.add('wallet-pay-card--selected');
         });
     });
+
+    // Show wagering requirement progress (if stats available)
+    if (typeof stats !== 'undefined' && stats.totalWagered !== undefined) {
+        const totalDep = window._walletTotalDeposited || 0;
+        if (totalDep > 0) {
+            const wagered = stats.totalWagered || 0;
+            const pct = Math.min(100, (wagered / totalDep) * 100);
+            const met = wagered >= totalDep;
+            const wagerDiv = document.createElement('div');
+            wagerDiv.style.cssText = 'padding:12px 16px;border-radius:8px;margin-top:8px;border:1px solid ' + (met ? '#10b981' : '#fbbf24') + ';background:rgba(' + (met ? '16,185,129' : '251,191,36') + ',0.1);';
+            const label = document.createElement('div');
+            label.style.cssText = 'font-size:0.8rem;color:#94a3b8;margin-bottom:6px;';
+            label.textContent = met ? 'Wagering requirement met' : 'Wagering requirement: ' + formatMoney(wagered) + ' / ' + formatMoney(totalDep);
+            wagerDiv.appendChild(label);
+            if (!met) {
+                const barBg = document.createElement('div');
+                barBg.style.cssText = 'height:6px;background:#1e293b;border-radius:3px;overflow:hidden;';
+                const barFill = document.createElement('div');
+                barFill.style.cssText = 'height:100%;border-radius:3px;background:linear-gradient(90deg,#fbbf24,#f59e0b);width:' + pct.toFixed(1) + '%;transition:width 0.3s;';
+                barBg.appendChild(barFill);
+                wagerDiv.appendChild(barBg);
+            }
+            // Insert before the actions section
+            const actionsSection = container.querySelector('.wallet-section--actions');
+            if (actionsSection) container.insertBefore(wagerDiv, actionsSection);
+        }
+    }
 }
 
 
@@ -560,7 +689,10 @@ async function submitWithdrawal() {
             updateBalance();
         }
 
-        showToast(`Withdrawal of $${formatMoney(amount)} submitted.`, 'success');
+        const processingDays = res.estimatedDays || 3;
+        const eta = new Date(Date.now() + processingDays * 86400000);
+        const etaStr = eta.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        showToast(`Withdrawal of $${formatMoney(amount)} submitted. Expected by ${etaStr}.`, 'success', 6000);
 
         // Add to pending list
         if (res.withdrawal) {
@@ -902,4 +1034,45 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+
+// ── Low Balance Nudge ─────────────────────────────────────────
+
+let _nudgeShownThisSession = false;
+let _nudgeTimer = null;
+
+function checkLowBalance() {
+    // Only show once per session, only when playing, only for logged-in users
+    if (_nudgeShownThisSession) return;
+    if (!currentUser) return;
+    if (typeof balance === 'undefined' || balance >= 20) return;
+    if (balance <= 0) return; // broke — different message not implemented yet
+
+    // Don't show if wallet is already open
+    const walletModal = document.getElementById('walletModal');
+    if (walletModal && walletModal.classList.contains('active')) return;
+
+    // Delay slightly so it doesn't interrupt spin animation
+    clearTimeout(_nudgeTimer);
+    _nudgeTimer = setTimeout(() => {
+        const nudge = document.getElementById('lowBalanceNudge');
+        if (nudge) {
+            _nudgeShownThisSession = true;
+            nudge.classList.add('nudge--visible');
+            // Auto-hide after 12 seconds
+            setTimeout(() => hideLowBalanceNudge(), 12000);
+        }
+    }, 1500);
+}
+
+function hideLowBalanceNudge() {
+    clearTimeout(_nudgeTimer);
+    const nudge = document.getElementById('lowBalanceNudge');
+    if (nudge) nudge.classList.remove('nudge--visible');
+}
+
+// Reset nudge flag when balance increases (new deposit)
+function resetNudgeOnDeposit() {
+    _nudgeShownThisSession = false;
 }

@@ -329,12 +329,14 @@
         }
 
 
-        async function register(username, email, password) {
+        async function register(username, email, password, referralCode) {
             let serverError = null;
             try {
+                const body = { username, email, password };
+                if (referralCode) body.referralCode = referralCode;
                 const response = await apiRequest('/api/auth/register', {
                     method: 'POST',
-                    body: { username, email, password },
+                    body,
                     requireAuth: false
                 });
                 if (!response.token || !response.user) {
@@ -385,7 +387,19 @@
         }
 
 
-        function logout() {
+        async function logout() {
+            // Push stats to server before clearing session
+            if (isServerAuthToken()) {
+                try {
+                    await apiRequest('/api/user/stats', {
+                        method: 'PUT',
+                        body: { stats: stats },
+                        requireAuth: true
+                    });
+                } catch (err) {
+                    // Best-effort — don't block logout
+                }
+            }
             clearAuthSession();
             updateAuthButton();
             if (typeof updateBalance === 'function') updateBalance();
@@ -428,12 +442,15 @@
             // Clear form fields and errors on close
             const errEl = document.getElementById('authError');
             if (errEl) errEl.textContent = '';
-            ['loginUsername', 'loginPassword', 'regUsername', 'regEmail', 'regPassword', 'regConfirm', 'forgotEmail'].forEach(id => {
+            ['loginUsername', 'loginPassword', 'regUsername', 'regEmail', 'regPassword', 'regConfirm', 'forgotEmail', 'resetNewPassword', 'resetConfirmPassword'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
             // Reset to login form
             showForgotPassword(false);
+            // Also hide reset password form if visible
+            const resetForm = document.getElementById('resetPasswordForm');
+            if (resetForm) resetForm.style.display = 'none';
         }
 
 
@@ -471,4 +488,90 @@
                 showToast('If an account with that email exists, a reset link has been sent.', 'success');
                 showForgotPassword(false);
             }
+        }
+
+
+        // ─── Password Reset (from emailed ?resetToken= link) ───
+
+        // Stored token from URL — consumed by handleResetPassword()
+        let _pendingResetToken = null;
+
+        function showResetPassword(show) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const forgotForm = document.getElementById('forgotPasswordForm');
+            const resetForm = document.getElementById('resetPasswordForm');
+            const tabs = document.querySelectorAll('.auth-tab');
+            const divider = document.querySelector('.auth-divider');
+            const guestBtn = document.querySelector('.auth-guest-btn');
+
+            if (show === false) {
+                // Back to login
+                _pendingResetToken = null;
+                if (loginForm) loginForm.style.display = '';
+                if (registerForm) registerForm.style.display = 'none';
+                if (forgotForm) forgotForm.style.display = 'none';
+                if (resetForm) resetForm.style.display = 'none';
+                tabs.forEach(t => t.style.display = '');
+                if (divider) divider.style.display = '';
+                if (guestBtn) guestBtn.style.display = '';
+                // Clean URL without reload
+                const url = new URL(window.location);
+                url.searchParams.delete('resetToken');
+                window.history.replaceState({}, '', url);
+                return;
+            }
+
+            // Show reset form, hide everything else
+            if (loginForm) loginForm.style.display = 'none';
+            if (registerForm) registerForm.style.display = 'none';
+            if (forgotForm) forgotForm.style.display = 'none';
+            if (resetForm) resetForm.style.display = '';
+            tabs.forEach(t => t.style.display = 'none');
+            if (divider) divider.style.display = 'none';
+            if (guestBtn) guestBtn.style.display = 'none';
+        }
+
+        async function handleResetPassword() {
+            const newPwd = (document.getElementById('resetNewPassword')?.value || '');
+            const confirmPwd = (document.getElementById('resetConfirmPassword')?.value || '');
+            const errEl = document.getElementById('authError');
+
+            if (!newPwd || newPwd.length < 6) {
+                if (errEl) errEl.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+            if (newPwd !== confirmPwd) {
+                if (errEl) errEl.textContent = 'Passwords do not match.';
+                return;
+            }
+            if (!_pendingResetToken) {
+                if (errEl) errEl.textContent = 'Reset token is missing. Please use the link from your email.';
+                return;
+            }
+
+            try {
+                await apiRequest('/api/user/reset-password', {
+                    method: 'POST',
+                    body: { token: _pendingResetToken, new_password: newPwd }
+                });
+                showToast('Password reset successful! You can now sign in.', 'success');
+                showResetPassword(false);
+            } catch (err) {
+                if (errEl) errEl.textContent = err.message || 'Reset failed. The link may have expired.';
+            }
+        }
+
+        /**
+         * Called from initAllSystems — checks for ?resetToken= and shows the reset form.
+         * Returns true if the reset flow was activated (caller should skip normal auth gate).
+         */
+        function checkResetTokenOnLoad() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('resetToken');
+            if (!token) return false;
+            _pendingResetToken = token;
+            showAuthModal();
+            showResetPassword(true);
+            return true;
         }

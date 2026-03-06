@@ -47,6 +47,17 @@ class SqliteBackend {
             }
         }
 
+        // Withdrawals table column migrations
+        if (schema.WITHDRAWAL_MIGRATIONS) {
+            const wdCols = this.db.exec('PRAGMA table_info(withdrawals)');
+            const wdColNames = wdCols.length > 0 ? wdCols[0].values.map(r => r[1]) : [];
+            for (const [name, def] of schema.WITHDRAWAL_MIGRATIONS) {
+                if (!wdColNames.includes(name)) {
+                    this.db.run(`ALTER TABLE withdrawals ADD COLUMN ${name} ${def}`);
+                }
+            }
+        }
+
         // Indexes
         for (const idx of schema.INDEXES) {
             this.db.run(idx);

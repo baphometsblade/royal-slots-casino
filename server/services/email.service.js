@@ -72,4 +72,75 @@ async function sendPasswordReset(toEmail, resetUrl, expiryHours) {
     return true;
 }
 
-module.exports = { sendPasswordReset };
+async function sendReengagementEmail(toEmail, username, balance) {
+    const transporter = getTransporter();
+    if (!transporter) return false;
+
+    const balStr = Number(balance) > 0 ? `${Number(balance).toFixed(2)}` : null;
+    const balLine = balStr
+        ? `<p style="color:#10b981;font-size:14px;">You still have <strong>${balStr}</strong> in your account ready to play!</p>`
+        : '';
+
+    await transporter.sendMail({
+        from: config.SMTP_FROM,
+        to: toEmail,
+        subject: `${username}, your luck is waiting at Matrix Spins 🎰`,
+        text: `Hi ${username},
+
+We noticed you haven't spun in a few days. Come back and try your luck — new games added daily!
+
+Play now: https://matrixspins.com
+
+Matrix Spins`,
+        html: `<!DOCTYPE html><html><body style="background:#0d0d1a;font-family:sans-serif;padding:24px;">
+<div style="max-width:480px;margin:0 auto;background:#1a1a2e;border-radius:12px;padding:28px;color:#f1f5f9;text-align:center;">
+  <div style="font-size:3rem;margin-bottom:8px;">🎰</div>
+  <h2 style="color:#ffd700;margin:0 0 8px;">We miss you, ${username}!</h2>
+  <p style="color:#94a3b8;margin:0 0 16px;">It's been a few days since your last spin. Your luck could be different today.</p>
+  ${balLine}
+  <a href="https://matrixspins.com" style="display:inline-block;margin:16px 0;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;">Spin Now</a>
+  <p style="color:#64748b;font-size:12px;margin-top:20px;">Matrix Spins — Play responsibly. Unsubscribe at any time.</p>
+</div></body></html>`,
+    });
+    return true;
+}
+
+async function sendWeeklyReport(toEmail, stats) {
+    const transporter = getTransporter();
+    if (!transporter) {
+        console.log('[Scheduler] Weekly P&L:', JSON.stringify(stats));
+        return false;
+    }
+    const profit   = Number(stats && stats.gross_profit   || 0).toFixed(2);
+    const wagered  = Number(stats && stats.total_wagered  || 0).toFixed(2);
+    const players  = stats && stats.active_players || 0;
+    const spins    = stats && stats.total_spins    || 0;
+    const deposits = Number(stats && stats.deposits_this_week || 0).toFixed(2);
+
+    await transporter.sendMail({
+        from: config.SMTP_FROM,
+        to: toEmail,
+        subject: `Matrix Spins Weekly P&L — ${profit} profit`,
+        text: `Weekly Report
+
+Gross Profit: ${profit}
+Total Wagered: ${wagered}
+Active Players: ${players}
+Total Spins: ${spins}
+Deposits: ${deposits}`,
+        html: `<!DOCTYPE html><html><body style="background:#0d0d1a;font-family:sans-serif;padding:24px;">
+<div style="max-width:480px;margin:0 auto;background:#1a1a2e;border-radius:12px;padding:24px;color:#f1f5f9;">
+<h2 style="color:#ffd700;margin:0 0 16px;">Weekly P&amp;L Report</h2>
+<table style="width:100%;border-collapse:collapse;">
+  <tr><td style="color:#94a3b8;padding:8px 0;">Gross Profit</td><td style="color:#10b981;font-size:20px;font-weight:700;">${profit}</td></tr>
+  <tr><td style="color:#94a3b8;padding:8px 0;">Total Wagered</td><td style="font-weight:700;">${wagered}</td></tr>
+  <tr><td style="color:#94a3b8;padding:8px 0;">Deposits This Week</td><td style="font-weight:700;">${deposits}</td></tr>
+  <tr><td style="color:#94a3b8;padding:8px 0;">Active Players</td><td style="font-weight:700;">${players}</td></tr>
+  <tr><td style="color:#94a3b8;padding:8px 0;">Total Spins</td><td style="font-weight:700;">${spins}</td></tr>
+</table>
+</div></body></html>`,
+    });
+    return true;
+}
+
+module.exports = { sendPasswordReset, sendReengagementEmail, sendWeeklyReport };

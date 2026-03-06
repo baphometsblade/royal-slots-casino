@@ -168,6 +168,102 @@ const TABLES = [
         UNIQUE(tournament_id, user_id),
         FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS user_achievements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        achievement_id TEXT NOT NULL,
+        unlocked_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, achievement_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS campaigns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        type TEXT DEFAULT 'deposit_match',
+        bonus_pct INTEGER DEFAULT 50,
+        max_bonus REAL DEFAULT 200,
+        wagering_mult INTEGER DEFAULT 25,
+        min_deposit REAL DEFAULT 10,
+        start_at TEXT NOT NULL,
+        end_at TEXT NOT NULL,
+        active INTEGER DEFAULT 1,
+        promo_code TEXT,
+        target_segment TEXT DEFAULT 'all',
+        max_claims INTEGER DEFAULT 0,
+        claims_count INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS campaign_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaign_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        bonus_amount REAL DEFAULT 0,
+        UNIQUE(campaign_id, user_id),
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS gifts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        from_user_id INTEGER NOT NULL,
+        to_user_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        message TEXT DEFAULT '',
+        status TEXT DEFAULT 'pending',
+        created_at TEXT DEFAULT (datetime('now')),
+        claimed_at TEXT DEFAULT NULL,
+        FOREIGN KEY (from_user_id) REFERENCES users(id),
+        FOREIGN KEY (to_user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS contests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        week_start TEXT NOT NULL,
+        week_end TEXT NOT NULL,
+        status TEXT DEFAULT 'active',
+        finalized_at TEXT DEFAULT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS contest_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        contest_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        metric_type TEXT NOT NULL,
+        metric_value REAL DEFAULT 0,
+        updated_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (contest_id) REFERENCES contests(id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(contest_id, user_id, metric_type)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS contest_prizes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        contest_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        rank INTEGER NOT NULL,
+        metric_type TEXT NOT NULL,
+        prize_amount REAL NOT NULL,
+        claimed INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS bonus_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        event_type TEXT NOT NULL,
+        multiplier REAL DEFAULT 2.0,
+        target_games TEXT DEFAULT 'all',
+        active INTEGER DEFAULT 1,
+        start_at TEXT NOT NULL,
+        end_at TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
     )`
 ];
 
@@ -182,7 +278,19 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_jackpot_tier ON jackpot_pool(tier)`    ,
     `CREATE INDEX IF NOT EXISTS idx_tournament_status ON tournaments(status)`,
     `CREATE INDEX IF NOT EXISTS idx_tournament_entries_tid ON tournament_entries(tournament_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`
+    `CREATE INDEX IF NOT EXISTS idx_tournament_entries_uid ON tournament_entries(user_id)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code) WHERE referral_code IS NOT NULL`,
+    `CREATE INDEX IF NOT EXISTS idx_spins_wins ON spins(win_amount, created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaigns_active ON campaigns(active, start_at, end_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_cid ON campaign_claims(campaign_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_uid ON campaign_claims(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_gifts_to ON gifts(to_user_id, status)`,
+    `CREATE INDEX IF NOT EXISTS idx_gifts_from ON gifts(from_user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_contest_entries_rank ON contest_entries(contest_id, metric_type, metric_value DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_contest_prizes_user ON contest_prizes(user_id, claimed)`,
+    `CREATE INDEX IF NOT EXISTS idx_contests_status ON contests(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`
 ];
 
 
@@ -198,6 +306,23 @@ const USER_MIGRATIONS = [
     ['phone_verified', 'INTEGER DEFAULT 0'],
     ['kyc_status', "TEXT DEFAULT 'unverified'"],
     ['updated_at', 'TEXT'],
+    ['stats_json', 'TEXT'],
+    ['last_daily_claim', 'TEXT'],
+    ['daily_streak', 'INTEGER DEFAULT 0'],
+    ['last_wheel_spin', 'TEXT'],
+    ['promo_codes_used', 'TEXT'],
+    ['referral_code', 'TEXT'],
+    ['referred_by', 'INTEGER'],
+    ['referral_bonus_paid', 'INTEGER DEFAULT 0'],
+    ['bonus_balance', 'REAL DEFAULT 0'],
+    ['wagering_requirement', 'REAL DEFAULT 0'],
+    ['wagering_progress', 'REAL DEFAULT 0'],
 ];
 
-module.exports = { TABLES, INDEXES, USER_MIGRATIONS };
+/** Extra columns added to withdrawals table via migrations (column name → definition). */
+const WITHDRAWAL_MIGRATIONS = [
+    ['otp_code', 'TEXT'],
+    ['otp_attempts', 'INTEGER DEFAULT 0'],
+];
+
+module.exports = { TABLES, INDEXES, USER_MIGRATIONS, WITHDRAWAL_MIGRATIONS };

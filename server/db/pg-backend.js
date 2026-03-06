@@ -70,6 +70,19 @@ class PgBackend {
             }
         }
 
+        // Withdrawals table column migrations
+        if (schema.WITHDRAWAL_MIGRATIONS) {
+            const wdResult = await this.pool.query(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'withdrawals'"
+            );
+            const wdColNames = wdResult.rows.map(r => r.column_name);
+            for (const [name, def] of schema.WITHDRAWAL_MIGRATIONS) {
+                if (!wdColNames.includes(name)) {
+                    await this.pool.query(`ALTER TABLE withdrawals ADD COLUMN ${name} ${def}`);
+                }
+            }
+        }
+
         // Indexes
         for (const idx of schema.INDEXES) {
             await this.pool.query(idx);

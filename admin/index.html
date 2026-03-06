@@ -71,8 +71,12 @@
 
         <div class="tabs">
             <div class="tab active" onclick="switchTab('games')">Game RTP</div>
+            <div class="tab" onclick="switchTab('deposits')">Deposits <span id="depositBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
+            <div class="tab" onclick="switchTab('withdrawals')">Withdrawals <span id="withdrawalBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
             <div class="tab" onclick="switchTab('users')">Users</div>
             <div class="tab" onclick="switchTab('spins')">Recent Spins</div>
+            <div class="tab" onclick="switchTab('fraud')">Fraud Alerts <span id="fraudBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
+            <div class="tab" onclick="switchTab('revenue')">Revenue P&amp;L</div>
         </div>
 
         <div id="tab-games" class="tab-content active">
@@ -82,9 +86,29 @@
             </div>
         </div>
 
+        <div id="tab-deposits" class="tab-content">
+            <div class="section">
+                <h3>Pending Deposits — Awaiting Approval</h3>
+                <div id="noDeposits" style="padding:20px;text-align:center;color:#94a3b8;display:none;">No pending deposits.</div>
+                <table id="depositsTable"><thead><tr><th>ID</th><th>Player</th><th>Email</th><th>Amount</th><th>Currency</th><th>Reference</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="depositsBody"></tbody></table>
+            </div>
+        </div>
+
+        <div id="tab-withdrawals" class="tab-content">
+            <div class="section">
+                <h3>Pending Withdrawals — Awaiting Payout</h3>
+                <div id="noWithdrawals" style="padding:20px;text-align:center;color:#94a3b8;display:none;">No pending withdrawals.</div>
+                <table id="withdrawalsTable"><thead><tr><th>ID</th><th>Player</th><th>Email</th><th>Amount</th><th>Method</th><th>Wager Ratio</th><th>Balance</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="withdrawalsBody"></tbody></table>
+            </div>
+        </div>
+
         <div id="tab-users" class="tab-content">
             <div class="section">
                 <h3>Player Accounts</h3>
+                <div style="padding:12px 20px;border-bottom:1px solid #334155;">
+                    <input type="text" id="userSearch" placeholder="Search by username or email…" oninput="filterUsers(this.value)"
+                        style="width:100%;max-width:380px;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-size:13px;">
+                </div>
                 <table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Balance</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table>
             </div>
         </div>
@@ -93,6 +117,32 @@
             <div class="section">
                 <h3>Recent Spin Activity</h3>
                 <table><thead><tr><th>ID</th><th>Player</th><th>Game</th><th>Bet</th><th>Win</th><th>Profit</th><th>Time</th></tr></thead><tbody id="spinsBody"></tbody></table>
+            </div>
+        </div>
+
+        <div id="tab-fraud" class="tab-content">
+            <div class="section">
+                <h3>Fraud & Risk Alerts</h3>
+                <div id="noFraudAlerts" style="padding:20px;text-align:center;color:#94a3b8;display:none;">No fraud alerts. All clear!</div>
+                <div id="fraudAlertsList"></div>
+            </div>
+        </div>
+
+        <div id="tab-revenue" class="tab-content">
+            <div id="revenueKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;"></div>
+            <div class="section">
+                <h3>Daily P&amp;L — Last 30 Days</h3>
+                <table>
+                    <thead><tr><th>Date</th><th>Spins</th><th>Wagered</th><th>Paid Out</th><th>Profit</th><th>RTP</th></tr></thead>
+                    <tbody id="revenueGameBody"></tbody>
+                </table>
+            </div>
+            <div class="section" style="margin-top:16px;">
+                <h3>Top 10 Players by Profit Generated (Your Gain)</h3>
+                <table>
+                    <thead><tr><th>Username</th><th>Spins</th><th>Total Wagered</th><th>Profit for House</th><th>Current Balance</th></tr></thead>
+                    <tbody id="revenueTopBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -134,7 +184,8 @@ async function showDashboard() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     const me = await apiFetch('/auth/me');
-    if (me) document.getElementById('adminName').textContent = me.user.username + ' (admin)';
+    if (!me) return; // token expired or invalid — apiFetch already called logout()
+    document.getElementById('adminName').textContent = me.user.username + ' (admin)';
     loadStats();
 }
 
@@ -151,6 +202,8 @@ async function loadStats() {
         <div class="stat-card"><div class="label">Overall RTP</div><div class="value">${o.overallRtp}</div></div>
         <div class="stat-card"><div class="label">Total Deposits</div><div class="value green">$${o.totalDeposits.toLocaleString()}</div></div>
         <div class="stat-card"><div class="label">Total Withdrawals</div><div class="value red">$${o.totalWithdrawals.toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">Pending Deposits</div><div class="value" style="color:#fbbf24">${o.pendingDeposits || 0} ($${(o.pendingDepositAmount || 0).toLocaleString()})</div></div>
+        <div class="stat-card"><div class="label">Pending Withdrawals</div><div class="value" style="color:#f97316">${o.pendingWithdrawals || 0} ($${(o.pendingWithdrawalAmount || 0).toLocaleString()})</div></div>
     `;
     document.getElementById('gameStatsBody').innerHTML = data.gameStats.map(g => {
         const profit = g.total_wagered - g.total_paid;
@@ -158,6 +211,9 @@ async function loadStats() {
     }).join('');
     loadUsers();
     loadSpins();
+    loadDeposits();
+    loadWithdrawals();
+    loadFraudAlerts();
 }
 
 async function loadUsers() {
@@ -183,6 +239,43 @@ async function loadSpins() {
     }).join('');
 }
 
+async function loadFraudAlerts() {
+    const data = await apiFetch('/admin/fraud-alerts');
+    if (!data) return;
+    const container = document.getElementById('fraudAlertsList');
+    const noAlerts = document.getElementById('noFraudAlerts');
+    if (!data.alerts || data.alerts.length === 0) {
+        if (container) container.innerHTML = '';
+        if (noAlerts) noAlerts.style.display = 'block';
+        return;
+    }
+    if (noAlerts) noAlerts.style.display = 'none';
+    const badge = document.getElementById('fraudBadge');
+    if (badge) { badge.textContent = data.count; badge.style.display = data.count > 0 ? 'inline' : 'none'; }
+    if (container) {
+        container.innerHTML = '';
+        data.alerts.forEach(function(a) {
+            var card = document.createElement('div');
+            card.style.cssText = 'background:rgba(255,255,255,0.05);border-left:4px solid ' + (a.severity === 'high' ? '#ef4444' : '#f59e0b') + ';padding:12px 16px;margin-bottom:8px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;';
+            var info = document.createElement('div');
+            var typeLabel = document.createElement('span');
+            typeLabel.style.cssText = 'font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:' + (a.severity === 'high' ? '#ef4444' : '#f59e0b') + ';';
+            typeLabel.textContent = a.type.replace(/_/g, ' ');
+            var user = document.createElement('div');
+            user.style.cssText = 'font-weight:600;margin:4px 0 2px;';
+            user.textContent = a.username + ' (ID: ' + a.userId + ')';
+            var msg = document.createElement('div');
+            msg.style.cssText = 'font-size:13px;color:#94a3b8;';
+            msg.textContent = a.message;
+            info.appendChild(typeLabel);
+            info.appendChild(user);
+            info.appendChild(msg);
+            card.appendChild(info);
+            container.appendChild(card);
+        });
+    }
+}
+
 async function banUser(id) {
     await fetch(API + `/admin/user/${id}/ban`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
     loadUsers();
@@ -197,6 +290,247 @@ function switchTab(name) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'deposits') loadDeposits();
+    if (name === 'withdrawals') loadWithdrawals();
+    if (name === 'fraud') loadFraudAlerts();
+    if (name === 'revenue') loadRevenue();
+}
+
+function filterUsers(query) {
+    var q = query.toLowerCase();
+    var rows = document.querySelectorAll('#usersBody tr');
+    rows.forEach(function(row) {
+        var text = row.textContent.toLowerCase();
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+}
+
+function statCard(label, value, color) {
+    return '<div style="background:#0d0d1a;border:1px solid #1e293b;border-radius:8px;padding:14px;">' +
+        '<div style="font-size:0.7rem;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">' + label + '</div>' +
+        '<div style="font-size:1.2rem;font-weight:700;color:' + (color || '#f1f5f9') + ';">' + value + '</div>' +
+        '</div>';
+}
+
+async function loadRevenue() {
+    const kpisEl = document.getElementById('revenueKpis');
+    const gameEl = document.getElementById('revenueGameBody');
+    const topEl  = document.getElementById('revenueTopBody');
+    kpisEl.innerHTML = '<div style="color:#94a3b8;padding:8px;">Loading…</div>';
+
+    const data = await apiFetch('/admin/revenue');
+    if (!data) { kpisEl.innerHTML = '<div style="color:#ef4444;padding:8px;">Failed to load revenue data.</div>'; return; }
+
+    const lt = data.lifetime || {};
+    const tw = (data.thisWeek && data.thisWeek.profit) || 0;
+    const lw = (data.lastWeek && data.lastWeek.profit) || 0;
+    const wowPct = lw > 0 ? (((tw - lw) / lw) * 100).toFixed(1) : (tw > 0 ? '+∞' : '0.0');
+    const d30 = data.deposits || {};
+    const w30 = data.withdrawals || {};
+
+    kpisEl.innerHTML = [
+        statCard('All-Time Gross Profit', '$' + (lt.gross_profit || 0).toLocaleString(), lt.gross_profit >= 0 ? '#10b981' : '#ef4444'),
+        statCard('This Week Profit', '$' + (tw || 0).toLocaleString(), tw >= 0 ? '#10b981' : '#ef4444'),
+        statCard('WoW Change', (tw >= lw ? '+' : '') + wowPct + '%', tw >= lw ? '#10b981' : '#ef4444'),
+        statCard('All-Time RTP', (lt.actual_rtp || 0).toFixed(2) + '%', lt.actual_rtp <= 92 ? '#10b981' : '#f59e0b'),
+        statCard('Deposits (30d)', '$' + (d30.total_deposited || 0).toLocaleString() + ' (' + (d30.total_deposits || 0) + ')', '#fbbf24'),
+        statCard('Withdrawals (30d)', '$' + (w30.total_withdrawn || 0).toLocaleString() + ' (' + (w30.total_withdrawals || 0) + ')', '#f97316'),
+        statCard('Unique Players', lt.unique_players || 0, '#38bdf8'),
+        statCard('Total Spins', (lt.total_spins || 0).toLocaleString(), '#a78bfa'),
+    ].join('');
+
+    gameEl.innerHTML = (data.dailyPnl || []).map(function(r) {
+        var rtp = r.wagered > 0 ? (r.paid_out / r.wagered * 100).toFixed(1) : '-';
+        return '<tr><td>' + esc(r.day) + '</td><td>' + (r.spins || 0).toLocaleString() +
+            '</td><td>$' + (r.wagered || 0).toLocaleString() +
+            '</td><td>$' + (r.paid_out || 0).toLocaleString() +
+            '</td><td style="color:' + (r.profit >= 0 ? '#10b981' : '#ef4444') + ';font-weight:700;">$' + (r.profit || 0).toLocaleString() +
+            '</td><td>' + rtp + (rtp !== '-' ? '%' : '') + '</td></tr>';
+    }).join('') || '<tr><td colspan="6" style="color:#64748b;text-align:center;padding:20px;">No spin data yet</td></tr>';
+
+    topEl.innerHTML = (data.topPlayers || []).map(function(u) {
+        return '<tr><td>' + esc(u.username) + '</td><td>' + (u.spins || 0).toLocaleString() +
+            '</td><td>$' + (u.wagered || 0).toLocaleString() +
+            '</td><td style="color:#10b981;font-weight:700;">$' + (u.profit_generated || 0).toLocaleString() +
+            '</td><td>$' + (u.current_balance || 0).toLocaleString() + '</td></tr>';
+    }).join('') || '<tr><td colspan="5" style="color:#64748b;text-align:center;padding:20px;">No player data yet</td></tr>';
+}
+
+// Note: Admin panel is behind authentication (admin JWT required) and serves
+// only admin-controlled data from trusted API endpoints. The deposit data
+// (id, username, email, amount) comes from our own database — not user-supplied
+// HTML. XSS risk is minimal here since admins are trusted and all values are
+// numeric/alphanumeric DB fields, but we escape for defense-in-depth.
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+}
+
+async function loadDeposits() {
+    const data = await apiFetch('/admin/pending-deposits');
+    if (!data) return;
+    const badge = document.getElementById('depositBadge');
+    const tbody = document.getElementById('depositsBody');
+    tbody.textContent = ''; // clear safely
+    if (data.deposits.length === 0) {
+        document.getElementById('noDeposits').style.display = 'block';
+        document.getElementById('depositsTable').style.display = 'none';
+        if (badge) { badge.style.display = 'none'; }
+        return;
+    }
+    document.getElementById('noDeposits').style.display = 'none';
+    document.getElementById('depositsTable').style.display = '';
+    if (badge) { badge.textContent = data.deposits.length; badge.style.display = 'inline-block'; }
+    data.deposits.forEach(function(d) {
+        var tr = document.createElement('tr');
+        var cells = [
+            d.id,
+            esc(d.username),
+            esc(d.email),
+            '$' + Number(d.amount).toLocaleString(),
+            esc(d.currency || 'AUD'),
+            esc(d.reference || '-'),
+            new Date(d.created_at).toLocaleString()
+        ];
+        cells.forEach(function(text, i) {
+            var td = document.createElement('td');
+            if (i === 3) { td.style.color = '#10b981'; td.style.fontWeight = '700'; }
+            td.textContent = text;
+            tr.appendChild(td);
+        });
+        var actionTd = document.createElement('td');
+        var approveBtn = document.createElement('button');
+        approveBtn.className = 'btn btn-success';
+        approveBtn.textContent = 'Approve';
+        approveBtn.onclick = function() { approveDeposit(d.id); };
+        var rejectBtn = document.createElement('button');
+        rejectBtn.className = 'btn btn-danger';
+        rejectBtn.textContent = 'Reject';
+        rejectBtn.style.marginLeft = '4px';
+        rejectBtn.onclick = function() { rejectDeposit(d.id); };
+        actionTd.appendChild(approveBtn);
+        actionTd.appendChild(rejectBtn);
+        tr.appendChild(actionTd);
+        tbody.appendChild(tr);
+    });
+}
+
+async function approveDeposit(id) {
+    if (!confirm('Approve this deposit and credit the player?')) return;
+    try {
+        const res = await fetch(API + '/admin/approve-deposit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ depositId: id }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert('Deposit #' + id + ' approved — $' + data.amount + ' credited. New balance: $' + data.newBalance);
+        loadDeposits();
+        loadStats();
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function rejectDeposit(id) {
+    const reason = prompt('Reason for rejection (optional):');
+    if (reason === null) return; // cancelled
+    try {
+        const res = await fetch(API + '/admin/reject-deposit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ depositId: id, reason }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert('Deposit #' + id + ' rejected.');
+        loadDeposits();
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function loadWithdrawals() {
+    var data = await apiFetch('/admin/pending-withdrawals');
+    if (!data) return;
+    var badge = document.getElementById('withdrawalBadge');
+    var tbody = document.getElementById('withdrawalsBody');
+    tbody.textContent = '';
+    if (data.withdrawals.length === 0) {
+        document.getElementById('noWithdrawals').style.display = 'block';
+        document.getElementById('withdrawalsTable').style.display = 'none';
+        if (badge) { badge.style.display = 'none'; }
+        return;
+    }
+    document.getElementById('noWithdrawals').style.display = 'none';
+    document.getElementById('withdrawalsTable').style.display = '';
+    if (badge) { badge.textContent = data.withdrawals.length; badge.style.display = 'inline-block'; }
+    data.withdrawals.forEach(function(w) {
+        var tr = document.createElement('tr');
+        var wagerColor = parseFloat(w.wagerRatio) >= 1 ? '#10b981' : '#ef4444';
+        var cells = [
+            w.id,
+            esc(w.username),
+            esc(w.email),
+            '$' + Number(w.amount).toLocaleString(),
+            esc(w.payment_type || '-'),
+            w.wagerRatio + 'x',
+            '$' + Number(w.balance).toLocaleString(),
+            new Date(w.created_at).toLocaleString()
+        ];
+        cells.forEach(function(text, i) {
+            var td = document.createElement('td');
+            if (i === 3) { td.style.color = '#ef4444'; td.style.fontWeight = '700'; }
+            if (i === 5) { td.style.color = wagerColor; td.style.fontWeight = '600'; }
+            td.textContent = text;
+            tr.appendChild(td);
+        });
+        var actionTd = document.createElement('td');
+        var approveBtn = document.createElement('button');
+        approveBtn.className = 'btn btn-success';
+        approveBtn.textContent = 'Approve';
+        approveBtn.onclick = function() { approveWithdrawal(w.id, w.amount); };
+        var rejectBtn = document.createElement('button');
+        rejectBtn.className = 'btn btn-danger';
+        rejectBtn.textContent = 'Reject';
+        rejectBtn.style.marginLeft = '4px';
+        rejectBtn.onclick = function() { rejectWithdrawal(w.id); };
+        actionTd.appendChild(approveBtn);
+        actionTd.appendChild(rejectBtn);
+        tr.appendChild(actionTd);
+        tbody.appendChild(tr);
+    });
+}
+
+async function approveWithdrawal(id, amount) {
+    if (!confirm('Approve withdrawal #' + id + ' ($' + amount + ') for payout?')) return;
+    try {
+        var r = await fetch(API + '/admin/approve-withdrawal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ withdrawalId: id }),
+        });
+        var d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+        alert('Withdrawal #' + id + ' approved — $' + d.amount + ' ready for payout.');
+        loadWithdrawals();
+        loadStats();
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function rejectWithdrawal(id) {
+    var reason = prompt('Reason for rejection (refund will be credited):');
+    if (reason === null) return;
+    try {
+        var r = await fetch(API + '/admin/reject-withdrawal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ withdrawalId: id, reason: reason }),
+        });
+        var d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+        alert('Withdrawal #' + id + ' rejected. $' + d.amount + ' refunded. New balance: $' + d.newBalance);
+        loadWithdrawals();
+        loadStats();
+    } catch (e) { alert('Error: ' + e.message); }
 }
 </script>
 </body>

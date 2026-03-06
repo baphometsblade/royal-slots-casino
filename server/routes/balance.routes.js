@@ -16,12 +16,20 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // POST /api/deposit
-// In production, this would integrate with a payment gateway (Stripe, etc.)
-// For now, it's a manual admin-approved deposit or dev helper
+// Admin-only manual balance credit (for admin-approved deposits or support adjustments).
+// Players cannot call this endpoint directly — all player deposits must go through
+// /api/payments/deposit which creates a pending record for payment processor callback.
 router.post('/deposit', authenticate, async (req, res) => {
     try {
-        const { amount, paymentRef } = req.body;
+        // Only admins can directly credit balance
+        if (!req.user.is_admin) {
+            return res.status(403).json({ error: 'Admin access required for direct deposits' });
+        }
+
+        const { amount, paymentRef, userId } = req.body;
         const deposit = parseFloat(amount);
+        // Allow admin to credit a specific user (or themselves)
+        const targetUserId = userId ? parseInt(userId) : req.user.id;
 
         if (isNaN(deposit) || deposit <= 0) {
             return res.status(400).json({ error: 'Invalid deposit amount' });
@@ -30,7 +38,7 @@ router.post('/deposit', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Maximum deposit is $100,000' });
         }
 
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [targetUserId]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -38,11 +46,11 @@ router.post('/deposit', authenticate, async (req, res) => {
         const balanceBefore = user.balance;
         const balanceAfter = balanceBefore + deposit;
 
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, targetUserId]);
 
         await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-            [req.user.id, 'deposit', deposit, balanceBefore, balanceAfter, paymentRef || 'manual']
+            [targetUserId, 'deposit', deposit, balanceBefore, balanceAfter, paymentRef || 'admin-manual']
         );
 
         res.json({ balance: balanceAfter, message: `Deposited $${deposit.toFixed(2)}` });

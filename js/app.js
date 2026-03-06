@@ -18,11 +18,27 @@
         }
 
 
+        function _statsStorageKey() {
+            const uid = currentUser ? (currentUser.id || currentUser.username) : null;
+            return uid ? STORAGE_KEY_STATS + '_' + uid : STORAGE_KEY_STATS;
+        }
+
         function loadState() {
             const savedBalance = localStorage.getItem(STORAGE_KEY_BALANCE);
             if (savedBalance !== null) balance = parseFloat(savedBalance);
 
-            const savedStats = localStorage.getItem(STORAGE_KEY_STATS);
+            // Per-user stats key — try user-specific first, then legacy global
+            const perUserKey = _statsStorageKey();
+            let savedStats = localStorage.getItem(perUserKey);
+
+            if (!savedStats && perUserKey !== STORAGE_KEY_STATS) {
+                // Migrate from legacy global key on first per-user load
+                savedStats = localStorage.getItem(STORAGE_KEY_STATS);
+                if (savedStats) {
+                    localStorage.setItem(perUserKey, savedStats);
+                }
+            }
+
             if (savedStats) {
                 try {
                     const parsed = JSON.parse(savedStats);
@@ -33,19 +49,62 @@
             } else {
                 stats = createDefaultStats();
             }
-
         }
 
 
         function saveBalance() {
-            if (typeof _demoMode !== 'undefined' && _demoMode) return;
             localStorage.setItem(STORAGE_KEY_BALANCE, balance.toString());
         }
 
 
         function saveStats() {
-            if (typeof _demoMode !== 'undefined' && _demoMode) return;
-            localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(stats));
+            localStorage.setItem(_statsStorageKey(), JSON.stringify(stats));
+            // Debounced server sync for server-authenticated users
+            if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+                _debouncedStatsSync();
+            }
+        }
+
+        // ── Server Stats Sync ──────────────────────────────
+        let _statsSyncTimer = null;
+        function _debouncedStatsSync() {
+            if (_statsSyncTimer) clearTimeout(_statsSyncTimer);
+            _statsSyncTimer = setTimeout(function () {
+                _statsSyncTimer = null;
+                _pushStatsToServer();
+            }, 10000); // batch at most once per 10 seconds
+        }
+
+        async function _pushStatsToServer() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            try {
+                await apiRequest('/api/user/stats', {
+                    method: 'PUT',
+                    body: { stats: stats },
+                    requireAuth: true
+                });
+            } catch (err) {
+                // Silently fail — localStorage is the fallback
+                console.warn('Stats server sync failed:', err.message);
+            }
+        }
+
+        async function _loadServerStats() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            try {
+                const res = await apiRequest('/api/user/stats', { requireAuth: true });
+                if (res && res.stats) {
+                    // Server stats take precedence — merge with defaults for any new fields
+                    stats = { ...createDefaultStats(), ...res.stats };
+                    localStorage.setItem(_statsStorageKey(), JSON.stringify(stats));
+                    if (typeof updateStatsSummary === 'function') updateStatsSummary();
+                } else {
+                    // No server stats yet — push current local stats to server
+                    _pushStatsToServer();
+                }
+            } catch (err) {
+                console.warn('Unable to load server stats:', err.message);
+            }
         }
 
 
@@ -128,6 +187,8 @@
         // Post-auth initialization — runs after login or on page load if already authenticated
         function onPostAuthInit() {
             checkDailyBonusReset();
+            // Load stats from server (overrides localStorage if server has data)
+            _loadServerStats();
             // Popups and engagement features only for verified (registered) users — not guests
             if (!currentUser || currentUser.isGuest) return;
             const urlParams = new URLSearchParams(window.location.search);
@@ -137,6 +198,14 @@
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
             if (typeof initPromoEngine === 'function') initPromoEngine();
+            if (typeof initHourlyBonus === 'function') initHourlyBonus();
+            if (typeof renderFavQuickBar === 'function') renderFavQuickBar();
+            // Load lobby enhancements
+            if (typeof startJackpotPolling === 'function') startJackpotPolling();
+            if (typeof loadBigWinFeed === 'function') loadBigWinFeed();
+            if (typeof loadPersonalizedOffers === 'function') setTimeout(loadPersonalizedOffers, 2000);
+            if (typeof loadCampaignBanners === 'function') setTimeout(loadCampaignBanners, 3000);
+            if (typeof loadActiveEvents === 'function') setTimeout(loadActiveEvents, 3500);
             startSessionDurationWatch();
         }
 
@@ -164,11 +233,36 @@
                 clearInterval(window._sessionDurationTimer);
                 window._sessionDurationTimer = null;
             }
+            // Flush any pending debounced stats sync immediately
+            if (_statsSyncTimer) {
+                clearTimeout(_statsSyncTimer);
+                _statsSyncTimer = null;
+                _pushStatsToServer(); // fire-and-forget on unload
+            }
         });
 
 
         // ===== Update init to include new systems =====
         async function initAllSystems() {
+            // Check for password reset token in URL before anything else
+            if (typeof checkResetTokenOnLoad === 'function' && checkResetTokenOnLoad()) {
+                // Reset flow is active — show auth modal with reset form
+                document.body.classList.add('auth-gate');
+                loadXP();
+                loadDailyBonus();
+                loadWheelState();
+                initBase();
+                updateAuthButton();
+                return;
+            }
+
+            // Pre-fill referral code from ?ref= URL parameter
+            var _refParam = new URLSearchParams(window.location.search).get('ref');
+            if (_refParam) {
+                var refInput = document.getElementById('regReferral');
+                if (refInput) refInput.value = _refParam.toUpperCase();
+            }
+
             // Fast-path: if no session exists, show auth immediately.
             // currentUser is already restored from localStorage by globals.js.
             if (!currentUser) {
@@ -180,6 +274,8 @@
                 initBase();
                 updateAuthButton();
                 showAuthModal();
+                // If a referral code is in the URL, auto-switch to register tab
+                if (_refParam) switchAuthTab('register');
                 return;
             }
 
@@ -188,22 +284,10 @@
             loadWheelState();
             initBase();
 
-            // Sprint 42: Sync volume slider with stored value
-            (function() {
-                var slider = document.getElementById('volSlider');
-                var label = document.getElementById('volLabel');
-                var stored = parseFloat(localStorage.getItem('casinoSoundVolume'));
-                if (!isNaN(stored) && slider) {
-                    slider.value = Math.round(stored * 100);
-                    if (label) label.textContent = Math.round(stored * 100) + '%';
-                }
-            })();
-
             // New systems
             updateXPDisplay();
             renderVipBadge();
             startWinTicker();
-            if (typeof renderRecommendations === 'function') renderRecommendations();
             updateAuthButton();
             await syncServerSession();
 
@@ -214,8 +298,9 @@
                 return;
             }
 
-            // Always refresh guest balance to $1,000 on page load
-            if (currentUser.isGuest) {
+            // Guest balance: only grant $1,000 if they have zero or no saved balance
+            // (prevents infinite-reload exploit while still giving new guests starter funds)
+            if (currentUser.isGuest && (!balance || balance <= 0)) {
                 balance = 1000;
                 updateBalance();
                 saveBalance();
@@ -279,8 +364,7 @@
                     break;
                 default:
                     if (e.key === '?' || e.key === '/') {
-                        if (slotOpen && typeof _toggleHotkeySheet === 'function') { _toggleHotkeySheet(); }
-                        else if (typeof openShortcutsModal === 'function') { openShortcutsModal(); }
+                        if (typeof _toggleHotkeySheet === 'function') _toggleHotkeySheet();
                         return;
                     }
                     break;

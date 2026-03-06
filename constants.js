@@ -36,6 +36,33 @@ const BET_STEPS = [
     400.00, 425.00, 450.00, 475.00, 500.00
 ];
 
+/**
+ * Bet-tier thresholds — visual badges that incentivize higher bets.
+ * Each tier has: min bet, label, emoji, CSS class suffix.
+ * Tiers are checked highest-first; first match wins.
+ */
+const BET_TIERS = [
+    { min: 100.00, label: 'DIAMOND',  emoji: '\uD83D\uDC8E', cls: 'diamond'  },
+    { min:  20.00, label: 'PLATINUM', emoji: '\u2B50',         cls: 'platinum' },
+    { min:   5.00, label: 'GOLD',     emoji: '\uD83C\uDFC6',  cls: 'gold'     },
+    { min:   1.00, label: 'SILVER',   emoji: '\uD83E\uDD48',  cls: 'silver'   },
+    { min:   0.00, label: 'BRONZE',   emoji: '\uD83E\uDD49',  cls: 'bronze'   }
+];
+
+/**
+ * Win-streak bonus rewards — paid at milestone streaks.
+ * bonus = currentBet × mult (small enough to keep house edge positive).
+ * Player must win N consecutive spins → wagered ≥ N×bet with ~12% edge each.
+ */
+const STREAK_BONUS_REWARDS = [
+    { at:  3, mult: 0.5,  label: 'STREAK BONUS' },
+    { at:  5, mult: 1.0,  label: 'HOT STREAK BONUS' },
+    { at:  7, mult: 2.0,  label: 'FIRE STREAK BONUS' },
+    { at: 10, mult: 5.0,  label: 'MEGA STREAK BONUS' },
+    { at: 15, mult: 10.0, label: 'LEGENDARY STREAK' },
+    { at: 20, mult: 20.0, label: 'GODLIKE STREAK' }
+];
+
 /** @type {object} Default player statistics on first load or reset */
 const DEFAULT_STATS = {
     totalSpins: 0,
@@ -565,6 +592,9 @@ const STORAGE_KEY_DAILY_BONUS = 'casinoDailyBonus';
 /** Bonus wheel last-spin timestamp (JSON) */
 const STORAGE_KEY_BONUS_WHEEL = 'casinoBonusWheel';
 
+/** Daily win goal progress (JSON) — Sprint 82 */
+const STORAGE_KEY_DAILY_GOAL = 'matrixDailyGoal';
+
 /** User settings (JSON) */
 const STORAGE_KEY_SETTINGS = 'casinoSettings';
 
@@ -833,16 +863,19 @@ const STORAGE_KEY_WEEKLY_MISSIONS = 'matrixWeeklyMissions';
 /** @type {string} localStorage key for notification center entries */
 const STORAGE_KEY_NOTIFICATIONS = 'matrixNotifications';
 const STORAGE_KEY_LOGIN_STREAK = 'matrixLoginStreak';
-const STORAGE_KEY_PROMO_CODES = 'matrixPromoCodes';
-const STORAGE_KEY_CASHBACK = 'matrixCashback';
-const STORAGE_KEY_CALENDAR = 'matrixLoginCalendar';
-const STORAGE_KEY_CALENDAR_MILESTONES = 'matrixCalendarMilestones';
-const STORAGE_KEY_COMMUNITY_JACKPOT = 'matrixCommunityJackpot';
+const STORAGE_KEY_REFERRAL = 'casinoReferral';
 
-/** Cashback configuration */
-const CASHBACK_RATE = 0.05;
-const CASHBACK_INTERVAL_MS = 24 * 60 * 60 * 1000;
-const CASHBACK_MIN_LOSS = 100;
+// ─────────────────────────────────────────────────────────────
+// REFERRAL SYSTEM
+// ─────────────────────────────────────────────────────────────
+/** Bonus awarded to the referring player when their referral makes first deposit */
+const REFERRAL_BONUS_REFERRER = 500;
+/** Bonus awarded to the referred player on their first deposit */
+const REFERRAL_BONUS_REFEREE = 250;
+/** Minimum first-deposit amount to trigger referral bonuses */
+const REFERRAL_MIN_DEPOSIT = 10;
+const WAGERING_MULTIPLIER_DEFAULT = 30;
+const WAGERING_MULTIPLIER_RELOAD = 25;
 
 /**
  * VIP tier definitions ordered by wagering threshold.
@@ -854,18 +887,18 @@ const VIP_TIERS = [
         id: 'bronze',
         name: 'Bronze',
         minWagered: 0,
-        maxWagered: 999,
+        maxWagered: 249,
         cashbackPct: 0.5,
-        weeklyReloadPct: 0,
+        weeklyReloadPct: 5,
         color: '#CD7F32',
         colorDark: '#8B5523',
         icon: '\u{1F949}',
-        benefits: ['0.5% cashback on losses', 'Access to all standard games']
+        benefits: ['0.5% cashback on losses', '5% weekly reload bonus', 'Access to all standard games']
     },
     {
         id: 'silver',
         name: 'Silver',
-        minWagered: 1000,
+        minWagered: 250,
         maxWagered: 4999,
         cashbackPct: 1.0,
         weeklyReloadPct: 10,

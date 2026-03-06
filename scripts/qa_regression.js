@@ -141,40 +141,20 @@ async function waitForPageTransitionIdle(page, timeout = 10000) {
 }
 
 async function dismissFeaturePopupIfVisible(page) {
-  // Dismiss intro splash if still visible (blocks pointer events for up to 1.85s)
+  // Always force-dismiss via JS — safe even if the popup isn't visible.
+  // Avoids waitForFunction timeouts caused by CSS transitions or re-opens.
   await page.evaluate(() => {
-    const splash = document.querySelector('.slot-intro-splash');
-    if (splash) splash.remove();
-  });
-
-  const popupVisible = await page.evaluate(() => {
+    if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
     const overlay = document.getElementById("slotFeaturePopup");
-    if (!overlay) return false;
-    const style = window.getComputedStyle(overlay);
-    return style.display !== "none" && style.visibility !== "hidden" && style.pointerEvents !== "none";
+    if (overlay) {
+      overlay.style.display = "none";
+      overlay.style.visibility = "hidden";
+      overlay.style.pointerEvents = "none";
+      overlay.classList.remove("active");
+    }
   });
-  if (!popupVisible) return;
-
-  const playButton = await page.$("#featurePopupPlayBtn");
-  if (playButton) {
-    await playButton.click({ timeout: 5000, force: true });
-  } else {
-    await page.evaluate(() => {
-      if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
-      const overlay = document.getElementById("slotFeaturePopup");
-      if (overlay) overlay.style.display = "none";
-    });
-  }
-
-  await page.waitForFunction(
-    () => {
-      const overlay = document.getElementById("slotFeaturePopup");
-      if (!overlay) return true;
-      const style = window.getComputedStyle(overlay);
-      return style.display === "none" || style.visibility === "hidden" || style.pointerEvents === "none";
-    },
-    { timeout: 5000 }
-  );
+  // Brief pause to let any CSS transitions settle
+  await page.waitForTimeout(300);
 }
 
 async function clickSpinButton(page) {

@@ -91,6 +91,22 @@ router.post('/', authenticate, async (req, res) => {
         }
         lastSpinTime.set(userId, now);
 
+        // ── Daily loss limit check (before spinning) ──
+        const lossLimitService = require('../services/loss-limit.service');
+        const lossCheck = await lossLimitService.checkDailyLossLimit(userId, bet);
+        if (!lossCheck.allowed) {
+            // Re-read balance in case cashback was just credited
+            const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+            return res.json({
+                error: 'daily_loss_limit',
+                message: 'Daily loss limit reached',
+                dailyLoss: lossCheck.dailyLoss,
+                limit: lossCheck.limit,
+                cashback: lossCheck.cashback,
+                balance: updatedUser ? updatedUser.balance : undefined
+            });
+        }
+
         // ── Check balance (fresh from DB) ──
         const currentUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
         if (!currentUser) {
@@ -167,6 +183,30 @@ router.post('/', authenticate, async (req, res) => {
             freeSpinStateByUser.delete(userId);
         }
 
+        // ── Bonus event payout multiplier (fail-open — never blocks spin) ──
+        let eventBonus = null;
+        if (spinResult.winAmount > 0) {
+            try {
+                const eventService = require('../services/event.service');
+                const activeEvent = await eventService.getActiveEventForGame(gameId, 'payout_boost');
+                if (activeEvent && activeEvent.multiplier > 1) {
+                    const baseWin = spinResult.winAmount;
+                    const boostedWin = Math.round(baseWin * activeEvent.multiplier * 100) / 100;
+                    const bonusAmount = Math.round((boostedWin - baseWin) * 100) / 100;
+                    spinResult.winAmount = boostedWin;
+                    eventBonus = {
+                        eventId: activeEvent.id,
+                        eventName: activeEvent.name,
+                        multiplier: activeEvent.multiplier,
+                        bonusAmount,
+                    };
+                }
+            } catch (evtErr) {
+                console.error('[Spin] Event boost check error:', evtErr);
+                // Non-blocking — proceed without boost
+            }
+        }
+
         // ── Credit win ──
         let finalBalance = balanceAfterBet;
         if (spinResult.winAmount > 0) {
@@ -210,7 +250,46 @@ router.post('/', authenticate, async (req, res) => {
                         tournamentService.submitScore(t.id, userId, _winMult).catch(function() {});
                     });
                 }).catch(function() {});
+
+                // Also record into weekly tournament_scores leaderboard
+                (function() {
+                    try {
+                        const now = new Date();
+                        const day = now.getUTCDay();
+                        const daysBack = day === 0 ? 6 : day - 1;
+                        const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysBack));
+                        const weekStart = monday.toISOString().slice(0, 10);
+                        const initScore = (_winMult * 10) + (spinResult.winAmount * 0.001);
+                        db.run(
+                            'INSERT INTO tournament_scores' +
+                            '  (user_id, week_start, best_multiplier, total_wins, spin_count, score, updated_at)' +
+                            " VALUES (?, ?, ?, ?, 1, ?, datetime('now'))" +
+                            ' ON CONFLICT(user_id, week_start) DO UPDATE SET' +
+                            '   spin_count      = tournament_scores.spin_count + 1,' +
+                            '   total_wins      = tournament_scores.total_wins + excluded.total_wins,' +
+                            '   best_multiplier = CASE WHEN excluded.best_multiplier > tournament_scores.best_multiplier THEN excluded.best_multiplier ELSE tournament_scores.best_multiplier END,' +
+                            '   score           = (CASE WHEN excluded.best_multiplier > tournament_scores.best_multiplier THEN excluded.best_multiplier ELSE tournament_scores.best_multiplier END * 10) + ((tournament_scores.total_wins + excluded.total_wins) * 0.001),' +
+                            "   updated_at      = datetime('now')",
+                            [userId, weekStart, _winMult, spinResult.winAmount, initScore]
+                        ).catch(function() {});
+                    } catch (e) {}
+                }());
             }
+        }
+
+        // ── Weekly contest entry (fire-and-forget) ──────────────────────
+        if (!usedFreeSpin && bet > 0) {
+            const contestService = require('../services/contest.service');
+            contestService.recordContestEntry(userId, 'spins', 1).catch(function() {});
+            contestService.recordContestEntry(userId, 'total_wagered', bet).catch(function() {});
+            if (spinResult.winAmount > 0) {
+                contestService.recordContestEntry(userId, 'biggest_win', spinResult.winAmount).catch(function() {});
+            }
+        }
+
+        // ── Hourly wager race entry (fire-and-forget) ────────────────────
+        if (!usedFreeSpin && bet > 0) {
+            require('../services/wagerace.service').recordWager(userId, bet).catch(function() {});
         }
 
         // ── Log spin ──
@@ -221,6 +300,74 @@ router.post('/', authenticate, async (req, res) => {
 
         // ── Update game stats (house edge tracking) ──
         await houseEdge.updateGameStats(db, gameId, usedFreeSpin ? 0 : bet, spinResult.winAmount);
+
+        // ── Wagering progress tracking ──
+        if (!usedFreeSpin && bet > 0) {
+            try {
+                const wagerUser = await db.get(
+                    'SELECT wagering_requirement, wagering_progress, bonus_balance FROM users WHERE id = ?',
+                    [userId]
+                );
+                if (wagerUser && wagerUser.wagering_requirement > 0 && wagerUser.wagering_progress < wagerUser.wagering_requirement) {
+                    const newProgress = Math.min(
+                        wagerUser.wagering_progress + bet,
+                        wagerUser.wagering_requirement
+                    );
+                    if (newProgress >= wagerUser.wagering_requirement && wagerUser.bonus_balance > 0) {
+                        // Wagering complete — convert bonus to real balance
+                        const userNow = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [userId]);
+                        const convertAmount = userNow.bonus_balance;
+                        await db.run(
+                            'UPDATE users SET wagering_progress = ?, bonus_balance = 0, balance = balance + ? WHERE id = ?',
+                            [newProgress, convertAmount, userId]
+                        );
+                        finalBalance += convertAmount;
+                        await db.run(
+                            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                            [userId, 'bonus_conversion', convertAmount, finalBalance - convertAmount, finalBalance, 'Wagering requirement completed']
+                        );
+                    } else {
+                        await db.run(
+                            'UPDATE users SET wagering_progress = ? WHERE id = ?',
+                            [newProgress, userId]
+                        );
+                    }
+                }
+            } catch (wagerErr) {
+                console.error('[Spin] Wagering progress error:', wagerErr);
+                // Non-blocking — don't fail the spin
+            }
+        }
+
+        // Include wagering status in response
+        let wageringStatus = null;
+        try {
+            const wu = await db.get(
+                'SELECT bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?',
+                [userId]
+            );
+            if (wu && wu.wagering_requirement > 0) {
+                wageringStatus = {
+                    bonusBalance: wu.bonus_balance,
+                    requirement: wu.wagering_requirement,
+                    progress: wu.wagering_progress,
+                    complete: wu.wagering_progress >= wu.wagering_requirement,
+                    pct: Math.min(100, Math.round((wu.wagering_progress / wu.wagering_requirement) * 100)),
+                };
+            }
+        } catch (_) {}
+
+        // ── Achievement check (non-blocking) ──
+        let newAchievements = [];
+        try {
+            const achievementService = require('../services/achievement.service');
+            const spinCountRow = await db.get('SELECT COUNT(*) as cnt FROM spins WHERE user_id = ?', [userId]);
+            const distinctRow = await db.get('SELECT COUNT(DISTINCT game_id) as cnt FROM spins WHERE user_id = ?', [userId]);
+            const spinCount = spinCountRow ? spinCountRow.cnt : 0;
+            const distinctGames = distinctRow ? distinctRow.cnt : 0;
+            const winMult = bet > 0 ? spinResult.winAmount / bet : 0;
+            newAchievements = await achievementService.checkSpinAchievements(userId, spinCount, winMult, distinctGames);
+        } catch (e) { console.error('[Achievement] check error:', e.message); }
 
         // ── Response ──
         res.json({
@@ -233,6 +380,10 @@ router.post('/', authenticate, async (req, res) => {
             freeSpinsAwarded: spinResult.freeSpinsAwarded,
             usedFreeSpin,
             jackpotWon: spinResult.jackpotWon || null,
+            wageringStatus,
+            newAchievements,
+            eventBonus,
+            lossStatus: lossCheck ? { dailyLoss: lossCheck.dailyLoss, limit: lossCheck.limit, remaining: lossCheck.remaining } : null,
         });
 
     } catch (err) {

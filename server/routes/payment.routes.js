@@ -3,8 +3,20 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../database');
 const config = require('../config');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+
+// ─── OTP Rate Limiter ───
+const otpLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts per window
+    keyGenerator: (req) => `otp:${req.user ? req.user.id : req.ip}`,
+    handler: (req, res) => {
+        res.status(429).json({ error: 'Too many OTP attempts. Please wait 15 minutes and request a new withdrawal.' });
+    },
+    skipSuccessfulRequests: false,
+});
 
 // ─── Helpers ───
 
@@ -92,6 +104,41 @@ async function checkDepositLimits(userId, amount) {
         if (monthly.total + amount > limits.monthly_deposit_limit) {
             return `Monthly deposit limit of $${limits.monthly_deposit_limit.toFixed(2)} would be exceeded. Already deposited $${monthly.total.toFixed(2)} this month.`;
         }
+    }
+
+    return null;
+}
+
+// ─── Deposit velocity fraud detection ───
+// Blocks rapid-fire deposits that indicate automated abuse or stolen cards
+async function checkDepositVelocity(userId) {
+    // Max 3 deposits per hour
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const hourly = await db.get(
+        "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND created_at >= ?",
+        [userId, hourAgo]
+    );
+    if (hourly && hourly.count >= 3) {
+        return 'Too many deposit attempts. Please wait before trying again.';
+    }
+
+    // Max 5 deposits per 24 hours
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const daily = await db.get(
+        "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND created_at >= ?",
+        [userId, dayAgo]
+    );
+    if (daily && daily.count >= 5) {
+        return 'Daily deposit attempt limit reached. Please try again tomorrow.';
+    }
+
+    // Max 3 pending deposits at once (prevents queue flooding)
+    const pending = await db.get(
+        "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'pending'",
+        [userId]
+    );
+    if (pending && pending.count >= 3) {
+        return 'You have too many pending deposits. Please wait for them to process.';
     }
 
     return null;
@@ -304,6 +351,12 @@ router.post('/deposit', authenticate, async (req, res) => {
             return res.status(400).json({ error: limitError });
         }
 
+        // Deposit velocity fraud check
+        const velocityError = await checkDepositVelocity(req.user.id);
+        if (velocityError) {
+            return res.status(429).json({ error: velocityError });
+        }
+
         // Validate payment method ownership if provided
         if (paymentMethodId) {
             const pm = await db.get(
@@ -317,42 +370,23 @@ router.post('/deposit', authenticate, async (req, res) => {
 
         const reference = generateReference('DEP');
 
-        // Create deposit record as pending
+        // Create deposit record as PENDING — balance is NOT credited yet.
+        // In production, a payment processor webhook (Stripe, PayPal, etc.) calls
+        // a separate callback endpoint to confirm payment, which then credits balance.
+        // This prevents users from getting free money by calling this endpoint directly.
         const depositResult = await db.run(
             'INSERT INTO deposits (user_id, amount, currency, payment_method_id, payment_type, status, reference) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [req.user.id, deposit, config.CURRENCY, paymentMethodId || null, paymentType, 'pending', reference]
         );
         const depositId = depositResult.lastInsertRowid;
 
-        // Auto-complete: in a real system, the payment processor callback would do this
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore + deposit;
-
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
-
-        await db.run(
-            "UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?",
-            [depositId]
-        );
-
-        await db.run(
-            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-            [req.user.id, 'deposit', deposit, balanceBefore, balanceAfter, reference]
-        );
-
         res.json({
-            message: `Deposited $${deposit.toFixed(2)}`,
-            balance: balanceAfter,
+            message: `Deposit of $${deposit.toFixed(2)} submitted — awaiting payment confirmation`,
             deposit: {
                 id: depositId,
                 amount: deposit,
                 currency: config.CURRENCY,
-                status: 'completed',
+                status: 'pending',
                 reference
             }
         });
@@ -410,13 +444,50 @@ router.post('/withdraw', authenticate, async (req, res) => {
             return res.status(403).json({ error: exclusion });
         }
 
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        const user = await db.get('SELECT balance, bonus_balance, wagering_requirement, wagering_progress FROM users WHERE id = ?', [req.user.id]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
         if (user.balance < withdrawal) {
             return res.status(400).json({ error: 'Insufficient balance' });
+        }
+
+        // Wagering requirement: must wager at least 1x total deposits before withdrawing
+        const totalDeposited = await db.get(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [req.user.id]
+        );
+        const totalWagered = await db.get(
+            'SELECT COALESCE(SUM(bet_amount), 0) as total FROM spins WHERE user_id = ?',
+            [req.user.id]
+        );
+        const deposited = totalDeposited ? totalDeposited.total : 0;
+        const wagered = totalWagered ? totalWagered.total : 0;
+        if (deposited > 0 && wagered < deposited) {
+            const remaining = (deposited - wagered).toFixed(2);
+            return res.status(400).json({
+                error: `Wagering requirement not met. You must wager $${remaining} more before withdrawing. (Wagered: $${wagered.toFixed(2)} / Required: $${deposited.toFixed(2)})`,
+                wagerRequired: deposited,
+                wagerCompleted: wagered,
+                wagerRemaining: deposited - wagered
+            });
+        }
+
+        // Block withdrawal if active bonus wagering is incomplete
+        if (user.wagering_requirement > 0 && user.wagering_progress < user.wagering_requirement) {
+            const remaining = (user.wagering_requirement - user.wagering_progress).toFixed(2);
+            const pct = Math.round((user.wagering_progress / user.wagering_requirement) * 100);
+            return res.status(400).json({
+                error: `Bonus wagering requirement not met. Wager $${remaining} more to unlock your $${(user.bonus_balance || 0).toFixed(2)} bonus. (${pct}% complete)`,
+                bonusWagering: {
+                    requirement: user.wagering_requirement,
+                    progress: user.wagering_progress,
+                    remaining: user.wagering_requirement - user.wagering_progress,
+                    bonusBalance: user.bonus_balance || 0,
+                    pct
+                }
+            });
         }
 
         // Validate payment method ownership if provided
@@ -450,8 +521,11 @@ router.post('/withdraw', authenticate, async (req, res) => {
             [req.user.id, 'withdrawal', -withdrawal, balanceBefore, balanceAfter, reference]
         );
 
+        // Calculate when cooling-off ends (24h from now)
+        var coolingOffEnds = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
         res.json({
-            message: `Withdrawal of $${withdrawal.toFixed(2)} submitted for processing`,
+            message: `Withdrawal of $${withdrawal.toFixed(2)} submitted. 24-hour review period before processing.`,
             balance: balanceAfter,
             withdrawal: {
                 id: withdrawalId,
@@ -459,7 +533,8 @@ router.post('/withdraw', authenticate, async (req, res) => {
                 currency: config.CURRENCY,
                 status: 'pending',
                 reference,
-                estimatedDays: config.WITHDRAWAL_PROCESSING_DAYS
+                coolingOffEnds: coolingOffEnds,
+                estimatedDays: config.WITHDRAWAL_PROCESSING_DAYS + 1
             }
         });
     } catch (err) {
@@ -480,6 +555,61 @@ router.get('/withdrawals', authenticate, async (req, res) => {
     } catch (err) {
         console.error('[Payment] List withdrawals error:', err);
         res.status(500).json({ error: 'Failed to retrieve withdrawal history' });
+    }
+});
+
+// POST /api/payments/withdraw/verify-otp — verify OTP to confirm a withdrawal
+router.post('/withdraw/verify-otp', authenticate, otpLimiter, async (req, res) => {
+    try {
+        const { withdrawal_id, otp } = req.body;
+        if (!withdrawal_id || !otp) {
+            return res.status(400).json({ error: 'withdrawal_id and otp are required' });
+        }
+
+        const wd = await db.get(
+            'SELECT id, user_id, amount, status, otp_code, otp_attempts FROM withdrawals WHERE id = ? AND user_id = ?',
+            [parseInt(withdrawal_id), req.user.id]
+        );
+        if (!wd) {
+            return res.status(404).json({ error: 'Withdrawal not found' });
+        }
+        if (wd.status !== 'pending') {
+            return res.status(400).json({ error: `Withdrawal is not pending (status: ${wd.status})` });
+        }
+        if (!wd.otp_code) {
+            return res.status(400).json({ error: 'No OTP is set for this withdrawal or it has been invalidated' });
+        }
+
+        // Check DB-level attempt count
+        const attempts = (wd.otp_attempts || 0) + 1;
+        if (otp !== wd.otp_code) {
+            if (attempts >= 5) {
+                // Invalidate the OTP and cancel the withdrawal
+                await db.run(
+                    "UPDATE withdrawals SET otp_code = NULL, otp_attempts = ?, status = 'cancelled', admin_note = 'OTP invalidated after 5 failed attempts', processed_at = datetime('now') WHERE id = ?",
+                    [attempts, wd.id]
+                );
+                // Refund balance
+                await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [wd.amount, req.user.id]);
+                await db.run(
+                    "INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) SELECT ?, 'withdrawal_cancel', ?, balance - ?, balance, ? FROM users WHERE id = ?",
+                    [req.user.id, wd.amount, wd.amount, `WDR-OTP-FAIL-${wd.id}`, req.user.id]
+                );
+                return res.status(400).json({ error: 'Too many incorrect OTP attempts — withdrawal has been cancelled and refunded' });
+            }
+            await db.run('UPDATE withdrawals SET otp_attempts = ? WHERE id = ?', [attempts, wd.id]);
+            return res.status(400).json({ error: `Incorrect OTP. ${5 - attempts} attempt(s) remaining.` });
+        }
+
+        // OTP correct — mark as otp_verified
+        await db.run(
+            "UPDATE withdrawals SET status = 'otp_verified', otp_code = NULL, otp_attempts = 0 WHERE id = ?",
+            [wd.id]
+        );
+        res.json({ message: 'OTP verified. Withdrawal approved for processing.', withdrawal_id: wd.id });
+    } catch (err) {
+        console.error('[Payment] OTP verify error:', err);
+        res.status(500).json({ error: 'Failed to verify OTP' });
     }
 });
 
@@ -673,6 +803,203 @@ router.post('/self-exclude', authenticate, async (req, res) => {
     } catch (err) {
         console.error('[Payment] Self-exclude error:', err);
         res.status(500).json({ error: 'Failed to activate self-exclusion' });
+    }
+});
+
+// ═══════════════════════════════════════════════════
+//  ADMIN: APPROVE PENDING DEPOSIT
+// ═══════════════════════════════════════════════════
+
+// POST /api/payments/admin/approve-deposit — admin-only: approve a pending deposit and credit balance
+router.post('/admin/approve-deposit', authenticate, async (req, res) => {
+    try {
+        if (!req.user.is_admin) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        const { depositId } = req.body;
+        if (!depositId) {
+            return res.status(400).json({ error: 'depositId is required' });
+        }
+
+        const deposit = await db.get(
+            'SELECT id, user_id, amount, status, reference FROM deposits WHERE id = ?',
+            [depositId]
+        );
+        if (!deposit) {
+            return res.status(404).json({ error: 'Deposit not found' });
+        }
+        if (deposit.status !== 'pending') {
+            return res.status(400).json({ error: `Deposit already ${deposit.status}` });
+        }
+
+        const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [deposit.user_id]);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const balanceBefore = user.balance;
+        let balanceAfter = balanceBefore + deposit.amount;
+
+        // Determine bonus: first deposit or reload
+        let bonusAmount = 0;
+        let wageringMult = 0;
+        let bonusType = '';
+        const priorDeposits = await db.get(
+            "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [deposit.user_id]
+        );
+        if (priorDeposits && priorDeposits.count === 0) {
+            bonusAmount = Math.min(deposit.amount * (config.FIRST_DEPOSIT_BONUS_PCT / 100), config.FIRST_DEPOSIT_BONUS_MAX);
+            wageringMult = config.FIRST_DEPOSIT_WAGERING_MULT || 30;
+            bonusType = 'first_deposit_bonus';
+        } else {
+            bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 50) / 100), config.RELOAD_BONUS_MAX || 250);
+            wageringMult = config.RELOAD_WAGERING_MULT || 25;
+            bonusType = 'reload_bonus';
+        }
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
+
+        await db.run(
+            "UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?",
+            [deposit.id]
+        );
+
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference]
+        );
+
+        if (bonusAmount > 0) {
+            const wagerReq = bonusAmount * wageringMult;
+            await db.run(
+                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                [bonusAmount, wagerReq, deposit.user_id]
+            );
+            const refLabel = bonusType === 'first_deposit_bonus'
+                ? `FIRST-DEPOSIT-MATCH (${wageringMult}x wagering)`
+                : `RELOAD-MATCH (${wageringMult}x wagering)`;
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [deposit.user_id, bonusType, bonusAmount, balanceAfter, balanceAfter, refLabel]
+            );
+        }
+
+        // ── Deposit Gem Reward (20 gems per $1, 25 min, 2500 max) ──
+        const depositGems = Math.max(25, Math.min(Math.floor(deposit.amount * 20), 2500));
+        await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [depositGems, deposit.user_id]).catch(function() {});
+
+        // ── Deposit Streak (fire-and-forget) ──
+        
+        require('./depositstreak.routes').recordForUser(deposit.user_id).catch(function() {});
+
+        const bonusMsg = bonusAmount > 0 ? ` + $${bonusAmount.toFixed(2)} first-deposit bonus!` : '';
+        res.json({
+            message: `Deposit #${deposit.id} approved — $${deposit.amount.toFixed(2)} credited${bonusMsg}`,
+            userId: deposit.user_id,
+            balance: balanceAfter,
+            bonus: bonusAmount,
+            gemsAwarded: depositGems
+        });
+    } catch (err) {
+        console.error('[Payment] Approve deposit error:', err);
+        res.status(500).json({ error: 'Failed to approve deposit' });
+    }
+});
+
+// ═══════════════════════════════════════════════════
+//  WEBHOOK: PAYMENT CONFIRMATION
+// ═══════════════════════════════════════════════════
+
+// POST /api/payments/webhook/confirm — Payment processor callback
+// Validates the deposit reference and secret, then credits the player.
+// Call this from Stripe/PayPal webhook handlers or manually via curl.
+router.post('/webhook/confirm', async (req, res) => {
+    try {
+        const { reference, webhookSecret } = req.body;
+
+        // Validate webhook secret (must match WEBHOOK_SECRET env var)
+        const expectedSecret = process.env.WEBHOOK_SECRET || config.JWT_SECRET;
+        if (!webhookSecret || webhookSecret !== expectedSecret) {
+            return res.status(403).json({ error: 'Invalid webhook secret' });
+        }
+
+        if (!reference) {
+            return res.status(400).json({ error: 'reference is required' });
+        }
+
+        const deposit = await db.get(
+            'SELECT id, user_id, amount, status, reference FROM deposits WHERE reference = ?',
+            [reference]
+        );
+        if (!deposit) {
+            return res.status(404).json({ error: 'Deposit not found' });
+        }
+        if (deposit.status !== 'pending') {
+            return res.status(200).json({ message: `Deposit already ${deposit.status}`, depositId: deposit.id });
+        }
+
+        const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [deposit.user_id]);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const balanceBefore = user.balance;
+        let balanceAfter = balanceBefore + deposit.amount;
+
+        // Determine bonus: first deposit or reload
+        let bonusAmount = 0;
+        let wageringMult = 0;
+        let bonusType = '';
+        const priorDeposits = await db.get(
+            "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [deposit.user_id]
+        );
+        if (priorDeposits && priorDeposits.count === 0) {
+            bonusAmount = Math.min(deposit.amount * (config.FIRST_DEPOSIT_BONUS_PCT / 100), config.FIRST_DEPOSIT_BONUS_MAX);
+            wageringMult = config.FIRST_DEPOSIT_WAGERING_MULT || 30;
+            bonusType = 'first_deposit_bonus';
+        } else {
+            bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 50) / 100), config.RELOAD_BONUS_MAX || 250);
+            wageringMult = config.RELOAD_WAGERING_MULT || 25;
+            bonusType = 'reload_bonus';
+        }
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
+        await db.run("UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?", [deposit.id]);
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference]
+        );
+
+        if (bonusAmount > 0) {
+            const wagerReq = bonusAmount * wageringMult;
+            await db.run(
+                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                [bonusAmount, wagerReq, deposit.user_id]
+            );
+            const refLabel = bonusType === 'first_deposit_bonus'
+                ? `FIRST-DEPOSIT-MATCH (${wageringMult}x wagering)`
+                : `RELOAD-MATCH (${wageringMult}x wagering)`;
+            await db.run(
+                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                [deposit.user_id, bonusType, bonusAmount, balanceAfter, balanceAfter, refLabel]
+            );
+        }
+
+        // ── Deposit Gem Reward ──
+        const depositGems = Math.max(25, Math.min(Math.floor(deposit.amount * 20), 2500));
+        await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [depositGems, deposit.user_id]).catch(function() {});
+
+        // ── Deposit Streak (fire-and-forget) ──
+        require('./depositstreak.routes').recordForUser(deposit.user_id).catch(function() {});
+
+        console.log(`[Webhook] Deposit ${deposit.id} confirmed — $${deposit.amount} + $${bonusAmount} bonus credited to user ${deposit.user_id}`);
+        res.json({ message: 'Deposit confirmed', depositId: deposit.id, amount: deposit.amount, bonus: bonusAmount, gemsAwarded: depositGems });
+    } catch (err) {
+        console.error('[Webhook] Payment confirm error:', err);
+        res.status(500).json({ error: 'Webhook processing failed' });
     }
 });
 

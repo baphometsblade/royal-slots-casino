@@ -1,74 +1,138 @@
 'use strict';
 
 const db = require('../database');
+const config = require('../config');
 
-const TIERS = [
-    { tier: 'mini',  seed: 500,   rate: 0.002 },
-    { tier: 'major', seed: 2500,  rate: 0.003 },
-    { tier: 'mega',  seed: 10000, rate: 0.005 },
-];
+/**
+ * Jackpot Pooling Service
+ *
+ * 4-tier progressive jackpot system:
+ *   mini  — small frequent wins
+ *   minor — moderate wins
+ *   major — large wins
+ *   grand — rare massive wins
+ *
+ * Every real-money spin contributes JACKPOT_CONTRIBUTION_RATE of the bet,
+ * split equally across all 4 tiers. Each tier has a "must hit at" ceiling —
+ * if current_amount >= mustHitAt the jackpot is guaranteed to trigger.
+ */
 
-// Base win probabilities per spin (on jackpot-tagged games)
-// 10x lower on non-jackpot games
-const BASE_PROBS = { mini: 0.005, major: 0.0005, mega: 0.00005 };
+const TIER_NAMES = ['mini', 'minor', 'major', 'grand'];
 
-async function ensureSeeded() {
-    for (const { tier, seed, rate } of TIERS) {
+// Map tier name to its win chance from config
+function getWinChance(tier) {
+    switch (tier) {
+        case 'mini':  return config.JACKPOT_MINI_WIN_CHANCE;
+        case 'minor': return config.JACKPOT_MINOR_WIN_CHANCE;
+        case 'major': return config.JACKPOT_MAJOR_WIN_CHANCE;
+        case 'grand': return config.JACKPOT_GRAND_WIN_CHANCE;
+        default:      return 0;
+    }
+}
+
+/**
+ * Seed the jackpot_pool table with all 4 tiers if they don't already exist.
+ * Called once at server startup.
+ */
+async function initJackpotPool() {
+    const tiers = config.JACKPOT_TIERS;
+    for (const tierName of TIER_NAMES) {
+        const tierConfig = tiers[tierName];
+        if (!tierConfig) continue;
         await db.run(
             'INSERT OR IGNORE INTO jackpot_pool (tier, current_amount, seed_amount, contribution_rate) VALUES (?, ?, ?, ?)',
-            [tier, seed, seed, rate]
+            [tierName, tierConfig.seed, tierConfig.seed, config.JACKPOT_CONTRIBUTION_RATE / TIER_NAMES.length]
         );
     }
+    console.log('[Jackpot] Pool initialised — 4 tiers seeded');
 }
 
-async function contribute(betAmount) {
-    for (const { tier, rate } of TIERS) {
-        const contribution = Math.round(betAmount * rate * 100) / 100;
-        if (contribution > 0) {
+/**
+ * Process a jackpot contribution from a spin bet and check for wins.
+ *
+ * @param {number} userId - The user who spun
+ * @param {number} betAmount - The bet amount (before deduction)
+ * @returns {Promise<{tier: string, amount: number}|null>} Win info or null
+ */
+async function processJackpotContribution(userId, betAmount) {
+    const totalContribution = Math.round(betAmount * config.JACKPOT_CONTRIBUTION_RATE * 100) / 100;
+    if (totalContribution <= 0) return null;
+
+    const perTier = Math.round((totalContribution / TIER_NAMES.length) * 100) / 100;
+
+    // Update all tiers with their contribution
+    for (const tierName of TIER_NAMES) {
+        if (perTier > 0) {
             await db.run(
                 'UPDATE jackpot_pool SET current_amount = current_amount + ?, total_contributed = total_contributed + ? WHERE tier = ?',
-                [contribution, contribution, tier]
+                [perTier, perTier, tierName]
             );
         }
     }
-}
 
-async function checkAndAward(userId, betAmount, minBet, isJackpotGame) {
-    // Win probabilities scale with bet size (capped at 3x boost)
-    const betMultiplier = Math.min(3, betAmount / Math.max(minBet, 1));
-    const gameMultiplier = isJackpotGame ? 1 : 0.1;
-
-    // Check tiers from lowest to highest (mini first, mega last)
+    // Check for jackpot win — iterate from lowest to highest tier
     // Only one jackpot can be won per spin
-    for (const { tier } of TIERS) {
-        const prob = BASE_PROBS[tier] * betMultiplier * gameMultiplier;
-        if (Math.random() < prob) {
-            // Won this tier — read current amount and reset
-            const row = await db.get('SELECT current_amount, seed_amount FROM jackpot_pool WHERE tier = ?', [tier]);
-            if (!row || row.current_amount <= 0) continue;
+    const tiers = config.JACKPOT_TIERS;
+    for (const tierName of TIER_NAMES) {
+        const tierConfig = tiers[tierName];
+        if (!tierConfig) continue;
 
+        const row = await db.get('SELECT current_amount, seed_amount FROM jackpot_pool WHERE tier = ?', [tierName]);
+        if (!row || row.current_amount <= 0) continue;
+
+        const winChance = getWinChance(tierName);
+        const mustHit = row.current_amount >= tierConfig.mustHitAt;
+        const randomHit = Math.random() < winChance;
+
+        if (mustHit || randomHit) {
+            // Jackpot won!
             const wonAmount = Math.round(row.current_amount * 100) / 100;
 
+            // Reset pool to seed amount
             await db.run(
                 "UPDATE jackpot_pool SET current_amount = seed_amount, total_paid_out = total_paid_out + ?, last_won_at = datetime('now'), last_winner_id = ? WHERE tier = ?",
-                [wonAmount, userId, tier]
+                [wonAmount, userId, tierName]
             );
 
-            return { tier, amount: wonAmount };
+            // Credit user balance
+            const userRow = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+            if (userRow) {
+                const balanceBefore = userRow.balance;
+                const balanceAfter = balanceBefore + wonAmount;
+                await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, userId]);
+
+                // Log transaction
+                await db.run(
+                    'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                    [userId, 'jackpot', wonAmount, balanceBefore, balanceAfter, 'jackpot:' + tierName]
+                );
+            }
+
+            return { tier: tierName, amount: wonAmount };
         }
     }
+
     return null;
 }
 
-async function getAmounts() {
-    const rows = await db.all('SELECT tier, current_amount FROM jackpot_pool');
-    const amounts = { mini: 500, major: 2500, mega: 10000 };
-    for (const row of rows) {
-        amounts[row.tier] = row.current_amount;
-    }
-    return amounts;
+/**
+ * Return current jackpot pool amounts for all tiers.
+ * Used by the public GET /api/jackpot endpoint.
+ */
+async function getJackpotLevels() {
+    const rows = await db.all('SELECT tier, current_amount, seed_amount, last_won_at, last_winner_id FROM jackpot_pool ORDER BY seed_amount ASC');
+    return rows.map(r => ({
+        tier: r.tier,
+        currentAmount: r.current_amount,
+        seedAmount: r.seed_amount,
+        lastWonAt: r.last_won_at,
+        lastWinnerId: r.last_winner_id
+    }));
 }
 
+/**
+ * Return recent jackpot win history with winner usernames.
+ */
 async function getHistory() {
     return db.all(
         `SELECT j.tier, j.total_paid_out, j.last_won_at, u.username as winner
@@ -79,4 +143,78 @@ async function getHistory() {
     );
 }
 
-module.exports = { ensureSeeded, contribute, checkAndAward, getAmounts, getHistory };
+// ── Legacy compatibility aliases ──
+// The existing jackpot.routes.js and spin.routes.js call ensureSeeded/contribute/checkAndAward/getAmounts
+const ensureSeeded = initJackpotPool;
+
+async function contribute(betAmount) {
+    const totalContribution = Math.round(betAmount * config.JACKPOT_CONTRIBUTION_RATE * 100) / 100;
+    if (totalContribution <= 0) return;
+    const perTier = Math.round((totalContribution / TIER_NAMES.length) * 100) / 100;
+    for (const tierName of TIER_NAMES) {
+        if (perTier > 0) {
+            await db.run(
+                'UPDATE jackpot_pool SET current_amount = current_amount + ?, total_contributed = total_contributed + ? WHERE tier = ?',
+                [perTier, perTier, tierName]
+            );
+        }
+    }
+}
+
+async function checkAndAward(userId, betAmount, minBet, isJackpotGame) {
+    const tiers = config.JACKPOT_TIERS;
+    for (const tierName of TIER_NAMES) {
+        const tierConfig = tiers[tierName];
+        if (!tierConfig) continue;
+
+        const row = await db.get('SELECT current_amount, seed_amount FROM jackpot_pool WHERE tier = ?', [tierName]);
+        if (!row || row.current_amount <= 0) continue;
+
+        const baseChance = getWinChance(tierName);
+        // Scale probability with bet size (capped at 3x boost), 10x lower on non-jackpot games
+        const betMultiplier = Math.min(3, betAmount / Math.max(minBet, 1));
+        const gameMultiplier = isJackpotGame ? 1 : 0.1;
+        const prob = baseChance * betMultiplier * gameMultiplier;
+
+        const mustHit = row.current_amount >= tierConfig.mustHitAt;
+        const randomHit = Math.random() < prob;
+
+        if (mustHit || randomHit) {
+            const wonAmount = Math.round(row.current_amount * 100) / 100;
+
+            await db.run(
+                "UPDATE jackpot_pool SET current_amount = seed_amount, total_paid_out = total_paid_out + ?, last_won_at = datetime('now'), last_winner_id = ? WHERE tier = ?",
+                [wonAmount, userId, tierName]
+            );
+
+            return { tier: tierName, amount: wonAmount };
+        }
+    }
+    return null;
+}
+
+async function getAmounts() {
+    const rows = await db.all('SELECT tier, current_amount FROM jackpot_pool');
+    const amounts = {};
+    // Seed defaults from config
+    for (const tierName of TIER_NAMES) {
+        const tierConfig = config.JACKPOT_TIERS[tierName];
+        amounts[tierName] = tierConfig ? tierConfig.seed : 0;
+    }
+    for (const row of rows) {
+        amounts[row.tier] = row.current_amount;
+    }
+    return amounts;
+}
+
+module.exports = {
+    initJackpotPool,
+    processJackpotContribution,
+    getJackpotLevels,
+    getHistory,
+    // Legacy aliases used by existing routes
+    ensureSeeded,
+    contribute,
+    checkAndAward,
+    getAmounts,
+};
