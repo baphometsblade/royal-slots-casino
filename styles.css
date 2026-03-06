@@ -15627,6 +15627,60 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .bet-high { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.25); }
 .bet-max  { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
 
+/* ===== Sprint 74: Bet Tier Badge ===== */
+.bet-tier-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 900;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap; cursor: default; user-select: none;
+}
+.bt-emoji { font-size: 13px; line-height: 1; }
+.bt-label { line-height: 1; }
+
+/* Bronze */
+.bt-bronze {
+    background: linear-gradient(135deg, rgba(180,120,60,0.2), rgba(160,100,40,0.12));
+    color: #cd8032; border: 1px solid rgba(180,120,60,0.3);
+}
+/* Silver */
+.bt-silver {
+    background: linear-gradient(135deg, rgba(192,192,210,0.18), rgba(160,170,190,0.12));
+    color: #b0c0d0; border: 1px solid rgba(192,192,210,0.3);
+}
+/* Gold */
+.bt-gold {
+    background: linear-gradient(135deg, rgba(255,200,50,0.22), rgba(220,170,30,0.12));
+    color: #f5c842; border: 1px solid rgba(255,200,50,0.35);
+    box-shadow: 0 0 8px rgba(255,200,50,0.15);
+}
+/* Platinum */
+.bt-platinum {
+    background: linear-gradient(135deg, rgba(180,220,255,0.2), rgba(140,180,240,0.12));
+    color: #a8d8ff; border: 1px solid rgba(180,220,255,0.35);
+    box-shadow: 0 0 10px rgba(140,180,240,0.2);
+}
+/* Diamond */
+.bt-diamond {
+    background: linear-gradient(135deg, rgba(100,220,255,0.25), rgba(180,120,255,0.15));
+    color: #80e8ff; border: 1px solid rgba(100,220,255,0.5);
+    box-shadow: 0 0 14px rgba(100,220,255,0.3), inset 0 0 10px rgba(180,120,255,0.08);
+    animation: bt-diamond-glow 2s ease-in-out infinite alternate;
+}
+@keyframes bt-diamond-glow {
+    0%   { box-shadow: 0 0 14px rgba(100,220,255,0.3), inset 0 0 10px rgba(180,120,255,0.08); }
+    100% { box-shadow: 0 0 22px rgba(100,220,255,0.5), inset 0 0 14px rgba(180,120,255,0.15); }
+}
+/* Pop animation on tier change */
+.bt-pop {
+    animation: bt-pop-anim 0.45s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes bt-pop-anim {
+    0%   { transform: scale(0.6); opacity: 0.5; }
+    60%  { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
 /* ===== Sprint 52: Volatility Meter ===== */
 .vm-meter { display: flex; align-items: center; gap: 2px; }
 .vm-seg { display: inline-block; width: 7px; height: 10px; border-radius: 2px; background: rgba(255,255,255,0.12); transition: background 0.3s; }

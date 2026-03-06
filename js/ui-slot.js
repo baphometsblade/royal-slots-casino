@@ -1979,6 +1979,8 @@
                 var v = parseFloat(btn.dataset.amount);
                 btn.classList.toggle('bet-preset-active', Math.abs(v - currentBet) < 0.001);
             });
+            // Sprint 74: Update bet tier badge
+            if (typeof _updateBetTierBadge === 'function') _updateBetTierBadge();
         }
 
         // Sprint 33 — Bet Preset: set currentBet to a fixed dollar amount (capped to game bounds)
@@ -10897,6 +10899,35 @@
             el.textContent = label;
             el.style.display = '';
             el.className = 'bet-indicator bet-' + label.toLowerCase();
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // SPRINT 74: Bet Tier Badge — visual prestige indicator
+        // ═══════════════════════════════════════════════════════
+        var _prevTierCls = '';
+        function _updateBetTierBadge() {
+            var badge = document.getElementById('betTierBadge');
+            if (!badge) return;
+            var tiers = (typeof BET_TIERS !== 'undefined') ? BET_TIERS : [];
+            if (!tiers.length) { badge.style.display = 'none'; return; }
+            var bet = (typeof currentBet !== 'undefined') ? currentBet : 1;
+            var tier = tiers[tiers.length - 1]; // default: lowest
+            for (var i = 0; i < tiers.length; i++) {
+                if (bet >= tiers[i].min) { tier = tiers[i]; break; }
+            }
+            var emojiEl = document.getElementById('btEmoji');
+            var labelEl = document.getElementById('btLabel');
+            if (emojiEl) emojiEl.textContent = tier.emoji;
+            if (labelEl) labelEl.textContent = tier.label;
+            // Swap CSS class
+            if (_prevTierCls) badge.classList.remove(_prevTierCls);
+            _prevTierCls = 'bt-' + tier.cls;
+            badge.classList.add(_prevTierCls);
+            badge.style.display = '';
+            // Pop animation on tier change
+            badge.classList.remove('bt-pop');
+            void badge.offsetWidth; // force reflow
+            badge.classList.add('bt-pop');
         }
 
 

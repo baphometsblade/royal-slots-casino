@@ -36,6 +36,19 @@ const BET_STEPS = [
     400.00, 425.00, 450.00, 475.00, 500.00
 ];
 
+/**
+ * Bet-tier thresholds — visual badges that incentivize higher bets.
+ * Each tier has: min bet, label, emoji, CSS class suffix.
+ * Tiers are checked highest-first; first match wins.
+ */
+const BET_TIERS = [
+    { min: 100.00, label: 'DIAMOND',  emoji: '\uD83D\uDC8E', cls: 'diamond'  },
+    { min:  20.00, label: 'PLATINUM', emoji: '\u2B50',         cls: 'platinum' },
+    { min:   5.00, label: 'GOLD',     emoji: '\uD83C\uDFC6',  cls: 'gold'     },
+    { min:   1.00, label: 'SILVER',   emoji: '\uD83E\uDD48',  cls: 'silver'   },
+    { min:   0.00, label: 'BRONZE',   emoji: '\uD83E\uDD49',  cls: 'bronze'   }
+];
+
 /** @type {object} Default player statistics on first load or reset */
 const DEFAULT_STATS = {
     totalSpins: 0,
