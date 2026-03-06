@@ -130,36 +130,58 @@ const GAME_CHROME_STYLES = {
     'demon_chambers':    'phantomworks', // Demon Chambers
     'norse_vaults':      'novaspin',     // Norse Vaults
     'crystal_chambers':  'celestial',    // Crystal Chambers
-    jade_temple:       'celestial',    // Orient Reels — eastern jade/temple
-    arctic_foxes:      'solstice',     // FrostByte Gaming — ice/frost nature
-    neon_viper:        'novaspin',     // NeonCore Labs — neon/cyber
-    midnight_drifter:  'novaspin',     // NeonCore Labs — dark neon
-    pharaoh_march:     'goldenedge',   // Desert Gold Studios — Egyptian gold
-    iron_stampede:     'ironreel',     // IronReel Entertainment — classic reels
-    golden_jaguar:     'goldenedge',  // GoldenEdge Gaming — jungle gold/wildlife
-    lightning_pearl:   'novaspin',    // NovaSpin Studios — electric ocean
-    samurai_blade:     'celestial',   // Orient Reels — eastern mythic
-    comet_rush:        'novaspin',    // NovaSpin Studios — space sci-fi
-    wolf_rise:         'solstice',    // SolsticeFX — dark nature electric
-    aztec_ascent:      'goldenedge',  // GoldenEdge Gaming — jungle ancient gold
-    diamond_falls:     'novaspin',
-    dragon_tumble:     'phantomworks',
-    golden_cascade:    'ironreel',
-    thunder_reel:      'novaspin',
-    crystal_veil:      'phantomworks',
-    primal_vault:      'ironreel',
-    fortune_bazaar:    'arcadeforge',
-    celestial_bazaar:  'vaultx',
-    titan_forge:       'ironreel',
-    mammoth_riches:    'ironreel',
-    koi_ascension:     'celestial',
-    pharaoh_collect:   'vaultx',
-    midnight_oasis:    'vaultx',
-    neptune_storm:     'novaspin',
-    twin_dragons:      'celestial',
-    mirror_palace:     'phantomworks',
-    golden_vault:      'vaultx',
-    thunder_jackpot:   'novaspin',
+    'jade_temple':       'celestial',    // Orient Reels — eastern jade/temple
+    'arctic_foxes':      'celestial',    // Celestial Plays — arctic nature
+    'neon_viper':        'novaspin',     // NeonCore Labs — neon/cyber
+    'midnight_drifter':  'ironreel',     // IronReel Ent. — racing/vehicles
+    'pharaoh_march':     'celestial',    // Celestial Plays — Egyptian
+    'iron_stampede':     'ironreel',     // IronReel Entertainment — classic reels
+    'golden_jaguar':     'celestial',    // Celestial Plays — jungle nature
+    'lightning_pearl':   'novaspin',     // NovaSpin Studios — electric ocean
+    'samurai_blade':     'celestial',    // Orient Reels — eastern mythic
+    'comet_rush':        'novaspin',     // NovaSpin Studios — space sci-fi
+    'wolf_rise':         'solstice',     // SolsticeFX — dark nature electric
+    'aztec_ascent':      'goldenedge',   // GoldenEdge Gaming — jungle ancient gold
+    'diamond_falls':     'novaspin',
+    'dragon_tumble':     'phantomworks',
+    'golden_cascade':    'ironreel',
+    'thunder_reel':      'novaspin',
+    'crystal_veil':      'phantomworks',
+    'primal_vault':      'ironreel',
+    'fortune_bazaar':    'arcadeforge',
+    'celestial_bazaar':  'vaultx',
+    'titan_forge':       'ironreel',
+    'mammoth_riches':    'ironreel',
+    'koi_ascension':     'celestial',
+    'pharaoh_collect':   'vaultx',
+    'midnight_oasis':    'vaultx',
+    'neptune_storm':     'novaspin',
+    'twin_dragons':      'celestial',
+    'mirror_palace':     'phantomworks',
+    'golden_vault':      'vaultx',
+    'thunder_jackpot':   'novaspin',
+
+    // -- New game chrome mappings (Sprint 73) ──────────────────────────
+    'agent_zero':        'ironreel',     // spy/heist
+    'big_top_bonanza':   'arcadeforge',  // circus/fun
+    'black_ops_heist':   'ironreel',     // heist
+    'castle_siege':      'phantomworks', // medieval
+    'cleopatra_gold':    'celestial',    // Egyptian
+    'clockwork_realm':   'ironreel',     // mechanical
+    'dragon_forge':      'phantomworks', // fantasy
+    'galactic_raiders':  'novaspin',     // space
+    'gold_crown_club':   'vaultx',       // luxury/dark
+    'grand_prix_rush':   'ironreel',     // racing
+    'jungle_fury':       'celestial',    // nature
+    'monaco_million':    'vaultx',       // luxury
+    'nova_blackhole':    'novaspin',     // space
+    'pixel_rewind':      'arcadeforge',  // retro
+    'rockstar_wild':     'arcadeforge',  // music
+    'rome_eternal':      'phantomworks', // mythology
+    'snow_queen_riches': 'celestial',    // nature
+    'solar_fist':        'novaspin',     // energy
+    'thunder_hero':      'phantomworks', // mythology
+    'world_cup_glory':   'arcadeforge',  // sports
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)
