@@ -170,10 +170,18 @@ async function updateProgress(userId, challengeType, amount, extra) {
 
             // Award credits
             if (ch.reward_credits > 0) {
+                var _balRow = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+                var _balBefore = _balRow ? _balRow.balance : 0;
                 await db.run(
                     'UPDATE users SET balance = balance + ? WHERE id = ?',
                     [ch.reward_credits, userId]
                 );
+                try {
+                    await db.run(
+                        'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                        [userId, 'challenge_reward', ch.reward_credits, _balBefore, _balBefore + ch.reward_credits, 'challenge:' + ch.id]
+                    );
+                } catch (_txErr) { /* non-critical — balance already credited */ }
             }
 
             // Award gems
@@ -269,10 +277,18 @@ async function _checkStreakBonuses(userId, currentStreak) {
         if (currentStreak === bonus.days) {
             // Award bonus credits
             if (bonus.credits > 0) {
+                var _sBalRow = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+                var _sBalBefore = _sBalRow ? _sBalRow.balance : 0;
                 await db.run(
                     'UPDATE users SET balance = balance + ? WHERE id = ?',
                     [bonus.credits, userId]
                 );
+                try {
+                    await db.run(
+                        'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                        [userId, 'streak_bonus', bonus.credits, _sBalBefore, _sBalBefore + bonus.credits, 'challenge_streak:' + bonus.days + 'days']
+                    );
+                } catch (_txErr) { /* non-critical */ }
             }
             // Award bonus gems
             if (bonus.gems > 0) {
