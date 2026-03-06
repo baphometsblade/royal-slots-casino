@@ -25,6 +25,11 @@ module.exports = {
     MAX_PAYOUT_PROFIT_PCT: 0.20,   // Single payout never exceeds 20% of total site profit
     MIN_WIN_MULTIPLIER_FLOOR: 2,   // Minimum win floor (2x bet) to keep game playable at low profit
 
+    // Stripe integration (optional — falls back to mock payments if unset)
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || null,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || null,
+    STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY || null,
+
     // Payment configuration
     CURRENCY: 'AUD',
     MIN_DEPOSIT: 5,

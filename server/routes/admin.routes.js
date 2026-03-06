@@ -1059,4 +1059,249 @@ router.post('/events/:id/toggle', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════
+//  WITHDRAWAL APPROVAL ENDPOINTS (RESTful)
+// ═══════════════════════════════════════════════════
+
+// GET /api/admin/withdrawals — List withdrawals with user info, filterable by status
+router.get('/withdrawals', async (req, res) => {
+    try {
+        const status = req.query.status || 'pending';
+        const validStatuses = ['pending', 'completed', 'rejected', 'all'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Invalid status filter. Use: pending, completed, rejected, or all' });
+        }
+
+        let query = `
+            SELECT w.id, w.user_id, w.amount, w.currency, w.payment_type, w.status,
+                   w.admin_note, w.reference, w.created_at, w.processed_at,
+                   u.username, u.email, u.balance
+            FROM withdrawals w
+            JOIN users u ON w.user_id = u.id
+        `;
+        const params = [];
+
+        if (status !== 'all') {
+            query += ' WHERE w.status = ?';
+            params.push(status);
+        }
+
+        query += ' ORDER BY w.created_at ASC';
+
+        const withdrawals = await db.all(query, params);
+        res.json({ withdrawals, count: withdrawals.length, filter: status });
+    } catch (err) {
+        console.error('[Admin] List withdrawals error:', err);
+        res.status(500).json({ error: 'Failed to load withdrawals' });
+    }
+});
+
+// GET /api/admin/withdrawals/:id — Get single withdrawal with enriched user details
+router.get('/withdrawals/:id', async (req, res) => {
+    try {
+        const withdrawalId = req.params.id;
+
+        const withdrawal = await db.get(
+            `SELECT w.id, w.user_id, w.amount, w.currency, w.payment_type, w.status,
+                    w.admin_note, w.reference, w.created_at, w.processed_at,
+                    u.username, u.email, u.balance, u.created_at as account_created_at
+             FROM withdrawals w
+             JOIN users u ON w.user_id = u.id
+             WHERE w.id = ?`,
+            [withdrawalId]
+        );
+
+        if (!withdrawal) {
+            return res.status(404).json({ error: 'Withdrawal not found' });
+        }
+
+        // Enrichment: deposit history count
+        const depositStats = await db.get(
+            "SELECT COUNT(*) as deposit_count, COALESCE(SUM(amount), 0) as total_deposited FROM deposits WHERE user_id = ? AND status = 'completed'",
+            [withdrawal.user_id]
+        );
+
+        // Enrichment: total wagered
+        const wagerStats = await db.get(
+            'SELECT COALESCE(SUM(bet_amount), 0) as total_wagered, COUNT(*) as total_spins FROM spins WHERE user_id = ?',
+            [withdrawal.user_id]
+        );
+
+        // Enrichment: account age in days
+        const accountAgeDays = withdrawal.account_created_at
+            ? Math.floor((Date.now() - new Date(withdrawal.account_created_at).getTime()) / 86400000)
+            : 0;
+
+        res.json({
+            withdrawal: {
+                ...withdrawal,
+                depositCount: depositStats ? depositStats.deposit_count : 0,
+                totalDeposited: depositStats ? depositStats.total_deposited : 0,
+                totalWagered: wagerStats ? wagerStats.total_wagered : 0,
+                totalSpins: wagerStats ? wagerStats.total_spins : 0,
+                accountAgeDays
+            }
+        });
+    } catch (err) {
+        console.error('[Admin] Get withdrawal detail error:', err);
+        res.status(500).json({ error: 'Failed to load withdrawal details' });
+    }
+});
+
+// POST /api/admin/withdrawals/:id/approve — Approve a pending withdrawal
+router.post('/withdrawals/:id/approve', async (req, res) => {
+    try {
+        const withdrawalId = req.params.id;
+        const { admin_note } = req.body;
+
+        const withdrawal = await db.get('SELECT * FROM withdrawals WHERE id = ?', [withdrawalId]);
+        if (!withdrawal) {
+            return res.status(404).json({ error: 'Withdrawal not found' });
+        }
+        if (withdrawal.status !== 'pending') {
+            return res.status(400).json({ error: `Withdrawal is already ${withdrawal.status}` });
+        }
+
+        // Mark as completed (balance was already deducted at request time)
+        await db.run(
+            "UPDATE withdrawals SET status = 'completed', admin_note = ?, processed_at = datetime('now') WHERE id = ?",
+            [admin_note || 'Approved by admin', withdrawalId]
+        );
+
+        // Log the approval transaction
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [withdrawal.user_id]);
+        const currentBalance = user ? user.balance : 0;
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [withdrawal.user_id, 'withdrawal_approved', withdrawal.amount, currentBalance, currentBalance, `WD-APPROVE-${withdrawalId}`]
+        );
+
+        res.json({
+            message: 'Withdrawal approved and ready for payout',
+            withdrawalId: parseInt(withdrawalId),
+            amount: withdrawal.amount,
+            admin_note: admin_note || 'Approved by admin'
+        });
+    } catch (err) {
+        console.error('[Admin] Approve withdrawal error:', err);
+        res.status(500).json({ error: 'Failed to approve withdrawal' });
+    }
+});
+
+// POST /api/admin/withdrawals/:id/reject — Reject a pending withdrawal and refund balance
+router.post('/withdrawals/:id/reject', async (req, res) => {
+    try {
+        const withdrawalId = req.params.id;
+        const { admin_note } = req.body;
+
+        if (!admin_note || !admin_note.trim()) {
+            return res.status(400).json({ error: 'admin_note is required — must provide a rejection reason' });
+        }
+
+        const withdrawal = await db.get('SELECT * FROM withdrawals WHERE id = ?', [withdrawalId]);
+        if (!withdrawal) {
+            return res.status(404).json({ error: 'Withdrawal not found' });
+        }
+        if (withdrawal.status !== 'pending') {
+            return res.status(400).json({ error: `Withdrawal is already ${withdrawal.status}` });
+        }
+
+        // Refund the amount back to user's balance
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [withdrawal.user_id]);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const balanceBefore = user.balance;
+        const balanceAfter = balanceBefore + withdrawal.amount;
+
+        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, withdrawal.user_id]);
+        await db.run(
+            "UPDATE withdrawals SET status = 'rejected', admin_note = ?, processed_at = datetime('now') WHERE id = ?",
+            [admin_note.trim(), withdrawalId]
+        );
+
+        // Log refund transaction
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [withdrawal.user_id, 'withdrawal_refund', withdrawal.amount, balanceBefore, balanceAfter, `WD-REJECT-${withdrawalId}`]
+        );
+
+        res.json({
+            message: 'Withdrawal rejected and amount refunded to user balance',
+            withdrawalId: parseInt(withdrawalId),
+            amount: withdrawal.amount,
+            refundedTo: withdrawal.user_id,
+            newBalance: balanceAfter,
+            admin_note: admin_note.trim()
+        });
+    } catch (err) {
+        console.error('[Admin] Reject withdrawal error:', err);
+        res.status(500).json({ error: 'Failed to reject withdrawal' });
+    }
+});
+
+// ═══════════════════════════════════════════════════
+//  USER ACCOUNT FREEZE
+// ═══════════════════════════════════════════════════
+
+// POST /api/admin/users/:id/freeze — Freeze or unfreeze a user account
+// Frozen users (is_banned = 1) cannot spin or withdraw
+router.post('/users/:id/freeze', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { freeze, reason } = req.body;
+
+        if (typeof freeze !== 'boolean') {
+            return res.status(400).json({ error: 'freeze (boolean) is required — true to freeze, false to unfreeze' });
+        }
+
+        const user = await db.get('SELECT id, username, is_banned, is_admin FROM users WHERE id = ?', [userId]);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        if (user.is_admin) {
+            return res.status(400).json({ error: 'Cannot freeze an admin account' });
+        }
+
+        const newBannedState = freeze ? 1 : 0;
+
+        // Update the is_banned flag (used as the freeze mechanism)
+        await db.run('UPDATE users SET is_banned = ? WHERE id = ?', [newBannedState, userId]);
+
+        // Upsert user_limits with admin note for audit trail
+        const existingLimits = await db.get('SELECT user_id FROM user_limits WHERE user_id = ?', [userId]);
+        if (existingLimits) {
+            await db.run(
+                "UPDATE user_limits SET updated_at = datetime('now') WHERE user_id = ?",
+                [userId]
+            );
+        } else {
+            await db.run(
+                "INSERT INTO user_limits (user_id, created_at, updated_at) VALUES (?, datetime('now'), datetime('now'))",
+                [userId]
+            );
+        }
+
+        // Log the freeze/unfreeze action as a transaction for audit
+        const userBalance = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+        const bal = userBalance ? userBalance.balance : 0;
+        await db.run(
+            'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, freeze ? 'account_frozen' : 'account_unfrozen', 0, bal, bal, reason || (freeze ? 'Frozen by admin' : 'Unfrozen by admin')]
+        );
+
+        res.json({
+            message: freeze ? 'User account frozen' : 'User account unfrozen',
+            userId: parseInt(userId),
+            username: user.username,
+            frozen: freeze,
+            reason: reason || null
+        });
+    } catch (err) {
+        console.error('[Admin] Freeze user error:', err);
+        res.status(500).json({ error: 'Failed to freeze/unfreeze user' });
+    }
+});
+
 module.exports = router;
