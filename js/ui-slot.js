@@ -578,7 +578,13 @@
             var symbols = (game.symbols || []).slice(0, 9);
             var symbolChips = symbols.map(function(s) {
                 var display = s.replace(/^s\d+_|^wild_|^scatter_/, "").replace(/_/g, " ");
-                return "<div class=\"paytable-symbol-chip\">" + display + "</div>";
+                var isWild = /wild/i.test(s);
+                var isScatter = /scatter/i.test(s);
+                var nameStyle = isWild ? ' style="color:#fbbf24;font-weight:600"'
+                              : isScatter ? ' style="color:#a78bfa;font-weight:600"' : '';
+                var imgHtml = '<span class="paytable-symbol-icon">' + getSymbolHtml(s, game.id) + '</span>';
+                return "<div class=\"paytable-symbol-chip\">" + imgHtml +
+                       "<span" + nameStyle + ">" + display + "</span></div>";
             }).join("");
             var bonusDesc = game.bonusDesc || game.description || "Spin to win!";
             var html = "";

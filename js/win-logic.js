@@ -1190,6 +1190,17 @@
                         triggerPrizeWheel(game);
                         if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                     }
+                } else if (game.bonusType === 'tumble' || game.bonusType === 'avalanche' ||
+                           game.bonusType === 'random_multiplier' || game.bonusType === 'zeus_multiplier' ||
+                           game.bonusType === 'wheel_multiplier' || game.bonusType === 'money_collect' ||
+                           game.bonusType === 'fisherman_collect') {
+                    // These types use standard free spins — the per-spin mechanic fires
+                    // inside freeSpinSpin() based on bonusType. Always grant full freeSpinsCount.
+                    playSound('freespin');
+                    const _bonusLabel = game.bonusType.replace(/_/g, ' ').toUpperCase();
+                    message = `${_bonusLabel}! ${game.freeSpinsCount} FREE SPINS! +$${scatterWin.toLocaleString()}!`;
+                    triggerFreeSpins(game, game.freeSpinsCount);
+                    if (typeof onChallengeEvent === 'function') onChallengeEvent('bonus', { gameId: game ? game.id : null });
                 } else if (scatterCount >= fullScatterThreshold) {
                     playSound('freespin');
                     triggerFreeSpins(game, game.freeSpinsCount);
