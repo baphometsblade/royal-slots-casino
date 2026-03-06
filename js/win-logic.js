@@ -350,7 +350,7 @@
                     const symIdx = game.symbols.indexOf(cluster.symbol);
                     if (window.HouseEdge) {
                         payMultiplier = window.HouseEdge.getClusterPayMultiplier(
-                            symIdx >= 0 ? symIdx : 0, size
+                            symIdx >= 0 ? symIdx : 0, size, game
                         );
                     } else {
                         // Fallback: use realistic fractions
@@ -406,7 +406,7 @@
                     let payMultiplier;
                     if (window.HouseEdge) {
                         payMultiplier = window.HouseEdge.getPaylinePayMultiplier(
-                            symIdx >= 0 ? symIdx : 0, win.matchCount
+                            symIdx >= 0 ? symIdx : 0, win.matchCount, game
                         );
                     } else {
                         // Fallback: realistic fractions
@@ -488,7 +488,7 @@
                     let payMultiplier;
                     if (window.HouseEdge) {
                         payMultiplier = window.HouseEdge.getClassicPayMultiplier(
-                            symIdx >= 0 ? symIdx : 0, 'triple'
+                            symIdx >= 0 ? symIdx : 0, 'triple', game
                         );
                     } else {
                         payMultiplier = 1.0; // Fallback: 1x bet
@@ -538,7 +538,7 @@
                         let payMultiplier;
                         if (window.HouseEdge) {
                             payMultiplier = window.HouseEdge.getClassicPayMultiplier(
-                                symIdx >= 0 ? symIdx : 0, 'double'
+                                symIdx >= 0 ? symIdx : 0, 'double', game
                             );
                         } else {
                             payMultiplier = 0.15; // Fallback

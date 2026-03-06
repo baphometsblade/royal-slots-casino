@@ -126,6 +126,18 @@
     };
 
     // ═══════════════════════════════════════════════════════════
+    // PER-GAME PAYOUT SCALING
+    // ═══════════════════════════════════════════════════════════
+    // Scale factors for symbol tiers — index 0 = lowest common, 5 = wild/highest.
+    // The top-tier (idx 4 or 5) payout comes from game.payouts; lower tiers scale down.
+    const TIER_SCALES = [0.04, 0.08, 0.18, 0.35, 1.00, 1.00];
+
+    function _gameScaledPay(game, symbolIndex, topPay) {
+        const scale = TIER_SCALES[Math.min(symbolIndex, TIER_SCALES.length - 1)];
+        return topPay * scale;
+    }
+
+    // ═══════════════════════════════════════════════════════════
     // STATS PERSISTENCE
     // ═══════════════════════════════════════════════════════════
 
@@ -568,7 +580,17 @@
      * @param {number} clusterSize - number of connected symbols
      * @returns {number} multiplier of total bet
      */
-    function getClusterPayMultiplier(symbolIndex, clusterSize) {
+    function getClusterPayMultiplier(symbolIndex, clusterSize, game) {
+        // Use per-game payouts if available
+        if (game && game.payouts) {
+            const p = game.payouts;
+            let topPay;
+            if (clusterSize >= 15 && p.cluster15 != null) topPay = p.cluster15;
+            else if (clusterSize >= 12 && p.cluster12 != null) topPay = p.cluster12;
+            else if (clusterSize >= 8 && p.cluster8 != null) topPay = p.cluster8;
+            else if (clusterSize >= 5 && p.cluster5 != null) topPay = p.cluster5;
+            if (topPay != null) return _gameScaledPay(game, symbolIndex, topPay);
+        }
         const tier = Math.min(symbolIndex, 5);
         const pays = CLUSTER_PAY[tier];
         if (clusterSize >= 12) return pays[3];
@@ -581,9 +603,25 @@
      * Get payout multiplier for a payline win.
      * @param {number} symbolIndex
      * @param {number} matchCount - 3, 4, or 5 matching symbols
+     * @param {object} [game] - optional game config with payouts
      * @returns {number} multiplier of total bet
      */
-    function getPaylinePayMultiplier(symbolIndex, matchCount) {
+    function getPaylinePayMultiplier(symbolIndex, matchCount, game) {
+        // Use per-game payouts if available
+        if (game && game.payouts) {
+            const p = game.payouts;
+            let topPay;
+            if (matchCount >= 5 && p.payline5 != null) topPay = p.payline5;
+            else if (matchCount >= 4 && p.payline4 != null) topPay = p.payline4;
+            else if (matchCount >= 3 && p.payline3 != null) topPay = p.payline3;
+            // Fallback: derive from triple/double if payline keys are missing
+            else if (p.triple != null) {
+                if (matchCount >= 5) topPay = p.triple * 3.0;
+                else if (matchCount >= 4) topPay = p.triple * 1.1;
+                else topPay = p.triple * 0.3;
+            }
+            if (topPay != null) return _gameScaledPay(game, symbolIndex, topPay);
+        }
         const tier = Math.min(symbolIndex, 5);
         const pays = PAYLINE_PAY[tier];
         if (matchCount >= 5) return pays[2];
@@ -595,9 +633,18 @@
      * Get payout multiplier for a classic (3-reel) win.
      * @param {number} symbolIndex
      * @param {string} type - 'double' or 'triple'
+     * @param {object} [game] - optional game config with payouts
      * @returns {number} multiplier of total bet
      */
-    function getClassicPayMultiplier(symbolIndex, type) {
+    function getClassicPayMultiplier(symbolIndex, type, game) {
+        // Use per-game payouts if available
+        if (game && game.payouts) {
+            const p = game.payouts;
+            let topPay;
+            if (type === 'triple' && p.triple != null) topPay = p.triple;
+            else if (type === 'double' && p.double != null) topPay = p.double;
+            if (topPay != null) return _gameScaledPay(game, symbolIndex, topPay);
+        }
         const tier = Math.min(symbolIndex, 5);
         const pays = CLASSIC_PAY[tier];
         return type === 'triple' ? pays[1] : pays[0];
@@ -607,15 +654,15 @@
      * Get the realistic payout for any win type.
      * Returns a multiplier of total bet.
      */
-    function getPayMultiplier(winType, symbolIndex, matchInfo) {
+    function getPayMultiplier(winType, symbolIndex, matchInfo, game) {
         if (winType === 'cluster') {
-            return getClusterPayMultiplier(symbolIndex, matchInfo.clusterSize || 5);
+            return getClusterPayMultiplier(symbolIndex, matchInfo.clusterSize || 5, game);
         }
         if (winType === 'payline') {
-            return getPaylinePayMultiplier(symbolIndex, matchInfo.matchCount || 3);
+            return getPaylinePayMultiplier(symbolIndex, matchInfo.matchCount || 3, game);
         }
         // classic
-        return getClassicPayMultiplier(symbolIndex, matchInfo.type || 'double');
+        return getClassicPayMultiplier(symbolIndex, matchInfo.type || 'double', game);
     }
 
     // ═══════════════════════════════════════════════════════════
