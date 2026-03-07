@@ -2530,6 +2530,7 @@
                 try { localStorage.setItem('lastBet_' + currentGame.id, String(currentBet)); } catch(e) {}
             }
             spinning = true;
+            if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) SoundManager.playSoundEvent('spin');
             if (typeof _startSpinTimer139 === 'function') _startSpinTimer139(); // 139
             _incrementSpinCounter(); // Sprint 48
             _clearLastWinPreview();  // Sprint 50 — clear on new spin
