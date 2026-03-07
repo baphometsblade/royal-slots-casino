@@ -460,10 +460,10 @@ function renderDepositForm() {
         banner.style.cssText = 'background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;padding:14px 18px;border-radius:10px;margin-bottom:16px;text-align:center;font-weight:700;box-shadow:0 0 20px rgba(255,215,0,0.4);';
         const title = document.createElement('div');
         title.style.cssText = 'font-size:1.3rem;margin-bottom:4px;';
-        title.textContent = '100% FIRST DEPOSIT BONUS';
+        title.textContent = '🎁 FIRST DEPOSIT BONUS';
         const desc = document.createElement('div');
         desc.style.cssText = 'font-weight:500;font-size:0.85rem;';
-        desc.textContent = 'Deposit up to $500 and we match it dollar for dollar!';
+        desc.textContent = 'Get +$5 free credits + 1,000 💎 gems on your first deposit!';
         banner.appendChild(title);
         banner.appendChild(desc);
         container.insertBefore(banner, container.firstChild);
