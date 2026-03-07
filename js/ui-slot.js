@@ -3354,7 +3354,7 @@
                     else if (_gemMult >= 25) { _gemsToAward = 5; _gemReason = 'win_25x'; }
                     else if (_gemMult >= 10) { _gemsToAward = 2; _gemReason = 'win_10x'; }
                     if (_gemsToAward > 0) {
-                        var _gemToken = (currentUser && currentUser.token) ? currentUser.token : (localStorage.getItem('casino_token') || '');
+                        var _gemToken = (currentUser && currentUser.token) ? currentUser.token : (localStorage.getItem('casinoToken') || '');
                         fetch('/api/gems/award', { method: 'POST', headers: { 'Authorization': 'Bearer ' + _gemToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: _gemsToAward, reason: _gemReason }) })
                             .then(function(r) { return r.json(); })
                             .then(function(d) { if (d && d.success && typeof refreshGemBalance === 'function') refreshGemBalance(); })
@@ -7401,7 +7401,7 @@
                     else if (_gemMult >= 25) { _gemsToAward = 5; _gemReason = 'win_25x'; }
                     else if (_gemMult >= 10) { _gemsToAward = 2; _gemReason = 'win_10x'; }
                     if (_gemsToAward > 0) {
-                        var _gemToken = (currentUser && currentUser.token) ? currentUser.token : (localStorage.getItem('casino_token') || '');
+                        var _gemToken = (currentUser && currentUser.token) ? currentUser.token : (localStorage.getItem('casinoToken') || '');
                         fetch('/api/gems/award', { method: 'POST', headers: { 'Authorization': 'Bearer ' + _gemToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: _gemsToAward, reason: _gemReason }) })
                             .then(function(r) { return r.json(); })
                             .then(function(d) { if (d && d.success && typeof refreshGemBalance === 'function') refreshGemBalance(); })
