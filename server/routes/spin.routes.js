@@ -413,6 +413,8 @@ router.post('/', authenticate, async (req, res) => {
                             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
                             [userId, 'bonus_conversion', convertAmount, finalBalance - convertAmount, finalBalance, 'Wagering requirement completed']
                         );
+                        // Grant wagering_done achievement (fire-and-forget)
+                        require('../services/achievement.service').grant(userId, 'wagering_done').catch(function() {});
                     } else {
                         await db.run(
                             'UPDATE users SET wagering_progress = ? WHERE id = ?',
@@ -458,6 +460,11 @@ router.post('/', authenticate, async (req, res) => {
             const totalWagered = wageredRow    ? wageredRow.total   : 0;
             const winMult = bet > 0 ? spinResult.winAmount / bet : 0;
             newAchievements = await achievementService.checkSpinAchievements(userId, spinCount, winMult, distinctGames, totalWagered);
+            // jackpot_winner achievement if a jackpot was won this spin
+            if (spinResult.jackpotWon) {
+                const r = await achievementService.grant(userId, 'jackpot_winner');
+                if (r) newAchievements.push(r);
+            }
         } catch (e) { console.error('[Achievement] check error:', e.message); }
 
         // ── Gems from wins (engagement incentive, fire-and-forget) ──────
