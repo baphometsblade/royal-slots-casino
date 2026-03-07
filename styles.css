@@ -18567,4 +18567,176 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .csb-dd-chevron { margin-left: auto; transition: transform .3s; display: inline-block; }
 .csb-dd.csb-dd-open .csb-dd-chevron { transform: rotate(180deg); }
 .csb-dd-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PROVIDER-THEMED FREE SPINS UI — 6 Unique Immersive Themes
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shared base for themed overlay ── */
+.fs-overlay-themed { position:fixed; inset:0; z-index:9000; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.fs-overlay-themed .fs-themed-bg { position:absolute; inset:0; z-index:0; }
+.fs-overlay-themed .fs-themed-content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; text-align:center; padding:40px 50px; border-radius:20px; max-width:500px; width:90%; }
+
+/* Animated scanline overlay */
+.fs-scanlines::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px); pointer-events:none; z-index:1; animation:fsScanlineScroll 8s linear infinite; }
+@keyframes fsScanlineScroll { 0%{background-position:0 0} 100%{background-position:0 100px} }
+
+/* Floating stars particle layer */
+.fs-stars::before { content:''; position:absolute; inset:0; background:radial-gradient(1px 1px at 10% 15%,#fff,transparent),radial-gradient(1px 1px at 25% 40%,#fff,transparent),radial-gradient(2px 2px at 40% 8%,#fff,transparent),radial-gradient(1px 1px at 55% 55%,#fff,transparent),radial-gradient(1px 1px at 70% 25%,#fff,transparent),radial-gradient(2px 2px at 85% 70%,#fff,transparent),radial-gradient(1px 1px at 15% 75%,#fff,transparent),radial-gradient(1px 1px at 60% 85%,#fff,transparent),radial-gradient(2px 2px at 90% 10%,#fff,transparent),radial-gradient(1px 1px at 35% 65%,#fff,transparent); pointer-events:none; animation:fsStarsTwinkle 4s ease-in-out infinite alternate; z-index:0; }
+@keyframes fsStarsTwinkle { 0%{opacity:.4} 100%{opacity:1} }
+
+/* ── NOVASPIN — Cyberpunk/Space ─────────────────────────────────────────── */
+.fs-provider-novaspin .fs-themed-bg { background:radial-gradient(ellipse at 50% 30%,#0a0a40 0%,#050515 60%,#020210 100%); }
+.fs-provider-novaspin .fs-themed-bg::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 30% 60%,rgba(0,229,255,0.12) 0%,transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(124,77,255,0.15) 0%,transparent 50%); animation:fsNovaPulse 3s ease-in-out infinite alternate; }
+.fs-provider-novaspin .fs-themed-bg::after { content:''; position:absolute; left:0; right:0; bottom:0; height:2px; background:linear-gradient(90deg,transparent,#00e5ff,#7c4dff,#00e5ff,transparent); animation:fsNovaScan 2s ease-in-out infinite; }
+@keyframes fsNovaPulse { 0%{opacity:.6} 100%{opacity:1} }
+@keyframes fsNovaScan { 0%,100%{opacity:.3;transform:scaleX(.5)} 50%{opacity:1;transform:scaleX(1)} }
+.fs-provider-novaspin .fs-themed-content { background:linear-gradient(135deg,rgba(0,10,50,0.97),rgba(15,0,60,0.97)); border:1px solid rgba(0,229,255,0.5); box-shadow:0 0 60px rgba(0,229,255,0.3),0 0 120px rgba(124,77,255,0.2),inset 0 0 40px rgba(0,229,255,0.05); }
+.fs-provider-novaspin .fs-provider-icon { font-size:56px; margin-bottom:12px; filter:drop-shadow(0 0 20px #00e5ff); animation:fsIconFloat 2s ease-in-out infinite alternate; }
+.fs-provider-novaspin .fs-provider-label { font-family:"Courier New",monospace; font-size:11px; letter-spacing:5px; color:#00e5ff; opacity:.7; margin-bottom:8px; text-transform:uppercase; }
+.fs-provider-novaspin .fs-provider-title { font-family:"Courier New",monospace; font-size:26px; font-weight:700; letter-spacing:3px; background:linear-gradient(135deg,#00e5ff,#7c4dff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-shadow:none; margin-bottom:4px; }
+.fs-provider-novaspin .fs-provider-count { font-family:"Courier New",monospace; font-size:88px; font-weight:900; color:#00e5ff; text-shadow:0 0 20px #00e5ff,0 0 40px #7c4dff; line-height:1; animation:fsCountPulseNova 1.5s ease-in-out infinite; }
+.fs-provider-novaspin .fs-provider-sublabel { font-family:"Courier New",monospace; font-size:13px; letter-spacing:6px; color:rgba(0,229,255,.6); margin-top:4px; }
+.fs-provider-novaspin .fs-provider-desc { font-family:"Courier New",monospace; font-size:12px; color:rgba(255,255,255,.5); margin-top:12px; letter-spacing:1px; }
+@keyframes fsCountPulseNova { 0%,100%{text-shadow:0 0 20px #00e5ff,0 0 40px #7c4dff} 50%{text-shadow:0 0 40px #00e5ff,0 0 80px #7c4dff,0 0 120px rgba(0,229,255,.5)} }
+/* Novaspin HUD */
+.fs-hud-novaspin { background:linear-gradient(90deg,rgba(0,10,50,0.98),rgba(5,0,30,0.98)) !important; border-bottom:2px solid #00e5ff !important; box-shadow:0 4px 30px rgba(0,229,255,0.25) !important; font-family:"Courier New",monospace !important; }
+.fs-hud-novaspin .fs-hud-label { color:rgba(0,229,255,.5) !important; letter-spacing:3px !important; font-size:9px !important; }
+.fs-hud-novaspin .fs-hud-value { color:#00e5ff !important; text-shadow:0 0 10px #00e5ff !important; font-family:"Courier New",monospace !important; }
+.fs-hud-novaspin .fs-hud-win-value { color:#7c4dff !important; text-shadow:0 0 10px #7c4dff !important; }
+/* Novaspin Summary */
+.fs-summary-novaspin { background:linear-gradient(135deg,rgba(0,10,50,0.98),rgba(15,0,60,0.98)) !important; border-color:rgba(0,229,255,0.6) !important; box-shadow:0 0 80px rgba(0,229,255,0.4),inset 0 0 30px rgba(0,229,255,0.05) !important; }
+.fs-summary-novaspin .fs-summary-label { color:#00e5ff !important; font-family:"Courier New",monospace !important; letter-spacing:4px !important; }
+.fs-summary-novaspin .fs-summary-amount { color:#00e5ff !important; text-shadow:0 0 20px #00e5ff,0 0 40px #7c4dff !important; }
+.fs-summary-novaspin .fs-summary-close-btn { background:linear-gradient(135deg,#00e5ff,#7c4dff) !important; }
+
+/* ── CELESTIAL — Divine/Fantasy ─────────────────────────────────────────── */
+.fs-provider-celestial .fs-themed-bg { background:radial-gradient(ellipse at 50% 0%,#2a1500 0%,#120a00 50%,#080500 100%); }
+.fs-provider-celestial .fs-themed-bg::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% -20%,rgba(255,215,0,0.25) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(255,152,0,0.1) 0%,transparent 40%),radial-gradient(ellipse at 80% 80%,rgba(255,215,0,0.1) 0%,transparent 40%); animation:fsCelestialGlow 4s ease-in-out infinite alternate; }
+.fs-provider-celestial .fs-themed-bg::after { content:'✦ ✦ ✦ ✦ ✦'; position:absolute; top:20%; width:100%; text-align:center; font-size:24px; color:rgba(255,215,0,0.2); animation:fsCelestialStarsDrift 8s linear infinite; letter-spacing:40px; }
+@keyframes fsCelestialGlow { 0%{opacity:.6} 100%{opacity:1} }
+@keyframes fsCelestialStarsDrift { 0%{opacity:.1;letter-spacing:30px} 50%{opacity:.4;letter-spacing:50px} 100%{opacity:.1;letter-spacing:30px} }
+.fs-provider-celestial .fs-themed-content { background:linear-gradient(160deg,rgba(40,20,0,0.97),rgba(25,12,0,0.97)); border:2px solid rgba(255,215,0,0.6); box-shadow:0 0 80px rgba(255,215,0,0.35),0 0 160px rgba(255,152,0,0.15),inset 0 0 60px rgba(255,215,0,0.06); }
+.fs-provider-celestial .fs-themed-content::before { content:''; position:absolute; inset:-1px; border-radius:20px; background:linear-gradient(135deg,rgba(255,215,0,.3),transparent,rgba(255,152,0,.2)); pointer-events:none; }
+.fs-provider-celestial .fs-provider-icon { font-size:60px; margin-bottom:12px; filter:drop-shadow(0 0 25px gold); animation:fsCelestialIconGlow 2s ease-in-out infinite alternate; }
+@keyframes fsCelestialIconGlow { 0%{filter:drop-shadow(0 0 15px gold)} 100%{filter:drop-shadow(0 0 35px #ffd700) drop-shadow(0 0 60px #ff9800)} }
+.fs-provider-celestial .fs-provider-label { font-family:Georgia,serif; font-size:11px; letter-spacing:6px; color:rgba(255,215,0,.7); margin-bottom:8px; font-style:italic; }
+.fs-provider-celestial .fs-provider-title { font-family:Georgia,serif; font-size:28px; font-weight:700; color:#ffd700; text-shadow:0 0 20px #ffd700,0 0 40px #ff9800; letter-spacing:2px; margin-bottom:4px; }
+.fs-provider-celestial .fs-provider-count { font-family:Georgia,serif; font-size:96px; font-weight:900; background:linear-gradient(180deg,#fff8d0,#ffd700,#ff9800); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-shadow:none; line-height:1; filter:drop-shadow(0 0 30px rgba(255,215,0,.8)); animation:fsCelestialCountShine 2s ease-in-out infinite; }
+@keyframes fsCelestialCountShine { 0%,100%{filter:drop-shadow(0 0 20px rgba(255,215,0,.6))} 50%{filter:drop-shadow(0 0 50px rgba(255,215,0,1)) drop-shadow(0 0 80px rgba(255,152,0,.8))} }
+.fs-provider-celestial .fs-provider-sublabel { font-family:Georgia,serif; font-size:14px; letter-spacing:5px; color:rgba(255,215,0,.65); font-style:italic; margin-top:4px; }
+.fs-provider-celestial .fs-provider-desc { font-family:Georgia,serif; font-size:13px; color:rgba(255,230,150,.55); margin-top:14px; font-style:italic; }
+/* Celestial HUD */
+.fs-hud-celestial { background:linear-gradient(90deg,rgba(40,20,0,0.98),rgba(25,12,0,0.98)) !important; border-bottom:2px solid rgba(255,215,0,.7) !important; box-shadow:0 4px 30px rgba(255,215,0,0.3) !important; }
+.fs-hud-celestial .fs-hud-label { color:rgba(255,215,0,.55) !important; letter-spacing:3px !important; font-family:Georgia,serif !important; font-style:italic !important; font-size:9px !important; }
+.fs-hud-celestial .fs-hud-value { color:#ffd700 !important; text-shadow:0 0 12px #ffd700 !important; font-family:Georgia,serif !important; }
+.fs-hud-celestial .fs-hud-win-value { color:#ff9800 !important; text-shadow:0 0 12px #ff9800 !important; }
+/* Celestial Summary */
+.fs-summary-celestial { background:linear-gradient(160deg,rgba(40,20,0,0.98),rgba(25,12,0,0.98)) !important; border-color:rgba(255,215,0,.7) !important; box-shadow:0 0 100px rgba(255,215,0,.4) !important; }
+.fs-summary-celestial .fs-summary-label { color:#ffd700 !important; font-family:Georgia,serif !important; letter-spacing:3px !important; font-style:italic !important; }
+.fs-summary-celestial .fs-summary-amount { color:#ffd700 !important; text-shadow:0 0 25px #ffd700,0 0 50px #ff9800 !important; }
+.fs-summary-celestial .fs-summary-close-btn { background:linear-gradient(135deg,#ffd700,#ff9800) !important; color:#1a0900 !important; }
+
+/* ── IRONREEL — Steampunk/Industrial ────────────────────────────────────── */
+.fs-provider-ironreel .fs-themed-bg { background:radial-gradient(ellipse at center,#1e0d00 0%,#0d0600 60%,#060300 100%); }
+.fs-provider-ironreel .fs-themed-bg::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 20% 50%,rgba(205,127,50,0.12) 0%,transparent 40%),radial-gradient(circle at 80% 50%,rgba(139,69,19,0.1) 0%,transparent 40%); }
+.fs-provider-ironreel .fs-themed-bg::after { content:'⚙ ⚙ ⚙'; position:absolute; font-size:120px; color:rgba(205,127,50,0.04); width:100%; top:50%; left:0; transform:translateY(-50%); letter-spacing:60px; text-align:center; animation:fsGearTurn 20s linear infinite; pointer-events:none; }
+@keyframes fsGearTurn { 0%{transform:translateY(-50%) rotate(0deg)} 100%{transform:translateY(-50%) rotate(360deg)} }
+.fs-provider-ironreel .fs-themed-content { background:linear-gradient(160deg,rgba(30,15,0,0.97),rgba(20,10,0,0.97)); border:3px solid rgba(205,127,50,0.6); border-radius:8px; box-shadow:0 0 50px rgba(205,127,50,0.35),inset 0 0 30px rgba(139,69,19,0.1); }
+.fs-provider-ironreel .fs-themed-content::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:repeating-linear-gradient(90deg,#cd7f32 0px,#cd7f32 8px,transparent 8px,transparent 12px); opacity:.7; }
+.fs-provider-ironreel .fs-provider-icon { font-size:56px; margin-bottom:12px; animation:fsGearIconSpin 8s linear infinite; }
+@keyframes fsGearIconSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+.fs-provider-ironreel .fs-provider-label { font-family:"Times New Roman",serif; font-size:11px; letter-spacing:5px; color:rgba(205,127,50,.7); margin-bottom:8px; text-transform:uppercase; }
+.fs-provider-ironreel .fs-provider-title { font-family:"Times New Roman",serif; font-size:26px; font-weight:700; color:#cd7f32; text-shadow:0 0 15px rgba(205,127,50,.7),0 2px 4px rgba(0,0,0,.8); letter-spacing:2px; margin-bottom:4px; }
+.fs-provider-ironreel .fs-provider-count { font-family:"Times New Roman",serif; font-size:90px; font-weight:900; background:linear-gradient(180deg,#f5c842,#cd7f32,#8b4513); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.8)); }
+.fs-provider-ironreel .fs-provider-sublabel { font-family:"Times New Roman",serif; font-size:14px; letter-spacing:6px; color:rgba(205,127,50,.6); margin-top:4px; }
+.fs-provider-ironreel .fs-provider-desc { font-family:"Times New Roman",serif; font-size:13px; color:rgba(200,160,100,.5); margin-top:14px; font-style:italic; }
+/* Ironreel HUD */
+.fs-hud-ironreel { background:linear-gradient(90deg,rgba(30,15,0,0.98),rgba(20,10,0,0.98)) !important; border-bottom:3px solid rgba(205,127,50,.7) !important; box-shadow:0 4px 25px rgba(205,127,50,.25) !important; }
+.fs-hud-ironreel .fs-hud-label { color:rgba(205,127,50,.55) !important; letter-spacing:3px !important; font-family:"Times New Roman",serif !important; font-size:9px !important; }
+.fs-hud-ironreel .fs-hud-value { color:#cd7f32 !important; text-shadow:0 0 8px #cd7f32 !important; font-family:"Times New Roman",serif !important; }
+.fs-hud-ironreel .fs-hud-win-value { color:#f5c842 !important; text-shadow:0 0 10px #f5c842 !important; }
+/* Ironreel Summary */
+.fs-summary-ironreel { background:linear-gradient(160deg,rgba(30,15,0,0.98),rgba(20,10,0,0.98)) !important; border-color:rgba(205,127,50,.7) !important; border-radius:8px !important; box-shadow:0 0 60px rgba(205,127,50,.35) !important; }
+.fs-summary-ironreel .fs-summary-label { color:#cd7f32 !important; font-family:"Times New Roman",serif !important; letter-spacing:4px !important; }
+.fs-summary-ironreel .fs-summary-amount { color:#f5c842 !important; text-shadow:0 0 20px #cd7f32 !important; }
+.fs-summary-ironreel .fs-summary-close-btn { background:linear-gradient(135deg,#cd7f32,#8b4513) !important; }
+
+/* ── VAULTX — Luxury Casino ─────────────────────────────────────────────── */
+.fs-provider-vaultx .fs-themed-bg { background:radial-gradient(ellipse at 50% 40%,#0a1f0a 0%,#050f05 60%,#020802 100%); }
+.fs-provider-vaultx .fs-themed-bg::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at center,rgba(184,150,12,0.1) 0%,transparent 60%),linear-gradient(0deg,rgba(45,138,78,0.05) 0%,transparent 100%); }
+.fs-provider-vaultx .fs-themed-bg::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(184,150,12,0.015) 20px,rgba(184,150,12,0.015) 21px); pointer-events:none; }
+.fs-provider-vaultx .fs-themed-content { background:linear-gradient(160deg,rgba(5,18,5,0.97),rgba(10,25,10,0.97)); border:2px solid rgba(184,150,12,0.6); border-radius:12px; box-shadow:0 0 80px rgba(184,150,12,0.3),inset 0 0 40px rgba(45,138,78,0.05); }
+.fs-provider-vaultx .fs-themed-content::before { content:''; position:absolute; top:8px; left:8px; right:8px; bottom:8px; border:1px solid rgba(184,150,12,0.2); border-radius:10px; pointer-events:none; }
+.fs-provider-vaultx .fs-provider-icon { font-size:58px; margin-bottom:12px; filter:drop-shadow(0 0 20px rgba(184,150,12,.8)); animation:fsIconFloat 3s ease-in-out infinite alternate; }
+.fs-provider-vaultx .fs-provider-label { font-family:Arial,sans-serif; font-size:10px; letter-spacing:7px; color:rgba(184,150,12,.65); margin-bottom:8px; }
+.fs-provider-vaultx .fs-provider-title { font-family:Arial,sans-serif; font-size:26px; font-weight:900; color:#b8960c; text-shadow:0 0 15px rgba(184,150,12,.6); letter-spacing:3px; margin-bottom:4px; }
+.fs-provider-vaultx .fs-provider-count { font-family:Arial,sans-serif; font-size:92px; font-weight:900; background:linear-gradient(180deg,#fff8a0,#b8960c,#2d8a4e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; filter:drop-shadow(0 4px 12px rgba(0,0,0,.9)); }
+.fs-provider-vaultx .fs-provider-sublabel { font-family:Arial,sans-serif; font-size:12px; letter-spacing:8px; color:rgba(184,150,12,.55); margin-top:4px; }
+.fs-provider-vaultx .fs-provider-desc { font-family:Arial,sans-serif; font-size:12px; color:rgba(150,200,150,.5); margin-top:14px; }
+/* Vaultx HUD */
+.fs-hud-vaultx { background:linear-gradient(90deg,rgba(5,18,5,0.98),rgba(10,25,10,0.98)) !important; border-bottom:2px solid rgba(184,150,12,.7) !important; box-shadow:0 4px 30px rgba(184,150,12,.2) !important; }
+.fs-hud-vaultx .fs-hud-label { color:rgba(184,150,12,.55) !important; letter-spacing:4px !important; font-size:8px !important; }
+.fs-hud-vaultx .fs-hud-value { color:#b8960c !important; text-shadow:0 0 10px rgba(184,150,12,.6) !important; }
+.fs-hud-vaultx .fs-hud-win-value { color:#2d8a4e !important; text-shadow:0 0 10px rgba(45,138,78,.6) !important; }
+/* Vaultx Summary */
+.fs-summary-vaultx { background:linear-gradient(160deg,rgba(5,18,5,0.98),rgba(10,25,10,0.98)) !important; border-color:rgba(184,150,12,.7) !important; box-shadow:0 0 80px rgba(184,150,12,.3) !important; }
+.fs-summary-vaultx .fs-summary-label { color:#b8960c !important; letter-spacing:5px !important; }
+.fs-summary-vaultx .fs-summary-amount { color:#b8960c !important; text-shadow:0 0 20px rgba(184,150,12,.8) !important; }
+.fs-summary-vaultx .fs-summary-close-btn { background:linear-gradient(135deg,#b8960c,#2d8a4e) !important; }
+
+/* ── PHANTOMWORKS — Dark/Occult ─────────────────────────────────────────── */
+.fs-provider-phantomworks .fs-themed-bg { background:radial-gradient(ellipse at 50% 40%,#1e0035 0%,#0d001a 60%,#050010 100%); }
+.fs-provider-phantomworks .fs-themed-bg::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 30% 60%,rgba(191,90,242,0.15) 0%,transparent 50%),radial-gradient(ellipse at 70% 30%,rgba(123,47,255,0.12) 0%,transparent 45%); animation:fsPhantomMist 5s ease-in-out infinite alternate; }
+.fs-provider-phantomworks .fs-themed-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 100%,rgba(191,90,242,0.2) 0%,transparent 40%); animation:fsPhantomRise 3s ease-in-out infinite alternate; }
+@keyframes fsPhantomMist { 0%{opacity:.5;transform:scale(1)} 100%{opacity:1;transform:scale(1.05)} }
+@keyframes fsPhantomRise { 0%{opacity:.3;transform:translateY(0)} 100%{opacity:.8;transform:translateY(-10px)} }
+.fs-provider-phantomworks .fs-themed-content { background:linear-gradient(160deg,rgba(20,0,40,0.97),rgba(10,0,25,0.97)); border:1px solid rgba(191,90,242,0.5); border-radius:16px; box-shadow:0 0 80px rgba(191,90,242,0.35),0 0 160px rgba(123,47,255,0.2),inset 0 0 50px rgba(191,90,242,0.05); }
+.fs-provider-phantomworks .fs-provider-icon { font-size:58px; margin-bottom:12px; filter:drop-shadow(0 0 20px #bf5af2); animation:fsPhantomIconBob 2s ease-in-out infinite alternate; }
+@keyframes fsPhantomIconBob { 0%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 15px #bf5af2)} 100%{transform:translateY(-8px) scale(1.05);filter:drop-shadow(0 0 30px #bf5af2) drop-shadow(0 0 60px #7b2fff)} }
+.fs-provider-phantomworks .fs-provider-label { font-family:Georgia,serif; font-size:11px; letter-spacing:5px; color:rgba(191,90,242,.65); margin-bottom:8px; font-style:italic; }
+.fs-provider-phantomworks .fs-provider-title { font-family:Georgia,serif; font-size:26px; font-weight:700; background:linear-gradient(135deg,#bf5af2,#7b2fff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:2px; margin-bottom:4px; }
+.fs-provider-phantomworks .fs-provider-count { font-family:Georgia,serif; font-size:90px; font-weight:900; color:#bf5af2; text-shadow:0 0 20px #bf5af2,0 0 50px #7b2fff; line-height:1; animation:fsPhantomCountGlow 2s ease-in-out infinite alternate; }
+@keyframes fsPhantomCountGlow { 0%{text-shadow:0 0 20px #bf5af2,0 0 40px #7b2fff} 100%{text-shadow:0 0 40px #bf5af2,0 0 80px #7b2fff,0 0 120px rgba(191,90,242,.5)} }
+.fs-provider-phantomworks .fs-provider-sublabel { font-family:Georgia,serif; font-size:13px; letter-spacing:5px; color:rgba(191,90,242,.6); font-style:italic; margin-top:4px; }
+.fs-provider-phantomworks .fs-provider-desc { font-family:Georgia,serif; font-size:13px; color:rgba(220,180,255,.45); margin-top:14px; font-style:italic; }
+/* Phantomworks HUD */
+.fs-hud-phantomworks { background:linear-gradient(90deg,rgba(20,0,40,0.98),rgba(10,0,25,0.98)) !important; border-bottom:2px solid rgba(191,90,242,.6) !important; box-shadow:0 4px 30px rgba(191,90,242,.25) !important; }
+.fs-hud-phantomworks .fs-hud-label { color:rgba(191,90,242,.5) !important; letter-spacing:3px !important; font-family:Georgia,serif !important; font-style:italic !important; font-size:9px !important; }
+.fs-hud-phantomworks .fs-hud-value { color:#bf5af2 !important; text-shadow:0 0 10px #bf5af2 !important; font-family:Georgia,serif !important; }
+.fs-hud-phantomworks .fs-hud-win-value { color:#7b2fff !important; text-shadow:0 0 10px #7b2fff !important; }
+/* Phantomworks Summary */
+.fs-summary-phantomworks { background:linear-gradient(160deg,rgba(20,0,40,0.98),rgba(10,0,25,0.98)) !important; border-color:rgba(191,90,242,.6) !important; box-shadow:0 0 100px rgba(191,90,242,.4) !important; }
+.fs-summary-phantomworks .fs-summary-label { color:#bf5af2 !important; font-family:Georgia,serif !important; letter-spacing:3px !important; font-style:italic !important; }
+.fs-summary-phantomworks .fs-summary-amount { color:#bf5af2 !important; text-shadow:0 0 25px #bf5af2,0 0 50px #7b2fff !important; }
+.fs-summary-phantomworks .fs-summary-close-btn { background:linear-gradient(135deg,#bf5af2,#7b2fff) !important; }
+
+/* ── ARCADEFORGE — Retro/Neon ───────────────────────────────────────────── */
+.fs-provider-arcadeforge .fs-themed-bg { background:#000428; }
+.fs-provider-arcadeforge .fs-themed-bg::before { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,0,128,0.08) 0%,transparent 30%,rgba(0,255,136,0.06) 100%),repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(0,255,136,0.02) 30px,rgba(0,255,136,0.02) 31px),repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(255,0,128,0.02) 30px,rgba(255,0,128,0.02) 31px); }
+.fs-provider-arcadeforge .fs-themed-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,0,128,.04) 0%,transparent 50%,rgba(255,0,128,.04) 100%); animation:fsArcadePulse 1s steps(2) infinite; }
+@keyframes fsArcadePulse { 0%{opacity:1} 50%{opacity:.6} }
+.fs-provider-arcadeforge .fs-themed-content { background:linear-gradient(135deg,rgba(0,4,40,0.97),rgba(0,0,20,0.97)); border:2px solid #ff0080; border-radius:4px; box-shadow:0 0 0 1px rgba(255,0,128,.2),0 0 40px rgba(255,0,128,.5),0 0 80px rgba(0,255,136,.25),inset 0 0 20px rgba(255,0,128,.05); }
+.fs-provider-arcadeforge .fs-provider-icon { font-size:56px; margin-bottom:12px; filter:drop-shadow(0 0 15px #ff0080); animation:fsArcadeIconBlink 0.8s steps(2) infinite; }
+@keyframes fsArcadeIconBlink { 0%,100%{filter:drop-shadow(0 0 15px #ff0080)} 50%{filter:drop-shadow(0 0 30px #ff0080) drop-shadow(0 0 50px #00ff88)} }
+.fs-provider-arcadeforge .fs-provider-label { font-family:"Courier New",monospace; font-size:11px; letter-spacing:4px; color:#00ff88; opacity:.8; margin-bottom:8px; animation:fsArcadeTextFlicker 3s infinite; }
+@keyframes fsArcadeTextFlicker { 0%,90%,100%{opacity:.8} 92%{opacity:.1} 94%{opacity:.8} 96%{opacity:.2} 98%{opacity:.8} }
+.fs-provider-arcadeforge .fs-provider-title { font-family:"Courier New",monospace; font-size:24px; font-weight:900; color:#ff0080; text-shadow:0 0 10px #ff0080,2px 2px 0 #00ff88; letter-spacing:3px; margin-bottom:4px; }
+.fs-provider-arcadeforge .fs-provider-count { font-family:"Courier New",monospace; font-size:88px; font-weight:900; color:#00ff88; text-shadow:0 0 20px #00ff88,0 0 40px rgba(0,255,136,.6),-2px -2px 0 #ff0080,2px 2px 0 rgba(0,255,136,.3); line-height:1; animation:fsArcadeCountFlash 1.2s ease-in-out infinite alternate; }
+@keyframes fsArcadeCountFlash { 0%{color:#00ff88;text-shadow:0 0 20px #00ff88,-2px -2px 0 #ff0080} 100%{color:#ff0080;text-shadow:0 0 20px #ff0080,2px 2px 0 #00ff88} }
+.fs-provider-arcadeforge .fs-provider-sublabel { font-family:"Courier New",monospace; font-size:13px; letter-spacing:5px; color:rgba(0,255,136,.7); margin-top:4px; }
+.fs-provider-arcadeforge .fs-provider-desc { font-family:"Courier New",monospace; font-size:11px; color:rgba(255,255,255,.4); margin-top:14px; letter-spacing:1px; }
+/* Arcadeforge HUD */
+.fs-hud-arcadeforge { background:linear-gradient(90deg,rgba(0,4,40,0.98),rgba(0,0,20,0.98)) !important; border-bottom:2px solid #ff0080 !important; box-shadow:0 4px 20px rgba(255,0,128,.4),0 0 40px rgba(0,255,136,.2) !important; }
+.fs-hud-arcadeforge .fs-hud-label { color:#00ff88 !important; letter-spacing:3px !important; font-family:"Courier New",monospace !important; font-size:9px !important; }
+.fs-hud-arcadeforge .fs-hud-value { color:#ff0080 !important; text-shadow:0 0 8px #ff0080,1px 1px 0 #00ff88 !important; font-family:"Courier New",monospace !important; }
+.fs-hud-arcadeforge .fs-hud-win-value { color:#00ff88 !important; text-shadow:0 0 8px #00ff88 !important; }
+/* Arcadeforge Summary */
+.fs-summary-arcadeforge { background:linear-gradient(135deg,rgba(0,4,40,0.98),rgba(0,0,20,0.98)) !important; border-color:#ff0080 !important; border-radius:4px !important; box-shadow:0 0 60px rgba(255,0,128,.5),0 0 80px rgba(0,255,136,.3) !important; }
+.fs-summary-arcadeforge .fs-summary-label { color:#ff0080 !important; font-family:"Courier New",monospace !important; letter-spacing:4px !important; text-shadow:0 0 10px #ff0080 !important; }
+.fs-summary-arcadeforge .fs-summary-amount { color:#00ff88 !important; text-shadow:0 0 20px #00ff88,0 0 40px #ff0080 !important; }
+.fs-summary-arcadeforge .fs-summary-close-btn { background:linear-gradient(135deg,#ff0080,#00ff88) !important; color:#000 !important; }
+
+/* Shared float animation for icons */
+@keyframes fsIconFloat { 0%{transform:translateY(0) scale(1)} 100%{transform:translateY(-10px) scale(1.06)} }
 .csb-dd.csb-dd-open .csb-dd-body { max-height: 800px; }
