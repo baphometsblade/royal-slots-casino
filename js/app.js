@@ -184,6 +184,53 @@
         }
 
 
+        // ── Notification Badge ─────────────────────────────────
+        async function updateNotifBadge() {
+            const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+            const headers = token ? { Authorization: 'Bearer ' + token } : {};
+
+            const safeFetch = async (url) => {
+                try {
+                    const res = await fetch(url, { headers });
+                    if (!res.ok) return null;
+                    return await res.json();
+                } catch (_) {
+                    return null;
+                }
+            };
+
+            const [cashback, depositMatch, firstDeposit] = await Promise.all([
+                safeFetch('/api/dailycashback/status'),
+                safeFetch('/api/depositmatch/status'),
+                safeFetch('/api/firstdeposit/status'),
+            ]);
+
+            let count = 0;
+            if (cashback && cashback.eligible && !cashback.claimed) count++;
+            if (depositMatch && depositMatch.eligible && !depositMatch.claimed) count++;
+            if (firstDeposit && firstDeposit.eligible && !firstDeposit.claimed) count++;
+
+            const badge = document.getElementById('notifBadge');
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function initNotifBadge() {
+            if (!currentUser || currentUser.isGuest) return;
+            // Clear any existing poll to prevent duplication on re-login
+            if (window._notifPollInterval) {
+                clearInterval(window._notifPollInterval);
+                window._notifPollInterval = null;
+            }
+            updateNotifBadge();
+            window._notifPollInterval = setInterval(updateNotifBadge, 60000);
+        }
+
         // Post-auth initialization — runs after login or on page load if already authenticated
         function onPostAuthInit() {
             checkDailyBonusReset();
@@ -200,6 +247,7 @@
             if (typeof initPromoEngine === 'function') initPromoEngine();
             if (typeof initHourlyBonus === 'function') initHourlyBonus();
             if (typeof renderFavQuickBar === 'function') renderFavQuickBar();
+            initNotifBadge();
             // Load lobby enhancements
             if (typeof startJackpotPolling === 'function') startJackpotPolling();
             if (typeof loadBigWinFeed === 'function') loadBigWinFeed();
