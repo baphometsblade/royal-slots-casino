@@ -1260,7 +1260,49 @@ function renderVipBadge() {
     badge.style.color = tier.color;
     badge.style.background = `linear-gradient(135deg, ${tier.color}15, ${tier.color}08)`;
     badge.innerHTML = `<span class="vip-header-badge-icon">${tier.icon}</span> ${tier.name.toUpperCase()}`;
+
+    updateVipMiniBar();
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// VIP MINI PROGRESS BAR
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Updates the persistent mini VIP progress bar shown in the header
+ * (#vipMiniBar / #vipMiniFill / #vipMiniText).
+ * Safe to call at any time -- exits early if elements are absent.
+ */
+function updateVipMiniBar() {
+    var fill  = document.getElementById('vipMiniFill');
+    var label = document.getElementById('vipMiniText');
+    var bar   = document.getElementById('vipMiniBar');
+    if (!fill || !label || !bar) return;
+
+    var tier     = getVipTier();
+    var progress = getVipProgress();   // 0-100
+    var next     = getNextVipTier();
+
+    // Width + colour
+    fill.style.width      = Math.min(progress, 100) + '%';
+    fill.style.background = tier.color || '#ffd700';
+
+    // Label: "$X to NextTier" or "MAX"
+    if (next) {
+        var needed = Math.max(0, next.minWagered - ((stats && stats.totalWagered) || 0));
+        label.textContent = '$' + (needed >= 1000
+            ? (needed / 1000).toFixed(1) + 'k'
+            : needed.toFixed(0)) + ' to ' + next.name;
+    } else {
+        label.textContent = tier.icon + ' MAX';
+    }
+
+    // Tooltip
+    bar.title = 'VIP: ' + tier.name + ' (' + Math.round(progress) + '% to ' +
+                (next ? next.name : 'Max') + ')';
+}
+window.updateVipMiniBar = updateVipMiniBar;
 
 
 // ═══════════════════════════════════════════════════════════════

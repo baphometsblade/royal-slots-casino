@@ -13,6 +13,12 @@
         let _bonusDroughtRounds = 0;  // number of bonuses triggered this session
         const SPIN_HISTORY_MAX = 15;
 
+        // ── Autoplay stop conditions (regulatory) ──────────────────
+        let _autoplayLastWin     = 0;   // win amount from the most recent spin
+        let _apStopOnWin         = false; // stop on any win
+        let _apStopBigWinMult    = 0;   // stop when win/bet >= this (0 = off)
+        let _apStopOnLoss        = 0;   // stop when (startBalance - balance) >= this (0 = off)
+
         /* ── Sprint 82: Bonus Drought tracker helpers ── */
         function _updateDroughtStat(justTriggered) {
             var el = document.getElementById('statDrought');
@@ -2765,6 +2771,7 @@
             stats.totalSpins++;
             if (!serverResult || !serverResult.usedFreeSpin) {
                 stats.totalWagered += currentBet;
+                if (typeof window.updateVipMiniBar === 'function') window.updateVipMiniBar();
             }
             if (!stats.gamesPlayed[spinGame.id]) stats.gamesPlayed[spinGame.id] = 0;
             stats.gamesPlayed[spinGame.id]++;
@@ -3099,6 +3106,9 @@
             const grid = result.grid;
             const winAmount = result.winAmount;
             const details = result.winDetails || {};
+
+            // Track last win for autoplay stop conditions
+            _autoplayLastWin = winAmount || 0;
 
             // Record to spin history
             const _histEntry = {
@@ -4564,6 +4574,22 @@
                 showMessage(`Autoplay stopped: Loss limit $${autoplayLossLimitAmount.toLocaleString()} reached!`, 'lose');
                 return true;
             }
+            // Regulatory stop conditions
+            if (_apStopOnWin && _autoplayLastWin > 0) {
+                stopAutoSpin();
+                if (typeof showToast === 'function') showToast('Autoplay stopped: win detected', 'success');
+                return true;
+            }
+            if (_apStopBigWinMult > 0 && currentBet > 0 && _autoplayLastWin >= currentBet * _apStopBigWinMult) {
+                stopAutoSpin();
+                if (typeof showToast === 'function') showToast('Autoplay stopped: big win!', 'success');
+                return true;
+            }
+            if (_apStopOnLoss > 0 && (autoplayStartBalance - balance) >= _apStopOnLoss) {
+                stopAutoSpin();
+                if (typeof showToast === 'function') showToast('Autoplay stopped: loss limit reached', 'lose');
+                return true;
+            }
             return false;
         }
 
@@ -4679,11 +4705,68 @@
         }
 
 
+        // ── Autoplay stop conditions: CSS + HTML injection ──────────
+        function _injectApStopConditionsCss() {
+            if (document.getElementById('apStopCondCss')) return;
+            var s = document.createElement('style');
+            s.id = 'apStopCondCss';
+            s.textContent = [
+                '.ap-stop-conditions{margin:10px 0;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;}',
+                '.ap-stop-row{margin:6px 0;font-size:13px;color:#ccc;display:flex;align-items:center;gap:8px;}',
+                '.ap-stop-row select,.ap-stop-row input[type="number"]{background:#222;border:1px solid #444;border-radius:4px;color:#fff;padding:2px 6px;}',
+                '.ap-stop-row input[type="checkbox"]{width:15px;height:15px;cursor:pointer;accent-color:#f0c040;}'
+            ].join('');
+            document.head.appendChild(s);
+        }
+
+        function _injectApStopConditions() {
+            _injectApStopConditionsCss();
+            if (document.getElementById('apStopCondBlock')) return;
+            var modal = document.querySelector('#autoplayOverlay .autoplay-modal-body');
+            if (!modal) return;
+            var block = document.createElement('div');
+            block.id = 'apStopCondBlock';
+            block.className = 'ap-stop-conditions';
+            block.innerHTML = [
+                '<div class="ap-stop-row">',
+                '  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">',
+                '    <input type="checkbox" id="apStopOnWin">',
+                '    Stop on any win',
+                '  </label>',
+                '</div>',
+                '<div class="ap-stop-row">',
+                '  <label style="display:flex;align-items:center;gap:6px;">Stop on win \u2265',
+                '    <select id="apStopOnBigWin">',
+                '      <option value="0">Off</option>',
+                '      <option value="5">5\u00d7 bet</option>',
+                '      <option value="10">10\u00d7 bet</option>',
+                '      <option value="25">25\u00d7 bet</option>',
+                '      <option value="50">50\u00d7 bet</option>',
+                '    </select>',
+                '  </label>',
+                '</div>',
+                '<div class="ap-stop-row">',
+                '  <label style="display:flex;align-items:center;gap:6px;">Stop if loss exceeds $',
+                '    <input type="number" id="apStopOnLoss" placeholder="e.g. 10" min="1" style="width:65px">',
+                '  </label>',
+                '</div>'
+            ].join('');
+            // Insert before the START AUTOPLAY button
+            var startBtn = modal.querySelector('.autoplay-start-btn');
+            if (startBtn && startBtn.parentNode === modal) {
+                modal.insertBefore(block, startBtn);
+            } else {
+                modal.appendChild(block);
+            }
+        }
+
+
         function openAutoplayModal() {
             if (autoSpinActive) {
                 stopAutoSpin();
                 return;
             }
+            _injectApStopConditions();
             // Sync button highlights
             document.querySelectorAll('.autoplay-spin-btn').forEach(btn => {
                 btn.classList.toggle('autoplay-spin-selected',
@@ -4739,6 +4822,21 @@
             autoplayWinLimitAmount  = AUTOPLAY_WIN_LIMITS[autoplayWinLimitIdx];
             autoplayLossLimitAmount = AUTOPLAY_LOSS_LIMITS[autoplayLossLimitIdx];
             autoplayStartBalance    = balance;
+            // Capture new stop conditions (skip in QA ?autoSpin=1 mode)
+            var _qaAutoSpin = (typeof URLSearchParams !== 'undefined') && new URLSearchParams(window.location.search).get('autoSpin') === '1';
+            if (!_qaAutoSpin) {
+                var _cbWin   = document.getElementById('apStopOnWin');
+                var _selBig  = document.getElementById('apStopOnBigWin');
+                var _inpLoss = document.getElementById('apStopOnLoss');
+                _apStopOnWin      = _cbWin  ? _cbWin.checked : false;
+                _apStopBigWinMult = _selBig ? parseInt(_selBig.value, 10) || 0 : 0;
+                _apStopOnLoss     = _inpLoss && _inpLoss.value !== '' ? parseFloat(_inpLoss.value) || 0 : 0;
+            } else {
+                _apStopOnWin      = false;
+                _apStopBigWinMult = 0;
+                _apStopOnLoss     = 0;
+            }
+            _autoplayLastWin = 0;
             toggleAutoSpin(autoplaySelectedCount);
         }
 
@@ -7057,6 +7155,9 @@
             const winAmount = result.winAmount;
             const details = result.winDetails || {};
 
+            // Track last win for autoplay stop conditions
+            _autoplayLastWin = winAmount || 0;
+
             // Record to spin history
             const _histEntry = {
                 win: winAmount,
@@ -8417,6 +8518,22 @@
                 showMessage(`Autoplay stopped: Loss limit $${autoplayLossLimitAmount.toLocaleString()} reached!`, 'lose');
                 return true;
             }
+            // Regulatory stop conditions
+            if (_apStopOnWin && _autoplayLastWin > 0) {
+                stopAutoSpin();
+                if (typeof showToast === 'function') showToast('Autoplay stopped: win detected', 'success');
+                return true;
+            }
+            if (_apStopBigWinMult > 0 && currentBet > 0 && _autoplayLastWin >= currentBet * _apStopBigWinMult) {
+                stopAutoSpin();
+                if (typeof showToast === 'function') showToast('Autoplay stopped: big win!', 'success');
+                return true;
+            }
+            if (_apStopOnLoss > 0 && (autoplayStartBalance - balance) >= _apStopOnLoss) {
+                stopAutoSpin();
+                if (typeof showToast === 'function') showToast('Autoplay stopped: loss limit reached', 'lose');
+                return true;
+            }
             return false;
         }
 
@@ -8532,11 +8649,68 @@
         }
 
 
+        // ── Autoplay stop conditions: CSS + HTML injection ──────────
+        function _injectApStopConditionsCss() {
+            if (document.getElementById('apStopCondCss')) return;
+            var s = document.createElement('style');
+            s.id = 'apStopCondCss';
+            s.textContent = [
+                '.ap-stop-conditions{margin:10px 0;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;}',
+                '.ap-stop-row{margin:6px 0;font-size:13px;color:#ccc;display:flex;align-items:center;gap:8px;}',
+                '.ap-stop-row select,.ap-stop-row input[type="number"]{background:#222;border:1px solid #444;border-radius:4px;color:#fff;padding:2px 6px;}',
+                '.ap-stop-row input[type="checkbox"]{width:15px;height:15px;cursor:pointer;accent-color:#f0c040;}'
+            ].join('');
+            document.head.appendChild(s);
+        }
+
+        function _injectApStopConditions() {
+            _injectApStopConditionsCss();
+            if (document.getElementById('apStopCondBlock')) return;
+            var modal = document.querySelector('#autoplayOverlay .autoplay-modal-body');
+            if (!modal) return;
+            var block = document.createElement('div');
+            block.id = 'apStopCondBlock';
+            block.className = 'ap-stop-conditions';
+            block.innerHTML = [
+                '<div class="ap-stop-row">',
+                '  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">',
+                '    <input type="checkbox" id="apStopOnWin">',
+                '    Stop on any win',
+                '  </label>',
+                '</div>',
+                '<div class="ap-stop-row">',
+                '  <label style="display:flex;align-items:center;gap:6px;">Stop on win \u2265',
+                '    <select id="apStopOnBigWin">',
+                '      <option value="0">Off</option>',
+                '      <option value="5">5\u00d7 bet</option>',
+                '      <option value="10">10\u00d7 bet</option>',
+                '      <option value="25">25\u00d7 bet</option>',
+                '      <option value="50">50\u00d7 bet</option>',
+                '    </select>',
+                '  </label>',
+                '</div>',
+                '<div class="ap-stop-row">',
+                '  <label style="display:flex;align-items:center;gap:6px;">Stop if loss exceeds $',
+                '    <input type="number" id="apStopOnLoss" placeholder="e.g. 10" min="1" style="width:65px">',
+                '  </label>',
+                '</div>'
+            ].join('');
+            // Insert before the START AUTOPLAY button
+            var startBtn = modal.querySelector('.autoplay-start-btn');
+            if (startBtn && startBtn.parentNode === modal) {
+                modal.insertBefore(block, startBtn);
+            } else {
+                modal.appendChild(block);
+            }
+        }
+
+
         function openAutoplayModal() {
             if (autoSpinActive) {
                 stopAutoSpin();
                 return;
             }
+            _injectApStopConditions();
             // Sync button highlights
             document.querySelectorAll('.autoplay-spin-btn').forEach(btn => {
                 btn.classList.toggle('autoplay-spin-selected',
@@ -8592,6 +8766,21 @@
             autoplayWinLimitAmount  = AUTOPLAY_WIN_LIMITS[autoplayWinLimitIdx];
             autoplayLossLimitAmount = AUTOPLAY_LOSS_LIMITS[autoplayLossLimitIdx];
             autoplayStartBalance    = balance;
+            // Capture new stop conditions (skip in QA ?autoSpin=1 mode)
+            var _qaAutoSpin = (typeof URLSearchParams !== 'undefined') && new URLSearchParams(window.location.search).get('autoSpin') === '1';
+            if (!_qaAutoSpin) {
+                var _cbWin   = document.getElementById('apStopOnWin');
+                var _selBig  = document.getElementById('apStopOnBigWin');
+                var _inpLoss = document.getElementById('apStopOnLoss');
+                _apStopOnWin      = _cbWin  ? _cbWin.checked : false;
+                _apStopBigWinMult = _selBig ? parseInt(_selBig.value, 10) || 0 : 0;
+                _apStopOnLoss     = _inpLoss && _inpLoss.value !== '' ? parseFloat(_inpLoss.value) || 0 : 0;
+            } else {
+                _apStopOnWin      = false;
+                _apStopBigWinMult = 0;
+                _apStopOnLoss     = 0;
+            }
+            _autoplayLastWin = 0;
             toggleAutoSpin(autoplaySelectedCount);
         }
 
