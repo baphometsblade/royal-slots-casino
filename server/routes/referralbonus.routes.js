@@ -176,6 +176,8 @@ router.post('/apply', verifyInternal, async function(req, res) {
     );
     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
       [referrer.id, REFERRAL_BONUS_AMOUNT, 'Referral bonus -- new user joined with your code']);
+    // Grant referral_made achievement to the referrer (idempotent)
+    require('../services/achievement.service').grant(referrer.id, 'referral_made').catch(function() {});
     // Credit new user: balance only
     await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [REFERRAL_BONUS_AMOUNT, newUserId]);
     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",

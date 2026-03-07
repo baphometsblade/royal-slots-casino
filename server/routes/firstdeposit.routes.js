@@ -50,6 +50,8 @@ router.post('/claim', authenticate, async function(req, res) {
       [BONUS_GEMS, BONUS_CREDITS, userId]);
     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
       [userId, BONUS_CREDITS, 'First Deposit Welcome Bonus']);
+    // Grant first_deposit achievement (idempotent)
+    require('../services/achievement.service').grant(userId, 'first_deposit').catch(function() {});
 
     var updated = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({

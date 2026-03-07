@@ -73,6 +73,10 @@ router.post('/', authenticate, async function(req, res) {
             }
         }
         await db.run('UPDATE users SET streak_count = ?, streak_last_date = ? WHERE id = ?', [newCount, today, userId]);
+        // Grant streak_7 achievement when user first hits a 7-day streak
+        if (newCount >= 7) {
+            require('../services/achievement.service').grant(userId, 'streak_7').catch(function() {});
+        }
         var balanceRow = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
         var newBalance = balanceRow ? balanceRow.balance : 0;
         return res.json({ isNewDay: true, streakCount: newCount, reward: reward, newBalance: newBalance, isWeeklyBonus: newCount % 7 === 0 });

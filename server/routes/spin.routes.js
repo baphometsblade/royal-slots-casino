@@ -68,6 +68,18 @@ router.post('/', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Invalid game ID' });
         }
 
+        // ── Rental access check for locked premium games ──────────────────
+        const rentalService = require('../services/rental.service');
+        if (rentalService.getLockedGames().includes(gameId)) {
+            const hasAccess = await rentalService.isUnlocked(userId, gameId);
+            if (!hasAccess) {
+                return res.status(403).json({
+                    error: 'game_locked',
+                    message: 'Purchase access to play this premium game'
+                });
+            }
+        }
+
         // ── Validate bet ──
         const bet = parseFloat(betAmount);
         if (isNaN(bet) || bet <= 0) {

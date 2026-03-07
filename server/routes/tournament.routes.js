@@ -169,6 +169,11 @@ router.post('/record', verifyToken, async (req, res) => {
 
     const rank = (rankRow ? parseInt(rankRow.cnt, 10) : 0) + 1;
 
+    // Grant tournament_win achievement when player reaches #1 (idempotent — fires once)
+    if (rank === 1) {
+        require('../services/achievement.service').grant(userId, 'tournament_win').catch(function() {});
+    }
+
     return res.json({ recorded: true, score: row.score, rank });
   } catch (err) {
     console.error('[Tournament] POST /record error:', err.message);
