@@ -742,8 +742,8 @@ function _promoCheckFirstDeposit() {
         icon: '\uD83C\uDF81',
         promoType: 'deposit',
         expiresAt: deadline,
-        title: 'First Deposit Bonus!',
-        body: 'Match your first deposit <span class="promo-highlight">100% up to $500</span>! Double your starting balance and hit the reels with confidence.',
+        title: '🎁 Welcome Gift!',
+        body: 'Make your first deposit and instantly receive <span class="promo-highlight">$5 bonus credits</span> + <span class="promo-highlight">1,000 gems</span> to get you started!',
         timer: timerText,
         cta: 'Deposit Now & Claim Bonus',
         onCta: function() {
