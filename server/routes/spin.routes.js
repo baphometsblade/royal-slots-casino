@@ -219,6 +219,30 @@ router.post('/', authenticate, async (req, res) => {
             }
         }
 
+        // ── Apply active player boosts ─────────────────────────────────────
+        // One DB call fetches all active boosts; avoids N separate hasBoost queries.
+        let _boostWinBonus = 0;
+        let _hasBpRush = false;
+        let _hasGemMiner = false;
+        if (!usedFreeSpin) {
+            try {
+                const boostService = require('../services/boost.service');
+                const _activeBoosts = await boostService.getActiveBoosts(userId);
+                const _hasMega = _activeBoosts.some(b => b.boost_type === 'mega_boost');
+                const _hasLucky = _hasMega || _activeBoosts.some(b => b.boost_type === 'lucky_streak');
+                _hasBpRush   = _hasMega || _activeBoosts.some(b => b.boost_type === 'bp_rush');
+                _hasGemMiner = _hasMega || _activeBoosts.some(b => b.boost_type === 'gem_miner');
+                // lucky_streak: +5% win bonus applied before balance credit
+                if (_hasLucky && spinResult.winAmount > 0) {
+                    _boostWinBonus = Math.round(spinResult.winAmount * 0.05 * 100) / 100;
+                    spinResult.winAmount = Math.round((spinResult.winAmount + _boostWinBonus) * 100) / 100;
+                }
+            } catch (_boostErr) {
+                console.error('[Boost] Boost check error:', _boostErr);
+                // Non-blocking — proceed without boosts
+            }
+        }
+
         // ── Credit win ──
         let finalBalance = balanceAfterBet;
         if (spinResult.winAmount > 0) {
@@ -302,6 +326,24 @@ router.post('/', authenticate, async (req, res) => {
         // ── Hourly wager race entry (fire-and-forget) ────────────────────
         if (!usedFreeSpin && bet > 0) {
             require('../services/wagerace.service').recordWager(userId, bet).catch(function() {});
+        }
+
+        // ── Battle pass XP + gem miner boost (fire-and-forget) ──────────
+        if (!usedFreeSpin && bet > 0) {
+            (async function () {
+                try {
+                    const battlepassService = require('../services/battlepass.service');
+                    await battlepassService.addXp(userId, bet);
+                    if (_hasBpRush) { await battlepassService.addXp(userId, bet); } // bp_rush: 2x XP
+                } catch (_bpErr) { console.error('[BattlePass] addXp error:', _bpErr); }
+            }());
+            if (_hasGemMiner) {
+                (async function () {
+                    try {
+                        await require('../services/gems.service').addGems(userId, 1, 'Boost: Gem Miner');
+                    } catch (_gmErr) { console.error('[GemMiner] addGems error:', _gmErr); }
+                }());
+            }
         }
 
         // ── Log spin ──
@@ -429,6 +471,7 @@ router.post('/', authenticate, async (req, res) => {
             newAchievements,
             eventBonus,
             lossStatus: lossCheck ? { dailyLoss: lossCheck.dailyLoss, limit: lossCheck.limit, remaining: lossCheck.remaining } : null,
+            boostWinBonus: _boostWinBonus || 0,
         });
 
     } catch (err) {
