@@ -325,6 +325,36 @@ function renderDepositForm() {
     const container = document.getElementById('walletContent');
     if (!container) return;
 
+    // ── VIP Tier Progress Bar ──────────────────────────────────────────────
+    const VIP_TIERS = [
+        { label: 'Bronze',   min: 100,    cashback: '6%'  },
+        { label: 'Silver',   min: 500,    cashback: '8%'  },
+        { label: 'Gold',     min: 2000,   cashback: '10%' },
+        { label: 'Platinum', min: 10000,  cashback: '15%' },
+        { label: 'Diamond',  min: 50000,  cashback: '20%' }
+    ];
+    const totalWagered = (typeof stats !== 'undefined' ? stats.totalWagered || 0 : 0);
+    let curTierIdx = -1;
+    for (let i = VIP_TIERS.length - 1; i >= 0; i--) {
+        if (totalWagered >= VIP_TIERS[i].min) { curTierIdx = i; break; }
+    }
+    const curTier   = curTierIdx >= 0 ? VIP_TIERS[curTierIdx]     : null;
+    const nextTier  = curTierIdx < VIP_TIERS.length - 1 ? VIP_TIERS[curTierIdx + 1] : null;
+    const prevMin   = curTier ? curTier.min : 0;
+    const pct       = nextTier ? Math.min(100, ((totalWagered - prevMin) / (nextTier.min - prevMin)) * 100) : 100;
+    const tierLabel = curTier ? curTier.label : 'No Tier';
+    const tierColor = curTierIdx === 4 ? '#b9f2ff' : curTierIdx === 3 ? '#e5cfff' : curTierIdx === 2 ? '#ffd700' : curTierIdx === 1 ? '#94a3b8' : '#cd7f32';
+    const vipBarHtml = `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:0.78rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <span style="color:${tierColor};font-weight:700;">${tierLabel} Tier${curTier ? ' · ' + curTier.cashback + ' cashback' : ''}</span>
+    <span style="color:#94a3b8;">${nextTier ? '$' + (nextTier.min - totalWagered).toLocaleString() + ' to ' + nextTier.label + ' (' + nextTier.cashback + ' cashback)' : 'Max tier reached!'}</span>
+  </div>
+  <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:6px;overflow:hidden;">
+    <div style="width:${pct.toFixed(1)}%;height:100%;background:linear-gradient(90deg,${tierColor},#fff8);border-radius:4px;transition:width 0.4s;"></div>
+  </div>
+</div>`;
+    // ────────────────────────────────────────────────────────────────────────
+
     const walletStart = walletSessionStartBalance !== null ? walletSessionStartBalance : balance;
     const netChange = balance - walletStart;
     const netClass = netChange > 0 ? 'wst-pos' : netChange < 0 ? 'wst-neg' : 'wst-neutral';
@@ -374,7 +404,7 @@ function renderDepositForm() {
         </div>
     </div>` : '';
 
-    container.innerHTML = sessionTrackerHtml + lowBalBanner + `
+    container.innerHTML = vipBarHtml + sessionTrackerHtml + lowBalBanner + `
         <div class="wallet-section">
             <div class="wallet-balance-display">
                 <span class="wallet-balance-display__label">Current Balance</span>
@@ -498,6 +528,9 @@ async function submitDeposit() {
                 `$${formatMoney(amount)} deposit submitted! Funds will appear once payment is confirmed.`,
                 'success'
             );
+            if (res.gemsAwarded > 0) {
+                setTimeout(() => showToast(`\u{1F48E} +${res.gemsAwarded} gems credited to your account!`, 'success', 4000), 1500);
+            }
         } else {
             const newBalance = Number(res.balance);
             if (Number.isFinite(newBalance)) {
@@ -505,7 +538,7 @@ async function submitDeposit() {
                 updateBalance();
                 resetNudgeOnDeposit();
             }
-            const gemMsg = res.gemsAwarded ? ` + 💎 ${res.gemsAwarded} gems!` : '';
+            const gemMsg = res.gemsAwarded ? ` + \u{1F48E} ${res.gemsAwarded} gems!` : '';
             showToast(`${formatMoney(amount)} deposited successfully!${gemMsg}`, 'success');
         }
         if (amountInput) amountInput.value = '';

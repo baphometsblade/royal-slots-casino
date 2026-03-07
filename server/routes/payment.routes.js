@@ -380,6 +380,21 @@ router.post('/deposit', authenticate, async (req, res) => {
         );
         const depositId = depositResult.lastInsertRowid;
 
+        // Award gems based on deposit amount
+        var depositGems = 0;
+        if (deposit >= 100) depositGems = 2500;
+        else if (deposit >= 50) depositGems = 1000;
+        else if (deposit >= 5) depositGems = 100;
+
+        if (depositGems > 0) {
+            try {
+                await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [depositGems, req.user.id]);
+            } catch(gemErr) {
+                console.error('[Payment] Gem award error:', gemErr.message);
+                // Non-fatal, continue
+            }
+        }
+
         res.json({
             message: `Deposit of $${deposit.toFixed(2)} submitted — awaiting payment confirmation`,
             deposit: {
@@ -388,7 +403,8 @@ router.post('/deposit', authenticate, async (req, res) => {
                 currency: config.CURRENCY,
                 status: 'pending',
                 reference
-            }
+            },
+            gemsAwarded: depositGems
         });
     } catch (err) {
         console.error('[Payment] Deposit error:', err);
