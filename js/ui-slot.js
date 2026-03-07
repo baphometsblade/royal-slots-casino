@@ -6193,6 +6193,22 @@
         // Prizes: 5–50× bet, 5–15 free spins, or jackpot 200× bet.
         // ═══════════════════════════════════════════════════════════
 
+        // Inject prizePointerPulse + wheelPrizeIn keyframes once into document head
+        (function _injectPrizePointerStyles() {
+            if (document.getElementById('prize-pointer-styles')) return;
+            var s = document.createElement('style');
+            s.id = 'prize-pointer-styles';
+            s.textContent = '@keyframes prizePointerPulse {'
+                + '0%   { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 8px #ffd700); }'
+                + '100% { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 24px #ffd700); }'
+                + '}'
+                + '@keyframes wheelPrizeIn {'
+                + '0%   { opacity:0; transform:scale(0.5); }'
+                + '100% { opacity:1; transform:scale(1); }'
+                + '}';
+            document.head.appendChild(s);
+        })();
+
         var _WHEEL_SEGMENTS = [
             { label: '5x', type: 'cash', value: 5 },
             { label: '8 SPINS', type: 'spins', value: 8 },
@@ -6271,12 +6287,19 @@
                 spinBtn.disabled = true;
                 spinBtn.style.opacity = '0.5';
                 if (typeof playSound === 'function') playSound('wheel_spin');
+                // Canvas glow during spin
+                canvas.style.filter = 'drop-shadow(0 0 24px #ffd700)';
+                // Pointer pulse animation during spin
+                ptr.style.animation = 'prizePointerPulse 0.6s ease-in-out infinite alternate';
                 var winIdx = Math.floor(Math.random() * segCount);
                 var fullSpins = 5 + Math.floor(Math.random() * 3);
                 var targetDeg = fullSpins * 360 + (360 - (winIdx * (360 / segCount))) - (360 / segCount / 2);
                 canvas.style.transition = 'transform 3s cubic-bezier(0.17,0.67,0.12,1)';
                 canvas.style.transform = 'rotate(' + targetDeg + 'deg)';
                 setTimeout(function() {
+                    // Remove canvas glow and pointer pulse when spin stops
+                    canvas.style.filter = '';
+                    ptr.style.animation = '';
                     var seg = _WHEEL_SEGMENTS[winIdx];
                     var prize;
                     if (seg.type === 'cash' || seg.type === 'jackpot') {
@@ -6296,6 +6319,27 @@
                     if (seg.type === 'jackpot' && typeof showBonusEffect === 'function') showBonusEffect('🎰 JACKPOT! +$' + (prize || 0).toLocaleString(), '#ffd600');
                     if (seg.type === 'spins' && typeof showBonusEffect === 'function') showBonusEffect('🎉 ' + seg.value + ' FREE SPINS!', '#69f0ae');
                     overlay.appendChild(resultEl);
+                    // Particle burst on any win result reveal
+                    if (typeof burstParticles === 'function') {
+                        var ovRect = overlay.getBoundingClientRect();
+                        var bx = (ovRect.width / 2) || (window.innerWidth / 2);
+                        var by = (ovRect.height / 2) || (window.innerHeight / 2);
+                        burstParticles(bx, by, 40, 'celestial');
+                    }
+                    // Jackpot: extra screen shake + heavy particles
+                    if (seg.type === 'jackpot') {
+                        if (typeof triggerScreenShake === 'function') triggerScreenShake('jackpot');
+                        if (typeof triggerWinParticles === 'function') {
+                            var ctr = overlay.getBoundingClientRect();
+                            triggerWinParticles(
+                                (ctr.width / 2) || (window.innerWidth / 2),
+                                (ctr.height / 2) || (window.innerHeight / 2),
+                                200,
+                                'celestial'
+                            );
+                        }
+                        overlay.classList.add('jackpot-shake');
+                    }
 
                     var closeBtn = document.createElement('button');
                     closeBtn.textContent = 'COLLECT';
@@ -9890,6 +9934,22 @@
         // Prizes: 5–50× bet, 5–15 free spins, or jackpot 200× bet.
         // ═══════════════════════════════════════════════════════════
 
+        // Inject prizePointerPulse + wheelPrizeIn keyframes once into document head
+        (function _injectPrizePointerStyles() {
+            if (document.getElementById('prize-pointer-styles')) return;
+            var s = document.createElement('style');
+            s.id = 'prize-pointer-styles';
+            s.textContent = '@keyframes prizePointerPulse {'
+                + '0%   { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 8px #ffd700); }'
+                + '100% { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 24px #ffd700); }'
+                + '}'
+                + '@keyframes wheelPrizeIn {'
+                + '0%   { opacity:0; transform:scale(0.5); }'
+                + '100% { opacity:1; transform:scale(1); }'
+                + '}';
+            document.head.appendChild(s);
+        })();
+
         var _WHEEL_SEGMENTS = [
             { label: '5x', type: 'cash', value: 5 },
             { label: '8 SPINS', type: 'spins', value: 8 },
@@ -9968,12 +10028,19 @@
                 spinBtn.disabled = true;
                 spinBtn.style.opacity = '0.5';
                 if (typeof playSound === 'function') playSound('wheel_spin');
+                // Canvas glow during spin
+                canvas.style.filter = 'drop-shadow(0 0 24px #ffd700)';
+                // Pointer pulse animation during spin
+                ptr.style.animation = 'prizePointerPulse 0.6s ease-in-out infinite alternate';
                 var winIdx = Math.floor(Math.random() * segCount);
                 var fullSpins = 5 + Math.floor(Math.random() * 3);
                 var targetDeg = fullSpins * 360 + (360 - (winIdx * (360 / segCount))) - (360 / segCount / 2);
                 canvas.style.transition = 'transform 3s cubic-bezier(0.17,0.67,0.12,1)';
                 canvas.style.transform = 'rotate(' + targetDeg + 'deg)';
                 setTimeout(function() {
+                    // Remove canvas glow and pointer pulse when spin stops
+                    canvas.style.filter = '';
+                    ptr.style.animation = '';
                     var seg = _WHEEL_SEGMENTS[winIdx];
                     var prize;
                     if (seg.type === 'cash' || seg.type === 'jackpot') {
@@ -9993,6 +10060,27 @@
                     if (seg.type === 'jackpot' && typeof showBonusEffect === 'function') showBonusEffect('🎰 JACKPOT! +$' + (prize || 0).toLocaleString(), '#ffd600');
                     if (seg.type === 'spins' && typeof showBonusEffect === 'function') showBonusEffect('🎉 ' + seg.value + ' FREE SPINS!', '#69f0ae');
                     overlay.appendChild(resultEl);
+                    // Particle burst on any win result reveal
+                    if (typeof burstParticles === 'function') {
+                        var ovRect = overlay.getBoundingClientRect();
+                        var bx = (ovRect.width / 2) || (window.innerWidth / 2);
+                        var by = (ovRect.height / 2) || (window.innerHeight / 2);
+                        burstParticles(bx, by, 40, 'celestial');
+                    }
+                    // Jackpot: extra screen shake + heavy particles
+                    if (seg.type === 'jackpot') {
+                        if (typeof triggerScreenShake === 'function') triggerScreenShake('jackpot');
+                        if (typeof triggerWinParticles === 'function') {
+                            var ctr = overlay.getBoundingClientRect();
+                            triggerWinParticles(
+                                (ctr.width / 2) || (window.innerWidth / 2),
+                                (ctr.height / 2) || (window.innerHeight / 2),
+                                200,
+                                'celestial'
+                            );
+                        }
+                        overlay.classList.add('jackpot-shake');
+                    }
 
                     var closeBtn = document.createElement('button');
                     closeBtn.textContent = 'COLLECT';

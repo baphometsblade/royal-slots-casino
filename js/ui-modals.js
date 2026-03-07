@@ -1659,6 +1659,24 @@
             const duration = 4000;
             const startTime = performance.now();
 
+            // --- Enhancement 1: canvas glow on spin start ---
+            const _wCanvas = document.getElementById('wheelCanvas');
+            if (_wCanvas) {
+                _wCanvas.style.filter = 'drop-shadow(0 0 20px #ffd700) drop-shadow(0 0 40px rgba(255,215,0,0.4))';
+            }
+
+            // --- Enhancement 5: pointer shimmer CSS (injected once) ---
+            if (!document.getElementById('_bonusPointerGlowStyle')) {
+                const _pStyle = document.createElement('style');
+                _pStyle.id = '_bonusPointerGlowStyle';
+                _pStyle.textContent = '@keyframes bonusPointerGlow { 0%,100% { filter: drop-shadow(0 0 6px #ffd700); } 50% { filter: drop-shadow(0 0 20px #ffd700) drop-shadow(0 0 40px #ffb300); } }';
+                document.head.appendChild(_pStyle);
+            }
+            const _wPointer = document.querySelector('#bonusWheelModal .wheel-pointer');
+            if (_wPointer) {
+                _wPointer.style.animation = 'bonusPointerGlow 0.8s ease-in-out infinite';
+            }
+
             function animateWheel(now) {
                 const elapsed = now - startTime;
                 const t = Math.min(elapsed / duration, 1);
@@ -1666,7 +1684,9 @@
                 const ease = 1 - Math.pow(1 - t, 3);
                 wheelAngle = startAngle + (totalRotation - startAngle) * ease;
 
-                drawWheel();
+                // --- Enhancement 2: highlight winning segment during deceleration (last 15% of animation) ---
+                const highlightDuring = t >= 0.85 ? winIndex : -1;
+                drawWheel(highlightDuring);
 
                 if (t < 1) {
                     requestAnimationFrame(animateWheel);
@@ -1674,6 +1694,15 @@
                     // Landed — use targetNorm directly to avoid float drift from modulo
                     wheelAngle = targetNorm;
                     const seg = WHEEL_SEGMENTS[winIndex];
+
+                    // --- Enhancement 1: remove canvas glow on spin end ---
+                    if (_wCanvas) {
+                        _wCanvas.style.filter = '';
+                    }
+                    // --- Enhancement 5: remove pointer shimmer ---
+                    if (_wPointer) {
+                        _wPointer.style.animation = '';
+                    }
 
                     if (seg.type === 'freespins') {
                         // Award free spins
@@ -1711,6 +1740,19 @@
                     createConfetti();
 
                     drawWheel(winIndex);
+
+                    // --- Enhancement 3: particle burst at canvas center on result reveal ---
+                    if (typeof burstParticles === 'function' && _wCanvas) {
+                        const _rect = _wCanvas.getBoundingClientRect();
+                        const _cx = _rect.left + _rect.width / 2;
+                        const _cy = _rect.top + _rect.height / 2;
+                        burstParticles(_cx, _cy, 50, ['#ffd700', '#ffb300', '#ff8c00', '#fffacd', '#ffa500']);
+                    }
+
+                    // --- Enhancement 4: heavy confetti for prizes >= $1000 ---
+                    if (seg.type !== 'freespins' && seg.value >= 1000 && typeof triggerWinParticles === 'function') {
+                        triggerWinParticles(seg.value);
+                    }
 
                     wheelSpinning = false;
                     spinBtn.textContent = 'NEXT SPIN IN A FEW HOURS';
