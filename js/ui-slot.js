@@ -5985,24 +5985,62 @@
                     showMessage('Insufficient balance for Buy Feature (' + costMult + '× bet = $' + cost.toLocaleString() + ')', 'lose');
                     return;
                 }
-                balance -= cost;
-                updateBalance();
-                saveBalance();
-                if (typeof playSound === 'function') playSound('buy_feature');
-                showBonusEffect('BONUS FEATURE PURCHASED!', '#ff6d00');
-                setTimeout(function() {
-                    if (game.bonusType === 'chamber_spins' && typeof triggerChamberSpins === 'function') {
-                        triggerChamberSpins(game);
-                    } else if (game.bonusType === 'sticky_wilds' && typeof triggerStickyWildsFreeSpins === 'function') {
-                        triggerStickyWildsFreeSpins(game, 0);
-                    } else if (game.bonusType === 'walking_wilds' && typeof triggerWalkingWildsFreeSpins === 'function') {
-                        triggerWalkingWildsFreeSpins(game, 0);
-                    } else if (game.bonusType === 'prize_wheel' && typeof triggerPrizeWheel === 'function') {
-                        triggerPrizeWheel(game);
-                    } else {
-                        triggerFreeSpins(game, game.freeSpinsCount);
+                // Disable button during server call
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                var _token = '';
+                try { _token = localStorage.getItem('casinoToken') || ''; } catch(e) {}
+                fetch('/api/buy-feature', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
+                    body: JSON.stringify({ gameId: game.id, betAmount: currentBet })
+                }).then(function(r) { return r.json(); }).then(function(res) {
+                    if (res.error) {
+                        showMessage('Buy Feature failed: ' + res.error, 'lose');
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        return;
                     }
-                }, 600);
+                    // Update balance from server (authoritative)
+                    balance = res.balance;
+                    updateBalance();
+                    saveBalance();
+                    if (typeof playSound === 'function') playSound('buy_feature');
+                    showBonusEffect('BONUS FEATURE PURCHASED!', '#ff6d00');
+                    setTimeout(function() {
+                        if (game.bonusType === 'chamber_spins' && typeof triggerChamberSpins === 'function') {
+                            triggerChamberSpins(game);
+                        } else if (game.bonusType === 'sticky_wilds' && typeof triggerStickyWildsFreeSpins === 'function') {
+                            triggerStickyWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'walking_wilds' && typeof triggerWalkingWildsFreeSpins === 'function') {
+                            triggerWalkingWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'prize_wheel' && typeof triggerPrizeWheel === 'function') {
+                            triggerPrizeWheel(game);
+                        } else {
+                            triggerFreeSpins(game, res.freeSpinsAwarded || game.freeSpinsCount);
+                        }
+                    }, 600);
+                }).catch(function() {
+                    // Fallback: local deduction if server unreachable
+                    balance -= cost;
+                    updateBalance();
+                    saveBalance();
+                    if (typeof playSound === 'function') playSound('buy_feature');
+                    showBonusEffect('BONUS FEATURE PURCHASED!', '#ff6d00');
+                    setTimeout(function() {
+                        if (game.bonusType === 'chamber_spins' && typeof triggerChamberSpins === 'function') {
+                            triggerChamberSpins(game);
+                        } else if (game.bonusType === 'sticky_wilds' && typeof triggerStickyWildsFreeSpins === 'function') {
+                            triggerStickyWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'walking_wilds' && typeof triggerWalkingWildsFreeSpins === 'function') {
+                            triggerWalkingWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'prize_wheel' && typeof triggerPrizeWheel === 'function') {
+                            triggerPrizeWheel(game);
+                        } else {
+                            triggerFreeSpins(game, game.freeSpinsCount);
+                        }
+                    }, 600);
+                });
             };
             document.body.appendChild(btn);
             btn._refreshCost = function() {
@@ -9877,24 +9915,59 @@
                     showMessage('Insufficient balance for Buy Feature (' + costMult + '× bet = $' + cost.toLocaleString() + ')', 'lose');
                     return;
                 }
-                balance -= cost;
-                updateBalance();
-                saveBalance();
-                if (typeof playSound === 'function') playSound('buy_feature');
-                showBonusEffect('BONUS FEATURE PURCHASED!', '#ff6d00');
-                setTimeout(function() {
-                    if (game.bonusType === 'chamber_spins' && typeof triggerChamberSpins === 'function') {
-                        triggerChamberSpins(game);
-                    } else if (game.bonusType === 'sticky_wilds' && typeof triggerStickyWildsFreeSpins === 'function') {
-                        triggerStickyWildsFreeSpins(game, 0);
-                    } else if (game.bonusType === 'walking_wilds' && typeof triggerWalkingWildsFreeSpins === 'function') {
-                        triggerWalkingWildsFreeSpins(game, 0);
-                    } else if (game.bonusType === 'prize_wheel' && typeof triggerPrizeWheel === 'function') {
-                        triggerPrizeWheel(game);
-                    } else {
-                        triggerFreeSpins(game, game.freeSpinsCount);
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                var _token = '';
+                try { _token = localStorage.getItem('casinoToken') || ''; } catch(e) {}
+                fetch('/api/buy-feature', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _token },
+                    body: JSON.stringify({ gameId: game.id, betAmount: currentBet })
+                }).then(function(r) { return r.json(); }).then(function(res) {
+                    if (res.error) {
+                        showMessage('Buy Feature failed: ' + res.error, 'lose');
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        return;
                     }
-                }, 600);
+                    balance = res.balance;
+                    updateBalance();
+                    saveBalance();
+                    if (typeof playSound === 'function') playSound('buy_feature');
+                    showBonusEffect('BONUS FEATURE PURCHASED!', '#ff6d00');
+                    setTimeout(function() {
+                        if (game.bonusType === 'chamber_spins' && typeof triggerChamberSpins === 'function') {
+                            triggerChamberSpins(game);
+                        } else if (game.bonusType === 'sticky_wilds' && typeof triggerStickyWildsFreeSpins === 'function') {
+                            triggerStickyWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'walking_wilds' && typeof triggerWalkingWildsFreeSpins === 'function') {
+                            triggerWalkingWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'prize_wheel' && typeof triggerPrizeWheel === 'function') {
+                            triggerPrizeWheel(game);
+                        } else {
+                            triggerFreeSpins(game, res.freeSpinsAwarded || game.freeSpinsCount);
+                        }
+                    }, 600);
+                }).catch(function() {
+                    balance -= cost;
+                    updateBalance();
+                    saveBalance();
+                    if (typeof playSound === 'function') playSound('buy_feature');
+                    showBonusEffect('BONUS FEATURE PURCHASED!', '#ff6d00');
+                    setTimeout(function() {
+                        if (game.bonusType === 'chamber_spins' && typeof triggerChamberSpins === 'function') {
+                            triggerChamberSpins(game);
+                        } else if (game.bonusType === 'sticky_wilds' && typeof triggerStickyWildsFreeSpins === 'function') {
+                            triggerStickyWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'walking_wilds' && typeof triggerWalkingWildsFreeSpins === 'function') {
+                            triggerWalkingWildsFreeSpins(game, 0);
+                        } else if (game.bonusType === 'prize_wheel' && typeof triggerPrizeWheel === 'function') {
+                            triggerPrizeWheel(game);
+                        } else {
+                            triggerFreeSpins(game, game.freeSpinsCount);
+                        }
+                    }, 600);
+                });
             };
             document.body.appendChild(btn);
         }
