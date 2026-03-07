@@ -388,6 +388,25 @@ router.post('/', authenticate, async (req, res) => {
             require('../services/wagerace.service').recordWager(userId, bet).catch(function() {});
         }
 
+        // ── Spin streak tick (fire-and-forget) ──────────────────────────
+        if (!usedFreeSpin) {
+            (async function () {
+                try {
+                    const _ssRow = await db.get('SELECT spin_streak_count, spin_streak_last FROM users WHERE id = ?', [userId]);
+                    if (_ssRow !== undefined) {
+                        const _ssNow = Date.now();
+                        let _ssCnt = _ssRow ? (_ssRow.spin_streak_count || 0) : 0;
+                        const _ssLast = _ssRow ? _ssRow.spin_streak_last : null;
+                        // Reset streak if gap > 5 minutes
+                        if (_ssLast && (_ssNow - new Date(_ssLast).getTime()) > 5 * 60 * 1000) _ssCnt = 0;
+                        _ssCnt++;
+                        await db.run('UPDATE users SET spin_streak_count = ?, spin_streak_last = ? WHERE id = ?',
+                            [_ssCnt, new Date(_ssNow).toISOString(), userId]);
+                    }
+                } catch (_ssErr) { /* non-critical */ }
+            }());
+        }
+
         // ── Battle pass XP + gem miner boost (fire-and-forget) ──────────
         if (!usedFreeSpin && bet > 0) {
             (async function () {
