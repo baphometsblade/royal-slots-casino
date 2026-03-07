@@ -19,6 +19,89 @@
         let _apStopBigWinMult    = 0;   // stop when win/bet >= this (0 = off)
         let _apStopOnLoss        = 0;   // stop when (startBalance - balance) >= this (0 = off)
 
+        // ── Low-balance quick-deposit nudge ─────────────────────────
+        let _lastLowBalanceNudge = 0; // epoch-ms timestamp of last overlay shown
+
+        function _showLowBalanceQuickDeposit() {
+            // Inject CSS once
+            if (!document.getElementById('lowBalQuickDepStyle')) {
+                var style = document.createElement('style');
+                style.id = 'lowBalQuickDepStyle';
+                style.textContent = [
+                    '#lowBalQuickDep{position:fixed;inset:0;background:rgba(0,0,0,0.75);',
+                    'z-index:15000;display:flex;align-items:center;justify-content:center;}',
+                    '#lowBalQuickDep .lbq-card{background:#0d0d1a;border:1px solid rgba(255,215,0,0.4);',
+                    'border-radius:16px;padding:24px;max-width:320px;width:90%;text-align:center;}',
+                    '#lowBalQuickDep .lbq-title{color:#ffd700;font-size:18px;font-weight:800;margin-bottom:8px;}',
+                    '#lowBalQuickDep .lbq-bal{color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;}',
+                    '#lowBalQuickDep .lbq-chips{display:flex;gap:8px;justify-content:center;',
+                    'flex-wrap:wrap;margin-bottom:12px;}',
+                    '#lowBalQuickDep .lbq-chip{background:linear-gradient(135deg,#10b981,#059669);',
+                    'color:#fff;border:none;border-radius:8px;padding:8px 14px;',
+                    'font-size:13px;font-weight:700;cursor:pointer;}',
+                    '#lowBalQuickDep .lbq-chip:hover{filter:brightness(1.15);}',
+                    '#lowBalQuickDep .lbq-dismiss{background:none;border:none;',
+                    'color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;padding:4px 8px;}'
+                ].join('');
+                document.head.appendChild(style);
+            }
+
+            // Remove any stale overlay
+            var existing = document.getElementById('lowBalQuickDep');
+            if (existing) existing.remove();
+
+            var bal = (typeof balance !== 'undefined' ? balance : 0).toFixed(2);
+
+            var overlay = document.createElement('div');
+            overlay.id = 'lowBalQuickDep';
+            overlay.innerHTML = [
+                '<div class="lbq-card">',
+                '<div class="lbq-title">&#x1F4B0; Balance Running Low</div>',
+                '<div class="lbq-bal">Current balance: $' + bal + '</div>',
+                '<div class="lbq-chips">',
+                '<button class="lbq-chip" data-amt="10">+$10</button>',
+                '<button class="lbq-chip" data-amt="25">+$25</button>',
+                '<button class="lbq-chip" data-amt="50">+$50</button>',
+                '<button class="lbq-chip" data-amt="100">+$100</button>',
+                '</div>',
+                '<button class="lbq-dismiss">Not Now</button>',
+                '</div>'
+            ].join('');
+
+            // Chip click handler
+            overlay.querySelectorAll('.lbq-chip').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var amt = parseInt(btn.getAttribute('data-amt'), 10);
+                    overlay.remove();
+                    if (typeof addFunds === 'function') {
+                        addFunds(amt);
+                    } else if (typeof showWalletModal === 'function') {
+                        showWalletModal();
+                    } else if (typeof openWallet === 'function') {
+                        openWallet();
+                    }
+                });
+            });
+
+            // Dismiss button
+            overlay.querySelector('.lbq-dismiss').addEventListener('click', function() {
+                overlay.remove();
+            });
+
+            // Backdrop click dismisses
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) overlay.remove();
+            });
+
+            document.body.appendChild(overlay);
+
+            // Auto-dismiss after 15 seconds
+            setTimeout(function() {
+                var el = document.getElementById('lowBalQuickDep');
+                if (el) el.remove();
+            }, 15000);
+        }
+
         /* ── Sprint 82: Bonus Drought tracker helpers ── */
         function _updateDroughtStat(justTriggered) {
             var el = document.getElementById('statDrought');
@@ -3597,12 +3680,15 @@
                     betAmount: currentBet
                 });
             }
-            // Low balance warning (once per 10 spins max)
+            // Low balance nudge — quick-deposit overlay (throttled to once per 5 min)
             (function() {
-                var threshold = Math.max(50, currentBet * 3);
-                if (balance < threshold && spinHistory.length > 0 && spinHistory.length % 10 === 1) {
-                    if (currentUser && !currentUser.isGuest) {
+                var threshold = Math.max(20, currentBet * 2);
+                var now = Date.now();
+                if (balance < threshold && (now - _lastLowBalanceNudge) >= 300000) {
+                    _lastLowBalanceNudge = now;
+                    if (typeof currentUser !== 'undefined' && currentUser && !currentUser.isGuest) {
                         showToast('Balance running low — tap WALLET to add funds!', 'warning', 5000);
+                        _showLowBalanceQuickDeposit();
                     } else {
                         showToast('Running low! Create an account to deposit and keep playing.', 'warning', 5000);
                     }
