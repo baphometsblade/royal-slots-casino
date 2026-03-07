@@ -1190,6 +1190,182 @@ function checkPromoTriggers(event, data) {
 
 
 // ─────────────────────────────────────────────────────────────────────
+// 4g. Deposit Streak Promo Card
+// ─────────────────────────────────────────────────────────────────────
+
+var _STREAK_REWARDS_STATIC = {
+    1: { gems: 100,  credits: 0,     label: 'Day 1 Bonus' },
+    2: { gems: 150,  credits: 0,     label: 'Day 2 Bonus' },
+    3: { gems: 300,  credits: 2.00,  label: 'Day 3 Bonus' },
+    4: { gems: 300,  credits: 0,     label: 'Day 4 Bonus' },
+    5: { gems: 500,  credits: 5.00,  label: 'Day 5 Bonus' },
+    6: { gems: 500,  credits: 0,     label: 'Day 6 Bonus' },
+    7: { gems: 1000, credits: 10.00, label: 'Day 7 MEGA Bonus' }
+};
+
+(function _injectDepositStreakStyles() {
+    if (document.getElementById('depositStreakCss')) return;
+    var s = document.createElement('style');
+    s.id = 'depositStreakCss';
+    s.textContent =
+        '.ds-card{background:linear-gradient(145deg,rgba(10,10,30,.95),rgba(20,10,50,.98));' +
+        'border:1.5px solid rgba(251,191,36,.45);border-radius:16px;padding:18px 16px 14px;' +
+        'color:#e0e7ff;margin-bottom:16px;box-shadow:0 4px 24px rgba(251,191,36,.12);}' +
+        '.ds-title{font-size:15px;font-weight:900;color:#fbbf24;text-align:center;margin-bottom:12px;letter-spacing:.3px;}' +
+        '.ds-circles{display:flex;justify-content:space-between;gap:4px;margin-bottom:10px;}' +
+        '.ds-day{flex:1;min-width:0;text-align:center;border-radius:8px;padding:6px 2px;cursor:default;transition:transform .15s;}' +
+        '.ds-day-done{background:linear-gradient(135deg,#d97706,#fbbf24);border:1px solid #fbbf24;color:#000;}' +
+        '.ds-day-today{background:rgba(251,191,36,.15);border:2px solid #fbbf24;color:#fbbf24;' +
+        'animation:dsPulse 1.4s ease-in-out infinite;box-shadow:0 0 12px rgba(251,191,36,.5);}' +
+        '.ds-day-mega{background:rgba(167,139,250,.12);border:1.5px solid rgba(167,139,250,.5);color:#a78bfa;}' +
+        '.ds-day-dim{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);}' +
+        '.ds-day-num{font-size:13px;font-weight:800;line-height:1.2;}' +
+        '.ds-day-gem{font-size:8px;margin-top:2px;opacity:.75;}' +
+        '.ds-status{font-size:11px;text-align:center;margin:6px 0 10px;line-height:1.5;color:rgba(255,255,255,.65);}' +
+        '.ds-status-active{color:#34d399;}' +
+        '.ds-status-info{color:rgba(255,255,255,.6);}' +
+        '.ds-mega-hint{color:#a78bfa;font-weight:700;display:block;margin-top:2px;}' +
+        '.ds-cta-btn{width:100%;padding:9px;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;' +
+        'background:linear-gradient(135deg,#d97706,#fbbf24);color:#000;transition:opacity .2s;}' +
+        '.ds-cta-btn:hover{opacity:.85;}' +
+        '.ds-cta-done{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);cursor:not-allowed;}' +
+        '.ds-cta-done:hover{opacity:1;}' +
+        '@keyframes dsPulse{0%,100%{box-shadow:0 0 8px rgba(251,191,36,.4);}50%{box-shadow:0 0 18px rgba(251,191,36,.8);}}';
+    document.head.appendChild(s);
+})();
+
+function _buildDepositStreakCardEl(data) {
+    var streak         = (data && typeof data.streak === 'number')  ? data.streak  : 0;
+    var nextDay        = (data && typeof data.nextDay === 'number') ? data.nextDay : 1;
+    var depositedToday = data ? !!data.depositedToday : false;
+    var rewards        = (data && data.rewards) ? data.rewards : _STREAK_REWARDS_STATIC;
+    var isStatic       = !data;
+
+    var card = document.createElement('div');
+    card.className = 'ds-card';
+    card.id = 'depositStreakCard';
+
+    var title = document.createElement('div');
+    title.className = 'ds-title';
+    title.textContent = '\uD83D\uDCB0 Daily Deposit Streak';
+    card.appendChild(title);
+
+    var circles = document.createElement('div');
+    circles.className = 'ds-circles';
+    for (var d = 1; d <= 7; d++) {
+        var isDone   = (d <= streak && !isStatic);
+        var isToday  = (!isStatic && d === nextDay && !depositedToday);
+        var isMega   = (d === 7);
+        var r        = rewards[d] || { gems: 0, credits: 0 };
+
+        var dayEl = document.createElement('div');
+        var cls = 'ds-day';
+        if (isDone)       cls += ' ds-day-done';
+        else if (isToday) cls += ' ds-day-today';
+        else if (isMega)  cls += ' ds-day-mega';
+        else              cls += ' ds-day-dim';
+        dayEl.className = cls;
+        dayEl.title = r.gems + ' gems' + (r.credits > 0 ? ' + $' + r.credits.toFixed(0) : '');
+
+        var dayNum = document.createElement('div');
+        dayNum.className = 'ds-day-num';
+        dayNum.textContent = (d === 7) ? '\uD83D\uDC8E' : String(d);
+
+        var dayGem = document.createElement('div');
+        dayGem.className = 'ds-day-gem';
+        dayGem.textContent = String(r.gems);
+
+        dayEl.appendChild(dayNum);
+        dayEl.appendChild(dayGem);
+        circles.appendChild(dayEl);
+    }
+    card.appendChild(circles);
+
+    var statusEl = document.createElement('div');
+    statusEl.className = 'ds-status';
+    if (isStatic) {
+        statusEl.className += ' ds-status-info';
+        statusEl.appendChild(document.createTextNode('Deposit daily to build your streak!'));
+        statusEl.appendChild(document.createElement('br'));
+        var hint = document.createElement('span');
+        hint.className = 'ds-mega-hint';
+        hint.textContent = 'Day 7 MEGA = 1000 gems + $10 credits!';
+        statusEl.appendChild(hint);
+    } else if (depositedToday) {
+        statusEl.className += ' ds-status-active';
+        statusEl.textContent = '\u2705 Streak active! Day ' + streak + ' complete \u2014 come back tomorrow!';
+    } else if (streak === 0) {
+        statusEl.className += ' ds-status-info';
+        statusEl.textContent = 'Start fresh \u2014 Day 1 gives you 100 gems!';
+    } else {
+        statusEl.className += ' ds-status-info';
+        var nextReward = rewards[nextDay] || { gems: 100, credits: 0 };
+        var preview = nextReward.gems + ' gems' + (nextReward.credits > 0 ? ' + $' + nextReward.credits.toFixed(0) + ' credits' : '');
+        statusEl.textContent = 'Deposit today \u2192 earn ' + preview + '!';
+    }
+    card.appendChild(statusEl);
+
+    var ctaDone = (!isStatic && depositedToday);
+    var ctaBtn = document.createElement('button');
+    ctaBtn.className = 'ds-cta-btn' + (ctaDone ? ' ds-cta-done' : '');
+    ctaBtn.id = 'dsCtaBtn';
+    ctaBtn.textContent = ctaDone ? '\u23F0 Come back tomorrow' : '\uD83D\uDCB3 Deposit Now';
+    if (!ctaDone) {
+        ctaBtn.addEventListener('click', function() {
+            if (typeof showWalletModal === 'function' && typeof currentUser !== 'undefined' && currentUser) {
+                showWalletModal();
+            } else if (typeof addFunds === 'function') {
+                addFunds();
+            }
+        });
+    }
+    card.appendChild(ctaBtn);
+
+    return card;
+}
+
+function renderDepositStreakCard(container) {
+    if (!container) return;
+
+    var existing = document.getElementById('depositStreakCard');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    var token = null;
+    try {
+        var tokenKey = (typeof STORAGE_KEY_AUTH_TOKEN !== 'undefined')
+            ? STORAGE_KEY_AUTH_TOKEN
+            : 'matrix_auth_token';
+        token = localStorage.getItem(tokenKey) || localStorage.getItem('matrix_auth_token');
+    } catch (e) {}
+
+    function _insertCard(data) {
+        var card = _buildDepositStreakCardEl(data);
+        if (container.firstChild) {
+            container.insertBefore(card, container.firstChild);
+        } else {
+            container.appendChild(card);
+        }
+    }
+
+    if (!token) {
+        _insertCard(null);
+        return;
+    }
+
+    fetch('/api/deposit-streak/status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    }).then(function(data) {
+        _insertCard(data);
+    }).catch(function() {
+        _insertCard(null);
+    });
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
 // 6. ENGINE INITIALISATION
 // ─────────────────────────────────────────────────────────────────────
 
@@ -1205,6 +1381,14 @@ function initPromoEngine() {
     if (!localStorage.getItem(PROMO_KEY_PLAY_START)) {
         localStorage.setItem(PROMO_KEY_PLAY_START, String(Date.now()));
     }
+
+    // Render deposit-streak card into the Bonuses & Promos sidebar section
+    setTimeout(function() {
+        var promosSidebar = document.querySelector('#csbDdPromos .csb-dd-body');
+        if (promosSidebar) {
+            renderDepositStreakCard(promosSidebar);
+        }
+    }, 4000);
 
     // Update last visit timestamp (read first for welcome-back check)
     const prevVisit = localStorage.getItem(PROMO_KEY_LAST_VISIT);
