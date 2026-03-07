@@ -130,6 +130,10 @@
             }
             updateFabBadge();
             if (_panelOpen) renderPanel();
+
+            // After a local unlock, also nudge the server to check and award
+            // any server-side achievements that may now be eligible.
+            _syncAchievementsFromServer();
         }
     }
 
@@ -375,6 +379,10 @@
         _panelOpen = true;
         ensurePanelDOM();
         renderPanel();
+
+        // Sync server state every time the panel opens so the user always
+        // sees server-verified unlocks merged into the local view.
+        _syncAchievementsFromServer();
 
         var overlay = document.getElementById(OVERLAY_ID);
         var panel   = document.getElementById(PANEL_ID);
@@ -649,6 +657,91 @@
             default:
                 return progress + ' / ' + ach.target;
         }
+    }
+
+    // ── Server API Sync ──────────────────────────────────────────
+    function _syncAchievementsFromServer() {
+        // Only sync when a user is logged in — check both the JWT token and the
+        // currentUser global so we skip unauthenticated sessions cleanly.
+        var token = null;
+
+        // Prefer the named constant if it loaded before this IIFE ran.
+        if (typeof STORAGE_KEY_TOKEN !== 'undefined') {
+            token = localStorage.getItem(STORAGE_KEY_TOKEN);
+        }
+        // Fallback: try the well-known legacy key name used by some auth paths.
+        if (!token) {
+            token = localStorage.getItem('matrix_auth_token');
+        }
+        // Final fallback: try 'casinoToken' directly.
+        if (!token) {
+            token = localStorage.getItem('casinoToken');
+        }
+
+        // Also require the in-memory currentUser to be populated.
+        var userLoggedIn = typeof currentUser !== 'undefined' && !!currentUser;
+
+        if (!token || !userLoggedIn) return;
+
+        var authHeader = { 'Authorization': 'Bearer ' + token };
+
+        // ── 1. GET /api/achievements ──────────────────────────────
+        fetch('/api/achievements', {
+            method: 'GET',
+            headers: authHeader
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data || !Array.isArray(data.achievements)) return;
+            if (!_state) return;
+
+            var newlyMerged = [];
+
+            data.achievements.forEach(function(svrAch) {
+                if (!svrAch.unlocked) return;
+                // Merge: add to local unlocked if not already there.
+                if (_state.unlocked.indexOf(svrAch.id) === -1) {
+                    _state.unlocked.push(svrAch.id);
+                    newlyMerged.push(svrAch);
+                }
+            });
+
+            if (newlyMerged.length > 0) {
+                saveState();
+                updateFabBadge();
+                if (_panelOpen) renderPanel();
+
+                // Show toast for each newly-discovered server unlock.
+                newlyMerged.forEach(function(svrAch, idx) {
+                    setTimeout(function() {
+                        var reward = typeof svrAch.rewardAmount === 'number' ? svrAch.rewardAmount : 0;
+                        var rewardLabel = svrAch.rewardType === 'gems'
+                            ? ('+' + reward + ' gems')
+                            : ('+$' + reward.toFixed ? '+$' + reward.toFixed(2) : '+' + reward);
+                        var msg = '\uD83C\uDFC5 ' + (svrAch.name || svrAch.id) + '! ' + rewardLabel;
+                        if (typeof showWinToast === 'function') {
+                            showWinToast(msg, 'epic');
+                        }
+                    }, TOAST_DELAY + idx * 800);
+                });
+            } else if (_panelOpen) {
+                // Still refresh panel so server-sourced data shows correctly.
+                renderPanel();
+            }
+        })
+        .catch(function() {
+            // Network error — silently ignore; localStorage state remains active.
+        });
+
+        // ── 2. POST /api/achievements/check (fire-and-forget) ─────
+        // Let the server evaluate conditions against the authoritative DB.
+        // No UI dependency on the result — a subsequent openPanel() call will
+        // pick up any new unlocks via the GET above.
+        fetch('/api/achievements/check', {
+            method: 'POST',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, authHeader),
+            body: JSON.stringify({})
+        }).catch(function() { /* fire-and-forget — ignore errors */ });
     }
 
     // ── Hook: displayServerWinResult ─────────────────────────────
