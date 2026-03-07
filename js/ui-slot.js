@@ -1138,6 +1138,108 @@
             }, 12000);
         }
 
+        // ── Challenge HUD (in-slot progress widget) ─────────────────────────────
+        function initSlotChallengeHud() {
+            var _old = document.getElementById('slotChallengeHud');
+            if (_old) _old.remove();
+
+            var _token = '';
+            try { _token = localStorage.getItem('casinoToken') || ''; } catch(e) {}
+            if (!_token) return;
+
+            var _modal = document.getElementById('slotModal');
+            if (!_modal) return;
+
+            var _hud = document.createElement('div');
+            _hud.id = 'slotChallengeHud';
+            _hud.style.cssText = [
+                'position:absolute', 'top:8px', 'right:8px', 'z-index:500',
+                'background:rgba(0,0,0,0.75)', 'border:1px solid rgba(255,215,0,0.4)',
+                'border-radius:10px', 'padding:6px 10px', 'cursor:pointer',
+                'font-size:11px', 'color:#fff', 'max-width:160px',
+                'backdrop-filter:blur(4px)', 'transition:opacity 0.3s',
+                'line-height:1.5'
+            ].join(';');
+            _hud.addEventListener('click', function() {
+                if (typeof window.openChallengesModal === 'function') window.openChallengesModal();
+            });
+            _modal.appendChild(_hud);
+            refreshSlotChallengeHud();
+        }
+
+        function _buildChallengeHudRow(c) {
+            var rawLabel = typeof c.label === 'string' ? c.label : '';
+            var label = rawLabel.length > 20 ? rawLabel.slice(0, 20) + '\u2026' : rawLabel;
+            var progress = Number(c.progress) || 0;
+            var target = Number(c.target) || 1;
+            var pct = Math.min(1, progress / target);
+            var fillW = Math.round(pct * 100);
+
+            var row = document.createElement('div');
+            row.style.cssText = 'margin-bottom:3px;';
+
+            var labelSpan = document.createElement('span');
+            labelSpan.textContent = '\uD83C\uDFC6 ' + label;
+            row.appendChild(labelSpan);
+            row.appendChild(document.createElement('br'));
+
+            var barContainer = document.createElement('span');
+            barContainer.style.cssText = 'display:inline-block;width:100px;height:4px;background:#333;border-radius:2px;vertical-align:middle;margin-left:4px;';
+            var barFill = document.createElement('span');
+            barFill.style.cssText = 'display:block;height:4px;border-radius:2px;background:linear-gradient(to right,#ffd700,#ffb300);max-width:100%;width:' + fillW + 'px;';
+            barContainer.appendChild(barFill);
+            row.appendChild(barContainer);
+
+            var countSpan = document.createElement('span');
+            countSpan.style.cssText = 'font-size:10px;opacity:0.8;';
+            countSpan.textContent = ' ' + progress + '/' + target;
+            row.appendChild(countSpan);
+
+            return row;
+        }
+
+        function refreshSlotChallengeHud() {
+            var _hud = document.getElementById('slotChallengeHud');
+            if (!_hud) return;
+
+            var _token = '';
+            try { _token = localStorage.getItem('casinoToken') || ''; } catch(e) {}
+            if (!_token) { _hud.style.display = 'none'; return; }
+            _hud.style.display = '';
+
+            try {
+                fetch('/api/challenges', {
+                    headers: { 'Authorization': 'Bearer ' + _token }
+                }).then(function(r) {
+                    if (!r.ok) throw new Error('non-ok');
+                    return r.json();
+                }).then(function(data) {
+                    var _hud2 = document.getElementById('slotChallengeHud');
+                    if (!_hud2) return;
+                    var challenges = Array.isArray(data) ? data : (data.challenges || []);
+                    var active = challenges.filter(function(c) { return !c.completed; });
+
+                    while (_hud2.firstChild) _hud2.removeChild(_hud2.firstChild);
+
+                    if (active.length === 0 && challenges.length > 0) {
+                        var doneSpan = document.createElement('div');
+                        doneSpan.style.cssText = 'text-align:center;font-size:11px;';
+                        doneSpan.textContent = '\u2705 All done! Tap to claim';
+                        _hud2.appendChild(doneSpan);
+                        return;
+                    }
+                    if (active.length === 0) {
+                        _hud2.style.display = 'none';
+                        return;
+                    }
+                    active.slice(0, 2).forEach(function(c) {
+                        _hud2.appendChild(_buildChallengeHudRow(c));
+                    });
+                }).catch(function() {});
+            } catch(e) {}
+        }
+        // ── End Challenge HUD ────────────────────────────────────────────────────
+
         function openSlot(gameId) {
             currentGame = games.find(g => g.id === gameId);
             if (!currentGame) return;
@@ -1864,6 +1966,8 @@
                 })();
                 // Inject tournament active badge
                 _injectTournamentBadge();
+                // Challenge progress HUD
+                initSlotChallengeHud();
             });
         }
 
@@ -1929,6 +2033,9 @@
             if (typeof destroyParticleEngine === 'function') destroyParticleEngine();
             _hideCascadeChain();
             _updateFreeSpinsFrame(); // cleanup: removes golden frame and banner
+            // Remove challenge HUD
+            var _challengeHudClose = document.getElementById('slotChallengeHud');
+            if (_challengeHudClose) _challengeHudClose.remove();
             // Cleanup gamble state
             if (typeof hideGambleButton === 'function') hideGambleButton();
             if (typeof gambleState !== 'undefined') { gambleState.active = false; gambleState.amount = 0; gambleState.round = 0; }
@@ -3074,6 +3181,7 @@
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
                 _updateSessionStats();
+                if (typeof refreshSlotChallengeHud === 'function') refreshSlotChallengeHud();
                 // Sprint 82: bonus drought (only on non-free-spin spins) + goal win
                 if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
                 if (typeof window.recordGoalWin === 'function' && !freeSpinsActive) window.recordGoalWin(winAmount);
@@ -3342,6 +3450,7 @@
                 if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _updateSessionHud();
                 _updateSessionStats();
+                if (typeof refreshSlotChallengeHud === 'function') refreshSlotChallengeHud();
                 // Sprint 82: bonus drought on loss
                 if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
                 // Dynamic layer de-escalation
@@ -6986,6 +7095,7 @@
                 _sessTotalWon += winAmount;
                 _updateSessionHud();
                 _updateSessionStats();
+                if (typeof refreshSlotChallengeHud === 'function') refreshSlotChallengeHud();
                 // Sprint 82: bonus drought (only on non-free-spin spins) + goal win
                 if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
                 if (typeof window.recordGoalWin === 'function' && !freeSpinsActive) window.recordGoalWin(winAmount);
@@ -7225,6 +7335,7 @@
                 if (typeof _bankrollBudget !== 'undefined' && _bankrollBudget > 0) { _bankrollWagered += currentBet; _updateBankrollBar(); }
                 _updateSessionHud();
                 _updateSessionStats();
+                if (typeof refreshSlotChallengeHud === 'function') refreshSlotChallengeHud();
                 // Sprint 82: bonus drought on loss
                 if (!freeSpinsActive) { _bonusDrought++; _updateDroughtStat(false); }
                 // Dynamic layer de-escalation

@@ -61,7 +61,7 @@
     r1Icon.textContent = '\uD83D\uDC8E';
     var r1Val = document.createElement('div');
     r1Val.className = 'fd-reward-val';
-    r1Val.textContent = '+500';
+    r1Val.textContent = '+1,000';
     var r1Label = document.createElement('div');
     r1Label.className = 'fd-reward-label';
     r1Label.textContent = 'Gems';
@@ -77,7 +77,7 @@
     r2Icon.textContent = '\uD83D\uDCB5';
     var r2Val = document.createElement('div');
     r2Val.className = 'fd-reward-val';
-    r2Val.textContent = '+$2.00';
+    r2Val.textContent = '+$5.00';
     var r2Label = document.createElement('div');
     r2Label.className = 'fd-reward-label';
     r2Label.textContent = 'Credits';
