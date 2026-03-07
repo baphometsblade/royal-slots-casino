@@ -163,8 +163,6 @@ app.use('/api/reddog',        require('./routes/reddog.routes'));
 app.use('/api/caribbeanstud',    require('./routes/caribbeanstud.routes'));
 app.use('/api/threecardpoker',  require('./routes/threecardpoker.routes'));
 app.use('/api/letitride',       require('./routes/letitride.routes'));
-app.use('/api/crash',          require('./routes/crash.routes'));
-app.use('/api/mines',          require('./routes/mines.routes'));
 app.use('/api/scratch',        require('./routes/scratch.routes'));
 app.use('/api/bigsixwheel',    require('./routes/bigsixwheel.routes'));
 app.use('/api/chuckaluck',     require('./routes/chuckaluck.routes'));
