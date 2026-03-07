@@ -2488,6 +2488,18 @@
                         }
                         return;
                     }
+                    // Handle locked premium game (no active rental)
+                    if (serverResult && serverResult.error === 'game_locked') {
+                        stopReelScrollingImmediately();
+                        spinning = false;
+                        var _raGL = document.querySelector('.slot-reel-area');
+                        if (_raGL) _raGL.classList.remove('spinning-active');
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = '';
+                        refreshBetControls();
+                        showMessage('🔒 Premium game — purchase access to play!', 'lose');
+                        return;
+                    }
                     if (!serverResult || !Array.isArray(serverResult.grid)) {
                         throw new Error('Invalid spin response from server.');
                     }
