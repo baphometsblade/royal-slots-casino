@@ -2770,8 +2770,10 @@
             // Update local stats
             stats.totalSpins++;
             if (!serverResult || !serverResult.usedFreeSpin) {
+                var _prevVipIdx = (typeof getVipTierIndex === 'function') ? getVipTierIndex() : -1;
                 stats.totalWagered += currentBet;
                 if (typeof window.updateVipMiniBar === 'function') window.updateVipMiniBar();
+                if (typeof window.checkAndFireVipTierUp === 'function') window.checkAndFireVipTierUp(_prevVipIdx);
             }
             if (!stats.gamesPlayed[spinGame.id]) stats.gamesPlayed[spinGame.id] = 0;
             stats.gamesPlayed[spinGame.id]++;

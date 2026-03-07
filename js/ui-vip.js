@@ -1319,3 +1319,122 @@ function getVipBadgeHtml(tierName) {
     var slug = String(tierName).toLowerCase().replace(/\s+/g, '-');
     return '<span class="vip-inline-badge vip-badge-' + slug + '">' + tierName + '</span>';
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// VIP TIER-UP CELEBRATION
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Call with the tier index that was current BEFORE wagered was incremented.
+ * If the player has crossed into a higher tier, fires the celebration modal.
+ */
+function checkAndFireVipTierUp(prevIndex) {
+    var newIndex = getVipTierIndex();
+    if (newIndex <= prevIndex) return; // no change or regression
+    var tier = getVipTier();
+    showVipTierUpModal(tier);
+}
+window.checkAndFireVipTierUp = checkAndFireVipTierUp;
+
+function showVipTierUpModal(tier) {
+    // Remove existing if any
+    var existing = document.getElementById('vipTierUpModal');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'vipTierUpModal';
+    overlay.style.cssText = [
+        'position:fixed', 'inset:0', 'z-index:99999',
+        'display:flex', 'align-items:center', 'justify-content:center',
+        'background:rgba(0,0,0,0.85)', 'backdrop-filter:blur(6px)',
+        'animation:vipTuFadeIn 0.4s ease'
+    ].join(';');
+
+    var card = document.createElement('div');
+    card.style.cssText = [
+        'background:linear-gradient(160deg,#0a0a1a,#12122a)',
+        'border:2px solid ' + (tier.color || '#ffd700'),
+        'box-shadow:0 0 60px ' + (tier.color || '#ffd700') + '55',
+        'border-radius:20px', 'padding:44px 52px', 'text-align:center',
+        'max-width:380px', 'width:90%',
+        'animation:vipTuPop 0.5s cubic-bezier(0.34,1.56,0.64,1)'
+    ].join(';');
+
+    // Inject keyframes once
+    if (!document.getElementById('_vipTuStyles')) {
+        var s = document.createElement('style');
+        s.id = '_vipTuStyles';
+        s.textContent = [
+            '@keyframes vipTuFadeIn{from{opacity:0}to{opacity:1}}',
+            '@keyframes vipTuPop{from{transform:scale(0.6);opacity:0}to{transform:scale(1);opacity:1}}',
+            '@keyframes vipTuFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}'
+        ].join('');
+        document.head.appendChild(s);
+    }
+
+    var icon = document.createElement('div');
+    icon.textContent = tier.icon || '⭐';
+    icon.style.cssText = 'font-size:72px;margin-bottom:12px;animation:vipTuFloat 2s ease-in-out infinite;display:block';
+
+    var headline = document.createElement('div');
+    headline.textContent = 'VIP TIER UP!';
+    headline.style.cssText = 'font-size:13px;letter-spacing:4px;color:#aaa;margin-bottom:6px;font-weight:700';
+
+    var tierName = document.createElement('div');
+    tierName.textContent = tier.name || 'Silver';
+    tierName.style.cssText = [
+        'font-size:42px', 'font-weight:900', 'letter-spacing:2px',
+        'color:' + (tier.color || '#ffd700'),
+        'text-shadow:0 0 30px ' + (tier.color || '#ffd700') + '88',
+        'margin-bottom:10px'
+    ].join(';');
+
+    var subtitle = document.createElement('div');
+    subtitle.textContent = 'You\'ve unlocked enhanced rewards!';
+    subtitle.style.cssText = 'font-size:14px;color:#888;margin-bottom:28px';
+
+    var btn = document.createElement('button');
+    btn.textContent = '✨ View Benefits';
+    btn.style.cssText = [
+        'background:linear-gradient(135deg,' + (tier.color || '#ffd700') + ',' + (tier.color || '#ffd700') + 'aa)',
+        'border:none', 'border-radius:12px', 'padding:14px 36px',
+        'font-size:16px', 'font-weight:800', 'color:#000', 'cursor:pointer',
+        'box-shadow:0 6px 20px ' + (tier.color || '#ffd700') + '44',
+        'letter-spacing:1px', 'margin-right:12px'
+    ].join(';');
+    btn.onclick = function() {
+        overlay.remove();
+        if (typeof showVipModal === 'function') showVipModal();
+    };
+
+    var skipBtn = document.createElement('button');
+    skipBtn.textContent = 'Continue Playing';
+    skipBtn.style.cssText = 'background:none;border:1px solid #444;border-radius:10px;padding:14px 24px;color:#888;cursor:pointer;font-size:14px';
+    skipBtn.onclick = function() { overlay.remove(); };
+
+    var btnRow = document.createElement('div');
+    btnRow.appendChild(btn);
+    btnRow.appendChild(skipBtn);
+
+    card.appendChild(icon);
+    card.appendChild(headline);
+    card.appendChild(tierName);
+    card.appendChild(subtitle);
+    card.appendChild(btnRow);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    // Sound + particles
+    if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
+        SoundManager.playSoundEvent('level_up');
+    }
+    if (typeof burstParticles === 'function') {
+        burstParticles(window.innerWidth / 2, window.innerHeight / 2, 80, [tier.color || '#ffd700', '#fff', '#ffb300']);
+    }
+
+    // Auto-close after 8 seconds
+    setTimeout(function() {
+        if (document.getElementById('vipTierUpModal')) overlay.remove();
+    }, 8000);
+}
