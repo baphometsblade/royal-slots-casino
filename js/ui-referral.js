@@ -152,6 +152,8 @@
             try { localStorage.setItem(STORAGE_SEEN_KEY, '1'); } catch (e) {}
             var dot = document.getElementById('refDot');
             if (dot && dot.parentNode) dot.parentNode.removeChild(dot);
+            // Load real server data (no-op if not authenticated)
+            _loadServerReferralData();
         } else {
             _panelEl.classList.remove('active');
         }
@@ -289,6 +291,117 @@
         if (!el) return;
         el.classList.add('show');
         setTimeout(function() { el.classList.remove('show'); }, 2000);
+    }
+
+    // ── Server API integration ────────────────────────────────────────
+    function _getAuthToken() {
+        var key = (typeof STORAGE_KEY_AUTH_TOKEN !== 'undefined')
+            ? STORAGE_KEY_AUTH_TOKEN
+            : 'matrix_auth_token';
+        try { return localStorage.getItem(key) || localStorage.getItem('matrix_auth_token'); } catch (e) { return null; }
+    }
+
+    function _updatePanelCode(code) {
+        var el = _panelEl && _panelEl.querySelector('.ref-code-val');
+        if (el) el.textContent = code;
+        // Also update share/copy button closures by patching the module-level var
+        _referralCode = code;
+        // Rebind copy button to new code
+        var copyBtn = _panelEl && _panelEl.querySelector('.ref-btn-copy');
+        if (copyBtn) {
+            var newCopy = copyBtn.cloneNode(true);
+            newCopy.addEventListener('click', function() { copyText(_referralCode); });
+            if (copyBtn.parentNode) copyBtn.parentNode.replaceChild(newCopy, copyBtn);
+        }
+        var shareBtn = _panelEl && _panelEl.querySelector('.ref-btn-share');
+        if (shareBtn) {
+            var newShare = shareBtn.cloneNode(true);
+            newShare.addEventListener('click', function() {
+                var url = window.location.origin + window.location.pathname + '?ref=' + _referralCode;
+                var msg = 'Join me on Matrix Spins! Use code ' + _referralCode + ' for $5.00 FREE bonus! ' + url;
+                copyText(msg);
+            });
+            if (shareBtn.parentNode) shareBtn.parentNode.replaceChild(newShare, shareBtn);
+        }
+    }
+
+    function _updatePanelStats(count, bonusEarned) {
+        var sNum = _panelEl && _panelEl.querySelector('.ref-stats-num');
+        if (sNum) sNum.textContent = String(count);
+        _referralStats.count = count;
+        if (typeof bonusEarned === 'number') _referralStats.totalEarned = bonusEarned;
+    }
+
+    function _updatePanelHistory(referrals) {
+        if (!_panelEl || !referrals) return;
+        // Find the history list element (child after ref-hist-title)
+        var histTitle = _panelEl.querySelector('.ref-hist-title');
+        if (!histTitle) return;
+        var histList = histTitle.nextElementSibling;
+        if (!histList) return;
+        // Clear existing children
+        while (histList.firstChild) histList.removeChild(histList.firstChild);
+
+        if (referrals.length === 0) {
+            var empty = document.createElement('div');
+            empty.className = 'ref-hist-empty';
+            empty.textContent = 'No referrals yet \u2014 share your code!';
+            histList.appendChild(empty);
+        } else {
+            for (var i = 0; i < referrals.length; i++) {
+                var r = referrals[i];
+                var item = document.createElement('div');
+                item.className = 'ref-hist-item';
+                var nm = document.createElement('span');
+                nm.textContent = r.referee_username || '??***';
+                var dt = document.createElement('span');
+                dt.textContent = r.created_at ? formatTimeAgo(new Date(r.created_at).getTime()) : '';
+                var bn = document.createElement('span');
+                bn.className = 'ref-hist-bonus';
+                var statusText = r.status === 'completed'
+                    ? ('+$' + (r.bonus_paid || 0).toFixed(2))
+                    : (r.status || 'pending');
+                bn.textContent = statusText;
+                item.appendChild(nm);
+                item.appendChild(dt);
+                item.appendChild(bn);
+                histList.appendChild(item);
+            }
+        }
+        _referralStats.history = referrals;
+    }
+
+    function _loadServerReferralData() {
+        var token = _getAuthToken();
+        if (!token) return; // No auth — remain on localStorage fallback
+
+        // Fetch referral info
+        fetch('/api/referral/info', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        }).then(function(res) {
+            if (!res.ok) return null;
+            return res.json();
+        }).then(function(data) {
+            if (!data || !data.code) return;
+            // Update code in localStorage too so it persists for next session
+            try { localStorage.setItem(STORAGE_CODE_KEY, data.code); } catch (e) {}
+            _referralCode = data.code;
+            if (_panelEl) {
+                _updatePanelCode(data.code);
+                _updatePanelStats(data.totalReferrals || 0, data.totalEarned || 0);
+            }
+        }).catch(function() { /* silent — keep localStorage fallback */ });
+
+        // Fetch referral history
+        fetch('/api/referral/stats', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        }).then(function(res) {
+            if (!res.ok) return null;
+            return res.json();
+        }).then(function(data) {
+            if (!data || !Array.isArray(data.referrals)) return;
+            if (_panelEl) _updatePanelHistory(data.referrals);
+        }).catch(function() { /* silent */ });
     }
 
     function processIncomingReferral() {
