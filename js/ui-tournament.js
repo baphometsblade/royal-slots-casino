@@ -11,14 +11,15 @@
     if (qs.indexOf('noBonus=1') !== -1 || qs.indexOf('qaTools=1') !== -1) return;
 
     // ── Constants ──────────────────────────────────────────────
-    var CYCLE_MS           = 4 * 60 * 60 * 1000;  // 4 hours
-    var LEADERBOARD_SIZE   = 10;
+    var CYCLE_MS           = 4 * 60 * 60 * 1000;  // 4 hours (kept for fake LB cycle)
+    var LEADERBOARD_SIZE   = 20;
     var PRIZE_POOL         = [50, 25, 10];         // 1st, 2nd, 3rd
     var STORAGE_KEY        = 'tournamentState';
     var STYLE_ID           = 'tournamentStyles';
     var FAB_Z              = 18800;
     var PANEL_Z            = 18900;
     var TICK_INTERVAL_MS   = 1000;
+    var REFRESH_INTERVAL_MS = 30 * 1000;           // 30s real-data refresh
 
     var TOURNAMENT_NAMES = [
         'High Roller Showdown', 'Spin Masters Cup', 'Jackpot Championship',
@@ -38,11 +39,13 @@
     ];
 
     // ── State ──────────────────────────────────────────────────
-    var _state       = null;
-    var _fabEl       = null;
-    var _panelEl     = null;
-    var _tickTimer   = null;
-    var _panelOpen   = false;
+    var _state            = null;
+    var _fabEl            = null;
+    var _panelEl          = null;
+    var _tickTimer        = null;
+    var _panelOpen        = false;
+    var _realLeaderboard  = null;   // cached real API leaderboard rows
+    var _realMyStats      = null;   // cached real API myStats
 
     // ── CSS Injection ──────────────────────────────────────────
     function injectStyles() {
@@ -129,6 +132,60 @@
     function pickTournamentName(cycleSeed) {
         var rng = seededRandom(cycleSeed);
         return TOURNAMENT_NAMES[Math.floor(rng() * TOURNAMENT_NAMES.length)];
+    }
+
+    // ── Weekly reset countdown ─────────────────────────────────
+    function getMsToNextMonday() {
+        var now = new Date();
+        var dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon, ...
+        var daysUntilMonday = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7 || 7;
+        var nextMonday = new Date(now);
+        nextMonday.setUTCDate(now.getUTCDate() + daysUntilMonday);
+        nextMonday.setUTCHours(0, 0, 0, 0);
+        return nextMonday - now;
+    }
+
+    // ── Real API fetch ─────────────────────────────────────────
+    function fetchRealTournamentData() {
+        var token = null;
+        try {
+            var rawToken = localStorage.getItem(
+                typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'authToken'
+            );
+            // Only use token if it is a real server token (not a local prefix token)
+            if (rawToken && typeof LOCAL_TOKEN_PREFIX !== 'undefined') {
+                if (!rawToken.startsWith(LOCAL_TOKEN_PREFIX)) token = rawToken;
+            } else if (rawToken) {
+                token = rawToken;
+            }
+        } catch (e) { /* silent */ }
+
+        var leaderboardPromise = fetch('/api/tournament/leaderboard')
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .catch(function () { return null; });
+
+        var myStatsPromise;
+        if (token) {
+            myStatsPromise = fetch('/api/tournament/mystats', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .catch(function () { return null; });
+        } else {
+            myStatsPromise = Promise.resolve(null);
+        }
+
+        return Promise.all([leaderboardPromise, myStatsPromise])
+            .then(function (results) {
+                var lb = results[0];
+                var ms = results[1];
+                // Validate leaderboard is a non-empty array
+                if (!Array.isArray(lb) || lb.length === 0) lb = null;
+                return { leaderboard: lb, myStats: ms || null };
+            })
+            .catch(function () {
+                return { leaderboard: null, myStats: null };
+            });
     }
 
     function generateFakeLeaderboard(cycleSeed) {
@@ -254,8 +311,46 @@
             handleCycleReset(currentCycleStart, now);
         }
 
-        var remaining = (_state.cycleStart + CYCLE_MS) - now;
-        var fullLb = buildFullLeaderboard();
+        // ── Determine data source: real API or fake fallback ───
+        var usingRealData = _realLeaderboard && _realLeaderboard.length > 0;
+        var remaining = usingRealData ? getMsToNextMonday() : (_state.cycleStart + CYCLE_MS) - now;
+
+        // Build display leaderboard
+        var medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+        var displayLb;   // array of { rank, name, score, isPlayer }
+        var playerRank = 0;
+        var playerScore = 0;
+
+        if (usingRealData) {
+            // Map API rows to display shape
+            displayLb = _realLeaderboard.map(function (row) {
+                return {
+                    rank: row.rank,
+                    name: row.username || '?',
+                    score: Math.round(row.score || 0),
+                    isPlayer: false
+                };
+            });
+            if (_realMyStats) {
+                playerRank  = _realMyStats.rank  || 0;
+                playerScore = Math.round(_realMyStats.score || 0);
+                // Mark the player's row in the leaderboard if it's in top-N
+                for (var ri = 0; ri < displayLb.length; ri++) {
+                    if (displayLb[ri].rank === playerRank) {
+                        displayLb[ri].isPlayer = true;
+                        break;
+                    }
+                }
+            }
+        } else {
+            // Fake leaderboard fallback — inject player entry and find rank
+            var fullLb = buildFullLeaderboard();
+            displayLb = [];
+            for (var fi = 0; fi < fullLb.length; fi++) {
+                displayLb.push({ rank: fi + 1, name: fullLb[fi].name, score: fullLb[fi].score, isPlayer: fullLb[fi].isPlayer });
+                if (fullLb[fi].isPlayer) { playerRank = fi + 1; playerScore = fullLb[fi].score; }
+            }
+        }
 
         // Header
         var header = document.createElement('div');
@@ -267,14 +362,13 @@
         var timer = document.createElement('div');
         timer.className = 'tourn-timer';
         timer.id = 'tournTimer';
-        timer.textContent = 'Ends in ' + fmtDuration(remaining);
+        timer.textContent = 'Resets in ' + fmtDuration(remaining);
         header.appendChild(timer);
         _panelEl.appendChild(header);
 
         // Prize pool
         var prizes = document.createElement('div');
         prizes.className = 'tourn-prizes';
-        var medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
         for (var p = 0; p < PRIZE_POOL.length; p++) {
             var badge = document.createElement('div');
             badge.className = 'tourn-prize-badge';
@@ -291,11 +385,6 @@
         _panelEl.appendChild(prizes);
 
         // Player stats row
-        var playerRank = 0;
-        for (var r = 0; r < fullLb.length; r++) {
-            if (fullLb[r].isPlayer) { playerRank = r + 1; break; }
-        }
-
         var statsRow = document.createElement('div');
         statsRow.className = 'tourn-your-stats';
         var rankInfo = document.createElement('div');
@@ -305,7 +394,7 @@
         rankInfo.appendChild(rlb);
         var rv = document.createElement('div');
         rv.className = 'tourn-your-value';
-        rv.textContent = '#' + playerRank;
+        rv.textContent = playerRank > 0 ? '#' + playerRank : '--';
         rankInfo.appendChild(rv);
         statsRow.appendChild(rankInfo);
         var scoreInfo = document.createElement('div');
@@ -316,7 +405,8 @@
         scoreInfo.appendChild(sl);
         var sv = document.createElement('div');
         sv.className = 'tourn-your-value';
-        sv.textContent = fmtMoney(_state.playerScore);
+        // Display real score as integer; fake score formatted as money
+        sv.textContent = usingRealData ? String(playerScore) : fmtMoney(playerScore);
         scoreInfo.appendChild(sv);
         statsRow.appendChild(scoreInfo);
         _panelEl.appendChild(statsRow);
@@ -336,14 +426,15 @@
         table.appendChild(thead);
 
         var tbody = document.createElement('tbody');
-        var displayCount = Math.min(fullLb.length, LEADERBOARD_SIZE);
+        var displayCount = Math.min(displayLb.length, LEADERBOARD_SIZE);
         var playerInTop = false;
         for (var di = 0; di < displayCount; di++) {
-            if (fullLb[di].isPlayer) { playerInTop = true; break; }
+            if (displayLb[di].isPlayer) { playerInTop = true; break; }
         }
 
         for (var i = 0; i < displayCount; i++) {
-            var entry = fullLb[i];
+            var entry = displayLb[i];
+            var displayRank = usingRealData ? entry.rank : (i + 1);
             var tr = document.createElement('tr');
             if (entry.isPlayer) tr.className = 'tourn-lb-row-you';
             if (i === 0) tr.classList.add('tourn-lb-gold');
@@ -351,18 +442,21 @@
             else if (i === 2) tr.classList.add('tourn-lb-bronze');
 
             var tdRank = document.createElement('td');
-            tdRank.textContent = String(i + 1);
+            // Top 3 get medal emoji, rest get number
+            tdRank.textContent = i === 0 ? medals[0] : i === 1 ? medals[1] : i === 2 ? medals[2] : String(displayRank);
             tr.appendChild(tdRank);
             var tdName = document.createElement('td');
             tdName.textContent = entry.isPlayer ? (entry.name + ' (You)') : entry.name;
             tr.appendChild(tdName);
             var tdScore = document.createElement('td');
-            tdScore.textContent = fmtMoney(entry.score);
+            // Real data: integer; fake data: money format
+            tdScore.textContent = usingRealData ? String(entry.score) : fmtMoney(entry.score);
             tr.appendChild(tdScore);
             tbody.appendChild(tr);
         }
 
-        if (!playerInTop && playerRank > displayCount) {
+        // If player is not in top N, append separator + player row
+        if (!playerInTop && playerRank > 0 && playerRank > displayCount) {
             var sepTr = document.createElement('tr');
             var sepTd = document.createElement('td');
             sepTd.colSpan = 3;
@@ -380,7 +474,7 @@
             pTdN.textContent = 'You';
             pTr.appendChild(pTdN);
             var pTdS = document.createElement('td');
-            pTdS.textContent = fmtMoney(_state.playerScore);
+            pTdS.textContent = usingRealData ? String(playerScore) : fmtMoney(playerScore);
             pTr.appendChild(pTdS);
             tbody.appendChild(pTr);
         }
@@ -400,18 +494,44 @@
     // ── Panel open/close ───────────────────────────────────────
     function openTournamentPanel() {
         if (!_panelEl) createPanel();
+        // Render immediately with whatever cached data we have (may be null → fake fallback)
         renderPanel();
         requestAnimationFrame(function() {
             requestAnimationFrame(function() { _panelEl.classList.add('tourn-open'); });
         });
         _panelOpen = true;
         startTick();
+
+        // Fetch real data then re-render with it; start 30s auto-refresh
+        fetchRealTournamentData().then(function (data) {
+            if (data && data.leaderboard) {
+                _realLeaderboard = data.leaderboard;
+                _realMyStats     = data.myStats;
+                if (_panelOpen) renderPanel();
+            }
+        }).catch(function () { /* silent */ });
+
+        if (window._tournRefreshInterval) clearInterval(window._tournRefreshInterval);
+        window._tournRefreshInterval = setInterval(function () {
+            if (!_panelOpen) return;
+            fetchRealTournamentData().then(function (data) {
+                if (data && data.leaderboard) {
+                    _realLeaderboard = data.leaderboard;
+                    _realMyStats     = data.myStats;
+                    if (_panelOpen) renderPanel();
+                }
+            }).catch(function () { /* silent */ });
+        }, REFRESH_INTERVAL_MS);
     }
 
     function closeTournamentPanel() {
         if (_panelEl) _panelEl.classList.remove('tourn-open');
         _panelOpen = false;
         stopTick();
+        if (window._tournRefreshInterval) {
+            clearInterval(window._tournRefreshInterval);
+            window._tournRefreshInterval = null;
+        }
     }
 
     // ── Countdown tick ─────────────────────────────────────────
@@ -419,16 +539,25 @@
         stopTick();
         _tickTimer = setInterval(function () {
             if (!_panelOpen || !_state) return;
-            var now = Date.now();
-            var currentCycleStart = getCycleStart(now);
-            if (_state.cycleStart !== currentCycleStart) {
-                handleCycleReset(currentCycleStart, now);
-                renderPanel();
-                return;
-            }
-            var remaining = (_state.cycleStart + CYCLE_MS) - now;
             var timerEl = document.getElementById('tournTimer');
-            if (timerEl) timerEl.textContent = 'Ends in ' + fmtDuration(remaining);
+            if (!timerEl) return;
+
+            var usingRealData = _realLeaderboard && _realLeaderboard.length > 0;
+            if (usingRealData) {
+                // Count down to next Monday 00:00 UTC (weekly reset)
+                timerEl.textContent = 'Resets in ' + fmtDuration(getMsToNextMonday());
+            } else {
+                // Fake 4-hour cycle countdown
+                var now = Date.now();
+                var currentCycleStart = getCycleStart(now);
+                if (_state.cycleStart !== currentCycleStart) {
+                    handleCycleReset(currentCycleStart, now);
+                    renderPanel();
+                    return;
+                }
+                var remaining = (_state.cycleStart + CYCLE_MS) - now;
+                timerEl.textContent = 'Resets in ' + fmtDuration(remaining);
+            }
         }, TICK_INTERVAL_MS);
     }
 
