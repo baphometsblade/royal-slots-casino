@@ -3344,6 +3344,23 @@
                 updateStatsSummary();
 
                 if (typeof awardXP === "function") { var _godMult = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round((winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN) * _godMult)); }
+                // Gems earned through gameplay wins (fire-and-forget, only on real spins, once per spin)
+                if (!freeSpinsActive && typeof currentUser !== 'undefined' && currentUser && currentBet > 0) {
+                    var _gemMult = winAmount / currentBet;
+                    var _gemsToAward = 0;
+                    var _gemReason = '';
+                    if (_gemMult >= 100) { _gemsToAward = 20; _gemReason = 'win_100x'; }
+                    else if (_gemMult >= 50) { _gemsToAward = 10; _gemReason = 'win_50x'; }
+                    else if (_gemMult >= 25) { _gemsToAward = 5; _gemReason = 'win_25x'; }
+                    else if (_gemMult >= 10) { _gemsToAward = 2; _gemReason = 'win_10x'; }
+                    if (_gemsToAward > 0) {
+                        var _gemToken = (currentUser && currentUser.token) ? currentUser.token : (localStorage.getItem('casino_token') || '');
+                        fetch('/api/gems/award', { method: 'POST', headers: { 'Authorization': 'Bearer ' + _gemToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: _gemsToAward, reason: _gemReason }) })
+                            .then(function(r) { return r.json(); })
+                            .then(function(d) { if (d && d.success && typeof refreshGemBalance === 'function') refreshGemBalance(); })
+                            .catch(function() {});
+                    }
+                }
                 if (typeof recordSpinHistory === 'function') recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: currentBet > 0 ? Math.round(winAmount / currentBet) : 0 });
                 if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
                 _demoOnSpinEnd();
@@ -7374,6 +7391,23 @@
                 updateStatsSummary();
 
                 if (typeof awardXP === "function") { var _godMult = (typeof gameOfDayId !== 'undefined' && gameOfDayId && currentGame && currentGame.id === gameOfDayId && typeof GAME_OF_DAY_XP_BONUS !== 'undefined') ? GAME_OF_DAY_XP_BONUS : 1; awardXP(Math.round((winAmount >= currentBet * WIN_TIER_BIG_THRESHOLD ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN) * _godMult)); }
+                // Gems earned through gameplay wins (fire-and-forget, only on real spins, once per spin)
+                if (!freeSpinsActive && typeof currentUser !== 'undefined' && currentUser && currentBet > 0) {
+                    var _gemMult = winAmount / currentBet;
+                    var _gemsToAward = 0;
+                    var _gemReason = '';
+                    if (_gemMult >= 100) { _gemsToAward = 20; _gemReason = 'win_100x'; }
+                    else if (_gemMult >= 50) { _gemsToAward = 10; _gemReason = 'win_50x'; }
+                    else if (_gemMult >= 25) { _gemsToAward = 5; _gemReason = 'win_25x'; }
+                    else if (_gemMult >= 10) { _gemsToAward = 2; _gemReason = 'win_10x'; }
+                    if (_gemsToAward > 0) {
+                        var _gemToken = (currentUser && currentUser.token) ? currentUser.token : (localStorage.getItem('casino_token') || '');
+                        fetch('/api/gems/award', { method: 'POST', headers: { 'Authorization': 'Bearer ' + _gemToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: _gemsToAward, reason: _gemReason }) })
+                            .then(function(r) { return r.json(); })
+                            .then(function(d) { if (d && d.success && typeof refreshGemBalance === 'function') refreshGemBalance(); })
+                            .catch(function() {});
+                    }
+                }
                 if (typeof recordSpinHistory === 'function') recordSpinHistory({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: currentBet > 0 ? Math.round(winAmount / currentBet) : 0 });
                 if (typeof saveWinReplay === 'function' && !_demoMode && currentBet > 0 && winAmount >= currentBet * 10) { saveWinReplay({ game: (game && game.name) || '', gameId: (game && game.id) || '', bet: currentBet, win: winAmount, mult: Math.round(winAmount / currentBet), ts: Date.now() }); }
                 _demoOnSpinEnd();
