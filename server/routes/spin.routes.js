@@ -448,13 +448,30 @@ router.post('/', authenticate, async (req, res) => {
         let newAchievements = [];
         try {
             const achievementService = require('../services/achievement.service');
-            const spinCountRow = await db.get('SELECT COUNT(*) as cnt FROM spins WHERE user_id = ?', [userId]);
-            const distinctRow = await db.get('SELECT COUNT(DISTINCT game_id) as cnt FROM spins WHERE user_id = ?', [userId]);
-            const spinCount = spinCountRow ? spinCountRow.cnt : 0;
-            const distinctGames = distinctRow ? distinctRow.cnt : 0;
+            const [spinCountRow, distinctRow, wageredRow] = await Promise.all([
+                db.get('SELECT COUNT(*) as cnt FROM spins WHERE user_id = ?', [userId]),
+                db.get('SELECT COUNT(DISTINCT game_id) as cnt FROM spins WHERE user_id = ?', [userId]),
+                db.get('SELECT COALESCE(SUM(bet_amount), 0) as total FROM spins WHERE user_id = ?', [userId]),
+            ]);
+            const spinCount    = spinCountRow  ? spinCountRow.cnt   : 0;
+            const distinctGames = distinctRow  ? distinctRow.cnt    : 0;
+            const totalWagered = wageredRow    ? wageredRow.total   : 0;
             const winMult = bet > 0 ? spinResult.winAmount / bet : 0;
-            newAchievements = await achievementService.checkSpinAchievements(userId, spinCount, winMult, distinctGames);
+            newAchievements = await achievementService.checkSpinAchievements(userId, spinCount, winMult, distinctGames, totalWagered);
         } catch (e) { console.error('[Achievement] check error:', e.message); }
+
+        // ── Gems from wins (engagement incentive, fire-and-forget) ──────
+        if (!usedFreeSpin && spinResult.winAmount >= 5) {
+            const _gemsFromWin = Math.floor(spinResult.winAmount / 5);
+            (async function () {
+                try {
+                    await require('../services/gems.service').addGems(
+                        userId, _gemsFromWin,
+                        'Win reward: $' + spinResult.winAmount.toFixed(2)
+                    );
+                } catch (_gfwErr) { console.error('[Gems] Win reward error:', _gfwErr); }
+            }());
+        }
 
         // ── Response ──
         res.json({
