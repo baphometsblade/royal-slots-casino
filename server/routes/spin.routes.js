@@ -9,6 +9,54 @@ const games = require('../../shared/game-definitions');
 const jackpotService = require('../services/jackpot.service');
 const router = express.Router();
 
+// ── Daily-missions helpers (shared logic, used in fire-and-forget block) ──
+const DAILY_MISSION_TEMPLATES = [
+    { type: 'spins', target: 5,   reward_type: 'cash',   reward_amount: 0.50, label: 'Spin 5 times'    },
+    { type: 'spins', target: 10,  reward_type: 'cash',   reward_amount: 1.00, label: 'Spin 10 times'   },
+    { type: 'wins',  target: 3,   reward_type: 'cash',   reward_amount: 0.50, label: 'Win 3 times'     },
+    { type: 'wins',  target: 5,   reward_type: 'cash',   reward_amount: 1.00, label: 'Win 5 times'     },
+    { type: 'bet',   target: 5,   reward_type: 'points', reward_amount: 50,   label: 'Wager $5 total'  },
+    { type: 'bet',   target: 10,  reward_type: 'cash',   reward_amount: 0.75, label: 'Wager $10 total' },
+    { type: 'spins', target: 20,  reward_type: 'points', reward_amount: 100,  label: 'Spin 20 times'   },
+    { type: 'wins',  target: 10,  reward_type: 'cash',   reward_amount: 1.50, label: 'Win 10 times'    },
+];
+
+function _dmSeededPick(seed, arr, count) {
+    let s = seed;
+    const shuffle = arr.slice();
+    for (let i = shuffle.length - 1; i > 0; i--) {
+        s = (s * 1664525 + 1013904223) & 0xffffffff;
+        const j = Math.abs(s) % (i + 1);
+        [shuffle[i], shuffle[j]] = [shuffle[j], shuffle[i]];
+    }
+    return shuffle.slice(0, count);
+}
+
+function getDayMissions() {
+    const today = new Date().toISOString().slice(0, 10);
+    const seed  = today.split('-').reduce(function(acc, n) { return acc * 31 + parseInt(n, 10); }, 0);
+    return _dmSeededPick(seed, DAILY_MISSION_TEMPLATES, 3).map(function(t, i) { return Object.assign({}, t, { slot: i }); });
+}
+
+let _dmSchemaReady = false;
+async function ensureDailyMissionsSchema() {
+    if (_dmSchemaReady) return;
+    await db.run(
+        'CREATE TABLE IF NOT EXISTS daily_mission_progress (' +
+        '  id            INTEGER PRIMARY KEY AUTOINCREMENT,' +
+        '  user_id       INTEGER NOT NULL,' +
+        '  mission_date  TEXT    NOT NULL,' +
+        '  slot          INTEGER NOT NULL,' +
+        '  progress      REAL    DEFAULT 0,' +
+        '  completed     INTEGER DEFAULT 0,' +
+        '  claimed       INTEGER DEFAULT 0,' +
+        '  UNIQUE(user_id, mission_date, slot)' +
+        ')'
+    );
+    try { await db.run('ALTER TABLE users ADD COLUMN loyalty_points INTEGER DEFAULT 0'); } catch (_) {}
+    _dmSchemaReady = true;
+}
+
 // Rate limiting state per user
 const lastSpinTime = new Map();
 const freeSpinStateByUser = new Map();
@@ -340,6 +388,25 @@ router.post('/', authenticate, async (req, res) => {
             require('../services/wagerace.service').recordWager(userId, bet).catch(function() {});
         }
 
+        // ── Spin streak tick (fire-and-forget) ──────────────────────────
+        if (!usedFreeSpin) {
+            (async function () {
+                try {
+                    const _ssRow = await db.get('SELECT spin_streak_count, spin_streak_last FROM users WHERE id = ?', [userId]);
+                    if (_ssRow !== undefined) {
+                        const _ssNow = Date.now();
+                        let _ssCnt = _ssRow ? (_ssRow.spin_streak_count || 0) : 0;
+                        const _ssLast = _ssRow ? _ssRow.spin_streak_last : null;
+                        // Reset streak if gap > 5 minutes
+                        if (_ssLast && (_ssNow - new Date(_ssLast).getTime()) > 5 * 60 * 1000) _ssCnt = 0;
+                        _ssCnt++;
+                        await db.run('UPDATE users SET spin_streak_count = ?, spin_streak_last = ? WHERE id = ?',
+                            [_ssCnt, new Date(_ssNow).toISOString(), userId]);
+                    }
+                } catch (_ssErr) { /* non-critical */ }
+            }());
+        }
+
         // ── Battle pass XP + gem miner boost (fire-and-forget) ──────────
         if (!usedFreeSpin && bet > 0) {
             (async function () {
@@ -396,6 +463,41 @@ router.post('/', authenticate, async (req, res) => {
                     await Promise.all(progressCalls);
                 } catch (e) {
                     console.error('[Challenges] Progress error:', e);
+                }
+            }());
+        }
+
+        // ── Daily missions progress (async fire-and-forget, non-blocking) ──
+        if (!usedFreeSpin) {
+            (async function () {
+                try {
+                    await ensureDailyMissionsSchema();
+                    const _dmToday = new Date().toISOString().slice(0, 10);
+                    const _dmTemplates = getDayMissions();
+                    const _dmSpins  = 1;
+                    const _dmWins   = spinResult.winAmount > 0 ? 1 : 0;
+                    const _dmBet    = bet || 0;
+                    for (const _dmt of _dmTemplates) {
+                        let _dmIncrement = 0;
+                        if (_dmt.type === 'spins') _dmIncrement = _dmSpins;
+                        else if (_dmt.type === 'wins')  _dmIncrement = _dmWins;
+                        else if (_dmt.type === 'bet')   _dmIncrement = _dmBet;
+                        if (_dmIncrement <= 0) continue;
+                        const _dmUpsert = [
+                            'INSERT INTO daily_mission_progress (user_id, mission_date, slot, progress, completed)',
+                            'VALUES (?, ?, ?, ?, 0)',
+                            'ON CONFLICT(user_id, mission_date, slot) DO UPDATE SET',
+                            '  progress = MIN(daily_mission_progress.progress + ?, ?),',
+                            '  completed = CASE WHEN MIN(daily_mission_progress.progress + ?, ?) >= ? THEN 1 ELSE completed END',
+                        ].join(' ');
+                        await db.run(_dmUpsert, [
+                            userId, _dmToday, _dmt.slot, Math.min(_dmIncrement, _dmt.target),
+                            _dmIncrement, _dmt.target,
+                            _dmIncrement, _dmt.target, _dmt.target,
+                        ]);
+                    }
+                } catch (_dmErr) {
+                    console.error('[DailyMissions] Progress error:', _dmErr);
                 }
             }());
         }

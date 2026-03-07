@@ -248,6 +248,26 @@ const TABLES = [
         start_at TIMESTAMPTZ NOT NULL,
         end_at TIMESTAMPTZ NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS battle_pass_seasons (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        starts_at TIMESTAMPTZ NOT NULL,
+        ends_at TIMESTAMPTZ NOT NULL,
+        status VARCHAR(20) DEFAULT 'active'
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS battle_pass_progress (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        season_id INTEGER NOT NULL REFERENCES battle_pass_seasons(id),
+        level INTEGER DEFAULT 0,
+        xp INTEGER DEFAULT 0,
+        is_premium SMALLINT DEFAULT 0,
+        claimed_free TEXT DEFAULT '[]',
+        claimed_premium TEXT DEFAULT '[]',
+        UNIQUE(user_id, season_id)
     )`
 ];
 
@@ -274,7 +294,10 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_contest_entries_rank ON contest_entries(contest_id, metric_type, metric_value DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_contest_prizes_user ON contest_prizes(user_id, claimed)`,
     `CREATE INDEX IF NOT EXISTS idx_contests_status ON contests(status)`,
-    `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`
+    `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_battle_pass_seasons_status ON battle_pass_seasons(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_user ON battle_pass_progress(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_season ON battle_pass_progress(season_id)`
 ];
 
 
@@ -301,6 +324,10 @@ const USER_MIGRATIONS = [
     ['bonus_balance', 'NUMERIC(15,2) DEFAULT 0'],
     ['wagering_requirement', 'NUMERIC(15,2) DEFAULT 0'],
     ['wagering_progress', 'NUMERIC(15,2) DEFAULT 0'],
+    ['subscription_active', 'SMALLINT DEFAULT 0'],
+    ['subscription_tier', 'VARCHAR(20)'],
+    ['subscription_expires', 'TIMESTAMPTZ'],
+    ['subscription_daily_claimed', 'DATE'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → PG definition). */
