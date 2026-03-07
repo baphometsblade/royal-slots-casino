@@ -52,7 +52,7 @@ async function grant(userId, achievementId) {
  * Check spin-based achievements after a spin completes.
  * Returns an array of newly unlocked achievements.
  */
-async function checkSpinAchievements(userId, spinCount, winMultiplier, distinctGames) {
+async function checkSpinAchievements(userId, spinCount, winMultiplier, distinctGames, totalWagered) {
     const unlocked = [];
 
     if (spinCount >= 1)    { const r = await grant(userId, 'first_spin');     if (r) unlocked.push(r); }
@@ -64,6 +64,11 @@ async function checkSpinAchievements(userId, spinCount, winMultiplier, distinctG
     if (winMultiplier >= 100) { const r = await grant(userId, 'mega_win');    if (r) unlocked.push(r); }
     if (distinctGames >= 5)   { const r = await grant(userId, 'five_games');  if (r) unlocked.push(r); }
     if (distinctGames >= 10)  { const r = await grant(userId, 'ten_games');   if (r) unlocked.push(r); }
+    // VIP tier achievements — awarded once per lifetime wagering threshold
+    const tw = totalWagered || 0;
+    if (tw >= 5000)  { const r = await grant(userId, 'vip_bronze'); if (r) unlocked.push(r); }
+    if (tw >= 10000) { const r = await grant(userId, 'vip_silver'); if (r) unlocked.push(r); }
+    if (tw >= 20000) { const r = await grant(userId, 'vip_gold');   if (r) unlocked.push(r); }
 
     return unlocked;
 }
