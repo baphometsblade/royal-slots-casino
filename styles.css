@@ -31223,4 +31223,1078 @@ body.s41-both-panels #dailyCashbackPanel {
   }
 }
 
+/* ============================================================
+   SPRINT 45 — Loyalty Points Shop, Win Celebration Overlay,
+               Auto-Collect Rewards Bar
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   S45 Keyframe Animations
+   ---------------------------------------------------------- */
+
+@keyframes _s45_fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes _s45_slideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes _s45_slideDown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes _s45_bounceIn {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.12); opacity: 1; }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes _s45_crownBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-18px) rotate(-6deg); }
+  50%      { transform: translateY(-8px) rotate(4deg); }
+  75%      { transform: translateY(-14px) rotate(-3deg); }
+}
+
+@keyframes _s45_amountPop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.25); opacity: 1; }
+  80%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@keyframes _s45_starFloat {
+  0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  50%  { transform: translateY(-30px) rotate(180deg) scale(1.2); opacity: 0.7; }
+  100% { transform: translateY(-60px) rotate(360deg) scale(0.8); opacity: 0; }
+}
+
+@keyframes _s45_shimmerGold {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes _s45_pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
+  50%      { box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), 0 0 40px rgba(255, 215, 0, 0.3); }
+}
+
+@keyframes _s45_incrementFlash {
+  0%   { transform: scale(1); color: #fbbf24; }
+  30%  { transform: scale(1.35); color: #4ade80; text-shadow: 0 0 12px rgba(74, 222, 128, 0.8); }
+  100% { transform: scale(1); color: #fbbf24; }
+}
+
+@keyframes _s45_coinFall {
+  0%   { transform: translateY(-80px) rotate(0deg); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(calc(100vh + 40px)) rotate(720deg); opacity: 0; }
+}
+
+@keyframes _s45_spinCoin {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(360deg); }
+}
+
+@keyframes _s45_ripple {
+  0%   { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes _s45_textGlow {
+  0%, 100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 2px 4px rgba(0,0,0,0.8); }
+  50%      { text-shadow: 0 0 25px rgba(255, 215, 0, 0.9), 0 0 50px rgba(251, 191, 36, 0.4), 0 2px 4px rgba(0,0,0,0.8); }
+}
+
+@keyframes _s45_slideRight {
+  from { transform: translateX(-20px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes _s45_historyExpand {
+  from { max-height: 0; opacity: 0; }
+  to   { max-height: 300px; opacity: 1; }
+}
+
+/* ----------------------------------------------------------
+   1. LOYALTY POINTS SHOP
+   ---------------------------------------------------------- */
+
+.loyalty-points-shop {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.loyalty-points-shop.active {
+  display: flex;
+  animation: _s45_fadeIn 0.3s ease forwards;
+}
+
+.s45-shop-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.s45-shop-card {
+  position: relative;
+  z-index: 1;
+  width: 92%;
+  max-width: 500px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(165deg, #1a1a2e 0%, #0f0f1a 60%, #2d1b69 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.5);
+  border-radius: 16px;
+  box-shadow:
+    0 0 30px rgba(251, 191, 36, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: _s45_slideUp 0.4s ease forwards;
+  overflow: hidden;
+}
+
+.s45-shop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.08) 0%, transparent 100%);
+  flex-shrink: 0;
+}
+
+.s45-shop-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+  animation: _s45_textGlow 3s ease-in-out infinite;
+}
+
+.s45-shop-points {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #fbbf24 0%, #ffd700 100%);
+  color: #0f0f1a;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+  white-space: nowrap;
+}
+
+.s45-shop-points::before {
+  content: '\2B50';
+  font-size: 0.9rem;
+}
+
+.s45-shop-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.s45-shop-close:hover {
+  background: rgba(255, 70, 70, 0.2);
+  border-color: rgba(255, 70, 70, 0.4);
+  color: #ff6b6b;
+  transform: rotate(90deg);
+}
+
+.s45-shop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+}
+
+.s45-shop-grid::-webkit-scrollbar {
+  width: 5px;
+}
+
+.s45-shop-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.s45-shop-grid::-webkit-scrollbar-thumb {
+  background: rgba(251, 191, 36, 0.3);
+  border-radius: 3px;
+}
+
+.s45-shop-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.s45-shop-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(251, 191, 36, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.s45-shop-item:hover {
+  transform: translateY(-4px);
+  border-color: rgba(251, 191, 36, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 12px rgba(251, 191, 36, 0.1);
+}
+
+.s45-shop-item:hover::before {
+  opacity: 1;
+}
+
+.s45-shop-item.s45-affordable {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
+}
+
+.s45-shop-item.s45-affordable:hover {
+  border-color: rgba(74, 222, 128, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(74, 222, 128, 0.15);
+}
+
+.s45-shop-item.s45-too-expensive {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+.s45-shop-item.s45-too-expensive:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.s45-shop-item-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.s45-shop-item:hover .s45-shop-item-icon {
+  animation: _s45_bounceIn 0.5s ease;
+}
+
+.s45-shop-item-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  text-align: center;
+  line-height: 1.3;
+  position: relative;
+  z-index: 1;
+}
+
+.s45-shop-item-cost {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  position: relative;
+  z-index: 1;
+}
+
+.s45-shop-item-cost::before {
+  content: '\2B50';
+  font-size: 0.7rem;
+}
+
+.s45-shop-buy-btn {
+  width: 100%;
+  padding: 7px 0;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ffd700 100%);
+  background-size: 200% 100%;
+  border: none;
+  border-radius: 8px;
+  color: #0f0f1a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
+}
+
+.s45-shop-buy-btn:hover {
+  background-position: 100% center;
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
+  transform: scale(1.03);
+}
+
+.s45-shop-buy-btn:active {
+  transform: scale(0.97);
+}
+
+.s45-shop-buy-btn:disabled {
+  background: linear-gradient(135deg, #444 0%, #555 100%);
+  color: #888;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.s45-shop-buy-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.s45-shop-footer {
+  padding: 12px 20px 16px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+  font-style: italic;
+}
+
+
+/* ----------------------------------------------------------
+   2. WIN CELEBRATION OVERLAY
+   ---------------------------------------------------------- */
+
+.win-celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.win-celebration-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.s45-celeb-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center,
+    rgba(45, 27, 105, 0.85) 0%,
+    rgba(15, 15, 26, 0.92) 60%,
+    rgba(0, 0, 0, 0.95) 100%);
+  animation: _s45_fadeIn 0.5s ease forwards;
+}
+
+.s45-celeb-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.s45-celeb-crown {
+  font-size: 4rem;
+  line-height: 1;
+  animation: _s45_crownBounce 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(255, 215, 0, 0.5));
+}
+
+.s45-celeb-title {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-shadow:
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 0 40px rgba(251, 191, 36, 0.3),
+    0 4px 0 #b8860b,
+    0 5px 0 #a07608,
+    0 6px 0 #8b6508,
+    0 7px 10px rgba(0, 0, 0, 0.5);
+  animation: _s45_textGlow 2s ease-in-out infinite;
+}
+
+.s45-celeb-amount {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #4ade80;
+  text-shadow:
+    0 0 15px rgba(74, 222, 128, 0.5),
+    0 0 30px rgba(0, 255, 136, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.6);
+  animation: _s45_amountPop 0.8s ease forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+.s45-celeb-multiplier {
+  display: inline-block;
+  background: linear-gradient(135deg, #fbbf24 0%, #ffd700 50%, #f59e0b 100%);
+  background-size: 200% 100%;
+  color: #0f0f1a;
+  font-size: 1.6rem;
+  font-weight: 900;
+  padding: 8px 24px;
+  border-radius: 30px;
+  letter-spacing: 1px;
+  box-shadow:
+    0 4px 20px rgba(251, 191, 36, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  animation: _s45_bounceIn 0.6s ease forwards, _s45_shimmerGold 3s linear infinite;
+  animation-delay: 0.6s, 0s;
+  opacity: 0;
+  animation-fill-mode: forwards, none;
+}
+
+.s45-celeb-stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.s45-celeb-star {
+  position: absolute;
+  font-size: 1.4rem;
+  animation: _s45_starFloat 2.5s ease-out infinite;
+  opacity: 0;
+}
+
+.s45-celeb-star:nth-child(1) { left: 10%; top: 70%; animation-delay: 0s; }
+.s45-celeb-star:nth-child(2) { left: 25%; top: 80%; animation-delay: 0.4s; }
+.s45-celeb-star:nth-child(3) { left: 45%; top: 75%; animation-delay: 0.8s; }
+.s45-celeb-star:nth-child(4) { left: 65%; top: 82%; animation-delay: 1.2s; }
+.s45-celeb-star:nth-child(5) { left: 80%; top: 68%; animation-delay: 0.2s; }
+.s45-celeb-star:nth-child(6) { left: 15%; top: 60%; animation-delay: 1.5s; }
+.s45-celeb-star:nth-child(7) { left: 55%; top: 65%; animation-delay: 0.6s; }
+.s45-celeb-star:nth-child(8) { left: 90%; top: 78%; animation-delay: 1.0s; }
+.s45-celeb-star:nth-child(9) { left: 35%; top: 58%; animation-delay: 1.8s; }
+.s45-celeb-star:nth-child(10) { left: 72%; top: 55%; animation-delay: 0.3s; }
+
+.s45-celeb-dismiss-btn {
+  margin-top: 12px;
+  padding: 14px 48px;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #00ff88 100%);
+  background-size: 200% 100%;
+  border: none;
+  border-radius: 12px;
+  color: #0f0f1a;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 4px 20px rgba(74, 222, 128, 0.3),
+    0 0 30px rgba(0, 255, 136, 0.1);
+  animation: _s45_bounceIn 0.5s ease forwards, _s45_pulseGlow 2s ease-in-out infinite;
+  animation-delay: 1s, 1.5s;
+  opacity: 0;
+  animation-fill-mode: forwards, none;
+}
+
+.s45-celeb-dismiss-btn:hover {
+  background-position: 100% center;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 8px 30px rgba(74, 222, 128, 0.5),
+    0 0 40px rgba(0, 255, 136, 0.2);
+}
+
+.s45-celeb-dismiss-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.s45-celeb-coins {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.s45-celeb-coins .s45-coin {
+  position: absolute;
+  top: -40px;
+  width: 28px;
+  height: 28px;
+  background: radial-gradient(circle at 35% 35%, #ffd700, #b8860b);
+  border-radius: 50%;
+  border: 2px solid #daa520;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  animation: _s45_coinFall var(--fall-duration, 2.5s) linear infinite;
+  animation-delay: var(--fall-delay, 0s);
+}
+
+.s45-celeb-coins .s45-coin::after {
+  content: '$';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #8b6508;
+  animation: _s45_spinCoin 1s linear infinite;
+}
+
+.s45-celeb-coins .s45-coin:nth-child(1)  { left: 5%;  --fall-duration: 2.2s; --fall-delay: 0.0s; }
+.s45-celeb-coins .s45-coin:nth-child(2)  { left: 15%; --fall-duration: 2.8s; --fall-delay: 0.3s; }
+.s45-celeb-coins .s45-coin:nth-child(3)  { left: 25%; --fall-duration: 2.0s; --fall-delay: 0.7s; }
+.s45-celeb-coins .s45-coin:nth-child(4)  { left: 35%; --fall-duration: 2.5s; --fall-delay: 0.1s; }
+.s45-celeb-coins .s45-coin:nth-child(5)  { left: 45%; --fall-duration: 3.0s; --fall-delay: 0.5s; }
+.s45-celeb-coins .s45-coin:nth-child(6)  { left: 55%; --fall-duration: 2.3s; --fall-delay: 0.9s; }
+.s45-celeb-coins .s45-coin:nth-child(7)  { left: 65%; --fall-duration: 2.7s; --fall-delay: 0.2s; }
+.s45-celeb-coins .s45-coin:nth-child(8)  { left: 75%; --fall-duration: 2.1s; --fall-delay: 0.6s; }
+.s45-celeb-coins .s45-coin:nth-child(9)  { left: 85%; --fall-duration: 2.9s; --fall-delay: 0.4s; }
+.s45-celeb-coins .s45-coin:nth-child(10) { left: 92%; --fall-duration: 2.4s; --fall-delay: 0.8s; }
+
+
+/* ----------------------------------------------------------
+   3. AUTO-COLLECT REWARDS BAR
+   ---------------------------------------------------------- */
+
+.auto-collect-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10400;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+  border-bottom: 1.5px solid rgba(251, 191, 36, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: visible;
+}
+
+.auto-collect-bar.active {
+  transform: translateY(0);
+  animation: _s45_slideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.s45-ac-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4));
+}
+
+.s45-ac-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.s45-ac-total {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+  min-width: 60px;
+  text-align: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.s45-ac-total.s45-increment {
+  animation: _s45_incrementFlash 0.6s ease forwards;
+}
+
+.s45-ac-toggle {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.s45-ac-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.s45-ac-toggle.s45-enabled {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.3) 0%, rgba(251, 191, 36, 0.3) 100%);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.s45-ac-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #ccc 0%, #999 100%);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.s45-ac-toggle.s45-enabled .s45-ac-slider {
+  left: 22px;
+  background: linear-gradient(135deg, #4ade80 0%, #fbbf24 100%);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4), 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.s45-ac-history {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+  border-bottom: 1.5px solid rgba(251, 191, 36, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.s45-ac-history.s45-expanded {
+  max-height: 300px;
+  opacity: 1;
+  overflow-y: auto;
+  animation: _s45_historyExpand 0.4s ease forwards;
+}
+
+.s45-ac-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  animation: _s45_slideRight 0.3s ease forwards;
+  opacity: 0;
+}
+
+.s45-ac-history-item:nth-child(1) { animation-delay: 0.05s; }
+.s45-ac-history-item:nth-child(2) { animation-delay: 0.1s; }
+.s45-ac-history-item:nth-child(3) { animation-delay: 0.15s; }
+.s45-ac-history-item:nth-child(4) { animation-delay: 0.2s; }
+.s45-ac-history-item:nth-child(5) { animation-delay: 0.25s; }
+.s45-ac-history-item:nth-child(6) { animation-delay: 0.3s; }
+.s45-ac-history-item:nth-child(7) { animation-delay: 0.35s; }
+.s45-ac-history-item:nth-child(8) { animation-delay: 0.4s; }
+
+.s45-ac-history-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.s45-ac-history-item .s45-ach-name {
+  color: #e0e0e0;
+  font-weight: 600;
+}
+
+.s45-ac-history-item .s45-ach-amount {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.s45-ac-history-item .s45-ach-time {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.7rem;
+}
+
+.s45-ac-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #999;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.s45-ac-close:hover {
+  background: rgba(255, 70, 70, 0.15);
+  border-color: rgba(255, 70, 70, 0.3);
+  color: #ff6b6b;
+}
+
+
+/* ----------------------------------------------------------
+   S45 RESPONSIVE — Tablet (max-width: 768px)
+   ---------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+  /* Loyalty Shop */
+  .s45-shop-card {
+    max-width: 95%;
+    max-height: 88vh;
+    border-radius: 12px;
+  }
+
+  .s45-shop-header {
+    padding: 14px 16px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .s45-shop-title {
+    font-size: 1.15rem;
+  }
+
+  .s45-shop-points {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+  }
+
+  .s45-shop-grid {
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .s45-shop-item {
+    padding: 12px 8px 10px;
+    border-radius: 10px;
+  }
+
+  .s45-shop-item-icon {
+    font-size: 1.8rem;
+  }
+
+  .s45-shop-item-name {
+    font-size: 0.75rem;
+  }
+
+  .s45-shop-item-cost {
+    font-size: 0.7rem;
+  }
+
+  .s45-shop-buy-btn {
+    padding: 6px 0;
+    font-size: 0.72rem;
+  }
+
+  .s45-shop-footer {
+    padding: 10px 16px 12px;
+    font-size: 0.72rem;
+  }
+
+  /* Win Celebration */
+  .s45-celeb-crown {
+    font-size: 3rem;
+  }
+
+  .s45-celeb-title {
+    font-size: 2.4rem;
+    letter-spacing: 2px;
+  }
+
+  .s45-celeb-amount {
+    font-size: 2.2rem;
+  }
+
+  .s45-celeb-multiplier {
+    font-size: 1.3rem;
+    padding: 6px 20px;
+  }
+
+  .s45-celeb-dismiss-btn {
+    padding: 12px 36px;
+    font-size: 1rem;
+  }
+
+  .s45-celeb-coins .s45-coin {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Auto-Collect Bar */
+  .auto-collect-bar {
+    height: 40px;
+    gap: 10px;
+    padding: 0 12px;
+  }
+
+  .s45-ac-icon {
+    font-size: 1.1rem;
+  }
+
+  .s45-ac-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+  }
+
+  .s45-ac-total {
+    font-size: 0.9rem;
+    min-width: 50px;
+  }
+
+  .s45-ac-toggle {
+    width: 38px;
+    height: 20px;
+    border-radius: 10px;
+  }
+
+  .s45-ac-slider {
+    width: 14px;
+    height: 14px;
+  }
+
+  .s45-ac-toggle.s45-enabled .s45-ac-slider {
+    left: 20px;
+  }
+
+  .s45-ac-close {
+    width: 26px;
+    height: 26px;
+    font-size: 0.9rem;
+  }
+
+  .s45-ac-history-item {
+    padding: 8px 12px;
+    font-size: 0.72rem;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   S45 RESPONSIVE — Mobile (max-width: 420px)
+   ---------------------------------------------------------- */
+
+@media (max-width: 420px) {
+
+  /* Loyalty Shop */
+  .s45-shop-card {
+    width: 98%;
+    max-height: 92vh;
+    border-radius: 10px;
+  }
+
+  .s45-shop-header {
+    padding: 12px 12px 10px;
+  }
+
+  .s45-shop-title {
+    font-size: 1rem;
+  }
+
+  .s45-shop-points {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 14px;
+  }
+
+  .s45-shop-close {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+
+  .s45-shop-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .s45-shop-item {
+    padding: 10px 6px 8px;
+    gap: 6px;
+    border-radius: 8px;
+  }
+
+  .s45-shop-item-icon {
+    font-size: 1.6rem;
+  }
+
+  .s45-shop-item-name {
+    font-size: 0.68rem;
+  }
+
+  .s45-shop-item-cost {
+    font-size: 0.65rem;
+  }
+
+  .s45-shop-buy-btn {
+    padding: 5px 0;
+    font-size: 0.68rem;
+    border-radius: 6px;
+  }
+
+  .s45-shop-footer {
+    padding: 8px 12px 10px;
+    font-size: 0.65rem;
+  }
+
+  /* Win Celebration */
+  .s45-celeb-content {
+    padding: 30px 16px;
+    gap: 12px;
+  }
+
+  .s45-celeb-crown {
+    font-size: 2.4rem;
+  }
+
+  .s45-celeb-title {
+    font-size: 1.8rem;
+    letter-spacing: 1.5px;
+    text-shadow:
+      0 0 12px rgba(255, 215, 0, 0.6),
+      0 0 20px rgba(251, 191, 36, 0.3),
+      0 3px 0 #b8860b,
+      0 4px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .s45-celeb-amount {
+    font-size: 1.7rem;
+  }
+
+  .s45-celeb-multiplier {
+    font-size: 1.1rem;
+    padding: 5px 16px;
+    border-radius: 20px;
+  }
+
+  .s45-celeb-dismiss-btn {
+    padding: 11px 30px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    letter-spacing: 1px;
+  }
+
+  .s45-celeb-star {
+    font-size: 1rem;
+  }
+
+  .s45-celeb-coins .s45-coin {
+    width: 18px;
+    height: 18px;
+    border-width: 1.5px;
+  }
+
+  .s45-celeb-coins .s45-coin::after {
+    font-size: 0.55rem;
+  }
+
+  /* Auto-Collect Bar */
+  .auto-collect-bar {
+    height: 36px;
+    gap: 7px;
+    padding: 0 8px;
+  }
+
+  .s45-ac-icon {
+    font-size: 1rem;
+  }
+
+  .s45-ac-label {
+    font-size: 0.62rem;
+    display: none;
+  }
+
+  .s45-ac-total {
+    font-size: 0.82rem;
+    min-width: 45px;
+  }
+
+  .s45-ac-toggle {
+    width: 34px;
+    height: 18px;
+    border-radius: 9px;
+  }
+
+  .s45-ac-slider {
+    width: 12px;
+    height: 12px;
+    top: 2px;
+    left: 2px;
+  }
+
+  .s45-ac-toggle.s45-enabled .s45-ac-slider {
+    left: 18px;
+  }
+
+  .s45-ac-close {
+    width: 24px;
+    height: 24px;
+    font-size: 0.85rem;
+    border-radius: 5px;
+  }
+
+  .s45-ac-history-item {
+    padding: 7px 8px;
+    font-size: 0.65rem;
+  }
+
+  .s45-ac-history-item .s45-ach-time {
+    font-size: 0.6rem;
+  }
+}
+
 /* END SPRINT 44 */
