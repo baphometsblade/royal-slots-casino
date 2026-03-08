@@ -19953,3 +19953,268 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     transition: opacity 0.2s;
 }
 .vip-nudge-banner .vnb-cta:hover { opacity: 0.85; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPRINT 27 — WELCOME OFFER · TOURNAMENT · CASHBACK · HOT-STREAK
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Welcome Bonus Popup ────────────────────────────────────────────────── */
+.welcome-offer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+    animation: _wofadeIn 0.4s ease;
+}
+@keyframes _wofadeIn { from { opacity:0 } to { opacity:1 } }
+
+.welcome-offer-card {
+    background: linear-gradient(145deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%);
+    border: 1px solid rgba(251,191,36,0.4);
+    border-radius: 20px;
+    padding: 0;
+    max-width: 480px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 0 60px rgba(251,191,36,0.15), 0 30px 80px rgba(0,0,0,0.7);
+    overflow: hidden;
+    animation: _woSlideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes _woSlideUp { from { transform:translateY(40px);opacity:0 } to { transform:translateY(0);opacity:1 } }
+
+.woc-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #fbbf24 100%);
+    padding: 22px 28px 18px;
+    text-align: center;
+    position: relative;
+}
+.woc-badge {
+    display: inline-block;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+.woc-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    margin-bottom: 4px;
+}
+.woc-subtitle { font-size: 13px; color: rgba(255,255,255,0.85); }
+
+.woc-body { padding: 24px 28px; }
+
+.woc-perks {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.woc-perk {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+}
+.woc-perk-val {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fbbf24;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.woc-perk-label { font-size: 10px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; }
+
+.woc-urgency {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+}
+.woc-urgency-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; animation:_woPulse 1s ease-in-out infinite; flex-shrink:0; }
+@keyframes _woPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.woc-urgency b { color: #fbbf24; }
+
+.woc-cta {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #000;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(251,191,36,0.4);
+    margin-bottom: 12px;
+}
+.woc-cta:hover { transform: scale(1.02); box-shadow: 0 6px 28px rgba(251,191,36,0.55); }
+
+.woc-decline {
+    display: block;
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+    margin-top: 4px;
+}
+.woc-decline:hover { color: rgba(255,255,255,0.6); }
+
+.woc-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: rgba(0,0,0,0.3);
+    border: none; border-radius: 50%;
+    width: 28px; height: 28px;
+    color: #fff; font-size: 16px;
+    cursor: pointer; line-height: 28px; text-align: center;
+    transition: background 0.2s;
+}
+.woc-close:hover { background: rgba(0,0,0,0.5); }
+
+/* ─── Weekly Tournament Widget ───────────────────────────────────────────── */
+.tournament-widget {
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a0533 50%, #0a1a2e 100%);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 0 0 20px;
+    position: relative;
+    overflow: hidden;
+}
+.tournament-widget::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 20px; right: 20px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #a78bfa, #fbbf24, #a78bfa, transparent);
+}
+.tw-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.tw-icon { font-size: 22px; }
+.tw-title { font-size: 14px; font-weight: 800; color: #a78bfa; letter-spacing: 1px; text-transform: uppercase; }
+.tw-prize {
+    margin-left: auto;
+    background: linear-gradient(135deg, #a78bfa22, #fbbf2422);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fbbf24;
+}
+.tw-countdown {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-left: 6px;
+}
+.tw-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.tw-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    font-size: 12px;
+    transition: background 0.15s;
+}
+.tw-row:hover { background: rgba(255,255,255,0.06); }
+.tw-row.tw-me {
+    background: rgba(167,139,250,0.12);
+    border: 1px solid rgba(167,139,250,0.25);
+}
+.tw-rank { width: 22px; text-align: center; font-weight: 700; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+.tw-rank.gold   { color: #fbbf24; font-size: 15px; }
+.tw-rank.silver { color: #94a3b8; font-size: 15px; }
+.tw-rank.bronze { color: #cd7f32; font-size: 15px; }
+.tw-name { flex: 1; color: rgba(255,255,255,0.8); font-weight: 500; }
+.tw-row.tw-me .tw-name { color: #a78bfa; font-weight: 700; }
+.tw-score { color: rgba(255,255,255,0.5); font-size: 11px; }
+.tw-prize-col { font-size: 11px; font-weight: 700; color: #4ade80; margin-left: 6px; min-width: 42px; text-align: right; }
+.tw-cta-row { display: flex; align-items: center; gap: 10px; }
+.tw-play-btn {
+    flex: 1;
+    padding: 10px;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    border: none; border-radius: 8px;
+    color: #fff; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s;
+}
+.tw-play-btn:hover { opacity: 0.85; }
+.tw-info { font-size: 10px; color: rgba(255,255,255,0.35); }
+
+/* ─── Cashback Ribbon ────────────────────────────────────────────────────── */
+.cashback-ribbon {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(90deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.04) 100%);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin: 0 0 16px;
+}
+.cr-icon { font-size: 20px; flex-shrink: 0; }
+.cr-text { flex: 1; font-size: 12px; color: rgba(255,255,255,0.75); }
+.cr-text b { color: #4ade80; font-size: 14px; }
+.cr-claim {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none; border-radius: 8px;
+    padding: 8px 16px; color: #fff;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s; flex-shrink: 0;
+}
+.cr-claim:hover { opacity: 0.85; }
+.cr-claim:disabled { opacity: 0.45; cursor: default; }
+.cr-timer { font-size: 10px; color: rgba(255,255,255,0.4); text-align: right; flex-shrink: 0; }
+
+/* ─── Hot Streak Notification ────────────────────────────────────────────── */
+.hot-streak-notif {
+    position: fixed;
+    top: 80px; right: 16px;
+    background: linear-gradient(135deg, #7c3aed, #fbbf24);
+    border-radius: 12px;
+    padding: 12px 18px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 90000;
+    box-shadow: 0 8px 28px rgba(124,58,237,0.5);
+    display: flex; align-items: center; gap: 10px;
+    animation: _hsSlideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+}
+@keyframes _hsSlideIn { from { transform:translateX(120%); opacity:0 } to { transform:translateX(0); opacity:1 } }
+.hs-icon { font-size: 20px; }

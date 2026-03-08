@@ -702,6 +702,15 @@
             <button class="compare-bar-clear" onclick="if(typeof clearCompareSelection==='function')clearCompareSelection()">✕ Clear</button>
         </div>
 
+        <!-- Sprint 27: Tournament widget + cashback ribbon -->
+        <div id="weeklyTournamentWidget" class="tournament-widget" style="display:none"></div>
+        <div id="cashbackRibbon" class="cashback-ribbon" style="display:none">
+            <span class="cr-icon">💚</span>
+            <span class="cr-text">Your cashback: <b id="cashbackAmount">$0.00</b> available to claim</span>
+            <span class="cr-timer" id="cashbackTimer"></span>
+            <button class="cr-claim" id="cashbackClaimBtn" onclick="if(typeof claimCashback==='function')claimCashback()">Claim</button>
+        </div>
+
         <!-- Sprint 26: VIP nudge + daily missions -->
         <div id="vipNudgeBanner" class="vip-nudge-banner" style="display:none">
             <span class="vnb-icon">💎</span>
@@ -2282,6 +2291,7 @@
     <script src="js/ui-jackpot-live.js"></script>
     <script src="js/ui-persuasion.js"></script>
     <script src="js/ui-daily-missions.js"></script>
+    <script src="js/ui-growth.js"></script>
 
     <!-- Matrix Rain Canvas Animation -->
     <script>
@@ -2587,5 +2597,43 @@
         <div>Gambling can be addictive. Please play responsibly. If you need help, visit <a href="https://www.begambleaware.org" target="_blank" rel="noopener" style="color:rgba(255,255,255,.4);text-decoration:underline">BeGambleAware.org</a> or <a href="https://www.gamstop.co.uk" target="_blank" rel="noopener" style="color:rgba(255,255,255,.4);text-decoration:underline">GamStop</a>.</div>
         <div style="margin-top:6px">© 2026 Matrix Spins Casino — msaart.online. For entertainment purposes only.</div>
     </div>
+    <!-- Sprint 27: Welcome Bonus Popup -->
+    <div id="welcomeOfferOverlay" class="welcome-offer-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Welcome Bonus">
+        <div class="welcome-offer-card">
+            <button class="woc-close" onclick="if(typeof dismissWelcomeOffer==='function')dismissWelcomeOffer()" aria-label="Close">&#x2715;</button>
+            <div class="woc-header">
+                <div class="woc-badge">🎉 New Player Exclusive</div>
+                <div class="woc-title">$500 BONUS</div>
+                <div class="woc-subtitle">100% match on your first deposit</div>
+            </div>
+            <div class="woc-body">
+                <div class="woc-perks">
+                    <div class="woc-perk">
+                        <div class="woc-perk-val">100%</div>
+                        <div class="woc-perk-label">Deposit Match</div>
+                    </div>
+                    <div class="woc-perk">
+                        <div class="woc-perk-val">+100</div>
+                        <div class="woc-perk-label">Free Spins</div>
+                    </div>
+                    <div class="woc-perk">
+                        <div class="woc-perk-val">$500</div>
+                        <div class="woc-perk-label">Max Bonus</div>
+                    </div>
+                </div>
+                <div class="woc-urgency">
+                    <span class="woc-urgency-dot"></span>
+                    <span>Offer expires in <b id="welcomeOfferTimer">23:47:12</b> — don't miss out!</span>
+                </div>
+                <button class="woc-cta" onclick="if(typeof claimWelcomeOffer==='function')claimWelcomeOffer()">
+                    🎁 CLAIM MY $500 BONUS
+                </button>
+                <span class="woc-decline" onclick="if(typeof dismissWelcomeOffer==='function')dismissWelcomeOffer()">
+                    No thanks, I'll pass on the free money
+                </span>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
