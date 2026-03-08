@@ -1438,3 +1438,180 @@ function showVipTierUpModal(tier) {
         if (document.getElementById('vipTierUpModal')) overlay.remove();
     }, 8000);
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// VIP ACCELERATOR NUDGE
+// Shows a deposit CTA when the player is 60–95% of the way to
+// the next VIP tier. Throttled to once per 10 minutes.
+// ═══════════════════════════════════════════════════════════════
+
+var _lastVipNudge = 0;
+var _vipNudgeCooldown = 10 * 60 * 1000; // 10 minutes
+
+/**
+ * Checks whether the player is within the 60–95% progress window
+ * toward the next VIP tier and, if so, shows the accelerator overlay.
+ * Throttled so it fires at most once per 10 minutes.
+ */
+function checkVipAcceleratorNudge() {
+    if (typeof currentUser === 'undefined' || !currentUser || currentUser.isGuest) return;
+    var now = Date.now();
+    if (now - _lastVipNudge < _vipNudgeCooldown) return;
+
+    var wagered = (stats && stats.totalWagered) || 0;
+    var idx = getVipTierIndex();
+
+    // Already at the highest tier — nothing to promote
+    if (idx >= VIP_TIERS.length - 1) return;
+
+    var currentTier = VIP_TIERS[idx];
+    var nextTier    = VIP_TIERS[idx + 1];
+    var rangeTotal  = nextTier.minWagered - currentTier.minWagered;
+    var rangeProgress = wagered - currentTier.minWagered;
+    var progress = rangeTotal > 0 ? rangeProgress / rangeTotal : 0;
+
+    // Only nudge when 60–95% of the way to the next tier
+    if (progress < 0.60 || progress >= 0.95) return;
+
+    _lastVipNudge = now;
+
+    var needed = nextTier.minWagered - wagered;
+    _showVipAcceleratorOverlay(nextTier, needed, progress);
+}
+
+/**
+ * Renders a bottom-right overlay nudging the player to deposit and
+ * wager toward the next VIP tier.
+ * @param {object} nextTier  - VIP_TIERS entry for the target tier
+ * @param {number} needed    - Dollar amount still needed to reach that tier
+ * @param {number} progress  - Fraction (0–1) already completed
+ */
+function _showVipAcceleratorOverlay(nextTier, needed, progress) {
+    var existing = document.getElementById('vipAccelOverlay');
+    if (existing) existing.remove();
+
+    var color = nextTier.color || '#ffd700';
+    var pct   = Math.round(progress * 100);
+
+    var overlay = document.createElement('div');
+    overlay.id = 'vipAccelOverlay';
+    overlay.style.cssText = [
+        'position:fixed', 'bottom:90px', 'right:20px', 'z-index:9500',
+        'background:linear-gradient(135deg,#1a1a2e,#16213e)',
+        'border:2px solid ' + color,
+        'border-radius:16px', 'padding:20px', 'max-width:300px',
+        'box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 20px ' + color + '40',
+        'animation:vipSlideIn 0.4s ease-out'
+    ].join(';');
+
+    // Header row
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:10px';
+
+    var title = document.createElement('div');
+    title.style.cssText = 'font-weight:700;color:' + color + ';font-size:1rem';
+    title.textContent = (nextTier.icon || '\uD83D\uDC51') + ' ' + nextTier.name + ' VIP within reach!';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.style.cssText = 'background:none;border:none;color:#888;font-size:1.2rem;cursor:pointer;padding:0 4px';
+    closeBtn.textContent = '\u2715';
+    closeBtn.onclick = function() {
+        var el = document.getElementById('vipAccelOverlay');
+        if (el) el.remove();
+    };
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
+    // Body text
+    var body = document.createElement('div');
+    body.style.cssText = 'color:#ccc;font-size:0.82rem;margin-bottom:12px';
+    body.textContent = "You're " + pct + '% there. Wager $' + Math.ceil(needed).toLocaleString() + ' more to unlock ' + nextTier.name + ' perks.';
+
+    // Progress bar
+    var barTrack = document.createElement('div');
+    barTrack.style.cssText = 'background:#0d0d1a;border-radius:8px;height:8px;margin-bottom:14px;overflow:hidden';
+
+    var barFill = document.createElement('div');
+    barFill.style.cssText = [
+        'background:linear-gradient(90deg,' + color + ',#fff)',
+        'height:100%', 'width:' + pct + '%',
+        'border-radius:8px', 'transition:width 0.5s'
+    ].join(';');
+
+    barTrack.appendChild(barFill);
+
+    // Button row
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px';
+
+    var depositBtn = document.createElement('button');
+    depositBtn.style.cssText = [
+        'flex:1',
+        'background:linear-gradient(135deg,' + color + ',#ff8c00)',
+        'color:#0d0d1a', 'border:none', 'border-radius:8px',
+        'padding:10px', 'font-weight:700', 'cursor:pointer', 'font-size:0.85rem'
+    ].join(';');
+    depositBtn.textContent = '\uD83D\uDCB3 Deposit Now';
+    depositBtn.onclick = function() {
+        var el = document.getElementById('vipAccelOverlay');
+        if (el) el.remove();
+        if (typeof openWalletModal === 'function') openWalletModal();
+    };
+
+    var detailsBtn = document.createElement('button');
+    detailsBtn.style.cssText = [
+        'flex:0 0 auto',
+        'background:#1a1a2e',
+        'border:1px solid ' + color,
+        'color:' + color,
+        'border-radius:8px', 'padding:10px', 'cursor:pointer', 'font-size:0.85rem'
+    ].join(';');
+    detailsBtn.textContent = 'Details';
+    detailsBtn.onclick = function() {
+        var el = document.getElementById('vipAccelOverlay');
+        if (el) el.remove();
+        if (typeof openVipModal === 'function') openVipModal();
+    };
+
+    btnRow.appendChild(depositBtn);
+    btnRow.appendChild(detailsBtn);
+
+    overlay.appendChild(header);
+    overlay.appendChild(body);
+    overlay.appendChild(barTrack);
+    overlay.appendChild(btnRow);
+
+    // Inject slide-in keyframe once
+    if (!document.getElementById('vipAccelStyle')) {
+        var s = document.createElement('style');
+        s.id = 'vipAccelStyle';
+        s.textContent = '@keyframes vipSlideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}';
+        document.head.appendChild(s);
+    }
+
+    document.body.appendChild(overlay);
+
+    // Auto-dismiss after 15 seconds
+    setTimeout(function() {
+        var el = document.getElementById('vipAccelOverlay');
+        if (!el) return;
+        el.style.transition = 'opacity 0.5s';
+        el.style.opacity = '0';
+        setTimeout(function() {
+            var el2 = document.getElementById('vipAccelOverlay');
+            if (el2) el2.remove();
+        }, 500);
+    }, 15000);
+}
+
+// Expose on window so ui-slot.js can call it after each wager increment
+window.checkVipAcceleratorNudge = checkVipAcceleratorNudge;
+
+// Periodic check every 30 s — catches cases where stats update outside of spins
+setInterval(function() {
+    if (typeof currentUser !== 'undefined' && currentUser && !currentUser.isGuest) {
+        if (typeof checkVipAcceleratorNudge === 'function') checkVipAcceleratorNudge();
+    }
+}, 30000);
