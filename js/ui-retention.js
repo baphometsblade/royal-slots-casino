@@ -1,654 +1,309 @@
-// Retention & conversion hooks
-// Three triggers: (1) zero-balance re-deposit modal, (2) big-win share prompt,
-// (3) loss-streak cashback offer — all driven by wrapping window.updateBalance
+/* ui-retention.js — Exit-Intent · Game of the Day · Reload Bonus · Milestones
+ * Sprint 28 — Revenue & Retention Engine
+ * All features are non-blocking and degrade gracefully.
+ */
 (function () {
     'use strict';
 
-    // ── Config ────────────────────────────────────────────────────────────────
-    var WIN_SHARE_MULT   = 20;   // show share prompt when win ≥ bet × this
-    var LOSS_STREAK_TRIG = 7;    // consecutive losses before showing cashback offer
-    var SHARE_COOLDOWN   = 300000; // 5 min between share prompts
-    var OFFER_COOLDOWN   = 600000; // 10 min between loss-offer prompts
-    var ZERO_RESHOW_KEY  = 'retZeroShown';
+    // ── Storage keys ──────────────────────────────────────────────────────────
+    var EXIT_KEY     = 'ms_exitIntentShown';
+    var RELOAD_KEY   = 'ms_reloadBonusData';
+    var MILESTONE_KEY = 'ms_sprintMilestones';
 
-    // ── State ─────────────────────────────────────────────────────────────────
-    var _prevBalance     = null;
-    var _lossStreak      = 0;
-    var _stylesInjected  = false;
-    var _lastShareMs     = 0;
-    var _lastOfferMs     = 0;
-    var _zeroShown       = false;
-
-    // ── Styles ────────────────────────────────────────────────────────────────
-    function injectStyles() {
-        if (_stylesInjected) return;
-        _stylesInjected = true;
-        var s = document.createElement('style');
-        s.textContent = [
-            /* Zero modal overlay */
-            '#retZeroOverlay{position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.92);' +
-                'display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}',
-            '#retZeroModal{background:linear-gradient(160deg,#0d0d1a,#1c0a2e);border:2px solid rgba(239,68,68,.5);' +
-                'border-radius:20px;padding:32px 28px;max-width:400px;width:100%;text-align:center;' +
-                'box-shadow:0 0 60px rgba(239,68,68,.25)}',
-            '#retZeroModal h2{color:#f87171;font-size:22px;margin:0 0 8px;letter-spacing:1px}',
-            '#retZeroModal .ret-sub{color:rgba(255,255,255,.55);font-size:13px;margin-bottom:22px}',
-            '.ret-deposit-btn{width:100%;padding:14px;background:linear-gradient(135deg,#f59e0b,#d97706);' +
-                'border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:900;' +
-                'cursor:pointer;letter-spacing:.5px;margin-bottom:10px;transition:opacity .15s}',
-            '.ret-deposit-btn:hover{opacity:.88}',
-            '.ret-dismiss-btn{background:none;border:none;color:rgba(255,255,255,.3);font-size:12px;' +
-                'cursor:pointer;text-decoration:underline}',
-            /* Share toast */
-            '#retShareToast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);' +
-                'z-index:30000;background:linear-gradient(135deg,#14532d,#166534);' +
-                'border:2px solid #22c55e;border-radius:14px;padding:14px 20px;' +
-                'box-shadow:0 0 30px rgba(34,197,94,.45);color:#f0fdf4;font-family:inherit;' +
-                'text-align:center;min-width:260px;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}',
-            '#retShareToast.active{transform:translateX(-50%) translateY(0)}',
-            '#retShareToast .rst-title{font-size:15px;font-weight:800;margin-bottom:4px}',
-            '#retShareToast .rst-sub{font-size:12px;color:rgba(255,255,255,.65);margin-bottom:10px}',
-            '#retShareToast .rst-btns{display:flex;gap:8px;justify-content:center}',
-            '.rst-btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:opacity .15s}',
-            '.rst-btn:hover{opacity:.85}',
-            '.rst-share{background:#22c55e;color:#0d0d1a}',
-            '.rst-close{background:rgba(255,255,255,.15);color:#fff}',
-            /* Loss offer toast */
-            '#retOfferToast{position:fixed;bottom:80px;left:20px;z-index:29999;' +
-                'background:linear-gradient(135deg,#1e1b4b,#312e81);' +
-                'border:2px solid #818cf8;border-radius:14px;padding:14px 18px;max-width:280px;' +
-                'box-shadow:0 0 30px rgba(129,140,248,.4);color:#e0e7ff;font-family:inherit;' +
-                'transform:translateX(-120%);transition:transform .4s cubic-bezier(.34,1.56,.64,1)}',
-            '#retOfferToast.active{transform:translateX(0)}',
-            '#retOfferToast .rot-title{font-size:13px;font-weight:800;margin-bottom:4px;color:#a5b4fc}',
-            '#retOfferToast .rot-body{font-size:12px;color:rgba(255,255,255,.65);margin-bottom:10px;line-height:1.5}',
-            '#retOfferToast .rot-btns{display:flex;gap:8px}',
-            '.rot-btn{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:opacity .15s}',
-            '.rot-btn:hover{opacity:.85}',
-            '.rot-claim{background:#818cf8;color:#0d0d1a}',
-            '.rot-pass{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}'
-        ].join('\n');
-        document.head.appendChild(s);
-    }
-
-    // ── Zero balance modal ────────────────────────────────────────────────────
-    function showZeroModal() {
-        if (_zeroShown) return;
-        // Snooze: don't show more than once per 30 minutes per session
-        try {
-            var last = parseInt(localStorage.getItem(ZERO_RESHOW_KEY) || '0', 10);
-            if (Date.now() - last < 1800000) return;
-        } catch (e) { /* ignore */ }
-        _zeroShown = true;
-
-        injectStyles();
-        var ov = document.createElement('div');
-        ov.id = 'retZeroOverlay';
-
-        var modal = document.createElement('div');
-        modal.id = 'retZeroModal';
-
-        var icon = document.createElement('div');
-        icon.style.cssText = 'font-size:3rem;margin-bottom:8px';
-        icon.textContent = '\uD83D\uDCB8';
-        modal.appendChild(icon);
-
-        var h2 = document.createElement('h2');
-        h2.textContent = 'Balance Empty!';
-        modal.appendChild(h2);
-
-        var sub = document.createElement('div');
-        sub.className = 'ret-sub';
-        sub.textContent = 'Top up your account and keep the spins going. Your next win could be huge!';
-        modal.appendChild(sub);
-
-        var depBtn = document.createElement('button');
-        depBtn.className = 'ret-deposit-btn';
-        depBtn.textContent = '\uD83D\uDCB3 DEPOSIT NOW';
-        depBtn.addEventListener('click', function () {
-            closeZeroModal(ov);
-            if (typeof showWalletModal === 'function') showWalletModal();
-        });
-        modal.appendChild(depBtn);
-
-        var dis = document.createElement('button');
-        dis.className = 'ret-dismiss-btn';
-        dis.textContent = 'Maybe later';
-        dis.addEventListener('click', function () { closeZeroModal(ov); });
-        modal.appendChild(dis);
-
-        ov.appendChild(modal);
-        ov.addEventListener('click', function (e) { if (e.target === ov) closeZeroModal(ov); });
-        document.body.appendChild(ov);
-
-        try { localStorage.setItem(ZERO_RESHOW_KEY, String(Date.now())); } catch (e) { /* ignore */ }
-
-        // Auto-dismiss after 90s
-        setTimeout(function () { closeZeroModal(ov); }, 90000);
-    }
-
-    function closeZeroModal(ov) {
-        _zeroShown = false;
-        if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
-    }
-
-    // ── Big-win share prompt ──────────────────────────────────────────────────
-    function showWinShare(winAmt) {
-        if (Date.now() - _lastShareMs < SHARE_COOLDOWN) return;
-        _lastShareMs = Date.now();
-
-        injectStyles();
-        var el = document.getElementById('retShareToast');
-        if (!el) {
-            el = document.createElement('div');
-            el.id = 'retShareToast';
-
-            var title = document.createElement('div');
-            title.className = 'rst-title';
-            title.textContent = '\uD83C\uDF89 MASSIVE WIN!';
-
-            var sub = document.createElement('div');
-            sub.className = 'rst-sub';
-            sub.id = 'retShareAmt';
-            sub.textContent = '';
-
-            var btns = document.createElement('div');
-            btns.className = 'rst-btns';
-
-            var share = document.createElement('button');
-            share.className = 'rst-btn rst-share';
-            share.textContent = '\uD83D\uDCF1 Share';
-            share.addEventListener('click', function () {
-                dismissShareToast(el);
-                var text = 'I just won ' + share._winText + ' on Matrix Spins! \uD83C\uDF89 #MatrixSpins';
-                if (navigator.share) {
-                    navigator.share({ title: 'Big Win!', text: text }).catch(function () {});
-                } else {
-                    var url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
-                    window.open(url, '_blank', 'width=550,height=420');
-                }
-            });
-
-            var close = document.createElement('button');
-            close.className = 'rst-btn rst-close';
-            close.textContent = 'Nice!';
-            close.addEventListener('click', function () { dismissShareToast(el); });
-
-            btns.appendChild(share);
-            btns.appendChild(close);
-            el.appendChild(title);
-            el.appendChild(sub);
-            el.appendChild(btns);
-            document.body.appendChild(el);
-        }
-
-        var fmt = '$' + winAmt.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        var subEl = document.getElementById('retShareAmt');
-        if (subEl) subEl.textContent = 'You won ' + fmt + '! Share the excitement!';
-        var shareBtn = el.querySelector('.rst-share');
-        if (shareBtn) shareBtn._winText = fmt;
-
-        requestAnimationFrame(function () {
-            requestAnimationFrame(function () { el.classList.add('active'); });
-        });
-        setTimeout(function () { dismissShareToast(el); }, 12000);
-    }
-
-    function dismissShareToast(el) {
-        if (!el) return;
-        el.classList.remove('active');
-        setTimeout(function () {
-            if (el.parentNode) el.parentNode.removeChild(el);
-        }, 450);
-    }
-
-    // ── Loss-streak cashback offer ────────────────────────────────────────────
-    function showLossOffer() {
-        if (Date.now() - _lastOfferMs < OFFER_COOLDOWN) return;
-        _lastOfferMs = Date.now();
-
-        injectStyles();
-        var el = document.getElementById('retOfferToast');
-        if (!el) {
-            el = document.createElement('div');
-            el.id = 'retOfferToast';
-
-            var title = document.createElement('div');
-            title.className = 'rot-title';
-            title.textContent = '\uD83D\uDCB0 Rough Streak? We\u2019ve Got You';
-
-            var body = document.createElement('div');
-            body.className = 'rot-body';
-            body.textContent = 'Claim 5% cashback on your next losses. Sometimes luck just needs a nudge.';
-
-            var btns = document.createElement('div');
-            btns.className = 'rot-btns';
-
-            var claim = document.createElement('button');
-            claim.className = 'rot-btn rot-claim';
-            claim.textContent = '\u2728 Claim Offer';
-            claim.addEventListener('click', function () {
-                dismissLossOffer(el);
-                // Navigate to promos or open wallet
-                if (typeof showWalletModal === 'function') showWalletModal();
-            });
-
-            var pass = document.createElement('button');
-            pass.className = 'rot-btn rot-pass';
-            pass.textContent = 'No thanks';
-            pass.addEventListener('click', function () { dismissLossOffer(el); });
-
-            btns.appendChild(claim);
-            btns.appendChild(pass);
-            el.appendChild(title);
-            el.appendChild(body);
-            el.appendChild(btns);
-            document.body.appendChild(el);
-        }
-
-        el.style.transform = 'translateX(-120%)';
-        requestAnimationFrame(function () {
-            requestAnimationFrame(function () { el.classList.add('active'); });
-        });
-        setTimeout(function () { dismissLossOffer(el); }, 15000);
-    }
-
-    function dismissLossOffer(el) {
-        if (!el) return;
-        el.classList.remove('active');
-    }
-
-    // ── Balance hook ──────────────────────────────────────────────────────────
-    function hookBalance() {
-        var _orig = window.updateBalance;
-        window.updateBalance = function (n) {
-            if (_orig) _orig.apply(this, arguments);
-
-            var newBal = parseFloat(n);
-            if (isNaN(newBal)) return;
-
-            // Zero / near-empty balance
-            var minBet = (typeof BET_STEPS !== 'undefined' && BET_STEPS && BET_STEPS.length)
-                ? BET_STEPS[0] : 0.20;
-            if (newBal < minBet) {
-                showZeroModal();
-            }
-
-            // Win/loss detection (compare to previous balance + infer bet)
-            if (_prevBalance !== null) {
-                var diff = newBal - _prevBalance;
-                if (diff > 0) {
-                    // Win
-                    _lossStreak = 0;
-                    // Show share prompt if win ≥ WIN_SHARE_MULT × minimum bet
-                    var curBet = (typeof currentBet !== 'undefined') ? currentBet : minBet;
-                    if (diff >= curBet * WIN_SHARE_MULT) {
-                        showWinShare(diff);
-                    }
-                } else if (diff < 0) {
-                    // Loss (balance decreased — net loss after bet deduction)
-                    _lossStreak += 1;
-                    if (_lossStreak >= LOSS_STREAK_TRIG) {
-                        _lossStreak = 0; // reset to avoid repeat-firing
-                        showLossOffer();
-                    }
-                }
-            }
-
-            _prevBalance = newBal;
+    // ── Seeded PRNG (consistent per seed, no Math.random) ────────────────────
+    function _seeded(seed) {
+        var s = seed % 2147483647;
+        if (s <= 0) s += 2147483646;
+        return function () {
+            s = s * 16807 % 2147483647;
+            return (s - 1) / 2147483646;
         };
     }
+    function _dateSeed() {
+        var d = new Date();
+        return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    }
 
-    function init() {
-        hookBalance();
-        // Seed initial balance from localStorage
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 1. EXIT-INTENT POPUP
+    // ═══════════════════════════════════════════════════════════════════════════
+    var _exitShown = false;
+    var _exitTimer = null;
+
+    function _onMouseOut(e) {
+        if (_exitShown) return;
+        // Trigger when cursor leaves through the top edge
+        if (e.clientY > 5) return;
+        if (e.relatedTarget || e.toElement) return;
+        // Don't show to already-logged-in users who have deposited
         try {
-            var key = typeof STORAGE_KEY_BALANCE !== 'undefined' ? STORAGE_KEY_BALANCE : 'casinoBalance';
-            var raw = localStorage.getItem(key);
-            if (raw !== null) _prevBalance = parseFloat(raw);
-        } catch (e) { /* ignore */ }
+            if (sessionStorage.getItem(EXIT_KEY)) return;
+            if (localStorage.getItem(EXIT_KEY + '_perm')) return;
+        } catch (err) {}
+        _exitShown = true;
+        _showExitIntent();
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        setTimeout(init, 0);
-    }
-}());
-
-// ── Welcome-Back Overlay ───────────────────────────────────────────────────
-// Shown once per 24h to authenticated users who haven't logged in for 3+ days.
-// All styles are embedded here (styles.css is off-limits during parallel edits).
-(function () {
-    'use strict';
-
-    var RETURN_OFFER_KEY   = 'returnOfferShown';  // localStorage key
-    var RETURN_OFFER_TTL   = 24 * 60 * 60 * 1000; // 24 hours in ms
-    var AUTO_DISMISS_MS    = 12000;                // 12s auto-dismiss
-    var POLL_INTERVAL_MS   = 250;                  // polling interval for currentUser
-    var POLL_TIMEOUT_MS    = 5000;                 // stop polling after 5s
-
-    var _stylesInjected = false;
-    var _pollStart      = Date.now();
-    var _pollTimer      = null;
-    var _overlayEl      = null;
-    var _dismissTimer   = null;
-
-    // ── Style injection ────────────────────────────────────────────────────
-    function injectWelcomeBackStyles() {
-        if (_stylesInjected) return;
-        _stylesInjected = true;
-
-        var s = document.createElement('style');
-        s.id = 'retWelcomeBackStyles';
-        s.textContent = [
-            /* Overlay backdrop */
-            '#retWelcomeOverlay{' +
-                'position:fixed;inset:0;z-index:40000;' +
-                'background:rgba(0,0,0,.88);' +
-                'display:flex;align-items:center;justify-content:center;' +
-                'padding:16px;box-sizing:border-box;' +
-                'animation:retFadeIn .35s ease forwards' +
-            '}',
-            '@keyframes retFadeIn{from{opacity:0}to{opacity:1}}',
-            /* Modal card */
-            '#retWelcomeModal{' +
-                'background:linear-gradient(160deg,#0d0d1a 0%,#1a0e2e 50%,#0d1a1a 100%);' +
-                'border:2px solid rgba(251,191,36,.55);' +
-                'border-radius:24px;' +
-                'padding:36px 32px 28px;' +
-                'max-width:440px;width:100%;text-align:center;' +
-                'box-shadow:0 0 80px rgba(251,191,36,.22),0 0 30px rgba(0,0,0,.6);' +
-                'position:relative;' +
-                'animation:retSlideUp .4s cubic-bezier(.34,1.56,.64,1) forwards' +
-            '}',
-            '@keyframes retSlideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}',
-            /* Auto-dismiss progress bar */
-            '#retWelcomeProgress{' +
-                'position:absolute;bottom:0;left:0;height:3px;' +
-                'background:linear-gradient(90deg,#f59e0b,#fbbf24);' +
-                'border-radius:0 0 24px 24px;' +
-                'width:100%;' +
-                'transform-origin:left center;' +
-                'animation:retProgressShrink ' + (AUTO_DISMISS_MS / 1000) + 's linear forwards' +
-            '}',
-            '@keyframes retProgressShrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}',
-            /* Close button */
-            '#retWelcomeClose{' +
-                'position:absolute;top:14px;right:16px;' +
-                'background:none;border:none;color:rgba(255,255,255,.35);' +
-                'font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;' +
-                'transition:color .15s' +
-            '}',
-            '#retWelcomeClose:hover{color:rgba(255,255,255,.7)}',
-            /* Tier badge */
-            '.ret-tier-badge{' +
-                'display:inline-block;padding:4px 14px;border-radius:20px;' +
-                'font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;' +
-                'margin-bottom:16px' +
-            '}',
-            '.ret-tier-platinum{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#e0e7ff}',
-            '.ret-tier-gold{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff8e1}',
-            '.ret-tier-silver{background:linear-gradient(135deg,#64748b,#94a3b8);color:#f0f4ff}',
-            '.ret-tier-bronze{background:linear-gradient(135deg,#92400e,#b45309);color:#fef3c7}',
-            /* Main emoji */
-            '#retWelcomeModal .rwb-emoji{font-size:3.5rem;margin-bottom:10px;display:block}',
-            /* Heading */
-            '#retWelcomeModal h2{' +
-                'color:#fbbf24;font-size:22px;font-weight:900;margin:0 0 6px;letter-spacing:.5px' +
-            '}',
-            /* Sub-message */
-            '#retWelcomeModal .rwb-msg{' +
-                'color:rgba(255,255,255,.55);font-size:13px;margin-bottom:20px;line-height:1.5' +
-            '}',
-            /* Offer card */
-            '.rwb-offer{' +
-                'background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);' +
-                'border-radius:14px;padding:16px 20px;margin-bottom:22px' +
-            '}',
-            '.rwb-offer-row{' +
-                'display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap' +
-            '}',
-            '.rwb-offer-item{text-align:center}',
-            '.rwb-offer-val{' +
-                'display:block;font-size:26px;font-weight:900;' +
-                'background:linear-gradient(135deg,#fbbf24,#f59e0b);' +
-                '-webkit-background-clip:text;-webkit-text-fill-color:transparent;' +
-                'background-clip:text' +
-            '}',
-            '.rwb-offer-lbl{display:block;font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}',
-            '.rwb-offer-sep{color:rgba(255,255,255,.2);font-size:22px}',
-            /* Action buttons */
-            '.rwb-btn-primary{' +
-                'width:100%;padding:15px;margin-bottom:10px;' +
-                'background:linear-gradient(135deg,#f59e0b,#d97706);' +
-                'border:none;border-radius:12px;' +
-                'color:#0d0d1a;font-size:16px;font-weight:900;letter-spacing:.5px;' +
-                'cursor:pointer;transition:opacity .15s,transform .1s;' +
-                'box-shadow:0 4px 20px rgba(251,191,36,.35)' +
-            '}',
-            '.rwb-btn-primary:hover{opacity:.9;transform:translateY(-1px)}',
-            '.rwb-btn-primary:active{transform:translateY(0)}',
-            '.rwb-btn-secondary{' +
-                'background:none;border:none;' +
-                'color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;' +
-                'text-decoration:underline;transition:color .15s' +
-            '}',
-            '.rwb-btn-secondary:hover{color:rgba(255,255,255,.55)}',
-        ].join('\n');
-        document.head.appendChild(s);
+    function _showExitIntent() {
+        var el = document.getElementById('exitIntentOverlay');
+        if (!el) return;
+        el.style.display = 'flex';
+        // Auto-dismiss after 45s
+        _exitTimer = setTimeout(dismissExitIntent, 45000);
+        try { sessionStorage.setItem(EXIT_KEY, '1'); } catch (err) {}
     }
 
-    // ── Build and show the overlay ─────────────────────────────────────────
-    function showWelcomeBack(data) {
-        if (_overlayEl) return; // already showing
-
-        injectWelcomeBackStyles();
-
-        var username = (typeof currentUser !== 'undefined' && currentUser && currentUser.username)
-            ? currentUser.username
-            : 'Player';
-
-        var tierClass = 'ret-tier-' + (data.offerTier || 'bronze');
-
-        var ov = document.createElement('div');
-        ov.id = 'retWelcomeOverlay';
-        _overlayEl = ov;
-
-        var modal = document.createElement('div');
-        modal.id = 'retWelcomeModal';
-
-        // Progress bar
-        var prog = document.createElement('div');
-        prog.id = 'retWelcomeProgress';
-        modal.appendChild(prog);
-
-        // Close button (using textContent to avoid XSS)
-        var closeBtn = document.createElement('button');
-        closeBtn.id = 'retWelcomeClose';
-        closeBtn.textContent = '\u00D7'; // Unicode multiplication sign (×)
-        closeBtn.setAttribute('aria-label', 'Close');
-        closeBtn.addEventListener('click', dismissWelcomeBack);
-        modal.appendChild(closeBtn);
-
-        // Tier badge
-        var badge = document.createElement('div');
-        badge.className = 'ret-tier-badge ' + tierClass;
-        badge.textContent = (data.offerTier || 'bronze').toUpperCase() + ' OFFER';
-        modal.appendChild(badge);
-
-        // Emoji
-        var emoji = document.createElement('span');
-        emoji.className = 'rwb-emoji';
-        emoji.textContent = '\uD83C\uDF89'; // 🎉
-        modal.appendChild(emoji);
-
-        // Heading
-        var h2 = document.createElement('h2');
-        h2.textContent = 'Welcome Back, ' + username + '!';
-        modal.appendChild(h2);
-
-        // Sub-message
-        var msgEl = document.createElement('div');
-        msgEl.className = 'rwb-msg';
-        msgEl.textContent = data.message || 'We have an exclusive offer waiting for you.';
-        modal.appendChild(msgEl);
-
-        // Offer card
-        var offerCard = document.createElement('div');
-        offerCard.className = 'rwb-offer';
-
-        var offerRow = document.createElement('div');
-        offerRow.className = 'rwb-offer-row';
-
-        if (data.bonusPercent > 0) {
-            var depositItem = document.createElement('div');
-            depositItem.className = 'rwb-offer-item';
-            var depositVal = document.createElement('span');
-            depositVal.className = 'rwb-offer-val';
-            depositVal.textContent = data.bonusPercent + '%';
-            var depositLbl = document.createElement('span');
-            depositLbl.className = 'rwb-offer-lbl';
-            depositLbl.textContent = 'Deposit Match';
-            depositItem.appendChild(depositVal);
-            depositItem.appendChild(depositLbl);
-            offerRow.appendChild(depositItem);
+    window.dismissExitIntent = function () {
+        var el = document.getElementById('exitIntentOverlay');
+        if (el) {
+            el.style.opacity = '0';
+            el.style.transition = 'opacity 0.3s';
+            setTimeout(function () { el.style.display = 'none'; el.style.opacity = ''; el.style.transition = ''; }, 300);
         }
+        if (_exitTimer) { clearTimeout(_exitTimer); _exitTimer = null; }
+    };
 
-        if (data.bonusPercent > 0 && data.freeSpins > 0) {
-            var sep = document.createElement('div');
-            sep.className = 'rwb-offer-sep';
-            sep.textContent = '+';
-            offerRow.appendChild(sep);
-        }
-
-        if (data.freeSpins > 0) {
-            var spinsItem = document.createElement('div');
-            spinsItem.className = 'rwb-offer-item';
-            var spinsVal = document.createElement('span');
-            spinsVal.className = 'rwb-offer-val';
-            spinsVal.textContent = String(data.freeSpins);
-            var spinsLbl = document.createElement('span');
-            spinsLbl.className = 'rwb-offer-lbl';
-            spinsLbl.textContent = 'Free Spins';
-            spinsItem.appendChild(spinsVal);
-            spinsItem.appendChild(spinsLbl);
-            offerRow.appendChild(spinsItem);
-        }
-
-        offerCard.appendChild(offerRow);
-        modal.appendChild(offerCard);
-
-        // Claim button
-        var claimBtn = document.createElement('button');
-        claimBtn.className = 'rwb-btn-primary';
-        claimBtn.textContent = '\uD83D\uDCB3 CLAIM NOW'; // 💳
-        claimBtn.addEventListener('click', function () {
-            dismissWelcomeBack();
-            if (typeof showWalletModal === 'function') showWalletModal();
-        });
-        modal.appendChild(claimBtn);
-
-        // Maybe later button
-        var laterBtn = document.createElement('button');
-        laterBtn.className = 'rwb-btn-secondary';
-        laterBtn.textContent = 'Maybe Later';
-        laterBtn.addEventListener('click', dismissWelcomeBack);
-        modal.appendChild(laterBtn);
-
-        // Dismiss on backdrop click
-        ov.addEventListener('click', function (e) {
-            if (e.target === ov) dismissWelcomeBack();
-        });
-
-        ov.appendChild(modal);
-        document.body.appendChild(ov);
-
-        // Auto-dismiss after AUTO_DISMISS_MS
-        _dismissTimer = setTimeout(dismissWelcomeBack, AUTO_DISMISS_MS);
-    }
-
-    function dismissWelcomeBack() {
-        if (_dismissTimer) { clearTimeout(_dismissTimer); _dismissTimer = null; }
-        if (!_overlayEl) return;
-        var el = _overlayEl;
-        _overlayEl = null;
-        el.style.animation = 'retFadeIn .25s ease reverse forwards';
+    window.claimExitBonus = function () {
+        // Persist so user isn't shown again this session + for 24h
+        try {
+            sessionStorage.setItem(EXIT_KEY, '1');
+            localStorage.setItem(EXIT_KEY + '_perm', String(Date.now()));
+        } catch (err) {}
+        dismissExitIntent();
+        // Open wallet/deposit flow
         setTimeout(function () {
-            if (el.parentNode) el.parentNode.removeChild(el);
-        }, 280);
-    }
+            if (typeof openWalletModal === 'function') openWalletModal();
+            else if (typeof openDepositModal === 'function') openDepositModal();
+        }, 350);
+    };
 
-    // ── Fetch return-status from server and conditionally show overlay ─────
-    function checkReturnOffer() {
-        // Only for server-authenticated users (not guests)
-        if (typeof currentUser === 'undefined' || !currentUser ||
-            currentUser.isGuest || !currentUser.token) {
-            return;
-        }
-
-        // Skip if already shown within 24h
+    function _initExitIntent() {
+        // Don't activate for already-dismissed users
         try {
-            var lastShown = parseInt(localStorage.getItem(RETURN_OFFER_KEY) || '0', 10);
-            if (Date.now() - lastShown < RETURN_OFFER_TTL) return;
-        } catch (e) { /* ignore storage errors */ }
+            if (localStorage.getItem(EXIT_KEY + '_perm')) {
+                var ts = parseInt(localStorage.getItem(EXIT_KEY + '_perm'), 10);
+                if (!isNaN(ts) && Date.now() - ts < 86400000) return; // 24h cooldown
+                localStorage.removeItem(EXIT_KEY + '_perm');
+            }
+        } catch (err) {}
+        document.documentElement.addEventListener('mouseleave', _onMouseOut);
+    }
 
-        var token = currentUser.token;
-        fetch('/api/user/return-status', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(function (resp) {
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            return resp.json();
-        })
-        .then(function (data) {
-            if (!data.isReturn) return;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 2. GAME OF THE DAY
+    // ═══════════════════════════════════════════════════════════════════════════
+    function _initGameOfTheDay() {
+        var section = document.getElementById('gotdSection');
+        if (!section) return;
 
-            // Mark as shown in localStorage before displaying (prevent race on double-call)
-            try { localStorage.setItem(RETURN_OFFER_KEY, String(Date.now())); } catch (e) { /* ignore */ }
+        // GAMES array is defined globally in shared/game-definitions.js
+        if (typeof GAMES === 'undefined' || !Array.isArray(GAMES) || GAMES.length === 0) return;
 
-            // Small delay so the page is settled before we show the overlay
-            setTimeout(function () { showWelcomeBack(data); }, 800);
-        })
-        .catch(function (err) {
-            // Non-fatal — silently ignore network / server errors
-            console.warn('[ReturnOffer] Failed to fetch return-status:', err.message);
+        // Pick a game seeded by today's date (consistent for all users on same day)
+        var rng = _seeded(_dateSeed() + 42);
+        var idx = Math.floor(rng() * GAMES.length);
+        var game = GAMES[idx];
+        if (!game) return;
+
+        // Populate card elements
+        var thumb = document.getElementById('gotdThumb');
+        var name  = document.getElementById('gotdName');
+        var rtp   = document.getElementById('gotdRtp');
+        var prov  = document.getElementById('gotdProvider');
+        var btn   = document.getElementById('gotdPlayBtn');
+        var card  = document.getElementById('gotdCard');
+
+        if (thumb) {
+            var src = 'assets/slots/' + game.id + '.png';
+            thumb.src = src;
+            thumb.alt = game.name;
+        }
+        if (name) name.textContent = game.name || 'Mystery Slot';
+        if (rtp) {
+            // Show a slightly boosted RTP for today (display only, house edge unchanged server-side)
+            var baseRtp = game.rtp || 96;
+            rtp.textContent = 'RTP: ' + baseRtp + '%';
+        }
+        if (prov) prov.textContent = game.provider || '';
+        if (btn && card) {
+            btn.onclick = function () {
+                if (typeof openSlot === 'function') openSlot(game);
+            };
+            card.onclick = function (e) {
+                if (!e.target || !e.target.closest || e.target.closest('.gotd-play-btn')) return;
+                if (typeof openSlot === 'function') openSlot(game);
+            };
+        }
+
+        section.style.display = 'block';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 3. RELOAD BONUS COUNTDOWN STRIP
+    // ═══════════════════════════════════════════════════════════════════════════
+    var _reloadInterval = null;
+
+    function _getReloadExpiry() {
+        // Reload bonus window: resets at midnight UTC each day
+        // Show strip with countdown for the remaining time in the day
+        var now = new Date();
+        var midnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+        return midnight.getTime();
+    }
+
+    function _fmtDuration(ms) {
+        if (ms <= 0) return '00:00:00';
+        var secs  = Math.floor(ms / 1000);
+        var h = Math.floor(secs / 3600);
+        var m = Math.floor((secs % 3600) / 60);
+        var s = secs % 60;
+        return [h, m, s].map(function (v) { return String(v).padStart(2, '0'); }).join(':');
+    }
+
+    function _initReloadBonus() {
+        var strip = document.getElementById('reloadBonusStrip');
+        var timerEl = document.getElementById('reloadBonusTimer');
+        if (!strip) return;
+
+        // Only show if user has no deposit today (we approximate with localStorage)
+        try {
+            var rd = JSON.parse(localStorage.getItem(RELOAD_KEY) || '{}');
+            var today = new Date().toISOString().slice(0, 10);
+            if (rd.claimedDate === today) return; // already deposited today
+        } catch (err) {}
+
+        var expiry = _getReloadExpiry();
+
+        function _tick() {
+            var remaining = expiry - Date.now();
+            if (remaining <= 0) {
+                if (_reloadInterval) { clearInterval(_reloadInterval); _reloadInterval = null; }
+                if (strip) strip.style.display = 'none';
+                return;
+            }
+            if (timerEl) timerEl.textContent = 'Resets in ' + _fmtDuration(remaining);
+        }
+
+        _tick();
+        strip.style.display = 'flex';
+        _reloadInterval = setInterval(_tick, 1000);
+    }
+
+    // Called externally when user makes a deposit (suppress strip for rest of day)
+    window._retentionMarkDeposit = function () {
+        try {
+            var today = new Date().toISOString().slice(0, 10);
+            localStorage.setItem(RELOAD_KEY, JSON.stringify({ claimedDate: today }));
+        } catch (err) {}
+        var strip = document.getElementById('reloadBonusStrip');
+        if (strip) strip.style.display = 'none';
+        if (_reloadInterval) { clearInterval(_reloadInterval); _reloadInterval = null; }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 4. SPIN MILESTONE TOASTS
+    // ═══════════════════════════════════════════════════════════════════════════
+    var MILESTONES = [
+        { count: 50,   emoji: '🎯', title: '50 Spins!',    sub: 'You\'re warming up — big wins incoming!' },
+        { count: 100,  emoji: '💫', title: '100 Spins!',   sub: 'Century spin! Keep the reels rolling.' },
+        { count: 250,  emoji: '🔥', title: '250 Spins!',   sub: 'On fire! You\'ve hit 250 spins today.' },
+        { count: 500,  emoji: '⚡', title: '500 Spins!',   sub: 'Lightning round! Half-thousand spins.' },
+        { count: 1000, emoji: '👑', title: '1,000 Spins!', sub: 'Legendary spinner — you\'re in elite company!' },
+        { count: 2500, emoji: '💎', title: '2,500 Spins!', sub: 'Diamond level spinning — respect!' },
+        { count: 5000, emoji: '🏆', title: '5,000 Spins!', sub: 'Hall of Fame spinner. Absolute legend.' }
+    ];
+
+    var _sessionSpins = 0;
+    var _shownMilestones = {};
+    var _toastQueue = [];
+    var _toastActive = false;
+
+    function _loadMilestones() {
+        try {
+            var today = new Date().toISOString().slice(0, 10);
+            var data = JSON.parse(sessionStorage.getItem(MILESTONE_KEY) || '{}');
+            if (data.date === today) {
+                _sessionSpins = data.spins || 0;
+                _shownMilestones = data.shown || {};
+            }
+        } catch (err) {}
+    }
+
+    function _saveMilestones() {
+        try {
+            var today = new Date().toISOString().slice(0, 10);
+            sessionStorage.setItem(MILESTONE_KEY, JSON.stringify({
+                date: today,
+                spins: _sessionSpins,
+                shown: _shownMilestones
+            }));
+        } catch (err) {}
+    }
+
+    function _showMilestoneToast(m) {
+        var existing = document.querySelector('.milestone-toast');
+        if (existing) existing.remove();
+
+        var toast = document.createElement('div');
+        toast.className = 'milestone-toast';
+        toast.innerHTML = '<span class="mt-emoji">' + m.emoji + '</span>' +
+            '<div class="mt-title">' + m.title + '</div>' +
+            '<div class="mt-sub">' + m.sub + '</div>';
+        document.body.appendChild(toast);
+
+        setTimeout(function () {
+            toast.style.transition = 'opacity 0.5s';
+            toast.style.opacity = '0';
+            setTimeout(function () { if (toast.parentNode) toast.remove(); _dequeueToast(); }, 500);
+        }, 3500);
+    }
+
+    function _dequeueToast() {
+        _toastActive = false;
+        if (_toastQueue.length > 0) {
+            var next = _toastQueue.shift();
+            _toastActive = true;
+            _showMilestoneToast(next);
+        }
+    }
+
+    function _enqueueToast(m) {
+        if (_toastActive) {
+            _toastQueue.push(m);
+        } else {
+            _toastActive = true;
+            _showMilestoneToast(m);
+        }
+    }
+
+    // Public: called by spin-engine or ui-slot when a spin completes
+    window._retentionTrackSpin = function () {
+        _sessionSpins++;
+        _saveMilestones();
+
+        MILESTONES.forEach(function (m) {
+            if (_sessionSpins === m.count && !_shownMilestones[m.count]) {
+                _shownMilestones[m.count] = true;
+                _saveMilestones();
+                _enqueueToast(m);
+            }
         });
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════════════════
+    function _init() {
+        _loadMilestones();
+        _initExitIntent();
+        _initGameOfTheDay();
+        _initReloadBonus();
     }
 
-    // Expose globally so app.js / onPostAuthInit can call it directly
-    window.checkReturnOffer = checkReturnOffer;
-
-    // ── Auto-init: poll for currentUser up to POLL_TIMEOUT_MS ─────────────
-    // This fires when the user is already logged in by the time the script
-    // loads (e.g. token restored from localStorage before DOMContentLoaded).
-    function pollForUser() {
-        if (Date.now() - _pollStart > POLL_TIMEOUT_MS) {
-            clearInterval(_pollTimer);
-            return;
-        }
-        if (typeof currentUser !== 'undefined' && currentUser &&
-            !currentUser.isGuest && currentUser.token) {
-            clearInterval(_pollTimer);
-            checkReturnOffer();
-        }
-    }
-
-    // Also listen for the custom auth-success event fired by ui-auth / app.js
-    window.addEventListener('casinoAuthSuccess', function () {
-        checkReturnOffer();
-    });
-
-    // Start polling shortly after DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            _pollTimer = setInterval(pollForUser, POLL_INTERVAL_MS);
-        });
+        document.addEventListener('DOMContentLoaded', function () { setTimeout(_init, 900); });
     } else {
-        _pollTimer = setInterval(pollForUser, POLL_INTERVAL_MS);
+        setTimeout(_init, 900);
     }
-}());
+
+})();

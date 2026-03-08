@@ -723,6 +723,31 @@
             <div class="dmb-reward" id="dmbRewardBtn" onclick="if(typeof claimDailyMissions==='function')claimDailyMissions()">Claim All</div>
         </div>
 
+        <!-- Sprint 28: Reload bonus strip -->
+        <div id="reloadBonusStrip" class="reload-bonus-strip" style="display:none">
+            <span class="rbs-icon">💜</span>
+            <span class="rbs-text">Reload Bonus — Deposit <b>$50+</b> today and get <b>50% back</b> as bonus credits</span>
+            <span class="rbs-timer" id="reloadBonusTimer"></span>
+            <button class="rbs-cta" onclick="if(typeof openWalletModal==='function')openWalletModal()">Deposit Now</button>
+        </div>
+
+        <!-- Sprint 28: Game of the Day -->
+        <div id="gotdSection" class="gotd-section" style="display:none">
+            <div class="gotd-label">⭐ Game of the Day</div>
+            <div class="gotd-card" id="gotdCard">
+                <img class="gotd-thumb" id="gotdThumb" src="" alt="" onerror="this.style.display='none'">
+                <div class="gotd-info">
+                    <div class="gotd-badge">⭐ Featured Today</div>
+                    <div class="gotd-name" id="gotdName">Loading...</div>
+                    <div class="gotd-meta">
+                        <span class="gotd-rtp" id="gotdRtp">RTP: 96.5%</span>
+                        <span id="gotdProvider"></span>
+                    </div>
+                </div>
+                <button class="gotd-play-btn" id="gotdPlayBtn">▶ Play Now</button>
+            </div>
+        </div>
+
         <!-- All Slots Section -->
         <div class="section-header">
             <h3 class="section-title" id="allSlotsTitle">
@@ -2632,6 +2657,27 @@
                     No thanks, I'll pass on the free money
                 </span>
             </div>
+        </div>
+    </div>
+
+    <!-- Sprint 28: Exit-intent popup -->
+    <div id="exitIntentOverlay" class="exit-intent-overlay" style="display:none" role="dialog" aria-modal="true">
+        <div class="exit-intent-card">
+            <button class="eic-close" onclick="if(typeof dismissExitIntent==='function')dismissExitIntent()">✕</button>
+            <div class="eic-emoji">🎰</div>
+            <div class="eic-title">Wait! Don't Leave!</div>
+            <div class="eic-sub">You're so close to a big win. Claim your exclusive bonus before you go.</div>
+            <div class="eic-offer-box">
+                <b>🎁 25 Free Spins</b><br>
+                No deposit required — valid for next 30 minutes only
+            </div>
+            <button class="eic-cta" onclick="if(typeof claimExitBonus==='function')claimExitBonus()">
+                🎁 CLAIM 25 FREE SPINS
+            </button>
+            <br>
+            <button class="eic-dismiss" onclick="if(typeof dismissExitIntent==='function')dismissExitIntent()">
+                No thanks, I'll leave without claiming
+            </button>
         </div>
     </div>
 

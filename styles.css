@@ -20218,3 +20218,196 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 }
 @keyframes _hsSlideIn { from { transform:translateX(120%); opacity:0 } to { transform:translateX(0); opacity:1 } }
 .hs-icon { font-size: 20px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPRINT 28 — EXIT-INTENT · GAME OF THE DAY · RELOAD BONUS · MILESTONES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Exit-Intent Overlay ──────────────────────────────────────────────── */
+.exit-intent-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.82);
+    z-index: 200000;
+    display: flex; align-items: center; justify-content: center;
+    animation: _s28fadeIn 0.25s ease;
+    backdrop-filter: blur(4px);
+}
+.exit-intent-card {
+    background: linear-gradient(160deg, #12001f, #1a0a2e);
+    border: 1px solid rgba(251,191,36,0.35);
+    border-radius: 20px;
+    padding: 40px 36px 32px;
+    max-width: 420px;
+    width: 92%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 60px rgba(251,191,36,0.18), 0 24px 60px rgba(0,0,0,0.6);
+    animation: _s28slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.eic-close {
+    position: absolute; top: 14px; right: 18px;
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    font-size: 22px; cursor: pointer; line-height: 1;
+    transition: color 0.2s;
+}
+.eic-close:hover { color: #fff; }
+.eic-emoji { font-size: 52px; line-height: 1; margin-bottom: 12px; }
+.eic-title {
+    font-size: 26px; font-weight: 800;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px; letter-spacing: -0.5px;
+}
+.eic-sub {
+    font-size: 14px; color: rgba(255,255,255,0.65);
+    margin-bottom: 22px; line-height: 1.5;
+}
+.eic-offer-box {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    font-size: 13px; color: rgba(255,255,255,0.75);
+}
+.eic-offer-box b { color: #fbbf24; font-size: 15px; }
+.eic-cta {
+    width: 100%; padding: 15px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 800;
+    color: #000; cursor: pointer;
+    animation: _s28pulse 2s ease-in-out infinite;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+}
+.eic-cta:hover { filter: brightness(1.1); }
+.eic-dismiss {
+    font-size: 11px; color: rgba(255,255,255,0.3);
+    cursor: pointer; text-decoration: underline;
+    background: none; border: none;
+}
+.eic-dismiss:hover { color: rgba(255,255,255,0.5); }
+
+/* ─── Game of the Day ──────────────────────────────────────────────────── */
+.gotd-section {
+    margin: 0 0 20px;
+}
+.gotd-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    color: #fbbf24; text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.gotd-card {
+    background: linear-gradient(135deg, #1a0a2e, #0f172a);
+    border: 2px solid rgba(251,191,36,0.45);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 20px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(251,191,36,0.12), 0 8px 24px rgba(0,0,0,0.4);
+    position: relative; overflow: hidden;
+}
+.gotd-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(251,191,36,0.06), transparent);
+    pointer-events: none;
+}
+.gotd-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px rgba(251,191,36,0.22), 0 16px 36px rgba(0,0,0,0.5);
+}
+.gotd-thumb {
+    width: 80px; height: 80px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid rgba(251,191,36,0.3);
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+}
+.gotd-info { flex: 1; min-width: 0; }
+.gotd-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.35);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 10px; font-weight: 700; color: #fbbf24;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.gotd-name {
+    font-size: 20px; font-weight: 800; color: #fff;
+    margin-bottom: 4px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.gotd-meta {
+    font-size: 12px; color: rgba(255,255,255,0.5);
+    display: flex; align-items: center; gap: 12px;
+}
+.gotd-rtp { color: #4ade80; font-weight: 700; }
+.gotd-play-btn {
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    border: none; border-radius: 10px;
+    padding: 12px 22px;
+    font-size: 14px; font-weight: 800;
+    color: #000; cursor: pointer;
+    flex-shrink: 0;
+    transition: filter 0.2s, transform 0.15s;
+    white-space: nowrap;
+}
+.gotd-play-btn:hover { filter: brightness(1.1); transform: scale(1.04); }
+@media (max-width: 600px) {
+    .gotd-card { flex-direction: column; text-align: center; }
+    .gotd-meta { justify-content: center; }
+}
+
+/* ─── Reload Bonus Strip ───────────────────────────────────────────────── */
+.reload-bonus-strip {
+    background: linear-gradient(90deg, rgba(124,58,237,0.15), rgba(251,191,36,0.08));
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 10px;
+    padding: 11px 18px;
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.rbs-icon { font-size: 20px; flex-shrink: 0; }
+.rbs-text { flex: 1; font-size: 13px; color: rgba(255,255,255,0.8); min-width: 160px; }
+.rbs-text b { color: #a78bfa; }
+.rbs-timer { font-size: 12px; color: rgba(255,255,255,0.45); flex-shrink: 0; }
+.rbs-cta {
+    background: rgba(124,58,237,0.3); border: 1px solid rgba(167,139,250,0.4);
+    border-radius: 8px; padding: 7px 14px;
+    font-size: 12px; font-weight: 700; color: #c4b5fd;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.2s;
+}
+.rbs-cta:hover { background: rgba(124,58,237,0.5); }
+
+/* ─── Milestone Toast ──────────────────────────────────────────────────── */
+.milestone-toast {
+    position: fixed;
+    bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, #1a0a2e, #0f0f1a);
+    border: 2px solid rgba(251,191,36,0.5);
+    border-radius: 16px;
+    padding: 16px 28px;
+    text-align: center;
+    color: #fff;
+    z-index: 95000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 24px rgba(251,191,36,0.2);
+    animation: _s28toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    min-width: 260px;
+    pointer-events: none;
+}
+.mt-emoji { font-size: 32px; display: block; margin-bottom: 6px; }
+.mt-title { font-size: 15px; font-weight: 800; color: #fbbf24; margin-bottom: 3px; }
+.mt-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
+@keyframes _s28toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px) scale(0.9) } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1) } }
+
+/* ─── Shared Sprint 28 keyframes ────────────────────────────────────────── */
+@keyframes _s28fadeIn { from { opacity:0 } to { opacity:1 } }
+@keyframes _s28slideUp { from { opacity:0; transform:translateY(30px) } to { opacity:1; transform:translateY(0) } }
+@keyframes _s28pulse { 0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0.5)} 50%{box-shadow:0 0 0 10px rgba(251,191,36,0)} }
