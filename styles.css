@@ -20819,3 +20819,200 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     .ls-body { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
     .loyalty-shop-card { width: 95vw; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SPRINT 31 — First Deposit Bonus · Piggy Bank · Spin Streak
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── First Deposit Bonus ────────────────────────────────────────────────────── */
+.first-deposit-overlay {
+    position: fixed; inset: 0; z-index: 9800;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center;
+    animation: _s31fadeIn 0.3s ease;
+}
+.first-deposit-card {
+    background: linear-gradient(160deg, #1e1e36 0%, #12121f 100%);
+    border: 2px solid rgba(251,191,36,0.3); border-radius: 20px;
+    width: 90vw; max-width: 440px; padding: 32px; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(251,191,36,0.15);
+    position: relative; overflow: hidden;
+}
+.first-deposit-card::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(251,191,36,0.08), transparent 30%);
+    animation: _s31rotate 6s linear infinite;
+}
+.fd-content { position: relative; z-index: 1; }
+.fd-badge {
+    display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #000; font-weight: 800; padding: 6px 20px; border-radius: 20px;
+    font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 16px;
+    text-transform: uppercase;
+}
+.fd-title {
+    font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px;
+    background: linear-gradient(135deg, #fbbf24, #fde68a);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.fd-subtitle { color: #aaa; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5; }
+.fd-amount {
+    font-size: 3rem; font-weight: 900; color: #fbbf24;
+    text-shadow: 0 0 30px rgba(251,191,36,0.4); margin-bottom: 4px;
+}
+.fd-amount-label { color: #888; font-size: 0.8rem; margin-bottom: 20px; }
+.fd-steps {
+    display: flex; justify-content: center; gap: 24px; margin-bottom: 24px;
+}
+.fd-step { text-align: center; }
+.fd-step-num {
+    width: 32px; height: 32px; border-radius: 50%; display: inline-flex;
+    align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;
+    margin-bottom: 6px; border: 2px solid rgba(251,191,36,0.3);
+    color: #fbbf24; background: rgba(251,191,36,0.08);
+}
+.fd-step-label { font-size: 0.7rem; color: #888; }
+.fd-cta {
+    display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #000; font-weight: 800; padding: 14px 40px; border-radius: 12px;
+    font-size: 1.1rem; border: none; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(251,191,36,0.4);
+}
+.fd-cta:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(251,191,36,0.5); }
+.fd-close {
+    position: absolute; top: 16px; right: 16px; background: none; border: none;
+    color: #555; font-size: 1.3rem; cursor: pointer; z-index: 2;
+    transition: color 0.2s;
+}
+.fd-close:hover { color: #fff; }
+.fd-terms { font-size: 0.65rem; color: #555; margin-top: 12px; }
+
+/* ── Piggy Bank Widget ──────────────────────────────────────────────────────── */
+.piggy-bank-widget {
+    position: fixed; bottom: 20px; left: 20px; z-index: 9000;
+    display: none; flex-direction: column; align-items: center;
+    cursor: pointer; transition: transform 0.2s;
+}
+.piggy-bank-widget:hover { transform: scale(1.08); }
+.piggy-bank-widget.pb-visible { display: flex; }
+.pb-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; box-shadow: 0 4px 20px rgba(251,191,36,0.4);
+    position: relative; animation: _s31piggyBounce 3s ease-in-out infinite;
+}
+.pb-amount-badge {
+    position: absolute; top: -8px; right: -8px;
+    background: #22c55e; color: #fff; font-size: 0.65rem; font-weight: 800;
+    padding: 3px 7px; border-radius: 10px; min-width: 20px; text-align: center;
+    box-shadow: 0 2px 8px rgba(34,197,94,0.4);
+}
+.pb-label {
+    font-size: 0.65rem; color: #fbbf24; margin-top: 4px; font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+
+/* Piggy Bank Break Modal */
+.pb-modal-overlay {
+    position: fixed; inset: 0; z-index: 9850;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+}
+.pb-modal-card {
+    background: linear-gradient(160deg, #1e1e36, #12121f);
+    border: 1px solid rgba(251,191,36,0.2); border-radius: 16px;
+    width: 90vw; max-width: 360px; padding: 28px; text-align: center;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.7);
+}
+.pb-modal-icon { font-size: 3.5rem; margin-bottom: 12px; animation: _s31piggyShake 0.6s ease; }
+.pb-modal-amount {
+    font-size: 2rem; font-weight: 900; color: #fbbf24;
+    margin-bottom: 8px; text-shadow: 0 0 20px rgba(251,191,36,0.3);
+}
+.pb-modal-text { color: #aaa; font-size: 0.85rem; margin-bottom: 20px; }
+.pb-break-btn {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000;
+    font-weight: 800; padding: 12px 32px; border-radius: 10px;
+    border: none; cursor: pointer; font-size: 1rem;
+    transition: transform 0.15s;
+}
+.pb-break-btn:hover { transform: scale(1.05); }
+.pb-close-btn {
+    background: none; border: 1px solid rgba(255,255,255,0.15); color: #888;
+    padding: 10px 24px; border-radius: 10px; cursor: pointer; font-size: 0.85rem;
+    margin-left: 10px; transition: border-color 0.2s, color 0.2s;
+}
+.pb-close-btn:hover { border-color: rgba(255,255,255,0.3); color: #ccc; }
+
+/* ── Spin Streak Bar ────────────────────────────────────────────────────────── */
+.spin-streak-bar {
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(251,191,36,0.1);
+    border-radius: 12px; padding: 12px 16px; margin: 8px 16px;
+    display: none;
+}
+.spin-streak-bar.ssb-visible { display: block; }
+.ssb-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.ssb-title { font-size: 0.85rem; font-weight: 700; color: #fbbf24; }
+.ssb-streak-count {
+    font-size: 0.75rem; color: #22c55e; font-weight: 700;
+    background: rgba(34,197,94,0.12); padding: 3px 10px; border-radius: 12px;
+}
+.ssb-days {
+    display: flex; gap: 6px; justify-content: space-between;
+}
+.ssb-day {
+    flex: 1; text-align: center; padding: 8px 4px;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03); transition: all 0.3s;
+}
+.ssb-day.ssb-claimed {
+    background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3);
+}
+.ssb-day.ssb-today {
+    background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.3);
+    animation: _s31todayPulse 2s infinite;
+}
+.ssb-day-num { font-size: 0.65rem; color: #888; font-weight: 600; }
+.ssb-day-reward { font-size: 0.95rem; margin: 2px 0; }
+.ssb-day-label { font-size: 0.6rem; color: #666; }
+.ssb-day.ssb-claimed .ssb-day-num { color: #22c55e; }
+.ssb-day.ssb-claimed .ssb-day-label { color: #22c55e; }
+.ssb-day.ssb-today .ssb-day-num { color: #fbbf24; }
+.ssb-day.ssb-today .ssb-day-label { color: #fbbf24; font-weight: 700; }
+
+/* ── Sprint 31 Keyframes ────────────────────────────────────────────────────── */
+@keyframes _s31fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes _s31rotate {
+    from { transform: rotate(0deg); } to { transform: rotate(360deg); }
+}
+@keyframes _s31piggyBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+@keyframes _s31piggyShake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+@keyframes _s31todayPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.2); }
+    50% { box-shadow: 0 0 12px 2px rgba(251,191,36,0.3); }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .first-deposit-card { max-width: 95vw; padding: 24px 16px; }
+    .fd-title { font-size: 1.5rem; }
+    .fd-amount { font-size: 2.2rem; }
+    .ssb-days { gap: 3px; }
+    .ssb-day { padding: 6px 2px; }
+    .piggy-bank-widget { bottom: 12px; left: 12px; }
+    .pb-icon { width: 48px; height: 48px; font-size: 1.3rem; }
+}

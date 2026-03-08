@@ -1,203 +1,131 @@
-(function() {
-  'use strict';
+/**
+ * ui-firstdeposit.js — First Deposit Conversion Modal (Sprint 31)
+ *
+ * Shows a persuasive modal to new users who haven't deposited yet.
+ * Re-shows up to 3 times across page loads with escalating delay.
+ * localStorage key: ms_firstDepositData
+ */
+(function () {
+    'use strict';
 
-  var TOKEN_KEY = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
-  var _overlay = null;
-  var _shown = false;
-  var _stylesInjected = false;
-  var SNOOZE_KEY = 'fdShown';
+    // ── Constants ──────────────────────────────────────────────────
+    var STORAGE_KEY = 'ms_firstDepositData';
+    var GOLD = '#fbbf24';
+    var INITIAL_DELAY_MS = 15000;   // 15 seconds for first show
+    var RE_SHOW_DELAY_MS = 30000;   // 30 seconds for subsequent shows
+    var MAX_SHOW_COUNT = 3;
 
-  function injectStyles() {
-    if (_stylesInjected) return;
-    _stylesInjected = true;
-    var s = document.createElement('style');
-    s.id = 'firstDepositStyles';
-    s.textContent = [
-      '#fdOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:21000;display:none;align-items:center;justify-content:center}',
-      '#fdOverlay.active{display:flex}',
-      '#fdModal{background:linear-gradient(160deg,#0d0d1a 0%,#1a1035 100%);border:2px solid rgba(255,215,0,.35);border-radius:20px;padding:32px;max-width:420px;width:92%;text-align:center;box-shadow:0 0 60px rgba(255,215,0,.15)}',
-      '#fdModal h2{color:#ffd700;font-size:24px;margin:0 0 8px;text-shadow:0 2px 8px rgba(255,215,0,.3)}',
-      '#fdModal .fd-sub{color:rgba(255,255,255,.6);font-size:14px;margin-bottom:20px}',
-      '.fd-rewards{display:flex;gap:12px;justify-content:center;margin-bottom:22px}',
-      '.fd-reward{background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:14px 20px;flex:1;text-align:center}',
-      '.fd-reward-icon{font-size:28px;margin-bottom:4px}',
-      '.fd-reward-val{color:#ffd700;font-size:18px;font-weight:800}',
-      '.fd-reward-label{color:rgba(255,255,255,.5);font-size:11px;margin-top:2px}',
-      '#fdClaimBtn{width:100%;padding:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:800;cursor:pointer;letter-spacing:1px}',
-      '#fdClaimBtn:hover{opacity:.9}',
-      '#fdClaimBtn:disabled{opacity:.5;cursor:not-allowed}',
-      '#fdDismiss{background:none;border:none;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;margin-top:14px;text-decoration:underline}',
-      '#fdConfirm{display:none;color:#34d399;font-size:18px;font-weight:700;margin-top:12px}'
-    ].join('\n');
-    document.head.appendChild(s);
-  }
+    // ── Helpers ────────────────────────────────────────────────────
+    function _isQASuppressed() {
+        try {
+            var qs = window.location.search || '';
+            return qs.indexOf('noBonus=1') !== -1;
+        } catch (e) { return false; }
+    }
 
-  function buildOverlay() {
-    if (_overlay) return;
+    function _loadData() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) { /* corrupted — reset */ }
+        return { dismissed: false, deposited: false, shownCount: 0 };
+    }
 
-    _overlay = document.createElement('div');
-    _overlay.id = 'fdOverlay';
+    function _saveData(data) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+    }
 
-    var modal = document.createElement('div');
-    modal.id = 'fdModal';
+    function _getOverlay() {
+        return document.getElementById('firstDepositOverlay');
+    }
 
-    var h2 = document.createElement('h2');
-    h2.textContent = '\uD83C\uDF89 WELCOME BONUS UNLOCKED!';
-    modal.appendChild(h2);
+    // ── Show / Hide ───────────────────────────────────────────────
+    function _showOverlay() {
+        var el = _getOverlay();
+        if (!el) return;
+        el.style.display = 'flex';
+    }
 
-    var sub = document.createElement('div');
-    sub.className = 'fd-sub';
-    sub.textContent = 'Your first deposit has been matched with exclusive rewards:';
-    modal.appendChild(sub);
+    function _hideOverlay() {
+        var el = _getOverlay();
+        if (!el) return;
+        el.style.display = 'none';
+    }
 
-    var rewards = document.createElement('div');
-    rewards.className = 'fd-rewards';
+    // ── Public API ────────────────────────────────────────────────
 
-    // Gems reward
-    var r1 = document.createElement('div');
-    r1.className = 'fd-reward';
-    var r1Icon = document.createElement('div');
-    r1Icon.className = 'fd-reward-icon';
-    r1Icon.textContent = '\uD83D\uDC8E';
-    var r1Val = document.createElement('div');
-    r1Val.className = 'fd-reward-val';
-    r1Val.textContent = '+1,000';
-    var r1Label = document.createElement('div');
-    r1Label.className = 'fd-reward-label';
-    r1Label.textContent = 'Gems';
-    r1.appendChild(r1Icon);
-    r1.appendChild(r1Val);
-    r1.appendChild(r1Label);
-
-    // Credits reward
-    var r2 = document.createElement('div');
-    r2.className = 'fd-reward';
-    var r2Icon = document.createElement('div');
-    r2Icon.className = 'fd-reward-icon';
-    r2Icon.textContent = '\uD83D\uDCB5';
-    var r2Val = document.createElement('div');
-    r2Val.className = 'fd-reward-val';
-    r2Val.textContent = '+$5.00';
-    var r2Label = document.createElement('div');
-    r2Label.className = 'fd-reward-label';
-    r2Label.textContent = 'Credits';
-    r2.appendChild(r2Icon);
-    r2.appendChild(r2Val);
-    r2.appendChild(r2Label);
-
-    rewards.appendChild(r1);
-    rewards.appendChild(r2);
-    modal.appendChild(rewards);
-
-    var claimBtn = document.createElement('button');
-    claimBtn.id = 'fdClaimBtn';
-    claimBtn.textContent = '\uD83C\uDF1F CLAIM NOW';
-    claimBtn.addEventListener('click', claim);
-    modal.appendChild(claimBtn);
-
-    var confirm = document.createElement('div');
-    confirm.id = 'fdConfirm';
-    confirm.textContent = '\u2705 Bonus Claimed!';
-    modal.appendChild(confirm);
-
-    var dismiss = document.createElement('button');
-    dismiss.id = 'fdDismiss';
-    dismiss.textContent = 'Maybe later';
-    dismiss.addEventListener('click', function() { closeOverlay(); });
-    modal.appendChild(dismiss);
-
-    _overlay.appendChild(modal);
-    document.body.appendChild(_overlay);
-  }
-
-  function claim() {
-    var token = localStorage.getItem(TOKEN_KEY);
-    if (!token) return;
-    var btn = document.getElementById('fdClaimBtn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Claiming...'; }
-
-    fetch('/api/firstdeposit/claim', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token }
-    })
-    .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(data) {
-      if (!data || !data.success) {
-        if (btn) { btn.disabled = false; btn.textContent = '\uD83C\uDF1F CLAIM NOW'; }
-        return;
-      }
-      if (btn) btn.style.display = 'none';
-      var confirm = document.getElementById('fdConfirm');
-      if (confirm) confirm.style.display = 'block';
-
-      if (data.newBalance !== undefined && typeof window.updateBalance === 'function') {
-        window.updateBalance(data.newBalance);
-      }
-      localStorage.setItem(SNOOZE_KEY, String(Date.now()));
-      setTimeout(closeOverlay, 2500);
-    })
-    .catch(function() {
-      if (btn) { btn.disabled = false; btn.textContent = '\uD83C\uDF1F CLAIM NOW'; }
-    });
-  }
-
-  function showOverlay() {
-    if (_shown) return;
-    _shown = true;
-    injectStyles();
-    buildOverlay();
-    _overlay.classList.add('active');
-    localStorage.setItem(SNOOZE_KEY, String(Date.now()));
-    // Auto-dismiss after 60s
-    setTimeout(function() {
-      if (_overlay && _overlay.classList.contains('active')) closeOverlay();
-    }, 60000);
-  }
-
-  function closeOverlay() {
-    if (_overlay) _overlay.classList.remove('active');
-  }
-
-  function checkEligibility() {
-    var token = localStorage.getItem(TOKEN_KEY);
-    if (!token) return;
-
-    // Snooze check — don't show again within 24h
-    var lastShown = parseInt(localStorage.getItem(SNOOZE_KEY) || '0', 10);
-    if (Date.now() - lastShown < 86400000) return;
-
-    fetch('/api/firstdeposit/status', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    })
-    .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(data) {
-      if (data && data.eligible && !data.claimed) {
-        showOverlay();
-      }
-    })
-    .catch(function() {});
-  }
-
-  function hookUpdateBalance() {
-    var _prev = window.updateBalance;
-    window.updateBalance = function(n) {
-      if (_prev) _prev.apply(this, arguments);
-      // Re-check 3s after any balance update
-      if (!_shown) {
-        setTimeout(checkEligibility, 3000);
-      }
+    /**
+     * Dismiss the overlay without depositing.
+     * Increments shownCount so re-show logic knows how many times it has appeared.
+     */
+    window.dismissFirstDeposit = function () {
+        var data = _loadData();
+        data.dismissed = true;
+        data.shownCount = (data.shownCount || 0) + 1;
+        _saveData(data);
+        _hideOverlay();
     };
-  }
 
-  function init() {
-    setTimeout(checkEligibility, 8000);
-    hookUpdateBalance();
-  }
+    /**
+     * User clicked "Deposit Now" — dismiss and open the wallet modal.
+     */
+    window.claimFirstDeposit = function () {
+        window.dismissFirstDeposit();
+        if (typeof openWalletModal === 'function') openWalletModal();
+    };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    setTimeout(init, 0);
-  }
+    /**
+     * Mark the user as having deposited — hides overlay permanently.
+     * Call this from the wallet/cashier flow after a successful deposit.
+     */
+    window._firstDepositMarkDeposited = function () {
+        var data = _loadData();
+        data.deposited = true;
+        _saveData(data);
+        _hideOverlay();
+    };
 
-}());
+    // ── Init ──────────────────────────────────────────────────────
+    function _init() {
+        if (_isQASuppressed()) return;
+
+        var data = _loadData();
+
+        // Already deposited — never show again
+        if (data.deposited) return;
+
+        // Determine delay based on whether this is first show or re-show
+        var isFirstEver = data.shownCount === 0 && !data.dismissed;
+        var delay = isFirstEver ? INITIAL_DELAY_MS : RE_SHOW_DELAY_MS;
+
+        // If dismissed too many times, stop showing
+        if (data.shownCount >= MAX_SHOW_COUNT) return;
+
+        // If previously dismissed, reset the dismissed flag so the re-show can happen
+        if (data.dismissed && data.shownCount < MAX_SHOW_COUNT) {
+            data.dismissed = false;
+            _saveData(data);
+        }
+
+        // Schedule the show
+        setTimeout(function () {
+            // Re-check in case state changed (e.g. user deposited while waiting)
+            var fresh = _loadData();
+            if (fresh.deposited || fresh.dismissed) return;
+            _showOverlay();
+        }, delay);
+    }
+
+    // ── Bootstrap ─────────────────────────────────────────────────
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(_init, 2200);
+        });
+    } else {
+        setTimeout(_init, 2200);
+    }
+
+    // ── Expose gold accent for inline style consumers ─────────────
+    window._FIRST_DEPOSIT_GOLD = GOLD;
+
+})();

@@ -743,6 +743,15 @@
                 <span class="lsb-icon">🎁</span> Loyalty Shop <span class="lsb-pts" id="lsbPts">0 pts</span>
             </button>
 
+            <!-- Sprint 31: Spin Streak Bar -->
+            <div id="spinStreakBar" class="spin-streak-bar">
+                <div class="ssb-header">
+                    <span class="ssb-title">🔥 Daily Spin Streak</span>
+                    <span class="ssb-streak-count" id="ssbStreakCount">Day 0</span>
+                </div>
+                <div class="ssb-days" id="ssbDays"></div>
+            </div>
+
         <!-- Sprint 28: Reload bonus strip -->
         <div id="reloadBonusStrip" class="reload-bonus-strip" style="display:none">
             <span class="rbs-icon">💜</span>
@@ -2754,6 +2763,44 @@
                 <button class="ls-close" onclick="if(typeof closeLoyaltyShop==='function')closeLoyaltyShop()">✕</button>
             </div>
             <div class="ls-body" id="lsItemsGrid"></div>
+        </div>
+    </div>
+
+    <!-- Sprint 31: First Deposit Bonus Overlay -->
+    <div class="first-deposit-overlay" id="firstDepositOverlay">
+        <div class="first-deposit-card">
+            <button class="fd-close" onclick="if(typeof dismissFirstDeposit==='function')dismissFirstDeposit()">✕</button>
+            <div class="fd-content">
+                <div class="fd-badge">🎉 Welcome Bonus</div>
+                <div class="fd-title">200% First Deposit</div>
+                <div class="fd-subtitle">Triple your first deposit — deposit $50, play with $150!</div>
+                <div class="fd-amount" id="fdBonusAmount">$150</div>
+                <div class="fd-amount-label">Maximum bonus on your first deposit</div>
+                <div class="fd-steps">
+                    <div class="fd-step"><div class="fd-step-num">1</div><div class="fd-step-label">Sign Up</div></div>
+                    <div class="fd-step"><div class="fd-step-num">2</div><div class="fd-step-label">Deposit</div></div>
+                    <div class="fd-step"><div class="fd-step-num">3</div><div class="fd-step-label">Play!</div></div>
+                </div>
+                <button class="fd-cta" onclick="if(typeof claimFirstDeposit==='function')claimFirstDeposit()">Deposit & Get 200%</button>
+                <div class="fd-terms">Min deposit $10. Bonus wagering 30×. T&Cs apply.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sprint 31: Piggy Bank Widget -->
+    <div class="piggy-bank-widget" id="piggyBankWidget" onclick="if(typeof openPiggyBank==='function')openPiggyBank()">
+        <div class="pb-icon">🐷<span class="pb-amount-badge" id="pbAmountBadge">$0</span></div>
+        <span class="pb-label">Piggy Bank</span>
+    </div>
+
+    <!-- Sprint 31: Piggy Bank Break Modal -->
+    <div class="pb-modal-overlay" id="pbModalOverlay">
+        <div class="pb-modal-card">
+            <div class="pb-modal-icon">🐷</div>
+            <div class="pb-modal-amount" id="pbModalAmount">$0.00</div>
+            <div class="pb-modal-text">Break your piggy bank to claim your savings!</div>
+            <button class="pb-break-btn" onclick="if(typeof breakPiggyBank==='function')breakPiggyBank()">🔨 Break Open!</button>
+            <button class="pb-close-btn" onclick="if(typeof closePiggyBank==='function')closePiggyBank()">Keep Saving</button>
         </div>
     </div>
 
