@@ -364,6 +364,8 @@ const USER_MIGRATIONS = [
     // Deposit match
     ['deposit_match_credits', 'NUMERIC(15,2) DEFAULT 0'],
     ['deposit_match_last', 'TEXT'],
+    // Loss streak deposit match offer
+    ['loss_streak_offer_last', 'TEXT'],
     // Fortune wheel
     ['fortune_wheel_last', 'TEXT'],
     ['free_spins_remaining', 'INTEGER DEFAULT 0'],

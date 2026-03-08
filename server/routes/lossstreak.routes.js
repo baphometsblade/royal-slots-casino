@@ -1,0 +1,136 @@
+'use strict';
+
+const router = require('express').Router();
+const { authenticate } = require('../middleware/auth');
+const db = require('../database');
+
+// Bootstrap column for loss-streak offer cooldown tracking
+db.run('ALTER TABLE users ADD COLUMN loss_streak_offer_last TEXT DEFAULT NULL').catch(function () {});
+
+// ── Constants ──────────────────────────────────────────
+const LOSS_STREAK_THRESHOLD = 8;     // 8 of last 10 spins must be losses
+const RECENT_SPINS_WINDOW   = 10;    // check last 10 spins
+const MATCH_PCT             = 0.50;  // 50% deposit match
+const MAX_MATCH             = 25;    // $25 cap
+const MIN_DEPOSIT           = 10;    // $10 minimum deposit
+const COOLDOWN_HOURS        = 4;     // 4 hours between offers
+const WAGERING_MULTIPLIER   = 15;    // 15x wagering requirement
+
+/**
+ * Check whether the user has had enough recent losses and is within
+ * the cooldown window.
+ * Returns { eligible, lossCount } or throws on DB error.
+ */
+async function checkEligibility(userId) {
+    // Cooldown check — only show once per 4 hours
+    var user = await db.get(
+        'SELECT loss_streak_offer_last FROM users WHERE id = ?',
+        [userId]
+    );
+    if (user && user.loss_streak_offer_last) {
+        var lastOffer = new Date(user.loss_streak_offer_last).getTime();
+        var now = Date.now();
+        if (now - lastOffer < COOLDOWN_HOURS * 60 * 60 * 1000) {
+            return { eligible: false, lossCount: 0 };
+        }
+    }
+
+    // Query last 10 spins
+    var recentSpins = await db.all(
+        'SELECT win_amount FROM spins WHERE user_id = ? ORDER BY id DESC LIMIT ?',
+        [userId, RECENT_SPINS_WINDOW]
+    );
+
+    if (recentSpins.length < RECENT_SPINS_WINDOW) {
+        return { eligible: false, lossCount: 0 };
+    }
+
+    var lossCount = 0;
+    for (var i = 0; i < recentSpins.length; i++) {
+        if (parseFloat(recentSpins[i].win_amount) === 0) {
+            lossCount++;
+        }
+    }
+
+    return {
+        eligible: lossCount >= LOSS_STREAK_THRESHOLD,
+        lossCount: lossCount
+    };
+}
+
+// GET /api/user/loss-streak-offer
+router.get('/loss-streak-offer', authenticate, async function (req, res) {
+    try {
+        var result = await checkEligibility(req.user.id);
+
+        if (!result.eligible) {
+            return res.json({ eligible: false });
+        }
+
+        return res.json({
+            eligible: true,
+            offer: {
+                matchPct: Math.round(MATCH_PCT * 100),
+                maxMatch: MAX_MATCH,
+                minDeposit: MIN_DEPOSIT
+            }
+        });
+    } catch (err) {
+        console.error('[LossStreak] Offer check error:', err.message);
+        return res.status(500).json({ error: 'Failed to check loss streak offer' });
+    }
+});
+
+// POST /api/user/claim-loss-offer
+router.post('/claim-loss-offer', authenticate, async function (req, res) {
+    try {
+        var depositAmount = parseFloat(req.body.depositAmount);
+        if (!Number.isFinite(depositAmount) || depositAmount < MIN_DEPOSIT) {
+            return res.status(400).json({
+                error: 'Minimum deposit is $' + MIN_DEPOSIT
+            });
+        }
+
+        // Re-verify eligibility
+        var result = await checkEligibility(req.user.id);
+        if (!result.eligible) {
+            return res.status(400).json({ error: 'Not eligible for loss streak offer' });
+        }
+
+        // Calculate bonus
+        var bonusAmount = Math.min(depositAmount * MATCH_PCT, MAX_MATCH);
+        bonusAmount = Math.round(bonusAmount * 100) / 100;
+
+        var wageringRequired = Math.round(bonusAmount * WAGERING_MULTIPLIER * 100) / 100;
+
+        // Credit bonus_balance and update wagering requirement
+        await db.run(
+            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, loss_streak_offer_last = datetime(\'now\') WHERE id = ?',
+            [bonusAmount, wageringRequired, req.user.id]
+        );
+
+        // Record transaction
+        await db.run(
+            "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
+            [req.user.id, bonusAmount, 'Loss Streak Deposit Match ' + Math.round(MATCH_PCT * 100) + '% — $' + bonusAmount.toFixed(2)]
+        );
+
+        var updated = await db.get(
+            'SELECT balance, bonus_balance FROM users WHERE id = ?',
+            [req.user.id]
+        );
+
+        return res.json({
+            success: true,
+            bonusAmount: bonusAmount,
+            wageringRequired: wageringRequired,
+            balance: updated ? updated.balance : 0,
+            bonusBalance: updated ? updated.bonus_balance : 0
+        });
+    } catch (err) {
+        console.error('[LossStreak] Claim error:', err.message);
+        return res.status(500).json({ error: 'Failed to claim loss streak offer' });
+    }
+});
+
+module.exports = router;

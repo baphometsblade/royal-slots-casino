@@ -13,11 +13,59 @@
         let _bonusDroughtRounds = 0;  // number of bonuses triggered this session
         const SPIN_HISTORY_MAX = 15;
 
+        // ── Loss streak deposit match offer tracking ──────────────
+        let _consecutiveLosses = 0;
+        let _lossStreakOfferShown = false; // prevent repeat toasts within same session
+
         // ── Autoplay stop conditions (regulatory) ──────────────────
         let _autoplayLastWin     = 0;   // win amount from the most recent spin
         let _apStopOnWin         = false; // stop on any win
         let _apStopBigWinMult    = 0;   // stop when win/bet >= this (0 = off)
         let _apStopOnLoss        = 0;   // stop when (startBalance - balance) >= this (0 = off)
+
+        // ── Loss streak deposit match offer check ──────────────────
+        async function _checkLossStreakOffer() {
+            // Only check for server-authenticated users
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+
+            try {
+                var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casino_token');
+                if (!token) return;
+
+                var resp = await fetch('/api/user/loss-streak-offer', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!resp.ok) return;
+
+                var data = await resp.json();
+                if (!data.eligible) return;
+
+                _lossStreakOfferShown = true;
+                _consecutiveLosses = 0;
+
+                // Show deposit match toast
+                if (typeof showWinToast === 'function') {
+                    showWinToast(
+                        'Tough streak! Get a ' + data.offer.matchPct + '% deposit match (up to $' + data.offer.maxMatch + ') on your next deposit',
+                        'streak',
+                        'Deposit Match Offer'
+                    );
+                } else if (typeof showToast === 'function') {
+                    showToast(
+                        'Tough streak! Get a ' + data.offer.matchPct + '% deposit match (up to $' + data.offer.maxMatch + ') on your next deposit',
+                        'info',
+                        5000
+                    );
+                } else if (typeof showMessage === 'function') {
+                    showMessage(
+                        'Tough streak! Get a ' + data.offer.matchPct + '% deposit match (up to $' + data.offer.maxMatch + ')',
+                        'win'
+                    );
+                }
+            } catch (err) {
+                // Silently fail — this is a non-critical retention feature
+            }
+        }
 
         // ── Low-balance quick-deposit nudge ─────────────────────────
         let _lastLowBalanceNudge = 0; // epoch-ms timestamp of last overlay shown
@@ -1444,6 +1492,8 @@
             _sessSpins = 0; _sessTotalBet = 0; _sessTotalWon = 0; _sessWins = 0;
             // Sprint 82: reset bonus drought
             _bonusDrought = 0; _bonusDroughtTotal = 0; _bonusDroughtRounds = 0;
+            // Reset loss streak counter (offer flag persists across games within session)
+            _consecutiveLosses = 0;
             // Reset wild_collect state to prevent leak between games
             window._wildCollectCount = 0; window._wildMeterValue = 1;
             var _sb0 = document.getElementById('spinBtn');
@@ -3315,6 +3365,8 @@
             }
 
             if (winAmount > 0) {
+                // Reset consecutive loss counter on any win
+                _consecutiveLosses = 0;
                 const oldBalance = balance;
                 const serverBalance = Number(result.balance);
                 if (Number.isFinite(serverBalance)) {
@@ -3676,6 +3728,12 @@
                 _hideCascadeChain();
                 if (typeof _clearTumbleChainBadge === 'function') _clearTumbleChainBadge();
                 window._tumbleCascadeDepth = 0;
+
+                // ── Loss streak deposit match offer ──────────────────
+                _consecutiveLosses++;
+                if (_consecutiveLosses >= 8 && !_lossStreakOfferShown) {
+                    _checkLossStreakOffer();
+                }
             }
             // Apply idle shimmer to all visible wild/scatter cells
             (function() {

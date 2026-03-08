@@ -70,6 +70,7 @@ const bonusLimiter = rateLimit({
 app.use('/api/user/claim-daily-bonus', bonusLimiter);
 app.use('/api/user/spin-wheel', bonusLimiter);
 app.use('/api/user/redeem-promo', bonusLimiter);
+app.use('/api/user/claim-loss-offer', bonusLimiter);
 
 // Strict rate limit for password/account-sensitive endpoints
 const sensitiveAuthLimiter = rateLimit({
@@ -130,6 +131,7 @@ app.use('/api/spin', spinRoutes);
 app.use('/api/balance', balanceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/user', require('./routes/lossstreak.routes'));
 app.use('/api/payment', paymentRoutes);
 app.use('/api/crypto', require('./routes/crypto.routes'));
 app.use('/api/jackpot', jackpotRoutes);
@@ -206,6 +208,7 @@ app.use('/api/kenoturbo',      require('./routes/kenoturbo.routes'));
 app.use('/api/horseracing',    require('./routes/horseracing.routes'));
 app.use('/api/buy-feature',   require('./routes/buyfeature.routes'));
 app.use('/api/xpshop',        require('./routes/xpshop.routes'));
+app.use('/api',               require('./routes/winback.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {

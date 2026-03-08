@@ -61,7 +61,8 @@
         <h1>Matrix Spins Admin</h1>
         <div>
             <span class="admin-info" id="adminName"></span>
-            <button class="refresh-btn" onclick="loadStats()" style="margin-left:12px;">Refresh</button>
+            <button class="refresh-btn" onclick="runWinBack()" style="margin-left:12px;background:#f59e0b;color:#0f0f1a;font-weight:700;">Run Win-Back</button>
+            <button class="refresh-btn" onclick="loadStats()" style="margin-left:8px;">Refresh</button>
             <button class="refresh-btn" onclick="logout()" style="margin-left:8px;">Logout</button>
         </div>
     </div>
@@ -339,6 +340,20 @@ function switchTab(name) {
     if (name === 'segments') loadSegments();
     if (name === 'profitability') loadProfitability();
     if (name === 'nftledger') loadNftLedger();
+}
+
+async function runWinBack() {
+    if (!confirm('Run win-back cycle? This will grant bonuses to dormant low-balance players.')) return;
+    try {
+        var res = await fetch(API + '/admin/run-winback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert('Processed ' + data.processed + ' dormant players, granted $' + data.totalBonused + ' in bonuses.');
+        loadStats();
+    } catch (e) { alert('Win-back error: ' + e.message); }
 }
 
 function filterUsers(query) {
