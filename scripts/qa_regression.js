@@ -210,6 +210,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "dailyDepositGoal",
       "cashbackStreakBar",
       "mysteryGiftOverlay",
+      "betLadderPanel",
+      "tournamentLeaderboard",
+      "lossStreakComfort",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

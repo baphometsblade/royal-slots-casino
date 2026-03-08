@@ -34904,3 +34904,1508 @@ body.s47-gift-open {
     display: none !important;
   }
 }
+
+
+/* ==========================================================================
+   SPRINT 48 — Progressive Bet Ladder, Tournament Leaderboard, Loss Streak Comfort
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   S48 Keyframe Animations (14 total)
+   -------------------------------------------------------------------------- */
+
+@keyframes _s48_pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 215, 0, 0.3), 0 0 16px rgba(255, 215, 0, 0.1); }
+  50% { box-shadow: 0 0 16px rgba(255, 215, 0, 0.6), 0 0 32px rgba(255, 215, 0, 0.3); }
+}
+
+@keyframes _s48_arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes _s48_rungUnlock {
+  0% { transform: scale(1); filter: brightness(1); }
+  30% { transform: scale(1.15); filter: brightness(1.5); }
+  60% { transform: scale(0.95); filter: brightness(1.2); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes _s48_topRungCelebrate {
+  0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 rgba(255, 215, 0, 0); }
+  25% { transform: scale(1.1) rotate(-2deg); box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+  50% { transform: scale(1.05) rotate(2deg); box-shadow: 0 0 50px rgba(255, 215, 0, 1); }
+  75% { transform: scale(1.08) rotate(-1deg); box-shadow: 0 0 35px rgba(255, 215, 0, 0.6); }
+  100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+}
+
+@keyframes _s48_slideInRight {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes _s48_slideUpPanel {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes _s48_scoreFlash {
+  0% { background-color: transparent; }
+  25% { background-color: rgba(0, 255, 136, 0.3); }
+  100% { background-color: transparent; }
+}
+
+@keyframes _s48_timerPulse {
+  0%, 100% { color: #ff6b6b; transform: scale(1); }
+  50% { color: #ff4444; transform: scale(1.05); }
+}
+
+@keyframes _s48_fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes _s48_fadeInUp {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes _s48_gentleBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.02); opacity: 1; }
+}
+
+@keyframes _s48_shimmerBar {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes _s48_cardHoverLift {
+  0% { transform: translateY(0) scale(1); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  100% { transform: translateY(-4px) scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+}
+
+@keyframes _s48_rankBadgeShine {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes _s48_multiplierPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* --------------------------------------------------------------------------
+   1. Progressive Bet Ladder (#betLadderPanel)
+   -------------------------------------------------------------------------- */
+
+#betLadderPanel {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 80px;
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+  border-left: 1px solid rgba(255, 215, 0, 0.15);
+  border-radius: 12px 0 0 12px;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+  animation: _s48_slideInRight 0.5s ease-out;
+  transition: width 0.3s ease;
+}
+
+#betLadderPanel.s48-expanded {
+  width: 140px;
+}
+
+.s48-ladder-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #ffd700;
+  margin-bottom: 10px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.s48-ladder-track {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  width: 100%;
+}
+
+.s48-ladder-connector {
+  width: 2px;
+  height: 8px;
+  background: rgba(255, 215, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.s48-ladder-connector.s48-active {
+  background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%);
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+
+.s48-ladder-rung {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  min-height: 48px;
+  padding: 4px;
+  background: linear-gradient(135deg, #1e1e36 0%, #16162b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+#betLadderPanel.s48-expanded .s48-ladder-rung {
+  width: 120px;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 6px 10px;
+}
+
+.s48-ladder-rung:hover {
+  background: linear-gradient(135deg, #252548 0%, #1e1e38 100%);
+  border-color: rgba(255, 215, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.s48-ladder-rung.s48-current {
+  background: linear-gradient(135deg, #2a2a50 0%, #1e1e40 100%);
+  border-color: rgba(255, 215, 0, 0.5);
+  animation: _s48_pulseGlow 2s ease-in-out infinite;
+}
+
+.s48-ladder-rung.s48-completed {
+  background: linear-gradient(135deg, #1a3a1a 0%, #0f2a0f 100%);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.s48-ladder-rung.s48-locked {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.s48-ladder-rung.s48-locked:hover {
+  transform: none;
+}
+
+.s48-ladder-rung.s48-unlocking {
+  animation: _s48_rungUnlock 0.6s ease-out;
+}
+
+.s48-rung-bet {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.s48-rung-bet .s48-currency {
+  font-size: 9px;
+  color: #fbbf24;
+  margin-right: 1px;
+}
+
+.s48-rung-multiplier {
+  font-size: 9px;
+  font-weight: 600;
+  color: #fbbf24;
+  background: rgba(255, 215, 0, 0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-top: 2px;
+  animation: _s48_multiplierPop 0.4s ease-out;
+}
+
+#betLadderPanel.s48-expanded .s48-rung-multiplier {
+  margin-top: 0;
+}
+
+.s48-rung-multiplier.s48-high-mult {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.12);
+}
+
+.s48-ladder-arrow {
+  font-size: 14px;
+  color: #ffd700;
+  margin: 2px 0;
+  animation: _s48_arrowBounce 1.2s ease-in-out infinite;
+  text-align: center;
+  line-height: 1;
+}
+
+.s48-ladder-arrow.s48-down {
+  transform: rotate(180deg);
+  color: #ff6b6b;
+}
+
+.s48-ladder-arrow.s48-hidden {
+  visibility: hidden;
+}
+
+.s48-ladder-top-badge {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: linear-gradient(135deg, #3d2e00 0%, #2a1f00 100%);
+  border: 1px solid #ffd700;
+  border-radius: 8px;
+  animation: _s48_topRungCelebrate 1s ease-in-out infinite;
+}
+
+.s48-ladder-top-badge.s48-visible {
+  display: flex;
+}
+
+.s48-ladder-top-badge .s48-crown-icon {
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.s48-ladder-top-badge .s48-top-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ffd700;
+  letter-spacing: 0.5px;
+}
+
+.s48-ladder-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.s48-ladder-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ffaa00);
+  border-radius: 2px;
+  transition: width 0.5s ease-out;
+  background-size: 200% 100%;
+  animation: _s48_shimmerBar 2s linear infinite;
+}
+
+.s48-ladder-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  transition: all 0.25s ease;
+}
+
+.s48-ladder-toggle:hover {
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+
+/* --------------------------------------------------------------------------
+   2. Tournament Leaderboard (#tournamentLeaderboard)
+   -------------------------------------------------------------------------- */
+
+#tournamentLeaderboard {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 940;
+  background: linear-gradient(0deg, #0f0f1a 0%, #1a1a2e 100%);
+  border-top: 1px solid rgba(255, 215, 0, 0.12);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.6);
+  animation: _s48_slideUpPanel 0.4s ease-out;
+  transition: transform 0.4s ease;
+  max-height: 340px;
+  display: flex;
+  flex-direction: column;
+}
+
+#tournamentLeaderboard.s48-collapsed-lb {
+  transform: translateY(calc(100% - 42px));
+}
+
+.s48-lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.05) 0%, transparent 50%, rgba(255, 215, 0, 0.05) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  min-height: 42px;
+}
+
+.s48-lb-header:hover {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08) 0%, transparent 50%, rgba(255, 215, 0, 0.08) 100%);
+}
+
+.s48-lb-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.s48-lb-trophy-icon {
+  font-size: 18px;
+}
+
+.s48-lb-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.s48-lb-player-count {
+  font-size: 11px;
+  color: #7ec8e3;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.s48-lb-timer-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.s48-lb-timer {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Courier New", monospace;
+  color: #7ec8e3;
+  background: rgba(74, 144, 217, 0.1);
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(74, 144, 217, 0.2);
+  letter-spacing: 1px;
+}
+
+.s48-lb-timer.s48-urgent {
+  animation: _s48_timerPulse 1s ease-in-out infinite;
+  border-color: rgba(255, 68, 68, 0.3);
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.s48-lb-collapse-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.s48-lb-collapse-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.25);
+}
+
+.s48-lb-collapse-btn .s48-chevron {
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+#tournamentLeaderboard.s48-collapsed-lb .s48-lb-collapse-btn .s48-chevron {
+  transform: rotate(180deg);
+}
+
+.s48-lb-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.2) transparent;
+}
+
+.s48-lb-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.s48-lb-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.s48-lb-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.2);
+  border-radius: 3px;
+}
+
+.s48-lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.s48-lb-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.s48-lb-table thead th {
+  padding: 6px 12px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #888;
+  background: #12122a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.s48-lb-table thead th:first-child {
+  text-align: center;
+  width: 50px;
+}
+
+.s48-lb-table thead th:last-child {
+  text-align: right;
+}
+
+.s48-lb-table tbody tr {
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.s48-lb-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.s48-lb-table tbody td {
+  padding: 7px 12px;
+  color: #ccc;
+  vertical-align: middle;
+}
+
+.s48-lb-table tbody td:first-child {
+  text-align: center;
+}
+
+.s48-lb-table tbody td:last-child {
+  text-align: right;
+}
+
+/* Rank column styling */
+.s48-rank-cell {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.s48-lb-row-gold .s48-rank-cell {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.s48-lb-row-silver .s48-rank-cell {
+  color: #c0c0c0;
+  text-shadow: 0 0 6px rgba(192, 192, 192, 0.4);
+}
+
+.s48-lb-row-bronze .s48-rank-cell {
+  color: #cd7f32;
+  text-shadow: 0 0 6px rgba(205, 127, 50, 0.4);
+}
+
+/* Rank badge for top 3 */
+.s48-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.s48-rank-badge.s48-gold {
+  background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+  color: #1a1a2e;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+  background-size: 200% 100%;
+  animation: _s48_rankBadgeShine 3s linear infinite;
+}
+
+.s48-rank-badge.s48-silver {
+  background: linear-gradient(135deg, #e0e0e0 0%, #a0a0a0 100%);
+  color: #1a1a2e;
+  box-shadow: 0 0 8px rgba(192, 192, 192, 0.3);
+}
+
+.s48-rank-badge.s48-bronze {
+  background: linear-gradient(135deg, #cd7f32 0%, #8b5a2b 100%);
+  color: #1a1a2e;
+  box-shadow: 0 0 8px rgba(205, 127, 50, 0.3);
+}
+
+/* Top 3 row highlights */
+.s48-lb-row-gold {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.06) 0%, transparent 60%);
+}
+
+.s48-lb-row-silver {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.04) 0%, transparent 60%);
+}
+
+.s48-lb-row-bronze {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.04) 0%, transparent 60%);
+}
+
+/* Player name column */
+.s48-player-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.s48-player-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4a90d9, #7ec8e3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.s48-lb-row-gold .s48-player-avatar {
+  background: linear-gradient(135deg, #ffd700, #b8860b);
+  color: #1a1a2e;
+}
+
+.s48-player-name-text {
+  font-weight: 500;
+  color: #e0e0e0;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Score column */
+.s48-score-cell {
+  font-weight: 700;
+  color: #fbbf24;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+}
+
+.s48-score-cell.s48-score-updated {
+  animation: _s48_scoreFlash 0.8s ease-out;
+}
+
+/* Prize column */
+.s48-prize-cell {
+  font-weight: 600;
+  color: #00ff88;
+}
+
+.s48-prize-cell .s48-prize-currency {
+  font-size: 10px;
+  color: #7ec8e3;
+  margin-right: 2px;
+}
+
+/* Player own row */
+.s48-lb-row-self {
+  background: linear-gradient(90deg, rgba(74, 144, 217, 0.12) 0%, rgba(74, 144, 217, 0.03) 70%, transparent 100%) !important;
+  border-left: 3px solid #4a90d9;
+  position: relative;
+}
+
+.s48-lb-row-self .s48-player-name-text {
+  color: #7ec8e3;
+  font-weight: 700;
+}
+
+.s48-lb-row-self::after {
+  content: "YOU";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  font-weight: 800;
+  color: #4a90d9;
+  background: rgba(74, 144, 217, 0.15);
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+
+/* Empty state */
+.s48-lb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #666;
+  font-size: 13px;
+  text-align: center;
+  gap: 6px;
+}
+
+.s48-lb-empty-icon {
+  font-size: 28px;
+  opacity: 0.4;
+}
+
+/* Leaderboard footer */
+.s48-lb-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.s48-lb-prize-pool {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #888;
+}
+
+.s48-lb-prize-pool-amount {
+  font-weight: 700;
+  color: #ffd700;
+  font-size: 13px;
+}
+
+.s48-lb-your-rank {
+  font-size: 11px;
+  color: #7ec8e3;
+  font-weight: 500;
+}
+
+.s48-lb-your-rank strong {
+  color: #ffffff;
+  font-size: 13px;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. Loss Streak Comfort (#lossStreakComfort)
+   -------------------------------------------------------------------------- */
+
+#lossStreakComfort {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#lossStreakComfort.s48-active {
+  display: flex;
+  animation: _s48_fadeIn 0.5s ease-out;
+}
+
+.s48-comfort-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(10, 22, 40, 0.92) 0%, rgba(15, 15, 26, 0.97) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.s48-comfort-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(160deg, #1a2340 0%, #0f1a2e 40%, #141428 100%);
+  border: 1px solid rgba(74, 144, 217, 0.2);
+  border-radius: 20px;
+  padding: 32px 28px 24px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(74, 144, 217, 0.08);
+  animation: _s48_fadeInUp 0.6s ease-out 0.1s both;
+  overflow: hidden;
+}
+
+.s48-comfort-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  line-height: 1;
+}
+
+.s48-comfort-close:hover {
+  background: rgba(255, 100, 100, 0.15);
+  color: #ff6b6b;
+  border-color: rgba(255, 100, 100, 0.3);
+  transform: rotate(90deg);
+}
+
+.s48-comfort-icon {
+  text-align: center;
+  font-size: 44px;
+  margin-bottom: 12px;
+  animation: _s48_gentleBreathe 3s ease-in-out infinite;
+}
+
+.s48-comfort-heading {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #e0e8f0;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.s48-comfort-subtext {
+  text-align: center;
+  font-size: 13px;
+  color: #8899aa;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s48-comfort-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.s48-comfort-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.s48-comfort-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7ec8e3;
+}
+
+.s48-comfort-stat-value.s48-loss {
+  color: #ff6b6b;
+}
+
+.s48-comfort-stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #667788;
+}
+
+.s48-comfort-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.s48-suggestion-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(74, 144, 217, 0.06) 0%, rgba(126, 200, 227, 0.03) 100%);
+  border: 1px solid rgba(74, 144, 217, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: _s48_fadeInUp 0.5s ease-out both;
+}
+
+.s48-suggestion-card:nth-child(1) { animation-delay: 0.2s; }
+.s48-suggestion-card:nth-child(2) { animation-delay: 0.3s; }
+.s48-suggestion-card:nth-child(3) { animation-delay: 0.4s; }
+
+.s48-suggestion-card:hover {
+  background: linear-gradient(135deg, rgba(74, 144, 217, 0.12) 0%, rgba(126, 200, 227, 0.06) 100%);
+  border-color: rgba(74, 144, 217, 0.25);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.s48-suggestion-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.s48-suggestion-icon.s48-break {
+  background: linear-gradient(135deg, rgba(126, 200, 227, 0.15), rgba(74, 144, 217, 0.1));
+}
+
+.s48-suggestion-icon.s48-lower-bet {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(255, 170, 0, 0.1));
+}
+
+.s48-suggestion-icon.s48-change-game {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.12), rgba(0, 200, 100, 0.08));
+}
+
+.s48-suggestion-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.s48-suggestion-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e8f0;
+  margin-bottom: 2px;
+}
+
+.s48-suggestion-desc {
+  font-size: 11px;
+  color: #667788;
+  line-height: 1.4;
+}
+
+.s48-suggestion-arrow {
+  color: #4a90d9;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.3s ease;
+}
+
+.s48-suggestion-card:hover .s48-suggestion-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Cashback offer */
+.s48-cashback-offer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.06) 0%, rgba(255, 170, 0, 0.03) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  border-radius: 14px;
+  margin-bottom: 16px;
+  animation: _s48_fadeInUp 0.5s ease-out 0.5s both;
+}
+
+.s48-cashback-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.s48-cashback-amount {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.s48-cashback-amount .s48-currency {
+  font-size: 16px;
+  vertical-align: super;
+  margin-right: 2px;
+}
+
+.s48-cashback-claim-btn {
+  padding: 8px 28px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #1a1a2e;
+  background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+}
+
+.s48-cashback-claim-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 215, 0, 0.45);
+  background: linear-gradient(135deg, #ffe033 0%, #ffbb22 100%);
+}
+
+.s48-cashback-claim-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.s48-cashback-terms {
+  font-size: 9px;
+  color: #556677;
+  text-align: center;
+}
+
+/* Comfort dismiss actions */
+.s48-comfort-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.s48-comfort-dismiss-btn {
+  padding: 8px 24px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8899aa;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.s48-comfort-dismiss-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ccc;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.s48-comfort-continue-btn {
+  padding: 8px 24px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7ec8e3;
+  background: rgba(74, 144, 217, 0.1);
+  border: 1px solid rgba(74, 144, 217, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.s48-comfort-continue-btn:hover {
+  background: rgba(74, 144, 217, 0.2);
+  border-color: rgba(74, 144, 217, 0.35);
+  color: #fff;
+}
+
+/* Decorative calming orbs */
+.s48-comfort-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.08;
+}
+
+.s48-comfort-orb.s48-orb-1 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, #4a90d9 0%, transparent 70%);
+  top: -60px;
+  left: -60px;
+  animation: _s48_gentleBreathe 5s ease-in-out infinite;
+}
+
+.s48-comfort-orb.s48-orb-2 {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, #7ec8e3 0%, transparent 70%);
+  bottom: -40px;
+  right: -40px;
+  animation: _s48_gentleBreathe 4s ease-in-out infinite 1s;
+}
+
+.s48-comfort-orb.s48-orb-3 {
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
+  top: 30%;
+  right: -30px;
+  animation: _s48_gentleBreathe 6s ease-in-out infinite 2s;
+}
+
+
+/* --------------------------------------------------------------------------
+   S48 Mobile Responsive (max-width: 768px)
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+  /* --- Bet Ladder Mobile --- */
+  #betLadderPanel {
+    width: 56px;
+    padding: 8px 4px;
+    border-radius: 10px 0 0 10px;
+  }
+
+  #betLadderPanel.s48-expanded {
+    width: 100px;
+  }
+
+  .s48-ladder-title {
+    font-size: 7px;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .s48-ladder-rung {
+    width: 44px;
+    min-height: 36px;
+    padding: 3px;
+    border-radius: 6px;
+  }
+
+  #betLadderPanel.s48-expanded .s48-ladder-rung {
+    width: 88px;
+    padding: 4px 8px;
+  }
+
+  .s48-rung-bet {
+    font-size: 10px;
+  }
+
+  .s48-rung-bet .s48-currency {
+    font-size: 7px;
+  }
+
+  .s48-rung-multiplier {
+    font-size: 7px;
+    padding: 1px 3px;
+  }
+
+  .s48-ladder-arrow {
+    font-size: 10px;
+  }
+
+  .s48-ladder-connector {
+    height: 5px;
+  }
+
+  .s48-ladder-top-badge {
+    padding: 4px 6px;
+  }
+
+  .s48-ladder-top-badge .s48-crown-icon {
+    font-size: 14px;
+  }
+
+  .s48-ladder-top-badge .s48-top-label {
+    font-size: 7px;
+  }
+
+  .s48-ladder-toggle {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    margin-top: 6px;
+  }
+
+  /* --- Tournament Leaderboard Mobile --- */
+  #tournamentLeaderboard {
+    max-height: 280px;
+  }
+
+  #tournamentLeaderboard.s48-collapsed-lb {
+    transform: translateY(calc(100% - 36px));
+  }
+
+  .s48-lb-header {
+    padding: 6px 10px;
+    min-height: 36px;
+  }
+
+  .s48-lb-trophy-icon {
+    font-size: 14px;
+  }
+
+  .s48-lb-title {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  .s48-lb-player-count {
+    font-size: 9px;
+  }
+
+  .s48-lb-timer {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .s48-lb-collapse-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .s48-lb-table {
+    font-size: 11px;
+  }
+
+  .s48-lb-table thead th {
+    padding: 4px 8px;
+    font-size: 8px;
+  }
+
+  .s48-lb-table tbody td {
+    padding: 5px 8px;
+  }
+
+  .s48-rank-badge {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .s48-player-avatar {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+  .s48-player-name-text {
+    max-width: 90px;
+    font-size: 11px;
+  }
+
+  .s48-score-cell {
+    font-size: 11px;
+  }
+
+  .s48-lb-row-self::after {
+    font-size: 7px;
+    padding: 1px 4px;
+  }
+
+  .s48-lb-footer {
+    padding: 4px 10px;
+  }
+
+  .s48-lb-prize-pool {
+    font-size: 10px;
+  }
+
+  .s48-lb-prize-pool-amount {
+    font-size: 11px;
+  }
+
+  .s48-lb-your-rank {
+    font-size: 10px;
+  }
+
+  /* --- Loss Streak Comfort Mobile --- */
+  #lossStreakComfort {
+    padding: 12px;
+  }
+
+  .s48-comfort-card {
+    max-width: 100%;
+    padding: 24px 18px 18px;
+    border-radius: 16px;
+  }
+
+  .s48-comfort-close {
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .s48-comfort-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+
+  .s48-comfort-heading {
+    font-size: 17px;
+  }
+
+  .s48-comfort-subtext {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .s48-comfort-stats {
+    gap: 16px;
+    margin-bottom: 14px;
+    padding: 10px 0;
+  }
+
+  .s48-comfort-stat-value {
+    font-size: 16px;
+  }
+
+  .s48-comfort-stat-label {
+    font-size: 9px;
+  }
+
+  .s48-comfort-suggestions {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .s48-suggestion-card {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .s48-suggestion-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+    border-radius: 8px;
+  }
+
+  .s48-suggestion-title {
+    font-size: 12px;
+  }
+
+  .s48-suggestion-desc {
+    font-size: 10px;
+  }
+
+  .s48-cashback-offer {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .s48-cashback-amount {
+    font-size: 22px;
+  }
+
+  .s48-cashback-amount .s48-currency {
+    font-size: 14px;
+  }
+
+  .s48-cashback-claim-btn {
+    padding: 7px 22px;
+    font-size: 12px;
+  }
+
+  .s48-comfort-actions {
+    gap: 8px;
+  }
+
+  .s48-comfort-dismiss-btn,
+  .s48-comfort-continue-btn {
+    padding: 7px 18px;
+    font-size: 11px;
+  }
+
+  .s48-comfort-orb.s48-orb-1 {
+    width: 120px;
+    height: 120px;
+    top: -30px;
+    left: -30px;
+  }
+
+  .s48-comfort-orb.s48-orb-2 {
+    width: 90px;
+    height: 90px;
+    bottom: -20px;
+    right: -20px;
+  }
+
+  .s48-comfort-orb.s48-orb-3 {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   S48 Extra-small screens (max-width: 480px)
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+
+  #betLadderPanel {
+    width: 48px;
+    padding: 6px 3px;
+  }
+
+  .s48-ladder-rung {
+    width: 38px;
+    min-height: 32px;
+  }
+
+  .s48-rung-bet {
+    font-size: 9px;
+  }
+
+  .s48-rung-multiplier {
+    font-size: 6px;
+  }
+
+  #tournamentLeaderboard {
+    max-height: 240px;
+  }
+
+  .s48-lb-title {
+    font-size: 10px;
+  }
+
+  .s48-lb-table thead th:nth-child(3),
+  .s48-lb-table tbody td:nth-child(3) {
+    display: none;
+  }
+
+  .s48-player-name-text {
+    max-width: 70px;
+  }
+
+  .s48-comfort-card {
+    padding: 20px 14px 16px;
+  }
+
+  .s48-comfort-heading {
+    font-size: 15px;
+  }
+
+  .s48-comfort-subtext {
+    font-size: 11px;
+  }
+
+  .s48-comfort-stats {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .s48-suggestion-card {
+    padding: 8px 10px;
+  }
+
+  .s48-cashback-amount {
+    font-size: 20px;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   S48 Reduced motion preference
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+  #betLadderPanel,
+  #tournamentLeaderboard,
+  .s48-comfort-card,
+  .s48-suggestion-card {
+    animation: none !important;
+  }
+
+  .s48-ladder-rung.s48-current {
+    animation: none;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+  }
+
+  .s48-ladder-arrow {
+    animation: none;
+  }
+
+  .s48-ladder-top-badge {
+    animation: none;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  }
+
+  .s48-comfort-icon {
+    animation: none;
+  }
+
+  .s48-comfort-orb {
+    animation: none;
+  }
+
+  .s48-rank-badge.s48-gold {
+    animation: none;
+  }
+
+  .s48-lb-timer.s48-urgent {
+    animation: none;
+    color: #ff4444;
+  }
+
+  .s48-ladder-progress-fill {
+    animation: none;
+  }
+
+  .s48-score-cell.s48-score-updated {
+    animation: none;
+    background-color: rgba(0, 255, 136, 0.15);
+  }
+}
