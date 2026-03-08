@@ -32298,3 +32298,1268 @@ body.s41-both-panels #dailyCashbackPanel {
 }
 
 /* END SPRINT 44 */
+
+
+/* ============================================================
+   SPRINT 46 — Favorites Quick-Play, Wagering Progress, Free Spin Meter
+   ============================================================ */
+
+/* -------------------------------------------------------
+   S46 Keyframe Animations
+   ------------------------------------------------------- */
+
+@keyframes _s46_slideInLeft {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(8px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes _s46_slideOutLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+}
+
+@keyframes _s46_slideInRight {
+  0% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-8px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes _s46_slideOutRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@keyframes _s46_fadeScaleIn {
+  0% {
+    transform: scale(0.7) translateY(-10px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes _s46_fadeScaleOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.7) translateY(-10px);
+    opacity: 0;
+  }
+}
+
+@keyframes _s46_pulseGold {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.4), 0 0 16px rgba(251, 191, 36, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.7), 0 0 32px rgba(251, 191, 36, 0.3);
+  }
+}
+
+@keyframes _s46_pulseBadge {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 18px rgba(74, 222, 128, 0.9), 0 0 30px rgba(0, 255, 136, 0.4);
+  }
+}
+
+@keyframes _s46_ringProgress {
+  0% {
+    stroke-dashoffset: 251.33;
+  }
+}
+
+@keyframes _s46_meterGlow {
+  0%, 100% {
+    opacity: 0.3;
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(8px);
+  }
+}
+
+@keyframes _s46_shimmerFill {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes _s46_milestoneReached {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    transform: scale(1.2);
+    text-shadow: 0 0 16px rgba(255, 215, 0, 0.9), 0 0 30px rgba(251, 191, 36, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+  }
+}
+
+@keyframes _s46_claimBtnPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.8), 0 0 40px rgba(255, 215, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.3);
+    transform: scale(1.04);
+  }
+}
+
+@keyframes _s46_thumbHoverGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.6), 0 4px 20px rgba(251, 191, 36, 0.3);
+  }
+}
+
+/* -------------------------------------------------------
+   1. SLOT FAVORITES QUICK-PLAY BAR
+   ------------------------------------------------------- */
+
+.fav-quickplay-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9500;
+  background: linear-gradient(135deg, rgba(15, 15, 26, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 16px;
+  padding: 0;
+  min-width: 280px;
+  max-width: 420px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 1px rgba(251, 191, 36, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(-120%);
+  opacity: 0;
+  transition: none;
+}
+
+.fav-quickplay-bar.active {
+  display: flex;
+  animation: _s46_slideInLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fav-quickplay-bar.s46-closing {
+  animation: _s46_slideOutLeft 0.35s ease-in forwards;
+}
+
+/* --- Header --- */
+
+.s46-fqp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.08) 0%, transparent 100%);
+}
+
+.s46-fqp-title {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.s46-fqp-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.s46-fqp-close:hover {
+  background: rgba(255, 60, 60, 0.15);
+  border-color: rgba(255, 60, 60, 0.3);
+  color: #ff6b6b;
+  transform: scale(1.1);
+}
+
+/* --- Scroll Container --- */
+
+.s46-fqp-scroll {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.s46-fqp-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- Game Thumbnail Card --- */
+
+.s46-fqp-item {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+  position: relative;
+  outline: none;
+}
+
+.s46-fqp-item:hover {
+  transform: scale(1.12) translateY(-3px);
+  filter: brightness(1.15);
+}
+
+.s46-fqp-item:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.s46-fqp-item.s46-active {
+  animation: _s46_pulseGold 2s ease-in-out infinite;
+}
+
+.s46-fqp-item.s46-active .s46-fqp-thumb {
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.5), inset 0 0 8px rgba(251, 191, 36, 0.1);
+}
+
+.s46-fqp-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 15, 26, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+}
+
+.s46-fqp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.s46-fqp-item:hover .s46-fqp-thumb img {
+  transform: scale(1.1);
+}
+
+.s46-fqp-item:hover .s46-fqp-thumb {
+  border-color: rgba(251, 191, 36, 0.5);
+  animation: _s46_thumbHoverGlow 1.5s ease-in-out infinite;
+}
+
+.s46-fqp-name {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 64px;
+  line-height: 1.2;
+  transition: color 0.2s ease;
+}
+
+.s46-fqp-item:hover .s46-fqp-name {
+  color: #fbbf24;
+}
+
+.s46-fqp-item.s46-active .s46-fqp-name {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* --- Empty State --- */
+
+.s46-fqp-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.78rem;
+  font-style: italic;
+  text-align: center;
+  min-height: 60px;
+  width: 100%;
+  user-select: none;
+}
+
+
+/* -------------------------------------------------------
+   2. WAGERING PROGRESS TRACKER PANEL
+   ------------------------------------------------------- */
+
+.wager-progress-panel {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%) translateX(120%);
+  z-index: 9500;
+  background: linear-gradient(160deg, rgba(15, 15, 26, 0.97) 0%, rgba(26, 26, 46, 0.97) 50%, rgba(45, 27, 105, 0.25) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 20px;
+  padding: 0;
+  width: 280px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.6),
+    0 0 1px rgba(251, 191, 36, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: none;
+  flex-direction: column;
+  opacity: 0;
+  transition: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+}
+
+.wager-progress-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.wager-progress-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wager-progress-panel::-webkit-scrollbar-thumb {
+  background: rgba(251, 191, 36, 0.3);
+  border-radius: 4px;
+}
+
+.wager-progress-panel.active {
+  display: flex;
+  animation: _s46_slideInRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform: translateY(-50%) translateX(0);
+}
+
+.wager-progress-panel.s46-closing {
+  animation: _s46_slideOutRight 0.35s ease-in forwards;
+}
+
+/* --- Header --- */
+
+.s46-wp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.08) 0%, transparent 100%);
+  border-radius: 20px 20px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.s46-wp-title {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.s46-wp-close {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.s46-wp-close:hover {
+  background: rgba(255, 60, 60, 0.15);
+  border-color: rgba(255, 60, 60, 0.3);
+  color: #ff6b6b;
+  transform: scale(1.1);
+}
+
+/* --- Circular Progress Ring --- */
+
+.s46-wp-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 18px 10px;
+  position: relative;
+}
+
+.s46-wp-ring-svg {
+  width: 120px;
+  height: 120px;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.2));
+}
+
+.s46-wp-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.s46-wp-ring-fill {
+  fill: none;
+  stroke: url(#s46-wp-ring-gradient);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 251.33;
+  stroke-dashoffset: 251.33;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: _s46_ringProgress 1s ease-out;
+}
+
+.s46-wp-ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -45%);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+  letter-spacing: -0.5px;
+  user-select: none;
+}
+
+.s46-wp-ring-label small {
+  font-size: 0.55em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 1px;
+}
+
+/* --- Stats Section --- */
+
+.s46-wp-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 18px 12px;
+}
+
+.s46-wp-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.2s ease;
+}
+
+.s46-wp-stat-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.s46-wp-stat-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.s46-wp-stat-value {
+  font-size: 0.85rem;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
+}
+
+/* --- Milestone Markers --- */
+
+.s46-wp-milestones {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 18px 12px;
+}
+
+.s46-wp-milestone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.s46-wp-milestone::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  transition: all 0.35s ease;
+}
+
+.s46-wp-milestone.s46-reached {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+  animation: _s46_milestoneReached 2.5s ease-in-out infinite;
+}
+
+.s46-wp-milestone.s46-reached::before {
+  background: #fbbf24;
+  border-color: #ffd700;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+.s46-wp-milestone.s46-reached::after {
+  content: '\2713';
+  position: absolute;
+  right: 12px;
+  font-size: 0.85rem;
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+/* --- Footer --- */
+
+.s46-wp-footer {
+  padding: 10px 18px 16px;
+  border-top: 1px solid rgba(251, 191, 36, 0.1);
+  background: linear-gradient(0deg, rgba(251, 191, 36, 0.04) 0%, transparent 100%);
+  border-radius: 0 0 20px 20px;
+}
+
+.s46-wp-footer-text {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.s46-wp-footer-text strong {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+
+/* -------------------------------------------------------
+   3. FREE SPIN BONUS METER BAR
+   ------------------------------------------------------- */
+
+.freespin-meter-bar {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9400;
+  background: linear-gradient(145deg, rgba(15, 15, 26, 0.96) 0%, rgba(26, 26, 46, 0.96) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 14px;
+  padding: 10px 14px;
+  min-width: 200px;
+  max-width: 260px;
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.45),
+    0 0 1px rgba(251, 191, 36, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  transform: scale(0.7) translateY(-10px);
+  opacity: 0;
+  transition: none;
+}
+
+.freespin-meter-bar.active {
+  display: flex;
+  animation: _s46_fadeScaleIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.freespin-meter-bar.s46-closing {
+  animation: _s46_fadeScaleOut 0.3s ease-in forwards;
+}
+
+/* --- Top Row (Icon + Label + Close) --- */
+
+.s46-fsm-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.s46-fsm-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.3));
+  flex-shrink: 0;
+}
+
+.s46-fsm-label {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.25);
+  letter-spacing: 0.3px;
+  flex: 1;
+  user-select: none;
+}
+
+.s46-fsm-close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.s46-fsm-close:hover {
+  background: rgba(255, 60, 60, 0.15);
+  border-color: rgba(255, 60, 60, 0.3);
+  color: #ff6b6b;
+  transform: scale(1.1);
+}
+
+/* --- Meter Bar --- */
+
+.s46-fsm-meter {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.s46-fsm-meter-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #4ade80 0%, #00ff88 40%, #fbbf24 80%, #ffd700 100%);
+  background-size: 200% 100%;
+  animation: _s46_shimmerFill 3s ease-in-out infinite;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 0;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+}
+
+.s46-fsm-meter-fill.s46-near-full {
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.5), 0 0 24px rgba(255, 215, 0, 0.2);
+}
+
+.s46-fsm-meter-glow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 9px;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.15) 50%, transparent 100%);
+  transition: opacity 0.4s ease;
+}
+
+.s46-fsm-meter.s46-glowing .s46-fsm-meter-glow {
+  opacity: 1;
+  animation: _s46_meterGlow 1.8s ease-in-out infinite;
+}
+
+/* --- Count Text --- */
+
+.s46-fsm-count {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  user-select: none;
+}
+
+.s46-fsm-count strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* --- Earned Badge --- */
+
+.s46-fsm-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+  font-size: 0.72rem;
+  font-weight: 700;
+  align-self: center;
+  animation: _s46_pulseBadge 2s ease-in-out infinite;
+  user-select: none;
+}
+
+.s46-fsm-badge-icon {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+/* --- Claim Button --- */
+
+.s46-fsm-claim-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  color: #0f0f1a;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  animation: _s46_claimBtnPulse 2s ease-in-out infinite;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.s46-fsm-claim-btn.s46-visible {
+  display: flex;
+}
+
+.s46-fsm-claim-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+  transition: left 0.5s ease;
+}
+
+.s46-fsm-claim-btn:hover {
+  transform: scale(1.03);
+  filter: brightness(1.1);
+  box-shadow: 0 0 28px rgba(251, 191, 36, 0.6), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.s46-fsm-claim-btn:hover::before {
+  left: 120%;
+}
+
+.s46-fsm-claim-btn:active {
+  transform: scale(0.97);
+  transition-duration: 0.1s;
+}
+
+
+/* -------------------------------------------------------
+   SPRINT 46 — RESPONSIVE BREAKPOINTS
+   ------------------------------------------------------- */
+
+/* --- Tablet (768px) --- */
+
+@media (max-width: 768px) {
+
+  /* --- Favorites Quick-Play --- */
+
+  .fav-quickplay-bar {
+    bottom: 14px;
+    left: 14px;
+    min-width: 240px;
+    max-width: 360px;
+    border-radius: 14px;
+  }
+
+  .s46-fqp-header {
+    padding: 10px 12px 7px;
+  }
+
+  .s46-fqp-title {
+    font-size: 0.82rem;
+  }
+
+  .s46-fqp-close {
+    width: 26px;
+    height: 26px;
+    font-size: 0.9rem;
+  }
+
+  .s46-fqp-scroll {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .s46-fqp-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+  }
+
+  .s46-fqp-name {
+    font-size: 0.56rem;
+    max-width: 56px;
+  }
+
+  /* --- Wagering Progress --- */
+
+  .wager-progress-panel {
+    right: 14px;
+    width: 260px;
+    border-radius: 18px;
+    max-height: 75vh;
+  }
+
+  .s46-wp-header {
+    padding: 14px 16px 10px;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .s46-wp-title {
+    font-size: 0.88rem;
+  }
+
+  .s46-wp-close {
+    width: 28px;
+    height: 28px;
+    font-size: 0.95rem;
+  }
+
+  .s46-wp-ring-svg {
+    width: 110px;
+    height: 110px;
+  }
+
+  .s46-wp-ring-label {
+    font-size: 1.45rem;
+  }
+
+  .s46-wp-ring-wrap {
+    padding: 16px 16px 8px;
+  }
+
+  .s46-wp-stats {
+    padding: 6px 16px 10px;
+  }
+
+  .s46-wp-stat-row {
+    padding: 7px 10px;
+  }
+
+  .s46-wp-stat-label {
+    font-size: 0.72rem;
+  }
+
+  .s46-wp-stat-value {
+    font-size: 0.8rem;
+  }
+
+  .s46-wp-milestones {
+    padding: 4px 16px 10px;
+    gap: 5px;
+  }
+
+  .s46-wp-milestone {
+    padding: 7px 10px;
+    font-size: 0.72rem;
+    gap: 8px;
+  }
+
+  .s46-wp-footer {
+    padding: 8px 16px 14px;
+    border-radius: 0 0 18px 18px;
+  }
+
+  .s46-wp-footer-text {
+    font-size: 0.65rem;
+  }
+
+  /* --- Free Spin Meter --- */
+
+  .freespin-meter-bar {
+    top: 70px;
+    right: 14px;
+    min-width: 180px;
+    max-width: 230px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    gap: 7px;
+  }
+
+  .s46-fsm-icon {
+    font-size: 1.05rem;
+  }
+
+  .s46-fsm-label {
+    font-size: 0.76rem;
+  }
+
+  .s46-fsm-close {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+    border-radius: 5px;
+  }
+
+  .s46-fsm-meter {
+    height: 12px;
+    border-radius: 6px;
+  }
+
+  .s46-fsm-meter-fill {
+    border-radius: 6px;
+  }
+
+  .s46-fsm-meter-glow {
+    border-radius: 8px;
+  }
+
+  .s46-fsm-count {
+    font-size: 0.68rem;
+  }
+
+  .s46-fsm-badge {
+    padding: 3px 8px;
+    font-size: 0.68rem;
+  }
+
+  .s46-fsm-claim-btn {
+    padding: 8px 14px;
+    font-size: 0.76rem;
+    border-radius: 8px;
+  }
+}
+
+/* --- Small Phone (420px) --- */
+
+@media (max-width: 420px) {
+
+  /* --- Favorites Quick-Play --- */
+
+  .fav-quickplay-bar {
+    bottom: 10px;
+    left: 8px;
+    right: 8px;
+    min-width: unset;
+    max-width: unset;
+    border-radius: 12px;
+  }
+
+  .s46-fqp-header {
+    padding: 8px 10px 6px;
+  }
+
+  .s46-fqp-title {
+    font-size: 0.75rem;
+  }
+
+  .s46-fqp-close {
+    width: 24px;
+    height: 24px;
+    font-size: 0.82rem;
+    border-radius: 6px;
+  }
+
+  .s46-fqp-scroll {
+    gap: 7px;
+    padding: 8px 10px;
+  }
+
+  .s46-fqp-thumb {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    border-width: 1.5px;
+  }
+
+  .s46-fqp-name {
+    font-size: 0.52rem;
+    max-width: 50px;
+  }
+
+  .s46-fqp-empty {
+    padding: 12px 14px;
+    font-size: 0.7rem;
+    min-height: 46px;
+  }
+
+  /* --- Wagering Progress --- */
+
+  .wager-progress-panel {
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 70vh;
+    border-radius: 16px;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  .wager-progress-panel.active {
+    transform: translateY(-50%) translateX(0);
+  }
+
+  .s46-wp-header {
+    padding: 12px 14px 8px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .s46-wp-title {
+    font-size: 0.82rem;
+  }
+
+  .s46-wp-close {
+    width: 26px;
+    height: 26px;
+    font-size: 0.88rem;
+    border-radius: 6px;
+  }
+
+  .s46-wp-ring-svg {
+    width: 96px;
+    height: 96px;
+  }
+
+  .s46-wp-ring-label {
+    font-size: 1.3rem;
+  }
+
+  .s46-wp-ring-wrap {
+    padding: 14px 14px 6px;
+  }
+
+  .s46-wp-stats {
+    padding: 4px 14px 8px;
+    gap: 1px;
+  }
+
+  .s46-wp-stat-row {
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
+
+  .s46-wp-stat-label {
+    font-size: 0.68rem;
+  }
+
+  .s46-wp-stat-value {
+    font-size: 0.75rem;
+  }
+
+  .s46-wp-milestones {
+    padding: 4px 14px 8px;
+    gap: 4px;
+  }
+
+  .s46-wp-milestone {
+    padding: 6px 8px;
+    font-size: 0.68rem;
+    gap: 7px;
+    border-radius: 8px;
+  }
+
+  .s46-wp-milestone::before {
+    width: 7px;
+    height: 7px;
+  }
+
+  .s46-wp-footer {
+    padding: 8px 14px 12px;
+    border-radius: 0 0 16px 16px;
+  }
+
+  .s46-wp-footer-text {
+    font-size: 0.6rem;
+  }
+
+  /* --- Free Spin Meter --- */
+
+  .freespin-meter-bar {
+    top: 60px;
+    right: 8px;
+    left: 8px;
+    min-width: unset;
+    max-width: unset;
+    padding: 8px 10px;
+    border-radius: 10px;
+    gap: 6px;
+  }
+
+  .s46-fsm-icon {
+    font-size: 0.95rem;
+  }
+
+  .s46-fsm-label {
+    font-size: 0.7rem;
+  }
+
+  .s46-fsm-close {
+    width: 20px;
+    height: 20px;
+    font-size: 0.72rem;
+    border-radius: 4px;
+  }
+
+  .s46-fsm-meter {
+    height: 10px;
+    border-radius: 5px;
+  }
+
+  .s46-fsm-meter-fill {
+    border-radius: 5px;
+  }
+
+  .s46-fsm-meter-glow {
+    border-radius: 7px;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+  }
+
+  .s46-fsm-count {
+    font-size: 0.62rem;
+  }
+
+  .s46-fsm-badge {
+    padding: 3px 7px;
+    font-size: 0.62rem;
+    border-radius: 16px;
+  }
+
+  .s46-fsm-badge-icon {
+    font-size: 0.7rem;
+  }
+
+  .s46-fsm-claim-btn {
+    padding: 7px 12px;
+    font-size: 0.7rem;
+    border-radius: 7px;
+    letter-spacing: 0.3px;
+  }
+}

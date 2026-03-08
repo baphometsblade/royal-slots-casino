@@ -204,6 +204,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "loyaltyPointsShop",
       "winCelebrationOverlay",
       "autoCollectBar",
+      "favQuickPlayBar",
+      "wagerProgressPanel",
+      "freeSpinMeterBar",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
