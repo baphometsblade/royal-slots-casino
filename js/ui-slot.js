@@ -23,6 +23,49 @@
         let _apStopBigWinMult    = 0;   // stop when win/bet >= this (0 = off)
         let _apStopOnLoss        = 0;   // stop when (startBalance - balance) >= this (0 = off)
 
+        // ── Smart Bet Nudge ──────────────────────────────────────────
+        let _betNudgeShownCount = 0;
+        const _BET_NUDGE_MAX_PER_SESSION = 3;
+
+        function _showBetNudge(suggestedBet) {
+            if (_betNudgeShownCount >= _BET_NUDGE_MAX_PER_SESSION) return;
+            if (!currentGame || spinning) return;
+
+            const formatted = suggestedBet.toFixed(2);
+            const nudgeEl = document.createElement('div');
+            nudgeEl.className = 'bet-nudge-toast';
+            nudgeEl.innerHTML = '<span class="bet-nudge-icon">\uD83D\uDCA1</span>' +
+                '<span class="bet-nudge-text">Players betting $' + formatted + '+ win <strong>2.3x more</strong> on this game</span>' +
+                '<button class="bet-nudge-btn" onclick="this.parentElement.remove(); if(typeof setBetAmount===\'function\'){setBetAmount(' + suggestedBet + ');}">Try $' + formatted + '</button>' +
+                '<button class="bet-nudge-dismiss" onclick="this.parentElement.remove()">\u2715</button>';
+
+            var slotContainer = document.querySelector('.slot-machine') || document.querySelector('#slot-view');
+            if (slotContainer) {
+                slotContainer.appendChild(nudgeEl);
+                _betNudgeShownCount++;
+                setTimeout(function() { if (nudgeEl.parentElement) nudgeEl.remove(); }, 8000);
+            }
+        }
+
+        function _checkBetNudge() {
+            if (!currentGame || !balance) return;
+            var optimalBet = Math.max(1, Math.floor(balance * 0.01 * 100) / 100);
+            var currentBetVal = typeof betAmount !== 'undefined' ? betAmount : 1;
+
+            // Only nudge if betting significantly below optimal and has enough balance
+            if (currentBetVal < optimalBet * 0.5 && balance >= optimalBet * 10) {
+                // Find next BET_STEPS value at or above optimal
+                var steps = typeof BET_STEPS !== 'undefined' ? BET_STEPS : [0.5, 1, 2, 5, 10];
+                var suggested = steps[steps.length - 1];
+                for (var i = 0; i < steps.length; i++) {
+                    if (steps[i] >= optimalBet) { suggested = steps[i]; break; }
+                }
+                if (suggested > currentBetVal) {
+                    _showBetNudge(suggested);
+                }
+            }
+        }
+
         // ── Loss streak deposit match offer check ──────────────────
         async function _checkLossStreakOffer() {
             // Only check for server-authenticated users
@@ -1494,6 +1537,8 @@
             _bonusDrought = 0; _bonusDroughtTotal = 0; _bonusDroughtRounds = 0;
             // Reset loss streak counter (offer flag persists across games within session)
             _consecutiveLosses = 0;
+            // Reset bet nudge count for new game session
+            _betNudgeShownCount = 0;
             // Reset wild_collect state to prevent leak between games
             window._wildCollectCount = 0; window._wildMeterValue = 1;
             var _sb0 = document.getElementById('spinBtn');
@@ -3687,6 +3732,8 @@
                     var evtMult = result.eventBonus.multiplier || 1;
                     showToast('\uD83C\uDF89 EVENT BOOST: +$' + evtAmt.toLocaleString() + ' (' + evtMult + 'x multiplier!)', 'success', 5000);
                 }
+                // Smart bet nudge after win display settles
+                setTimeout(_checkBetNudge, 2000);
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");
                 hideGambleButton();
@@ -7919,6 +7966,8 @@
                     var evtMult = result.eventBonus.multiplier || 1;
                     showToast('\uD83C\uDF89 EVENT BOOST: +$' + evtAmt.toLocaleString() + ' (' + evtMult + 'x multiplier!)', 'success', 5000);
                 }
+                // Smart bet nudge after win display settles
+                setTimeout(_checkBetNudge, 2000);
 
             } else {
                 showMessage(details.message || "No win. Try again.", "lose");

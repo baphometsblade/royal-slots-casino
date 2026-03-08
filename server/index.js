@@ -141,6 +141,7 @@ app.use('/api/balance', balanceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/user', require('./routes/lossstreak.routes'));
+app.use('/api/user', require('./routes/vipdeposit.routes'));
 app.use('/api/payment', paymentRoutes);
 app.use('/api/crypto', require('./routes/crypto.routes'));
 app.use('/api/jackpot', jackpotRoutes);

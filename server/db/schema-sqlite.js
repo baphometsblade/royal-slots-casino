@@ -419,6 +419,8 @@ const USER_MIGRATIONS = [
     ['win_streak_max', 'INTEGER DEFAULT 0'],
     // Level-up bonus
     ['last_bonus_level', 'INTEGER DEFAULT 1'],
+    // VIP deposit bonus
+    ['vip_deposit_claimed', 'TEXT'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → definition). */
