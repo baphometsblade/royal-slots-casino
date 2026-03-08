@@ -723,6 +723,26 @@
             <div class="dmb-reward" id="dmbRewardBtn" onclick="if(typeof claimDailyMissions==='function')claimDailyMissions()">Claim All</div>
         </div>
 
+            <!-- Sprint 30: VIP Progress Bar -->
+            <div id="vipProgressContainer" class="vip-progress-container">
+                <div class="vp-header">
+                    <span class="vp-tier-badge vp-tier-bronze" id="vpTierBadge">🥉 Bronze</span>
+                    <span class="vp-next-tier" id="vpNextTier">Next: <b>Silver</b></span>
+                </div>
+                <div class="vp-bar-wrap">
+                    <div class="vp-bar-fill vp-bar-bronze" id="vpBarFill" style="width:0%"></div>
+                </div>
+                <div class="vp-xp-text">
+                    <span id="vpXpCurrent">0 XP</span>
+                    <span id="vpXpTarget"><b>1,000 XP</b></span>
+                </div>
+            </div>
+
+            <!-- Sprint 30: Loyalty Shop Trigger -->
+            <button class="loyalty-shop-btn" id="loyaltyShopBtn" onclick="if(typeof openLoyaltyShop==='function')openLoyaltyShop()">
+                <span class="lsb-icon">🎁</span> Loyalty Shop <span class="lsb-pts" id="lsbPts">0 pts</span>
+            </button>
+
         <!-- Sprint 28: Reload bonus strip -->
         <div id="reloadBonusStrip" class="reload-bonus-strip" style="display:none">
             <span class="rbs-icon">💜</span>
@@ -2678,6 +2698,62 @@
             <button class="eic-dismiss" onclick="if(typeof dismissExitIntent==='function')dismissExitIntent()">
                 No thanks, I'll leave without claiming
             </button>
+        </div>
+    </div>
+
+    <!-- Sprint 30: Referral FAB -->
+    <button class="referral-fab" id="referralFab" onclick="if(typeof openReferralPanel==='function')openReferralPanel()" title="Invite Friends">👥</button>
+
+    <!-- Sprint 30: Referral Panel Overlay -->
+    <div class="rp-overlay" id="rpOverlay" onclick="if(typeof closeReferralPanel==='function')closeReferralPanel()"></div>
+
+    <!-- Sprint 30: Referral Slide-out Panel -->
+    <div class="referral-panel" id="referralPanel">
+        <div class="rp-header">
+            <span class="rp-title">👥 Invite Friends</span>
+            <button class="rp-close" onclick="if(typeof closeReferralPanel==='function')closeReferralPanel()">✕</button>
+        </div>
+        <div class="rp-body">
+            <div class="rp-invite-box">
+                <h3>Earn $10 For Every Friend!</h3>
+                <p>Share your unique link. When a friend signs up and deposits, you both get <b>$10 bonus credits</b>.</p>
+                <div class="rp-link-row">
+                    <input class="rp-link-input" id="rpLinkInput" readonly value="Loading...">
+                    <button class="rp-copy-btn" id="rpCopyBtn" onclick="if(typeof copyReferralLink==='function')copyReferralLink()">Copy</button>
+                </div>
+            </div>
+            <div class="rp-stats">
+                <div class="rp-stat-card">
+                    <div class="rp-stat-val" id="rpInvitesSent">0</div>
+                    <div class="rp-stat-label">Links Shared</div>
+                </div>
+                <div class="rp-stat-card">
+                    <div class="rp-stat-val" id="rpFriendsJoined">0</div>
+                    <div class="rp-stat-label">Friends Joined</div>
+                </div>
+                <div class="rp-stat-card">
+                    <div class="rp-stat-val" id="rpEarned">$0</div>
+                    <div class="rp-stat-label">Total Earned</div>
+                </div>
+                <div class="rp-stat-card">
+                    <div class="rp-stat-val" id="rpPending">0</div>
+                    <div class="rp-stat-label">Pending</div>
+                </div>
+            </div>
+            <div class="rp-rewards-title">🏆 Referral Milestones</div>
+            <div id="rpRewardsList"></div>
+        </div>
+    </div>
+
+    <!-- Sprint 30: Loyalty Shop Modal -->
+    <div class="loyalty-shop-overlay" id="loyaltyShopOverlay">
+        <div class="loyalty-shop-card">
+            <div class="ls-header">
+                <span class="ls-title">🎁 Loyalty Shop</span>
+                <span class="ls-balance-badge">💎 <span id="lsPointsBadge">0</span> pts</span>
+                <button class="ls-close" onclick="if(typeof closeLoyaltyShop==='function')closeLoyaltyShop()">✕</button>
+            </div>
+            <div class="ls-body" id="lsItemsGrid"></div>
         </div>
     </div>
 

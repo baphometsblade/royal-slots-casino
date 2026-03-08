@@ -313,6 +313,8 @@ async function run() {
       openSlot("fire_joker");
     });
     await page.waitForSelector("#slotModal.active", { timeout: 10000 });
+    // Brief pause to let slot UI fully initialize before clicking spin
+    await page.waitForTimeout(800);
     await clickSpinButton(page);
     await waitForState(page, (state) => !state.spinning && state.stats.totalSpins >= 1, 30000);
 
