@@ -7,14 +7,18 @@ const config = require('../config');
 
 let _started = false;
 
-// Ensure email_log tracking table exists
-db.run(`CREATE TABLE IF NOT EXISTS email_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    email_type TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    UNIQUE(user_id, email_type)
-)`).catch(err => console.warn('[Scheduler] email_log table create:', err.message));
+// Ensure email_log tracking table exists (dialect-aware: PG uses SERIAL, SQLite uses AUTOINCREMENT)
+{
+    const _isPg = !!process.env.DATABASE_URL;
+    const _idDef = _isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    db.run(`CREATE TABLE IF NOT EXISTS email_log (
+        id ${_idDef},
+        user_id INTEGER NOT NULL,
+        email_type TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        UNIQUE(user_id, email_type)
+    )`).catch(err => console.warn('[Scheduler] email_log table create:', err.message));
+}
 
 /**
  * Send re-engagement emails to players who haven't logged in recently.
