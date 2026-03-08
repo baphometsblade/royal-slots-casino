@@ -169,6 +169,15 @@
             });
         });
 
+        // For big/mega/jackpot wins, also show the dismissible corner toast
+        if (tier.tier === 'big' || tier.tier === 'mega' || tier.tier === 'jackpot') {
+            if (typeof window.showBigWinCornerToast === 'function') {
+                setTimeout(function() {
+                    window.showBigWinCornerToast(name, amt, game);
+                }, 600);
+            }
+        }
+
         // Auto-hide
         setTimeout(function() {
             if (_toastEl) {
