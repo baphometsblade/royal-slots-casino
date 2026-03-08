@@ -186,6 +186,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "winWheelOverlay",
       "autoCashoutPanel",
       "autoCashoutCelebration",
+      "mysteryBoxOverlay",
+      "tournamentBar",
+      "bonusMeterBar",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

@@ -25982,3 +25982,1283 @@ body.happy-hour-active .header-container {
         font-size: 1.6rem;
     }
 }
+
+
+/* ========================================================
+   Sprint 40 — Mystery Box Drops, Tournament Bar, Bonus Meter
+   All keyframes prefixed _s40_ to avoid collisions
+   ======================================================== */
+
+/* -------------------------------------------------------
+   S40 KEYFRAMES
+   ------------------------------------------------------- */
+
+@keyframes _s40_boxPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3),
+                0 0 40px rgba(251, 191, 36, 0.15),
+                inset 0 0 15px rgba(251, 191, 36, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(251, 191, 36, 0.5),
+                0 0 70px rgba(251, 191, 36, 0.25),
+                inset 0 0 25px rgba(251, 191, 36, 0.1);
+  }
+}
+
+@keyframes _s40_boxShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-4px, -2px) rotate(-1deg); }
+  20% { transform: translate(4px, 2px) rotate(1deg); }
+  30% { transform: translate(-3px, 1px) rotate(-0.5deg); }
+  40% { transform: translate(3px, -1px) rotate(0.5deg); }
+  50% { transform: translate(-2px, 2px) rotate(-0.3deg); }
+  60% { transform: translate(2px, -2px) rotate(0.3deg); }
+  70% { transform: translate(-1px, 1px) rotate(-0.2deg); }
+  80% { transform: translate(1px, -1px) rotate(0.2deg); }
+  90% { transform: translate(-1px, 0) rotate(0deg); }
+}
+
+@keyframes _s40_prizeRevealScale {
+  0% {
+    transform: scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15) rotate(3deg);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.95) rotate(-1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes _s40_sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.2) rotate(90deg);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.8) rotate(180deg);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1.1) rotate(270deg);
+  }
+}
+
+@keyframes _s40_overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes _s40_overlayFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes _s40_boxEntrance {
+  0% {
+    transform: scale(0.1) translateY(60px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08) translateY(-10px);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.96) translateY(3px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes _s40_btnShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes _s40_trophySpin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+@keyframes _s40_trophyBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.1); }
+}
+
+@keyframes _s40_slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes _s40_slideDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+@keyframes _s40_timerPulse {
+  0%, 100% { color: #e2e8f0; }
+  50% { color: #fbbf24; }
+}
+
+@keyframes _s40_meterFillShine {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes _s40_milestoneGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(251, 191, 36, 0.7),
+                0 0 30px rgba(251, 191, 36, 0.3);
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+@keyframes _s40_milestoneHit {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 5px rgba(251, 191, 36, 0.3);
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.6);
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.8),
+                0 0 50px rgba(251, 191, 36, 0.4);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+  }
+}
+
+@keyframes _s40_rewardPopup {
+  0% {
+    transform: translateX(-50%) scale(0.3) translateY(20px);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.1) translateY(-5px);
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(-50%) scale(0.95) translateY(2px);
+  }
+  100% {
+    transform: translateX(-50%) scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes _s40_rewardPopupExit {
+  from {
+    transform: translateX(-50%) scale(1) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-50%) scale(0.6) translateY(-30px);
+    opacity: 0;
+  }
+}
+
+@keyframes _s40_meterBarPulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(251, 191, 36, 0.12);
+  }
+}
+
+@keyframes _s40_lidOpen {
+  0% {
+    transform: rotateX(0deg) translateY(0);
+  }
+  40% {
+    transform: rotateX(-100deg) translateY(-20px);
+  }
+  60% {
+    transform: rotateX(-110deg) translateY(-25px);
+  }
+  100% {
+    transform: rotateX(-105deg) translateY(-22px);
+  }
+}
+
+@keyframes _s40_lightRays {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1.2) rotate(15deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.8) rotate(30deg);
+  }
+}
+
+
+/* -------------------------------------------------------
+   FEATURE 1: Mystery Box Drops — #mysteryBoxOverlay
+   ------------------------------------------------------- */
+
+#mysteryBoxOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: _s40_overlayFadeIn 0.35s ease-out forwards;
+}
+
+#mysteryBoxOverlay.active {
+  display: flex;
+}
+
+#mysteryBoxOverlay.closing {
+  animation: _s40_overlayFadeOut 0.3s ease-in forwards;
+  pointer-events: none;
+}
+
+.mystery-box-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 40px 48px;
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.95), rgba(15, 15, 26, 0.98));
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6),
+              0 0 40px rgba(251, 191, 36, 0.15);
+  animation: _s40_boxEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  max-width: 420px;
+  width: 90vw;
+}
+
+.mystery-box-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+  text-align: center;
+}
+
+.mystery-box-subtitle {
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.7);
+  text-align: center;
+  margin-top: -12px;
+}
+
+.mystery-box-visual {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  perspective: 600px;
+}
+
+.mystery-box-icon {
+  width: 140px;
+  height: 140px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 50%, #1a1a2e 100%);
+  border: 3px solid rgba(251, 191, 36, 0.6);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  animation: _s40_boxPulseGlow 2.5s ease-in-out infinite;
+  transition: transform 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mystery-box-icon::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+  border-radius: 14px 14px 0 0;
+  border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+  transform-origin: bottom center;
+  transition: transform 0.4s ease;
+}
+
+.mystery-box-icon.opened::before {
+  animation: _s40_lidOpen 0.5s ease-out forwards;
+}
+
+.mystery-box-visual:hover .mystery-box-icon:not(.opened) {
+  animation: _s40_boxShake 0.5s ease-in-out;
+}
+
+.mystery-box-sparkle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #fbbf24, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: _s40_sparkle 1.8s ease-in-out infinite;
+}
+
+.mystery-box-sparkle:nth-child(1) { top: 5%; left: 10%; animation-delay: 0s; }
+.mystery-box-sparkle:nth-child(2) { top: 8%; right: 12%; animation-delay: 0.4s; }
+.mystery-box-sparkle:nth-child(3) { bottom: 10%; left: 15%; animation-delay: 0.8s; }
+.mystery-box-sparkle:nth-child(4) { bottom: 5%; right: 8%; animation-delay: 1.2s; }
+.mystery-box-sparkle:nth-child(5) { top: 50%; left: 0%; animation-delay: 0.6s; }
+.mystery-box-sparkle:nth-child(6) { top: 50%; right: 0%; animation-delay: 1.0s; }
+
+.mystery-box-light-rays {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(251, 191, 36, 0.08) 15deg,
+    transparent 30deg,
+    rgba(251, 191, 36, 0.06) 45deg,
+    transparent 60deg,
+    rgba(251, 191, 36, 0.08) 75deg,
+    transparent 90deg,
+    rgba(251, 191, 36, 0.06) 105deg,
+    transparent 120deg,
+    rgba(251, 191, 36, 0.08) 135deg,
+    transparent 150deg,
+    rgba(251, 191, 36, 0.06) 165deg,
+    transparent 180deg,
+    rgba(251, 191, 36, 0.08) 195deg,
+    transparent 210deg,
+    rgba(251, 191, 36, 0.06) 225deg,
+    transparent 240deg,
+    rgba(251, 191, 36, 0.08) 255deg,
+    transparent 270deg,
+    rgba(251, 191, 36, 0.06) 285deg,
+    transparent 300deg,
+    rgba(251, 191, 36, 0.08) 315deg,
+    transparent 330deg,
+    rgba(251, 191, 36, 0.06) 345deg,
+    transparent 360deg
+  );
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  animation: _s40_lightRays 2s ease-out forwards;
+  animation-play-state: paused;
+}
+
+.mystery-box-visual.revealing .mystery-box-light-rays {
+  animation-play-state: running;
+}
+
+.mystery-box-open-btn {
+  padding: 14px 48px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #0f0f1a;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.mystery-box-open-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 45%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.15) 55%,
+    transparent 100%
+  );
+  animation: _s40_btnShimmer 3s ease-in-out infinite;
+}
+
+.mystery-box-open-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.mystery-box-open-btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.mystery-box-open-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mystery-box-prize-reveal {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.mystery-box-prize-reveal.active {
+  display: flex;
+  animation: _s40_prizeRevealScale 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.mystery-box-prize-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.5));
+}
+
+.mystery-box-prize-label {
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mystery-box-prize-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+}
+
+.mystery-box-prize-desc {
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.75);
+  max-width: 280px;
+  line-height: 1.4;
+}
+
+.mystery-box-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(42, 42, 62, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.15);
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.mystery-box-close-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  transform: rotate(90deg);
+}
+
+.mystery-box-rarity {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.mystery-box-rarity.common {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.mystery-box-rarity.rare {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.mystery-box-rarity.epic {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.mystery-box-rarity.legendary {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
+}
+
+
+/* -------------------------------------------------------
+   FEATURE 2: Tournament Entry Bar — #tournamentBar
+   ------------------------------------------------------- */
+
+#tournamentBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  z-index: 9200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(26, 26, 46, 0.92), rgba(15, 15, 26, 0.96));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(251, 191, 36, 0.2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4),
+              0 -1px 0 rgba(251, 191, 36, 0.1);
+  padding: 0 20px;
+  font-family: inherit;
+}
+
+#tournamentBar.active {
+  display: flex;
+  animation: _s40_slideUp 0.4s ease-out forwards;
+}
+
+#tournamentBar.hiding {
+  animation: _s40_slideDown 0.3s ease-in forwards;
+}
+
+.tournament-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  max-width: 1200px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.tournament-bar-trophy {
+  font-size: 1.5rem;
+  animation: _s40_trophyBounce 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.4));
+  flex-shrink: 0;
+}
+
+.tournament-bar-trophy:hover {
+  animation: _s40_trophySpin 0.8s ease-in-out;
+}
+
+.tournament-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tournament-bar-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.tournament-bar-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(226, 232, 240, 0.15);
+  flex-shrink: 0;
+}
+
+.tournament-bar-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+
+.tournament-bar-timer-icon {
+  font-size: 0.9rem;
+}
+
+.tournament-bar-timer.urgent {
+  animation: _s40_timerPulse 1s ease-in-out infinite;
+}
+
+.tournament-bar-timer.urgent .tournament-bar-timer-value {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.tournament-bar-rank {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.8);
+  white-space: nowrap;
+}
+
+.tournament-bar-rank-value {
+  color: #fbbf24;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tournament-bar-prize {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.8);
+  white-space: nowrap;
+}
+
+.tournament-bar-prize-value {
+  color: #34d399;
+  font-weight: 700;
+}
+
+.tournament-bar-enter-btn {
+  padding: 8px 22px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #0f0f1a;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.tournament-bar-enter-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(251, 191, 36, 0.45);
+  background: linear-gradient(135deg, #fcd34d, #fbbf24);
+}
+
+.tournament-bar-enter-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 5px rgba(251, 191, 36, 0.25);
+}
+
+.tournament-bar-enter-btn.entered {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #fff;
+  cursor: default;
+  box-shadow: 0 2px 10px rgba(52, 211, 153, 0.3);
+}
+
+.tournament-leaderboard-popup {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 340px;
+  max-width: 90vw;
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.97), rgba(15, 15, 26, 0.99));
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 14px;
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(251, 191, 36, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 9210;
+}
+
+.tournament-leaderboard-popup.active {
+  display: flex;
+  animation: _s40_slideUp 0.3s ease-out forwards;
+}
+
+.tournament-leaderboard-popup.closing {
+  animation: _s40_slideDown 0.2s ease-in forwards;
+}
+
+.tournament-leaderboard-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tournament-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tournament-leaderboard-table th {
+  font-size: 0.7rem;
+  color: rgba(226, 232, 240, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: left;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+
+.tournament-leaderboard-table th:last-child {
+  text-align: right;
+}
+
+.tournament-leaderboard-table td {
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  padding: 7px 8px;
+  border-top: 1px solid rgba(226, 232, 240, 0.06);
+}
+
+.tournament-leaderboard-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: #34d399;
+}
+
+.tournament-leaderboard-row.highlight {
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 6px;
+}
+
+.tournament-leaderboard-row.highlight td {
+  color: #fbbf24;
+}
+
+.tournament-leaderboard-row.highlight td:last-child {
+  color: #fbbf24;
+}
+
+.tournament-leaderboard-rank-1 { color: #fbbf24; }
+.tournament-leaderboard-rank-2 { color: #94a3b8; }
+.tournament-leaderboard-rank-3 { color: #b45309; }
+
+.tournament-leaderboard-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(42, 42, 62, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  color: rgba(226, 232, 240, 0.5);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tournament-leaderboard-close:hover {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+
+/* -------------------------------------------------------
+   FEATURE 3: Progressive Bonus Meter — #bonusMeterBar
+   ------------------------------------------------------- */
+
+#bonusMeterBar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  right: 0;
+  height: 38px;
+  z-index: 9100;
+  display: none;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(15, 15, 26, 0.93), rgba(26, 26, 46, 0.9));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  padding: 0 20px;
+  animation: _s40_meterBarPulse 4s ease-in-out infinite;
+}
+
+#bonusMeterBar.active {
+  display: flex;
+}
+
+.bonus-meter-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.bonus-meter-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bonus-meter-track {
+  flex: 1;
+  height: 14px;
+  background: rgba(42, 42, 62, 0.8);
+  border-radius: 7px;
+  position: relative;
+  overflow: visible;
+  border: 1px solid rgba(226, 232, 240, 0.08);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bonus-meter-fill {
+  height: 100%;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #22c55e, #34d399, #fbbf24, #f59e0b);
+  background-size: 300% 100%;
+  animation: _s40_meterFillShine 4s ease-in-out infinite;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  min-width: 0;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.3);
+}
+
+.bonus-meter-fill::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  right: 4px;
+  height: 4px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25), transparent);
+  border-radius: 4px;
+}
+
+.bonus-meter-fill.tier-low {
+  background: linear-gradient(90deg, #22c55e, #34d399 80%, #86efac);
+  background-size: 200% 100%;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.35);
+}
+
+.bonus-meter-fill.tier-mid {
+  background: linear-gradient(90deg, #34d399, #fbbf24 70%, #fcd34d);
+  background-size: 200% 100%;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+}
+
+.bonus-meter-fill.tier-high {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b, #b45309);
+  background-size: 200% 100%;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.bonus-meter-fill.tier-max {
+  background: linear-gradient(90deg, #f59e0b, #ec4899, #a855f7, #6366f1);
+  background-size: 300% 100%;
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.4),
+              0 0 30px rgba(251, 191, 36, 0.2);
+}
+
+.bonus-meter-milestones {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.bonus-meter-milestone {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(42, 42, 62, 0.9);
+  border: 2px solid rgba(226, 232, 240, 0.25);
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.bonus-meter-milestone[data-milestone="25"] { left: 25%; }
+.bonus-meter-milestone[data-milestone="50"] { left: 50%; }
+.bonus-meter-milestone[data-milestone="75"] { left: 75%; }
+.bonus-meter-milestone[data-milestone="100"] { left: calc(100% - 1px); }
+
+.bonus-meter-milestone.reached {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+}
+
+.bonus-meter-milestone.near {
+  animation: _s40_milestoneGlowPulse 1.2s ease-in-out infinite;
+  border-color: rgba(251, 191, 36, 0.6);
+}
+
+.bonus-meter-milestone.just-hit {
+  animation: _s40_milestoneHit 0.6s ease-out forwards;
+  background: #fbbf24;
+  border-color: #fcd34d;
+}
+
+.bonus-meter-milestone-label {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: rgba(226, 232, 240, 0.4);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.bonus-meter-milestone.reached .bonus-meter-milestone-label {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.bonus-meter-percent {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 38px;
+  text-align: right;
+}
+
+.bonus-meter-percent .pct-value {
+  color: #fbbf24;
+}
+
+.bonus-meter-reward-popup {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.97), rgba(15, 15, 26, 0.99));
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(251, 191, 36, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 9110;
+  white-space: nowrap;
+}
+
+.bonus-meter-reward-popup.active {
+  display: flex;
+  animation: _s40_rewardPopup 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.bonus-meter-reward-popup.closing {
+  animation: _s40_rewardPopupExit 0.3s ease-in forwards;
+}
+
+.bonus-meter-reward-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4));
+}
+
+.bonus-meter-reward-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bonus-meter-reward-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #34d399;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+}
+
+.bonus-meter-reward-desc {
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.bonus-meter-reward-claim-btn {
+  padding: 8px 24px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #0f0f1a;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.bonus-meter-reward-claim-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(251, 191, 36, 0.45);
+}
+
+.bonus-meter-reward-claim-btn:active {
+  transform: translateY(1px);
+}
+
+
+/* -------------------------------------------------------
+   S40 RESPONSIVE — Mobile adjustments
+   ------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  /* Mystery Box */
+  .mystery-box-container {
+    padding: 28px 24px;
+    gap: 18px;
+    max-width: 340px;
+  }
+
+  .mystery-box-title {
+    font-size: 1.2rem;
+  }
+
+  .mystery-box-icon {
+    width: 110px;
+    height: 110px;
+    font-size: 2.8rem;
+  }
+
+  .mystery-box-open-btn {
+    padding: 12px 36px;
+    font-size: 1rem;
+  }
+
+  .mystery-box-prize-value {
+    font-size: 1.6rem;
+  }
+
+  /* Tournament Bar */
+  #tournamentBar {
+    height: auto;
+    min-height: 46px;
+    padding: 6px 12px;
+  }
+
+  .tournament-bar-inner {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tournament-bar-name {
+    max-width: 120px;
+    font-size: 0.78rem;
+  }
+
+  .tournament-bar-divider {
+    display: none;
+  }
+
+  .tournament-bar-timer,
+  .tournament-bar-rank,
+  .tournament-bar-prize {
+    font-size: 0.75rem;
+  }
+
+  .tournament-bar-enter-btn {
+    padding: 6px 16px;
+    font-size: 0.75rem;
+  }
+
+  .tournament-leaderboard-popup {
+    width: 280px;
+    padding: 12px;
+  }
+
+  /* Bonus Meter */
+  #bonusMeterBar {
+    height: 34px;
+    padding: 0 12px;
+  }
+
+  .bonus-meter-inner {
+    gap: 8px;
+  }
+
+  .bonus-meter-label {
+    font-size: 0.65rem;
+    display: none;
+  }
+
+  .bonus-meter-track {
+    height: 12px;
+  }
+
+  .bonus-meter-milestone {
+    width: 8px;
+    height: 8px;
+  }
+
+  .bonus-meter-milestone-label {
+    display: none;
+  }
+
+  .bonus-meter-percent {
+    font-size: 0.75rem;
+  }
+
+  .bonus-meter-reward-popup {
+    padding: 12px 18px;
+    gap: 6px;
+  }
+
+  .bonus-meter-reward-icon {
+    font-size: 1.5rem;
+  }
+
+  .bonus-meter-reward-value {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mystery-box-container {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .mystery-box-title {
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+
+  .mystery-box-icon {
+    width: 90px;
+    height: 90px;
+    font-size: 2.2rem;
+  }
+
+  .mystery-box-sparkle {
+    width: 8px;
+    height: 8px;
+  }
+
+  .mystery-box-open-btn {
+    padding: 10px 28px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  .tournament-bar-info {
+    gap: 8px;
+  }
+
+  .tournament-bar-name {
+    max-width: 80px;
+  }
+
+  .tournament-bar-rank,
+  .tournament-bar-prize {
+    display: none;
+  }
+
+  .bonus-meter-reward-popup {
+    max-width: 260px;
+  }
+}
