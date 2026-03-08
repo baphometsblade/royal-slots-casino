@@ -2891,7 +2891,7 @@ function showAchievementToast(achievement) {
 
 // ── Personalized Offers ─────────────────────────────────
 function loadPersonalizedOffers() {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     fetch('/api/offers', { headers: { 'Authorization': 'Bearer ' + token } })
         .then(function(r) { return r.json(); })
@@ -2997,7 +2997,7 @@ function loadBundleList() {
 }
 
 function purchaseBundle(bundleId) {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) {
         if (typeof showToast === 'function') showToast('Login required to purchase bundles', 'error');
         return;
@@ -3029,7 +3029,7 @@ function purchaseBundle(bundleId) {
 
 // ── Campaign Banners ─────────────────────────────────
 function loadCampaignBanners() {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     fetch('/api/campaigns', { headers: { 'Authorization': 'Bearer ' + token } })
         .then(function(r) { return r.json(); })
@@ -3178,7 +3178,7 @@ function _renderGiftSendForm() {
 }
 
 function sendGift() {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) {
         if (typeof showToast === 'function') showToast('Login required to send gifts', 'error');
         return;
@@ -3219,7 +3219,7 @@ function sendGift() {
 }
 
 function loadPendingGifts() {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     var body = document.getElementById('giftModalBody');
     if (!body) return;
@@ -3280,7 +3280,7 @@ function loadPendingGifts() {
 }
 
 function claimGift(giftId) {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     fetch('/api/gifts/' + giftId + '/claim', {
         method: 'POST',
@@ -3305,7 +3305,7 @@ function claimGift(giftId) {
 }
 
 function loadGiftHistory() {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     var body = document.getElementById('giftModalBody');
     if (!body) return;
@@ -3411,7 +3411,7 @@ function _renderContestTabs() {
 
 function loadContestLeaderboard(metric) {
     _contestMetric = metric || 'spins';
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     var body = document.getElementById('contestModalBody');
     if (!body) return;
     while (body.firstChild) body.removeChild(body.firstChild);
@@ -3519,7 +3519,7 @@ function loadContestLeaderboard(metric) {
 }
 
 function loadContestPrizes() {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) {
         if (typeof showToast === 'function') showToast('Login required', 'error');
         return;
@@ -3590,7 +3590,7 @@ function loadContestPrizes() {
 }
 
 function claimContestPrize(prizeId) {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     fetch('/api/contests/prizes/' + prizeId + '/claim', {
         method: 'POST',
@@ -3618,7 +3618,7 @@ function claimContestPrize(prizeId) {
 var _eventTimers = [];
 
 function loadActiveEvents() {
-    var token = localStorage.getItem('token');
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     var headers = {};
     if (token) headers['Authorization'] = 'Bearer ' + token;
 

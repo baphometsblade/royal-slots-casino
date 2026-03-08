@@ -58,6 +58,7 @@ module.exports = {
     SMTP_USER:   process.env.SMTP_USER   || null,
     SMTP_PASS:   process.env.SMTP_PASS   || null,
     SMTP_FROM:   process.env.SMTP_FROM   || '"Matrix Spins" <noreply@msaart.online>',
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL || null,
 
     // Jackpot pooling
     JACKPOT_CONTRIBUTION_RATE: 0.005,   // 0.5% of every bet feeds jackpot pool

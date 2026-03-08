@@ -51,7 +51,7 @@
   // ── helpers ────────────────────────────────────────────────────────────────
 
   function getToken() {
-    try { return localStorage.getItem('casino_token') || localStorage.getItem('token') || null; }
+    try { return localStorage.getItem('casino_token') || localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken') || localStorage.getItem('token') || null; }
     catch (e) { return null; }
   }
 
