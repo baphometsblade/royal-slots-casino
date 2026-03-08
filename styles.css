@@ -7049,13 +7049,14 @@
             animation: autoSpinPulse 1s ease-in-out infinite;
         }
 
-        /* Win display overlay in reel area */
-        .slot-reel-area #messageDisplay {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
+        /* Win/Lose message — displayed below the reel area (not overlaid on reels) */
+        #messageDisplay {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 8px;
+            width: 100%;
         }
 
         .slot-reel-area #winAnimation {

@@ -1685,15 +1685,9 @@
             currentReels = flattenGrid(initGrid);
             renderGrid(initGrid, currentGame);
 
-            // Show bonus feature info
+            // Bonus info banner hidden — description available in paytable (ℹ button)
             const bonusInfoEl = document.getElementById('slotBonusInfo');
-            if (bonusInfoEl && currentGame.bonusDesc) {
-                bonusInfoEl.textContent = currentGame.bonusDesc;
-                bonusInfoEl.style.display = 'block';
-                bonusInfoEl.style.color = currentGame.accentColor || '#fbbf24';
-            } else if (bonusInfoEl) {
-                bonusInfoEl.style.display = 'none';
-            }
+            if (bonusInfoEl) bonusInfoEl.style.display = 'none';
 
             // Clean up old free spins UI
             hideFreeSpinsDisplay();
