@@ -328,6 +328,7 @@ const USER_MIGRATIONS = [
     ['subscription_tier', 'VARCHAR(20)'],
     ['subscription_expires', 'TIMESTAMPTZ'],
     ['subscription_daily_claimed', 'DATE'],
+    ['xp', 'INTEGER DEFAULT 0'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → PG definition). */

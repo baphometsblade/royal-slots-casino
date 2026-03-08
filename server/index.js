@@ -170,6 +170,7 @@ app.use('/api/moneywheel',     require('./routes/moneywheel.routes'));
 app.use('/api/kenoturbo',      require('./routes/kenoturbo.routes'));
 app.use('/api/horseracing',    require('./routes/horseracing.routes'));
 app.use('/api/buy-feature',   require('./routes/buyfeature.routes'));
+app.use('/api/xpshop',        require('./routes/xpshop.routes'));
 
 // ─── Big-win feed — recent large wins for social proof ───
 app.get('/api/big-wins', async (req, res) => {

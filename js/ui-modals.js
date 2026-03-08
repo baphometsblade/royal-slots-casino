@@ -2062,9 +2062,10 @@ function openXpShop() {
                 '<div class="xp-shop-cost">' + item.cost.toLocaleString() + ' XP</div>' +
                 '<button class="xp-shop-buy-btn"' + (canAfford ? '' : ' disabled') + '>BUY</button>';
             card.querySelector('.xp-shop-buy-btn').addEventListener('click', function() {
+                // _buyXpShopItem is async — it calls openXpShop() internally after
+                // the server responds. Do NOT call openXpShop() here as it would
+                // re-render the grid immediately and undo the button-disabled guard.
                 _buyXpShopItem(item);
-                // Refresh modal after purchase
-                openXpShop();
             });
             grid.appendChild(card);
         });
@@ -2074,47 +2075,112 @@ function openXpShop() {
 }
 
 function _buyXpShopItem(item) {
+    // Client-side pre-check (UX only — server re-validates authoritatively)
     if (typeof playerXP === 'undefined' || playerXP < item.cost) {
         if (typeof showToast === 'function') showToast('Not enough XP!', 'error');
         return;
     }
-    playerXP -= item.cost;
-    if (typeof saveXP === 'function') saveXP();
-    if (typeof updateXPDisplay === 'function') updateXPDisplay();
-    switch (item.id) {
-        case 'freespins5':
-            if (typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
-                triggerFreeSpins(currentGame, 5);
-                if (typeof showToast === 'function') showToast('5 Free Spins activated!', 'win');
-            } else if (typeof showToast === 'function') {
-                showToast('Open a slot first, then use Free Spins!', 'info');
+
+    // Retrieve auth token for server call
+    var token = '';
+    try { token = localStorage.getItem('casinoToken') || ''; } catch (e) {}
+
+    // Disable all buy buttons while the request is in flight
+    var btns = document.querySelectorAll('.xp-shop-buy-btn');
+    btns.forEach(function (b) { b.disabled = true; });
+
+    fetch('/api/xpshop/purchase', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ itemId: item.id }),
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (res) {
+        btns.forEach(function (b) { b.disabled = false; });
+
+        if (res.error) {
+            if (typeof showToast === 'function') showToast(res.error, 'error', 3000);
+            return;
+        }
+
+        // Server confirmed purchase — sync local XP to authoritative server value
+        if (typeof playerXP !== 'undefined') {
+            playerXP = res.newXp;
+            if (typeof saveXP === 'function') saveXP();
+            if (typeof updateXPDisplay === 'function') updateXPDisplay();
+        }
+
+        // Apply the granted reward
+        if (res.granted) {
+            if (res.granted.type === 'balance') {
+                if (typeof balance !== 'undefined') {
+                    balance = res.newBalance;
+                    if (typeof saveBalance === 'function') saveBalance();
+                    if (typeof updateBalance === 'function') updateBalance();
+                }
+                if (typeof showToast === 'function') {
+                    showToast('+$' + res.granted.amount.toLocaleString() + ' added to your balance!', 'win', 4000);
+                }
+            } else if (res.granted.type === 'freespins') {
+                if (typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                    triggerFreeSpins(currentGame, res.granted.amount);
+                    if (typeof showToast === 'function') showToast(res.granted.amount + ' Free Spins activated!', 'win', 4000);
+                } else if (typeof showToast === 'function') {
+                    showToast('Open a slot first to use your Free Spins!', 'info', 4000);
+                }
+            } else if (res.granted.type === 'xpboost') {
+                try {
+                    var existing = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                    var remaining = (existing && existing.remaining > 0) ? existing.remaining + res.granted.amount : res.granted.amount;
+                    localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: remaining }));
+                    if (typeof showToast === 'function') showToast('2× XP Boost active for ' + remaining + ' spins!', 'win', 4000);
+                } catch (e) {}
             }
-            break;
-        case 'balance500':
-            if (typeof balance !== 'undefined') {
-                balance += 500;
-                if (typeof saveBalance === 'function') saveBalance();
-                if (typeof updateBalance === 'function') updateBalance();
-                if (typeof showToast === 'function') showToast('+$500 added to your balance!', 'win');
+        }
+
+        // Refresh the shop UI to reflect updated XP balance
+        if (typeof openXpShop === 'function') openXpShop();
+    })
+    .catch(function (err) {
+        btns.forEach(function (b) { b.disabled = false; });
+
+        // Server is unreachable — only allow non-balance items client-side.
+        // Balance grants MUST go through the server to prevent exploitation.
+        if (item.type === 'balance' || item.id === 'balance500' || item.id === 'balance2000') {
+            if (typeof showToast === 'function') {
+                showToast('Server unavailable — balance rewards require a server connection.', 'error', 5000);
             }
-            break;
-        case 'xpboost50':
-            try {
-                var existing = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
-                var remaining = (existing && existing.remaining > 0) ? existing.remaining + 50 : 50;
-                localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: remaining }));
-                if (typeof showToast === 'function') showToast('2× XP Boost active for ' + remaining + ' spins!', 'win');
-            } catch(e) {}
-            break;
-        case 'balance2000':
-            if (typeof balance !== 'undefined') {
-                balance += 2000;
-                if (typeof saveBalance === 'function') saveBalance();
-                if (typeof updateBalance === 'function') updateBalance();
-                if (typeof showToast === 'function') showToast('+$2,000 added to your balance!', 'bigwin');
+            return;
+        }
+
+        // Fallback for freespins / xpboost when server is offline
+        if (typeof playerXP !== 'undefined' && playerXP >= item.cost) {
+            playerXP -= item.cost;
+            if (typeof saveXP === 'function') saveXP();
+            if (typeof updateXPDisplay === 'function') updateXPDisplay();
+
+            if (item.id === 'freespins5') {
+                if (typeof currentGame !== 'undefined' && currentGame && typeof triggerFreeSpins === 'function') {
+                    triggerFreeSpins(currentGame, 5);
+                    if (typeof showToast === 'function') showToast('5 Free Spins activated! (offline)', 'win');
+                } else if (typeof showToast === 'function') {
+                    showToast('Open a slot first to use your Free Spins!', 'info');
+                }
+            } else if (item.id === 'xpboost50') {
+                try {
+                    var existingBoost = JSON.parse(localStorage.getItem('matrixXpBoost') || 'null');
+                    var boostRem = (existingBoost && existingBoost.remaining > 0) ? existingBoost.remaining + 50 : 50;
+                    localStorage.setItem('matrixXpBoost', JSON.stringify({ remaining: boostRem }));
+                    if (typeof showToast === 'function') showToast('2× XP Boost active for ' + boostRem + ' spins! (offline)', 'win');
+                } catch (e) {}
             }
-            break;
-    }
+
+            if (typeof openXpShop === 'function') openXpShop();
+        }
+    });
 }
 
 // ── Mystery Box ──────────────────────────────────────────────────────────────
