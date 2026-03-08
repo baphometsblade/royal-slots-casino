@@ -27262,3 +27262,1121 @@ body.happy-hour-active .header-container {
     max-width: 260px;
   }
 }
+
+
+/* ============================================================
+   SPRINT 41 — Daily Cashback, Slot Race Timer, Deposit Streak
+   Prefix: _s41_
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   S41 KEYFRAMES
+   ---------------------------------------------------------- */
+
+@keyframes _s41_slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(120%) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-6%) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes _s41_slideOutRight {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(120%) scale(0.92);
+  }
+}
+
+@keyframes _s41_slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-120%) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(6%) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes _s41_slideOutLeft {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-120%) scale(0.92);
+  }
+}
+
+@keyframes _s41_progressRingSpin {
+  0% { transform: rotate(-90deg); }
+  100% { transform: rotate(270deg); }
+}
+
+@keyframes _s41_collectBtnShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes _s41_collectPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), 0 0 40px rgba(251, 191, 36, 0.3); }
+}
+
+@keyframes _s41_raceIconMove {
+  0% { left: 0%; }
+  100% { left: calc(100% - 28px); }
+}
+
+@keyframes _s41_racePulseGo {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    text-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.18);
+    text-shadow: 0 0 20px rgba(74, 222, 128, 1), 0 0 40px rgba(74, 222, 128, 0.5);
+  }
+}
+
+@keyframes _s41_raceBarNeonPulse {
+  0%, 100% { box-shadow: 0 2px 12px rgba(74, 222, 128, 0.15); }
+  50% { box-shadow: 0 2px 20px rgba(74, 222, 128, 0.35), 0 0 4px rgba(74, 222, 128, 0.2); }
+}
+
+@keyframes _s41_neonGlow {
+  0%, 100% { text-shadow: 0 0 6px rgba(74, 222, 128, 0.5); }
+  50% { text-shadow: 0 0 14px rgba(74, 222, 128, 0.9), 0 0 28px rgba(74, 222, 128, 0.4); }
+}
+
+@keyframes _s41_streakFlame {
+  0%, 100% {
+    transform: scaleY(1) scaleX(1);
+    opacity: 0.85;
+  }
+  25% {
+    transform: scaleY(1.15) scaleX(0.92);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleY(0.9) scaleX(1.08);
+    opacity: 0.75;
+  }
+  75% {
+    transform: scaleY(1.1) scaleX(0.95);
+    opacity: 0.95;
+  }
+}
+
+@keyframes _s41_streakFlameFlicker {
+  0%   { opacity: 0.6; transform: translateY(0) scale(1); }
+  20%  { opacity: 0.9; transform: translateY(-2px) scale(1.05); }
+  40%  { opacity: 0.5; transform: translateY(-1px) scale(0.97); }
+  60%  { opacity: 1;   transform: translateY(-3px) scale(1.08); }
+  80%  { opacity: 0.7; transform: translateY(-1px) scale(1.02); }
+  100% { opacity: 0.6; transform: translateY(0) scale(1); }
+}
+
+@keyframes _s41_dayCheckPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes _s41_multiplierBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 22px rgba(251, 191, 36, 0.8), 0 0 44px rgba(251, 191, 36, 0.3);
+  }
+}
+
+@keyframes _s41_currentDayGlow {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.4), inset 0 0 4px rgba(251, 191, 36, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.8), 0 0 32px rgba(251, 191, 36, 0.3), inset 0 0 8px rgba(251, 191, 36, 0.25);
+  }
+}
+
+@keyframes _s41_fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+
+/* ----------------------------------------------------------
+   FEATURE 1: DAILY CASHBACK PANEL
+   ---------------------------------------------------------- */
+
+#dailyCashbackPanel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 280px;
+  z-index: 9100;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.97), rgba(15, 15, 26, 0.98));
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 1px rgba(251, 191, 36, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #fff;
+  overflow: hidden;
+  animation: _s41_slideInRight 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  pointer-events: auto;
+  font-family: inherit;
+}
+
+#dailyCashbackPanel.s41-hiding {
+  animation: _s41_slideOutRight 0.35s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+#dailyCashbackPanel .s41-cashback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#dailyCashbackPanel .s41-cashback-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+#dailyCashbackPanel .s41-cashback-title-icon {
+  font-size: 16px;
+}
+
+#dailyCashbackPanel .s41-cashback-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+#dailyCashbackPanel .s41-cashback-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+#dailyCashbackPanel .s41-cashback-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#dailyCashbackPanel .s41-cashback-ring-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#dailyCashbackPanel .s41-cashback-ring-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+#dailyCashbackPanel .s41-cashback-ring-svg {
+  width: 64px;
+  height: 64px;
+  transform: rotate(-90deg);
+}
+
+#dailyCashbackPanel .s41-cashback-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 4;
+}
+
+#dailyCashbackPanel .s41-cashback-ring-progress {
+  fill: none;
+  stroke: #fbbf24;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 175.93;
+  stroke-dashoffset: 44;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5));
+}
+
+#dailyCashbackPanel .s41-cashback-ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbbf24;
+  text-align: center;
+  line-height: 1.15;
+}
+
+#dailyCashbackPanel .s41-cashback-ring-label small {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
+#dailyCashbackPanel .s41-cashback-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+#dailyCashbackPanel .s41-cashback-percentage {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fbbf24;
+  line-height: 1;
+}
+
+#dailyCashbackPanel .s41-cashback-percentage span {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin-left: 3px;
+}
+
+#dailyCashbackPanel .s41-cashback-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+#dailyCashbackPanel .s41-cashback-stat-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#dailyCashbackPanel .s41-cashback-stat-value {
+  color: #fff;
+  font-weight: 600;
+}
+
+#dailyCashbackPanel .s41-cashback-stat-value.s41-loss {
+  color: #f87171;
+}
+
+#dailyCashbackPanel .s41-cashback-stat-value.s41-gain {
+  color: #4ade80;
+}
+
+#dailyCashbackPanel .s41-cashback-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  margin: 0;
+}
+
+#dailyCashbackPanel .s41-cashback-amount-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#dailyCashbackPanel .s41-cashback-earned-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+}
+
+#dailyCashbackPanel .s41-cashback-earned-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+}
+
+#dailyCashbackPanel .s41-cashback-collect-btn {
+  display: block;
+  width: 100%;
+  padding: 11px 0;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  color: #0f0f1a;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  background-size: 200% auto;
+  box-shadow:
+    0 4px 14px rgba(251, 191, 36, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 0.25s ease;
+  animation: _s41_collectPulse 2.5s ease-in-out infinite;
+}
+
+#dailyCashbackPanel .s41-cashback-collect-btn:hover {
+  background-size: 200% auto;
+  animation: _s41_collectBtnShimmer 1.5s linear infinite;
+  background-image: linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24, #f59e0b);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 20px rgba(251, 191, 36, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+#dailyCashbackPanel .s41-cashback-collect-btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+#dailyCashbackPanel .s41-cashback-collect-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  animation: none;
+  transform: none;
+}
+
+#dailyCashbackPanel .s41-cashback-footer {
+  padding: 8px 16px 10px 16px;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+
+/* ----------------------------------------------------------
+   FEATURE 2: SLOT RACE TIMER BAR
+   ---------------------------------------------------------- */
+
+#slotRaceBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  z-index: 9200;
+  background: linear-gradient(180deg, rgba(15, 15, 26, 0.97), rgba(26, 26, 46, 0.95));
+  border-bottom: 1px solid rgba(74, 222, 128, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  font-family: inherit;
+  color: #fff;
+  animation: _s41_raceBarNeonPulse 3s ease-in-out infinite;
+  box-shadow: 0 2px 12px rgba(74, 222, 128, 0.15);
+}
+
+#slotRaceBar.s41-race-hidden {
+  display: none;
+}
+
+#slotRaceBar .s41-race-go-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: #0f0f1a;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: _s41_racePulseGo 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+#slotRaceBar .s41-race-go-badge.s41-race-inactive {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+  color: rgba(255, 255, 255, 0.4);
+  animation: none;
+}
+
+#slotRaceBar .s41-race-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #4ade80;
+  flex-shrink: 0;
+  animation: _s41_neonGlow 2.5s ease-in-out infinite;
+}
+
+#slotRaceBar .s41-race-track {
+  flex: 1;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(74, 222, 128, 0.12);
+  min-width: 80px;
+}
+
+#slotRaceBar .s41-race-track-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.35));
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#slotRaceBar .s41-race-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.6));
+  z-index: 2;
+  line-height: 1;
+}
+
+#slotRaceBar .s41-race-checkpoints {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+#slotRaceBar .s41-race-checkpoint {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#slotRaceBar .s41-race-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+#slotRaceBar .s41-race-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+#slotRaceBar .s41-race-stat-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+}
+
+#slotRaceBar .s41-race-stat-value.s41-race-position {
+  color: #4ade80;
+  font-size: 15px;
+}
+
+#slotRaceBar .s41-race-stat-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+}
+
+#slotRaceBar .s41-race-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+#slotRaceBar .s41-race-timer-icon {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#slotRaceBar .s41-race-timer-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  min-width: 50px;
+  text-align: center;
+}
+
+#slotRaceBar .s41-race-timer-value.s41-race-ending {
+  color: #f87171;
+  animation: _s41_racePulseGo 0.8s ease-in-out infinite;
+}
+
+#slotRaceBar .s41-race-laps {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#slotRaceBar .s41-race-laps-count {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+
+/* ----------------------------------------------------------
+   FEATURE 3: DEPOSIT STREAK REWARDS PANEL
+   ---------------------------------------------------------- */
+
+#depositStreakPanel {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 290px;
+  z-index: 9100;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.97), rgba(15, 15, 26, 0.98));
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 1px rgba(251, 191, 36, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #fff;
+  overflow: hidden;
+  animation: _s41_slideInLeft 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  pointer-events: auto;
+  font-family: inherit;
+}
+
+#depositStreakPanel.s41-hiding {
+  animation: _s41_slideOutLeft 0.35s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+#depositStreakPanel .s41-streak-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#depositStreakPanel .s41-streak-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+#depositStreakPanel .s41-streak-title-icon {
+  font-size: 16px;
+}
+
+#depositStreakPanel .s41-streak-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+#depositStreakPanel .s41-streak-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+#depositStreakPanel .s41-streak-body {
+  padding: 14px 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#depositStreakPanel .s41-streak-multiplier-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#depositStreakPanel .s41-streak-multiplier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.15));
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  font-size: 16px;
+  font-weight: 800;
+  color: #fbbf24;
+  animation: _s41_multiplierBadgePulse 2.5s ease-in-out infinite;
+}
+
+#depositStreakPanel .s41-streak-multiplier-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#depositStreakPanel .s41-streak-calendar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+#depositStreakPanel .s41-streak-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+
+#depositStreakPanel .s41-streak-day-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+#depositStreakPanel .s41-streak-day.s41-completed .s41-streak-day-circle {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.15));
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+#depositStreakPanel .s41-streak-day.s41-completed .s41-streak-day-check {
+  animation: _s41_dayCheckPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+#depositStreakPanel .s41-streak-day.s41-current .s41-streak-day-circle {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+  border-color: #fbbf24;
+  color: #fbbf24;
+  animation: _s41_currentDayGlow 2s ease-in-out infinite;
+}
+
+#depositStreakPanel .s41-streak-day.s41-milestone .s41-streak-day-circle {
+  border-width: 2.5px;
+}
+
+#depositStreakPanel .s41-streak-day-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.3px;
+}
+
+#depositStreakPanel .s41-streak-day.s41-completed .s41-streak-day-label {
+  color: rgba(74, 222, 128, 0.6);
+}
+
+#depositStreakPanel .s41-streak-day.s41-current .s41-streak-day-label {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+#depositStreakPanel .s41-streak-connector {
+  height: 2px;
+  flex: 0.4;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+  align-self: center;
+  margin-top: -14px;
+}
+
+#depositStreakPanel .s41-streak-connector.s41-filled {
+  background: linear-gradient(90deg, #4ade80, rgba(74, 222, 128, 0.4));
+}
+
+#depositStreakPanel .s41-streak-flame-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0 4px 0;
+}
+
+#depositStreakPanel .s41-streak-flame {
+  font-size: 28px;
+  animation: _s41_streakFlame 0.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.5));
+}
+
+#depositStreakPanel .s41-streak-flame-particles {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 40px;
+  pointer-events: none;
+}
+
+#depositStreakPanel .s41-streak-flame-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fbbf24;
+  animation: _s41_streakFlameFlicker 1.2s ease-in-out infinite;
+  opacity: 0;
+}
+
+#depositStreakPanel .s41-streak-flame-particle:nth-child(1) {
+  left: 20%;
+  top: 30%;
+  animation-delay: 0s;
+  background: #f97316;
+}
+
+#depositStreakPanel .s41-streak-flame-particle:nth-child(2) {
+  left: 55%;
+  top: 15%;
+  animation-delay: 0.3s;
+  background: #fbbf24;
+}
+
+#depositStreakPanel .s41-streak-flame-particle:nth-child(3) {
+  left: 75%;
+  top: 40%;
+  animation-delay: 0.6s;
+  background: #ef4444;
+}
+
+#depositStreakPanel .s41-streak-flame-particle:nth-child(4) {
+  left: 35%;
+  top: 10%;
+  animation-delay: 0.15s;
+  background: #fbbf24;
+}
+
+#depositStreakPanel .s41-streak-flame-particle:nth-child(5) {
+  left: 65%;
+  top: 25%;
+  animation-delay: 0.45s;
+  background: #f97316;
+}
+
+#depositStreakPanel.s41-no-streak .s41-streak-flame-wrap {
+  display: none;
+}
+
+#depositStreakPanel .s41-streak-milestones {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+#depositStreakPanel .s41-streak-milestone-card {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+#depositStreakPanel .s41-streak-milestone-card.s41-active {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.06));
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+#depositStreakPanel .s41-streak-milestone-card.s41-achieved {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.06));
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+#depositStreakPanel .s41-streak-milestone-days {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
+}
+
+#depositStreakPanel .s41-streak-milestone-card.s41-active .s41-streak-milestone-days,
+#depositStreakPanel .s41-streak-milestone-card.s41-achieved .s41-streak-milestone-days {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+#depositStreakPanel .s41-streak-milestone-mult {
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+#depositStreakPanel .s41-streak-milestone-card.s41-active .s41-streak-milestone-mult {
+  color: #fbbf24;
+}
+
+#depositStreakPanel .s41-streak-milestone-card.s41-achieved .s41-streak-milestone-mult {
+  color: #4ade80;
+}
+
+#depositStreakPanel .s41-streak-footer {
+  padding: 8px 16px 10px 16px;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+
+/* ----------------------------------------------------------
+   S41 RESPONSIVE — MOBILE ADJUSTMENTS
+   ---------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  #dailyCashbackPanel {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: 340px;
+  }
+
+  #depositStreakPanel {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: 340px;
+  }
+
+  #slotRaceBar {
+    height: 32px;
+    padding: 0 10px;
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  #slotRaceBar .s41-race-title {
+    display: none;
+  }
+
+  #slotRaceBar .s41-race-laps {
+    display: none;
+  }
+
+  #slotRaceBar .s41-race-stats {
+    gap: 8px;
+  }
+
+  #slotRaceBar .s41-race-stat-value {
+    font-size: 11px;
+  }
+
+  #slotRaceBar .s41-race-timer-value {
+    font-size: 12px;
+    min-width: 42px;
+  }
+
+  #depositStreakPanel .s41-streak-day-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  #depositStreakPanel .s41-streak-milestone-card {
+    padding: 6px 4px;
+  }
+
+  #depositStreakPanel .s41-streak-milestone-mult {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  #dailyCashbackPanel {
+    bottom: 8px;
+    right: 8px;
+    left: 8px;
+    border-radius: 12px;
+  }
+
+  #dailyCashbackPanel .s41-cashback-ring-wrap {
+    width: 52px;
+    height: 52px;
+  }
+
+  #dailyCashbackPanel .s41-cashback-ring-svg {
+    width: 52px;
+    height: 52px;
+  }
+
+  #dailyCashbackPanel .s41-cashback-percentage {
+    font-size: 18px;
+  }
+
+  #depositStreakPanel {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    border-radius: 12px;
+  }
+
+  #depositStreakPanel .s41-streak-calendar {
+    gap: 2px;
+  }
+
+  #depositStreakPanel .s41-streak-day-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 9px;
+  }
+
+  #depositStreakPanel .s41-streak-day-label {
+    font-size: 8px;
+  }
+
+  #slotRaceBar {
+    height: 30px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  #slotRaceBar .s41-race-go-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+
+  #slotRaceBar .s41-race-track {
+    height: 14px;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   S41 UTILITY: stacking when both panels are visible
+   ---------------------------------------------------------- */
+
+#dailyCashbackPanel + #depositStreakPanel,
+#depositStreakPanel.s41-stacked {
+  bottom: 24px;
+}
+
+/* If both bottom panels are visible, nudge deposit streak above cashback */
+body.s41-both-panels #depositStreakPanel {
+  left: 24px;
+}
+
+body.s41-both-panels #dailyCashbackPanel {
+  right: 24px;
+}
+
+/* Ensure panels don't overlap on narrow screens */
+@media (max-width: 640px) {
+  body.s41-both-panels #depositStreakPanel {
+    bottom: auto;
+    top: auto;
+    transform-origin: bottom left;
+  }
+
+  body.s41-both-panels #dailyCashbackPanel {
+    transform-origin: bottom right;
+  }
+}
+
+/* Dark scrollbar for panels if they ever overflow */
+#dailyCashbackPanel::-webkit-scrollbar,
+#depositStreakPanel::-webkit-scrollbar {
+  width: 4px;
+}
+
+#dailyCashbackPanel::-webkit-scrollbar-track,
+#depositStreakPanel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#dailyCashbackPanel::-webkit-scrollbar-thumb,
+#depositStreakPanel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* END SPRINT 41 */
