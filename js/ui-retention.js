@@ -315,3 +315,340 @@
         setTimeout(init, 0);
     }
 }());
+
+// ── Welcome-Back Overlay ───────────────────────────────────────────────────
+// Shown once per 24h to authenticated users who haven't logged in for 3+ days.
+// All styles are embedded here (styles.css is off-limits during parallel edits).
+(function () {
+    'use strict';
+
+    var RETURN_OFFER_KEY   = 'returnOfferShown';  // localStorage key
+    var RETURN_OFFER_TTL   = 24 * 60 * 60 * 1000; // 24 hours in ms
+    var AUTO_DISMISS_MS    = 12000;                // 12s auto-dismiss
+    var POLL_INTERVAL_MS   = 250;                  // polling interval for currentUser
+    var POLL_TIMEOUT_MS    = 5000;                 // stop polling after 5s
+
+    var _stylesInjected = false;
+    var _pollStart      = Date.now();
+    var _pollTimer      = null;
+    var _overlayEl      = null;
+    var _dismissTimer   = null;
+
+    // ── Style injection ────────────────────────────────────────────────────
+    function injectWelcomeBackStyles() {
+        if (_stylesInjected) return;
+        _stylesInjected = true;
+
+        var s = document.createElement('style');
+        s.id = 'retWelcomeBackStyles';
+        s.textContent = [
+            /* Overlay backdrop */
+            '#retWelcomeOverlay{' +
+                'position:fixed;inset:0;z-index:40000;' +
+                'background:rgba(0,0,0,.88);' +
+                'display:flex;align-items:center;justify-content:center;' +
+                'padding:16px;box-sizing:border-box;' +
+                'animation:retFadeIn .35s ease forwards' +
+            '}',
+            '@keyframes retFadeIn{from{opacity:0}to{opacity:1}}',
+            /* Modal card */
+            '#retWelcomeModal{' +
+                'background:linear-gradient(160deg,#0d0d1a 0%,#1a0e2e 50%,#0d1a1a 100%);' +
+                'border:2px solid rgba(251,191,36,.55);' +
+                'border-radius:24px;' +
+                'padding:36px 32px 28px;' +
+                'max-width:440px;width:100%;text-align:center;' +
+                'box-shadow:0 0 80px rgba(251,191,36,.22),0 0 30px rgba(0,0,0,.6);' +
+                'position:relative;' +
+                'animation:retSlideUp .4s cubic-bezier(.34,1.56,.64,1) forwards' +
+            '}',
+            '@keyframes retSlideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}',
+            /* Auto-dismiss progress bar */
+            '#retWelcomeProgress{' +
+                'position:absolute;bottom:0;left:0;height:3px;' +
+                'background:linear-gradient(90deg,#f59e0b,#fbbf24);' +
+                'border-radius:0 0 24px 24px;' +
+                'width:100%;' +
+                'transform-origin:left center;' +
+                'animation:retProgressShrink ' + (AUTO_DISMISS_MS / 1000) + 's linear forwards' +
+            '}',
+            '@keyframes retProgressShrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}',
+            /* Close button */
+            '#retWelcomeClose{' +
+                'position:absolute;top:14px;right:16px;' +
+                'background:none;border:none;color:rgba(255,255,255,.35);' +
+                'font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;' +
+                'transition:color .15s' +
+            '}',
+            '#retWelcomeClose:hover{color:rgba(255,255,255,.7)}',
+            /* Tier badge */
+            '.ret-tier-badge{' +
+                'display:inline-block;padding:4px 14px;border-radius:20px;' +
+                'font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;' +
+                'margin-bottom:16px' +
+            '}',
+            '.ret-tier-platinum{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#e0e7ff}',
+            '.ret-tier-gold{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff8e1}',
+            '.ret-tier-silver{background:linear-gradient(135deg,#64748b,#94a3b8);color:#f0f4ff}',
+            '.ret-tier-bronze{background:linear-gradient(135deg,#92400e,#b45309);color:#fef3c7}',
+            /* Main emoji */
+            '#retWelcomeModal .rwb-emoji{font-size:3.5rem;margin-bottom:10px;display:block}',
+            /* Heading */
+            '#retWelcomeModal h2{' +
+                'color:#fbbf24;font-size:22px;font-weight:900;margin:0 0 6px;letter-spacing:.5px' +
+            '}',
+            /* Sub-message */
+            '#retWelcomeModal .rwb-msg{' +
+                'color:rgba(255,255,255,.55);font-size:13px;margin-bottom:20px;line-height:1.5' +
+            '}',
+            /* Offer card */
+            '.rwb-offer{' +
+                'background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);' +
+                'border-radius:14px;padding:16px 20px;margin-bottom:22px' +
+            '}',
+            '.rwb-offer-row{' +
+                'display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap' +
+            '}',
+            '.rwb-offer-item{text-align:center}',
+            '.rwb-offer-val{' +
+                'display:block;font-size:26px;font-weight:900;' +
+                'background:linear-gradient(135deg,#fbbf24,#f59e0b);' +
+                '-webkit-background-clip:text;-webkit-text-fill-color:transparent;' +
+                'background-clip:text' +
+            '}',
+            '.rwb-offer-lbl{display:block;font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}',
+            '.rwb-offer-sep{color:rgba(255,255,255,.2);font-size:22px}',
+            /* Action buttons */
+            '.rwb-btn-primary{' +
+                'width:100%;padding:15px;margin-bottom:10px;' +
+                'background:linear-gradient(135deg,#f59e0b,#d97706);' +
+                'border:none;border-radius:12px;' +
+                'color:#0d0d1a;font-size:16px;font-weight:900;letter-spacing:.5px;' +
+                'cursor:pointer;transition:opacity .15s,transform .1s;' +
+                'box-shadow:0 4px 20px rgba(251,191,36,.35)' +
+            '}',
+            '.rwb-btn-primary:hover{opacity:.9;transform:translateY(-1px)}',
+            '.rwb-btn-primary:active{transform:translateY(0)}',
+            '.rwb-btn-secondary{' +
+                'background:none;border:none;' +
+                'color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;' +
+                'text-decoration:underline;transition:color .15s' +
+            '}',
+            '.rwb-btn-secondary:hover{color:rgba(255,255,255,.55)}',
+        ].join('\n');
+        document.head.appendChild(s);
+    }
+
+    // ── Build and show the overlay ─────────────────────────────────────────
+    function showWelcomeBack(data) {
+        if (_overlayEl) return; // already showing
+
+        injectWelcomeBackStyles();
+
+        var username = (typeof currentUser !== 'undefined' && currentUser && currentUser.username)
+            ? currentUser.username
+            : 'Player';
+
+        var tierClass = 'ret-tier-' + (data.offerTier || 'bronze');
+
+        var ov = document.createElement('div');
+        ov.id = 'retWelcomeOverlay';
+        _overlayEl = ov;
+
+        var modal = document.createElement('div');
+        modal.id = 'retWelcomeModal';
+
+        // Progress bar
+        var prog = document.createElement('div');
+        prog.id = 'retWelcomeProgress';
+        modal.appendChild(prog);
+
+        // Close button (using textContent to avoid XSS)
+        var closeBtn = document.createElement('button');
+        closeBtn.id = 'retWelcomeClose';
+        closeBtn.textContent = '\u00D7'; // Unicode multiplication sign (×)
+        closeBtn.setAttribute('aria-label', 'Close');
+        closeBtn.addEventListener('click', dismissWelcomeBack);
+        modal.appendChild(closeBtn);
+
+        // Tier badge
+        var badge = document.createElement('div');
+        badge.className = 'ret-tier-badge ' + tierClass;
+        badge.textContent = (data.offerTier || 'bronze').toUpperCase() + ' OFFER';
+        modal.appendChild(badge);
+
+        // Emoji
+        var emoji = document.createElement('span');
+        emoji.className = 'rwb-emoji';
+        emoji.textContent = '\uD83C\uDF89'; // 🎉
+        modal.appendChild(emoji);
+
+        // Heading
+        var h2 = document.createElement('h2');
+        h2.textContent = 'Welcome Back, ' + username + '!';
+        modal.appendChild(h2);
+
+        // Sub-message
+        var msgEl = document.createElement('div');
+        msgEl.className = 'rwb-msg';
+        msgEl.textContent = data.message || 'We have an exclusive offer waiting for you.';
+        modal.appendChild(msgEl);
+
+        // Offer card
+        var offerCard = document.createElement('div');
+        offerCard.className = 'rwb-offer';
+
+        var offerRow = document.createElement('div');
+        offerRow.className = 'rwb-offer-row';
+
+        if (data.bonusPercent > 0) {
+            var depositItem = document.createElement('div');
+            depositItem.className = 'rwb-offer-item';
+            var depositVal = document.createElement('span');
+            depositVal.className = 'rwb-offer-val';
+            depositVal.textContent = data.bonusPercent + '%';
+            var depositLbl = document.createElement('span');
+            depositLbl.className = 'rwb-offer-lbl';
+            depositLbl.textContent = 'Deposit Match';
+            depositItem.appendChild(depositVal);
+            depositItem.appendChild(depositLbl);
+            offerRow.appendChild(depositItem);
+        }
+
+        if (data.bonusPercent > 0 && data.freeSpins > 0) {
+            var sep = document.createElement('div');
+            sep.className = 'rwb-offer-sep';
+            sep.textContent = '+';
+            offerRow.appendChild(sep);
+        }
+
+        if (data.freeSpins > 0) {
+            var spinsItem = document.createElement('div');
+            spinsItem.className = 'rwb-offer-item';
+            var spinsVal = document.createElement('span');
+            spinsVal.className = 'rwb-offer-val';
+            spinsVal.textContent = String(data.freeSpins);
+            var spinsLbl = document.createElement('span');
+            spinsLbl.className = 'rwb-offer-lbl';
+            spinsLbl.textContent = 'Free Spins';
+            spinsItem.appendChild(spinsVal);
+            spinsItem.appendChild(spinsLbl);
+            offerRow.appendChild(spinsItem);
+        }
+
+        offerCard.appendChild(offerRow);
+        modal.appendChild(offerCard);
+
+        // Claim button
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'rwb-btn-primary';
+        claimBtn.textContent = '\uD83D\uDCB3 CLAIM NOW'; // 💳
+        claimBtn.addEventListener('click', function () {
+            dismissWelcomeBack();
+            if (typeof showWalletModal === 'function') showWalletModal();
+        });
+        modal.appendChild(claimBtn);
+
+        // Maybe later button
+        var laterBtn = document.createElement('button');
+        laterBtn.className = 'rwb-btn-secondary';
+        laterBtn.textContent = 'Maybe Later';
+        laterBtn.addEventListener('click', dismissWelcomeBack);
+        modal.appendChild(laterBtn);
+
+        // Dismiss on backdrop click
+        ov.addEventListener('click', function (e) {
+            if (e.target === ov) dismissWelcomeBack();
+        });
+
+        ov.appendChild(modal);
+        document.body.appendChild(ov);
+
+        // Auto-dismiss after AUTO_DISMISS_MS
+        _dismissTimer = setTimeout(dismissWelcomeBack, AUTO_DISMISS_MS);
+    }
+
+    function dismissWelcomeBack() {
+        if (_dismissTimer) { clearTimeout(_dismissTimer); _dismissTimer = null; }
+        if (!_overlayEl) return;
+        var el = _overlayEl;
+        _overlayEl = null;
+        el.style.animation = 'retFadeIn .25s ease reverse forwards';
+        setTimeout(function () {
+            if (el.parentNode) el.parentNode.removeChild(el);
+        }, 280);
+    }
+
+    // ── Fetch return-status from server and conditionally show overlay ─────
+    function checkReturnOffer() {
+        // Only for server-authenticated users (not guests)
+        if (typeof currentUser === 'undefined' || !currentUser ||
+            currentUser.isGuest || !currentUser.token) {
+            return;
+        }
+
+        // Skip if already shown within 24h
+        try {
+            var lastShown = parseInt(localStorage.getItem(RETURN_OFFER_KEY) || '0', 10);
+            if (Date.now() - lastShown < RETURN_OFFER_TTL) return;
+        } catch (e) { /* ignore storage errors */ }
+
+        var token = currentUser.token;
+        fetch('/api/user/return-status', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(function (resp) {
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            return resp.json();
+        })
+        .then(function (data) {
+            if (!data.isReturn) return;
+
+            // Mark as shown in localStorage before displaying (prevent race on double-call)
+            try { localStorage.setItem(RETURN_OFFER_KEY, String(Date.now())); } catch (e) { /* ignore */ }
+
+            // Small delay so the page is settled before we show the overlay
+            setTimeout(function () { showWelcomeBack(data); }, 800);
+        })
+        .catch(function (err) {
+            // Non-fatal — silently ignore network / server errors
+            console.warn('[ReturnOffer] Failed to fetch return-status:', err.message);
+        });
+    }
+
+    // Expose globally so app.js / onPostAuthInit can call it directly
+    window.checkReturnOffer = checkReturnOffer;
+
+    // ── Auto-init: poll for currentUser up to POLL_TIMEOUT_MS ─────────────
+    // This fires when the user is already logged in by the time the script
+    // loads (e.g. token restored from localStorage before DOMContentLoaded).
+    function pollForUser() {
+        if (Date.now() - _pollStart > POLL_TIMEOUT_MS) {
+            clearInterval(_pollTimer);
+            return;
+        }
+        if (typeof currentUser !== 'undefined' && currentUser &&
+            !currentUser.isGuest && currentUser.token) {
+            clearInterval(_pollTimer);
+            checkReturnOffer();
+        }
+    }
+
+    // Also listen for the custom auth-success event fired by ui-auth / app.js
+    window.addEventListener('casinoAuthSuccess', function () {
+        checkReturnOffer();
+    });
+
+    // Start polling shortly after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            _pollTimer = setInterval(pollForUser, POLL_INTERVAL_MS);
+        });
+    } else {
+        _pollTimer = setInterval(pollForUser, POLL_INTERVAL_MS);
+    }
+}());

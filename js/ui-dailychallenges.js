@@ -457,4 +457,392 @@
     } else {
         setTimeout(init, 0);
     }
+
+    // ── In-slot Daily Challenge Widget ───────────────────────
+    // A compact floating pill that appears inside the slot modal while
+    // the player is actively playing. Shows live challenge progress
+    // and updates on every spin without opening the full panel.
+
+    var _slotWidgetEl        = null;
+    var _slotWidgetExpanded  = false;
+    var _slotWidgetDismissed = false;
+    var _slotWidgetStyles    = false;
+    var _slotObserver        = null;
+    var _slotSpinWatcher     = null;
+    var _lastSpinState       = false;  // previous value of window.spinning
+
+    // Inject widget-specific styles (does not touch styles.css)
+    function _injectWidgetStyles() {
+        if (_slotWidgetStyles) return;
+        _slotWidgetStyles = true;
+        var s = document.createElement('style');
+        s.id = 'dcSlotWidgetStyles';
+        s.textContent = [
+            '#dcSlotWidget{',
+            '  position:fixed;bottom:90px;right:16px;z-index:1000;',
+            '  max-width:260px;width:max-content;',
+            '  background:rgba(13,17,23,.92);',
+            '  border:1.5px solid rgba(251,191,36,.55);',
+            '  border-radius:20px;',
+            '  box-shadow:0 4px 20px rgba(0,0,0,.5),0 0 12px rgba(251,191,36,.15);',
+            '  font-family:inherit;font-size:12px;color:#e6edf3;',
+            '  cursor:pointer;',
+            '  transition:opacity .25s ease,transform .25s ease;',
+            '  pointer-events:auto;',
+            '  user-select:none;',
+            '}',
+            '#dcSlotWidget.dc-widget-hidden{opacity:0;pointer-events:none;transform:translateY(8px)}',
+            '#dcSlotWidget.dc-widget-visible{opacity:1;transform:translateY(0)}',
+            '/* Collapsed pill row */',
+            '#dcSlotWidget .dcw-pill{',
+            '  display:flex;align-items:center;gap:6px;',
+            '  padding:7px 12px;',
+            '  white-space:nowrap;',
+            '}',
+            '#dcSlotWidget .dcw-pill-icon{font-size:14px;flex-shrink:0}',
+            '#dcSlotWidget .dcw-pill-text{font-size:11px;font-weight:700;color:#fbbf24;flex:1}',
+            '#dcSlotWidget .dcw-pill-chevron{font-size:9px;color:rgba(255,255,255,.45);transition:transform .2s}',
+            '#dcSlotWidget.dcw-expanded .dcw-pill-chevron{transform:rotate(180deg)}',
+            '#dcSlotWidget .dcw-dismiss{',
+            '  font-size:10px;color:rgba(255,255,255,.35);padding:0 6px 0 0;',
+            '  background:none;border:none;cursor:pointer;line-height:1;flex-shrink:0;',
+            '}',
+            '#dcSlotWidget .dcw-dismiss:hover{color:rgba(255,255,255,.7)}',
+            '/* Expanded detail area */',
+            '#dcSlotWidget .dcw-detail{',
+            '  overflow:hidden;max-height:0;transition:max-height .25s ease,padding .25s ease;',
+            '  padding:0 12px;',
+            '}',
+            '#dcSlotWidget.dcw-expanded .dcw-detail{max-height:200px;padding:0 12px 10px}',
+            '#dcSlotWidget .dcw-sep{',
+            '  height:1px;background:rgba(251,191,36,.2);margin-bottom:8px;',
+            '}',
+            '#dcSlotWidget .dcw-task-row{display:flex;align-items:center;gap:6px;margin-bottom:7px}',
+            '#dcSlotWidget .dcw-task-row:last-child{margin-bottom:0}',
+            '#dcSlotWidget .dcw-task-icon{font-size:13px;flex-shrink:0;width:18px;text-align:center}',
+            '#dcSlotWidget .dcw-task-info{flex:1;min-width:0}',
+            '#dcSlotWidget .dcw-task-desc{',
+            '  font-size:10px;color:rgba(230,237,243,.75);',
+            '  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
+            '}',
+            '#dcSlotWidget .dcw-task-bar-wrap{',
+            '  height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-top:3px;',
+            '}',
+            '#dcSlotWidget .dcw-task-bar-fill{',
+            '  height:100%;border-radius:2px;transition:width .4s ease;',
+            '  background:linear-gradient(90deg,#3b82f6,#8b5cf6);',
+            '}',
+            '#dcSlotWidget .dcw-task-bar-fill.dcw-bar-close{background:linear-gradient(90deg,#f59e0b,#fbbf24)}',
+            '#dcSlotWidget .dcw-task-bar-fill.dcw-bar-done{background:linear-gradient(90deg,#22c55e,#16a34a)}',
+            '#dcSlotWidget .dcw-task-check{font-size:12px;flex-shrink:0}',
+            '#dcSlotWidget .dcw-task-frac{font-size:9px;color:rgba(255,255,255,.4);flex-shrink:0}'
+        ].join('\n');
+        document.head.appendChild(s);
+    }
+
+    // Read challenge data fresh from localStorage (safe — no dependency on private _challenges)
+    function _readWidgetData() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return null;
+            var data = JSON.parse(raw);
+            if (!data || !data.tasks) return null;
+            // Only use today's data
+            var d = new Date();
+            var today = d.getFullYear() + '-' +
+                        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                        String(d.getDate()).padStart(2, '0');
+            if (data.day !== today) return null;
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Build the summary line for the collapsed pill
+    function _buildSummaryLine(data) {
+        if (!data || !data.tasks) return '🎯 Daily Challenges';
+        var tasks = data.tasks;
+        var completed = 0;
+        var total = tasks.length;
+        var pendingReward = 0;
+        for (var i = 0; i < tasks.length; i++) {
+            var t = tasks[i];
+            if (t.claimed) { completed++; continue; }
+            if (t.progress >= t.target) {
+                completed++;
+                pendingReward += t.reward;
+            }
+        }
+        if (pendingReward > 0) {
+            return completed + '/' + total + ' done · $' + pendingReward.toFixed(2) + ' to claim!';
+        }
+        return completed + '/' + total + ' challenges done';
+    }
+
+    // Render (or re-render) the widget DOM
+    function _buildSlotWidget() {
+        _injectWidgetStyles();
+
+        var existing = document.getElementById('dcSlotWidget');
+        if (existing) {
+            // Already exists — just refresh content
+            _refreshWidgetContent();
+            return;
+        }
+
+        var widget = document.createElement('div');
+        widget.id = 'dcSlotWidget';
+        widget.className = 'dc-widget-hidden';
+
+        // -- Pill row (always visible) --
+        var pill = document.createElement('div');
+        pill.className = 'dcw-pill';
+
+        var pillIcon = document.createElement('span');
+        pillIcon.className = 'dcw-pill-icon';
+        pillIcon.textContent = '\uD83C\uDFAF'; // 🎯
+
+        var pillText = document.createElement('span');
+        pillText.className = 'dcw-pill-text';
+        pillText.id = 'dcwPillText';
+        pillText.textContent = _buildSummaryLine(_readWidgetData());
+
+        var pillChevron = document.createElement('span');
+        pillChevron.className = 'dcw-pill-chevron';
+        pillChevron.textContent = '\u25BC'; // ▼
+
+        var dismissBtn = document.createElement('button');
+        dismissBtn.className = 'dcw-dismiss';
+        dismissBtn.title = 'Dismiss';
+        dismissBtn.textContent = '\u00D7'; // ×
+        dismissBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            _slotWidgetDismissed = true;
+            _hideSlotWidget();
+        });
+
+        pill.appendChild(pillIcon);
+        pill.appendChild(pillText);
+        pill.appendChild(pillChevron);
+        pill.appendChild(dismissBtn);
+        widget.appendChild(pill);
+
+        // -- Expandable detail area --
+        var detail = document.createElement('div');
+        detail.className = 'dcw-detail';
+        detail.id = 'dcwDetail';
+
+        var sep = document.createElement('div');
+        sep.className = 'dcw-sep';
+        detail.appendChild(sep);
+
+        widget.appendChild(detail);
+
+        // Toggle expand on pill click (not dismiss)
+        pill.addEventListener('click', function(e) {
+            if (e.target === dismissBtn) return;
+            _slotWidgetExpanded = !_slotWidgetExpanded;
+            if (_slotWidgetExpanded) {
+                widget.classList.add('dcw-expanded');
+                _renderWidgetTasks(detail);
+            } else {
+                widget.classList.remove('dcw-expanded');
+            }
+        });
+
+        document.body.appendChild(widget);
+        _slotWidgetEl = widget;
+
+        // Render task rows initially inside detail
+        _renderWidgetTasks(detail);
+    }
+
+    // Render challenge task rows into the detail element
+    function _renderWidgetTasks(detailEl) {
+        if (!detailEl) return;
+        // Clear existing task rows (keep the separator)
+        var children = detailEl.querySelectorAll('.dcw-task-row');
+        for (var i = 0; i < children.length; i++) {
+            detailEl.removeChild(children[i]);
+        }
+
+        var data = _readWidgetData();
+        if (!data || !data.tasks) return;
+
+        for (var j = 0; j < data.tasks.length; j++) {
+            var t = data.tasks[j];
+            var isComplete = t.progress >= t.target;
+            var pct = Math.min(100, t.target > 0 ? Math.round((t.progress / t.target) * 100) : 0);
+
+            var row = document.createElement('div');
+            row.className = 'dcw-task-row';
+
+            // Icon
+            var icoEl = document.createElement('span');
+            icoEl.className = 'dcw-task-icon';
+            icoEl.textContent = t.icon;
+            row.appendChild(icoEl);
+
+            // Info (desc + bar)
+            var info = document.createElement('div');
+            info.className = 'dcw-task-info';
+
+            var descEl = document.createElement('div');
+            descEl.className = 'dcw-task-desc';
+            descEl.textContent = t.desc;
+            info.appendChild(descEl);
+
+            var barWrap = document.createElement('div');
+            barWrap.className = 'dcw-task-bar-wrap';
+            var barFill = document.createElement('div');
+            barFill.className = 'dcw-task-bar-fill';
+            if (isComplete || t.claimed) {
+                barFill.classList.add('dcw-bar-done');
+            } else if (pct >= 70) {
+                barFill.classList.add('dcw-bar-close');
+            }
+            barFill.style.width = pct + '%';
+            barWrap.appendChild(barFill);
+            info.appendChild(barWrap);
+
+            row.appendChild(info);
+
+            // Right side: checkmark or fraction
+            if (isComplete || t.claimed) {
+                var check = document.createElement('span');
+                check.className = 'dcw-task-check';
+                check.textContent = t.claimed ? '\u2705' : '\u2714\uFE0F'; // ✅ or ✔️
+                row.appendChild(check);
+            } else {
+                var frac = document.createElement('span');
+                frac.className = 'dcw-task-frac';
+                frac.textContent = t.progress + '/' + t.target;
+                row.appendChild(frac);
+            }
+
+            detailEl.appendChild(row);
+        }
+    }
+
+    // Refresh only the pill text and task bars (no full rebuild)
+    function _refreshWidgetContent() {
+        var pillText = document.getElementById('dcwPillText');
+        if (pillText) {
+            pillText.textContent = _buildSummaryLine(_readWidgetData());
+        }
+        if (_slotWidgetExpanded) {
+            var detail = document.getElementById('dcwDetail');
+            if (detail) _renderWidgetTasks(detail);
+        }
+    }
+
+    function _showSlotWidget() {
+        if (_slotWidgetDismissed) return;
+        if (!_slotWidgetEl) _buildSlotWidget();
+        var w = document.getElementById('dcSlotWidget');
+        if (!w) return;
+        _refreshWidgetContent();
+        // Use double-RAF to let CSS transition trigger properly
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                w.classList.remove('dc-widget-hidden');
+                w.classList.add('dc-widget-visible');
+            });
+        });
+    }
+
+    function _hideSlotWidget() {
+        var w = document.getElementById('dcSlotWidget');
+        if (!w) return;
+        w.classList.remove('dc-widget-visible');
+        w.classList.add('dc-widget-hidden');
+    }
+
+    // Watch #slotModal for active class changes via MutationObserver
+    function _attachSlotObserver() {
+        if (_slotObserver) return; // already attached
+
+        var slotModal = document.getElementById('slotModal');
+        if (!slotModal) {
+            // Modal not in DOM yet — retry once after a short delay
+            setTimeout(_attachSlotObserver, 1500);
+            return;
+        }
+
+        _slotObserver = new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                var m = mutations[i];
+                if (m.type === 'attributes' && m.attributeName === 'class') {
+                    var isActive = slotModal.classList.contains('active');
+                    if (isActive) {
+                        // Reset dismiss state each time slot is opened
+                        _slotWidgetDismissed = false;
+                        _slotWidgetExpanded  = false;
+                        if (_slotWidgetEl) {
+                            _slotWidgetEl.classList.remove('dcw-expanded');
+                        }
+                        _buildSlotWidget();
+                        _showSlotWidget();
+                        _startSpinWatcher();
+                    } else {
+                        _hideSlotWidget();
+                        _stopSpinWatcher();
+                    }
+                }
+            }
+        });
+
+        _slotObserver.observe(slotModal, { attributes: true, attributeFilter: ['class'] });
+
+        // Check if slot is already open at attach time
+        if (slotModal.classList.contains('active')) {
+            _buildSlotWidget();
+            _showSlotWidget();
+            _startSpinWatcher();
+        }
+    }
+
+    // Poll the global `spinning` variable to detect spin completion
+    // This is lightweight: 200ms interval, only while slot is open.
+    function _startSpinWatcher() {
+        _stopSpinWatcher(); // Clear any existing watcher first
+        _lastSpinState = (typeof window.spinning !== 'undefined') ? window.spinning : false;
+        _slotSpinWatcher = setInterval(function() {
+            var currentState = (typeof window.spinning !== 'undefined') ? window.spinning : false;
+            // Detect falling edge: spinning just became false (spin completed)
+            if (_lastSpinState === true && currentState === false) {
+                // Give localStorage a brief moment to be written by win-logic/spin-engine
+                setTimeout(_refreshWidgetContent, 150);
+            }
+            _lastSpinState = currentState;
+        }, 200);
+    }
+
+    function _stopSpinWatcher() {
+        if (_slotSpinWatcher) {
+            clearInterval(_slotSpinWatcher);
+            _slotSpinWatcher = null;
+        }
+    }
+
+    // Kick off the observer after init — slot modal is built after DOMContentLoaded
+    function _initSlotWidget() {
+        // Wait for everything else to initialise, then attach
+        setTimeout(_attachSlotObserver, 2500);
+    }
+
+    // Append _initSlotWidget call to existing init flow
+    var _origInit = init;
+    // Re-define init to also boot the widget
+    // (We shadow the local variable — safe because it has already run or will run via the
+    //  DOMContentLoaded / setTimeout path below, and we patch before either fires when loaded
+    //  early, or we call it directly when loaded late.)
+    // However, since `init` has likely already been scheduled, we just call _initSlotWidget
+    // directly as a secondary initialiser on the same timing path.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _initSlotWidget);
+    } else {
+        setTimeout(_initSlotWidget, 0);
+    }
 }());

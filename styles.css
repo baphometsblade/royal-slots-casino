@@ -11426,10 +11426,16 @@
         padding: 10px 0;
     }
 
+    /* ── Header: two-row layout on phones ──
+       Row 1: logo (left-aligned, single line)
+       Row 2: icon-only action buttons, horizontally scrollable
+    ── */
     .header-content {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 0 12px;
+        flex-direction: column;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: 0;
+        padding: 0 10px;
     }
 
     .logo-icon {
@@ -11449,19 +11455,21 @@
         display: none;
     }
 
-    /* Header-actions row: fill full width, tighten gaps */
-    .header-actions {
-        width: 100%;
-        justify-content: flex-end;
-        gap: 6px;
-        flex-wrap: nowrap;
+    /* Row 1: logo — compact gap for 375px width */
+    .logo-section {
+        order: 0;
+        flex-shrink: 0;
+        gap: 8px;
+        padding: 2px 0;
     }
 
-    /* Compact balance display */
+    /* Move balance-display before header-actions in flow (flex order) */
     .balance-display {
-        padding: 5px 10px;
-        flex-shrink: 1;
+        order: -1;           /* appears before other actions in row 2 */
+        flex-shrink: 0;
+        padding: 4px 10px;
         min-width: 0;
+        white-space: nowrap;
     }
 
     .balance-label {
@@ -11469,30 +11477,77 @@
     }
 
     .balance-amount {
-        font-size: 15px;
+        font-size: 14px;
         white-space: nowrap;
     }
 
-    /* Hide STATS button — accessible via profile */
+    /* Row 2: header-actions — single scrollable row */
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 6px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;          /* Firefox */
+        padding: 4px 0 2px;
+        /* Ensure balance is pinned left and always visible */
+        align-items: center;
+    }
+
+    .header-actions::-webkit-scrollbar {
+        display: none;                  /* Chrome/Safari */
+    }
+
+    /* Hide STATS text button — accessible via profile/sidebar */
     .btn[onclick*="openStatsModal"] {
         display: none;
     }
 
-    /* Icon-only buttons: shrink to save row space */
-    .btn-user {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        padding: 0;
-        font-size: 13px;
+    /* Hide shop / gift / contest emoji buttons — in sidebar */
+    .shop-btn,
+    .gift-btn,
+    .contest-btn {
+        display: none;
     }
 
-    /* WALLET button: show icon only */
+    /* Hide shortcuts "?" button on mobile — not needed on touch */
+    .btn-shortcuts {
+        display: none;
+    }
+
+    /* Icon-only buttons: 44×44px touch targets (iOS HIG) */
+    .btn-user {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        padding: 0;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    /* WALLET button: icon + abbreviated label */
     .btn-deposit {
         padding: 0 10px;
-        font-size: 12px;
-        gap: 4px;
-        height: 36px;
+        font-size: 0;            /* hide text "WALLET" */
+        gap: 0;
+        height: 44px;
+        min-width: 44px;
+        flex-shrink: 0;
+    }
+
+    /* Show wallet icon at normal size even with font-size:0 */
+    .btn-deposit svg {
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    /* Hamburger: 44×44px touch target */
+    .csb-hamburger-btn {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
     }
 
     /* ── 2. Game grid: 2 columns on phones (not 1) ── */
