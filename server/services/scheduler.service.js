@@ -7,6 +7,15 @@ const config = require('../config');
 
 let _started = false;
 
+// Ensure email_log tracking table exists
+db.run(`CREATE TABLE IF NOT EXISTS email_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    email_type TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(user_id, email_type)
+)`).catch(err => console.warn('[Scheduler] email_log table create:', err.message));
+
 /**
  * Send re-engagement emails to players who haven't logged in recently.
  * Runs daily at 10:00 AM server time.
@@ -77,6 +86,87 @@ async function _sendWeeklyReport() {
     }
 }
 
+/**
+ * Send deposit nudge emails to registered users who have never deposited.
+ * Targets users registered 2-7 days ago with no completed deposit.
+ * Runs every 6 hours.
+ */
+async function _sendDepositNudgeEmails() {
+    if (!config.SMTP_HOST || !config.SMTP_USER) return;
+    try {
+        // Find registered users with no deposits who registered 2-7 days ago
+        const prospects = await db.all(`
+            SELECT u.id, u.email, u.username, u.balance, u.created_at
+            FROM users u
+            LEFT JOIN deposits d ON d.user_id = u.id AND d.status = 'completed'
+            WHERE u.is_banned = 0
+              AND u.email IS NOT NULL
+              AND d.id IS NULL
+              AND u.created_at < datetime('now', '-2 days')
+              AND u.created_at > datetime('now', '-7 days')
+              AND NOT EXISTS (
+                SELECT 1 FROM email_log el WHERE el.user_id = u.id AND el.email_type = 'deposit_nudge'
+                AND el.created_at > datetime('now', '-5 days')
+              )
+            ORDER BY u.created_at DESC
+            LIMIT 30
+        `);
+
+        for (const player of prospects) {
+            await emailService.sendDepositNudgeEmail(player.email, player.username);
+            // Log to avoid re-sending
+            await db.run(`INSERT OR IGNORE INTO email_log (user_id, email_type, created_at) VALUES (?, 'deposit_nudge', datetime('now'))`, [player.id]).catch(() => {});
+            await new Promise(r => setTimeout(r, 300));
+        }
+        if (prospects.length > 0) console.log(`[Scheduler] Deposit nudge emails sent to ${prospects.length} players`);
+    } catch (err) {
+        console.error('[Scheduler] Deposit nudge error:', err.message);
+    }
+}
+
+/**
+ * Send VIP tier-up congratulation emails to players who recently crossed a milestone.
+ * Checks spin count milestones: 500 (Silver), 2000 (Gold), 5000 (Platinum), 10000 (Diamond).
+ * Runs daily at 11:00 AM.
+ */
+async function _sendVipTierUpEmails() {
+    if (!config.SMTP_HOST || !config.SMTP_USER) return;
+    try {
+        const tierThresholds = [
+            { minSpins: 500,   tierName: 'Silver',   emoji: '🥈', benefit: '5% win boost on all games' },
+            { minSpins: 2000,  tierName: 'Gold',     emoji: '🥇', benefit: 'Priority withdrawals + exclusive games' },
+            { minSpins: 5000,  tierName: 'Platinum', emoji: '💎', benefit: 'Personal manager + 10% rakeback' },
+            { minSpins: 10000, tierName: 'Diamond',  emoji: '💠', benefit: 'Max rakeback + custom limits + VIP lounge' },
+        ];
+
+        for (const tier of tierThresholds) {
+            const newlyTiered = await db.all(`
+                SELECT u.id, u.email, u.username, COUNT(s.id) as spin_count
+                FROM users u
+                JOIN spins s ON s.user_id = u.id
+                WHERE u.is_banned = 0 AND u.email IS NOT NULL
+                GROUP BY u.id
+                HAVING COUNT(s.id) >= ?
+                  AND COUNT(s.id) < ? + 50
+                  AND NOT EXISTS (
+                    SELECT 1 FROM email_log el WHERE el.user_id = u.id
+                    AND el.email_type = 'vip_' || ?
+                  )
+                LIMIT 20
+            `, [tier.minSpins, tier.minSpins, tier.tierName.toLowerCase()]);
+
+            for (const player of newlyTiered) {
+                await emailService.sendVipTierEmail(player.email, player.username, tier);
+                await db.run(`INSERT OR IGNORE INTO email_log (user_id, email_type, created_at) VALUES (?, ?, datetime('now'))`,
+                    [player.id, `vip_${tier.tierName.toLowerCase()}`]).catch(() => {});
+                await new Promise(r => setTimeout(r, 300));
+            }
+        }
+    } catch (err) {
+        console.error('[Scheduler] VIP tier-up email error:', err.message);
+    }
+}
+
 function start() {
     if (_started) return;
     _started = true;
@@ -87,7 +177,13 @@ function start() {
     // Weekly P&L report: Monday 8:00 AM
     cron.schedule('0 8 * * 1', _sendWeeklyReport);
 
-    console.log('[Scheduler] Cron jobs started (re-engagement daily 10AM, P&L weekly Mon 8AM)');
+    // Deposit nudge: every 6 hours
+    cron.schedule('0 */6 * * *', _sendDepositNudgeEmails);
+
+    // VIP tier-up notifications: daily at 11 AM
+    cron.schedule('0 11 * * *', _sendVipTierUpEmails);
+
+    console.log('[Scheduler] Cron jobs started (re-engagement daily 10AM, P&L weekly Mon 8AM, deposit nudge every 6h, VIP tier-up daily 11AM)');
 }
 
 module.exports = { start };

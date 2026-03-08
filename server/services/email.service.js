@@ -143,4 +143,140 @@ Deposits: ${deposits}`,
     return true;
 }
 
-module.exports = { sendPasswordReset, sendReengagementEmail, sendWeeklyReport };
+/**
+ * Send a deposit nudge email to a user who registered but never deposited.
+ * Highlights the 100% welcome bonus to drive first-time deposits.
+ */
+async function sendDepositNudgeEmail(toEmail, username) {
+    const transporter = getTransporter();
+    if (!transporter) return false;
+
+    await transporter.sendMail({
+        from: config.SMTP_FROM,
+        to: toEmail,
+        subject: `${username}, claim your welcome bonus at Matrix Spins 🎰`,
+        text: `Hi ${username},
+
+You registered at Matrix Spins but haven't made your first deposit yet.
+
+Don't miss out — we'll match your first deposit 100% up to $500!
+
+That means if you deposit $100, you'll play with $200. Welcome bonus expires in 7 days.
+
+Claim your bonus now: https://matrixspins.com
+
+Matrix Spins`,
+        html: `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#0d0d1a;color:#fff;padding:40px;margin:0">
+  <div style="max-width:520px;margin:0 auto;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,215,0,0.3);border-radius:12px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#ffd700,#ff8c00);padding:24px;text-align:center">
+      <h1 style="margin:0;color:#0d0d1a;font-size:26px">&#127920; Matrix Spins</h1>
+      <p style="margin:6px 0 0;color:#0d0d1a;font-size:14px;font-weight:bold;">Your welcome bonus is waiting</p>
+    </div>
+    <div style="padding:32px;text-align:center">
+      <h2 style="color:#ffd700;margin-top:0;font-size:22px">Hi ${username}!</h2>
+      <p style="color:#ccc;line-height:1.7;margin:0 0 20px;">You're just one step away from unlocking the full Matrix Spins experience. Make your first deposit and we'll <strong style="color:#ffd700">double it instantly</strong>.</p>
+
+      <div style="background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,140,0,0.1));border:2px solid rgba(255,215,0,0.5);border-radius:12px;padding:24px;margin:0 0 24px;">
+        <div style="font-size:42px;margin-bottom:8px;">&#127775;</div>
+        <div style="color:#ffd700;font-size:32px;font-weight:900;letter-spacing:-1px;">100% MATCH BONUS</div>
+        <div style="color:#fff;font-size:16px;margin:6px 0 4px;">on your first deposit up to</div>
+        <div style="color:#10b981;font-size:36px;font-weight:900;">$500</div>
+      </div>
+
+      <p style="color:#94a3b8;font-size:14px;margin:0 0 8px;">Deposit $100 &rarr; Play with $200</p>
+      <p style="color:#94a3b8;font-size:14px;margin:0 0 24px;">Deposit $500 &rarr; Play with $1,000</p>
+
+      <a href="https://matrixspins.com" style="display:inline-block;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;text-decoration:none;padding:16px 40px;border-radius:10px;font-weight:900;font-size:18px;letter-spacing:0.5px;">Claim My Bonus &#8594;</a>
+
+      <div style="margin:24px 0 0;padding:12px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:8px;">
+        <p style="color:#fca5a5;font-size:13px;margin:0;">&#9201; Welcome bonus expires in <strong>7 days</strong> — don't let it go to waste!</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:28px 0 20px">
+      <p style="color:#475569;font-size:12px;margin:0;">Matrix Spins — Play responsibly. 18+ only. Terms apply.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+    });
+    return true;
+}
+
+/**
+ * Send a VIP tier-up congratulation email.
+ * @param {string} toEmail
+ * @param {string} username
+ * @param {{ tierName: string, emoji: string, benefit: string }} tier
+ */
+async function sendVipTierEmail(toEmail, username, tier) {
+    const transporter = getTransporter();
+    if (!transporter) return false;
+
+    const tierColors = {
+        Silver:   { bg: '#c0c0c0', text: '#1a1a2e', glow: 'rgba(192,192,192,0.4)' },
+        Gold:     { bg: '#ffd700', text: '#0d0d1a', glow: 'rgba(255,215,0,0.4)'   },
+        Platinum: { bg: '#e5e4e2', text: '#1a1a2e', glow: 'rgba(229,228,226,0.4)' },
+        Diamond:  { bg: '#b9f2ff', text: '#0d0d1a', glow: 'rgba(185,242,255,0.5)' },
+    };
+    const colors = tierColors[tier.tierName] || tierColors.Gold;
+
+    await transporter.sendMail({
+        from: config.SMTP_FROM,
+        to: toEmail,
+        subject: `${tier.emoji} Congratulations ${username} — You've reached ${tier.tierName} VIP!`,
+        text: `Congratulations ${username}!
+
+You've reached ${tier.tierName} VIP status at Matrix Spins!
+
+Your new benefit: ${tier.benefit}
+
+Keep playing to unlock even more rewards.
+
+Play now: https://matrixspins.com
+
+Matrix Spins`,
+        html: `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#0d0d1a;color:#fff;padding:40px;margin:0">
+  <div style="max-width:520px;margin:0 auto;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid ${colors.glow};border-radius:12px;overflow:hidden;box-shadow:0 0 30px ${colors.glow}">
+    <div style="background:linear-gradient(135deg,${colors.bg},${colors.bg}cc);padding:28px;text-align:center">
+      <div style="font-size:52px;line-height:1;">${tier.emoji}</div>
+      <h1 style="margin:8px 0 4px;color:${colors.text};font-size:22px;">&#127920; Matrix Spins</h1>
+      <p style="margin:0;color:${colors.text};font-size:14px;opacity:0.8;">VIP Status Upgrade</p>
+    </div>
+    <div style="padding:32px;text-align:center">
+      <h2 style="color:#ffd700;margin-top:0;font-size:20px;">Congratulations, ${username}!</h2>
+      <p style="color:#ccc;line-height:1.7;margin:0 0 24px;">Your dedication has paid off. You've officially reached <strong style="color:${colors.bg}">${tier.tierName} VIP</strong> status — one of our most valued players!</p>
+
+      <div style="background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,140,0,0.05));border:2px solid ${colors.glow};border-radius:14px;padding:28px;margin:0 0 24px;">
+        <div style="font-size:60px;margin-bottom:12px;">${tier.emoji}</div>
+        <div style="color:${colors.bg};font-size:28px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">${tier.tierName} VIP</div>
+        <div style="width:60px;height:3px;background:${colors.bg};margin:12px auto;border-radius:2px;"></div>
+        <div style="color:#e2e8f0;font-size:15px;line-height:1.6;">&#10003; <strong>${tier.benefit}</strong></div>
+      </div>
+
+      <p style="color:#94a3b8;font-size:14px;margin:0 0 24px;">Your new perks are active immediately. Keep playing to unlock the next tier and even greater rewards!</p>
+
+      <a href="https://matrixspins.com" style="display:inline-block;background:linear-gradient(135deg,${colors.bg},${colors.bg}cc);color:${colors.text};text-decoration:none;padding:16px 40px;border-radius:10px;font-weight:900;font-size:17px;">Play as ${tier.tierName} VIP &#8594;</a>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:28px 0 20px">
+      <p style="color:#475569;font-size:12px;margin:0;">Matrix Spins — Play responsibly. 18+ only.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+    });
+    return true;
+}
+
+module.exports = {
+    sendPasswordReset,
+    sendReengagementEmail,
+    sendWeeklyReport,
+    sendDepositNudgeEmail,
+    sendVipTierEmail,
+};
