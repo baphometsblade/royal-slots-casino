@@ -4,8 +4,12 @@ const db = require('../database');
 // ── Schema Init ─────────────────────────────────────────────────────────
 
 async function initSchema() {
+    const isPg      = !!process.env.DATABASE_URL;
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
+    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     await db.run(`CREATE TABLE IF NOT EXISTS cosmetic_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         category TEXT NOT NULL,
         name TEXT NOT NULL,
         description TEXT,
@@ -13,15 +17,15 @@ async function initSchema() {
         rarity TEXT DEFAULT 'common',
         is_limited INTEGER DEFAULT 0,
         image_key TEXT,
-        created_at TEXT DEFAULT (datetime('now'))
+        created_at ${tsType} DEFAULT ${tsDefault}
     )`);
 
     await db.run(`CREATE TABLE IF NOT EXISTS cosmetic_inventory (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         user_id INTEGER NOT NULL,
         item_id INTEGER NOT NULL,
         equipped INTEGER DEFAULT 0,
-        purchased_at TEXT DEFAULT (datetime('now')),
+        purchased_at ${tsType} DEFAULT ${tsDefault},
         UNIQUE(user_id, item_id)
     )`);
 

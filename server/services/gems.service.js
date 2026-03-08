@@ -15,6 +15,10 @@ const GEM_PACKS = [
 // ── Schema Init ──────────────────────────────────────────────────────────────
 
 async function initSchema() {
+    const isPg      = !!process.env.DATABASE_URL;
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
+    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const db = require('../database');
     await db.run(`CREATE TABLE IF NOT EXISTS gem_balances (
         user_id INTEGER PRIMARY KEY,
@@ -24,12 +28,12 @@ async function initSchema() {
         updated_at TEXT
     )`);
     await db.run(`CREATE TABLE IF NOT EXISTS gem_transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         user_id INTEGER,
         type TEXT,
         amount INTEGER,
         description TEXT,
-        created_at TEXT DEFAULT (datetime('now'))
+        created_at ${tsType} DEFAULT ${tsDefault}
     )`);
 }
 

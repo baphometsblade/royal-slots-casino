@@ -25,16 +25,20 @@ var SEGMENTS = [
 // ── Schema Init ─────────────────────────────────────────────────────────────
 
 async function initSchema() {
+    const isPg      = !!process.env.DATABASE_URL;
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
+    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const db = require('../database');
     await db.run(`CREATE TABLE IF NOT EXISTS mega_wheel_spins (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         user_id INTEGER NOT NULL,
         spin_tier TEXT NOT NULL,
         segment_index INTEGER NOT NULL,
         prize_type TEXT NOT NULL,
         prize_amount REAL NOT NULL,
         gem_cost INTEGER NOT NULL,
-        created_at TEXT DEFAULT (datetime('now'))
+        created_at ${tsType} DEFAULT ${tsDefault}
     )`);
 }
 

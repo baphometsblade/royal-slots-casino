@@ -31,11 +31,15 @@ var SKIP_COST = 150;
  * Initialize daily_challenges and challenge_streaks tables.
  */
 async function initSchema() {
+    const isPg      = !!process.env.DATABASE_URL;
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
+    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const db = require('../database');
 
     await db.run(`
         CREATE TABLE IF NOT EXISTS daily_challenges (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id ${idDef},
             user_id INTEGER NOT NULL,
             date TEXT NOT NULL,
             challenge_type TEXT NOT NULL,
@@ -46,7 +50,7 @@ async function initSchema() {
             completed INTEGER DEFAULT 0,
             difficulty TEXT NOT NULL,
             description TEXT,
-            created_at TEXT DEFAULT (datetime('now'))
+            created_at ${tsType} DEFAULT ${tsDefault}
         )
     `);
 

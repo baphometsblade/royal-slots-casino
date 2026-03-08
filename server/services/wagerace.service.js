@@ -22,37 +22,41 @@ const PARTICIPATION_GEMS = 10;
 // ── Schema ──────────────────────────────────────────────────────────────────
 
 async function initSchema() {
+    const isPg      = !!process.env.DATABASE_URL;
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
+    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     await db.run(`
         CREATE TABLE IF NOT EXISTS wager_races (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id ${idDef},
             starts_at TEXT NOT NULL,
             ends_at TEXT NOT NULL,
             status TEXT DEFAULT 'active',
-            created_at TEXT DEFAULT (datetime('now'))
+            created_at ${tsType} DEFAULT ${tsDefault}
         )
     `);
 
     await db.run(`
         CREATE TABLE IF NOT EXISTS wager_race_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id ${idDef},
             race_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
             total_wagered REAL DEFAULT 0,
             spin_count INTEGER DEFAULT 0,
-            updated_at TEXT DEFAULT (datetime('now')),
+            updated_at ${tsType} DEFAULT ${tsDefault},
             UNIQUE(race_id, user_id)
         )
     `);
 
     await db.run(`
         CREATE TABLE IF NOT EXISTS wager_race_prizes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id ${idDef},
             race_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
             place INTEGER,
             credit_prize REAL DEFAULT 0,
             gem_prize INTEGER DEFAULT 0,
-            claimed_at TEXT DEFAULT (datetime('now'))
+            claimed_at ${tsType} DEFAULT ${tsDefault}
         )
     `);
 }
