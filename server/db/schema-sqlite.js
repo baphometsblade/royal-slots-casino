@@ -266,6 +266,28 @@ const TABLES = [
         created_at TEXT DEFAULT (datetime('now'))
     )`,
 
+    `CREATE TABLE IF NOT EXISTS battle_pass_seasons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        starts_at TEXT NOT NULL,
+        ends_at TEXT NOT NULL,
+        status TEXT DEFAULT 'active'
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS battle_pass_progress (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        season_id INTEGER NOT NULL,
+        level INTEGER DEFAULT 0,
+        xp INTEGER DEFAULT 0,
+        is_premium INTEGER DEFAULT 0,
+        claimed_free TEXT DEFAULT '[]',
+        claimed_premium TEXT DEFAULT '[]',
+        UNIQUE(user_id, season_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (season_id) REFERENCES battle_pass_seasons(id)
+    )`,
+
     `CREATE TABLE IF NOT EXISTS nft_ledger (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         token_id TEXT UNIQUE NOT NULL,
@@ -305,13 +327,17 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_contest_prizes_user ON contest_prizes(user_id, claimed)`,
     `CREATE INDEX IF NOT EXISTS idx_contests_status ON contests(status)`,
     `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_battle_pass_seasons_status ON battle_pass_seasons(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_user ON battle_pass_progress(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_season ON battle_pass_progress(season_id)`,
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_user ON nft_ledger(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_token ON nft_ledger(token_id)`,
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_type ON nft_ledger(type, created_at)`
 ];
 
 
-/** Extra columns added via migrations (column name → definition). */
+/** Extra columns added via migrations (column name → definition).
+ *  Must stay in sync with schema-pg.js USER_MIGRATIONS. */
 const USER_MIGRATIONS = [
     ['display_name', 'TEXT'],
     ['avatar_url', 'TEXT'],
@@ -334,7 +360,63 @@ const USER_MIGRATIONS = [
     ['bonus_balance', 'REAL DEFAULT 0'],
     ['wagering_requirement', 'REAL DEFAULT 0'],
     ['wagering_progress', 'REAL DEFAULT 0'],
+    ['subscription_active', 'INTEGER DEFAULT 0'],
+    ['subscription_tier', 'TEXT'],
+    ['subscription_expires', 'TEXT'],
+    ['subscription_daily_claimed', 'TEXT'],
     ['xp', 'INTEGER DEFAULT 0'],
+    // Birthday bonus
+    ['birth_month', 'INTEGER'],
+    ['birth_day', 'INTEGER'],
+    ['birthday_claimed', 'TEXT'],
+    // Daily cashback
+    ['cashback_last', 'TEXT'],
+    // First deposit bonus
+    ['first_deposit_bonus_claimed', 'INTEGER DEFAULT 0'],
+    // Free spins
+    ['free_spins_count', 'INTEGER DEFAULT 0'],
+    ['free_spins_expires', 'TEXT'],
+    ['free_spins_last_auto', 'TEXT'],
+    // Deposit streak
+    ['deposit_streak', 'INTEGER DEFAULT 0'],
+    ['deposit_streak_last', 'TEXT'],
+    ['deposit_streak_max', 'INTEGER DEFAULT 0'],
+    // Deposit match
+    ['deposit_match_credits', 'REAL DEFAULT 0'],
+    ['deposit_match_last', 'TEXT'],
+    // Fortune wheel
+    ['fortune_wheel_last', 'TEXT'],
+    ['free_spins_remaining', 'INTEGER DEFAULT 0'],
+    // Loyalty
+    ['loyalty_points', 'INTEGER DEFAULT 0'],
+    ['loyalty_lifetime', 'INTEGER DEFAULT 0'],
+    // Milestones
+    ['milestone_last_claimed', 'INTEGER DEFAULT 0'],
+    // Mystery drops
+    ['mystery_next_drop', 'INTEGER DEFAULT 0'],
+    // Reload bonus
+    ['reload_bonus_claimed_at', 'TEXT'],
+    ['reload_bonus_count', 'INTEGER DEFAULT 0'],
+    // Referral bonus
+    ['referral_count', 'INTEGER DEFAULT 0'],
+    ['referral_bonus_earned', 'REAL DEFAULT 0'],
+    // Scratch cards
+    ['scratch_last_date', 'TEXT'],
+    ['scratch_result', 'TEXT'],
+    // Spin streak
+    ['spin_streak_count', 'INTEGER DEFAULT 0'],
+    ['spin_streak_last', 'TEXT'],
+    // Login streak
+    ['streak_count', 'INTEGER DEFAULT 0'],
+    ['streak_last_date', 'TEXT'],
+    // VIP wheel
+    ['vip_wheel_last', 'TEXT'],
+    ['gems', 'INTEGER DEFAULT 0'],
+    // Win streak
+    ['win_streak_current', 'INTEGER DEFAULT 0'],
+    ['win_streak_max', 'INTEGER DEFAULT 0'],
+    // Level-up bonus
+    ['last_bonus_level', 'INTEGER DEFAULT 1'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → definition). */

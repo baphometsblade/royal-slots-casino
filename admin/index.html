@@ -77,6 +77,10 @@
             <div class="tab" onclick="switchTab('spins')">Recent Spins</div>
             <div class="tab" onclick="switchTab('fraud')">Fraud Alerts <span id="fraudBadge" class="badge" style="background:#ef4444;color:#fff;margin-left:4px;display:none;">0</span></div>
             <div class="tab" onclick="switchTab('revenue')">Revenue P&amp;L</div>
+            <div class="tab" onclick="switchTab('funnel')">Funnel</div>
+            <div class="tab" onclick="switchTab('segments')">Segments</div>
+            <div class="tab" onclick="switchTab('profitability')">Game Profit</div>
+            <div class="tab" onclick="switchTab('nftledger')">NFT Ledger</div>
         </div>
 
         <div id="tab-games" class="tab-content active">
@@ -144,6 +148,43 @@
                     <tbody id="revenueTopBody"></tbody>
                 </table>
             </div>
+        <div id="tab-funnel" class="tab-content">
+            <div id="funnelKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;"></div>
+            <div class="section">
+                <h3>Conversion Funnel</h3>
+                <div id="funnelBars" style="padding:20px;"></div>
+            </div>
+        </div>
+
+        <div id="tab-segments" class="tab-content">
+            <div id="segmentKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;"></div>
+            <div class="section">
+                <h3>Player Segments by Total Wagered</h3>
+                <div id="segmentBars" style="padding:20px;"></div>
+            </div>
+        </div>
+
+        <div id="tab-profitability" class="tab-content">
+            <div class="section">
+                <h3>Game Profitability Ranking</h3>
+                <table>
+                    <thead><tr><th>Game</th><th>Spins</th><th>Players</th><th>Wagered</th><th>Paid Out</th><th>Profit</th><th>RTP</th><th>Avg Bet</th></tr></thead>
+                    <tbody id="profitBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-nftledger" class="tab-content">
+            <div id="nftKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;"></div>
+            <div class="section">
+                <h3>Recent NFT Transactions</h3>
+                <table>
+                    <thead><tr><th>Token ID</th><th>Player</th><th>Type</th><th>Amount</th><th>Currency</th><th>Source</th><th>Created</th></tr></thead>
+                    <tbody id="nftBody"></tbody>
+                </table>
+            </div>
+        </div>
+
         </div>
     </div>
 </div>
@@ -294,6 +335,10 @@ function switchTab(name) {
     if (name === 'withdrawals') loadWithdrawals();
     if (name === 'fraud') loadFraudAlerts();
     if (name === 'revenue') loadRevenue();
+    if (name === 'funnel') loadFunnel();
+    if (name === 'segments') loadSegments();
+    if (name === 'profitability') loadProfitability();
+    if (name === 'nftledger') loadNftLedger();
 }
 
 function filterUsers(query) {
@@ -531,6 +576,114 @@ async function rejectWithdrawal(id) {
         loadWithdrawals();
         loadStats();
     } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function loadFunnel() {
+    var el = document.getElementById('funnelKpis');
+    var bars = document.getElementById('funnelBars');
+    el.innerHTML = '<div style="color:#94a3b8;padding:8px;">Loading…</div>';
+    var data = await apiFetch('/admin/conversion-funnel');
+    if (!data) { el.innerHTML = '<div style="color:#ef4444;">Failed to load.</div>'; return; }
+    var f = data.funnel || {};
+    var total = f.total_signups || 1;
+    el.innerHTML = [
+        statCard('Total Signups', (f.total_signups || 0).toLocaleString(), '#38bdf8'),
+        statCard('First Spin', (f.first_spin || 0).toLocaleString() + ' (' + ((f.first_spin||0)/total*100).toFixed(1) + '%)', '#a78bfa'),
+        statCard('First Deposit', (f.first_deposit || 0).toLocaleString() + ' (' + ((f.first_deposit||0)/total*100).toFixed(1) + '%)', '#10b981'),
+        statCard('Repeat Deposit', (f.repeat_deposit || 0).toLocaleString() + ' (' + ((f.repeat_deposit||0)/total*100).toFixed(1) + '%)', '#fbbf24'),
+        statCard('Avg Days to Deposit', (f.avg_days_to_deposit || '-'), '#f97316'),
+    ].join('');
+    var stages = [
+        { label: 'Signups', count: f.total_signups || 0, color: '#38bdf8' },
+        { label: 'First Spin', count: f.first_spin || 0, color: '#a78bfa' },
+        { label: 'First Deposit', count: f.first_deposit || 0, color: '#10b981' },
+        { label: 'Repeat Deposit', count: f.repeat_deposit || 0, color: '#fbbf24' },
+    ];
+    bars.innerHTML = stages.map(function(s) {
+        var pct = total > 0 ? (s.count / total * 100) : 0;
+        return '<div style="margin-bottom:12px;">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+            '<span style="font-weight:600;">' + s.label + '</span><span style="color:#94a3b8;">' + s.count.toLocaleString() + ' (' + pct.toFixed(1) + '%)</span></div>' +
+            '<div style="background:#1e293b;border-radius:4px;height:24px;overflow:hidden;">' +
+            '<div style="background:' + s.color + ';height:100%;width:' + pct + '%;border-radius:4px;transition:width 0.5s;"></div>' +
+            '</div></div>';
+    }).join('');
+}
+
+async function loadSegments() {
+    var el = document.getElementById('segmentKpis');
+    var bars = document.getElementById('segmentBars');
+    el.innerHTML = '<div style="color:#94a3b8;padding:8px;">Loading…</div>';
+    var data = await apiFetch('/admin/player-segments');
+    if (!data) { el.innerHTML = '<div style="color:#ef4444;">Failed to load.</div>'; return; }
+    var s = data.segments || {};
+    el.innerHTML = [
+        statCard('Whales ($10k+)', s.whale || 0, '#fbbf24'),
+        statCard('Regular ($1k+)', s.regular || 0, '#10b981'),
+        statCard('Casual ($100+)', s.casual || 0, '#38bdf8'),
+        statCard('New (<$100)', s.new_player || 0, '#94a3b8'),
+        statCard('Dormant (7d+)', data.dormant || 0, '#ef4444'),
+    ].join('');
+    var segs = [
+        { label: 'Whales ($10k+)', count: s.whale || 0, color: '#fbbf24' },
+        { label: 'Regular ($1k-$10k)', count: s.regular || 0, color: '#10b981' },
+        { label: 'Casual ($100-$1k)', count: s.casual || 0, color: '#38bdf8' },
+        { label: 'New (<$100)', count: s.new_player || 0, color: '#94a3b8' },
+    ];
+    var total = segs.reduce(function(a, b) { return a + b.count; }, 0) || 1;
+    bars.innerHTML = segs.map(function(sg) {
+        var pct = sg.count / total * 100;
+        return '<div style="margin-bottom:12px;">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+            '<span style="font-weight:600;">' + sg.label + '</span><span style="color:#94a3b8;">' + sg.count.toLocaleString() + ' (' + pct.toFixed(1) + '%)</span></div>' +
+            '<div style="background:#1e293b;border-radius:4px;height:24px;overflow:hidden;">' +
+            '<div style="background:' + sg.color + ';height:100%;width:' + pct + '%;border-radius:4px;transition:width 0.5s;"></div>' +
+            '</div></div>';
+    }).join('');
+}
+
+async function loadProfitability() {
+    var el = document.getElementById('profitBody');
+    el.innerHTML = '<tr><td colspan="8" style="color:#94a3b8;text-align:center;padding:20px;">Loading…</td></tr>';
+    var data = await apiFetch('/admin/game-profitability');
+    if (!data) { el.innerHTML = '<tr><td colspan="8" style="color:#ef4444;text-align:center;">Failed to load.</td></tr>'; return; }
+    el.innerHTML = (data.games || []).map(function(g) {
+        var profitColor = g.profit >= 0 ? '#10b981' : '#ef4444';
+        var rtpColor = g.rtp_pct <= 92 ? '#10b981' : (g.rtp_pct <= 96 ? '#f59e0b' : '#ef4444');
+        return '<tr><td>' + esc(g.game_id) + '</td><td>' + (g.total_spins || 0).toLocaleString() +
+            '</td><td>' + (g.unique_players || 0) +
+            '</td><td>$' + (g.total_wagered || 0).toLocaleString() +
+            '</td><td>$' + (g.total_paid || 0).toLocaleString() +
+            '</td><td style="color:' + profitColor + ';font-weight:700;">$' + (g.profit || 0).toLocaleString() +
+            '</td><td style="color:' + rtpColor + ';">' + (g.rtp_pct || 0).toFixed(2) + '%' +
+            '</td><td>$' + (g.avg_bet || 0).toFixed(2) + '</td></tr>';
+    }).join('') || '<tr><td colspan="8" style="color:#64748b;text-align:center;padding:20px;">No game data yet</td></tr>';
+}
+
+async function loadNftLedger() {
+    var kpis = document.getElementById('nftKpis');
+    var el = document.getElementById('nftBody');
+    kpis.innerHTML = '<div style="color:#94a3b8;padding:8px;">Loading…</div>';
+    var data = await apiFetch('/admin/nft-ledger');
+    if (!data) { kpis.innerHTML = '<div style="color:#ef4444;">Failed to load.</div>'; return; }
+    var s = data.summary || {};
+    kpis.innerHTML = [
+        statCard('Total NFTs', (s.total_nfts || 0).toLocaleString(), '#a78bfa'),
+        statCard('Sales (Deposits)', (s.sales_count || 0).toLocaleString(), '#10b981'),
+        statCard('Sales Volume', '$' + (s.sales_volume || 0).toLocaleString(), '#10b981'),
+        statCard('Resales (Withdrawals)', (s.resales_count || 0).toLocaleString(), '#f97316'),
+        statCard('Resales Volume', '$' + (s.resales_volume || 0).toLocaleString(), '#f97316'),
+    ].join('');
+    el.innerHTML = (data.recent || []).map(function(n) {
+        var typeColor = n.type === 'sale' ? '#10b981' : '#f97316';
+        return '<tr><td style="font-family:monospace;font-size:11px;">' + esc(n.token_id) + '</td>' +
+            '<td>' + esc(n.username || 'User #' + n.user_id) + '</td>' +
+            '<td style="color:' + typeColor + ';font-weight:600;">' + n.type.toUpperCase() + '</td>' +
+            '<td>$' + Number(n.amount).toLocaleString() + '</td>' +
+            '<td>' + esc(n.currency || 'AUD') + '</td>' +
+            '<td>' + esc(n.source_table) + ' #' + n.source_id + '</td>' +
+            '<td>' + new Date(n.created_at).toLocaleString() + '</td></tr>';
+    }).join('') || '<tr><td colspan="7" style="color:#64748b;text-align:center;padding:20px;">No NFT transactions yet</td></tr>';
 }
 </script>
 </body>

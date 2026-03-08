@@ -659,6 +659,9 @@
                 window._autoplayRemaining = 0;
                 window._autoplayStopping = false;
                 _updateAutoplayBtn();
+                // After stopping autoplay, nudge deposit
+                if (typeof _showLowBalanceQuickDeposit === 'function') _showLowBalanceQuickDeposit();
+                else if (typeof showWalletModal === 'function') showToast('Top up to keep spinning!', 'warning', 4000);
                 return;
             }
             window._autoplayRemaining--;
@@ -4698,8 +4701,11 @@
                 return;
             }
             if (currentBet > balance) {
-                showToast('Auto-spin stopped: insufficient balance.', 'lose');
+                showToast('Top up to keep spinning!', 'warning', 4000);
                 stopAutoSpin();
+                setTimeout(function() {
+                    if (typeof _showLowBalanceQuickDeposit === 'function') _showLowBalanceQuickDeposit();
+                }, 500);
                 return;
             }
             if (spinning || freeSpinsActive) {
@@ -8882,8 +8888,11 @@
                 return;
             }
             if (currentBet > balance) {
-                showToast('Auto-spin stopped: insufficient balance.', 'lose');
+                showToast('Top up to keep spinning!', 'warning', 4000);
                 stopAutoSpin();
+                setTimeout(function() {
+                    if (typeof _showLowBalanceQuickDeposit === 'function') _showLowBalanceQuickDeposit();
+                }, 500);
                 return;
             }
             if (spinning || freeSpinsActive) {
