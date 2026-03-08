@@ -1304,4 +1304,125 @@ router.post('/users/:id/freeze', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════
+//  CONVERSION & SEGMENTATION ANALYTICS
+// ═══════════════════════════════════════════════════
+
+// GET /api/admin/conversion-funnel — Shows signup → first spin → first deposit → repeat deposit conversion
+router.get('/conversion-funnel', async (req, res) => {
+    try {
+        const totalUsers = await db.get("SELECT COUNT(*) as count FROM users");
+        const usersWithSpins = await db.get("SELECT COUNT(DISTINCT user_id) as count FROM spins");
+        const usersWithDeposits = await db.get("SELECT COUNT(DISTINCT user_id) as count FROM deposits WHERE status='completed'");
+        const repeatDepositors = await db.get(
+            "SELECT COUNT(*) as count FROM (SELECT user_id FROM deposits WHERE status='completed' GROUP BY user_id HAVING COUNT(*) >= 2) sub"
+        );
+        const avgFirstDepositDays = await db.get(
+            "SELECT ROUND(AVG(julianday(d.created_at) - julianday(u.created_at)),1) as avg_days " +
+            "FROM (SELECT user_id, MIN(created_at) as created_at FROM deposits WHERE status='completed' GROUP BY user_id) d " +
+            "JOIN users u ON u.id = d.user_id"
+        );
+        res.json({
+            totalSignups: totalUsers?.count || 0,
+            firstSpin: usersWithSpins?.count || 0,
+            firstDeposit: usersWithDeposits?.count || 0,
+            repeatDeposit: repeatDepositors?.count || 0,
+            avgDaysToFirstDeposit: avgFirstDepositDays?.avg_days || null
+        });
+    } catch (e) {
+        console.error('[Admin] Conversion funnel error:', e.message);
+        res.status(500).json({ error: 'Failed to load conversion data' });
+    }
+});
+
+// GET /api/admin/player-segments — Player segmentation (whale/regular/casual/dormant)
+router.get('/player-segments', async (req, res) => {
+    try {
+        const whales = await db.get(
+            "SELECT COUNT(DISTINCT user_id) as count FROM spins " +
+            "GROUP BY user_id HAVING SUM(bet_amount) > 10000"
+        );
+        // Actually need a different approach for counting segments
+        const segments = await db.all(
+            "SELECT CASE " +
+            "  WHEN total_wagered >= 10000 THEN 'whale' " +
+            "  WHEN total_wagered >= 1000 THEN 'regular' " +
+            "  WHEN total_wagered >= 100 THEN 'casual' " +
+            "  ELSE 'new' END as segment, " +
+            "COUNT(*) as player_count, " +
+            "ROUND(SUM(total_wagered),2) as total_wagered, " +
+            "ROUND(SUM(total_wagered - total_paid),2) as total_profit " +
+            "FROM (SELECT user_id, SUM(bet_amount) as total_wagered, SUM(win_amount) as total_paid FROM spins GROUP BY user_id) sub " +
+            "GROUP BY segment ORDER BY total_wagered DESC"
+        );
+        const dormant = await db.get(
+            "SELECT COUNT(*) as count FROM users u " +
+            "WHERE u.id NOT IN (SELECT DISTINCT user_id FROM spins WHERE created_at >= datetime('now','-7 days')) " +
+            "AND u.id IN (SELECT DISTINCT user_id FROM spins)"
+        );
+        res.json({ segments: segments || [], dormantPlayers: dormant?.count || 0 });
+    } catch (e) {
+        console.error('[Admin] Player segments error:', e.message);
+        res.status(500).json({ error: 'Failed to load segment data' });
+    }
+});
+
+// GET /api/admin/game-profitability — Per-game profitability ranking
+router.get('/game-profitability', async (req, res) => {
+    try {
+        const games = await db.all(
+            "SELECT game_id, COUNT(*) as total_spins, COUNT(DISTINCT user_id) as unique_players, " +
+            "ROUND(SUM(bet_amount),2) as total_wagered, ROUND(SUM(win_amount),2) as total_paid, " +
+            "ROUND(SUM(bet_amount)-SUM(win_amount),2) as profit, " +
+            "ROUND(100.0*SUM(win_amount)/NULLIF(SUM(bet_amount),0),2) as actual_rtp, " +
+            "ROUND(AVG(bet_amount),2) as avg_bet " +
+            "FROM spins GROUP BY game_id ORDER BY profit DESC"
+        );
+        res.json({ games: games || [] });
+    } catch (e) {
+        console.error('[Admin] Game profitability error:', e.message);
+        res.status(500).json({ error: 'Failed to load game data' });
+    }
+});
+
+// GET /api/admin/nft-ledger — NFT ledger overview (deposits framed as NFT sales)
+router.get('/nft-ledger', async (req, res) => {
+    try {
+        const summary = await db.get(
+            "SELECT COUNT(*) as total_nfts, " +
+            "SUM(CASE WHEN type='sale' THEN 1 ELSE 0 END) as sales, " +
+            "SUM(CASE WHEN type='resale' THEN 1 ELSE 0 END) as resales, " +
+            "ROUND(SUM(CASE WHEN type='sale' THEN amount ELSE 0 END),2) as total_sale_volume, " +
+            "ROUND(SUM(CASE WHEN type='resale' THEN amount ELSE 0 END),2) as total_resale_volume " +
+            "FROM nft_ledger"
+        );
+        const recent = await db.all(
+            "SELECT n.token_id, n.type, n.amount, n.currency, n.created_at, u.username " +
+            "FROM nft_ledger n JOIN users u ON u.id = n.user_id " +
+            "ORDER BY n.created_at DESC LIMIT 20"
+        );
+        res.json({ summary: summary || {}, recent: recent || [] });
+    } catch (e) {
+        console.error('[Admin] NFT ledger error:', e.message);
+        res.status(500).json({ error: 'Failed to load NFT data' });
+    }
+});
+
+// GET /api/admin/hourly-activity — Hourly activity heatmap (best times for promotions)
+router.get('/hourly-activity', async (req, res) => {
+    try {
+        const hourly = await db.all(
+            "SELECT CAST(strftime('%H', created_at) AS INTEGER) as hour, " +
+            "COUNT(*) as spins, COUNT(DISTINCT user_id) as players, " +
+            "ROUND(SUM(bet_amount),2) as wagered, ROUND(SUM(bet_amount)-SUM(win_amount),2) as profit " +
+            "FROM spins WHERE created_at >= datetime('now','-7 days') " +
+            "GROUP BY hour ORDER BY hour"
+        );
+        res.json({ hourly: hourly || [] });
+    } catch (e) {
+        console.error('[Admin] Hourly activity error:', e.message);
+        res.status(500).json({ error: 'Failed to load hourly data' });
+    }
+});
+
 module.exports = router;
