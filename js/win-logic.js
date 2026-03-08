@@ -1295,24 +1295,6 @@
                 showMessage(message, 'win');
                 const xpBonus = isBigWin ? XP_AWARD_BIG_WIN : XP_AWARD_REGULAR_WIN;
                 if (typeof awardXP === 'function') awardXP(xpBonus);
-                // Auto-save big wins to replay gallery
-                if (typeof autoSaveWinReplay === 'function' && currentGame) {
-                    autoSaveWinReplay(currentGame.name, currentGame.id, currentBet, winAmount, symbols);
-                }
-                // Sprint 42: Track win goal progress
-                if (typeof _trackWinGoal === 'function') _trackWinGoal(winAmount);
-
-                // Sprint 45: Record significant wins to recent wins feed
-                if (winAmount >= currentBet * 2 && currentGame) {
-                    _recordRecentWin(currentGame.name, winAmount);
-                }
-                // Sprint 50: Show last win preview with winning symbols
-                if (typeof showLastWinPreview === 'function') showLastWinPreview(symbols);
-                // Sprint 60: Track session best win
-                if (typeof updateSessionBestWin === 'function') updateSessionBestWin(winAmount);
-                // Sprint 68: Last win multiplier + average win
-                if (typeof updateLastWinMult === 'function') updateLastWinMult(winAmount);
-                if (typeof updateAvgWin === 'function') updateAvgWin(winAmount);
 
                 // Apply celebration animations based on win size (adjusted thresholds)
                 const isMegaWin = winAmount >= currentBet * 10;
@@ -1351,61 +1333,6 @@
             // Community Jackpot contribution (Sprint 30)
             if (typeof communityJackpotSpin === 'function') communityJackpotSpin(currentBet);
 
-            // Sprint 46: Update win streak display
-            if (typeof _updateWinStreak === 'function') _updateWinStreak(winAmount > 0);
-            // Sprint 48: Increment spin counter
-            if (typeof _incrementSpinCounter === 'function') _incrementSpinCounter();
-
-            // Sprint 53: Hot/cold indicator
-            if (typeof updateHotCold === 'function') updateHotCold(winAmount > 0);
-            // Sprint 53: Lucky symbol tracker (wins only)
-            if (winAmount > 0 && typeof trackLuckySymbol === 'function') trackLuckySymbol(symbols);
-
-            // Sprint 55: Record bet for history chart
-            if (typeof recordBetHistory === 'function') recordBetHistory();
-            // Sprint 56: Update win rate
-            if (typeof updateWinRate === 'function') updateWinRate(winAmount > 0);
-
-            // Sprint 58: Balance milestone check
-            if (typeof checkBalanceMilestone === 'function') checkBalanceMilestone();
-            // Sprint 59: Profit target check
-            if (typeof checkProfitTarget === 'function') checkProfitTarget();
-            // Sprint 60: Update spin pace
-            if (typeof updateSpinPace === 'function') updateSpinPace();
-            // Sprint 61: Update ROI meter
-            if (typeof updateROIMeter === 'function') updateROIMeter();
-            // Sprint 62: Balance change indicator
-            if (typeof showBalanceChange === 'function') showBalanceChange(winAmount);
-            // Sprint 65: Update total wagered
-            if (typeof updateTotalWagered === 'function') updateTotalWagered();
-            // Sprint 67: Dry spell encouragement
-            if (typeof checkDrySpell === 'function') checkDrySpell(winAmount > 0);
-            // Sprint 69: Win frequency + biggest loss
-            if (typeof updateWinFreq === 'function') updateWinFreq(winAmount > 0);
-            if (typeof updateBiggestLoss === 'function') updateBiggestLoss(winAmount);
-            // Sprint 70: Time since last win
-            if (typeof updateTimeSinceWin === 'function') updateTimeSinceWin(winAmount > 0);
-            // Sprint 71: Peak balance
-            if (typeof updatePeakBalance === 'function') updatePeakBalance();
-            // Sprint 75: Balance runway
-            if (typeof updateBalRunway === 'function') updateBalRunway();
-            // Sprint 76: Outcome dots
-            if (typeof pushOutcDot === 'function') pushOutcDot(winAmount > 0);
-            // Sprint 77: Session net position
-            if (typeof updateSessNet === 'function') updateSessNet();
-            // Sprint 78: Wild count
-            if (typeof updateWildCount === 'function') updateWildCount();
-            // Sprint 79: Scatter count + best streak
-            if (typeof updateScatterCount === 'function') updateScatterCount();
-            if (typeof updateBestStreak === 'function') updateBestStreak(winAmount > 0);
-            // Sprint 80: Near miss counter
-            if (typeof checkNearMiss === 'function') checkNearMiss(winAmount);
-            // Sprint 81: Worst loss streak
-            if (typeof updateWorstLossStreak === 'function') updateWorstLossStreak(winAmount > 0);
-
-            // Sprint 44: Record balance for P&L sparkline
-            if (typeof _recordPnlPoint === 'function') _recordPnlPoint();
-
             // ── Hot Chillies Respin (classic 3-reel only) ──
             if (winType === 'classic' && !freeSpinsActive && isDouble && !isTriple && game.bonusType === 'respin' && respinCount < (game.maxRespins || 3)) {
                 const doublePair = getDoubleMatch(symbols, game);
@@ -1438,8 +1365,8 @@
                 return;
             }
 
-            // ── Demo mode: count down spins ──
-            if (typeof _handleDemoSpinEnd === 'function') _handleDemoSpinEnd();
+            // Refresh slot session stats (sssNet P/L) after every win/loss
+            if (typeof window._updateSlotSessionStats === 'function') window._updateSlotSessionStats();
 
             // ── Process free spin advancement ──
             if (freeSpinsActive) {
