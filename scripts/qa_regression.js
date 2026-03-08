@@ -172,6 +172,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "vipProgressMeter",
       "socialProofContainer",
       "comebackOverlay",
+      "dailyLoginCalendar",
+      "reloadBonusBar",
+      "jackpotTicker",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

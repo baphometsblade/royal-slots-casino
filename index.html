@@ -2926,6 +2926,38 @@
         </div>
     </div>
 
+    <!-- Sprint 36: Daily Login Calendar -->
+    <div id="dailyLoginCalendar" style="display:none;">
+        <div class="dlc-modal">
+            <button class="dlc-close" onclick="dismissLoginCalendar()">&times;</button>
+            <div class="dlc-header">
+                <span class="dlc-icon">📅</span>
+                <span class="dlc-title">Daily Rewards</span>
+            </div>
+            <div id="dlcGrid" class="dlc-grid"></div>
+            <div id="dlcStatus" class="dlc-status"></div>
+        </div>
+    </div>
+
+    <!-- Sprint 36: Reload Bonus Bar -->
+    <div id="reloadBonusBar" style="display:none;">
+        <span class="rlb-text">
+            <span class="rlb-icon">🎯</span>
+            Reload Bonus: Deposit <span id="rlbRemaining">$50</span> more for <span id="rlbPercent">25%</span> match!
+        </span>
+        <div class="rlb-progress">
+            <div id="rlbFill" class="rlb-fill"></div>
+        </div>
+        <button id="rlbClaimBtn" class="rlb-claim" style="display:none;" onclick="claimReloadBonus()">Claim!</button>
+    </div>
+
+    <!-- Sprint 36: Progressive Jackpot Ticker -->
+    <div id="jackpotTicker" style="display:none;">
+        <div class="jpt-label">PROGRESSIVE JACKPOT</div>
+        <div id="jptAmount" class="jpt-amount">$0.00</div>
+        <div class="jpt-sub">Grows with every spin across all games</div>
+    </div>
+
     <script src="js/ui-sessiontime.js"></script>
     <script src="js/ui-winmultiplier.js"></script>
     <script src="js/ui-dailychallenge.js"></script>
@@ -2937,6 +2969,9 @@
     <script src="js/ui-vipprogress.js"></script>
     <script src="js/ui-socialproof.js"></script>
     <script src="js/ui-comeback.js"></script>
+    <script src="js/ui-logincalendar.js"></script>
+    <script src="js/ui-reloadprogress.js"></script>
+    <script src="js/ui-jackpotticker.js"></script>
 
 </body>
 </html>
