@@ -198,6 +198,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "spinMultiplierBanner",
       "referralTrackerPanel",
       "sessionRewardPopup",
+      "luckyNumberOverlay",
+      "achievementBadgePanel",
+      "betInsuranceBar",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
