@@ -21572,3 +21572,557 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     #dailyChallengePanel { width: 100%; max-width: 100vw; }
     .dc-fab { bottom: 64px; right: 12px; width: 42px; height: 42px; font-size: 1.1rem; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPRINT 33 — Deposit Match Popup, Lucky Spin Wheel, Weekend Tournament
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Deposit Match Popup (#depositMatchOverlay) ─────────────────────── */
+
+.dm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.75);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.dm-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+    animation: _s33DmFadeIn 0.45s ease-out both;
+}
+
+.dm-card {
+    background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+    border: 2px solid #fbbf24;
+    border-radius: 18px;
+    padding: 36px 32px 28px;
+    max-width: 420px;
+    width: 90vw;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.18), 0 12px 48px rgba(0, 0, 0, 0.6);
+    transform: scale(0.85);
+    animation: _s33DmCardIn 0.5s 0.1s ease-out both;
+}
+
+.dm-heading {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #fbbf24;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 6px;
+    text-shadow: 0 0 18px rgba(251, 191, 36, 0.45);
+}
+
+.dm-subtext {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 24px;
+    font-weight: 400;
+}
+
+.dm-tiers {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.dm-tier {
+    background: rgba(251, 191, 36, 0.08);
+    border: 1.5px solid rgba(251, 191, 36, 0.3);
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.dm-tier:hover {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.6);
+    color: #fff;
+}
+
+.dm-tier.active {
+    background: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
+    border-color: #fbbf24;
+    color: #0f0f1a;
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
+}
+
+.dm-cta {
+    display: inline-block;
+    width: 100%;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
+    border: none;
+    border-radius: 12px;
+    color: #0f0f1a;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.35);
+}
+
+.dm-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(251, 191, 36, 0.5);
+}
+
+.dm-cta:active {
+    transform: translateY(0);
+}
+
+.dm-dismiss {
+    display: block;
+    margin-top: 16px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.dm-dismiss:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes _s33DmFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes _s33DmCardIn {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ── 2. Lucky Spin Wheel (#luckyWheelOverlay) ──────────────────────────── */
+
+.lw-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.lw-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.lw-wheel-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin-bottom: 20px;
+}
+
+.lw-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 4px solid #fbbf24;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s;
+}
+
+.lw-wheel.spinning {
+    animation: _s33LwSpin 4s cubic-bezier(0.17, 0.67, 0.12, 0.99) forwards;
+}
+
+.lw-segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 0;
+    left: 50%;
+    transform-origin: 0% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    padding-left: 18px;
+    padding-bottom: 20px;
+}
+
+.lw-segment:nth-child(odd) {
+    background: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
+    color: #0f0f1a;
+    text-shadow: none;
+}
+
+.lw-segment:nth-child(even) {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+}
+
+.lw-segment:nth-child(1) { transform: rotate(0deg) skewY(-45deg); }
+.lw-segment:nth-child(2) { transform: rotate(45deg) skewY(-45deg); }
+.lw-segment:nth-child(3) { transform: rotate(90deg) skewY(-45deg); }
+.lw-segment:nth-child(4) { transform: rotate(135deg) skewY(-45deg); }
+.lw-segment:nth-child(5) { transform: rotate(180deg) skewY(-45deg); }
+.lw-segment:nth-child(6) { transform: rotate(225deg) skewY(-45deg); }
+.lw-segment:nth-child(7) { transform: rotate(270deg) skewY(-45deg); }
+.lw-segment:nth-child(8) { transform: rotate(315deg) skewY(-45deg); }
+
+.lw-pointer {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 26px solid #fbbf24;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+    z-index: 2;
+}
+
+.lw-spin-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
+    border: 3px solid #0f0f1a;
+    color: #0f0f1a;
+    font-size: 0.85rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    z-index: 3;
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
+    transition: transform 0.15s ease;
+}
+
+.lw-spin-btn:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+}
+
+.lw-spin-btn:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+.lw-spin-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.lw-prize-display {
+    text-align: center;
+    padding: 16px 32px;
+    min-width: 220px;
+    background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+    border: 2px solid #fbbf24;
+    border-radius: 14px;
+    color: #fbbf24;
+    font-size: 1.4rem;
+    font-weight: 800;
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+}
+
+.lw-prize-display.revealed {
+    animation: _s33LwPrizeReveal 0.5s ease-out both;
+    pointer-events: auto;
+}
+
+.lw-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.lw-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+@keyframes _s33LwSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(2160deg);
+    }
+}
+
+@keyframes _s33LwPrizeReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.12);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── 3. Weekend Tournament Banner (#weekendTournamentBar) ──────────────── */
+
+.wt-bar {
+    display: none;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    padding: 12px 24px;
+    background: linear-gradient(90deg, #0f0f1a 0%, #1a1a2e 50%, #0f0f1a 100%);
+    border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+    z-index: 500;
+    animation: _s33WtSlide 0.5s ease-out both;
+}
+
+.wt-bar.active {
+    display: flex;
+}
+
+.wt-rank {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fbbf24;
+    font-size: 1.05rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.wt-rank::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fbbf24;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+.wt-prize {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wt-prize span {
+    color: #fbbf24;
+    font-weight: 800;
+}
+
+.wt-timer {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.wt-playbtn {
+    margin-left: auto;
+    padding: 8px 22px;
+    background: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
+    border: none;
+    border-radius: 8px;
+    color: #0f0f1a;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 12px rgba(251, 191, 36, 0.3);
+    white-space: nowrap;
+}
+
+.wt-playbtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 18px rgba(251, 191, 36, 0.45);
+}
+
+.wt-playbtn:active {
+    transform: translateY(0);
+}
+
+.wt-leaderboard {
+    display: none;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+}
+
+.wt-leaderboard.expanded {
+    display: block;
+}
+
+.wt-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.88rem;
+    transition: background 0.15s ease;
+}
+
+.wt-row:last-child {
+    border-bottom: none;
+}
+
+.wt-row:hover {
+    background: rgba(251, 191, 36, 0.04);
+}
+
+.wt-row.top3 {
+    color: #fff;
+    font-weight: 700;
+}
+
+.wt-row.top3:nth-child(1) {
+    border-left: 3px solid #fbbf24;
+    background: rgba(251, 191, 36, 0.06);
+}
+
+.wt-row.top3:nth-child(2) {
+    border-left: 3px solid #c0c0c0;
+    background: rgba(192, 192, 192, 0.04);
+}
+
+.wt-row.top3:nth-child(3) {
+    border-left: 3px solid #cd7f32;
+    background: rgba(205, 127, 50, 0.04);
+}
+
+@keyframes _s33WtSlide {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ── Sprint 33 Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .dm-card {
+        padding: 24px 18px 20px;
+        max-width: 95vw;
+    }
+    .dm-heading {
+        font-size: 1.6rem;
+    }
+    .dm-tier {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    .dm-cta {
+        font-size: 1rem;
+        padding: 14px 18px;
+    }
+
+    .lw-wheel-container {
+        width: 260px;
+        height: 260px;
+    }
+    .lw-spin-btn {
+        width: 52px;
+        height: 52px;
+        font-size: 0.75rem;
+    }
+    .lw-prize-display {
+        font-size: 1.1rem;
+        padding: 12px 20px;
+    }
+
+    .wt-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 14px;
+    }
+    .wt-rank {
+        font-size: 0.9rem;
+    }
+    .wt-prize {
+        font-size: 0.82rem;
+    }
+    .wt-timer {
+        font-size: 0.75rem;
+    }
+    .wt-playbtn {
+        padding: 7px 16px;
+        font-size: 0.8rem;
+    }
+    .wt-leaderboard {
+        padding: 8px 14px;
+    }
+    .wt-row {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+}

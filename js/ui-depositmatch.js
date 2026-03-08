@@ -1,238 +1,212 @@
-/* =====================================================================
- *  Deposit Match Bonus — auto-fire celebration overlay
- *  50% match up to $5 on eligible deposits
- *  IIFE — no globals polluted, hooks window.updateBalance
- * ===================================================================== */
-(function() {
-  'use strict';
+/* ui-depositmatch.js — Deposit Match Popup
+ * Sprint 33: Drives deposits by showing tiered match offers.
+ * Dynamically creates its own DOM elements (no static HTML required).
+ */
+(function () {
+    'use strict';
 
-  var TOKEN_KEY = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
-  var DM_SHOWN_KEY = 'dmShown';
-  var COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
-  var CHECK_DELAY_MS = 3000;
+    // ── Constants ────────────────────────────────────────────────────────────
+    var STORAGE_KEY = 'ms_depositMatchData';
+    var TIERS = [
+        { amount: 10, match: 10 },
+        { amount: 25, match: 25 },
+        { amount: 50, match: 50 },
+        { amount: 100, match: 100 }
+    ];
+    var MAX_SHOWS    = 3;
+    var DELAY_MS     = 20000;  // 20s before first show
+    var COOLDOWN_MS  = 7200000; // 2 hours between shows
 
-  // ---- helpers ----
+    var _overlayEl   = null;
+    var _selectedIdx = 0;
+    var _showTimer   = null;
 
-  function getToken() {
-    try { return localStorage.getItem(TOKEN_KEY); } catch(e) { return null; }
-  }
-
-  function isCoolingDown() {
-    try {
-      var ts = localStorage.getItem(DM_SHOWN_KEY);
-      if (!ts) return false;
-      return (Date.now() - Number(ts)) < COOLDOWN_MS;
-    } catch(e) { return false; }
-  }
-
-  function markShown() {
-    try { localStorage.setItem(DM_SHOWN_KEY, String(Date.now())); } catch(e) {}
-  }
-
-  function apiFetch(method, path) {
-    var token = getToken();
-    if (!token) return Promise.resolve(null);
-    var opts = {
-      method: method,
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-    };
-    return fetch(path, opts)
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .catch(function() { return null; });
-  }
-
-  // ---- overlay builder (pure DOM) ----
-
-  function buildOverlay(depositAmount, matchAmount) {
-    // Backdrop
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:20500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.82);opacity:0;transition:opacity 0.4s ease;';
-
-    // Card
-    var card = document.createElement('div');
-    card.style.cssText = 'background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border:2px solid #ffd700;border-radius:20px;padding:40px 48px;text-align:center;max-width:420px;width:90%;box-shadow:0 0 60px rgba(255,215,0,0.3),0 20px 60px rgba(0,0,0,0.6);transform:scale(0.7);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);';
-
-    // Confetti top
-    var confettiTop = document.createElement('div');
-    confettiTop.style.cssText = 'font-size:36px;margin-bottom:8px;';
-    confettiTop.textContent = '🎉✨🎊';
-    card.appendChild(confettiTop);
-
-    // Header
-    var header = document.createElement('div');
-    header.style.cssText = 'font-size:28px;font-weight:900;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.5);margin-bottom:16px;letter-spacing:1px;';
-    header.textContent = '💰 DEPOSIT MATCHED!';
-    card.appendChild(header);
-
-    // Description
-    var desc = document.createElement('div');
-    desc.style.cssText = 'font-size:17px;color:#e0e0e0;margin-bottom:8px;line-height:1.5;';
-    var descText = 'Your $' + depositAmount.toFixed(2) + ' deposit earns';
-    desc.textContent = descText;
-    card.appendChild(desc);
-
-    // Bonus amount
-    var bonusLine = document.createElement('div');
-    bonusLine.style.cssText = 'font-size:38px;font-weight:900;color:#00ff88;text-shadow:0 0 30px rgba(0,255,136,0.5);margin:12px 0 20px;';
-    bonusLine.textContent = '+$' + matchAmount.toFixed(2) + ' bonus credits!';
-    card.appendChild(bonusLine);
-
-    // Confetti middle
-    var confettiMid = document.createElement('div');
-    confettiMid.style.cssText = 'font-size:24px;margin-bottom:20px;';
-    confettiMid.textContent = '🎉💸✨💰🎊';
-    card.appendChild(confettiMid);
-
-    // Claim button
-    var btn = document.createElement('button');
-    btn.style.cssText = 'background:linear-gradient(135deg,#00c853,#00e676);color:#000;font-size:20px;font-weight:900;padding:16px 48px;border:none;border-radius:12px;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 4px 20px rgba(0,200,83,0.4);transition:transform 0.15s ease,box-shadow 0.15s ease;';
-    btn.textContent = 'CLAIM NOW';
-    btn.addEventListener('mouseenter', function() {
-      btn.style.transform = 'scale(1.05)';
-      btn.style.boxShadow = '0 6px 30px rgba(0,200,83,0.6)';
-    });
-    btn.addEventListener('mouseleave', function() {
-      btn.style.transform = 'scale(1)';
-      btn.style.boxShadow = '0 4px 20px rgba(0,200,83,0.4)';
-    });
-    card.appendChild(btn);
-
-    // Rate info
-    var info = document.createElement('div');
-    info.style.cssText = 'font-size:12px;color:#888;margin-top:16px;';
-    info.textContent = '50% match • up to $5.00 per deposit';
-    card.appendChild(info);
-
-    overlay.appendChild(card);
-
-    // Wire claim
-    btn.addEventListener('click', function() {
-      btn.disabled = true;
-      btn.style.opacity = '0.6';
-      btn.textContent = 'CLAIMING...';
-      claimMatch(overlay, card, matchAmount);
-    });
-
-    // Close on backdrop click
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) {
-        closeOverlay(overlay);
-      }
-    });
-
-    return overlay;
-  }
-
-  function showOverlay(overlay, card) {
-    document.body.appendChild(overlay);
-    // Force reflow then animate in
-    void overlay.offsetHeight;
-    overlay.style.opacity = '1';
-    if (card) card.style.transform = 'scale(1)';
-  }
-
-  function closeOverlay(overlay) {
-    overlay.style.opacity = '0';
-    setTimeout(function() {
-      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    }, 400);
-  }
-
-  function claimMatch(overlay, card, matchAmount) {
-    apiFetch('POST', '/api/depositmatch/claim').then(function(data) {
-      if (!data || !data.success) {
-        closeOverlay(overlay);
-        return;
-      }
-
-      // Update balance if updateBalance exists
-      if (typeof window.updateBalance === 'function') {
-        window.updateBalance(data.newBalance);
-      } else if (typeof balance !== 'undefined') {
-        balance = data.newBalance;
-      }
-
-      // Replace card content with success message
-      while (card.firstChild) card.removeChild(card.firstChild);
-
-      var checkmark = document.createElement('div');
-      checkmark.style.cssText = 'font-size:48px;margin-bottom:12px;';
-      checkmark.textContent = '✅';
-      card.appendChild(checkmark);
-
-      var successMsg = document.createElement('div');
-      successMsg.style.cssText = 'font-size:24px;font-weight:900;color:#00ff88;text-shadow:0 0 20px rgba(0,255,136,0.4);';
-      successMsg.textContent = '+$' + matchAmount.toFixed(2) + ' credited!';
-      card.appendChild(successMsg);
-
-      var confettiEnd = document.createElement('div');
-      confettiEnd.style.cssText = 'font-size:28px;margin-top:12px;';
-      confettiEnd.textContent = '🎉✨🎊';
-      card.appendChild(confettiEnd);
-
-      markShown();
-
-      setTimeout(function() {
-        closeOverlay(overlay);
-      }, 2000);
-    }).catch(function() {
-      closeOverlay(overlay);
-    });
-  }
-
-  // ---- main check ----
-
-  function checkAndShow() {
-    if (isCoolingDown()) return;
-    var token = getToken();
-    if (!token) return;
-
-    apiFetch('GET', '/api/depositmatch/status').then(function(data) {
-      if (!data || !data.eligible || data.matchAmount <= 0) return;
-
-      var overlay = buildOverlay(data.lastDeposit, data.matchAmount);
-      var card = overlay.firstChild;
-      showOverlay(overlay, card);
-    }).catch(function() {});
-  }
-
-  // ---- poll for deposit match eligibility ----
-
-  var _prevBalance = null;
-  var _pollTimer = null;
-
-  function startPolling() {
-    // Capture initial balance
-    if (typeof balance !== 'undefined') {
-      _prevBalance = balance;
+    // ── Persistence helpers ─────────────────────────────────────────────────
+    function _load() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) { return {}; }
     }
 
-    // Poll every 8 seconds; compare balance to detect deposits
-    _pollTimer = setInterval(function() {
-      var cur = (typeof balance !== 'undefined') ? balance : null;
-      if (cur !== null && _prevBalance !== null && cur > _prevBalance) {
-        _prevBalance = cur;
-        if (!isCoolingDown()) {
-          checkAndShow();
+    function _save(data) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+    }
+
+    // ── DOM creation ────────────────────────────────────────────────────────
+    function _createOverlay() {
+        if (_overlayEl) return;
+        var el = document.createElement('div');
+        el.id = 'depositMatchOverlay';
+        el.className = 'deposit-match-overlay';
+        el.style.cssText = 'display:none;position:fixed;inset:0;z-index:20600;' +
+            'background:rgba(0,0,0,0.82);align-items:center;justify-content:center;';
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-modal', 'true');
+
+        var card = document.createElement('div');
+        card.className = 'dm-card';
+        card.style.cssText = 'background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);' +
+            'border:2px solid #fbbf24;border-radius:20px;padding:36px 40px;text-align:center;' +
+            'max-width:420px;width:90%;box-shadow:0 0 60px rgba(251,191,36,0.25),0 20px 60px rgba(0,0,0,0.5);';
+
+        // Close button
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'dm-close';
+        closeBtn.style.cssText = 'position:absolute;top:12px;right:16px;background:none;border:none;' +
+            'color:#aaa;font-size:22px;cursor:pointer;';
+        closeBtn.textContent = '\u2715';
+        closeBtn.addEventListener('click', function () {
+            if (typeof window.dismissDepositMatch === 'function') window.dismissDepositMatch();
+        });
+        card.style.position = 'relative';
+        card.appendChild(closeBtn);
+
+        // Icon
+        var icon = document.createElement('div');
+        icon.style.cssText = 'font-size:42px;margin-bottom:8px;';
+        icon.textContent = '\uD83D\uDCB0';
+        card.appendChild(icon);
+
+        // Title
+        var title = document.createElement('div');
+        title.className = 'dm-title';
+        title.style.cssText = 'font-size:24px;font-weight:900;color:#fbbf24;margin-bottom:8px;' +
+            'text-shadow:0 0 18px rgba(251,191,36,0.4);';
+        title.textContent = 'Double Your Deposit';
+        card.appendChild(title);
+
+        // Subtitle
+        var sub = document.createElement('div');
+        sub.className = 'dm-sub';
+        sub.style.cssText = 'font-size:15px;color:#ccc;margin-bottom:18px;line-height:1.4;';
+        sub.textContent = 'Pick a tier and we match it dollar-for-dollar!';
+        card.appendChild(sub);
+
+        // Tier buttons container
+        var tierWrap = document.createElement('div');
+        tierWrap.className = 'dm-tiers';
+        tierWrap.id = 'dmTierWrap';
+        tierWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;';
+        for (var i = 0; i < TIERS.length; i++) {
+            var btn = document.createElement('button');
+            btn.style.cssText = 'padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;' +
+                'cursor:pointer;transition:all 0.15s;border:2px solid ' +
+                (i === 0 ? '#fbbf24' : '#444') + ';background:' +
+                (i === 0 ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)') + ';color:' +
+                (i === 0 ? '#fbbf24' : '#ccc') + ';';
+            btn.className = 'dm-tier-btn' + (i === 0 ? ' dm-tier-selected' : '');
+            btn.setAttribute('data-idx', String(i));
+            btn.textContent = '$' + TIERS[i].amount + ' \u2192 +$' + TIERS[i].match;
+            btn.addEventListener('click', _onTierClick);
+            tierWrap.appendChild(btn);
         }
-      } else if (cur !== null) {
-        _prevBalance = cur;
-      }
-    }, 8000);
-  }
+        card.appendChild(tierWrap);
 
-  // ---- init ----
+        // CTA
+        var cta = document.createElement('button');
+        cta.className = 'dm-cta';
+        cta.style.cssText = 'background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;' +
+            'font-size:18px;font-weight:900;padding:14px 44px;border:none;border-radius:12px;' +
+            'cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px rgba(251,191,36,0.35);' +
+            'transition:transform 0.15s,box-shadow 0.15s;';
+        cta.textContent = '\uD83C\uDFB0 Claim Match Bonus';
+        cta.addEventListener('click', function () {
+            if (typeof window.claimDepositMatch === 'function') window.claimDepositMatch();
+        });
+        card.appendChild(cta);
 
-  function init() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(startPolling, 3000);
-      });
-    } else {
-      setTimeout(startPolling, 3000);
+        // Dismiss link
+        var dismiss = document.createElement('button');
+        dismiss.className = 'dm-dismiss';
+        dismiss.style.cssText = 'display:block;margin:14px auto 0;background:none;border:none;' +
+            'color:#888;font-size:13px;cursor:pointer;text-decoration:underline;';
+        dismiss.textContent = 'No thanks';
+        dismiss.addEventListener('click', function () {
+            if (typeof window.dismissDepositMatch === 'function') window.dismissDepositMatch();
+        });
+        card.appendChild(dismiss);
+
+        el.appendChild(card);
+        document.body.appendChild(el);
+        _overlayEl = el;
     }
-  }
 
-  init();
+    function _onTierClick(e) {
+        var idx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
+        _selectedIdx = idx;
+        var wrap = document.getElementById('dmTierWrap');
+        if (!wrap) return;
+        var btns = wrap.querySelectorAll('.dm-tier-btn');
+        for (var i = 0; i < btns.length; i++) {
+            var sel = (i === idx);
+            btns[i].className = 'dm-tier-btn' + (sel ? ' dm-tier-selected' : '');
+            btns[i].style.borderColor = sel ? '#fbbf24' : '#444';
+            btns[i].style.background = sel ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)';
+            btns[i].style.color = sel ? '#fbbf24' : '#ccc';
+        }
+    }
 
+    // ── Show / hide ─────────────────────────────────────────────────────────
+    function _show() {
+        _createOverlay();
+        _overlayEl.style.display = 'flex';
+        var data = _load();
+        data.sessionShows = (data.sessionShows || 0) + 1;
+        data.lastShownAt = Date.now();
+        _save(data);
+    }
+
+    window.dismissDepositMatch = function () {
+        if (_overlayEl) {
+            _overlayEl.style.opacity = '0';
+            _overlayEl.style.transition = 'opacity 0.25s';
+            setTimeout(function () {
+                if (_overlayEl) { _overlayEl.style.display = 'none'; _overlayEl.style.opacity = ''; }
+            }, 250);
+        }
+    };
+
+    window.claimDepositMatch = function () {
+        if (_overlayEl) _overlayEl.style.display = 'none';
+        if (typeof openWalletModal === 'function') openWalletModal();
+    };
+
+    window._depositMatchMarkDeposited = function () {
+        var data = _load();
+        data.deposited = true;
+        _save(data);
+    };
+
+    // ── Init ────────────────────────────────────────────────────────────────
+    function _init() {
+        // QA suppression
+        try { if (new URLSearchParams(location.search).get('noBonus') === '1') return; } catch (e) {}
+
+        var data = _load();
+        // Permanently suppressed after deposit
+        if (data.deposited) return;
+        // Max shows per session
+        if ((data.sessionShows || 0) >= MAX_SHOWS) return;
+        // Cooldown check (2 hours)
+        if (data.lastShownAt && (Date.now() - data.lastShownAt) < COOLDOWN_MS) return;
+        // Only for logged-in users
+        if (typeof currentUser === 'undefined' || !currentUser) return;
+
+        _showTimer = setTimeout(function () {
+            // Re-check conditions at display time
+            if (typeof currentUser === 'undefined' || !currentUser) return;
+            var d2 = _load();
+            if (d2.deposited) return;
+            if ((d2.sessionShows || 0) >= MAX_SHOWS) return;
+            _show();
+        }, DELAY_MS);
+    }
+
+    // ── Bootstrap ───────────────────────────────────────────────────────────
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _init);
+    } else {
+        _init();
+    }
 })();

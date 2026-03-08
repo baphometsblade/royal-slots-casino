@@ -759,6 +759,18 @@
                 <span class="str-timer" id="strTimer">0:00</span>
             </div>
 
+        <!-- Sprint 33: Weekend Tournament -->
+        <div id="weekendTournamentBar" class="wt-bar" style="display:none;">
+            <span class="wt-icon">🏆</span>
+            <span class="wt-title">Weekend Tournament</span>
+            <span class="wt-rank" id="wtRank">Rank: --</span>
+            <span class="wt-prize" id="wtPrize">Prize Pool: $500</span>
+            <span class="wt-timer" id="wtTimer">Ends in --:--</span>
+            <button class="wt-playbtn" onclick="if(typeof playRandomHotGame==='function')playRandomHotGame()">Play Now</button>
+            <button class="wt-expand" id="wtExpandBtn" onclick="if(typeof toggleWeekendLeaderboard==='function')toggleWeekendLeaderboard()">▼</button>
+            <div class="wt-leaderboard" id="wtLeaderboard" style="display:none;"></div>
+        </div>
+
         <!-- Sprint 28: Reload bonus strip -->
         <div id="reloadBonusStrip" class="reload-bonus-strip" style="display:none">
             <span class="rbs-icon">💜</span>
@@ -2834,9 +2846,36 @@
         </div>
     </div>
 
+    <!-- Sprint 33: Deposit Match Popup -->
+    <div id="depositMatchOverlay" class="dm-overlay" style="display:none;">
+        <div class="dm-card">
+            <div class="dm-heading">100% MATCH</div>
+            <div class="dm-subtext">Double your next deposit!</div>
+            <div class="dm-tiers" id="dmTiers"></div>
+            <button class="dm-cta" onclick="if(typeof claimDepositMatch==='function')claimDepositMatch()">CLAIM MATCH BONUS</button>
+            <a class="dm-dismiss" href="javascript:void(0)" onclick="if(typeof dismissDepositMatch==='function')dismissDepositMatch()">Maybe later</a>
+        </div>
+    </div>
+
+    <!-- Sprint 33: Lucky Spin Wheel -->
+    <div id="luckyWheelOverlay" class="lw-overlay" style="display:none;">
+        <div class="lw-wheel-container">
+            <div class="lw-title">Daily Lucky Wheel</div>
+            <div class="lw-wheel-wrap">
+                <div class="lw-pointer"></div>
+                <div class="lw-wheel" id="lwWheel"></div>
+            </div>
+            <button class="lw-spin-btn" id="lwSpinBtn" onclick="if(typeof spinLuckyWheel==='function')spinLuckyWheel()">SPIN!</button>
+            <div class="lw-prize-display" id="lwPrize" style="display:none;"></div>
+            <button class="lw-close" onclick="if(typeof closeLuckyWheel==='function')closeLuckyWheel()">&times;</button>
+        </div>
+    </div>
+
     <script src="js/ui-sessiontime.js"></script>
     <script src="js/ui-winmultiplier.js"></script>
     <script src="js/ui-dailychallenge.js"></script>
+    <script src="js/ui-luckywheel.js"></script>
+    <script src="js/ui-weekendtournament.js"></script>
 
 </body>
 </html>
