@@ -1,18 +1,24 @@
-// Sprint 83: Referral Bonus System
+// Sprint 83: Referral Bonus System (enhanced)
 // Encourages players to share the casino with friends by offering bonus credits.
 // Generates a unique referral code per player, shows a floating panel with
 // share/copy functionality, simulated referral stats, and processes incoming
-// ?ref=CODE URL parameters to credit $5.00 bonus to new players.
+// ?ref=CODE URL parameters to credit bonus to new players.
+// Enhanced: one-click full-link copy, WhatsApp/Twitter/Telegram social share,
+// $25-per-deposit offer, milestone progress bar.
 (function() {
     'use strict';
 
-    var REFERRAL_BONUS      = 5.00;
+    var REFERRAL_BONUS      = 25.00;   // $25 per friend who deposits
     var CODE_LENGTH         = 6;
     var CODE_CHARS          = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     var STORAGE_CODE_KEY    = 'casinoReferral';
     var STORAGE_STATS_KEY   = 'referralStats';
     var STORAGE_CLAIMED_KEY = 'referralClaimed';
     var STORAGE_SEEN_KEY    = 'referralPanelSeen';
+
+    // Milestone: refer N friends, earn milestone bonus
+    var MILESTONE_GOAL  = 5;
+    var MILESTONE_BONUS = 150.00; // $150 for 5 referrals
 
     var FAKE_NAMES = [
         'Alex M.', 'Jordan K.', 'Sam R.', 'Taylor W.', 'Casey B.',
@@ -49,6 +55,10 @@
         return code;
     }
 
+    function buildReferralLink(code) {
+        return 'https://matrixspins.com?ref=' + (code || _referralCode);
+    }
+
     function loadStats() {
         try {
             var raw = localStorage.getItem(STORAGE_STATS_KEY);
@@ -78,6 +88,7 @@
     function injectStyles() {
         if (_stylesInjected) return;
         _stylesInjected = true;
+        if (document.getElementById('referralStyles')) { return; }
         var s = document.createElement('style');
         s.id = 'referralStyles';
         s.textContent = [
@@ -89,38 +100,82 @@
             '#refFab:hover{transform:scale(1.1)}',
             '#refFab .ref-dot{position:absolute;top:-2px;right:-2px;width:12px;height:12px;' +
                 'border-radius:50%;background:#ef4444;border:2px solid #0d0d1a}',
-            '#refPanel{position:fixed;bottom:260px;right:16px;z-index:19100;width:310px;max-width:90vw;' +
+            '#refPanel{position:fixed;bottom:260px;right:16px;z-index:19100;width:320px;max-width:92vw;' +
                 'background:linear-gradient(160deg,#0d0d1a,#1a0a2e);' +
                 'border:2px solid rgba(124,58,237,.4);border-radius:16px;' +
                 'padding:20px;box-shadow:0 8px 40px rgba(124,58,237,.25);color:#e0e7ff;' +
                 'transform:translateY(20px) scale(.95);opacity:0;pointer-events:none;' +
-                'transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s ease}',
+                'transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s ease;' +
+                'max-height:85vh;overflow-y:auto}',
             '#refPanel.active{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}',
-            '.ref-title{font-size:16px;font-weight:900;color:#a78bfa;margin-bottom:12px;text-align:center}',
+            '.ref-title{font-size:16px;font-weight:900;color:#a78bfa;margin-bottom:4px;text-align:center}',
+            '.ref-subtitle{font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:12px}',
+            '.ref-offer-banner{background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(59,130,246,.12));' +
+                'border:1px solid rgba(34,197,94,.35);border-radius:12px;padding:10px 14px;' +
+                'text-align:center;margin-bottom:12px}',
+            '.ref-offer-main{font-size:18px;font-weight:900;color:#22c55e;letter-spacing:.5px}',
+            '.ref-offer-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}',
+            '.ref-link-box{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);' +
+                'border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:6px;margin-bottom:10px}',
+            '.ref-link-text{flex:1;font-size:10px;color:rgba(255,255,255,.45);overflow:hidden;' +
+                'text-overflow:ellipsis;white-space:nowrap;font-family:monospace}',
+            '.ref-link-copy-btn{flex-shrink:0;padding:5px 10px;border:none;border-radius:6px;' +
+                'background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:11px;' +
+                'font-weight:700;cursor:pointer;transition:opacity .2s}',
+            '.ref-link-copy-btn:hover{opacity:.85}',
             '.ref-code-box{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);' +
-                'border-radius:12px;padding:12px;text-align:center;margin-bottom:12px}',
+                'border-radius:12px;padding:12px;text-align:center;margin-bottom:10px}',
             '.ref-code-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}',
             '.ref-code-val{font-size:24px;font-weight:900;letter-spacing:4px;color:#a78bfa}',
-            '.ref-btns{display:flex;gap:8px;margin-bottom:12px}',
-            '.ref-btn{flex:1;padding:9px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}',
-            '.ref-btn-copy{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}',
-            '.ref-btn-share{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff}',
-            '.ref-bonus{background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.2);' +
-                'border-radius:10px;padding:8px;text-align:center;margin-bottom:12px;font-size:12px;color:rgba(255,255,255,.55)}',
-            '.ref-bonus-amt{color:#fbbf24;font-weight:800;font-size:15px}',
-            '.ref-stats{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:8px}',
-            '.ref-stats-num{color:#a78bfa;font-weight:800}',
+            '.ref-share-label{font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;' +
+                'letter-spacing:1px;margin-bottom:6px;text-align:center}',
+            '.ref-share-row{display:flex;gap:6px;margin-bottom:12px;justify-content:center}',
+            '.ref-share-btn{flex:1;max-width:80px;padding:8px 4px;border:none;border-radius:8px;' +
+                'font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;' +
+                'align-items:center;gap:2px;transition:transform .15s,opacity .15s}',
+            '.ref-share-btn:hover{transform:translateY(-2px);opacity:.9}',
+            '.ref-share-btn-wa{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff}',
+            '.ref-share-btn-tw{background:linear-gradient(135deg,#1da1f2,#0d8fd8);color:#fff}',
+            '.ref-share-btn-tg{background:linear-gradient(135deg,#2ca5e0,#1a8abf);color:#fff}',
+            '.ref-share-btn-cp{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}',
+            '.ref-share-ico{font-size:16px;line-height:1}',
+            '.ref-share-lbl{font-size:9px;opacity:.85}',
+            '.ref-milestone{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);' +
+                'border-radius:10px;padding:10px 12px;margin-bottom:12px}',
+            '.ref-milestone-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}',
+            '.ref-milestone-title{font-size:11px;font-weight:700;color:#fbbf24}',
+            '.ref-milestone-reward{font-size:11px;color:#22c55e;font-weight:700}',
+            '.ref-milestone-bar-bg{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}',
+            '.ref-milestone-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#fbbf24,#f59e0b);' +
+                'transition:width .5s ease}',
+            '.ref-milestone-prog{font-size:10px;color:rgba(255,255,255,.35);margin-top:4px;text-align:right}',
+            '.ref-stats-row{display:flex;gap:8px;margin-bottom:12px}',
+            '.ref-stat-card{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);' +
+                'border-radius:10px;padding:8px;text-align:center}',
+            '.ref-stat-num{font-size:18px;font-weight:900;color:#a78bfa}',
+            '.ref-stat-lbl{font-size:10px;color:rgba(255,255,255,.35);margin-top:2px}',
             '.ref-hist-title{font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}',
             '.ref-hist-item{display:flex;justify-content:space-between;padding:4px 0;' +
                 'border-bottom:1px solid rgba(255,255,255,.05);font-size:11px;color:rgba(255,255,255,.5)}',
             '.ref-hist-bonus{color:#22c55e;font-weight:700}',
             '.ref-hist-empty{font-size:11px;color:rgba(255,255,255,.2);text-align:center;padding:8px 0;font-style:italic}',
-            '.ref-copied{font-size:11px;color:#22c55e;text-align:center;height:16px;opacity:0;transition:opacity .2s}',
+            '.ref-copied{font-size:11px;color:#22c55e;text-align:center;height:16px;opacity:0;transition:opacity .2s;margin-bottom:4px}',
             '.ref-copied.show{opacity:1}',
-            '.ref-close{display:block;margin:8px auto 0;background:none;border:none;color:rgba(255,255,255,.25);' +
+            '.ref-close{display:block;margin:10px auto 0;background:none;border:none;color:rgba(255,255,255,.25);' +
                 'font-size:11px;cursor:pointer;text-decoration:underline}'
         ].join('\n');
         document.head.appendChild(s);
+    }
+
+    // Build an icon+label span safely without innerHTML
+    function _makeShareBtnContent(icoChar, lblText) {
+        var ico = document.createElement('span');
+        ico.className = 'ref-share-ico';
+        ico.textContent = icoChar;
+        var lbl = document.createElement('span');
+        lbl.className = 'ref-share-lbl';
+        lbl.textContent = lblText;
+        return [ico, lbl];
     }
 
     function buildFab() {
@@ -128,7 +183,7 @@
         injectStyles();
         _fabEl = document.createElement('div');
         _fabEl.id = 'refFab';
-        _fabEl.title = 'Invite Friends';
+        _fabEl.title = 'Invite Friends \u2014 Earn $25 per referral!';
         _fabEl.appendChild(document.createTextNode('\uD83D\uDC8C'));
         var hasSeen = false;
         try { hasSeen = localStorage.getItem(STORAGE_SEEN_KEY) === '1'; } catch (e) {}
@@ -159,15 +214,76 @@
         }
     }
 
+    // Open share URL in a new tab safely
+    function openShareUrl(url) {
+        var a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function makeShareUrl(platform) {
+        var link = buildReferralLink(_referralCode);
+        var msg = 'I\u2019m playing at Matrix Spins casino! Join me and get a bonus using my referral link: ' + link;
+        if (platform === 'wa') {
+            return 'https://wa.me/?text=' + encodeURIComponent(msg);
+        } else if (platform === 'tw') {
+            return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(msg);
+        } else if (platform === 'tg') {
+            return 'https://t.me/share/url?url=' + encodeURIComponent(link) +
+                '&text=' + encodeURIComponent('Join me on Matrix Spins casino and get a bonus!');
+        }
+        return link;
+    }
+
     function buildPanel() {
         if (_panelEl) return;
+        injectStyles();
         _panelEl = document.createElement('div');
         _panelEl.id = 'refPanel';
 
+        // Title
         var title = document.createElement('div');
         title.className = 'ref-title';
-        title.textContent = '\uD83D\uDC65 Invite Friends';
+        title.textContent = '\uD83D\uDC65 Invite Friends & Earn';
 
+        var subtitle = document.createElement('div');
+        subtitle.className = 'ref-subtitle';
+        subtitle.textContent = 'Share Matrix Spins with friends';
+
+        // Offer banner — $25 per referral
+        var offerBanner = document.createElement('div');
+        offerBanner.className = 'ref-offer-banner';
+        var offerMain = document.createElement('div');
+        offerMain.className = 'ref-offer-main';
+        offerMain.textContent = 'Earn $' + REFERRAL_BONUS.toFixed(0) + ' for every friend who deposits!';
+        var offerSub = document.createElement('div');
+        offerSub.className = 'ref-offer-sub';
+        offerSub.textContent = 'Credits added instantly when they make their first deposit';
+        offerBanner.appendChild(offerMain);
+        offerBanner.appendChild(offerSub);
+
+        // Referral link box — one-click copy full link
+        var linkBox = document.createElement('div');
+        linkBox.className = 'ref-link-box';
+        var linkText = document.createElement('span');
+        linkText.className = 'ref-link-text';
+        linkText.id = 'refLinkText';
+        linkText.textContent = buildReferralLink(_referralCode);
+        var linkCopyBtn = document.createElement('button');
+        linkCopyBtn.className = 'ref-link-copy-btn';
+        linkCopyBtn.id = 'refLinkCopyBtn';
+        linkCopyBtn.textContent = '\uD83D\uDCCB Copy Link';
+        linkCopyBtn.addEventListener('click', function() {
+            copyText(buildReferralLink(_referralCode), true);
+        });
+        linkBox.appendChild(linkText);
+        linkBox.appendChild(linkCopyBtn);
+
+        // Code box
         var codeBox = document.createElement('div');
         codeBox.className = 'ref-code-box';
         var cLabel = document.createElement('div');
@@ -175,80 +291,130 @@
         cLabel.textContent = 'Your Referral Code';
         var cVal = document.createElement('div');
         cVal.className = 'ref-code-val';
+        cVal.id = 'refCodeVal';
         cVal.textContent = _referralCode;
         codeBox.appendChild(cLabel);
         codeBox.appendChild(cVal);
 
+        // Copied feedback
         var copied = document.createElement('div');
         copied.className = 'ref-copied';
         copied.id = 'refCopied';
-        copied.textContent = 'Copied to clipboard!';
+        copied.textContent = '\u2705 Copied!';
 
-        var btns = document.createElement('div');
-        btns.className = 'ref-btns';
-        var copyBtn = document.createElement('button');
-        copyBtn.className = 'ref-btn ref-btn-copy';
-        copyBtn.textContent = '\uD83D\uDCCB Copy Code';
-        copyBtn.addEventListener('click', function() { copyText(_referralCode); });
-        var shareBtn = document.createElement('button');
-        shareBtn.className = 'ref-btn ref-btn-share';
-        shareBtn.textContent = '\uD83D\uDCE4 Share';
-        shareBtn.addEventListener('click', function() {
-            var url = window.location.origin + window.location.pathname + '?ref=' + _referralCode;
-            var msg = 'Join me on Matrix Spins! Use code ' + _referralCode + ' for $5.00 FREE bonus! ' + url;
-            copyText(msg);
+        // Social share label
+        var shareLabel = document.createElement('div');
+        shareLabel.className = 'ref-share-label';
+        shareLabel.textContent = 'Share via';
+
+        // Social share buttons
+        var shareRow = document.createElement('div');
+        shareRow.className = 'ref-share-row';
+
+        var waBtn = document.createElement('button');
+        waBtn.className = 'ref-share-btn ref-share-btn-wa';
+        waBtn.title = 'Share on WhatsApp';
+        _makeShareBtnContent('\uD83D\uDCAC', 'WhatsApp').forEach(function(el) { waBtn.appendChild(el); });
+        waBtn.addEventListener('click', function() { openShareUrl(makeShareUrl('wa')); });
+
+        var twBtn = document.createElement('button');
+        twBtn.className = 'ref-share-btn ref-share-btn-tw';
+        twBtn.title = 'Share on Twitter / X';
+        _makeShareBtnContent('\uD83D\uDC26', 'Twitter/X').forEach(function(el) { twBtn.appendChild(el); });
+        twBtn.addEventListener('click', function() { openShareUrl(makeShareUrl('tw')); });
+
+        var tgBtn = document.createElement('button');
+        tgBtn.className = 'ref-share-btn ref-share-btn-tg';
+        tgBtn.title = 'Share on Telegram';
+        _makeShareBtnContent('\uD83D\uDCE8', 'Telegram').forEach(function(el) { tgBtn.appendChild(el); });
+        tgBtn.addEventListener('click', function() { openShareUrl(makeShareUrl('tg')); });
+
+        var cpBtn = document.createElement('button');
+        cpBtn.className = 'ref-share-btn ref-share-btn-cp';
+        cpBtn.title = 'Copy full share message';
+        _makeShareBtnContent('\uD83D\uDCE4', 'Copy Msg').forEach(function(el) { cpBtn.appendChild(el); });
+        cpBtn.addEventListener('click', function() {
+            var link = buildReferralLink(_referralCode);
+            var msg = 'I\u2019m playing at Matrix Spins casino and winning! Join me using my referral link to get a bonus: ' + link;
+            copyText(msg, false);
         });
-        btns.appendChild(copyBtn);
-        btns.appendChild(shareBtn);
 
-        var bonus = document.createElement('div');
-        bonus.className = 'ref-bonus';
-        var b1 = document.createTextNode('Earn ');
-        var bAmt = document.createElement('span');
-        bAmt.className = 'ref-bonus-amt';
-        bAmt.textContent = '$' + REFERRAL_BONUS.toFixed(2);
-        var b2 = document.createTextNode(' for each friend who joins!');
-        bonus.appendChild(b1);
-        bonus.appendChild(bAmt);
-        bonus.appendChild(b2);
+        shareRow.appendChild(waBtn);
+        shareRow.appendChild(twBtn);
+        shareRow.appendChild(tgBtn);
+        shareRow.appendChild(cpBtn);
 
-        var statsEl = document.createElement('div');
-        statsEl.className = 'ref-stats';
-        var sNum = document.createElement('span');
-        sNum.className = 'ref-stats-num';
-        sNum.textContent = String(_referralStats.count);
-        statsEl.appendChild(document.createTextNode('\uD83D\uDC65 '));
-        statsEl.appendChild(sNum);
-        statsEl.appendChild(document.createTextNode(' friends joined'));
+        // Milestone progress bar
+        var milestone = document.createElement('div');
+        milestone.className = 'ref-milestone';
+        var msHdr = document.createElement('div');
+        msHdr.className = 'ref-milestone-hdr';
+        var msTitle = document.createElement('div');
+        msTitle.className = 'ref-milestone-title';
+        msTitle.textContent = '\uD83C\uDFC6 Milestone Bonus';
+        var msReward = document.createElement('div');
+        msReward.className = 'ref-milestone-reward';
+        msReward.textContent = '$' + MILESTONE_BONUS.toFixed(0) + ' for ' + MILESTONE_GOAL + ' referrals';
+        msHdr.appendChild(msTitle);
+        msHdr.appendChild(msReward);
+        var msBarBg = document.createElement('div');
+        msBarBg.className = 'ref-milestone-bar-bg';
+        var msBarFill = document.createElement('div');
+        msBarFill.className = 'ref-milestone-bar-fill';
+        msBarFill.id = 'refMsBarFill';
+        var pct = Math.min(100, Math.round((_referralStats.count / MILESTONE_GOAL) * 100));
+        msBarFill.style.width = pct + '%';
+        msBarBg.appendChild(msBarFill);
+        var msProg = document.createElement('div');
+        msProg.className = 'ref-milestone-prog';
+        msProg.id = 'refMsProg';
+        msProg.textContent = _referralStats.count + ' / ' + MILESTONE_GOAL + ' friends';
+        milestone.appendChild(msHdr);
+        milestone.appendChild(msBarBg);
+        milestone.appendChild(msProg);
 
+        // Stats row — count + earned
+        var statsRow = document.createElement('div');
+        statsRow.className = 'ref-stats-row';
+
+        var sc1 = document.createElement('div');
+        sc1.className = 'ref-stat-card';
+        var sc1Num = document.createElement('div');
+        sc1Num.className = 'ref-stat-num';
+        sc1Num.id = 'refStatCount';
+        sc1Num.textContent = String(_referralStats.count);
+        var sc1Lbl = document.createElement('div');
+        sc1Lbl.className = 'ref-stat-lbl';
+        sc1Lbl.textContent = 'Friends Referred';
+        sc1.appendChild(sc1Num);
+        sc1.appendChild(sc1Lbl);
+
+        var sc2 = document.createElement('div');
+        sc2.className = 'ref-stat-card';
+        var sc2Num = document.createElement('div');
+        sc2Num.className = 'ref-stat-num';
+        sc2Num.id = 'refStatEarned';
+        var totalEarned = (_referralStats.totalEarned !== undefined)
+            ? _referralStats.totalEarned
+            : (_referralStats.count * REFERRAL_BONUS);
+        sc2Num.textContent = '$' + totalEarned.toFixed(0);
+        var sc2Lbl = document.createElement('div');
+        sc2Lbl.className = 'ref-stat-lbl';
+        sc2Lbl.textContent = 'Total Earned';
+        sc2.appendChild(sc2Num);
+        sc2.appendChild(sc2Lbl);
+
+        statsRow.appendChild(sc1);
+        statsRow.appendChild(sc2);
+
+        // History
         var histTitle = document.createElement('div');
         histTitle.className = 'ref-hist-title';
         histTitle.textContent = 'Referral History';
 
         var histList = document.createElement('div');
-        if (_referralStats.history.length === 0) {
-            var empty = document.createElement('div');
-            empty.className = 'ref-hist-empty';
-            empty.textContent = 'No referrals yet \u2014 share your code!';
-            histList.appendChild(empty);
-        } else {
-            for (var i = 0; i < _referralStats.history.length; i++) {
-                var h = _referralStats.history[i];
-                var item = document.createElement('div');
-                item.className = 'ref-hist-item';
-                var nm = document.createElement('span');
-                nm.textContent = h.name;
-                var dt = document.createElement('span');
-                dt.textContent = formatTimeAgo(h.ts);
-                var bn = document.createElement('span');
-                bn.className = 'ref-hist-bonus';
-                bn.textContent = '+$' + h.bonus.toFixed(2);
-                item.appendChild(nm);
-                item.appendChild(dt);
-                item.appendChild(bn);
-                histList.appendChild(item);
-            }
-        }
+        histList.id = 'refHistList';
+        _buildHistoryItems(histList, _referralStats.history);
 
         var closeBtn = document.createElement('button');
         closeBtn.className = 'ref-close';
@@ -256,24 +422,64 @@
         closeBtn.addEventListener('click', togglePanel);
 
         _panelEl.appendChild(title);
+        _panelEl.appendChild(subtitle);
+        _panelEl.appendChild(offerBanner);
+        _panelEl.appendChild(linkBox);
         _panelEl.appendChild(codeBox);
         _panelEl.appendChild(copied);
-        _panelEl.appendChild(btns);
-        _panelEl.appendChild(bonus);
-        _panelEl.appendChild(statsEl);
+        _panelEl.appendChild(shareLabel);
+        _panelEl.appendChild(shareRow);
+        _panelEl.appendChild(milestone);
+        _panelEl.appendChild(statsRow);
         _panelEl.appendChild(histTitle);
         _panelEl.appendChild(histList);
         _panelEl.appendChild(closeBtn);
         document.body.appendChild(_panelEl);
     }
 
-    function copyText(text) {
-        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-            navigator.clipboard.writeText(text).then(showCopied).catch(function() { fallbackCopy(text); });
-        } else { fallbackCopy(text); }
+    function _buildHistoryItems(container, history) {
+        while (container.firstChild) container.removeChild(container.firstChild);
+        if (!history || history.length === 0) {
+            var empty = document.createElement('div');
+            empty.className = 'ref-hist-empty';
+            empty.textContent = 'No referrals yet \u2014 share your code!';
+            container.appendChild(empty);
+            return;
+        }
+        for (var i = 0; i < history.length; i++) {
+            var h = history[i];
+            var item = document.createElement('div');
+            item.className = 'ref-hist-item';
+            var nm = document.createElement('span');
+            nm.textContent = h.referee_username || h.name || '??***';
+            var dt = document.createElement('span');
+            dt.textContent = h.ts
+                ? formatTimeAgo(h.ts)
+                : (h.created_at ? formatTimeAgo(new Date(h.created_at).getTime()) : '');
+            var bn = document.createElement('span');
+            bn.className = 'ref-hist-bonus';
+            var statusText = (h.status === 'completed')
+                ? ('+$' + (h.bonus_paid || h.bonus || REFERRAL_BONUS).toFixed(2))
+                : (h.status || '+$' + (h.bonus || REFERRAL_BONUS).toFixed(2));
+            bn.textContent = statusText;
+            item.appendChild(nm);
+            item.appendChild(dt);
+            item.appendChild(bn);
+            container.appendChild(item);
+        }
     }
 
-    function fallbackCopy(text) {
+    function copyText(text, isLink) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(text)
+                .then(function() { showCopied(isLink); })
+                .catch(function() { fallbackCopy(text, isLink); });
+        } else {
+            fallbackCopy(text, isLink);
+        }
+    }
+
+    function fallbackCopy(text, isLink) {
         try {
             var ta = document.createElement('textarea');
             ta.value = text;
@@ -282,11 +488,21 @@
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            showCopied();
+            showCopied(isLink);
         } catch (e) {}
     }
 
-    function showCopied() {
+    function showCopied(isLink) {
+        // Update link copy button text temporarily for link copies
+        if (isLink) {
+            var linkBtn = document.getElementById('refLinkCopyBtn');
+            if (linkBtn) {
+                linkBtn.textContent = '\u2705 Copied!';
+                setTimeout(function() {
+                    linkBtn.textContent = '\uD83D\uDCCB Copy Link';
+                }, 2000);
+            }
+        }
         var el = document.getElementById('refCopied');
         if (!el) return;
         el.classList.add('show');
@@ -302,72 +518,34 @@
     }
 
     function _updatePanelCode(code) {
-        var el = _panelEl && _panelEl.querySelector('.ref-code-val');
-        if (el) el.textContent = code;
-        // Also update share/copy button closures by patching the module-level var
         _referralCode = code;
-        // Rebind copy button to new code
-        var copyBtn = _panelEl && _panelEl.querySelector('.ref-btn-copy');
-        if (copyBtn) {
-            var newCopy = copyBtn.cloneNode(true);
-            newCopy.addEventListener('click', function() { copyText(_referralCode); });
-            if (copyBtn.parentNode) copyBtn.parentNode.replaceChild(newCopy, copyBtn);
-        }
-        var shareBtn = _panelEl && _panelEl.querySelector('.ref-btn-share');
-        if (shareBtn) {
-            var newShare = shareBtn.cloneNode(true);
-            newShare.addEventListener('click', function() {
-                var url = window.location.origin + window.location.pathname + '?ref=' + _referralCode;
-                var msg = 'Join me on Matrix Spins! Use code ' + _referralCode + ' for $5.00 FREE bonus! ' + url;
-                copyText(msg);
-            });
-            if (shareBtn.parentNode) shareBtn.parentNode.replaceChild(newShare, shareBtn);
-        }
+        var codeEl = document.getElementById('refCodeVal');
+        if (codeEl) codeEl.textContent = code;
+        var linkEl = document.getElementById('refLinkText');
+        if (linkEl) linkEl.textContent = buildReferralLink(code);
     }
 
     function _updatePanelStats(count, bonusEarned) {
-        var sNum = _panelEl && _panelEl.querySelector('.ref-stats-num');
-        if (sNum) sNum.textContent = String(count);
         _referralStats.count = count;
         if (typeof bonusEarned === 'number') _referralStats.totalEarned = bonusEarned;
+
+        var countEl = document.getElementById('refStatCount');
+        if (countEl) countEl.textContent = String(count);
+
+        var earnedEl = document.getElementById('refStatEarned');
+        if (earnedEl) earnedEl.textContent = '$' + (bonusEarned || 0).toFixed(0);
+
+        // Update milestone bar
+        var barFill = document.getElementById('refMsBarFill');
+        var barProg = document.getElementById('refMsProg');
+        if (barFill) barFill.style.width = Math.min(100, Math.round((count / MILESTONE_GOAL) * 100)) + '%';
+        if (barProg) barProg.textContent = count + ' / ' + MILESTONE_GOAL + ' friends';
     }
 
     function _updatePanelHistory(referrals) {
-        if (!_panelEl || !referrals) return;
-        // Find the history list element (child after ref-hist-title)
-        var histTitle = _panelEl.querySelector('.ref-hist-title');
-        if (!histTitle) return;
-        var histList = histTitle.nextElementSibling;
-        if (!histList) return;
-        // Clear existing children
-        while (histList.firstChild) histList.removeChild(histList.firstChild);
-
-        if (referrals.length === 0) {
-            var empty = document.createElement('div');
-            empty.className = 'ref-hist-empty';
-            empty.textContent = 'No referrals yet \u2014 share your code!';
-            histList.appendChild(empty);
-        } else {
-            for (var i = 0; i < referrals.length; i++) {
-                var r = referrals[i];
-                var item = document.createElement('div');
-                item.className = 'ref-hist-item';
-                var nm = document.createElement('span');
-                nm.textContent = r.referee_username || '??***';
-                var dt = document.createElement('span');
-                dt.textContent = r.created_at ? formatTimeAgo(new Date(r.created_at).getTime()) : '';
-                var bn = document.createElement('span');
-                bn.className = 'ref-hist-bonus';
-                var statusText = r.status === 'completed'
-                    ? ('+$' + (r.bonus_paid || 0).toFixed(2))
-                    : (r.status || 'pending');
-                bn.textContent = statusText;
-                item.appendChild(nm);
-                item.appendChild(dt);
-                item.appendChild(bn);
-                histList.appendChild(item);
-            }
-        }
+        var histList = document.getElementById('refHistList');
+        if (!histList || !referrals) return;
+        _buildHistoryItems(histList, referrals);
         _referralStats.history = referrals;
     }
 
@@ -383,13 +561,9 @@
             return res.json();
         }).then(function(data) {
             if (!data || !data.code) return;
-            // Update code in localStorage too so it persists for next session
             try { localStorage.setItem(STORAGE_CODE_KEY, data.code); } catch (e) {}
-            _referralCode = data.code;
-            if (_panelEl) {
-                _updatePanelCode(data.code);
-                _updatePanelStats(data.totalReferrals || 0, data.totalEarned || 0);
-            }
+            _updatePanelCode(data.code);
+            _updatePanelStats(data.totalReferrals || 0, data.totalEarned || 0);
         }).catch(function() { /* silent — keep localStorage fallback */ });
 
         // Fetch referral history
@@ -400,7 +574,7 @@
             return res.json();
         }).then(function(data) {
             if (!data || !Array.isArray(data.referrals)) return;
-            if (_panelEl) _updatePanelHistory(data.referrals);
+            _updatePanelHistory(data.referrals);
         }).catch(function() { /* silent */ });
     }
 
@@ -410,12 +584,12 @@
         if (!match) return;
         try { if (localStorage.getItem(STORAGE_CLAIMED_KEY) === '1') return; } catch (e) {}
         try { localStorage.setItem(STORAGE_CLAIMED_KEY, '1'); } catch (e) {}
-        if (typeof balance !== 'undefined') { balance += REFERRAL_BONUS; balance = Math.round(balance * 100) / 100; }
+        if (typeof balance !== 'undefined') { balance += 5.00; balance = Math.round(balance * 100) / 100; }
         if (typeof updateBalance === 'function') updateBalance();
         if (typeof saveBalance === 'function') saveBalance();
         if (typeof showWinToast === 'function') {
             setTimeout(function() {
-                showWinToast('Welcome! You received $' + REFERRAL_BONUS.toFixed(2) + ' bonus from a referral!', 'epic');
+                showWinToast('Welcome! Your friend earns $' + REFERRAL_BONUS.toFixed(0) + ' when you make your first deposit!', 'epic');
             }, 1500);
         }
     }
@@ -429,6 +603,7 @@
     }
 
     window.getReferralCode = function() { return _referralCode; };
+    window.getReferralLink = function() { return buildReferralLink(_referralCode); };
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
