@@ -527,6 +527,108 @@
                 el.classList.remove("win-cell-glow", "win-tier-epic", "win-tier-mega", "win-tier-jackpot");
             });
         }
+
+        // ── Win Cell Dimming (non-winning cells fade to 28% opacity) ──
+        function _applyWinCellDim(winningCells) {
+            // winningCells: Set of "col-row" strings e.g. "0-1", "2-0"
+            var allCells = document.querySelectorAll('.reel-cell');
+            allCells.forEach(function(cell) {
+                var col = cell.getAttribute('data-col');
+                var row = cell.getAttribute('data-row');
+                if (col === null || row === null) {
+                    // Fallback: parse from id "reel_C_R"
+                    if (cell.id) {
+                        var parts = cell.id.split('_');
+                        if (parts.length >= 3) { col = parts[1]; row = parts[2]; }
+                    }
+                }
+                var key = col + '-' + row;
+                if (winningCells && winningCells.has(key)) {
+                    cell.classList.remove('reel-cell-dim');
+                    cell.classList.add('reel-cell-winning');
+                } else {
+                    cell.classList.add('reel-cell-dim');
+                    cell.classList.remove('reel-cell-winning');
+                }
+            });
+        }
+
+        function _clearWinCellDim() {
+            document.querySelectorAll('.reel-cell').forEach(function(cell) {
+                cell.classList.remove('reel-cell-dim', 'reel-cell-winning');
+            });
+        }
+
+        // ── Per-Line Win Breakdown Panel ──
+        function showWinBreakdownPanel(paylineWins, totalWin, game) {
+            // Remove any existing panel
+            var existing = document.getElementById('winBreakdownPanel');
+            if (existing) existing.remove();
+            if (!paylineWins || paylineWins.length === 0) return;
+
+            var reelsWrap = document.querySelector('.reels-wrap') || document.querySelector('.reels-container') || document.querySelector('.slot-reels');
+            if (!reelsWrap) return;
+
+            // Get game symbols for emoji display
+            var syms = (game && game.symbols) ? game.symbols : [];
+
+            var panel = document.createElement('div');
+            panel.id = 'winBreakdownPanel';
+            panel.className = 'win-breakdown-panel';
+
+            var linesHtml = paylineWins.slice(0, 8).map(function(w, idx) {
+                var lineAmt = w.lineWin || w.winAmount || w.amount || 0;
+                var matchSym = w.symbol || (w.symbols && w.symbols[0]) || '🎰';
+                var matchCount = w.matchCount || 3;
+                var lineNum = (w.lineIndex !== undefined ? w.lineIndex : idx) + 1;
+                var symEmoji = '';
+                // Try to get symbol emoji/name
+                if (syms.length > 0) {
+                    var symObj = syms.find(function(s) { return s && (s.id === matchSym || s.name === matchSym || s === matchSym); });
+                    symEmoji = symObj ? (symObj.emoji || symObj.icon || symObj.name || matchSym) : matchSym;
+                } else {
+                    symEmoji = typeof matchSym === 'string' ? matchSym.slice(0, 8) : '🎰';
+                }
+                var symStr = Array(matchCount).fill(symEmoji).join('');
+                return '<div class="win-breakdown-line" style="animation-delay:' + (idx * 0.06) + 's">' +
+                    '<div class="wbd-line-left">' +
+                        '<span class="wbd-line-num">L' + lineNum + '</span>' +
+                        '<span class="wbd-line-syms">' + symStr + '</span>' +
+                        '<span class="wbd-line-match">' + matchCount + '\xd7</span>' +
+                    '</div>' +
+                    '<span class="wbd-line-amount">$' + parseFloat(lineAmt).toFixed(2) + '</span>' +
+                '</div>';
+            }).join('');
+
+            var extraLines = paylineWins.length > 8 ? '<div style="font-size:0.65rem;color:rgba(200,180,255,0.5);text-align:center;padding-top:4px">+' + (paylineWins.length - 8) + ' more lines</div>' : '';
+
+            panel.innerHTML =
+                '<div class="win-breakdown-header">' +
+                    '<span>' + (paylineWins.length > 1 ? paylineWins.length + ' Winning Lines' : '1 Winning Line') + '</span>' +
+                    '<span style="font-size:0.6rem;color:rgba(255,200,100,0.5)">' + (game ? (game.name || '') : '') + '</span>' +
+                '</div>' +
+                linesHtml + extraLines +
+                '<div class="win-breakdown-total">' +
+                    '<span class="wbd-total-label">TOTAL WIN</span>' +
+                    '<span class="wbd-total-amount">$' + parseFloat(totalWin).toFixed(2) + '</span>' +
+                '</div>';
+
+            reelsWrap.style.position = 'relative';
+            reelsWrap.appendChild(panel);
+
+            // Auto-dismiss after 4.5s
+            var _panelTimer = setTimeout(function() {
+                var p = document.getElementById('winBreakdownPanel');
+                if (p) { p.style.transition = 'opacity 0.4s'; p.style.opacity = '0'; setTimeout(function() { var p2 = document.getElementById('winBreakdownPanel'); if (p2) p2.remove(); }, 400); }
+            }, 4500);
+            panel._timer = _panelTimer;
+        }
+
+        function clearWinBreakdownPanel() {
+            var p = document.getElementById('winBreakdownPanel');
+            if (p) { clearTimeout(p._timer); p.remove(); }
+        }
+
         // Autoplay (N-spin) helpers
         function _startAutoplay(count) {
             window._autoplayActive = true;
@@ -1347,6 +1449,9 @@
             preloadAnimatedAssets(currentGame);
 
             addRecentlyPlayed(gameId);
+
+            // Inject win visualization CSS (Phase 1-5)
+            if (typeof _injectWinVisualizationCss === 'function') _injectWinVisualizationCss();
 
             // Set game-specific CSS theme
             document.getElementById('slotModal').setAttribute('data-game-id', currentGame.id);
@@ -2631,6 +2736,9 @@
         _updateTurboBadge();         // Sprint 103 — turbo badge
             resetIdleTimer(); // reset idle pulse at spin start
             _clearWinCellGlow(); // clear win-cell-glow before new spin
+            _clearWinCellDim(); // clear cell dim before new spin
+            clearWinBreakdownPanel(); // clear win breakdown panel before new spin
+            _clearMoneyCollectCounter(); // clear money collect counter before new spin
             if (window._turboSpinEnabled) {
                 var _rcTurbo = document.querySelector('.reels-container') || document.querySelector('.reels');
                 if (_rcTurbo) _rcTurbo.classList.add('turbo-mode');
@@ -3292,10 +3400,39 @@
                 if (currentGame && (currentGame.bonusType === 'tumble' || currentGame.bonusType === 'avalanche')) {
                     window._tumbleCascadeDepth = (window._tumbleCascadeDepth || 0) + 1;
                     _showCascadeChain(window._tumbleCascadeDepth);
+                    if (typeof _showTumbleChainBadge === 'function') _showTumbleChainBadge(window._tumbleCascadeDepth);
                     setTimeout(function() { triggerTumbleCascade(currentGame); }, 60);
                 }
                 setTimeout(showPaylinePaths, 300);
                 setTimeout(triggerPaylineFlash, 350);
+                // Win breakdown panel + cell dimming
+                (function() {
+                    var _winLines = (typeof _lastWinLines !== 'undefined') ? _lastWinLines : [];
+                    var _numLines = _winLines.length || 1;
+                    var _perLine = _numLines > 0 ? winAmount / _numLines : winAmount;
+                    // Build paylineWins from _lastWinLines with even split amounts
+                    var _paneWins = _winLines.map(function(wl, i) {
+                        // Try to detect symbol from first winning cell
+                        var sym = '🎰';
+                        if (wl.cells && wl.cells[0]) {
+                            var _c = wl.cells[0][0], _r = wl.cells[0][1];
+                            var _cellEl = document.getElementById('reel_' + _c + '_' + _r);
+                            if (_cellEl) { sym = (_cellEl.textContent || _cellEl.innerText || '🎰').trim().slice(0, 8); }
+                        }
+                        return { lineIndex: wl.lineIndex !== undefined ? wl.lineIndex : i, matchCount: wl.cells ? wl.cells.length : 3, symbol: sym, lineWin: _perLine };
+                    });
+                    // Apply win cell dim based on winning cells
+                    if (typeof _applyWinCellDim === 'function') {
+                        var _winCellSet = new Set();
+                        _winLines.forEach(function(wl) {
+                            if (wl.cells) wl.cells.forEach(function(cr) { _winCellSet.add(cr[0] + '-' + cr[1]); });
+                        });
+                        if (_winCellSet.size > 0) _applyWinCellDim(_winCellSet);
+                    }
+                    if (typeof showWinBreakdownPanel === 'function' && _paneWins.length > 0) {
+                        setTimeout(function() { showWinBreakdownPanel(_paneWins, winAmount, currentGame); }, 350);
+                    }
+                })();
                 updateSlotWinDisplay(winAmount);
 
                 // Win entrance animation on highlighted cells
@@ -3582,6 +3719,7 @@
                 })();
                 // Hide cascade chain counter on loss
                 _hideCascadeChain();
+                if (typeof _clearTumbleChainBadge === 'function') _clearTumbleChainBadge();
                 window._tumbleCascadeDepth = 0;
             }
             // Apply idle shimmer to all visible wild/scatter cells
@@ -5166,6 +5304,52 @@
             // CSS is in styles.css
         }
 
+        // ── Win Visualization CSS injection (Phase 1-5) ──
+        function _injectWinVisualizationCss() {
+            if (document.getElementById('winVisualizationStyles')) return;
+            var style = document.createElement('style');
+            style.id = 'winVisualizationStyles';
+            style.textContent = [
+                '.win-breakdown-panel{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:50;background:rgba(15,5,40,0.92);border:1px solid rgba(180,100,255,0.35);border-radius:10px;padding:8px 10px;min-width:160px;max-width:190px;backdrop-filter:blur(8px);box-shadow:0 4px 24px rgba(140,60,255,0.25),inset 0 1px 0 rgba(255,255,255,0.06);animation:wbdSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;}',
+                '@keyframes wbdSlideIn{from{opacity:0;transform:translateY(-50%) translateX(18px)}to{opacity:1;transform:translateY(-50%) translateX(0)}}',
+                '.win-breakdown-header{display:flex;justify-content:space-between;align-items:center;font-size:0.68rem;font-weight:700;color:rgba(200,160,255,0.85);letter-spacing:0.04em;border-bottom:1px solid rgba(180,100,255,0.18);padding-bottom:5px;margin-bottom:5px;}',
+                '.win-breakdown-line{display:flex;justify-content:space-between;align-items:center;font-size:0.65rem;padding:2px 0;animation:wbdLineFade 0.3s ease both;}',
+                '@keyframes wbdLineFade{from{opacity:0;transform:translateX(6px)}to{opacity:1;transform:translateX(0)}}',
+                '.wbd-line-left{display:flex;align-items:center;gap:4px;}',
+                '.wbd-line-num{color:rgba(160,120,255,0.6);font-size:0.58rem;font-weight:600;min-width:18px;}',
+                '.wbd-line-syms{font-size:0.7rem;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+                '.wbd-line-match{color:rgba(200,160,255,0.5);font-size:0.58rem;}',
+                '.wbd-line-amount{color:#ffd700;font-weight:700;font-size:0.68rem;}',
+                '.win-breakdown-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,200,100,0.25);margin-top:5px;padding-top:5px;}',
+                '.wbd-total-label{font-size:0.6rem;font-weight:700;color:rgba(255,200,100,0.7);letter-spacing:0.06em;}',
+                '.wbd-total-amount{font-size:0.82rem;font-weight:900;color:#ffd700;text-shadow:0 0 8px rgba(255,215,0,0.5);}',
+                '.reel-cell-dim{opacity:0.28!important;filter:saturate(0.3) brightness(0.6);transition:opacity 0.25s ease,filter 0.25s ease;}',
+                '.reel-cell-winning{opacity:1!important;filter:saturate(1.4) brightness(1.15);transition:opacity 0.25s ease,filter 0.25s ease;z-index:2;position:relative;}',
+                '.tumble-chain-badge{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:60;background:linear-gradient(135deg,rgba(255,100,0,0.9),rgba(255,50,0,0.85));border:2px solid rgba(255,150,50,0.6);border-radius:20px;padding:4px 14px;font-size:1rem;font-weight:900;color:#fff;letter-spacing:0.05em;text-shadow:0 0 10px rgba(255,100,0,0.8);box-shadow:0 0 20px rgba(255,80,0,0.5);animation:chainBadgeIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;pointer-events:none;}',
+                '@keyframes chainBadgeIn{from{opacity:0;transform:translateX(-50%) scale(0.6)}to{opacity:1;transform:translateX(-50%) scale(1)}}',
+                '.tumble-chain-badge.chain-exit{animation:chainBadgeOut 0.45s ease forwards;}',
+                '@keyframes chainBadgeOut{to{opacity:0;transform:translateX(-50%) scale(0.8) translateY(-8px)}}',
+                '.chain-x{font-size:0.65rem;opacity:0.8;letter-spacing:0.1em;}',
+                '.mult-reveal-overlay,.zeus-mult-overlay{position:absolute;inset:0;z-index:55;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;animation:multRevealIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;background:radial-gradient(ellipse at center,rgba(255,180,0,0.18) 0%,transparent 70%);}',
+                '@keyframes multRevealIn{from{opacity:0;transform:scale(0.7)}to{opacity:1;transform:scale(1)}}',
+                '.mult-reveal-value,.zeus-mult-value{font-size:3rem;font-weight:900;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.9),0 0 8px #fff;line-height:1;animation:multPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;}',
+                '.zeus-bolt{font-size:2rem;animation:boltFlash 0.3s ease alternate 3;}',
+                '@keyframes boltFlash{from{opacity:0.3}to{opacity:1}}',
+                '@keyframes multPop{from{transform:scale(0.4)}to{transform:scale(1)}}',
+                '.mult-reveal-label,.mult-reveal-wheel{font-size:0.9rem;color:rgba(255,200,100,0.8);font-weight:700;margin-top:4px;}',
+                '.mult-reveal-wheel{font-size:1.5rem;}',
+                '.money-collect-counter{position:absolute;top:10px;right:10px;z-index:55;background:rgba(20,60,10,0.9);border:1px solid rgba(100,220,60,0.4);border-radius:8px;padding:5px 10px;display:flex;flex-direction:column;align-items:center;font-size:0.7rem;color:#7fff00;box-shadow:0 0 12px rgba(80,200,40,0.3);}',
+                '.mc-label{font-size:0.55rem;color:rgba(150,255,80,0.6);letter-spacing:0.1em;font-weight:700;}',
+                '#mcCountVal{font-size:0.85rem;font-weight:900;color:#7fff00;text-shadow:0 0 8px rgba(100,255,50,0.6);}',
+                '.money-collect-counter.mc-bump{animation:mcBump 0.25s ease;}',
+                '@keyframes mcBump{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}',
+                '.money-coin-fly{position:absolute;font-size:1.2rem;pointer-events:none;z-index:60;animation:coinFly var(--fly-dur,0.75s) cubic-bezier(0.25,0.46,0.45,0.94) forwards;}',
+                '@keyframes coinFly{0%{opacity:1;transform:translate(0,0) scale(1)}80%{opacity:0.9}100%{opacity:0;transform:translate(var(--fly-tx,50px),var(--fly-ty,-50px)) scale(0.4)}}'
+            ].join('');
+            document.head.appendChild(style);
+        }
+
+
         function triggerTumbleCascade(game) {
             if (!game || (game.bonusType !== 'tumble' && game.bonusType !== 'avalanche')) return;
             _injectTumbleCss();
@@ -6248,6 +6432,115 @@
             el.classList.remove('visible');
             el.setAttribute('data-level', '1');
         }
+
+        // ── Tumble Chain Badge (Phase 3) ──
+        function _showTumbleChainBadge(chain) {
+            var existing = document.getElementById('tumbleChainBadge');
+            if (existing) existing.remove();
+            if (chain <= 1) return;
+            var reelsEl = document.querySelector('.slot-reels') || document.querySelector('.reels-container');
+            if (!reelsEl) return;
+            var badge = document.createElement('div');
+            badge.id = 'tumbleChainBadge';
+            badge.className = 'tumble-chain-badge';
+            badge.innerHTML = '<span class="chain-x">CHAIN </span>\xd7' + chain;
+            reelsEl.style.position = 'relative';
+            reelsEl.appendChild(badge);
+        }
+
+        function _clearTumbleChainBadge() {
+            var b = document.getElementById('tumbleChainBadge');
+            if (b) { b.classList.add('chain-exit'); setTimeout(function() { var b2 = document.getElementById('tumbleChainBadge'); if (b2) b2.remove(); }, 450); }
+        }
+
+        // ── Multiplier Reveal Overlay (Phase 4) ──
+        function _showMultiplierReveal(multValue, type) {
+            var reelsEl = document.querySelector('.slot-reels') || document.querySelector('.reels-container') || document.querySelector('.reel-grid');
+            if (!reelsEl) return;
+            var ex = document.getElementById('multRevealOverlay'); if (ex) ex.remove();
+            var isZeus = (type === 'zeus_multiplier');
+            var overlay = document.createElement('div');
+            overlay.id = 'multRevealOverlay';
+            overlay.className = isZeus ? 'zeus-mult-overlay' : 'mult-reveal-overlay';
+            if (isZeus) {
+                overlay.innerHTML = '<div class="zeus-bolt">\u26a1</div><div class="zeus-mult-value">\xd7' + multValue + '</div><div class="mult-reveal-label">Zeus Power!</div>';
+            } else {
+                overlay.innerHTML = '<div class="mult-reveal-wheel">\uD83C\uDF61</div><div class="mult-reveal-value">\xd7' + multValue + '</div><div class="mult-reveal-label">Multiplier!</div>';
+            }
+            reelsEl.style.position = 'relative';
+            reelsEl.appendChild(overlay);
+            setTimeout(function() {
+                var el = document.getElementById('multRevealOverlay');
+                if (el) { el.style.transition = 'opacity 0.4s'; el.style.opacity = '0'; setTimeout(function() { var el2 = document.getElementById('multRevealOverlay'); if (el2) el2.remove(); }, 400); }
+            }, 1800);
+        }
+
+        // ── Money Collect Coin Animation (Phase 5) ──
+        function _animateMoneyCollect(fromCell, collectValue) {
+            if (!fromCell || collectValue <= 0) return;
+            var reelsEl = document.querySelector('.slot-reels') || document.querySelector('.reels-container');
+            if (!reelsEl) return;
+            var fromRect = fromCell.getBoundingClientRect();
+            var containerRect = reelsEl.getBoundingClientRect();
+
+            // Create counter if not present
+            var counter = document.getElementById('moneyCollectCounter');
+            if (!counter) {
+                counter = document.createElement('div');
+                counter.id = 'moneyCollectCounter';
+                counter.className = 'money-collect-counter';
+                counter.innerHTML = '<span class="mc-label">Collected</span><span id="mcCountVal">$0.00</span>';
+                reelsEl.style.position = 'relative';
+                reelsEl.appendChild(counter);
+            }
+            // Update counter with bump
+            var curVal = parseFloat((counter.querySelector('#mcCountVal') || {}).textContent ? counter.querySelector('#mcCountVal').textContent.replace('$', '') : '0') || 0;
+            curVal += collectValue;
+            var mcValEl = counter.querySelector('#mcCountVal');
+            if (mcValEl) mcValEl.textContent = '$' + curVal.toFixed(2);
+            counter.classList.remove('mc-bump');
+            void counter.offsetWidth; // reflow
+            counter.classList.add('mc-bump');
+
+            // Animate coin from cell to counter
+            var coin = document.createElement('div');
+            coin.className = 'money-coin-fly';
+            coin.textContent = '\uD83E\uDE99';
+            var startX = fromRect.left - containerRect.left + fromRect.width / 2;
+            var startY = fromRect.top - containerRect.top + fromRect.height / 2;
+            var endX = containerRect.right - containerRect.left - 30;
+            var endY = 25;
+            coin.style.left = startX + 'px';
+            coin.style.top = startY + 'px';
+            coin.style.setProperty('--fly-tx', (endX - startX) + 'px');
+            coin.style.setProperty('--fly-ty', (endY - startY) + 'px');
+            coin.style.setProperty('--fly-dur', '0.75s');
+            reelsEl.appendChild(coin);
+            setTimeout(function() { if (coin && coin.parentNode) coin.remove(); }, 850);
+        }
+
+        function _clearMoneyCollectCounter() {
+            var c = document.getElementById('moneyCollectCounter');
+            if (c) c.remove();
+        }
+
+        // ── Multiplier Reveal: patch showBonusEffect to intercept mult messages ──
+        (function() {
+            if (typeof showBonusEffect !== 'function') return;
+            var _origShowBonusEffect = showBonusEffect;
+            showBonusEffect = function(text, color) {
+                _origShowBonusEffect(text, color);
+                // If text indicates a multiplier win, show the reveal overlay
+                if (typeof text === 'string' && typeof _showMultiplierReveal === 'function' && currentGame) {
+                    var multMatch = text.match(/^(\d+)x\s+MULTIPLIER!/i) || text.match(/^ZEUS\s+(\d+)x!/i);
+                    if (multMatch) {
+                        var multVal = parseInt(multMatch[1], 10) || 2;
+                        var btype = currentGame ? (currentGame.bonusType || 'random_multiplier') : 'random_multiplier';
+                        if (multVal > 1) _showMultiplierReveal(multVal, btype);
+                    }
+                }
+            };
+        })();
 
         function _currentCascadeMult() {
             return _CASCADE_MULTS[Math.min(window._cascadeLevel || 0, _CASCADE_MULTS.length - 1)];
@@ -7357,6 +7650,31 @@
                 }
                 setTimeout(showPaylinePaths, 300);
                 setTimeout(triggerPaylineFlash, 350);
+                // Win breakdown panel + cell dimming (second half)
+                (function() {
+                    var _winLines2 = (typeof _lastWinLines !== 'undefined') ? _lastWinLines : [];
+                    var _numLines2 = _winLines2.length || 1;
+                    var _perLine2 = _numLines2 > 0 ? winAmount / _numLines2 : winAmount;
+                    var _paneWins2 = _winLines2.map(function(wl, i) {
+                        var sym2 = '🎰';
+                        if (wl.cells && wl.cells[0]) {
+                            var _c2 = wl.cells[0][0], _r2 = wl.cells[0][1];
+                            var _cellEl2 = document.getElementById('reel_' + _c2 + '_' + _r2);
+                            if (_cellEl2) { sym2 = (_cellEl2.textContent || _cellEl2.innerText || '🎰').trim().slice(0, 8); }
+                        }
+                        return { lineIndex: wl.lineIndex !== undefined ? wl.lineIndex : i, matchCount: wl.cells ? wl.cells.length : 3, symbol: sym2, lineWin: _perLine2 };
+                    });
+                    if (typeof _applyWinCellDim === 'function') {
+                        var _winCellSet2 = new Set();
+                        _winLines2.forEach(function(wl) {
+                            if (wl.cells) wl.cells.forEach(function(cr) { _winCellSet2.add(cr[0] + '-' + cr[1]); });
+                        });
+                        if (_winCellSet2.size > 0) _applyWinCellDim(_winCellSet2);
+                    }
+                    if (typeof showWinBreakdownPanel === 'function' && _paneWins2.length > 0) {
+                        setTimeout(function() { showWinBreakdownPanel(_paneWins2, winAmount, currentGame); }, 350);
+                    }
+                })();
                 updateSlotWinDisplay(winAmount);
 
                 // Win entrance animation on highlighted cells
