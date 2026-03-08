@@ -166,6 +166,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "depositMatchOverlay",
       "luckyWheelOverlay",
       "weekendTournamentBar",
+      "lossComfortOverlay",
+      "achievementContainer",
+      "flashDealBanner",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
@@ -182,17 +185,19 @@ async function dismissFeaturePopupIfVisible(page) {
 }
 
 async function clickSpinButton(page) {
-  const maxAttempts = 3;
+  const maxAttempts = 5;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     await waitForPageTransitionIdle(page, 10000);
     await dismissFeaturePopupIfVisible(page);
     await waitForPageTransitionIdle(page, 5000);
     try {
+      // Ensure spinBtn is actually visible and clickable
+      await page.waitForSelector("#spinBtn", { state: "visible", timeout: 5000 });
       await page.click("#spinBtn", { timeout: 6000, force: true });
       return;
     } catch (error) {
       if (attempt === maxAttempts) throw error;
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(500);
     }
   }
 }
@@ -326,11 +331,13 @@ async function run() {
       openSlot("fire_joker");
     });
     await page.waitForSelector("#slotModal.active", { timeout: 10000 });
-    // Brief pause to let slot UI fully initialize before clicking spin
-    await page.waitForTimeout(1200);
+    // Generous pause — many Sprint 31-34 features schedule init timers (600-1400ms)
+    await page.waitForTimeout(2000);
+    await dismissFeaturePopupIfVisible(page);
+    await page.waitForTimeout(500);
     await dismissFeaturePopupIfVisible(page);
     await clickSpinButton(page);
-    await waitForState(page, (state) => !state.spinning && state.stats.totalSpins >= 1, 45000);
+    await waitForState(page, (state) => !state.spinning && state.stats.totalSpins >= 1, 60000);
 
     const afterSpin = await readState(page);
     assert(afterSpin.mode === "slot", "Expected slot mode after spin");

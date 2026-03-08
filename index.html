@@ -2871,11 +2871,38 @@
         </div>
     </div>
 
+    <!-- Sprint 34: Loss Streak Comfort -->
+    <div id="lossComfortOverlay" class="lc-overlay" style="display:none;">
+        <div class="lc-card">
+            <div class="lc-icon">💜</div>
+            <div class="lc-heading">We've got you!</div>
+            <div class="lc-message" id="lcMessage">Here's a comfort bonus to keep you going:</div>
+            <div class="lc-amount" id="lcAmount">$3.00</div>
+            <button class="lc-claim-btn" onclick="if(typeof claimLossComfort==='function')claimLossComfort()">Claim Bonus</button>
+            <a class="lc-dismiss" href="javascript:void(0)" onclick="if(typeof dismissLossComfort==='function')dismissLossComfort()">No thanks</a>
+        </div>
+    </div>
+
+    <!-- Sprint 34: Achievement Popups -->
+    <div id="achievementContainer" class="ach-container"></div>
+
+    <!-- Sprint 34: Countdown Flash Deals -->
+    <div id="flashDealBanner" class="fd-banner" style="display:none;">
+        <span class="fd-badge">FLASH DEAL</span>
+        <span class="fd-offer" id="fdOffer">Get $20 bonus for $10!</span>
+        <span class="fd-timer" id="fdTimer">04:59</span>
+        <button class="fd-buy-btn" onclick="if(typeof claimFlashDeal==='function')claimFlashDeal()">GRAB IT</button>
+        <button class="fd-dismiss" onclick="if(typeof dismissFlashDeal==='function')dismissFlashDeal()">&times;</button>
+    </div>
+
     <script src="js/ui-sessiontime.js"></script>
     <script src="js/ui-winmultiplier.js"></script>
     <script src="js/ui-dailychallenge.js"></script>
     <script src="js/ui-luckywheel.js"></script>
     <script src="js/ui-weekendtournament.js"></script>
+    <script src="js/ui-losscomfort.js"></script>
+    <script src="js/ui-achievementpopup.js"></script>
+    <script src="js/ui-flashdeal.js"></script>
 
 </body>
 </html>
