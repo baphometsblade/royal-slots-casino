@@ -30,6 +30,10 @@ async function initSchema() {
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
     const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const db = require('../database');
+    const isPg  = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
     await db.run(`CREATE TABLE IF NOT EXISTS mega_wheel_spins (
         id ${idDef},
         user_id INTEGER NOT NULL,

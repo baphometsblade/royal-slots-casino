@@ -48,9 +48,11 @@ function getDayMissions() {
 let schemaReady = false;
 async function ensureSchema() {
   if (schemaReady) return;
+  const isPg  = !!process.env.DATABASE_URL;
+  const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
   await db.run(
     'CREATE TABLE IF NOT EXISTS daily_mission_progress (' +
-    '  id            INTEGER PRIMARY KEY AUTOINCREMENT,' +
+    '  id            ' + idDef + ',' +
     '  user_id       INTEGER NOT NULL,' +
     '  mission_date  TEXT    NOT NULL,' +
     '  slot          INTEGER NOT NULL,' +

@@ -22,17 +22,24 @@ const PARTICIPATION_GEMS = 10;
 // ── Schema ──────────────────────────────────────────────────────────────────
 
 async function initSchema() {
-    const isPg      = !!process.env.DATABASE_URL;
-    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
-    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
-    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const isPg = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const tsType = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+
+    if (isPg) {
+        // Drop and recreate wager_race tables to fix column types (transient race data)
+        await db.run('DROP TABLE IF EXISTS wager_race_entries CASCADE').catch(() => {});
+        await db.run('DROP TABLE IF EXISTS wager_race_prizes CASCADE').catch(() => {});
+        await db.run('DROP TABLE IF EXISTS wager_races CASCADE').catch(() => {});
+    }
+
     await db.run(`
         CREATE TABLE IF NOT EXISTS wager_races (
             id ${idDef},
-            starts_at TEXT NOT NULL,
-            ends_at TEXT NOT NULL,
+            starts_at ${tsType} NOT NULL,
+            ends_at ${tsType} NOT NULL,
             status TEXT DEFAULT 'active',
-            created_at ${tsType} DEFAULT ${tsDefault}
+            created_at TEXT DEFAULT (datetime('now'))
         )
     `);
 
@@ -43,7 +50,7 @@ async function initSchema() {
             user_id INTEGER NOT NULL,
             total_wagered REAL DEFAULT 0,
             spin_count INTEGER DEFAULT 0,
-            updated_at ${tsType} DEFAULT ${tsDefault},
+            updated_at TEXT DEFAULT (datetime('now')),
             UNIQUE(race_id, user_id)
         )
     `);
@@ -56,7 +63,7 @@ async function initSchema() {
             place INTEGER,
             credit_prize REAL DEFAULT 0,
             gem_prize INTEGER DEFAULT 0,
-            claimed_at ${tsType} DEFAULT ${tsDefault}
+            claimed_at TEXT DEFAULT (datetime('now'))
         )
     `);
 }

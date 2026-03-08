@@ -12,7 +12,7 @@ router.get('/bigwins', async (req, res) => {
     try {
         const rows = await db.all(
             `SELECT s.user_id, u.username, s.game_id, s.bet_amount, s.win_amount,
-                    ROUND(s.win_amount / s.bet_amount, 2) as multiplier,
+                    ROUND(CAST(s.win_amount / NULLIF(s.bet_amount, 0) AS NUMERIC), 2) as multiplier,
                     s.created_at
              FROM spins s
              JOIN users u ON s.user_id = u.id

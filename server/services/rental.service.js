@@ -23,18 +23,18 @@ var RENTAL_TIERS = [
 // ── Schema Init ─────────────────────────────────────────────────────────────
 
 async function initSchema() {
-    const isPg      = !!process.env.DATABASE_URL;
+    const db = require('../database');
+    const isPg  = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
-    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const db = require('../database');
     await db.run(`CREATE TABLE IF NOT EXISTS slot_rentals (
         id ${idDef},
         user_id INTEGER NOT NULL,
         game_id TEXT NOT NULL,
         tier TEXT NOT NULL,
         started_at ${tsType} DEFAULT ${tsDefault},
-        expires_at TEXT,
+        expires_at ${tsType},
         permanent INTEGER DEFAULT 0,
         created_at ${tsType} DEFAULT ${tsDefault}
     )`);

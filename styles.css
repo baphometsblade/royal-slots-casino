@@ -6869,6 +6869,7 @@
             flex-direction: row;
             align-items: center;
             gap: 4px;
+            flex-shrink: 0;
         }
 
         .slot-bet-btn {
@@ -17475,6 +17476,19 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .slot-bar-value {
   font-size: 17px !important;
   font-weight: 800 !important;
+}
+/* Ensure bet section always visible and prominent */
+.slot-bar-bet {
+  flex-shrink: 0 !important;
+}
+.slot-bet-display .slot-bar-label {
+  color: #94a3b8 !important;
+  font-size: 9px !important;
+}
+.slot-bet-display .slot-bar-value {
+  color: #fbbf24 !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
 }
 /* Make spin button slightly larger for the cinematic look */
 .slot-spin-btn {

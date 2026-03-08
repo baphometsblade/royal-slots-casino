@@ -18,15 +18,20 @@ async function ensureSchema() {
         // Column already exists — safe to ignore
     }
 
+    const isPg  = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
+
     // Create referrals table
     await db.run(`
         CREATE TABLE IF NOT EXISTS referrals (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            id          ${idDef},
             referrer_id INTEGER NOT NULL,
             referee_id  INTEGER NOT NULL,
             status      TEXT    DEFAULT 'pending',
             bonus_paid  REAL    DEFAULT 0,
-            created_at  TEXT    DEFAULT (datetime('now'))
+            created_at  ${tsType}    DEFAULT ${tsDefault}
         )
     `);
 

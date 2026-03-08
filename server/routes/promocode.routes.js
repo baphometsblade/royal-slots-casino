@@ -5,8 +5,13 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 const db = require('../database');
 
 // Bootstrap tables
-db.run(`CREATE TABLE IF NOT EXISTS promo_codes (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+{
+  var _isPg  = !!process.env.DATABASE_URL;
+  var _idDef = _isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+  var _tsType    = _isPg ? 'TIMESTAMPTZ' : 'TEXT';
+  var _tsDefault = _isPg ? 'NOW()' : "(datetime('now'))";
+  db.run(`CREATE TABLE IF NOT EXISTS promo_codes (
+  id ${_idDef},
   code TEXT UNIQUE NOT NULL,
   type TEXT NOT NULL,
   reward_gems INTEGER DEFAULT 0,
@@ -16,16 +21,17 @@ db.run(`CREATE TABLE IF NOT EXISTS promo_codes (
   uses_count INTEGER DEFAULT 0,
   expires_at TEXT DEFAULT NULL,
   active INTEGER DEFAULT 1,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at ${_tsType} DEFAULT ${_tsDefault}
 )`).catch(function() {});
 
-db.run(`CREATE TABLE IF NOT EXISTS promo_redemptions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  db.run(`CREATE TABLE IF NOT EXISTS promo_redemptions (
+  id ${_idDef},
   user_id INTEGER NOT NULL,
   code_id INTEGER NOT NULL,
-  redeemed_at TEXT DEFAULT (datetime('now')),
+  redeemed_at ${_tsType} DEFAULT ${_tsDefault},
   UNIQUE(user_id, code_id)
 )`).catch(function() {});
+}
 
 // Seed default codes on startup
 setTimeout(async function() {

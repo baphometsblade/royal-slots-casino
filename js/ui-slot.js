@@ -1709,10 +1709,6 @@
                 })();
                 // Show intro splash for this game
                 _showSlotSplash(currentGame);
-                // Inject spin history panel (idempotent — removed and re-injected on each game open)
-                var _oldHistPanel = document.getElementById('spinHistoryPanel');
-                if (_oldHistPanel) _oldHistPanel.parentNode.removeChild(_oldHistPanel);
-                _ensureSpinHistoryPanel();
                 // Inject session stats mini-bar (removed and re-injected so counts reset per game)
                 var _oldSessStats = document.getElementById('slotSessionStats');
                 if (_oldSessStats) _oldSessStats.parentNode.removeChild(_oldSessStats);
@@ -2269,7 +2265,13 @@
             const display = Number.isInteger(currentBet)
                 ? String(currentBet)
                 : currentBet.toFixed(2);
-            document.getElementById('betAmount').textContent = display;
+            const _betAmountEl = document.getElementById('betAmount');
+            if (_betAmountEl) {
+                _betAmountEl.textContent = display;
+                _betAmountEl.style.display = '';
+                const _betDisplayEl = _betAmountEl.closest('.slot-bet-display');
+                if (_betDisplayEl) _betDisplayEl.style.display = '';
+            }
             // Sync bet chip active state
             document.querySelectorAll('.bet-chip').forEach(function(chip) {
                 var v = parseFloat(chip.dataset.betVal);
@@ -2679,7 +2681,7 @@
 
         async function spin() {
             if (spinning || !currentGame) return;
-            if (freeSpinsActive) return;
+            if (freeSpinsActive) { freeSpinSpin(currentGame); return; }
             if (currentBet > balance) {
                 if (currentUser && !currentUser.isGuest) {
                     const msgDiv = document.getElementById('messageDisplay');
@@ -3051,67 +3053,6 @@
             }
         }
 
-        // ── Spin History Rendering ────────────────────────────────────────────
-        function renderSpinHistory() {
-            const panel = document.getElementById('spinHistoryPanel');
-            if (!panel) return;
-            const list = document.getElementById('spinHistoryList');
-            if (!list) return;
-            if (spinHistory.length === 0) {
-                list.innerHTML = '<div style="color:#64748b;font-size:11px;padding:4px 0;">No spins yet this session</div>';
-                return;
-            }
-            list.innerHTML = spinHistory.map(function(entry) {
-                const isWin = entry.win > 0;
-                const isNM = entry.isNearMiss;
-                const dot = isWin ? '#22c55e' : isNM ? '#fbbf24' : '#ef4444';
-                const label = isWin ? ('+$' + formatMoney(entry.win)) : isNM ? 'Near!' : ('-$' + formatMoney(entry.bet));
-                const color = isWin ? '#22c55e' : isNM ? '#fbbf24' : '#94a3b8';
-                const ago = _histTimeAgo(entry.timestamp);
-                return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);">' +
-                    '<span style="width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;display:inline-block;"></span>' +
-                    '<span style="font-size:11px;font-weight:700;color:' + color + ';min-width:60px;">' + label + '</span>' +
-                    '<span style="font-size:10px;color:#475569;margin-left:auto;">' + ago + '</span>' +
-                    '</div>';
-            }).join('');
-        }
-
-        function _histTimeAgo(ts) {
-            const s = Math.floor((Date.now() - ts) / 1000);
-            if (s < 5) return 'just now';
-            if (s < 60) return s + 's ago';
-            return Math.floor(s / 60) + 'm ago';
-        }
-
-        function _ensureSpinHistoryPanel() {
-            if (document.getElementById('spinHistoryPanel')) return;
-            const slotModal = document.getElementById('slotModal') || document.querySelector('.slot-modal-fullscreen');
-            if (!slotModal) return;
-
-            const panel = document.createElement('div');
-            panel.id = 'spinHistoryPanel';
-            panel.innerHTML =
-                '<div id="spinHistoryToggle" onclick="(function(t){' +
-                    'var l=t.parentElement.querySelector(\'#spinHistoryList\');' +
-                    'l.style.display=(l.style.display===\'none\'?\'\':\'none\');' +
-                    't.querySelector(\'.hist-arrow\').textContent=(l.style.display===\'none\'?\'&#9654;\':\'&#9660;\');' +
-                '})(this)">' +
-                    '<span>Spin History</span>' +
-                    '<span class="hist-arrow">&#9660;</span>' +
-                '</div>' +
-                '<div id="spinHistoryList"></div>';
-
-            // Insert between reel area and bottom bar
-            const bottomBar = slotModal.querySelector('.slot-bottom-bar');
-            if (bottomBar && bottomBar.parentNode) {
-                bottomBar.parentNode.insertBefore(panel, bottomBar);
-            } else {
-                slotModal.appendChild(panel);
-            }
-            renderSpinHistory();
-            _updateSlotSessionStats();
-        }
-
         // ── Session Stats Mini-Bar ────────────────────────────────────────────
         function _ensureSlotSessionStats() {
             if (document.getElementById('slotSessionStats')) return;
@@ -3130,12 +3071,9 @@
                 '<div class="sss-divider"></div>' +
                 '<div class="sss-item"><span class="sss-label">Time</span><span class="sss-value" id="sssTime">0:00</span></div>';
 
-            // Insert just above spin history panel, or above slot-bottom-bar as fallback
-            const histPanel = document.getElementById('spinHistoryPanel');
+            // Insert just above slot-bottom-bar
             const bottomBar = document.querySelector('.slot-bottom-bar');
-            if (histPanel && histPanel.parentNode) {
-                histPanel.parentNode.insertBefore(bar, histPanel);
-            } else if (bottomBar && bottomBar.parentNode) {
+            if (bottomBar && bottomBar.parentNode) {
                 bottomBar.parentNode.insertBefore(bar, bottomBar);
             }
         }
@@ -3284,7 +3222,7 @@
                 });
                 showMessage("So Close! 👀", "near-miss");
                 triggerNearMissNudge();
-                if (spinHistory.length > 0) { spinHistory[0].isNearMiss = true; renderSpinHistory(); _updateSlotSessionStats(); }
+                if (spinHistory.length > 0) { spinHistory[0].isNearMiss = true; _updateSlotSessionStats(); }
             }
         }
 
@@ -3331,7 +3269,6 @@
             if (typeof recordHallOfFameWin === 'function' && winAmount > 0 && currentGame) {
                 recordHallOfFameWin(winAmount, currentBet, currentGame.name, currentGame.id, currentGame.bonusType);
             }
-            renderSpinHistory();
             _updateSlotSessionStats();
 
             // Clear highlights
@@ -3966,14 +3903,8 @@
 
             if (freeSpinsRemaining <= 0) {
                 endFreeSpins(game);
-            } else {
-                // Auto-spin the next free spin after a delay
-                setTimeout(() => {
-                    if (freeSpinsActive && currentGame && !spinning) {
-                        freeSpinSpin(game);
-                    }
-                }, 1500);
             }
+            // User must click Spin button for next free spin
         }
 
 
@@ -4343,15 +4274,10 @@
                 overlay.appendChild(_fsContent);
                 overlay.classList.add('active');
 
-                // Auto-dismiss after 3.5s and start first free spin
+                // Auto-dismiss after 3.5s — user clicks Spin to begin free spins
                 setTimeout(() => {
                     overlay.classList.remove('active');
                     showFreeSpinsHUD(game);
-                    setTimeout(() => {
-                        if (freeSpinsActive && currentGame && !spinning) {
-                            freeSpinSpin(game);
-                        }
-                    }, 500);
                 }, 3500);
             }, 700);
         }
@@ -6848,14 +6774,14 @@
         })();
 
         var _WHEEL_SEGMENTS = [
-            { label: '5x', type: 'cash', value: 5 },
-            { label: '8 SPINS', type: 'spins', value: 8 },
-            { label: '10x', type: 'cash', value: 10 },
+            { label: '3x', type: 'cash', value: 3 },
             { label: '5 SPINS', type: 'spins', value: 5 },
-            { label: '25x', type: 'cash', value: 25 },
-            { label: '10 SPINS', type: 'spins', value: 10 },
-            { label: '50x', type: 'cash', value: 50 },
-            { label: '200x 🎰', type: 'jackpot', value: 200 }
+            { label: '6x', type: 'cash', value: 6 },
+            { label: '5 SPINS', type: 'spins', value: 5 },
+            { label: '15x', type: 'cash', value: 15 },
+            { label: '6 SPINS', type: 'spins', value: 6 },
+            { label: '30x', type: 'cash', value: 30 },
+            { label: '75x 🎰', type: 'jackpot', value: 75 }
         ];
         var _WHEEL_COLORS = ['#ff6d00','#1565c0','#2e7d32','#6a1b9a','#c62828','#00695c','#f9a825','#37474f'];
 
@@ -7575,7 +7501,7 @@
                 });
                 showMessage("So Close! 👀", "near-miss");
                 triggerNearMissNudge();
-                if (spinHistory.length > 0) { spinHistory[0].isNearMiss = true; renderSpinHistory(); _updateSlotSessionStats(); }
+                if (spinHistory.length > 0) { spinHistory[0].isNearMiss = true; _updateSlotSessionStats(); }
             }
         }
 
@@ -7622,7 +7548,6 @@
             if (typeof recordHallOfFameWin === 'function' && winAmount > 0 && currentGame) {
                 recordHallOfFameWin(winAmount, currentBet, currentGame.name, currentGame.id, currentGame.bonusType);
             }
-            renderSpinHistory();
             _updateSlotSessionStats();
 
             // Clear highlights
@@ -8178,14 +8103,8 @@
 
             if (freeSpinsRemaining <= 0) {
                 endFreeSpins(game);
-            } else {
-                // Auto-spin the next free spin after a delay
-                setTimeout(() => {
-                    if (freeSpinsActive && currentGame && !spinning) {
-                        freeSpinSpin(game);
-                    }
-                }, 1500);
             }
+            // User must click Spin button for next free spin
         }
 
 
@@ -8526,15 +8445,10 @@
                 `;
                 overlay.classList.add('active');
 
-                // Auto-dismiss after 3.5s and start first free spin
+                // Auto-dismiss after 3.5s — user clicks Spin to begin free spins
                 setTimeout(() => {
                     overlay.classList.remove('active');
                     showFreeSpinsHUD(game);
-                    setTimeout(() => {
-                        if (freeSpinsActive && currentGame && !spinning) {
-                            freeSpinSpin(game);
-                        }
-                    }, 500);
                 }, 3500);
             }, 700);
         }
@@ -10759,14 +10673,14 @@
         })();
 
         var _WHEEL_SEGMENTS = [
-            { label: '5x', type: 'cash', value: 5 },
-            { label: '8 SPINS', type: 'spins', value: 8 },
-            { label: '10x', type: 'cash', value: 10 },
+            { label: '3x', type: 'cash', value: 3 },
             { label: '5 SPINS', type: 'spins', value: 5 },
-            { label: '25x', type: 'cash', value: 25 },
-            { label: '10 SPINS', type: 'spins', value: 10 },
-            { label: '50x', type: 'cash', value: 50 },
-            { label: '200x 🎰', type: 'jackpot', value: 200 }
+            { label: '6x', type: 'cash', value: 6 },
+            { label: '5 SPINS', type: 'spins', value: 5 },
+            { label: '15x', type: 'cash', value: 15 },
+            { label: '6 SPINS', type: 'spins', value: 6 },
+            { label: '30x', type: 'cash', value: 30 },
+            { label: '75x 🎰', type: 'jackpot', value: 75 }
         ];
         var _WHEEL_COLORS = ['#ff6d00','#1565c0','#2e7d32','#6a1b9a','#c62828','#00695c','#f9a825','#37474f'];
 

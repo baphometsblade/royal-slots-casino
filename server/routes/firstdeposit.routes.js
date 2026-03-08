@@ -43,8 +43,8 @@ router.post('/claim', authenticate, async function(req, res) {
     );
     if (!deposit) return res.status(400).json({ error: 'No deposit found' });
 
-    var BONUS_GEMS = 1000;
-    var BONUS_CREDITS = 5.00;
+    var BONUS_GEMS = 500;
+    var BONUS_CREDITS = 2.00;
 
     await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ?, balance = balance + ?, first_deposit_bonus_claimed = 1 WHERE id = ?',
       [BONUS_GEMS, BONUS_CREDITS, userId]);

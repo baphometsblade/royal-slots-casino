@@ -13,17 +13,17 @@ const BOOSTS = [
 // ── Schema Init ─────────────────────────────────────────────────────────────
 
 async function initSchema() {
-    const isPg      = !!process.env.DATABASE_URL;
+    const db = require('../database');
+    const isPg  = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
-    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const db = require('../database');
     await db.run(`CREATE TABLE IF NOT EXISTS active_boosts (
         id ${idDef},
         user_id INTEGER NOT NULL,
         boost_type TEXT NOT NULL,
         started_at ${tsType} DEFAULT ${tsDefault},
-        expires_at TEXT NOT NULL,
+        expires_at ${tsType} NOT NULL,
         created_at ${tsType} DEFAULT ${tsDefault}
     )`);
 }

@@ -694,14 +694,14 @@ const ACHIEVEMENT_THRESHOLD_JACKPOT_HUNTER_WIN = 25000;
  *   xp: XP bonus awarded alongside the prize
  */
 const WHEEL_SEGMENTS = [
-    { label: '$250',  value: 250,  color: '#3b82f6', xp: 20  },
+    { label: '$25',  value: 25,  color: '#3b82f6', xp: 20  },
     { label: '5 FS',  value: 5,   type: 'freespins', color: '#7c3aed', xp: 15 },
-    { label: '$500',  value: 500,  color: '#10b981', xp: 30  },
-    { label: '$1000', value: 1000, color: '#f59e0b', xp: 50  },
-    { label: '$2500', value: 2500, color: '#8b5cf6', xp: 75  },
-    { label: '10 FS', value: 10,  type: 'freespins', color: '#0ea5e9', xp: 25 },
-    { label: '$250',  value: 250,  color: '#ec4899', xp: 20  },
-    { label: '$5000', value: 5000, color: '#ffd700', xp: 150 }
+    { label: '$50',  value: 50,  color: '#10b981', xp: 30  },
+    { label: '$75', value: 75, color: '#f59e0b', xp: 50  },
+    { label: '$100', value: 100, color: '#8b5cf6', xp: 75  },
+    { label: '5 FS', value: 5,  type: 'freespins', color: '#0ea5e9', xp: 25 },
+    { label: '$25',  value: 25,  color: '#ec4899', xp: 20  },
+    { label: '$100', value: 100, color: '#ffd700', xp: 150 }
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -749,13 +749,13 @@ const XP_TIERS = [
  * Day 7 loops back to the last entry.
  */
 const DAILY_REWARDS = [
-    { amount: 500,  xp: 25  },
-    { amount: 750,  xp: 35  },
-    { amount: 1000, xp: 50  },
-    { amount: 1500, xp: 75  },
-    { amount: 2000, xp: 100 },
-    { amount: 3000, xp: 150 },
-    { amount: 5000, xp: 250 }
+    { amount: 300,  xp: 25  },
+    { amount: 450,  xp: 35  },
+    { amount: 600,  xp: 50  },
+    { amount: 900,  xp: 75  },
+    { amount: 1200, xp: 100 },
+    { amount: 1800, xp: 150 },
+    { amount: 3000, xp: 250 }
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -888,60 +888,60 @@ const VIP_TIERS = [
         name: 'Bronze',
         minWagered: 0,
         maxWagered: 249,
-        cashbackPct: 0.5,
-        weeklyReloadPct: 5,
+        cashbackPct: 0.25,
+        weeklyReloadPct: 3,
         color: '#CD7F32',
         colorDark: '#8B5523',
         icon: '\u{1F949}',
-        benefits: ['0.5% cashback on losses', '5% weekly reload bonus', 'Access to all standard games']
+        benefits: ['0.25% cashback on losses', '3% weekly reload bonus', 'Access to all standard games']
     },
     {
         id: 'silver',
         name: 'Silver',
         minWagered: 250,
         maxWagered: 4999,
-        cashbackPct: 1.0,
-        weeklyReloadPct: 10,
+        cashbackPct: 0.5,
+        weeklyReloadPct: 5,
         color: '#C0C0C0',
         colorDark: '#808080',
         icon: '\u{1F948}',
-        benefits: ['1% cashback on losses', '10% weekly reload bonus', 'Priority email support']
+        benefits: ['0.5% cashback on losses', '5% weekly reload bonus', 'Priority email support']
     },
     {
         id: 'gold',
         name: 'Gold',
         minWagered: 5000,
         maxWagered: 19999,
-        cashbackPct: 1.5,
-        weeklyReloadPct: 15,
+        cashbackPct: 1.0,
+        weeklyReloadPct: 8,
         color: '#FFD700',
         colorDark: '#B8860B',
         icon: '\u{1F947}',
-        benefits: ['1.5% cashback on losses', '15% weekly reload bonus', 'Birthday bonus', 'Dedicated account manager']
+        benefits: ['1% cashback on losses', '8% weekly reload bonus', 'Birthday bonus', 'Dedicated account manager']
     },
     {
         id: 'platinum',
         name: 'Platinum',
         minWagered: 20000,
         maxWagered: 49999,
-        cashbackPct: 2.0,
-        weeklyReloadPct: 20,
+        cashbackPct: 1.5,
+        weeklyReloadPct: 12,
         color: '#E5E4E2',
         colorDark: '#A9A9A9',
         icon: '\u{1F48E}',
-        benefits: ['2% cashback on losses', '20% weekly reload bonus', 'Dedicated VIP host', 'Monthly cashback boost', 'Higher withdrawal limits']
+        benefits: ['1.5% cashback on losses', '12% weekly reload bonus', 'Dedicated VIP host', 'Monthly cashback boost', 'Higher withdrawal limits']
     },
     {
         id: 'diamond',
         name: 'Diamond',
         minWagered: 50000,
         maxWagered: Infinity,
-        cashbackPct: 3.0,
-        weeklyReloadPct: 25,
+        cashbackPct: 2.0,
+        weeklyReloadPct: 15,
         color: '#B9F2FF',
         colorDark: '#5BC0DE',
         icon: '\u{1F451}',
-        benefits: ['3% cashback on losses', '25% weekly reload bonus', 'Exclusive games access', 'Priority withdrawals', 'Personal VIP concierge', 'Invitations to VIP events']
+        benefits: ['2% cashback on losses', '15% weekly reload bonus', 'Exclusive games access', 'Priority withdrawals', 'Personal VIP concierge', 'Invitations to VIP events']
     }
 ];
 
@@ -949,7 +949,7 @@ const VIP_TIERS = [
 const VIP_WEEKLY_RELOAD_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** Weekly reload max bonus cap ($) */
-const VIP_WEEKLY_RELOAD_MAX_BONUS = 5000;
+const VIP_WEEKLY_RELOAD_MAX_BONUS = 1500;
 
 /** Weekly reload base amount the percentage applies to */
-const VIP_WEEKLY_RELOAD_BASE = 1000;
+const VIP_WEEKLY_RELOAD_BASE = 500;

@@ -4,10 +4,11 @@ const db = require('../database');
 // ── Schema Init ─────────────────────────────────────────────────────────
 
 async function initSchema() {
-    const isPg      = !!process.env.DATABASE_URL;
+    const isPg  = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
-    const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+
     await db.run(`CREATE TABLE IF NOT EXISTS cosmetic_items (
         id ${idDef},
         category TEXT NOT NULL,

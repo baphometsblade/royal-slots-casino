@@ -20,6 +20,8 @@ async function initSchema() {
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
     const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const db = require('../database');
+    const isPg = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     await db.run(`CREATE TABLE IF NOT EXISTS gem_balances (
         user_id INTEGER PRIMARY KEY,
         balance INTEGER DEFAULT 0,
