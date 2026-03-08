@@ -44,9 +44,11 @@ router.post('/deposit', authenticate, async (req, res) => {
         }
 
         const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore + deposit;
 
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, targetUserId]);
+        // Atomic balance credit — prevents race condition overwrites
+        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [deposit, targetUserId]);
+
+        const balanceAfter = balanceBefore + deposit;
 
         await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
@@ -60,34 +62,41 @@ router.post('/deposit', authenticate, async (req, res) => {
     }
 });
 
-// POST /api/withdraw
+// POST /api/withdraw — DISABLED for players
+// All player withdrawals must use /api/payments/withdraw which enforces:
+// wagering requirements, self-exclusion checks, deposit-required gate,
+// bonus playthrough, OTP verification, cooling-off period, and limits.
+// This endpoint now requires admin privileges (for support-initiated refunds only).
 router.post('/withdraw', authenticate, async (req, res) => {
     try {
-        const { amount } = req.body;
+        if (!req.user.is_admin) {
+            return res.status(403).json({ error: 'Use the Cashier to request withdrawals' });
+        }
+        const { amount, userId } = req.body;
         const withdrawal = parseFloat(amount);
+        const targetUserId = userId ? parseInt(userId) : req.user.id;
 
         if (isNaN(withdrawal) || withdrawal <= 0) {
             return res.status(400).json({ error: 'Invalid withdrawal amount' });
         }
 
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        if (user.balance < withdrawal) {
-            return res.status(400).json({ error: 'Insufficient balance' });
+        // Atomic balance deduction — prevents race condition double-withdrawal
+        const result = await db.run(
+            'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+            [withdrawal, targetUserId, withdrawal]
+        );
+        if (!result || result.changes === 0) {
+            return res.status(400).json({ error: 'Insufficient balance or user not found' });
         }
 
-        const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore - withdrawal;
-
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
+        const user = await db.get('SELECT balance FROM users WHERE id = ?', [targetUserId]);
 
         await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-            [req.user.id, 'withdrawal', -withdrawal, balanceBefore, balanceAfter, 'pending']
+            [targetUserId, 'withdrawal', -withdrawal, (user ? user.balance : 0) + withdrawal, user ? user.balance : 0, 'admin-refund']
         );
 
-        res.json({ balance: balanceAfter, message: `Withdrawal of $${withdrawal.toFixed(2)} submitted` });
+        res.json({ balance: user ? user.balance : 0, message: `Withdrawal of $${withdrawal.toFixed(2)} processed` });
     } catch (err) {
         console.error('[Balance] Withdrawal error:', err);
         res.status(500).json({ error: 'Withdrawal failed' });

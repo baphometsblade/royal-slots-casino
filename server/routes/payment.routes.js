@@ -380,20 +380,8 @@ router.post('/deposit', authenticate, async (req, res) => {
         );
         const depositId = depositResult.lastInsertRowid;
 
-        // Award gems based on deposit amount
-        var depositGems = 0;
-        if (deposit >= 100) depositGems = 2500;
-        else if (deposit >= 50) depositGems = 1000;
-        else if (deposit >= 5) depositGems = 100;
-
-        if (depositGems > 0) {
-            try {
-                await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [depositGems, req.user.id]);
-            } catch(gemErr) {
-                console.error('[Payment] Gem award error:', gemErr.message);
-                // Non-fatal, continue
-            }
-        }
+        // Gems are awarded ONLY when the deposit is confirmed (via webhook/admin approval).
+        // Previously gems were awarded here on submission AND again on confirmation = double-gem exploit.
 
         res.json({
             message: `Deposit of $${deposit.toFixed(2)} submitted — awaiting payment confirmation`,
@@ -404,7 +392,7 @@ router.post('/deposit', authenticate, async (req, res) => {
                 status: 'pending',
                 reference
             },
-            gemsAwarded: depositGems
+            gemsAwarded: 0
         });
     } catch (err) {
         console.error('[Payment] Deposit error:', err);
@@ -551,10 +539,16 @@ router.post('/withdraw', authenticate, async (req, res) => {
 
         const reference = generateReference('WDR');
         const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore - withdrawal;
 
-        // Deduct balance immediately
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
+        // Atomic balance deduction — prevents race condition double-withdrawal
+        const deductResult = await db.run(
+            'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+            [withdrawal, req.user.id, withdrawal]
+        );
+        if (!deductResult || deductResult.changes === 0) {
+            return res.status(400).json({ error: 'Insufficient balance' });
+        }
+        const balanceAfter = balanceBefore - withdrawal;
 
         // Create withdrawal record as pending (awaits admin processing)
         const wdResult = await db.run(
@@ -680,30 +674,29 @@ router.post('/withdraw/:id/cancel', authenticate, async (req, res) => {
             return res.status(400).json({ error: `Cannot cancel a withdrawal with status: ${wd.status}` });
         }
 
-        // Refund the balance
-        const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const balanceBefore = user.balance;
-        const balanceAfter = balanceBefore + wd.amount;
-
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, req.user.id]);
-
-        await db.run(
-            "UPDATE withdrawals SET status = 'cancelled', processed_at = datetime('now'), admin_note = 'Cancelled by user' WHERE id = ?",
+        // Atomically cancel + refund: only cancel if still pending (prevents double-cancel race)
+        const cancelResult = await db.run(
+            "UPDATE withdrawals SET status = 'cancelled', processed_at = datetime('now'), admin_note = 'Cancelled by user' WHERE id = ? AND status = 'pending'",
             [withdrawalId]
         );
+        if (!cancelResult || cancelResult.changes === 0) {
+            return res.status(400).json({ error: 'Withdrawal already processed or cancelled' });
+        }
+
+        // Atomic balance refund
+        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [wd.amount, req.user.id]);
+
+        const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        const newBalance = updatedUser ? updatedUser.balance : 0;
 
         await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-            [req.user.id, 'withdrawal_cancel', wd.amount, balanceBefore, balanceAfter, `WDR-CANCEL-${withdrawalId}`]
+            [req.user.id, 'withdrawal_cancel', wd.amount, newBalance - wd.amount, newBalance, `WDR-CANCEL-${withdrawalId}`]
         );
 
         res.json({
             message: `Withdrawal of $${wd.amount.toFixed(2)} cancelled and refunded`,
-            balance: balanceAfter
+            balance: newBalance
         });
     } catch (err) {
         console.error('[Payment] Cancel withdrawal error:', err);
@@ -967,8 +960,13 @@ router.post('/webhook/confirm', async (req, res) => {
     try {
         const { reference, webhookSecret } = req.body;
 
-        // Validate webhook secret (must match WEBHOOK_SECRET env var)
-        const expectedSecret = process.env.WEBHOOK_SECRET || config.JWT_SECRET;
+        // Validate webhook secret — MUST be set explicitly via WEBHOOK_SECRET env var.
+        // Never falls back to JWT_SECRET (attacker who knows default JWT secret could forge deposits).
+        const expectedSecret = process.env.WEBHOOK_SECRET;
+        if (!expectedSecret) {
+            console.error('[Webhook] WEBHOOK_SECRET not configured — rejecting webhook');
+            return res.status(503).json({ error: 'Webhook not configured' });
+        }
         if (!webhookSecret || webhookSecret !== expectedSecret) {
             return res.status(403).json({ error: 'Invalid webhook secret' });
         }
@@ -984,8 +982,13 @@ router.post('/webhook/confirm', async (req, res) => {
         if (!deposit) {
             return res.status(404).json({ error: 'Deposit not found' });
         }
-        if (deposit.status !== 'pending') {
-            return res.status(200).json({ message: `Deposit already ${deposit.status}`, depositId: deposit.id });
+        // Atomic: mark deposit completed FIRST to prevent double-confirm race condition
+        const confirmResult = await db.run(
+            "UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ? AND status = 'pending'",
+            [deposit.id]
+        );
+        if (!confirmResult || confirmResult.changes === 0) {
+            return res.status(200).json({ message: `Deposit already processed`, depositId: deposit.id });
         }
 
         const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [deposit.user_id]);
@@ -994,7 +997,6 @@ router.post('/webhook/confirm', async (req, res) => {
         }
 
         const balanceBefore = user.balance;
-        let balanceAfter = balanceBefore + deposit.amount;
 
         // Determine bonus: first deposit or reload
         let bonusAmount = 0;
@@ -1004,7 +1006,8 @@ router.post('/webhook/confirm', async (req, res) => {
             "SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'completed'",
             [deposit.user_id]
         );
-        if (priorDeposits && priorDeposits.count === 0) {
+        if (priorDeposits && priorDeposits.count <= 1) {
+            // count <= 1 because the current deposit was already marked completed above
             bonusAmount = Math.min(deposit.amount * (config.FIRST_DEPOSIT_BONUS_PCT / 100), config.FIRST_DEPOSIT_BONUS_MAX);
             wageringMult = config.FIRST_DEPOSIT_WAGERING_MULT || 30;
             bonusType = 'first_deposit_bonus';
@@ -1014,8 +1017,9 @@ router.post('/webhook/confirm', async (req, res) => {
             bonusType = 'reload_bonus';
         }
 
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
-        await db.run("UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?", [deposit.id]);
+        // Atomic balance credit — prevents race condition overwrites
+        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [deposit.amount, deposit.user_id]);
+        let balanceAfter = balanceBefore + deposit.amount;
         await db.run(
             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
             [deposit.user_id, 'deposit', deposit.amount, balanceBefore, balanceAfter, deposit.reference]

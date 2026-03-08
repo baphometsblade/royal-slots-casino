@@ -52,13 +52,14 @@ router.post('/play', authenticate, async function(req, res) {
       return res.status(400).json({ error: 'Bet must be $' + MIN_BET + ' \u2013 $' + MAX_BET });
     }
 
-    const user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    if (parseFloat(user.balance) < bet) {
+    // Atomic bet deduction — prevents race condition negative balance
+    const deductResult = await db.run(
+      'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+      [bet, userId, bet]
+    );
+    if (!deductResult || deductResult.changes === 0) {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
-
-    await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [bet, userId]);
 
     const segmentIndex = Math.floor(Math.random() * SEGMENTS.length);
     const segment      = SEGMENTS[segmentIndex];

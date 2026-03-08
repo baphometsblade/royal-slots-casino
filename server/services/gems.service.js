@@ -62,13 +62,14 @@ async function purchaseGems(userId, packId) {
     const pack = GEM_PACKS.find(p => p.id === packId);
     if (!pack) throw new Error('Invalid gem pack');
 
-    // Check user credit balance
-    const row = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
-    if (!row) throw new Error('User not found');
-    if (row.balance < pack.price) throw new Error('Insufficient credit balance');
-
-    // Deduct credits from user
-    await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [pack.price, userId]);
+    // Atomic balance deduction — prevents race condition double-purchase
+    const deductResult = await db.run(
+        'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+        [pack.price, userId, pack.price]
+    );
+    if (!deductResult || deductResult.changes === 0) {
+        throw new Error('Insufficient credit balance');
+    }
 
     // Calculate total gems including bonus
     const bonusGems = pack.bonus > 0 ? Math.floor(pack.gems * pack.bonus / 100) : 0;
@@ -113,13 +114,14 @@ async function spendGems(userId, amount, description) {
 
     if (!amount || amount <= 0) throw new Error('Invalid gem amount');
 
-    const row = await db.get('SELECT balance FROM gem_balances WHERE user_id = ?', [userId]);
-    if (!row || row.balance < amount) throw new Error('Insufficient gem balance');
-
-    await db.run(
-        "UPDATE gem_balances SET balance = balance - ?, total_spent = total_spent + ?, updated_at = datetime('now') WHERE user_id = ?",
-        [amount, amount, userId]
+    // Atomic gem deduction — prevents race condition double-spend (negative gem balance)
+    const spendResult = await db.run(
+        "UPDATE gem_balances SET balance = balance - ?, total_spent = total_spent + ?, updated_at = datetime('now') WHERE user_id = ? AND balance >= ?",
+        [amount, amount, userId, amount]
     );
+    if (!spendResult || spendResult.changes === 0) {
+        throw new Error('Insufficient gem balance');
+    }
 
     await db.run(
         "INSERT INTO gem_transactions (user_id, type, amount, description, created_at) VALUES (?, 'spend', ?, ?, datetime('now'))",
@@ -137,19 +139,12 @@ async function addGems(userId, amount, description) {
 
     if (!amount || amount <= 0) throw new Error('Invalid gem amount');
 
-    // Upsert gem balance
-    const existing = await db.get('SELECT balance FROM gem_balances WHERE user_id = ?', [userId]);
-    if (existing) {
-        await db.run(
-            "UPDATE gem_balances SET balance = balance + ?, updated_at = datetime('now') WHERE user_id = ?",
-            [amount, userId]
-        );
-    } else {
-        await db.run(
-            "INSERT INTO gem_balances (user_id, balance, total_purchased, total_spent, updated_at) VALUES (?, ?, 0, 0, datetime('now'))",
-            [userId, amount]
-        );
-    }
+    // Atomic upsert — INSERT or UPDATE in one statement, prevents race condition duplicate inserts
+    await db.run(
+        "INSERT INTO gem_balances (user_id, balance, total_purchased, total_spent, updated_at) VALUES (?, ?, 0, 0, datetime('now')) " +
+        "ON CONFLICT(user_id) DO UPDATE SET balance = gem_balances.balance + ?, updated_at = datetime('now')",
+        [userId, amount, amount]
+    );
 
     await db.run(
         "INSERT INTO gem_transactions (user_id, type, amount, description, created_at) VALUES (?, 'reward', ?, ?, datetime('now'))",

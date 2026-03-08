@@ -197,12 +197,19 @@ router.post('/', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
-        // ── Deduct bet ──
+        // ── Deduct bet (atomic — prevents race condition double-spend) ──
         const balanceBefore = currentUser.balance;
         let balanceAfterBet = balanceBefore;
         if (!usedFreeSpin) {
+            // Atomic: deduct only if balance is sufficient (single SQL statement)
+            const deductResult = await db.run(
+                'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+                [bet, userId, bet]
+            );
+            if (!deductResult || deductResult.changes === 0) {
+                return res.status(400).json({ error: 'Insufficient balance' });
+            }
             balanceAfterBet = balanceBefore - bet;
-            await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfterBet, userId]);
 
             // Log bet transaction
             await db.run(
@@ -223,7 +230,56 @@ router.post('/', authenticate, async (req, res) => {
         spinResult.winAmount = cappedWinAmount;
         applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount);
 
+        // ── Bonus event payout multiplier (fail-open — applied BEFORE session cap) ──
+        let eventBonus = null;
+        if (spinResult.winAmount > 0) {
+            try {
+                const eventService = require('../services/event.service');
+                const activeEvent = await eventService.getActiveEventForGame(gameId, 'payout_boost');
+                if (activeEvent && activeEvent.multiplier > 1) {
+                    const baseWin = spinResult.winAmount;
+                    const boostedWin = Math.round(baseWin * activeEvent.multiplier * 100) / 100;
+                    const bonusAmount = Math.round((boostedWin - baseWin) * 100) / 100;
+                    spinResult.winAmount = boostedWin;
+                    eventBonus = {
+                        eventId: activeEvent.id,
+                        eventName: activeEvent.name,
+                        multiplier: activeEvent.multiplier,
+                        bonusAmount,
+                    };
+                }
+            } catch (evtErr) {
+                console.error('[Spin] Event boost check error:', evtErr);
+                // Non-blocking — proceed without boost
+            }
+        }
+
+        // ── Apply active player boosts (BEFORE session cap) ────────────────
+        // One DB call fetches all active boosts; avoids N separate hasBoost queries.
+        let _boostWinBonus = 0;
+        let _hasBpRush = false;
+        let _hasGemMiner = false;
+        if (!usedFreeSpin) {
+            try {
+                const boostService = require('../services/boost.service');
+                const _activeBoosts = await boostService.getActiveBoosts(userId);
+                const _hasMega = _activeBoosts.some(b => b.boost_type === 'mega_boost');
+                const _hasLucky = _hasMega || _activeBoosts.some(b => b.boost_type === 'lucky_streak');
+                _hasBpRush   = _hasMega || _activeBoosts.some(b => b.boost_type === 'bp_rush');
+                _hasGemMiner = _hasMega || _activeBoosts.some(b => b.boost_type === 'gem_miner');
+                // lucky_streak: +5% win bonus applied before session cap
+                if (_hasLucky && spinResult.winAmount > 0) {
+                    _boostWinBonus = Math.round(spinResult.winAmount * 0.05 * 100) / 100;
+                    spinResult.winAmount = Math.round((spinResult.winAmount + _boostWinBonus) * 100) / 100;
+                }
+            } catch (_boostErr) {
+                console.error('[Boost] Boost check error:', _boostErr);
+                // Non-blocking — proceed without boosts
+            }
+        }
+
         // ── Enforce session win cap ($50k cumulative ceiling, persisted to DB) ──
+        // Applied AFTER event multiplier + boosts so they cannot bypass the cap
         // Atomic: uses MIN(total_wins + ?, cap) to prevent concurrent spins from exceeding the cap
         if (spinResult.winAmount > 0) {
             // Expire old sessions atomically
@@ -261,59 +317,11 @@ router.post('/', authenticate, async (req, res) => {
             freeSpinStateByUser.delete(userId);
         }
 
-        // ── Bonus event payout multiplier (fail-open — never blocks spin) ──
-        let eventBonus = null;
-        if (spinResult.winAmount > 0) {
-            try {
-                const eventService = require('../services/event.service');
-                const activeEvent = await eventService.getActiveEventForGame(gameId, 'payout_boost');
-                if (activeEvent && activeEvent.multiplier > 1) {
-                    const baseWin = spinResult.winAmount;
-                    const boostedWin = Math.round(baseWin * activeEvent.multiplier * 100) / 100;
-                    const bonusAmount = Math.round((boostedWin - baseWin) * 100) / 100;
-                    spinResult.winAmount = boostedWin;
-                    eventBonus = {
-                        eventId: activeEvent.id,
-                        eventName: activeEvent.name,
-                        multiplier: activeEvent.multiplier,
-                        bonusAmount,
-                    };
-                }
-            } catch (evtErr) {
-                console.error('[Spin] Event boost check error:', evtErr);
-                // Non-blocking — proceed without boost
-            }
-        }
-
-        // ── Apply active player boosts ─────────────────────────────────────
-        // One DB call fetches all active boosts; avoids N separate hasBoost queries.
-        let _boostWinBonus = 0;
-        let _hasBpRush = false;
-        let _hasGemMiner = false;
-        if (!usedFreeSpin) {
-            try {
-                const boostService = require('../services/boost.service');
-                const _activeBoosts = await boostService.getActiveBoosts(userId);
-                const _hasMega = _activeBoosts.some(b => b.boost_type === 'mega_boost');
-                const _hasLucky = _hasMega || _activeBoosts.some(b => b.boost_type === 'lucky_streak');
-                _hasBpRush   = _hasMega || _activeBoosts.some(b => b.boost_type === 'bp_rush');
-                _hasGemMiner = _hasMega || _activeBoosts.some(b => b.boost_type === 'gem_miner');
-                // lucky_streak: +5% win bonus applied before balance credit
-                if (_hasLucky && spinResult.winAmount > 0) {
-                    _boostWinBonus = Math.round(spinResult.winAmount * 0.05 * 100) / 100;
-                    spinResult.winAmount = Math.round((spinResult.winAmount + _boostWinBonus) * 100) / 100;
-                }
-            } catch (_boostErr) {
-                console.error('[Boost] Boost check error:', _boostErr);
-                // Non-blocking — proceed without boosts
-            }
-        }
-
-        // ── Credit win ──
+        // ── Credit win (atomic — prevents race condition balance overwrites) ──
         let finalBalance = balanceAfterBet;
         if (spinResult.winAmount > 0) {
+            await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [spinResult.winAmount, userId]);
             finalBalance = balanceAfterBet + spinResult.winAmount;
-            await db.run('UPDATE users SET balance = ? WHERE id = ?', [finalBalance, userId]);
 
             await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
@@ -330,10 +338,10 @@ router.post('/', authenticate, async (req, res) => {
             const isJackpotGame = Boolean(game.jackpot);
             const jackpotWin = await jackpotService.checkAndAward(userId, bet, game.minBet || 0.20, isJackpotGame);
             if (jackpotWin) {
-                // Credit jackpot amount to user
+                // Credit jackpot amount to user (atomic)
+                await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [jackpotWin.amount, userId]);
                 const balanceBeforeJp = finalBalance;
                 finalBalance = balanceBeforeJp + jackpotWin.amount;
-                await db.run('UPDATE users SET balance = ? WHERE id = ?', [finalBalance, userId]);
                 await db.run(
                     'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
                     [userId, 'jackpot', jackpotWin.amount, balanceBeforeJp, finalBalance, 'jackpot:' + jackpotWin.tier]

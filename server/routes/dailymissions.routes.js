@@ -105,42 +105,18 @@ router.get('/', authenticate, async function(req, res) {
   }
 });
 
-// POST /progress -- update progress after a spin
-// Body: { spins: 1, wins: 0|1, betAmount: number }
+// POST /progress — DISABLED (client-reported progress removed)
+// All mission progress is now tracked exclusively server-side in spin.routes.js
+// (the fire-and-forget daily missions block). This prevents users from forging
+// completions by sending fake { spins, wins, betAmount } payloads.
 router.post('/progress', authenticate, async function(req, res) {
+  // Return current mission state without accepting any client-reported progress
   try {
-    await ensureSchema();
-    const userId = req.user.id;
-    const today  = todayStr();
-    const spins  = parseInt((req.body && req.body.spins)  || 0, 10);
-    const wins   = parseInt((req.body && req.body.wins)   || 0, 10);
-    const bet    = parseFloat((req.body && req.body.betAmount) || 0);
-
-    const templates = getDayMissions();
-    for (const t of templates) {
-      let increment = 0;
-      if (t.type === 'spins') increment = spins;
-      else if (t.type === 'wins')  increment = wins;
-      else if (t.type === 'bet')   increment = bet;
-      if (increment <= 0) continue;
-
-      const upsertSql = [
-        'INSERT INTO daily_mission_progress (user_id, mission_date, slot, progress, completed)',
-        'VALUES (?, ?, ?, ?, 0)',
-        'ON CONFLICT(user_id, mission_date, slot) DO UPDATE SET',
-        '  progress = MIN(daily_mission_progress.progress + ?, ?),',
-        '  completed = CASE WHEN MIN(daily_mission_progress.progress + ?, ?) >= ? THEN 1 ELSE completed END',
-      ].join(' ');
-      await db.run(upsertSql, [userId, today, t.slot, Math.min(increment, t.target),
-        increment, t.target,
-        increment, t.target, t.target]);
-    }
-
-    const missions = await getMissionsWithProgress(userId);
+    const missions = await getMissionsWithProgress(req.user.id);
     return res.json({ success: true, missions });
   } catch (err) {
     console.error('[DailyMissions] POST /progress error:', err.message);
-    return res.status(500).json({ error: 'Failed to update progress' });
+    return res.status(500).json({ error: 'Failed to get missions' });
   }
 });
 

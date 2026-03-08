@@ -12,16 +12,20 @@ var SPIN_TIERS = {
 
 // ── Wheel Segment Definitions (base values) ─────────────────────────────────
 
+// Segment weights tuned for ~55% RTP (basic tier, 50-gem cost):
+// Gem EV: ~9.8 gems/spin (19.7% return) — can't recycle into another spin
+// Credit EV: ~$0.18/spin — no money-pump possible
+// OLD VALUES had positive EV: $1.43 credit return + gem recycling = infinite money pump
 var SEGMENTS = [
-    { label: '5 Gems', type: 'gems', amount: 5, weight: 25 },
-    { label: '10 Gems', type: 'gems', amount: 10, weight: 20 },
-    { label: '25 Gems', type: 'gems', amount: 25, weight: 15 },
-    { label: '$1', type: 'credits', amount: 1, weight: 15 },
-    { label: '50 Gems', type: 'gems', amount: 50, weight: 10 },
-    { label: '$5', type: 'credits', amount: 5, weight: 8 },
-    { label: '100 Gems', type: 'gems', amount: 100, weight: 5 },
-    { label: '$25', type: 'credits', amount: 25, weight: 1.5 },
-    { label: 'JACKPOT $100', type: 'credits', amount: 100, weight: 0.5 }
+    { label: '5 Gems', type: 'gems', amount: 5, weight: 30 },
+    { label: '10 Gems', type: 'gems', amount: 10, weight: 22 },
+    { label: '15 Gems', type: 'gems', amount: 15, weight: 15 },
+    { label: '$0.25', type: 'credits', amount: 0.25, weight: 12 },
+    { label: '25 Gems', type: 'gems', amount: 25, weight: 8 },
+    { label: '$1', type: 'credits', amount: 1, weight: 5 },
+    { label: '50 Gems', type: 'gems', amount: 50, weight: 3 },
+    { label: '$5', type: 'credits', amount: 5, weight: 0.8 },
+    { label: 'JACKPOT $25', type: 'credits', amount: 25, weight: 0.2 }
 ];
 
 // ── Schema Init ─────────────────────────────────────────────────────────────

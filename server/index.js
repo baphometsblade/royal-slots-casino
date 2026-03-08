@@ -18,7 +18,21 @@ app.set('trust proxy', 1);
 
 // ─── Security Middleware ───
 app.use(helmet({
-    contentSecurityPolicy: false, // Allow inline scripts for the casino client
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],  // casino client uses inline scripts
+            styleSrc: ["'self'", "'unsafe-inline'"],       // inline styles for dynamic theming
+            imgSrc: ["'self'", "data:", "blob:"],           // data URIs for generated assets
+            connectSrc: ["'self'"],                         // API calls to same origin
+            fontSrc: ["'self'", "data:"],
+            objectSrc: ["'none'"],                          // no Flash/Java
+            frameAncestors: ["'none'"],                     // no iframing (clickjacking protection)
+            baseUri: ["'self'"],                            // prevent base tag hijacking
+            formAction: ["'self'"],                         // restrict form submission targets
+        }
+    },
+    crossOriginEmbedderPolicy: false, // needed for loading cross-origin images
 }));
 // In production restrict CORS to the declared origin; open in development
 const corsOrigin = config.NODE_ENV === 'production'
@@ -57,6 +71,16 @@ app.use('/api/user/claim-daily-bonus', bonusLimiter);
 app.use('/api/user/spin-wheel', bonusLimiter);
 app.use('/api/user/redeem-promo', bonusLimiter);
 
+// Strict rate limit for password/account-sensitive endpoints
+const sensitiveAuthLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts per 15 min
+    message: { error: 'Too many requests. Try again later.' },
+});
+app.use('/api/auth/forgot-password', sensitiveAuthLimiter);
+app.use('/api/auth/reset-password', sensitiveAuthLimiter);
+app.use('/api/user/change-password', sensitiveAuthLimiter);
+
 // Strict rate limit for deposit/withdrawal endpoints
 const paymentLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -68,6 +92,14 @@ app.use('/api/payment/withdraw', paymentLimiter);
 app.use('/api/balance/deposit', paymentLimiter);
 app.use('/api/bundles/purchase', paymentLimiter);
 app.use('/api/gifts/send', paymentLimiter);
+
+// Admin endpoint rate limit — prevent brute-force admin access
+const adminLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30, // 30 per minute
+    message: { error: 'Too many admin requests.' },
+});
+app.use('/api/admin', adminLimiter);
 
 // ─── Health Check (used by Render / load balancers) ───
 app.get('/api/health', async (req, res) => {
@@ -432,14 +464,19 @@ app.post('/api/contests/prizes/:id/claim', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'Invalid prize ID' });
         }
 
-        const prize = await db.get(
-            'SELECT * FROM contest_prizes WHERE id = ? AND user_id = ?',
+        // Atomic claim — UPDATE WHERE claimed = 0 prevents race condition double-claim
+        const claimResult = await db.run(
+            'UPDATE contest_prizes SET claimed = 1 WHERE id = ? AND user_id = ? AND claimed = 0',
             [prizeId, req.user.id]
         );
-        if (!prize) return res.status(404).json({ error: 'Prize not found' });
-        if (prize.claimed) return res.status(400).json({ error: 'Prize already claimed' });
+        if (!claimResult || claimResult.changes === 0) {
+            return res.status(400).json({ error: 'Prize not found or already claimed' });
+        }
 
-        await db.run('UPDATE contest_prizes SET claimed = 1 WHERE id = ?', [prizeId]);
+        const prize = await db.get(
+            'SELECT prize_amount FROM contest_prizes WHERE id = ?',
+            [prizeId]
+        );
 
         const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [req.user.id]);
         res.json({
@@ -455,8 +492,19 @@ app.post('/api/contests/prizes/:id/claim', verifyToken, async (req, res) => {
 });
 
 // ─── Static Files ───
+// Block access to sensitive files BEFORE static middleware
+app.use((req, res, next) => {
+    const blocked = /\/(\.env|\.git|\.claude|package\.json|package-lock\.json|CLAUDE\.md|render\.yaml|node_modules|server|scripts|casino\.db)/i;
+    if (blocked.test(req.path)) {
+        return res.status(404).json({ error: 'Not found' });
+    }
+    next();
+});
+
 // Serve the casino client from the project root
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, '..'), {
+    dotfiles: 'deny',  // block dotfiles (.env, .git, etc.)
+}));
 
 // Admin dashboard
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
