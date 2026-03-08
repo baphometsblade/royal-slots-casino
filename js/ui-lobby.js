@@ -2570,12 +2570,31 @@ function _injectFilterCounts() {
 }
 
 /** Render the featured spotlight strip above Top Picks */
-function _renderFeaturedSpotlight() {
+async function _renderFeaturedSpotlight() {
   var container = document.getElementById('featuredSpotlight');
   if (!container || typeof games === 'undefined') return;
   container.innerHTML = '';
 
-  // Pick: 2 jackpot, 3 hot, 2 new, 2 popular
+  // --- Try to fetch server-side profitability-ranked featured games ---
+  var serverFeaturedGames = [];
+  try {
+    var resp = await fetch('/api/featured-games');
+    if (resp.ok) {
+      var data = await resp.json();
+      if (data && Array.isArray(data.games) && data.games.length > 0) {
+        var gamesById = {};
+        games.forEach(function(g) { gamesById[g.id] = g; });
+        data.games.forEach(function(id) {
+          var g = gamesById[id];
+          if (g) serverFeaturedGames.push(g);
+        });
+      }
+    }
+  } catch (e) {
+    // Server unreachable — fall through to tag-based picks
+  }
+
+  // --- Tag-based picks (existing logic) ---
   function pickRandom(arr, n) {
     return arr.slice().sort(function() { return Math.random() - 0.5; }).slice(0, n);
   }
@@ -2584,24 +2603,50 @@ function _renderFeaturedSpotlight() {
   var news     = games.filter(function(g) { return (g.tag||'').toLowerCase() === 'new'; });
   var pops     = games.filter(function(g) { return (g.tag||'').toLowerCase() === 'popular'; });
 
-  var featured = pickRandom(jackpots, 2)
+  var tagPicks = pickRandom(jackpots, 2)
     .concat(pickRandom(hots, 3))
     .concat(pickRandom(news, 2))
-    .concat(pickRandom(pops, 2))
-    .slice(0, 9);
+    .concat(pickRandom(pops, 2));
+
+  // --- Merge: server-featured first, then tag picks (deduplicated), cap at 9 ---
+  var seenIds = {};
+  var featured = [];
+  serverFeaturedGames.forEach(function(g) {
+    if (!seenIds[g.id] && featured.length < 9) {
+      seenIds[g.id] = true;
+      featured.push({ game: g, source: 'server' });
+    }
+  });
+  tagPicks.forEach(function(g) {
+    if (!seenIds[g.id] && featured.length < 9) {
+      seenIds[g.id] = true;
+      featured.push({ game: g, source: 'tag' });
+    }
+  });
 
   if (!featured.length) return;
 
-  featured.forEach(function(game) {
+  featured.forEach(function(entry) {
+    var game = entry.game;
     var tag = (game.tag || '').toLowerCase();
-    var badgeClass = tag === 'jackpot' ? 'featured-badge-jackpot'
-                   : tag === 'hot'     ? 'featured-badge-hot'
-                   : tag === 'new'     ? 'featured-badge-new'
-                                       : 'featured-badge-popular';
-    var badgeLabel = tag === 'jackpot' ? '💰 JACKPOT'
-                   : tag === 'hot'     ? '🔥 HOT'
-                   : tag === 'new'     ? '✨ NEW'
-                                       : '🤝 POPULAR';
+    var badgeClass, badgeLabel;
+
+    if (entry.source === 'server') {
+      badgeClass = 'featured-badge-featured';
+      badgeLabel = '\u2B50 FEATURED';
+    } else if (tag === 'jackpot') {
+      badgeClass = 'featured-badge-jackpot';
+      badgeLabel = '\uD83D\uDCB0 JACKPOT';
+    } else if (tag === 'hot') {
+      badgeClass = 'featured-badge-hot';
+      badgeLabel = '\uD83D\uDD25 HOT';
+    } else if (tag === 'new') {
+      badgeClass = 'featured-badge-new';
+      badgeLabel = '\u2728 NEW';
+    } else {
+      badgeClass = 'featured-badge-popular';
+      badgeLabel = '\uD83E\uDD1D POPULAR';
+    }
 
     var card = document.createElement('div');
     card.className = 'featured-card';

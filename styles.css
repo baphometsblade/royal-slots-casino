@@ -17873,6 +17873,11 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
   background: linear-gradient(135deg,#1e40af,#60a5fa);
   color: #fff;
 }
+.featured-badge-featured {
+  background: linear-gradient(135deg,#fbbf24,#f59e0b);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(251,191,36,0.5);
+}
 .featured-card-name {
   position: absolute;
   bottom: 8px;

@@ -138,6 +138,7 @@ app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/session', require('./routes/session.routes'));
 app.use('/api/game-of-day', require('./routes/gameofday.routes'));
+app.use('/api/featured-games', (req, res, next) => { req.url = '/featured'; next(); }, require('./routes/gameofday.routes'));
 app.use('/api/game-stats', require('./routes/gamestats.routes'));
 app.use('/api/gems', require('./routes/gems.routes'));
 app.use('/api/boosts', require('./routes/boost.routes'));
