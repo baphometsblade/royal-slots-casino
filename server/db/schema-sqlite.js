@@ -421,6 +421,8 @@ const USER_MIGRATIONS = [
     ['last_bonus_level', 'INTEGER DEFAULT 1'],
     // VIP deposit bonus
     ['vip_deposit_claimed', 'TEXT'],
+    // Comeback bonus
+    ['comeback_bonus_last', 'TEXT'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → definition). */

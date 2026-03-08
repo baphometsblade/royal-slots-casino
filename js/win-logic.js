@@ -2,6 +2,9 @@
 // WIN-LOGIC MODULE
 // ═══════════════════════════════════════════════════════
 
+        // ── Comeback Bonus State ──
+        var _comebackLossStreak = 0;
+        var _comebackCheckInFlight = false;
 
         // ═══ Payline Definitions ═══
         // Standard paylines for different grid configs
@@ -1321,6 +1324,8 @@
                 if (winAmount >= currentBet * 10 && !freeSpinsActive) {
                     setTimeout(() => showBigWinCelebration(winAmount), 800);
                 }
+                // Reset comeback loss streak on any win
+                _comebackLossStreak = 0;
             } else {
                 // Still record the loss for tracking
                 if (window.HouseEdge && winAmount === 0) {
@@ -1328,6 +1333,11 @@
                 }
                 showMessage(message, 'lose');
                 hideGambleButton();
+                // Track loss streak for comeback bonus
+                _comebackLossStreak++;
+                if (_comebackLossStreak > 0 && _comebackLossStreak % 20 === 0) {
+                    checkComebackBonus();
+                }
             }
             if (typeof awardXP === 'function') awardXP(XP_AWARD_PER_SPIN);
             // Community Jackpot contribution (Sprint 30)
@@ -1372,4 +1382,100 @@
             if (freeSpinsActive) {
                 advanceFreeSpins(game);
             }
+        }
+
+        // ── Comeback Bonus Functions ──
+        function checkComebackBonus() {
+            if (_comebackCheckInFlight) return;
+            if (!currentUser || !currentUser.token) return;
+            _comebackCheckInFlight = true;
+            fetch('/api/user/comeback-bonus', {
+                headers: { 'Authorization': 'Bearer ' + currentUser.token }
+            }).then(function(r) {
+                if (!r.ok) return null;
+                return r.json();
+            }).then(function(data) {
+                _comebackCheckInFlight = false;
+                if (data && data.eligible) {
+                    _showComebackToast(data);
+                }
+            }).catch(function() {
+                _comebackCheckInFlight = false;
+            });
+        }
+
+        function _showComebackToast(data) {
+            var existing = document.querySelector('.comeback-toast');
+            if (existing) existing.remove();
+
+            var toast = document.createElement('div');
+            toast.className = 'comeback-toast';
+
+            var icon = document.createElement('div');
+            icon.className = 'comeback-toast-icon';
+            icon.textContent = '\uD83D\uDCB0';
+
+            var text = document.createElement('div');
+            text.className = 'comeback-toast-text';
+            text.textContent = 'Tough luck! Claim your $' + data.amount.toFixed(2) + ' ' + data.tier + ' comeback bonus!';
+
+            var btn = document.createElement('button');
+            btn.className = 'comeback-toast-btn';
+            btn.textContent = 'Claim $' + data.amount.toFixed(2);
+            btn.onclick = function() { _claimComebackBonus(toast); };
+
+            var close = document.createElement('button');
+            close.className = 'comeback-toast-close';
+            close.textContent = '\u2715';
+            close.onclick = function() {
+                toast.classList.add('closing');
+                setTimeout(function() { toast.remove(); }, 300);
+            };
+
+            toast.appendChild(icon);
+            toast.appendChild(text);
+            toast.appendChild(btn);
+            toast.appendChild(close);
+
+            var target = document.querySelector('#slotView') || document.body;
+            target.appendChild(toast);
+
+            // Auto-dismiss after 15 seconds
+            setTimeout(function() {
+                if (toast.parentNode) {
+                    toast.classList.add('closing');
+                    setTimeout(function() { toast.remove(); }, 300);
+                }
+            }, 15000);
+        }
+
+        function _claimComebackBonus(toast) {
+            if (!currentUser || !currentUser.token) return;
+            var btn = toast.querySelector('.comeback-toast-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Claiming...'; }
+
+            fetch('/api/user/claim-comeback-bonus', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + currentUser.token,
+                    'Content-Type': 'application/json'
+                }
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                if (data.success) {
+                    balance = data.newBalance;
+                    updateBalanceDisplay();
+                    var text = toast.querySelector('.comeback-toast-text');
+                    if (text) text.textContent = 'Bonus credited! New balance: $' + data.newBalance.toFixed(2);
+                    if (btn) btn.remove();
+                    _comebackLossStreak = 0;
+                    setTimeout(function() {
+                        toast.classList.add('closing');
+                        setTimeout(function() { toast.remove(); }, 300);
+                    }, 3000);
+                } else {
+                    if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+                }
+            }).catch(function() {
+                if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+            });
         }

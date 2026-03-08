@@ -613,6 +613,7 @@ function renderGames() {
             container.innerHTML = recentGames.map(g => createGameCard(g)).join('');
             renderYouMightLike();
             renderBestWins();
+            _renderLeaderboardWidget();
         }
 
         function renderYouMightLike() {
@@ -742,6 +743,54 @@ function renderGames() {
                 </div>`;
         }
 
+
+        // ── Recent Big Wins Leaderboard Widget ──
+        let _leaderboardRefreshTimer = null;
+
+        function _renderLeaderboardWidget() {
+            fetch('/api/leaderboard/recent-wins').then(function(r) {
+                if (!r.ok) return null;
+                return r.json();
+            }).then(function(data) {
+                if (!data || !data.wins || data.wins.length === 0) return;
+                var section = document.getElementById('leaderboardWidget');
+                if (!section) {
+                    section = document.createElement('div');
+                    section.id = 'leaderboardWidget';
+                    section.className = 'leaderboard-widget';
+                    var bestWins = document.getElementById('bestWinsSection');
+                    var anchor = bestWins || document.querySelector('.lobby-content') || document.querySelector('main');
+                    if (anchor && anchor.parentNode && bestWins) {
+                        anchor.parentNode.insertBefore(section, bestWins.nextSibling);
+                    } else if (anchor) {
+                        anchor.appendChild(section);
+                    }
+                }
+
+                var rows = data.wins.map(function(w, i) {
+                    var mult = w.multiplier || (w.win_amount / Math.max(w.bet_amount, 0.01));
+                    var tierClass = mult >= 50 ? 'epic' : mult >= 20 ? 'mega' : mult >= 10 ? 'big' : '';
+                    return '<div class="leaderboard-entry" style="animation-delay:' + (i * 0.05) + 's">' +
+                        '<span class="lb-rank">#' + (i + 1) + '</span>' +
+                        '<span class="lb-user">' + (w.username || 'Player') + '</span>' +
+                        '<span class="lb-game">' + (w.game_name || w.game_id || '') + '</span>' +
+                        '<span class="win-multiplier-badge ' + tierClass + '">' + mult.toFixed(1) + 'x</span>' +
+                        '<span class="lb-amount">$' + Number(w.win_amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + '</span>' +
+                        '</div>';
+                }).join('');
+
+                section.innerHTML =
+                    '<div class="section-header">' +
+                    '<h3 class="section-title" style="font-size:14px"><span class="lb-live-dot"></span> Recent Big Wins</h3>' +
+                    '</div>' +
+                    '<div class="leaderboard-entries">' + rows + '</div>';
+
+                // Auto-refresh every 2 minutes
+                if (!_leaderboardRefreshTimer) {
+                    _leaderboardRefreshTimer = setInterval(_renderLeaderboardWidget, 120000);
+                }
+            }).catch(function() { /* silently ignore */ });
+        }
 
         function startJackpotTicker() {
             const fmt = v => '$' + Number(v).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

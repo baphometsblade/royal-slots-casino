@@ -66,6 +66,101 @@
             }
         }
 
+        // ── Lucky Hour Banner ──────────────────────────────────────────
+        let _luckyHourInterval = null;
+
+        function _checkLuckyHour() {
+            try {
+                fetch('/api/lucky-hour').then(function(resp) {
+                    if (!resp.ok) return;
+                    return resp.json();
+                }).then(function(data) {
+                    if (data) _renderLuckyHourBanner(data);
+                }).catch(function() { /* silently ignore */ });
+            } catch (e) {
+                // silently ignore
+            }
+        }
+
+        function _renderLuckyHourBanner(data) {
+            var existing = document.querySelector('.lucky-hour-banner');
+            if (data.active) {
+                var endsAt = new Date(data.endsAt);
+                var now = new Date();
+                var remainMs = endsAt.getTime() - now.getTime();
+                if (remainMs <= 0) {
+                    if (existing) existing.classList.add('hidden');
+                    return;
+                }
+                var mins = Math.floor(remainMs / 60000);
+                var secs = Math.floor((remainMs % 60000) / 1000);
+                var timeStr = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+                if (!existing) {
+                    existing = document.createElement('div');
+                    existing.className = 'lucky-hour-banner';
+                    existing.innerHTML =
+                        '<span class="lucky-hour-icon">\u2728</span>' +
+                        '<span class="lucky-hour-label">LUCKY HOUR!</span>' +
+                        '<span class="lucky-hour-mult">' + data.multiplier + 'x Multiplier</span>' +
+                        '<span class="lucky-hour-sep">\u2014</span>' +
+                        '<span class="lucky-hour-timer"></span>' +
+                        '<span class="lucky-hour-remaining">remaining</span>';
+                    var slotContainer = document.querySelector('.slot-machine') || document.querySelector('#slot-view') || document.body;
+                    slotContainer.prepend(existing);
+                }
+                existing.classList.remove('hidden');
+                var timerEl = existing.querySelector('.lucky-hour-timer');
+                if (timerEl) timerEl.textContent = timeStr;
+                var multEl = existing.querySelector('.lucky-hour-mult');
+                if (multEl) multEl.textContent = data.multiplier + 'x Multiplier';
+            } else {
+                if (existing) existing.classList.add('hidden');
+            }
+        }
+
+        function _startLuckyHourPolling() {
+            _checkLuckyHour();
+            var tickCount = 0;
+            _luckyHourInterval = setInterval(function () {
+                tickCount++;
+                if (tickCount % 60 === 0) {
+                    _checkLuckyHour();
+                } else {
+                    var banner = document.querySelector('.lucky-hour-banner');
+                    if (banner && !banner.classList.contains('hidden')) {
+                        var timerEl = banner.querySelector('.lucky-hour-timer');
+                        if (timerEl && timerEl.textContent) {
+                            var parts = timerEl.textContent.split(':');
+                            if (parts.length === 2) {
+                                var m = parseInt(parts[0], 10);
+                                var s = parseInt(parts[1], 10);
+                                if (s > 0) {
+                                    s--;
+                                } else if (m > 0) {
+                                    m--;
+                                    s = 59;
+                                } else {
+                                    _checkLuckyHour();
+                                    return;
+                                }
+                                timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                            }
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        function _stopLuckyHourPolling() {
+            if (_luckyHourInterval) {
+                clearInterval(_luckyHourInterval);
+                _luckyHourInterval = null;
+            }
+            var banner = document.querySelector('.lucky-hour-banner');
+            if (banner) banner.remove();
+        }
+
         // ── Loss streak deposit match offer check ──────────────────
         async function _checkLossStreakOffer() {
             // Only check for server-authenticated users
@@ -2056,6 +2151,8 @@
         _resetLongestDrought();   // 169 — longest drought
         _resetGameSessionCount(); // 170 — game session count
         if (typeof _initCinematicUI === 'function') _initCinematicUI(); // cinematic
+                // ── Lucky Hour polling ──
+                _startLuckyHourPolling();
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -2280,6 +2377,8 @@
             var _rcClose = document.querySelector('.reels-container') || document.querySelector('.reels');
             if (_rcClose) _rcClose.classList.remove('turbo-mode');
 
+            // Stop Lucky Hour polling
+            _stopLuckyHourPolling();
             // Stop jackpot banner ticker and hide banner
             if (window._slotTimerInterval) { clearInterval(window._slotTimerInterval); window._slotTimerInterval = null; }
             clearInterval(window._sessionStatsInterval); window._sessionStatsInterval = null;

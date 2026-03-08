@@ -103,4 +103,44 @@ router.get('/richlist', async (req, res) => {
     }
 });
 
+// GET /api/leaderboard/recent-wins — top 10 biggest wins in last 24 hours (lobby FOMO widget)
+router.get('/recent-wins', async (req, res) => {
+    try {
+        const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
+            .toISOString().slice(0, 19).replace('T', ' ');
+
+        const rows = await db.all(
+            `SELECT s.user_id, u.username, s.game_id, s.bet_amount, s.win_amount, s.created_at
+             FROM spins s
+             JOIN users u ON s.user_id = u.id
+             WHERE s.win_amount > 0 AND s.bet_amount > 0
+               AND s.created_at >= ? AND u.is_banned = 0
+             ORDER BY s.win_amount DESC
+             LIMIT 10`,
+            [cutoff]
+        );
+
+        const wins = rows.map(function(r) {
+            var gameDef = null;
+            try {
+                var GAMES = require('../../shared/game-definitions');
+                gameDef = GAMES.find(function(g) { return g.id === r.game_id; });
+            } catch(e) {}
+            return {
+                username: maskUsername(r.username),
+                game_id: r.game_id,
+                game_name: gameDef ? gameDef.name : r.game_id,
+                bet_amount: parseFloat(r.bet_amount) || 0,
+                win_amount: parseFloat(r.win_amount) || 0,
+                multiplier: parseFloat(r.win_amount) / Math.max(parseFloat(r.bet_amount), 0.01),
+                created_at: r.created_at
+            };
+        });
+
+        res.json({ wins: wins });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load recent wins' });
+    }
+});
+
 module.exports = router;

@@ -19303,3 +19303,202 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
   from { transform: translate(-50%,-50%) scale(0); opacity: 0; }
   to   { transform: translate(-50%,-50%) scale(1); opacity: 1; }
 }
+
+        /* ── Lucky Hour Banner ── */
+        .lucky-hour-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: linear-gradient(90deg, #b8860b 0%, #ffd700 25%, #ffec80 50%, #ffd700 75%, #b8860b 100%);
+            background-size: 200% 100%;
+            color: #1a0a00;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+            animation: luckyHourShimmer 3s linear infinite, luckyHourPulse 2s ease-in-out infinite;
+        }
+
+        .lucky-hour-banner.hidden {
+            display: none;
+        }
+
+        .lucky-hour-icon {
+            font-size: 1.3rem;
+            animation: luckyHourIconBounce 1.5s ease-in-out infinite;
+        }
+
+        .lucky-hour-label {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #1a0a00;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+        }
+
+        .lucky-hour-mult {
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .lucky-hour-sep {
+            opacity: 0.5;
+            font-size: 0.8rem;
+        }
+
+        .lucky-hour-timer {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #1a0a00;
+            background: rgba(255, 255, 255, 0.25);
+            padding: 2px 8px;
+            border-radius: 6px;
+            min-width: 56px;
+            text-align: center;
+        }
+
+        .lucky-hour-remaining {
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.7;
+            text-transform: lowercase;
+        }
+
+        @keyframes luckyHourShimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        @keyframes luckyHourPulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3); }
+            50%      { box-shadow: 0 4px 30px rgba(255, 215, 0, 0.8), 0 2px 12px rgba(255, 200, 0, 0.4); }
+        }
+
+        @keyframes luckyHourIconBounce {
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.2); }
+        }
+
+/* ── Leaderboard Widget ── */
+.leaderboard-widget {
+    margin: 16px 0;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(20,20,40,0.9), rgba(30,30,60,0.8));
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 12px;
+}
+.leaderboard-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.leaderboard-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    animation: lbSlideIn 0.3s ease-out both;
+    font-size: 0.82rem;
+}
+@keyframes lbSlideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.lb-rank { color: #fbbf24; font-weight: 700; min-width: 28px; }
+.lb-user { color: #e2e8f0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-game { color: #94a3b8; font-size: 0.75rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-amount { color: #22c55e; font-weight: 700; font-variant-numeric: tabular-nums; }
+.win-multiplier-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(255,255,255,0.1);
+    color: #94a3b8;
+}
+.win-multiplier-badge.big { background: rgba(34,197,94,0.2); color: #22c55e; }
+.win-multiplier-badge.mega { background: rgba(168,85,247,0.2); color: #a855f7; }
+.win-multiplier-badge.epic { background: rgba(251,191,36,0.2); color: #fbbf24; }
+.lb-live-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    margin-right: 6px;
+    animation: lbPulse 1.5s ease-in-out infinite;
+}
+@keyframes lbPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px #22c55e; }
+    50%      { opacity: 0.5; box-shadow: 0 0 10px #22c55e; }
+}
+
+/* ── Comeback Bonus Toast ── */
+.comeback-toast {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(120,20,20,0.95), rgba(30,10,10,0.95));
+    border: 1px solid rgba(239,68,68,0.4);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    animation: comebackSlideUp 0.4s cubic-bezier(.22,.68,0,1.4);
+    max-width: 420px;
+    width: max-content;
+}
+.comeback-toast.closing { animation: comebackSlideDown 0.3s ease-in forwards; }
+.comeback-toast-icon { font-size: 1.5rem; }
+.comeback-toast-text { color: #fca5a5; font-size: 0.85rem; flex: 1; }
+.comeback-toast-btn {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s, opacity 0.15s;
+}
+.comeback-toast-btn:hover { transform: scale(1.05); }
+.comeback-toast-btn:disabled { opacity: 0.5; cursor: wait; }
+.comeback-toast-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 4px;
+}
+.comeback-toast-close:hover { color: rgba(255,255,255,0.8); }
+@keyframes comebackSlideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes comebackSlideDown {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to   { opacity: 0; transform: translateX(-50%) translateY(20px); }
+}
