@@ -110,6 +110,14 @@
     return '🎰';
   }
 
+  function _injectLimitedPulseCSS() {
+    if (document.getElementById('limitedPulseStyle')) return;
+    var s = document.createElement('style');
+    s.id = 'limitedPulseStyle';
+    s.textContent = '@keyframes limitedPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }';
+    document.head.appendChild(s);
+  }
+
   function _makeItemCard(item, isOwned, isEquipped, onBuy, onEquip) {
     var card = _el('div',
       'display:flex;flex-direction:column;align-items:stretch;background:rgba(255,255,255,0.04);' +
@@ -118,6 +126,19 @@
     );
     card.addEventListener('mouseenter', function () { card.style.background = 'rgba(255,255,255,0.07)'; });
     card.addEventListener('mouseleave', function () { card.style.background = 'rgba(255,255,255,0.04)'; });
+
+    // Limited-time badge (top-right corner)
+    if (item.is_limited && item.limited_expires_at) {
+      _injectLimitedPulseCSS();
+      var limitedBadge = _el('div',
+        'position:absolute;top:6px;right:6px;background:#e53935;color:#fff;' +
+        'font-size:0.65rem;font-weight:700;padding:2px 6px;border-radius:4px;' +
+        'letter-spacing:0.5px;animation:limitedPulse 1.5s ease-in-out infinite;',
+        'LIMITED'
+      );
+      card.appendChild(limitedBadge);
+    }
+
     if (isOwned) {
       var dot = _el('div',
         'position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;' +
@@ -146,6 +167,19 @@
       'font-size:12px;color:#fbbf24;text-align:center;font-weight:600;',
       '💎 ' + (item.gem_price || 0) + ' gems'
     ));
+
+    // Limited countdown timer displayed below the price
+    if (item.is_limited && item.limited_expires_at) {
+      var expMs = new Date(item.limited_expires_at).getTime();
+      var msLeft = Math.max(0, expMs - Date.now());
+      var hoursLeft = Math.floor(msLeft / 3600000);
+      var minsLeft = Math.floor((msLeft % 3600000) / 60000);
+      card.appendChild(_el('div',
+        'color:#e53935;font-size:0.7rem;font-weight:600;text-align:center;margin-top:-4px;',
+        '\u23F0 ' + hoursLeft + 'h ' + minsLeft + 'm left'
+      ));
+    }
+
     var btn;
     if (isEquipped) {
       btn = _el('button',

@@ -5,6 +5,28 @@
   var _overlay   = null;
   var _stylesDone = false;
 
+  // ── Expiry nudge tracking ─────────────────────────────────────────────────
+  var _boostExpiryNotified = new Set();
+
+  function _checkBoostExpiries(boosts) {
+    var now = Date.now();
+    (boosts || []).forEach(function (b) {
+      var expMs = new Date(b.expires_at).getTime();
+      var key = b.boost_type + '_' + expMs;
+      if (expMs < now && !_boostExpiryNotified.has(key)) {
+        _boostExpiryNotified.add(key);
+        var name = b.name || b.boost_type;
+        if (typeof showToast === 'function') {
+          showToast(
+            '\u26A1 ' + name + ' expired! <span style="cursor:pointer;text-decoration:underline" onclick="openBoostModal()">Renew \u2192</span>',
+            'warning',
+            6000
+          );
+        }
+      }
+    });
+  }
+
   var BOOST_ICONS = {
     xp_surge:     '\uD83E\uDD16',
     bp_rush:      '\uD83D\uDE80',
@@ -135,6 +157,9 @@
   // ── Render ────────────────────────────────────────────────────────────────
 
   function renderBoosts(defs, active, gemBalance) {
+    // Check for newly-expired boosts and fire re-buy nudge toasts
+    _checkBoostExpiries(active);
+
     // Active boosts bar
     var activeBar  = document.getElementById('boostActiveBar');
     var activeList = document.getElementById('boostActiveList');
@@ -272,6 +297,25 @@
   function closeBoostModal() {
     if (_overlay) _overlay.classList.remove('active');
   }
+
+  // ── Background expiry poller ──────────────────────────────────────────────
+  // Polls active boosts every 30 s so expiry toasts fire even when the modal
+  // is closed. Only runs when a user token is present.
+  (function _startExpiryPoller() {
+    function _pollExpiries() {
+      var token = localStorage.getItem(TOKEN_KEY);
+      if (!token) return;
+      fetch('/api/boosts', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function (r) { return r.ok ? r.json() : { boosts: [] }; })
+        .then(function (data) { _checkBoostExpiries(data.boosts || []); })
+        .catch(function () {});
+    }
+    // Delay first poll by 5 s to avoid competing with page load
+    setTimeout(function () {
+      _pollExpiries();
+      setInterval(_pollExpiries, 30000);
+    }, 5000);
+  }());
 
   window.openBoostModal  = openBoostModal;
   window.closeBoostModal = closeBoostModal;

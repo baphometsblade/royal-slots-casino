@@ -10,7 +10,26 @@ const router = express.Router();
 router.get('/shop', async (req, res) => {
     try {
         const shop = await cosmeticsService.getShop();
-        res.json({ shop });
+
+        // Mark high-value items as time-limited (rotates every 48 h based on day number)
+        const dayNum = Math.floor(Date.now() / (48 * 3600000));
+        const expiresAt = new Date((dayNum + 1) * 48 * 3600000).toISOString();
+        const enrichedShop = {};
+        Object.keys(shop).forEach(function (category) {
+            enrichedShop[category] = (shop[category] || []).map(function (item) {
+                const price = item.gem_price || item.price || 0;
+                if (price >= 2000) {
+                    return Object.assign({}, item, {
+                        is_limited: 1,
+                        limited_expires_at: expiresAt,
+                        limited_label: 'LIMITED'
+                    });
+                }
+                return item;
+            });
+        });
+
+        res.json({ shop: enrichedShop });
     } catch (err) {
         console.error('[Cosmetics] Shop error:', err.message);
         res.status(500).json({ error: 'Failed to load cosmetic shop' });
