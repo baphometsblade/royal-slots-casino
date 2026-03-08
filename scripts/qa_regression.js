@@ -175,6 +175,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "dailyLoginCalendar",
       "reloadBonusBar",
       "jackpotTicker",
+      "referralLeaderboard",
+      "spinInsuranceBar",
+      "happyHourBar",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

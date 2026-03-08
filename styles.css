@@ -23461,3 +23461,844 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
         font-size: 1rem;
     }
 }
+
+
+/* ============================================================
+   SPRINT 37 — Referral Leaderboard, Spin Insurance, Happy Hour
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   Feature 1: Referral Leaderboard (.referral-lb-*)
+   ---------------------------------------------------------- */
+
+.referral-lb-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 260px;
+    max-height: 380px;
+    background: linear-gradient(165deg, rgba(30, 30, 58, 0.97) 0%, rgba(15, 15, 26, 0.98) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    border-radius: 16px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(251, 191, 36, 0.08);
+    z-index: 9500;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: _s37_rlbSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+    transform: translateY(40px);
+    font-family: inherit;
+}
+
+@keyframes _s37_rlbSlideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.referral-lb-panel.referral-lb-closing {
+    animation: _s37_rlbSlideDown 0.35s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@keyframes _s37_rlbSlideDown {
+    to {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+}
+
+.referral-lb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.08) 0%, transparent 100%);
+    flex-shrink: 0;
+}
+
+.referral-lb-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fbbf24;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.referral-lb-title-icon {
+    font-size: 1rem;
+}
+
+.referral-lb-close {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.referral-lb-close:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.referral-lb-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+}
+
+.referral-lb-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.referral-lb-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.referral-lb-list::-webkit-scrollbar-thumb {
+    background: rgba(251, 191, 36, 0.3);
+    border-radius: 4px;
+}
+
+.referral-lb-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    gap: 10px;
+    transition: background 0.2s ease;
+}
+
+.referral-lb-row:hover {
+    background: rgba(251, 191, 36, 0.04);
+}
+
+.referral-lb-rank {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.referral-lb-row.referral-lb-top3 .referral-lb-rank {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #0f0f1a;
+    border: none;
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
+    animation: _s37_rlbRankPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes _s37_rlbRankPulse {
+    0%, 100% { box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35); }
+    50% { box-shadow: 0 2px 14px rgba(251, 191, 36, 0.6); }
+}
+
+.referral-lb-row.referral-lb-rank1 .referral-lb-rank {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+}
+
+.referral-lb-crown {
+    position: absolute;
+    top: -10px;
+    font-size: 0.65rem;
+    line-height: 1;
+}
+
+.referral-lb-rank-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.referral-lb-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.referral-lb-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.referral-lb-row.referral-lb-top3 .referral-lb-name {
+    color: #fbbf24;
+}
+
+.referral-lb-refs {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.referral-lb-reward {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #34d399;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.referral-lb-row.referral-lb-top3 {
+    border-left: 2px solid rgba(251, 191, 36, 0.5);
+    animation: _s37_rlbGoldBorder 3s ease-in-out infinite;
+}
+
+@keyframes _s37_rlbGoldBorder {
+    0%, 100% { border-left-color: rgba(251, 191, 36, 0.5); }
+    50% { border-left-color: rgba(251, 191, 36, 0.9); }
+}
+
+.referral-lb-footer {
+    padding: 10px 16px;
+    border-top: 1px solid rgba(251, 191, 36, 0.12);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.referral-lb-your-rank {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.referral-lb-your-rank span {
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.referral-lb-invite-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #0f0f1a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.referral-lb-invite-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+}
+
+.referral-lb-empty {
+    padding: 30px 16px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.78rem;
+}
+
+
+/* ----------------------------------------------------------
+   Feature 2: Spin Insurance (.spin-ins-*)
+   ---------------------------------------------------------- */
+
+.spin-ins-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 16px;
+    margin: 6px auto 0;
+    max-width: 420px;
+    background: rgba(30, 30, 58, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.spin-ins-bar.spin-ins-active {
+    border-color: rgba(52, 211, 153, 0.5);
+    box-shadow: 0 0 16px rgba(52, 211, 153, 0.12), inset 0 0 12px rgba(52, 211, 153, 0.04);
+    animation: _s37_insGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes _s37_insGlow {
+    0%, 100% { box-shadow: 0 0 16px rgba(52, 211, 153, 0.12), inset 0 0 12px rgba(52, 211, 153, 0.04); }
+    50% { box-shadow: 0 0 22px rgba(52, 211, 153, 0.22), inset 0 0 18px rgba(52, 211, 153, 0.08); }
+}
+
+.spin-ins-shield {
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.spin-ins-bar.spin-ins-active .spin-ins-shield {
+    animation: _s37_insShieldPulse 2s ease-in-out infinite;
+}
+
+@keyframes _s37_insShieldPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.spin-ins-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.spin-ins-bar.spin-ins-active .spin-ins-label {
+    color: #34d399;
+}
+
+.spin-ins-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.spin-ins-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.spin-ins-toggle-track {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 11px;
+    transition: background 0.25s ease;
+}
+
+.spin-ins-toggle input:checked + .spin-ins-toggle-track {
+    background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.spin-ins-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spin-ins-toggle input:checked ~ .spin-ins-toggle-thumb {
+    transform: translateX(18px);
+}
+
+.spin-ins-cost {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    transition: all 0.25s ease;
+}
+
+.spin-ins-bar.spin-ins-active .spin-ins-cost {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.spin-ins-guarantee {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.25);
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    animation: _s37_insGuaranteePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.spin-ins-bar.spin-ins-active .spin-ins-guarantee {
+    display: inline-flex;
+}
+
+@keyframes _s37_insGuaranteePop {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.spin-ins-guarantee-icon {
+    font-size: 0.7rem;
+}
+
+.spin-ins-payout-badge {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    padding: 2px 7px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #0f0f1a;
+    font-size: 0.6rem;
+    font-weight: 800;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+    animation: _s37_insBadgeBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 2;
+}
+
+.spin-ins-bar.spin-ins-active .spin-ins-payout-badge {
+    display: block;
+}
+
+@keyframes _s37_insBadgeBounce {
+    from { opacity: 0; transform: scale(0.5) translateY(4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.spin-ins-refund-flash {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    padding: 16px 28px;
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.95), rgba(16, 185, 129, 0.95));
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 14px;
+    box-shadow: 0 8px 40px rgba(52, 211, 153, 0.4);
+    z-index: 10000;
+    pointer-events: none;
+    animation: _s37_insRefundFlash 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes _s37_insRefundFlash {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -55%) scale(0.95); }
+}
+
+
+/* ----------------------------------------------------------
+   Feature 3: Happy Hour Events (.happy-hour-*)
+   ---------------------------------------------------------- */
+
+.happy-hour-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f1d91 30%, #1a1a2e 60%, #92400e 85%, #fbbf24 100%);
+    background-size: 250% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    z-index: 9800;
+    box-shadow: 0 3px 16px rgba(124, 58, 237, 0.3), 0 1px 4px rgba(0, 0, 0, 0.4);
+    animation: _s37_hhSlideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+               _s37_hhGradientShift 8s ease-in-out infinite;
+    transform: translateY(-100%);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+@keyframes _s37_hhSlideDown {
+    to { transform: translateY(0); }
+}
+
+@keyframes _s37_hhGradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.happy-hour-banner.happy-hour-ending {
+    animation: _s37_hhSlideUp 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@keyframes _s37_hhSlideUp {
+    to { transform: translateY(-100%); }
+}
+
+.happy-hour-clock {
+    font-size: 1.2rem;
+    line-height: 1;
+    animation: _s37_hhClockTick 1s steps(2) infinite;
+    flex-shrink: 0;
+}
+
+@keyframes _s37_hhClockTick {
+    0%, 49% { transform: rotate(0deg); }
+    50%, 100% { transform: rotate(15deg); }
+}
+
+.happy-hour-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.happy-hour-timer {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #fbbf24;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    min-width: 58px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.happy-hour-timer.happy-hour-urgent {
+    color: #f87171;
+    animation: _s37_hhTimerUrgent 0.6s ease-in-out infinite;
+}
+
+@keyframes _s37_hhTimerUrgent {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.happy-hour-multiplier {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #0f0f1a;
+    font-size: 0.85rem;
+    font-weight: 900;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(251, 191, 36, 0.4);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+}
+
+.happy-hour-multiplier::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    animation: _s37_hhMultShimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes _s37_hhMultShimmer {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+}
+
+.happy-hour-multiplier-pulse {
+    animation: _s37_hhMultPulse 2s ease-in-out infinite;
+}
+
+@keyframes _s37_hhMultPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 2px 10px rgba(251, 191, 36, 0.4); }
+    50% { transform: scale(1.08); box-shadow: 0 4px 18px rgba(251, 191, 36, 0.6); }
+}
+
+.happy-hour-close {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.happy-hour-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.happy-hour-lobby-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(251, 191, 36, 0.15));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #fbbf24;
+    animation: _s37_hhBadgePulse 3s ease-in-out infinite;
+}
+
+@keyframes _s37_hhBadgePulse {
+    0%, 100% { border-color: rgba(251, 191, 36, 0.3); }
+    50% { border-color: rgba(251, 191, 36, 0.6); }
+}
+
+.happy-hour-lobby-badge-icon {
+    font-size: 0.75rem;
+}
+
+.happy-hour-game-boost {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 2px 7px;
+    background: linear-gradient(135deg, #7c3aed, #fbbf24);
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 800;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+    z-index: 3;
+    animation: _s37_hhBoostPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes _s37_hhBoostPop {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.happy-hour-win-bonus {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(251, 191, 36, 0.12));
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #c4b5fd;
+}
+
+.happy-hour-win-bonus-amount {
+    color: #fbbf24;
+    font-weight: 800;
+}
+
+/* Happy Hour — body offset when banner is visible */
+body.happy-hour-active {
+    padding-top: 44px;
+}
+
+body.happy-hour-active .header-container {
+    top: 44px;
+}
+
+/* Happy Hour — notification toast */
+.happy-hour-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 24px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(79, 29, 145, 0.95));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    z-index: 10100;
+    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35);
+    pointer-events: none;
+    animation: _s37_hhToastIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@keyframes _s37_hhToastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.happy-hour-toast.happy-hour-toast-out {
+    animation: _s37_hhToastOut 0.35s ease-in forwards;
+}
+
+@keyframes _s37_hhToastOut {
+    to { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+.happy-hour-toast-icon {
+    font-size: 1.1rem;
+}
+
+.happy-hour-toast-mult {
+    color: #fbbf24;
+    font-weight: 800;
+}
+
+
+/* ----------------------------------------------------------
+   Sprint 37 — Responsive Overrides
+   ---------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .referral-lb-panel {
+        left: 10px;
+        bottom: 10px;
+        width: 230px;
+        max-height: 320px;
+    }
+
+    .referral-lb-row {
+        padding: 6px 12px;
+    }
+
+    .referral-lb-name {
+        font-size: 0.75rem;
+    }
+
+    .spin-ins-bar {
+        gap: 6px;
+        padding: 6px 10px;
+        max-width: 340px;
+        flex-wrap: wrap;
+    }
+
+    .spin-ins-label {
+        font-size: 0.72rem;
+    }
+
+    .happy-hour-banner {
+        height: 38px;
+        gap: 8px;
+    }
+
+    .happy-hour-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.8px;
+    }
+
+    .happy-hour-timer {
+        font-size: 0.82rem;
+    }
+
+    .happy-hour-multiplier {
+        font-size: 0.75rem;
+        padding: 3px 9px;
+    }
+
+    body.happy-hour-active {
+        padding-top: 38px;
+    }
+
+    body.happy-hour-active .header-container {
+        top: 38px;
+    }
+}
+
+@media (max-width: 480px) {
+    .referral-lb-panel {
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        width: auto;
+        max-height: 280px;
+        border-radius: 12px;
+    }
+
+    .spin-ins-bar {
+        max-width: 100%;
+        margin: 4px 8px 0;
+        border-radius: 8px;
+    }
+
+    .spin-ins-guarantee {
+        font-size: 0.6rem;
+    }
+
+    .happy-hour-banner {
+        height: 34px;
+        gap: 6px;
+    }
+
+    .happy-hour-clock {
+        font-size: 0.95rem;
+    }
+
+    .happy-hour-label {
+        font-size: 0.6rem;
+    }
+
+    .happy-hour-close {
+        right: 6px;
+        width: 20px;
+        height: 20px;
+        font-size: 0.6rem;
+    }
+
+    body.happy-hour-active {
+        padding-top: 34px;
+    }
+
+    body.happy-hour-active .header-container {
+        top: 34px;
+    }
+}
