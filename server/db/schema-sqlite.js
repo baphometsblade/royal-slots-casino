@@ -317,6 +317,7 @@ const USER_MIGRATIONS = [
     ['bonus_balance', 'REAL DEFAULT 0'],
     ['wagering_requirement', 'REAL DEFAULT 0'],
     ['wagering_progress', 'REAL DEFAULT 0'],
+    ['xp', 'INTEGER DEFAULT 0'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → definition). */
