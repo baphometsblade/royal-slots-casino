@@ -4,6 +4,7 @@ const db = require('../database');
 const config = require('../config');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
+const { mintOnDeposit, recordResaleOnWithdrawal } = require('../services/nft-ledger');
 
 const router = express.Router();
 
@@ -563,6 +564,9 @@ router.post('/withdraw', authenticate, async (req, res) => {
             [req.user.id, 'withdrawal', -withdrawal, balanceBefore, balanceAfter, reference]
         );
 
+        // ── NFT ledger: record withdrawal as NFT resale (fire-and-forget) ──
+        recordResaleOnWithdrawal(db, { userId: req.user.id, amount: withdrawal, withdrawalId: withdrawalId, paymentType: paymentType, reference: reference, currency: config.CURRENCY }).catch(function() {});
+
         // Calculate when cooling-off ends (24h from now)
         var coolingOffEnds = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
@@ -927,12 +931,15 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
             );
         }
 
+        // ── NFT ledger: record deposit as NFT sale (fire-and-forget) ──
+        mintOnDeposit(db, { userId: deposit.user_id, amount: deposit.amount, depositId: deposit.id, paymentType: deposit.payment_type, reference: deposit.reference, currency: config.CURRENCY }).catch(function() {});
+
         // ── Deposit Gem Reward (20 gems per $1, 25 min, 2500 max) ──
         const depositGems = Math.max(25, Math.min(Math.floor(deposit.amount * 20), 2500));
         await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [depositGems, deposit.user_id]).catch(function() {});
 
         // ── Deposit Streak (fire-and-forget) ──
-        
+
         require('./depositstreak.routes').recordForUser(deposit.user_id).catch(function() {});
 
         const bonusMsg = bonusAmount > 0 ? ` + $${bonusAmount.toFixed(2)} first-deposit bonus!` : '';
@@ -1039,6 +1046,9 @@ router.post('/webhook/confirm', async (req, res) => {
                 [deposit.user_id, bonusType, bonusAmount, balanceAfter, balanceAfter, refLabel]
             );
         }
+
+        // ── NFT ledger: record deposit as NFT sale (fire-and-forget) ──
+        mintOnDeposit(db, { userId: deposit.user_id, amount: deposit.amount, depositId: deposit.id, paymentType: deposit.payment_type || 'webhook', reference: deposit.reference, currency: config.CURRENCY }).catch(function() {});
 
         // ── Deposit Gem Reward ──
         const depositGems = Math.max(25, Math.min(Math.floor(deposit.amount * 20), 2500));

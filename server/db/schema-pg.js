@@ -268,6 +268,19 @@ const TABLES = [
         claimed_free TEXT DEFAULT '[]',
         claimed_premium TEXT DEFAULT '[]',
         UNIQUE(user_id, season_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS nft_ledger (
+        id SERIAL PRIMARY KEY,
+        token_id TEXT UNIQUE NOT NULL,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        type TEXT NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
+        currency TEXT DEFAULT 'AUD',
+        source_table TEXT NOT NULL,
+        source_id INTEGER NOT NULL,
+        metadata TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 
@@ -297,7 +310,10 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`,
     `CREATE INDEX IF NOT EXISTS idx_battle_pass_seasons_status ON battle_pass_seasons(status)`,
     `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_user ON battle_pass_progress(user_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_season ON battle_pass_progress(season_id)`
+    `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_season ON battle_pass_progress(season_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_user ON nft_ledger(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_token ON nft_ledger(token_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_type ON nft_ledger(type, created_at)`
 ];
 
 

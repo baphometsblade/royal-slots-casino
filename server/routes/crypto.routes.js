@@ -19,6 +19,7 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../database');
 const config = require('../config');
 const crypto = require('crypto');
+const { mintOnDeposit } = require('../services/nft-ledger');
 
 const router = express.Router();
 
@@ -300,6 +301,9 @@ router.post('/verify-deposit', authenticate, async (req, res) => {
             "INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference, created_at) VALUES (?, 'deposit', ?, ?, ?, ?, datetime('now'))",
             [req.user.id, audAmount, oldBalance, newBalance, reference]
         );
+
+        // ── NFT ledger: record crypto deposit as NFT sale (fire-and-forget) ──
+        mintOnDeposit(db, { userId: req.user.id, amount: audAmount, depositId: null, paymentType: 'crypto_eth', reference: reference, currency: config.CURRENCY }).catch(function() {});
 
         // Award gems based on deposit amount
         let gemsAwarded = 0;

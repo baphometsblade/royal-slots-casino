@@ -264,6 +264,20 @@ const TABLES = [
         start_at TEXT NOT NULL,
         end_at TEXT NOT NULL,
         created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS nft_ledger (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        token_id TEXT UNIQUE NOT NULL,
+        user_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        amount REAL NOT NULL,
+        currency TEXT DEFAULT 'AUD',
+        source_table TEXT NOT NULL,
+        source_id INTEGER NOT NULL,
+        metadata TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 
@@ -290,7 +304,10 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_contest_entries_rank ON contest_entries(contest_id, metric_type, metric_value DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_contest_prizes_user ON contest_prizes(user_id, claimed)`,
     `CREATE INDEX IF NOT EXISTS idx_contests_status ON contests(status)`,
-    `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`
+    `CREATE INDEX IF NOT EXISTS idx_bonus_events_active ON bonus_events(active, start_at, end_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_user ON nft_ledger(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_token ON nft_ledger(token_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_type ON nft_ledger(type, created_at)`
 ];
 
 
