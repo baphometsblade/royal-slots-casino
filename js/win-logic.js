@@ -187,6 +187,11 @@
                 multiplier *= bombMult;
                 bonusText = ` (${bombMult}x Bomb!)`;
                 showBonusEffect(`${bombMult}x MULTIPLIER!`, game.accentColor);
+            } else if (!freeSpinsActive && game.bonusType === 'random_multiplier') {
+                // Base game: apply a small random multiplier on wins (1x-3x)
+                const baseMultChoices = [1, 1, 1, 2, 2, 3];
+                multiplier = baseMultChoices[Math.floor(Math.random() * baseMultChoices.length)];
+                if (multiplier > 1) bonusText = '×' + multiplier + ' Random!';
             }
 
             if (freeSpinsActive && game.bonusType === 'zeus_multiplier') {
@@ -196,6 +201,12 @@
                 multiplier *= zeusMult;
                 bonusText = ` (Zeus ${zeusMult}x!)`;
                 showBonusEffect(`ZEUS ${zeusMult}x!`, '#f5c842');
+            } else if (!freeSpinsActive && game.bonusType === 'zeus_multiplier') {
+                // Base game: 20% chance of 2x-4x divine multiplier
+                if (Math.random() < 0.20) {
+                    multiplier = 2 + Math.floor(Math.random() * 3); // 2, 3, or 4
+                    bonusText = '⚡ ×' + multiplier + ' Zeus!';
+                }
             }
 
             if (freeSpinsActive && (game.bonusType === 'tumble' || game.bonusType === 'avalanche')) {
@@ -205,6 +216,12 @@
                 freeSpinsCascadeLevel++;
                 bonusText = ` (Cascade ${multiplier}x!)`;
                 if (multiplier > 1) showBonusEffect(`CASCADE ${multiplier}x!`, game.accentColor);
+            } else if (!freeSpinsActive && (game.bonusType === 'tumble' || game.bonusType === 'avalanche')) {
+                // Base game: use the running tumble chain multiplier if > 1
+                if (typeof window._tumbleChain !== 'undefined' && window._tumbleChain > 1) {
+                    multiplier = window._tumbleChain;
+                    bonusText = '🔗 Chain ×' + multiplier;
+                }
             }
 
             return { amount: Math.round(baseWin * multiplier * 100) / 100, multiplier, bonusText };
@@ -788,7 +805,7 @@
                     // Wild bonus: 1.5x on wild-assisted wins
                     const lineSymbols = win.cells.map(([c, r]) => grid[c][r]);
                     const lineWilds = lineSymbols.filter(s => isWild(s, game)).length;
-                    if (lineWilds > 0) payMultiplier *= 1.5;
+                    if (lineWilds > 0) payMultiplier *= Math.min(3, 1 + lineWilds * 0.5);
 
                     let lineWin = currentBet * payMultiplier;
                     const bonus = applyBonusMultiplier(lineWin, game);
@@ -1076,7 +1093,7 @@
 
             // ── Money Collect mechanics (Black Bull, Big Bass) — grid-aware ──
             const gridWilds = grid ? countWildsInGrid(grid, game) : countWilds(symbols, game);
-            if (gridWilds > 0 && (game.bonusType === 'money_collect' || game.bonusType === 'fisherman_collect')) {
+            if (game.bonusType === 'money_collect' || game.bonusType === 'fisherman_collect') {
                 const collectSyms = game.moneySymbols || game.fishSymbols || [];
                 let collectTotal = 0;
                 if (grid) {
