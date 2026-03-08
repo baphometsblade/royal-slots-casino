@@ -1,5 +1,7 @@
 'use strict';
 
+const db = require('../database');
+
 // ── Spin Tier Definitions ───────────────────────────────────────────────────
 
 var SPIN_TIERS = {
@@ -29,11 +31,6 @@ async function initSchema() {
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
     const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const db = require('../database');
-    const isPg  = !!process.env.DATABASE_URL;
-    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
-    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
     await db.run(`CREATE TABLE IF NOT EXISTS mega_wheel_spins (
         id ${idDef},
         user_id INTEGER NOT NULL,
@@ -104,7 +101,7 @@ function getWheelConfig(tier) {
  * Validates tier, checks gem balance, deducts cost, rolls, grants prize, logs spin.
  */
 async function spin(userId, tier) {
-    const db = require('../database');
+
     var tierKey = tier || 'basic';
     var tierConfig = SPIN_TIERS[tierKey];
     if (!tierConfig) {
@@ -169,7 +166,7 @@ async function spin(userId, tier) {
  * Get recent spin history for a user.
  */
 async function getHistory(userId, limit) {
-    const db = require('../database');
+
     var historyLimit = limit || 20;
     var rows = await db.all(
         'SELECT id, spin_tier, segment_index, prize_type, prize_amount, gem_cost, created_at FROM mega_wheel_spins WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',

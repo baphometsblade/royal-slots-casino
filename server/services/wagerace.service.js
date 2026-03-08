@@ -25,12 +25,13 @@ async function initSchema() {
     const isPg = !!process.env.DATABASE_URL;
     const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const tsType = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
 
     if (isPg) {
         // Drop and recreate wager_race tables to fix column types (transient race data)
-        await db.run('DROP TABLE IF EXISTS wager_race_entries CASCADE').catch(() => {});
-        await db.run('DROP TABLE IF EXISTS wager_race_prizes CASCADE').catch(() => {});
-        await db.run('DROP TABLE IF EXISTS wager_races CASCADE').catch(() => {});
+        try { await db.run('DROP TABLE IF EXISTS wager_race_entries CASCADE'); } catch (e) { console.warn('[WagerRace] DROP entries:', e.message); }
+        try { await db.run('DROP TABLE IF EXISTS wager_race_prizes CASCADE'); } catch (e) { console.warn('[WagerRace] DROP prizes:', e.message); }
+        try { await db.run('DROP TABLE IF EXISTS wager_races CASCADE'); } catch (e) { console.warn('[WagerRace] DROP races:', e.message); }
     }
 
     await db.run(`
@@ -39,7 +40,7 @@ async function initSchema() {
             starts_at ${tsType} NOT NULL,
             ends_at ${tsType} NOT NULL,
             status TEXT DEFAULT 'active',
-            created_at TEXT DEFAULT (datetime('now'))
+            created_at ${tsType} DEFAULT ${tsDefault}
         )
     `);
 
@@ -50,7 +51,7 @@ async function initSchema() {
             user_id INTEGER NOT NULL,
             total_wagered REAL DEFAULT 0,
             spin_count INTEGER DEFAULT 0,
-            updated_at TEXT DEFAULT (datetime('now')),
+            updated_at ${tsType} DEFAULT ${tsDefault},
             UNIQUE(race_id, user_id)
         )
     `);
@@ -63,7 +64,7 @@ async function initSchema() {
             place INTEGER,
             credit_prize REAL DEFAULT 0,
             gem_prize INTEGER DEFAULT 0,
-            claimed_at TEXT DEFAULT (datetime('now'))
+            claimed_at ${tsType} DEFAULT ${tsDefault}
         )
     `);
 }

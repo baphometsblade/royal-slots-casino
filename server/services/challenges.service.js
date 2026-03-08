@@ -27,6 +27,8 @@ var STREAK_BONUSES = [
 
 var SKIP_COST = 150;
 
+var db = require('../database');
+
 /**
  * Initialize daily_challenges and challenge_streaks tables.
  */
@@ -35,11 +37,6 @@ async function initSchema() {
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
     const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const db = require('../database');
-    const isPg  = !!process.env.DATABASE_URL;
-    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
-    const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
 
     await db.run(`
         CREATE TABLE IF NOT EXISTS daily_challenges (
@@ -87,7 +84,7 @@ function _formatDesc(template, target) {
  * Returns { challenges: [...], streak: {...} }.
  */
 async function getDailyChallenges(userId) {
-    const db = require('../database');
+
 
     // Check if challenges already exist for today
     var existing = await db.all(
@@ -145,7 +142,7 @@ async function getDailyChallenges(userId) {
  * Returns { updated: true, completed: boolean, rewards: { credits, gems } } or { updated: false }.
  */
 async function updateProgress(userId, challengeType, amount, extra) {
-    const db = require('../database');
+
 
     // Find uncompleted challenges of this type for today
     var challenges = await db.all(
@@ -226,7 +223,7 @@ async function updateProgress(userId, challengeType, amount, extra) {
  * Update the user's challenge streak after completing all daily challenges.
  */
 async function _updateStreak(userId) {
-    const db = require('../database');
+
 
     var row = await db.get(
         'SELECT * FROM challenge_streaks WHERE user_id = ?',
@@ -278,7 +275,7 @@ async function _updateStreak(userId) {
  * Check and award streak bonuses if the current streak matches a bonus threshold.
  */
 async function _checkStreakBonuses(userId, currentStreak) {
-    const db = require('../database');
+
 
     for (var i = 0; i < STREAK_BONUSES.length; i++) {
         var bonus = STREAK_BONUSES[i];
@@ -316,7 +313,7 @@ async function _checkStreakBonuses(userId, currentStreak) {
  * Skip a challenge by spending gems. Marks it completed and grants rewards.
  */
 async function skipChallenge(userId, challengeId) {
-    const db = require('../database');
+
 
     // Verify challenge belongs to user and is not completed
     var challenge = await db.get(
@@ -379,7 +376,7 @@ async function skipChallenge(userId, challengeId) {
  * Get the user's current challenge streak info.
  */
 async function getStreak(userId) {
-    const db = require('../database');
+
 
     var row = await db.get(
         'SELECT * FROM challenge_streaks WHERE user_id = ?',

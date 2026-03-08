@@ -19,15 +19,12 @@ async function initSchema() {
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
     const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
     const idDef     = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const db = require('../database');
-    const isPg = !!process.env.DATABASE_URL;
-    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     await db.run(`CREATE TABLE IF NOT EXISTS gem_balances (
         user_id INTEGER PRIMARY KEY,
         balance INTEGER DEFAULT 0,
         total_purchased INTEGER DEFAULT 0,
         total_spent INTEGER DEFAULT 0,
-        updated_at TEXT
+        updated_at ${tsType}
     )`);
     await db.run(`CREATE TABLE IF NOT EXISTS gem_transactions (
         id ${idDef},
@@ -45,7 +42,7 @@ async function initSchema() {
  * Get the gem balance for a user. If no row exists, insert one with 0.
  */
 async function getBalance(userId) {
-    const db = require('../database');
+
     let row = await db.get('SELECT balance FROM gem_balances WHERE user_id = ?', [userId]);
     if (!row) {
         await db.run(
@@ -61,7 +58,7 @@ async function getBalance(userId) {
  * Purchase a gem pack using the user's credit balance.
  */
 async function purchaseGems(userId, packId) {
-    const db = require('../database');
+
     const pack = GEM_PACKS.find(p => p.id === packId);
     if (!pack) throw new Error('Invalid gem pack');
 
@@ -113,7 +110,7 @@ async function purchaseGems(userId, packId) {
  * Spend gems (e.g. for in-game purchases).
  */
 async function spendGems(userId, amount, description) {
-    const db = require('../database');
+
     if (!amount || amount <= 0) throw new Error('Invalid gem amount');
 
     const row = await db.get('SELECT balance FROM gem_balances WHERE user_id = ?', [userId]);
@@ -137,7 +134,7 @@ async function spendGems(userId, amount, description) {
  * Add gems as a reward (e.g. achievements, daily bonus, etc.).
  */
 async function addGems(userId, amount, description) {
-    const db = require('../database');
+
     if (!amount || amount <= 0) throw new Error('Invalid gem amount');
 
     // Upsert gem balance
@@ -167,7 +164,7 @@ async function addGems(userId, amount, description) {
  * Get recent gem transaction history for a user.
  */
 async function getHistory(userId, limit = 20) {
-    const db = require('../database');
+
     const rows = await db.all(
         'SELECT id, type, amount, description, created_at FROM gem_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',
         [userId, limit]

@@ -14,14 +14,16 @@
 function adaptSQL(sql) {
     let adapted = sql;
 
-    // 1. datetime('now', '-N <unit>') → NOW() - INTERVAL 'N <unit>'
+    // 1. datetime('now', '±N <unit>') → NOW() ± INTERVAL 'N <unit>'
     //    Must run BEFORE the plain datetime('now') replacement.
     adapted = adapted.replace(
-        /datetime\(\s*'now'\s*,\s*'(-?\s*\d+\s+\w+)'\s*\)/gi,
+        /datetime\(\s*'now'\s*,\s*'([+-]?\s*\d+\s+\w+)'\s*\)/gi,
         function (_, interval) {
-            // Strip leading minus & whitespace: "-24 hours" → "24 hours"
-            var clean = interval.replace(/^-\s*/, '');
-            return "NOW() - INTERVAL '" + clean + "'";
+            // Detect direction: '+1 hour' → add, '-24 hours' or '24 hours' → subtract
+            var isAdd = /^\+/.test(interval.trim());
+            var clean = interval.replace(/^[+-]\s*/, '');
+            var op = isAdd ? '+' : '-';
+            return "NOW() " + op + " INTERVAL '" + clean + "'";
         }
     );
 

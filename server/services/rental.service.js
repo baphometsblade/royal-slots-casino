@@ -1,5 +1,7 @@
 'use strict';
 
+const db = require('../database');
+
 // ── Locked Games (premium exclusive) ────────────────────────────────────────
 
 var LOCKED_GAMES = [
@@ -23,7 +25,7 @@ var RENTAL_TIERS = [
 // ── Schema Init ─────────────────────────────────────────────────────────────
 
 async function initSchema() {
-    const db = require('../database');
+
     const isPg  = !!process.env.DATABASE_URL;
     const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
@@ -62,7 +64,7 @@ function getRentalTiers() {
  * (permanent=1 OR expires_at > now).
  */
 async function isUnlocked(userId, gameId) {
-    const db = require('../database');
+
 
     // Free games are always unlocked
     if (!LOCKED_GAMES.includes(gameId)) {
@@ -85,7 +87,7 @@ async function isUnlocked(userId, gameId) {
  * @returns {{ success: boolean, rental: { gameId, tier, expiresAt, permanent } }}
  */
 async function rentSlot(userId, gameId, tierId, payWith) {
-    const db = require('../database');
+
 
     // Validate gameId is a locked game
     if (!LOCKED_GAMES.includes(gameId)) {
@@ -133,16 +135,13 @@ async function rentSlot(userId, gameId, tierId, payWith) {
             [userId, gameId, tierId]
         );
     } else {
-        // Timed rental — expires_at = now + N minutes
-        var result = await db.get(
-            "SELECT datetime('now', '+' || ? || ' minutes') AS exp",
-            [tier.duration]
-        );
-        expiresAt = result ? result.exp : null;
+        // Timed rental — compute expiry in JS for PG compatibility
+        expiresAt = new Date(Date.now() + tier.duration * 60 * 1000)
+            .toISOString().replace('T', ' ').replace('Z', '');
 
         await db.run(
-            "INSERT INTO slot_rentals (user_id, game_id, tier, permanent, expires_at) VALUES (?, ?, ?, 0, datetime('now', '+' || ? || ' minutes'))",
-            [userId, gameId, tierId, tier.duration]
+            "INSERT INTO slot_rentals (user_id, game_id, tier, permanent, expires_at) VALUES (?, ?, ?, 0, ?)",
+            [userId, gameId, tierId, expiresAt]
         );
     }
 
@@ -163,7 +162,7 @@ async function rentSlot(userId, gameId, tierId, payWith) {
  * Get all active (unexpired + permanent) rentals for a user.
  */
 async function getActiveRentals(userId) {
-    const db = require('../database');
+
     const rows = await db.all(
         "SELECT id, game_id, tier, started_at, expires_at, permanent FROM slot_rentals WHERE user_id = ? AND (permanent = 1 OR expires_at > datetime('now')) ORDER BY created_at DESC",
         [userId]
@@ -176,7 +175,7 @@ async function getActiveRentals(userId) {
  * Returns the active rental row or null if no active rental exists.
  */
 async function getRentalStatus(userId, gameId) {
-    const db = require('../database');
+
     const row = await db.get(
         "SELECT id, game_id, tier, started_at, expires_at, permanent FROM slot_rentals WHERE user_id = ? AND game_id = ? AND (permanent = 1 OR expires_at > datetime('now')) ORDER BY permanent DESC, expires_at DESC LIMIT 1",
         [userId, gameId]

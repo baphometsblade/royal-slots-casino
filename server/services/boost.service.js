@@ -1,5 +1,7 @@
 'use strict';
 
+const db = require('../database');
+
 // ── Boost Definitions ───────────────────────────────────────────────────────
 
 const BOOSTS = [
@@ -13,7 +15,7 @@ const BOOSTS = [
 // ── Schema Init ─────────────────────────────────────────────────────────────
 
 async function initSchema() {
-    const db = require('../database');
+
     const isPg  = !!process.env.DATABASE_URL;
     const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
@@ -41,7 +43,7 @@ function getBoostDefs() {
  * Purchase a boost for a user, deducting gems.
  */
 async function purchaseBoost(userId, boostType) {
-    const db = require('../database');
+
     const boost = BOOSTS.find(b => b.type === boostType);
     if (!boost) throw new Error('Invalid boost type');
 
@@ -80,7 +82,7 @@ async function purchaseBoost(userId, boostType) {
  * Get all active (non-expired) boosts for a user.
  */
 async function getActiveBoosts(userId) {
-    const db = require('../database');
+
     const rows = await db.all(
         "SELECT id, boost_type, started_at, expires_at FROM active_boosts WHERE user_id = ? AND expires_at > datetime('now')",
         [userId]
@@ -93,7 +95,7 @@ async function getActiveBoosts(userId) {
  * mega_boost counts as having all boost types.
  */
 async function hasBoost(userId, boostType) {
-    const db = require('../database');
+
     const row = await db.get(
         "SELECT id FROM active_boosts WHERE user_id = ? AND (boost_type = ? OR boost_type = 'mega_boost') AND expires_at > datetime('now') LIMIT 1",
         [userId, boostType]
@@ -105,7 +107,7 @@ async function hasBoost(userId, boostType) {
  * Delete all expired boosts from the table.
  */
 async function cleanExpired() {
-    const db = require('../database');
+
     await db.run("DELETE FROM active_boosts WHERE expires_at <= datetime('now')");
 }
 
