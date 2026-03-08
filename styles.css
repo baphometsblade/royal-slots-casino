@@ -22632,3 +22632,379 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
         font-size: 0.65rem;
     }
 }
+
+/* =====================================================
+   SPRINT 35 — VIP Progress Meter
+   ===================================================== */
+
+@keyframes _s35vipPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(251,191,36,0.3), 0 0 0 rgba(251,191,36,0); }
+    50% { box-shadow: 0 0 16px rgba(251,191,36,0.5), 0 0 30px rgba(251,191,36,0.15); }
+}
+
+#vipProgressMeter {
+    position: fixed;
+    left: 16px;
+    bottom: 80px;
+    z-index: 10001;
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+    border: 1px solid rgba(251,191,36,0.4);
+    border-radius: 14px;
+    padding: 14px 16px;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: _s35vipPulse 3s ease-in-out infinite;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+#vipProgressMeter:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 24px rgba(251,191,36,0.55), 0 4px 20px rgba(0,0,0,0.5);
+}
+
+#vipProgressMeter .vip-ring-wrap {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+#vipProgressMeter .vip-ring-wrap svg {
+    width: 60px;
+    height: 60px;
+    transform: rotate(-90deg);
+}
+
+#vipProgressMeter .vip-ring-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.08);
+    stroke-width: 5;
+}
+
+#vipProgressMeter .vip-ring-fg {
+    fill: none;
+    stroke: #fbbf24;
+    stroke-width: 5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s ease;
+    filter: drop-shadow(0 0 4px rgba(251,191,36,0.5));
+}
+
+#vipProgressMeter .vip-ring-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+#vipProgressMeter .vip-level-name {
+    color: #fbbf24;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#vipProgressMeter .vip-xp-text {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+#vipProgressMeter .vip-next-perk {
+    color: rgba(255,255,255,0.45);
+    font-size: 0.65rem;
+    text-align: center;
+    font-style: italic;
+    max-width: 160px;
+    line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+    #vipProgressMeter {
+        left: 8px;
+        bottom: 70px;
+        padding: 10px 12px;
+        min-width: 140px;
+        border-radius: 12px;
+    }
+    #vipProgressMeter .vip-ring-wrap,
+    #vipProgressMeter .vip-ring-wrap svg {
+        width: 48px;
+        height: 48px;
+    }
+    #vipProgressMeter .vip-level-name {
+        font-size: 0.75rem;
+    }
+    #vipProgressMeter .vip-xp-text {
+        font-size: 0.68rem;
+    }
+    #vipProgressMeter .vip-next-perk {
+        font-size: 0.6rem;
+    }
+}
+
+/* =====================================================
+   SPRINT 35 — Social Proof Win Ticker
+   ===================================================== */
+
+@keyframes _s35slideIn {
+    0% { transform: translateX(120%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes _s35slideOut {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(120%); opacity: 0; }
+}
+
+#socialProofContainer {
+    position: fixed;
+    right: 16px;
+    bottom: 80px;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    pointer-events: none;
+    max-height: 300px;
+    overflow: hidden;
+}
+
+#socialProofContainer .sp-card {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 220px;
+    max-width: 280px;
+    animation: _s35slideIn 0.4s ease-out forwards;
+    transition: opacity 0.3s ease;
+}
+
+#socialProofContainer .sp-card.sp-dismissing {
+    animation: _s35slideOut 0.35s ease-in forwards;
+}
+
+#socialProofContainer .sp-card.sp-big-win {
+    background: linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(251,191,36,0.05) 100%);
+    border-color: rgba(251,191,36,0.4);
+    box-shadow: 0 0 12px rgba(251,191,36,0.2);
+}
+
+#socialProofContainer .sp-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: #0f0f1a;
+    font-weight: 700;
+}
+
+#socialProofContainer .sp-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+#socialProofContainer .sp-player {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.72rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#socialProofContainer .sp-amount {
+    color: #fbbf24;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+#socialProofContainer .sp-card.sp-big-win .sp-amount {
+    text-shadow: 0 0 8px rgba(251,191,36,0.5);
+    font-size: 1rem;
+}
+
+#socialProofContainer .sp-game-name {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.62rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+    #socialProofContainer {
+        right: 8px;
+        bottom: 70px;
+    }
+    #socialProofContainer .sp-card {
+        min-width: 180px;
+        max-width: 240px;
+        padding: 8px 10px;
+    }
+    #socialProofContainer .sp-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    #socialProofContainer .sp-amount {
+        font-size: 0.8rem;
+    }
+}
+
+/* =====================================================
+   SPRINT 35 — Comeback Bonus Overlay
+   ===================================================== */
+
+@keyframes _s35giftBounce {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-12px) rotate(-5deg); }
+    50% { transform: translateY(0) rotate(0deg); }
+    75% { transform: translateY(-6px) rotate(3deg); }
+}
+
+#comebackOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+#comebackOverlay.active {
+    display: flex;
+}
+
+#comebackOverlay .comeback-modal {
+    background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+    border: 1.5px solid rgba(251,191,36,0.5);
+    border-radius: 16px;
+    padding: 36px 32px 28px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 40px rgba(251,191,36,0.15), 0 20px 60px rgba(0,0,0,0.6);
+}
+
+#comebackOverlay .comeback-dismiss {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.6);
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+}
+
+#comebackOverlay .comeback-dismiss:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+}
+
+#comebackOverlay .comeback-gift-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+    animation: _s35giftBounce 1.5s ease-in-out infinite;
+}
+
+#comebackOverlay .comeback-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+#comebackOverlay .comeback-subtitle {
+    color: rgba(255,255,255,0.55);
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+#comebackOverlay .comeback-claim-btn {
+    display: inline-block;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #0f0f1a;
+    font-size: 1.05rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(251,191,36,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#comebackOverlay .comeback-claim-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 28px rgba(251,191,36,0.5);
+}
+
+#comebackOverlay .comeback-claim-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+#comebackOverlay .comeback-amount {
+    color: #fbbf24;
+    font-weight: 900;
+}
+
+@media (max-width: 768px) {
+    #comebackOverlay .comeback-modal {
+        padding: 28px 20px 22px;
+        max-width: 320px;
+        border-radius: 14px;
+    }
+    #comebackOverlay .comeback-gift-icon {
+        font-size: 2.4rem;
+    }
+    #comebackOverlay .comeback-title {
+        font-size: 1.25rem;
+    }
+    #comebackOverlay .comeback-claim-btn {
+        padding: 12px 28px;
+        font-size: 0.95rem;
+    }
+}

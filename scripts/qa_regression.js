@@ -169,6 +169,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "lossComfortOverlay",
       "achievementContainer",
       "flashDealBanner",
+      "vipProgressMeter",
+      "socialProofContainer",
+      "comebackOverlay",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

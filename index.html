@@ -2895,6 +2895,37 @@
         <button class="fd-dismiss" onclick="if(typeof dismissFlashDeal==='function')dismissFlashDeal()">&times;</button>
     </div>
 
+    <!-- Sprint 35: VIP Progress Meter -->
+    <div id="vipProgressMeter" style="display:none;">
+        <div class="vpm-ring">
+            <svg viewBox="0 0 64 64">
+                <circle class="vpm-track" cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                <circle id="vpmProgress" class="vpm-fill" cx="32" cy="32" r="28" fill="none" stroke="#fbbf24" stroke-width="4" stroke-dasharray="175.93" stroke-dashoffset="175.93" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+            </svg>
+            <span id="vpmLevel" class="vpm-level">1</span>
+        </div>
+        <div class="vpm-info">
+            <div id="vpmTierName" class="vpm-tier">Bronze</div>
+            <div id="vpmXP" class="vpm-xp">0/1000 XP</div>
+            <div id="vpmNextPerk" class="vpm-perk">Next: 2% Cashback</div>
+        </div>
+    </div>
+
+    <!-- Sprint 35: Social Proof Win Ticker -->
+    <div id="socialProofContainer"></div>
+
+    <!-- Sprint 35: Comeback Bonus -->
+    <div id="comebackOverlay" style="display:none;">
+        <div class="cb-modal">
+            <button class="cb-close" onclick="dismissComebackBonus()">&times;</button>
+            <div class="cb-icon">&#127873;</div>
+            <h2 class="cb-title">Welcome Back!</h2>
+            <p class="cb-text">We missed you! Here's a special bonus to get you started:</p>
+            <button id="cbClaimBtn" class="cb-claim" onclick="claimComebackBonus()">Claim $5 Bonus</button>
+            <p class="cb-fine">Play to unlock &bull; 1x wagering</p>
+        </div>
+    </div>
+
     <script src="js/ui-sessiontime.js"></script>
     <script src="js/ui-winmultiplier.js"></script>
     <script src="js/ui-dailychallenge.js"></script>
@@ -2903,6 +2934,9 @@
     <script src="js/ui-losscomfort.js"></script>
     <script src="js/ui-achievementpopup.js"></script>
     <script src="js/ui-flashdeal.js"></script>
+    <script src="js/ui-vipprogress.js"></script>
+    <script src="js/ui-socialproof.js"></script>
+    <script src="js/ui-comeback.js"></script>
 
 </body>
 </html>
