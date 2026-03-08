@@ -430,6 +430,8 @@ function renderDepositForm() {
             <div class="wallet-pay-grid">${payTypeCards}</div>
         </div>
 
+        <div id="cryptoDepositSection" class="crypto-deposit-section" style="display:none;"></div>
+
         <div class="wallet-section wallet-section--actions">
             <div style="text-align:center;font-size:12px;color:#c084fc;margin-bottom:10px;font-weight:600">
                 💎 Earn gems on every deposit — $5 = 100 gems, $50 = 1000 gems, $100+ = 2500 gems
@@ -451,6 +453,8 @@ function renderDepositForm() {
         radio.addEventListener('change', () => {
             container.querySelectorAll('.wallet-pay-card').forEach(c => c.classList.remove('wallet-pay-card--selected'));
             if (radio.checked) radio.closest('.wallet-pay-card').classList.add('wallet-pay-card--selected');
+            // Show/hide MetaMask section for crypto types
+            walletUpdateCryptoSection(radio.value);
         });
     });
 
@@ -1005,6 +1009,213 @@ function walletSubmitNewMethod(type) {
     }
 
     addPaymentMethod(type, label, details);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// METAMASK / CRYPTO DEPOSIT FLOW
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Show/hide MetaMask deposit section based on selected payment type.
+ */
+function walletUpdateCryptoSection(payType) {
+    const section = document.getElementById('cryptoDepositSection');
+    if (!section) return;
+
+    const isCrypto = payType === 'eth' || payType === 'btc' || payType === 'usdt';
+    section.style.display = isCrypto ? 'block' : 'none';
+
+    if (isCrypto && payType === 'eth') {
+        walletRenderMetaMaskSection(section);
+    } else if (isCrypto) {
+        section.innerHTML = `
+            <div style="padding:16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.03);margin-bottom:12px;text-align:center;">
+                <div style="font-size:0.9rem;color:#94a3b8;">
+                    ${payType === 'btc' ? '₿ Bitcoin' : '₮ Tether'} deposits — use the standard deposit button below.
+                    <br><span style="color:#627eea;font-weight:600;">For instant MetaMask deposits, select Ethereum.</span>
+                </div>
+            </div>`;
+    }
+}
+
+/**
+ * Render the MetaMask connect + deposit UI.
+ */
+async function walletRenderMetaMaskSection(container) {
+    // Check if ethers.js is available
+    if (typeof cryptoIsEthersLoaded === 'undefined' || !cryptoIsEthersLoaded()) {
+        container.innerHTML = `
+            <div style="padding:16px;border:1px solid rgba(255,100,100,0.3);border-radius:10px;background:rgba(255,50,50,0.08);margin-bottom:12px;text-align:center;">
+                <div style="font-size:0.85rem;color:#f87171;">Ethereum library not loaded. Please refresh the page.</div>
+            </div>`;
+        return;
+    }
+
+    // Load crypto config
+    const configOk = await cryptoLoadConfig();
+    if (!configOk) {
+        container.innerHTML = `
+            <div style="padding:16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.03);margin-bottom:12px;text-align:center;">
+                <div style="font-size:0.85rem;color:#94a3b8;">Crypto deposits are not available right now.</div>
+            </div>`;
+        return;
+    }
+
+    // Fetch rate
+    await cryptoFetchRate();
+
+    if (cryptoConnectedAddress) {
+        // Already connected — show deposit UI
+        const ethBal = await cryptoGetBalance();
+        const amountInput = document.getElementById('walletDepositAmount');
+        const audAmount = parseFloat(amountInput?.value) || 50;
+        const ethEquiv = cryptoAudToEth(audAmount);
+
+        container.innerHTML = `
+            <div style="padding:16px;border:1px solid rgba(98,126,234,0.4);border-radius:12px;background:linear-gradient(135deg,rgba(98,126,234,0.1),rgba(98,126,234,0.03));margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                    <div style="width:32px;height:32px;background:#627eea;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:bold;color:white;">Ξ</div>
+                    <div>
+                        <div style="font-size:0.85rem;font-weight:700;color:#fff;">MetaMask Connected</div>
+                        <div style="font-size:0.7rem;color:#94a3b8;font-family:monospace;">${cryptoConnectedAddress.slice(0, 6)}...${cryptoConnectedAddress.slice(-4)}</div>
+                    </div>
+                    <div style="margin-left:auto;text-align:right;">
+                        <div style="font-size:0.7rem;color:#94a3b8;">Balance</div>
+                        <div style="font-size:0.85rem;font-weight:600;color:#fff;">${parseFloat(ethBal).toFixed(4)} ETH</div>
+                    </div>
+                </div>
+                <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:4px;">
+                        <span style="color:#94a3b8;">You pay</span>
+                        <span style="color:#94a3b8;">1 ETH = $${cryptoEthRate.toLocaleString()} AUD</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:1.2rem;font-weight:700;color:#627eea;" id="cryptoEthAmount">${ethEquiv.toFixed(6)} ETH</span>
+                        <span style="font-size:1rem;color:#fff;">→ $<span id="cryptoAudAmount">${audAmount.toFixed(2)}</span> AUD</span>
+                    </div>
+                </div>
+                <button class="wallet-btn wallet-btn--primary wallet-btn--lg" onclick="walletCryptoDeposit()" style="background:linear-gradient(135deg,#627eea,#8b5cf6);width:100%;">
+                    <span style="font-size:1.1rem;">Ξ</span> Pay with MetaMask
+                </button>
+                <div id="cryptoTxStatus" style="margin-top:10px;display:none;"></div>
+            </div>`;
+
+        // Update ETH amount when deposit amount changes
+        const depInput = document.getElementById('walletDepositAmount');
+        if (depInput) {
+            depInput.addEventListener('input', function () {
+                const aud = parseFloat(this.value) || 0;
+                const eth = cryptoAudToEth(aud);
+                const ethEl = document.getElementById('cryptoEthAmount');
+                const audEl = document.getElementById('cryptoAudAmount');
+                if (ethEl) ethEl.textContent = eth.toFixed(6) + ' ETH';
+                if (audEl) audEl.textContent = aud.toFixed(2);
+            });
+        }
+    } else {
+        // Not connected — show connect button
+        container.innerHTML = `
+            <div style="padding:16px;border:1px solid rgba(98,126,234,0.4);border-radius:12px;background:linear-gradient(135deg,rgba(98,126,234,0.1),rgba(98,126,234,0.03));margin-bottom:12px;text-align:center;">
+                <div style="font-size:1.5rem;margin-bottom:8px;">🦊</div>
+                <div style="font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:4px;">Instant ETH Deposits</div>
+                <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:14px;">
+                    Connect your MetaMask wallet to deposit ETH instantly.<br>
+                    Funds are credited at the current ETH/AUD rate after ${cryptoMinConfirmations} confirmations.
+                </div>
+                <button class="wallet-btn wallet-btn--primary" onclick="walletConnectMetaMask()" style="background:linear-gradient(135deg,#f6851b,#e2761b);border:none;padding:10px 24px;font-size:0.9rem;">
+                    🦊 Connect MetaMask
+                </button>
+                ${!cryptoIsMetaMaskInstalled() ? '<div style="font-size:0.72rem;color:#f87171;margin-top:8px;">MetaMask not detected. <a href="https://metamask.io/download/" target="_blank" style="color:#627eea;">Install it here</a>.</div>' : ''}
+            </div>`;
+    }
+}
+
+/**
+ * Connect MetaMask and refresh the deposit section.
+ */
+async function walletConnectMetaMask() {
+    const addr = await cryptoConnectWallet();
+    if (addr) {
+        showToast('MetaMask connected: ' + addr.slice(0, 6) + '...' + addr.slice(-4), 'success');
+        const section = document.getElementById('cryptoDepositSection');
+        if (section) {
+            walletRenderMetaMaskSection(section);
+        }
+    }
+}
+
+/**
+ * Execute a MetaMask deposit: send ETH → verify on server → credit balance.
+ */
+async function walletCryptoDeposit() {
+    const amountInput = document.getElementById('walletDepositAmount');
+    const audAmount = parseFloat(amountInput?.value);
+    if (!Number.isFinite(audAmount) || audAmount <= 0) {
+        showToast('Enter a valid deposit amount.', 'error');
+        return;
+    }
+
+    if (audAmount < cryptoMinDeposit) {
+        showToast('Minimum deposit is $' + cryptoMinDeposit.toFixed(2), 'error');
+        return;
+    }
+    if (audAmount > cryptoMaxDeposit) {
+        showToast('Maximum deposit is $' + cryptoMaxDeposit.toFixed(2), 'error');
+        return;
+    }
+
+    const statusEl = document.getElementById('cryptoTxStatus');
+    if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = '<div style="text-align:center;color:#fbbf24;font-size:0.85rem;">⏳ Waiting for MetaMask approval...</div>';
+    }
+
+    // Send ETH
+    const txHash = await cryptoSendDeposit(audAmount);
+    if (!txHash) {
+        if (statusEl) statusEl.style.display = 'none';
+        return;
+    }
+
+    // Show pending state
+    if (statusEl) {
+        statusEl.innerHTML = `
+            <div style="text-align:center;padding:10px;">
+                <div style="color:#10b981;font-size:0.85rem;font-weight:600;margin-bottom:6px;">✅ Transaction Sent!</div>
+                <div style="font-size:0.72rem;color:#94a3b8;font-family:monospace;word-break:break-all;margin-bottom:8px;">${txHash}</div>
+                <div style="color:#fbbf24;font-size:0.85rem;" id="cryptoConfirmStatus">⏳ Waiting for confirmations (0/${cryptoMinConfirmations})...</div>
+            </div>`;
+    }
+
+    // Poll for confirmation
+    const result = await cryptoPollDeposit(txHash, function (progress) {
+        const confirmEl = document.getElementById('cryptoConfirmStatus');
+        if (!confirmEl) return;
+
+        if (progress.status === 'completed') {
+            confirmEl.innerHTML = '<span style="color:#10b981;font-weight:700;">✅ Deposit Confirmed!</span>';
+        } else if (progress.status === 'confirming') {
+            confirmEl.innerHTML = '⏳ Confirming: ' + progress.confirmations + '/' + progress.required + ' blocks...';
+        } else {
+            confirmEl.innerHTML = '⏳ Checking transaction... (attempt ' + progress.attempt + ')';
+        }
+    });
+
+    if (result && result.balance !== undefined) {
+        // Update balance
+        balance = Number(result.balance);
+        updateBalance();
+        resetNudgeOnDeposit();
+
+        const gemMsg = result.gemsAwarded ? ' + 💎 ' + result.gemsAwarded + ' gems!' : '';
+        showToast('$' + result.deposit.amount.toFixed(2) + ' AUD deposited via ETH!' + gemMsg, 'success', 6000);
+
+        // Refresh deposit form after a short delay
+        setTimeout(function () { renderDepositForm(); }, 2000);
+    } else {
+        showToast('Deposit verification timed out. Your funds are safe — check back in a few minutes.', 'error', 8000);
+    }
 }
 
 

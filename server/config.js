@@ -30,6 +30,13 @@ module.exports = {
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || null,
     STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY || null,
 
+    // Crypto / MetaMask integration
+    CRYPTO_WALLET_ADDRESS: process.env.CRYPTO_WALLET_ADDRESS || null,  // Owner's receiving wallet address
+    ETH_RPC_URL: process.env.ETH_RPC_URL || 'https://cloudflare-eth.com',
+    ETH_CHAIN_ID: parseInt(process.env.ETH_CHAIN_ID, 10) || 1,         // 1 = Ethereum Mainnet
+    CRYPTO_MIN_CONFIRMATIONS: parseInt(process.env.CRYPTO_MIN_CONFIRMATIONS, 10) || 2,
+    ETH_AUD_FALLBACK_RATE: parseFloat(process.env.ETH_AUD_FALLBACK_RATE) || 5000,
+
     // Payment configuration
     CURRENCY: 'AUD',
     MIN_DEPOSIT: 5,

@@ -21,10 +21,10 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],  // casino client uses inline scripts
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],  // casino client uses inline scripts + ethers.js CDN
             styleSrc: ["'self'", "'unsafe-inline'"],       // inline styles for dynamic theming
             imgSrc: ["'self'", "data:", "blob:"],           // data URIs for generated assets
-            connectSrc: ["'self'"],                         // API calls to same origin
+            connectSrc: ["'self'", "https://api.coingecko.com", "https://cloudflare-eth.com"],  // API calls + crypto price feed + ETH RPC
             fontSrc: ["'self'", "data:"],
             objectSrc: ["'none'"],                          // no Flash/Java
             frameAncestors: ["'none'"],                     // no iframing (clickjacking protection)
@@ -89,6 +89,7 @@ const paymentLimiter = rateLimit({
 });
 app.use('/api/payment/deposit', paymentLimiter);
 app.use('/api/payment/withdraw', paymentLimiter);
+app.use('/api/crypto/verify-deposit', paymentLimiter);
 app.use('/api/balance/deposit', paymentLimiter);
 app.use('/api/bundles/purchase', paymentLimiter);
 app.use('/api/gifts/send', paymentLimiter);
@@ -130,6 +131,7 @@ app.use('/api/balance', balanceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/crypto', require('./routes/crypto.routes'));
 app.use('/api/jackpot', jackpotRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/tournaments', tournamentRoutes);
