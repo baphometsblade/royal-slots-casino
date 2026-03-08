@@ -64,8 +64,13 @@ router.get('/status', authenticate, async (req, res) => {
 });
 
 // POST /api/deposit-streak/record — called internally after deposit completion
-// Also callable by auth'd user to trigger reward after deposit
+// Requires admin auth to prevent users from triggering streak without real deposits
+// Use recordForUser() function from payment routes after verified deposit
 router.post('/record', authenticate, async (req, res) => {
+    // Only admins or internal server calls can trigger deposit streak recording
+    if (!req.user.is_admin) {
+        return res.status(403).json({ error: 'Deposit streak can only be recorded after a verified deposit' });
+    }
     try {
         var user = await db.get(
             'SELECT deposit_streak, deposit_streak_last, deposit_streak_max, balance FROM users WHERE id = ?',

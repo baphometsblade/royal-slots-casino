@@ -66,36 +66,47 @@ router.get('/status', authenticate, async function(req, res) {
 });
 
 // POST /api/freespins/use — use one free spin
+// Uses atomic UPDATE to prevent race condition double-claim
 router.post('/use', authenticate, async function(req, res) {
   try {
     var userId = req.user.id;
+
+    // Check for expiry first
     var row = await db.get(
-      'SELECT free_spins_count, free_spins_expires, balance FROM users WHERE id = ?',
+      'SELECT free_spins_count, free_spins_expires FROM users WHERE id = ?',
       [userId]
     );
     if (!row) return res.status(404).json({ error: 'User not found' });
-
-    var count = row.free_spins_count || 0;
-    var expiresAt = row.free_spins_expires || null;
-
-    if (count <= 0) return res.status(400).json({ error: 'No free spins available' });
-    if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+    if ((row.free_spins_count || 0) <= 0) return res.status(400).json({ error: 'No free spins available' });
+    if (row.free_spins_expires && new Date(row.free_spins_expires).getTime() < Date.now()) {
       await db.run('UPDATE users SET free_spins_count = 0, free_spins_expires = NULL WHERE id = ?', [userId]);
       return res.status(400).json({ error: 'Free spins have expired' });
     }
 
-    var newCount = count - 1;
-    var newBalance = parseFloat(row.balance || 0) + FREE_SPIN_VALUE;
-    var newExpires = newCount === 0 ? null : expiresAt;
-    await db.run(
-      'UPDATE users SET free_spins_count = ?, free_spins_expires = ?, balance = ? WHERE id = ?',
-      [newCount, newExpires, newBalance, userId]
+    // Atomic: decrement spin count AND credit balance in one UPDATE
+    // WHERE free_spins_count > 0 prevents race condition double-claim
+    var result = await db.run(
+      'UPDATE users SET free_spins_count = free_spins_count - 1, balance = balance + ? WHERE id = ? AND free_spins_count > 0',
+      [FREE_SPIN_VALUE, userId]
     );
+    if (result.changes === 0) {
+      return res.status(400).json({ error: 'No free spins available' });
+    }
+
+    // Clear expires if count reached 0
+    await db.run(
+      'UPDATE users SET free_spins_expires = CASE WHEN free_spins_count = 0 THEN NULL ELSE free_spins_expires END WHERE id = ?',
+      [userId]
+    );
+
     await db.run(
       "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'free_spin', ?, 'Free spin credit')",
       [userId, FREE_SPIN_VALUE]
     );
-    return res.json({ success: true, remaining: newCount, newBalance: newBalance });
+
+    // Fetch updated values for response
+    var updated = await db.get('SELECT free_spins_count, balance FROM users WHERE id = ?', [userId]);
+    return res.json({ success: true, remaining: updated.free_spins_count || 0, newBalance: parseFloat(updated.balance || 0) });
   } catch(err) {
     return res.status(500).json({ error: 'Internal server error' });
   }

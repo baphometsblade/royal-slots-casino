@@ -53,11 +53,22 @@ router.get('/history', authenticate, async (req, res) => {
 
 // POST /api/gems/award — award gems earned through gameplay (auth required)
 // Body: { amount: N, reason: 'win_10x' } — fire-and-forget from spin flow
+// Rate limited: max 20 gem awards per minute per user to prevent abuse
+var _gemAwardRateMap = new Map();
+setInterval(function() { _gemAwardRateMap.clear(); }, 60000); // clear every minute
 router.post('/award', authenticate, async (req, res) => {
     try {
+        // Rate limit: max 20 awards per minute per user
+        var rateKey = String(req.user.id);
+        var rateCount = _gemAwardRateMap.get(rateKey) || 0;
+        if (rateCount >= 20) {
+            return res.status(429).json({ error: 'Too many gem awards — slow down' });
+        }
+        _gemAwardRateMap.set(rateKey, rateCount + 1);
+
         const amount = parseInt(req.body.amount, 10);
-        if (!amount || amount <= 0 || amount > 100) {
-            return res.status(400).json({ error: 'Invalid gem amount' });
+        if (!amount || amount <= 0 || amount > 50) {
+            return res.status(400).json({ error: 'Invalid gem amount (max 50)' });
         }
         const reason = (req.body.reason || 'gameplay_win').slice(0, 64);
         const result = await gemsService.addGems(req.user.id, amount, 'Earned via gameplay: ' + reason);

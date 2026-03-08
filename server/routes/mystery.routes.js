@@ -44,6 +44,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // POST /api/mystery/claim — claim reward (auth required)
+// Uses atomic UPDATE to prevent race condition double-claim
 router.post('/claim', authenticate, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -56,6 +57,17 @@ router.post('/claim', authenticate, async (req, res) => {
 
         if (totalSpins < nextDrop) {
             return res.status(400).json({ error: 'Drop not ready yet' });
+        }
+
+        // Atomic: set next drop target FIRST with WHERE guard to prevent double-claim
+        // Only succeeds if mystery_next_drop still matches what we read (no concurrent claim)
+        const newNextDrop = totalSpins + randInt(50, 250);
+        const claimResult = await db.run(
+            'UPDATE users SET mystery_next_drop = ? WHERE id = ? AND mystery_next_drop = ?',
+            [newNextDrop, userId, nextDrop]
+        );
+        if (claimResult.changes === 0) {
+            return res.status(400).json({ error: 'Drop already claimed or not ready' });
         }
 
         const reward = pickReward();
@@ -88,9 +100,6 @@ router.post('/claim', authenticate, async (req, res) => {
                 );
             } catch (e) {}
         }
-
-        const newNextDrop = totalSpins + randInt(50, 250);
-        await db.run('UPDATE users SET mystery_next_drop = ? WHERE id = ?', [newNextDrop, userId]);
 
         const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
         const newBalance = updatedUser ? (updatedUser.balance || 0) : 0;

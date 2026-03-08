@@ -54,6 +54,7 @@ router.get('/status', authenticate, async (req, res) => {
 });
 
 // POST /api/birthday/claim — auth required
+// Uses atomic UPDATE with WHERE guard to prevent race condition double-claim
 router.post('/claim', authenticate, async (req, res) => {
     try {
         var user = await db.get(
@@ -73,12 +74,19 @@ router.post('/claim', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Birthday bonus already claimed this year' });
         }
 
-        // Credit the bonus
-        var newBalance = (user.balance || 0) + BIRTHDAY_CREDITS;
-        await db.run('UPDATE users SET balance = ?, birthday_claimed = ? WHERE id = ?',
-            [newBalance, String(today.year), req.user.id]);
+        // Atomic: credit bonus AND set claimed year in one UPDATE
+        // WHERE guard prevents race condition: two concurrent requests both pass the SELECT check,
+        // but only one can succeed the UPDATE (birthday_claimed != year)
+        var yearStr = String(today.year);
+        var result = await db.run(
+            'UPDATE users SET balance = balance + ?, birthday_claimed = ? WHERE id = ? AND (birthday_claimed IS NULL OR birthday_claimed != ?)',
+            [BIRTHDAY_CREDITS, yearStr, req.user.id, yearStr]
+        );
+        if (result.changes === 0) {
+            return res.status(400).json({ error: 'Birthday bonus already claimed this year' });
+        }
 
-        // Award gems
+        // Award gems (non-critical)
         await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?',
             [BIRTHDAY_GEMS, req.user.id]).catch(function() {});
 
@@ -92,12 +100,13 @@ router.post('/claim', authenticate, async (req, res) => {
             [req.user.id, BIRTHDAY_CREDITS, 'Birthday Bonus — Happy Birthday!']
         ).catch(function() {});
 
+        var updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
         res.json({
             success:      true,
             creditsAwarded:   BIRTHDAY_CREDITS,
             gemsAwarded:      BIRTHDAY_GEMS,
             freeSpinsAwarded: BIRTHDAY_FREE_SPINS,
-            newBalance:       newBalance
+            newBalance:       updatedUser ? parseFloat(updatedUser.balance) : 0
         });
     } catch (err) {
         console.error('[Birthday] Claim error:', err.message);
