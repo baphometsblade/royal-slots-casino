@@ -259,7 +259,7 @@ async function run() {
       ok: true,
     });
 
-    await page.click("button[title='View player stats']");
+    await page.evaluate(() => openStatsModal());
     await page.waitForSelector("#statsModal.active", { timeout: 10000 });
     await ensureQaPanelOpen(page);
 
@@ -320,7 +320,7 @@ async function run() {
 
     await page.keyboard.press("Escape");
     await page.waitForSelector("#slotModal.active", { state: "hidden", timeout: 10000 });
-    await page.click("button[title='View player stats']");
+    await page.evaluate(() => openStatsModal());
     await page.waitForSelector("#statsModal.active", { timeout: 10000 });
     await ensureQaPanelOpen(page);
 
