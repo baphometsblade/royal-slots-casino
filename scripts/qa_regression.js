@@ -143,7 +143,7 @@ async function waitForPageTransitionIdle(page, timeout = 10000) {
 async function dismissFeaturePopupIfVisible(page) {
   // Always force-dismiss via JS — safe even if the popup isn't visible.
   // Avoids waitForFunction timeouts caused by CSS transitions or re-opens.
-  // Also clears Sprint 27-31 promotional overlays that may appear during QA.
+  // Also clears Sprint 27-32 promotional overlays that may appear during QA.
   await page.evaluate(() => {
     if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
     const overlayIds = [
@@ -159,6 +159,10 @@ async function dismissFeaturePopupIfVisible(page) {
       "piggyBankWidget",
       "piggyBankModal",
       "spinStreakBar",
+      "sessionTimeBar",
+      "winMultiplierBanner",
+      "dailyChallengePanel",
+      "dcFab",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

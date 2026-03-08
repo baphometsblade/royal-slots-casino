@@ -21016,3 +21016,559 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     .piggy-bank-widget { bottom: 12px; left: 12px; }
     .pb-icon { width: 48px; height: 48px; font-size: 1.3rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Sprint 32 — Session Time Rewards, Win Multiplier Banner, Daily Challenges
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Session Time Rewards Bar ──────────────────────────────────────────── */
+
+#sessionTimeBar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background: linear-gradient(180deg, rgba(15,15,26,0.95) 0%, rgba(10,10,20,0.98) 100%);
+    border-top: 1px solid rgba(251,191,36,0.15);
+    padding: 10px 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#sessionTimeBar.active {
+    display: flex;
+}
+
+#sessionTimeBar.has-streak-bar {
+    bottom: 48px;
+}
+
+.str-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+}
+
+.str-bar::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 24px;
+    right: 24px;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+.str-milestone {
+    position: relative;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(26,26,46,0.9);
+    border: 2px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+    transition: all 0.4s ease;
+    cursor: default;
+    flex-shrink: 0;
+}
+
+.str-milestone span {
+    line-height: 1;
+}
+
+.str-milestone.str-claimed {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border-color: #fbbf24;
+    color: #0f0f1a;
+    box-shadow: 0 0 12px rgba(251,191,36,0.4);
+}
+
+.str-milestone.str-claimed::after {
+    content: '\2713';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    background: #22c55e;
+    border-radius: 50%;
+    font-size: 0.55rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(34,197,94,0.4);
+}
+
+.str-milestone.str-active {
+    border-color: #fbbf24;
+    color: #fbbf24;
+    animation: _s32StrPulse 2s ease-in-out infinite;
+}
+
+.str-timer {
+    font-size: 0.75rem;
+    color: rgba(251,191,36,0.8);
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    min-width: 48px;
+    text-align: center;
+}
+
+@keyframes _s32StrPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(251,191,36,0.3);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 14px 4px rgba(251,191,36,0.25);
+        transform: scale(1.08);
+    }
+}
+
+/* ── 2. Win Multiplier Event Banner ───────────────────────────────────────── */
+
+#winMultiplierBanner {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    z-index: 2000;
+    pointer-events: none;
+    opacity: 0;
+    transition: none;
+}
+
+#winMultiplierBanner.active {
+    pointer-events: auto;
+    animation: _s32WmeSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+#winMultiplierBanner.dismissing {
+    animation: _s32WmeSlideOut 0.4s ease-in forwards;
+}
+
+.wme-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #ef4444 100%);
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 8px 32px rgba(251,191,36,0.4), 0 4px 12px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+    min-width: 320px;
+    max-width: 90vw;
+    animation: _s32WmePulse 2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.wme-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: _s32WmeSweep 3s ease-in-out infinite;
+}
+
+.wme-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.wme-text {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f0f1a;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.2);
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+.wme-timer {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(15,15,26,0.7);
+    font-variant-numeric: tabular-nums;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.wme-close {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: rgba(15,15,26,0.2);
+    color: #0f0f1a;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+    line-height: 1;
+}
+
+.wme-close:hover {
+    background: rgba(15,15,26,0.35);
+}
+
+@keyframes _s32WmeSlideIn {
+    0% {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes _s32WmeSlideOut {
+    0% {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+    }
+}
+
+@keyframes _s32WmePulse {
+    0%, 100% {
+        box-shadow: 0 8px 32px rgba(251,191,36,0.4), 0 4px 12px rgba(0,0,0,0.3),
+                    inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    50% {
+        box-shadow: 0 8px 40px rgba(251,191,36,0.6), 0 6px 20px rgba(249,115,22,0.3),
+                    inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+}
+
+@keyframes _s32WmeSweep {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+}
+
+/* ── 3. Daily Challenge Panel ─────────────────────────────────────────────── */
+
+#dailyChallengePanel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    max-width: 90vw;
+    z-index: 1800;
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+    border-left: 1px solid rgba(251,191,36,0.15);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.6);
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#dailyChallengePanel.active {
+    transform: translateX(0);
+    animation: _s32DcSlide 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dc-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.dc-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+}
+
+.dc-header h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fbbf24;
+    letter-spacing: 0.3px;
+}
+
+.dc-header .dc-refresh-timer {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.4);
+    font-variant-numeric: tabular-nums;
+}
+
+.dc-cards {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dc-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.dc-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+}
+
+.dc-card.dc-completed {
+    border-color: rgba(34,197,94,0.4);
+    background: rgba(34,197,94,0.06);
+}
+
+.dc-card.dc-completed .dc-desc {
+    text-decoration: line-through;
+    opacity: 0.5;
+}
+
+.dc-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.dc-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(251,191,36,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.dc-card.dc-completed .dc-card-icon {
+    background: rgba(34,197,94,0.15);
+}
+
+.dc-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dc-desc {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.4;
+    margin: 0;
+    transition: opacity 0.3s ease;
+}
+
+.dc-reward {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(251,191,36,0.1);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+.dc-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.dc-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+}
+
+.dc-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 100%;
+    background: rgba(255,255,255,0.3);
+    border-radius: 0 3px 3px 0;
+    filter: blur(2px);
+}
+
+.dc-card.dc-completed .dc-progress-fill {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.dc-progress-text {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.35);
+    text-align: right;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* FAB toggle button */
+.dc-fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    color: #0f0f1a;
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 1799;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(251,191,36,0.3), 0 2px 6px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dc-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(251,191,36,0.45), 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.dc-fab:active {
+    transform: scale(0.95);
+}
+
+.dc-fab.dc-fab-active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    transform: rotate(45deg);
+}
+
+.dc-fab .dc-fab-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(239,68,68,0.4);
+}
+
+/* Daily Challenge panel close button */
+.dc-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dc-close:hover {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.8);
+}
+
+/* Panel overlay backdrop */
+.dc-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1798;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.dc-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@keyframes _s32DcSlide {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* ── Sprint 32 Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    #sessionTimeBar { padding: 8px 12px; gap: 8px; }
+    .str-milestone { width: 30px; height: 30px; font-size: 0.55rem; }
+    .str-bar { gap: 10px; }
+    .str-timer { font-size: 0.65rem; }
+
+    .wme-banner { min-width: unset; padding: 10px 16px; gap: 8px; }
+    .wme-text { font-size: 0.85rem; }
+    .wme-icon { font-size: 1.3rem; }
+
+    #dailyChallengePanel { width: 100%; max-width: 100vw; }
+    .dc-fab { bottom: 64px; right: 12px; width: 42px; height: 42px; font-size: 1.1rem; }
+}

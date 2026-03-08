@@ -752,6 +752,13 @@
                 <div class="ssb-days" id="ssbDays"></div>
             </div>
 
+            <!-- Sprint 32: Session Time Rewards -->
+            <div id="sessionTimeBar" class="str-bar" style="display:none;">
+                <span class="str-label">⏰ Session Rewards</span>
+                <div class="str-milestones" id="strMilestones"></div>
+                <span class="str-timer" id="strTimer">0:00</span>
+            </div>
+
         <!-- Sprint 28: Reload bonus strip -->
         <div id="reloadBonusStrip" class="reload-bonus-strip" style="display:none">
             <span class="rbs-icon">💜</span>
@@ -2803,6 +2810,33 @@
             <button class="pb-close-btn" onclick="if(typeof closePiggyBank==='function')closePiggyBank()">Keep Saving</button>
         </div>
     </div>
+
+    <!-- Sprint 32: Win Multiplier Event -->
+    <div id="winMultiplierBanner" class="wme-banner" style="display:none;">
+        <span class="wme-icon">🔥</span>
+        <span class="wme-text" id="wmeText">2X WINS!</span>
+        <span class="wme-timer" id="wmeTimer">5:00</span>
+        <button class="wme-close" onclick="if(typeof dismissWinMultiplier==='function')dismissWinMultiplier()">&times;</button>
+    </div>
+
+    <!-- Sprint 32: Daily Challenges -->
+    <button class="dc-fab" id="dcFab" onclick="if(typeof toggleDailyChallenge==='function')toggleDailyChallenge()" title="Daily Challenges">🎯</button>
+    <div id="dailyChallengePanel" class="dc-panel">
+        <div class="dc-header">
+            <span class="dc-title">🎯 Daily Challenges</span>
+            <span class="dc-refresh" id="dcRefreshTimer">Resets in --:--</span>
+            <button class="dc-close-btn" onclick="if(typeof toggleDailyChallenge==='function')toggleDailyChallenge()">&times;</button>
+        </div>
+        <div class="dc-cards" id="dcCards"></div>
+        <div class="dc-footer">
+            <span class="dc-bonus-label">Complete all 3 for bonus:</span>
+            <span class="dc-bonus-amount" id="dcBonusAmount">$10</span>
+        </div>
+    </div>
+
+    <script src="js/ui-sessiontime.js"></script>
+    <script src="js/ui-winmultiplier.js"></script>
+    <script src="js/ui-dailychallenge.js"></script>
 
 </body>
 </html>
