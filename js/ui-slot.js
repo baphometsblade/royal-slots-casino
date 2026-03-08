@@ -1441,6 +1441,8 @@
             _sessSpins = 0; _sessTotalBet = 0; _sessTotalWon = 0; _sessWins = 0;
             // Sprint 82: reset bonus drought
             _bonusDrought = 0; _bonusDroughtTotal = 0; _bonusDroughtRounds = 0;
+            // Reset wild_collect state to prevent leak between games
+            window._wildCollectCount = 0; window._wildMeterValue = 1;
             var _sb0 = document.getElementById('spinBtn');
             if (_sb0) _sb0.classList.remove('spin-btn-fire');
             var _oldHud = document.getElementById('slotSessionHud');
@@ -2175,6 +2177,8 @@
             if (autoSpinActive) stopAutoSpin();
             // Reset new autoplay state
             if (window._autoplayActive) { window._autoplayActive = false; window._autoplayRemaining = 0; window._autoplayStopping = false; _updateAutoplayBtn(); }
+            // Reset wild_collect state to prevent leak between games
+            window._wildCollectCount = 0; window._wildMeterValue = 1;
             var _rcClose = document.querySelector('.reels-container') || document.querySelector('.reels');
             if (_rcClose) _rcClose.classList.remove('turbo-mode');
 
