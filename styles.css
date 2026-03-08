@@ -29264,3 +29264,889 @@ body.s41-both-panels #dailyCashbackPanel {
 }
 
 /* END SPRINT 42 */
+
+
+/* =============================================
+   SPRINT 43 — Spin Multiplier Event, Referral Bonus Tracker, Session Rewards Popup
+   Gold design system: #fbbf24 accent, #0f0f1a / #1a1a2e backgrounds
+   ============================================= */
+
+/* ------------------------------------------------------------------
+   S43 KEYFRAMES
+   ------------------------------------------------------------------ */
+
+@keyframes _s43_multPulse {
+  0% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.08);
+    box-shadow: 0 0 28px rgba(251, 191, 36, 0.6), 0 0 60px rgba(251, 191, 36, 0.2);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+  }
+}
+
+@keyframes _s43_multSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-40px) scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(6px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes _s43_multFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-24px) scale(0.9);
+  }
+}
+
+@keyframes _s43_giftBounce {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    transform: scale(1.25) rotate(-8deg);
+  }
+  40% {
+    transform: scale(0.95) rotate(6deg);
+  }
+  60% {
+    transform: scale(1.12) rotate(-3deg);
+  }
+  80% {
+    transform: scale(0.98) rotate(1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes _s43_rewardPopIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+  75% {
+    transform: translate(-50%, -50%) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes _s43_clockTick {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(6deg);
+  }
+  20% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes _s43_shimmerSlide {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+@keyframes _s43_backdropFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes _s43_progressFill {
+  0% {
+    width: 0%;
+  }
+}
+
+@keyframes _s43_badgeUnlock {
+  0% {
+    transform: scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------
+   FEATURE 1: SPIN MULTIPLIER EVENT BANNER (#spinMultiplierBanner)
+   ------------------------------------------------------------------ */
+
+#spinMultiplierBanner {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10050;
+  width: 200px;
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.5);
+  color: #fbbf24;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: visibility 0s;
+}
+
+#spinMultiplierBanner.s43-mult-active {
+  opacity: 1;
+  visibility: visible;
+  animation: _s43_multSlideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+             _s43_multPulse 1.6s ease-in-out 0.5s infinite;
+}
+
+#spinMultiplierBanner.s43-mult-dismiss {
+  animation: _s43_multFadeOut 0.4s ease-in forwards;
+}
+
+.s43-mult-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(251, 191, 36, 0.65);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.s43-mult-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.15;
+  text-shadow: 0 0 12px currentColor;
+}
+
+.s43-mult-icon {
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+/* --- Color variants --- */
+
+#spinMultiplierBanner.s43-mult-2x {
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.5);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+#spinMultiplierBanner.s43-mult-2x .s43-mult-value {
+  text-shadow: 0 0 14px rgba(96, 165, 250, 0.7);
+}
+
+#spinMultiplierBanner.s43-mult-2x.s43-mult-active {
+  animation: _s43_multSlideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+             _s43_multPulse 1.6s ease-in-out 0.5s infinite;
+  --_s43-glow-color: rgba(96, 165, 250, 0.4);
+}
+
+#spinMultiplierBanner.s43-mult-3x {
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.5);
+  background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 100%);
+}
+
+#spinMultiplierBanner.s43-mult-3x .s43-mult-value {
+  text-shadow: 0 0 14px rgba(192, 132, 252, 0.7);
+}
+
+#spinMultiplierBanner.s43-mult-5x {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.65);
+  background: linear-gradient(135deg, #1a1608 0%, #2e2410 100%);
+}
+
+#spinMultiplierBanner.s43-mult-5x .s43-mult-value {
+  font-size: 1.7rem;
+  text-shadow: 0 0 18px rgba(251, 191, 36, 0.8), 0 0 40px rgba(251, 191, 36, 0.3);
+}
+
+/* ------------------------------------------------------------------
+   FEATURE 2: REFERRAL BONUS TRACKER (#referralTrackerPanel)
+   ------------------------------------------------------------------ */
+
+#referralTrackerPanel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9900;
+  width: 260px;
+  background: linear-gradient(160deg, #1a1a2e 0%, #0f0f1a 100%);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 16px;
+  padding: 16px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: #e2e8f0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(251, 191, 36, 0.08);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#referralTrackerPanel.s43-ref-hidden {
+  transform: translateX(300px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.s43-ref-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+}
+
+.s43-ref-gift-icon {
+  font-size: 1.4rem;
+  display: inline-block;
+  line-height: 1;
+}
+
+.s43-ref-gift-icon.s43-ref-unlocked {
+  animation: _s43_giftBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.s43-ref-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.s43-ref-close-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  line-height: 1;
+}
+
+.s43-ref-close-btn:hover {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.s43-ref-count-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.s43-ref-count {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #fbbf24;
+  line-height: 1;
+}
+
+.s43-ref-count-label {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.s43-ref-next-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  text-align: right;
+}
+
+/* Progress bar */
+.s43-ref-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.s43-ref-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: _s43_progressFill 0.8s ease-out;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+}
+
+/* Milestone badges */
+.s43-ref-milestones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.s43-ref-milestone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.s43-ref-milestone-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.s43-ref-milestone-badge.s43-ref-reached {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-color: #fbbf24;
+  color: #0f0f1a;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+  animation: _s43_badgeUnlock 0.5s ease-out;
+}
+
+.s43-ref-milestone-label {
+  font-size: 0.55rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.s43-ref-milestone-label.s43-ref-reached {
+  color: #fbbf24;
+}
+
+/* Copy link button */
+.s43-ref-copy-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid rgba(251, 191, 36, 0.35);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(251, 191, 36, 0.03));
+  color: #fbbf24;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s, border-color 0.3s, transform 0.15s;
+}
+
+.s43-ref-copy-btn:hover {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(251, 191, 36, 0.08));
+  border-color: rgba(251, 191, 36, 0.6);
+  transform: translateY(-1px);
+}
+
+.s43-ref-copy-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Shimmer on hover */
+.s43-ref-copy-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.2), transparent);
+  transition: none;
+  pointer-events: none;
+}
+
+.s43-ref-copy-btn:hover::after {
+  animation: _s43_shimmerSlide 0.8s ease-in-out;
+}
+
+.s43-ref-copy-btn .s43-ref-copy-icon {
+  margin-right: 6px;
+  font-size: 0.8rem;
+}
+
+.s43-ref-copy-btn.s43-ref-copied {
+  border-color: #34d399;
+  color: #34d399;
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.03));
+}
+
+/* ------------------------------------------------------------------
+   FEATURE 3: SESSION REWARDS POPUP (#sessionRewardPopup)
+   ------------------------------------------------------------------ */
+
+.s43-reward-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10100;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: _s43_backdropFadeIn 0.3s ease-out;
+  display: none;
+}
+
+.s43-reward-backdrop.s43-reward-visible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#sessionRewardPopup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  z-index: 10101;
+  width: 90vw;
+  max-width: 350px;
+  background: linear-gradient(170deg, #1a1a2e 0%, #0f0f1a 60%, #1a1608 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.35);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: #e2e8f0;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6),
+              0 0 40px rgba(251, 191, 36, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  visibility: hidden;
+  transition: visibility 0s;
+}
+
+#sessionRewardPopup.s43-reward-active {
+  opacity: 1;
+  visibility: visible;
+  animation: _s43_rewardPopIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.s43-reward-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.s43-reward-close:hover {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.s43-reward-timer-icon {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  display: inline-block;
+  animation: _s43_clockTick 2s ease-in-out infinite;
+}
+
+.s43-reward-heading {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.s43-reward-session-dur {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.s43-reward-session-dur .s43-dur-val {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.s43-reward-amount {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #fbbf24;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+}
+
+.s43-reward-amount .s43-reward-currency {
+  font-size: 1.3rem;
+  vertical-align: super;
+  margin-right: 2px;
+  opacity: 0.8;
+}
+
+.s43-reward-tier-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+/* Reward tiers display */
+.s43-reward-tiers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.s43-reward-tier {
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.s43-reward-tier.s43-tier-active {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.15);
+}
+
+.s43-reward-tier .s43-tier-time {
+  display: block;
+  font-size: 0.52rem;
+  color: inherit;
+  opacity: 0.7;
+  margin-top: 1px;
+}
+
+/* Claim button */
+.s43-reward-claim-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  color: #0f0f1a;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.3);
+  transition: transform 0.15s, box-shadow 0.3s;
+}
+
+.s43-reward-claim-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(251, 191, 36, 0.45);
+}
+
+.s43-reward-claim-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 10px rgba(251, 191, 36, 0.25);
+}
+
+.s43-reward-claim-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  pointer-events: none;
+}
+
+.s43-reward-claim-btn:hover::after {
+  animation: _s43_shimmerSlide 0.7s ease-in-out;
+}
+
+.s43-reward-footer-note {
+  font-size: 0.55rem;
+  color: #475569;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------------
+   RESPONSIVE: 768px
+   ------------------------------------------------------------------ */
+
+@media (max-width: 768px) {
+  #spinMultiplierBanner {
+    width: 175px;
+    padding: 8px 14px;
+    font-size: 1rem;
+    top: 14px;
+    border-radius: 12px;
+  }
+
+  .s43-mult-value {
+    font-size: 1.3rem;
+  }
+
+  #spinMultiplierBanner.s43-mult-5x .s43-mult-value {
+    font-size: 1.5rem;
+  }
+
+  #referralTrackerPanel {
+    width: 240px;
+    padding: 14px;
+    bottom: 16px;
+    right: 16px;
+    border-radius: 14px;
+  }
+
+  .s43-ref-count {
+    font-size: 1.4rem;
+  }
+
+  .s43-ref-milestone-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.62rem;
+  }
+
+  .s43-ref-copy-btn {
+    padding: 9px 12px;
+    font-size: 0.7rem;
+  }
+
+  #sessionRewardPopup {
+    max-width: 320px;
+    padding: 24px 20px;
+    border-radius: 18px;
+  }
+
+  .s43-reward-amount {
+    font-size: 2rem;
+  }
+
+  .s43-reward-claim-btn {
+    padding: 12px 18px;
+    font-size: 0.82rem;
+  }
+
+  .s43-reward-tiers {
+    gap: 5px;
+  }
+
+  .s43-reward-tier {
+    padding: 3px 8px;
+    font-size: 0.55rem;
+  }
+}
+
+/* ------------------------------------------------------------------
+   RESPONSIVE: 480px
+   ------------------------------------------------------------------ */
+
+@media (max-width: 480px) {
+  #spinMultiplierBanner {
+    width: 155px;
+    padding: 7px 12px;
+    font-size: 0.88rem;
+    top: 10px;
+    border-radius: 10px;
+  }
+
+  .s43-mult-label {
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+  }
+
+  .s43-mult-value {
+    font-size: 1.15rem;
+  }
+
+  #spinMultiplierBanner.s43-mult-5x .s43-mult-value {
+    font-size: 1.3rem;
+  }
+
+  #referralTrackerPanel {
+    width: 220px;
+    padding: 12px;
+    bottom: 12px;
+    right: 12px;
+    border-radius: 12px;
+  }
+
+  .s43-ref-header {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .s43-ref-gift-icon {
+    font-size: 1.2rem;
+  }
+
+  .s43-ref-title {
+    font-size: 0.72rem;
+  }
+
+  .s43-ref-count {
+    font-size: 1.2rem;
+  }
+
+  .s43-ref-milestone-badge {
+    width: 26px;
+    height: 26px;
+    font-size: 0.58rem;
+  }
+
+  .s43-ref-milestone-label {
+    font-size: 0.5rem;
+  }
+
+  .s43-ref-copy-btn {
+    padding: 8px 10px;
+    font-size: 0.65rem;
+    border-radius: 8px;
+  }
+
+  .s43-ref-progress-track {
+    height: 6px;
+    margin-bottom: 10px;
+  }
+
+  #sessionRewardPopup {
+    max-width: 290px;
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .s43-reward-timer-icon {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+  }
+
+  .s43-reward-heading {
+    font-size: 0.95rem;
+  }
+
+  .s43-reward-amount {
+    font-size: 1.8rem;
+  }
+
+  .s43-reward-amount .s43-reward-currency {
+    font-size: 1rem;
+  }
+
+  .s43-reward-claim-btn {
+    padding: 11px 16px;
+    font-size: 0.78rem;
+    border-radius: 10px;
+  }
+
+  .s43-reward-tiers {
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .s43-reward-tier {
+    padding: 3px 7px;
+    font-size: 0.52rem;
+    border-radius: 6px;
+  }
+
+  .s43-reward-tier .s43-tier-time {
+    font-size: 0.48rem;
+  }
+
+  .s43-reward-close {
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.78rem;
+  }
+
+  .s43-reward-footer-note {
+    font-size: 0.5rem;
+  }
+}
+
+/* END SPRINT 43 */

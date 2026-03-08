@@ -195,6 +195,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "vipWheelOverlay",
       "lossLimitBar",
       "quickBetStrip",
+      "spinMultiplierBanner",
+      "referralTrackerPanel",
+      "sessionRewardPopup",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
