@@ -9,6 +9,7 @@
     // ─── Ripple Effect on Buttons ────────────────────────────────────────────
     function _addRippleEffect() {
         document.addEventListener('click', function (e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
             const btn = e.target.closest('.btn, .filter-tab, .csb-item, .btn-deposit, .btn-play');
             if (!btn) return;
             const ripple = document.createElement('span');
@@ -167,6 +168,7 @@
         if (q === 'low' || q === 'off') return;
 
         document.addEventListener('mousemove', function (e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
             const card = e.target.closest('.game-card');
             if (!card) return;
             const rect = card.getBoundingClientRect();
@@ -176,6 +178,7 @@
         });
 
         document.addEventListener('mouseleave', function (e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
             const card = e.target.closest('.game-card');
             if (!card) return;
             card.style.transform = '';
@@ -211,6 +214,7 @@
     // ─── Tooltip on truncated game names ────────────────────────────────────
     function _addGameNameTooltips() {
         document.addEventListener('mouseover', function (e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
             const name = e.target.closest('.game-name');
             if (!name || name.title) return;
             if (name.scrollWidth > name.offsetWidth) {

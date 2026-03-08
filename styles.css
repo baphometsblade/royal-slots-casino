@@ -303,6 +303,17 @@
                         radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.08) 0%, transparent 60%);
         }
 
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(251,191,36,0.6), rgba(139,92,246,0.4), transparent);
+            border-radius: 0 0 20px 20px;
+        }
+
         .hero-content {
             position: relative;
             z-index: 2;
@@ -389,21 +400,25 @@
         /* ── Quick Games Navigation Bar ── */
         .quick-games-nav {
             margin: 16px 0 10px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: linear-gradient(135deg, rgba(15,23,42,0.6), rgba(10,15,30,0.6));
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px;
-            padding: 14px 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
         .qgn-section { display: flex; flex-direction: column; gap: 8px; }
         .qgn-label {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: 800;
             letter-spacing: 2px;
-            color: rgba(255,255,255,0.35);
+            color: rgba(251,191,36,0.6);
             text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-left: 4px;
         }
         .qgn-scroll {
             display: flex;
@@ -421,25 +436,23 @@
 
         /* Colour palette: --qgt 1-8 → rotating accent colours */
         .qgn-tile {
-            flex: 0 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            padding: 10px 12px;
+            gap: 6px;
+            padding: 12px 14px;
+            min-width: 72px;
             border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.09);
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
             cursor: pointer;
-            transition: all .15s;
-            min-width: 64px;
+            transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+            flex-shrink: 0;
+            position: relative;
         }
         .qgn-tile:hover {
-            background: rgba(255,255,255,0.11);
-            transform: translateY(-2px);
-            border-color: rgba(255,255,255,0.2);
-            color: #fff;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
         .qgn-tile[style*="--qgt:1"] { border-color: rgba(129,140,248,.25); }
         .qgn-tile[style*="--qgt:1"]:hover { background: rgba(129,140,248,.15); border-color: rgba(129,140,248,.5); }
@@ -459,16 +472,21 @@
         .qgn-tile[style*="--qgt:8"]:hover { background: rgba(244,114,182,.15); border-color: rgba(244,114,182,.5); }
 
         .qgn-icon {
-            font-size: 22px;
+            font-size: 28px;
             line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+            transition: transform 0.2s ease;
+        }
+        .qgn-tile:hover .qgn-icon {
+            transform: scale(1.15);
         }
         .qgn-tile span:last-child {
-            font-size: 8px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            text-transform: uppercase;
-            opacity: 0.7;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.75);
+            text-align: center;
+            letter-spacing: 0.2px;
+            transition: opacity 0.2s ease;
         }
         .qgn-tile:hover span:last-child { opacity: 1; }
 
@@ -543,11 +561,13 @@
         }
 
         .hero-stats {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 24px;
-            padding: 32px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px 28px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            min-width: 180px;
         }
 
         .stats-label {
@@ -599,6 +619,16 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 24px;
+        }
+
+        .section-header::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, rgba(251,191,36,0.2));
+            border-radius: 2px;
+            margin-top: 8px;
         }
 
         .section-title {
@@ -5136,9 +5166,9 @@
         .jackpot-ticker-amount {
             font-size: 18px;
             font-weight: 800;
-            color: var(--rg-yellow-200);
+            color: #fbbf24;
             font-variant-numeric: tabular-nums;
-            text-shadow: 0 0 20px rgba(255, 229, 83, 0.4);
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
         }
 
         .jackpot-ticker-sub {
@@ -5150,19 +5180,19 @@
 
         /* Live dot for win ticker */
         .ticker-live-dot {
-            display: inline-block;
-            width: 7px;
-            height: 7px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: #22c55e;
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+            background: #4ade80;
             flex-shrink: 0;
-            animation: livePulse 2s ease-in-out infinite;
+            box-shadow: 0 0 0 0 rgba(74,222,128,0.4);
+            animation: tickerPulse 2s ease-in-out infinite;
         }
 
-        @keyframes livePulse {
-            0%, 100% { box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); }
-            50% { box-shadow: 0 0 16px rgba(34, 197, 94, 0.9); }
+        @keyframes tickerPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+            70%  { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+            100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
         }
 
         /* Recently Played */
@@ -18410,13 +18440,70 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 }
 
 /* ── Jackpot Ticker Bar V2 (API-driven) ─────────────────── */
-.jackpot-ticker-bar-v2 { display: flex; justify-content: center; gap: 12px; padding: 10px 16px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; margin: 0 16px 12px; }
-.jackpot-ticker-item { display: flex; flex-direction: column; align-items: center; padding: 6px 16px; background: rgba(255,255,255,0.05); border-radius: 8px; min-width: 80px; }
-.jp-label { font-size: 10px; text-transform: uppercase; color: #8888aa; letter-spacing: 1px; }
-.jp-amount { font-size: 18px; font-weight: 700; color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.4); }
-.jackpot-ticker-item.jp-major .jp-amount { color: #ff6b35; font-size: 20px; }
-.jackpot-ticker-item.jp-grand .jp-amount { color: #ff4444; font-size: 22px; animation: jp-pulse-v2 2s ease-in-out infinite; }
-@keyframes jp-pulse-v2 { 0%,100% { text-shadow: 0 0 8px rgba(255,68,68,0.4); } 50% { text-shadow: 0 0 20px rgba(255,68,68,0.8); } }
+.jackpot-ticker-bar-v2 {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #0d0d1a, #1a0a2e, #0d0d1a);
+    border-radius: 16px;
+    margin: 0 0 16px 0;
+    border: 1px solid rgba(251,191,36,0.2);
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.jackpot-ticker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 20px;
+    flex: 1;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    transition: background 0.3s ease;
+}
+.jackpot-ticker-item:last-child { border-right: none; }
+.jackpot-ticker-item:hover { background: rgba(255,255,255,0.04); }
+.jp-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 2px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.jp-amount {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fbbf24;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.5px;
+    text-shadow: 0 0 12px rgba(251,191,36,0.5);
+    transition: color 0.3s ease;
+}
+.jackpot-ticker-item.jp-major .jp-label { color: rgba(167,139,250,0.7); }
+.jackpot-ticker-item.jp-major .jp-amount {
+    color: #a78bfa;
+    font-size: 24px;
+    text-shadow: 0 0 14px rgba(167,139,250,0.5);
+}
+.jackpot-ticker-item.jp-grand {
+    background: linear-gradient(180deg, rgba(251,191,36,0.07) 0%, transparent 100%);
+}
+.jackpot-ticker-item.jp-grand .jp-label {
+    color: rgba(251,191,36,0.7);
+    letter-spacing: 2.5px;
+}
+.jackpot-ticker-item.jp-grand .jp-amount {
+    color: #fbbf24;
+    font-size: 28px;
+    animation: jp-pulse-v2 1.8s ease-in-out infinite;
+    text-shadow: 0 0 20px rgba(251,191,36,0.7), 0 0 40px rgba(251,191,36,0.3);
+}
+@keyframes jp-pulse-v2 {
+    0%, 100% { text-shadow: 0 0 16px rgba(251,191,36,0.6), 0 0 32px rgba(251,191,36,0.3); }
+    50%       { text-shadow: 0 0 28px rgba(251,191,36,0.95), 0 0 56px rgba(251,191,36,0.5); }
+}
 
 /* ── Big Win Feed ─────────────────── */
 .big-win-feed { margin: 0 16px 12px; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px 12px; max-height: 120px; overflow: hidden; }
