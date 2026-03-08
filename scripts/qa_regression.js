@@ -213,6 +213,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "betLadderPanel",
       "tournamentLeaderboard",
       "lossStreakComfort",
+      "slotRaceTimer",
+      "jackpotContribMeter",
+      "socialSharePanel",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
