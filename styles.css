@@ -37877,3 +37877,1243 @@ body.s47-gift-open {
     transition-duration: 0.2s;
   }
 }
+
+
+/* ==========================================================================
+   SPRINT 50 — VIP Lounge Invite, Mega Jackpot Ticker, Player Dashboard Widget
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   S50 Keyframe Animations
+   -------------------------------------------------------------------------- */
+
+@keyframes _s50_fadeInScale {
+  0% { opacity: 0; transform: scale(0.85) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes _s50_shimmerGold {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes _s50_pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.1); }
+  50% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.6), 0 0 70px rgba(255, 215, 0, 0.25); }
+}
+
+@keyframes _s50_sparkleFloat {
+  0% { opacity: 0; transform: translateY(0) scale(0); }
+  20% { opacity: 1; transform: translateY(-10px) scale(1); }
+  80% { opacity: 1; transform: translateY(-50px) scale(0.8); }
+  100% { opacity: 0; transform: translateY(-70px) scale(0); }
+}
+
+@keyframes _s50_odometerTick {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+@keyframes _s50_tickerSlide {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes _s50_bannerPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes _s50_borderRotate {
+  0% { --s50-angle: 0deg; }
+  100% { --s50-angle: 360deg; }
+}
+
+@keyframes _s50_widgetSlideUp {
+  0% { transform: translateY(100%) scale(0.9); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes _s50_barGrow {
+  0% { height: 0; }
+  100% { height: var(--s50-bar-h, 50%); }
+}
+
+@keyframes _s50_countUp {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes _s50_crownBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}
+
+@keyframes _s50_ripple {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes _s50_gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes _s50_spinStar {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes _s50_expandIn {
+  0% { max-height: 0; opacity: 0; padding: 0; }
+  100% { max-height: 600px; opacity: 1; }
+}
+
+@keyframes _s50_collapseOut {
+  0% { max-height: 600px; opacity: 1; }
+  100% { max-height: 0; opacity: 0; padding: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   1. VIP Lounge Invite Modal (#vipLoungeInvite)
+   -------------------------------------------------------------------------- */
+
+#vipLoungeInvite {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#vipLoungeInvite.active {
+  display: flex;
+}
+
+.s50-vip-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.s50-vip-modal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(165deg, #1a1a2e 0%, #0f0f1a 50%, #1a0f28 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 0;
+  overflow: hidden;
+  animation: _s50_fadeInScale 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  box-shadow:
+    0 0 40px rgba(255, 215, 0, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 215, 0, 0.15);
+}
+
+.s50-vip-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffd700, #ffaa00, #ffd700, transparent);
+  background-size: 200% 100%;
+  animation: _s50_shimmerGold 3s linear infinite;
+}
+
+.s50-vip-sparkle-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.s50-vip-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ffd700;
+  border-radius: 50%;
+  animation: _s50_sparkleFloat 2.5s ease-out infinite;
+  box-shadow: 0 0 6px #ffd700;
+}
+
+.s50-vip-sparkle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.s50-vip-sparkle:nth-child(2) { left: 25%; animation-delay: 0.4s; }
+.s50-vip-sparkle:nth-child(3) { left: 45%; animation-delay: 0.8s; }
+.s50-vip-sparkle:nth-child(4) { left: 65%; animation-delay: 1.2s; }
+.s50-vip-sparkle:nth-child(5) { left: 80%; animation-delay: 1.6s; }
+.s50-vip-sparkle:nth-child(6) { left: 90%; animation-delay: 2.0s; }
+
+.s50-vip-header {
+  position: relative;
+  text-align: center;
+  padding: 32px 24px 20px;
+  background: linear-gradient(180deg, rgba(255, 215, 0, 0.08) 0%, transparent 100%);
+}
+
+.s50-vip-crown {
+  font-size: 48px;
+  display: inline-block;
+  animation: _s50_crownBob 2s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(255, 215, 0, 0.4));
+  margin-bottom: 8px;
+}
+
+.s50-vip-title {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffd700, #ffaa00, #fbbf24, #ffd700);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: _s50_gradientShift 4s ease infinite;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 4px;
+}
+
+.s50-vip-subtitle {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.s50-vip-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.s50-vip-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.s50-vip-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px auto 0;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 170, 0, 0.08));
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 30px;
+  animation: _s50_pulseGlow 3s ease-in-out infinite;
+}
+
+.s50-vip-tier-icon {
+  font-size: 20px;
+}
+
+.s50-vip-tier-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.s50-vip-body {
+  padding: 20px 28px 28px;
+}
+
+.s50-vip-benefits-title {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+.s50-vip-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.s50-vip-benefit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.25s ease;
+}
+
+.s50-vip-benefit:hover {
+  background: rgba(255, 215, 0, 0.05);
+  border-color: rgba(255, 215, 0, 0.15);
+  transform: translateX(4px);
+}
+
+.s50-vip-benefit-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 215, 0, 0.08);
+  border-radius: 10px;
+}
+
+.s50-vip-benefit-text {
+  flex: 1;
+}
+
+.s50-vip-benefit-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.s50-vip-benefit-desc {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.s50-vip-cta {
+  display: block;
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffd700, #ffaa00, #fbbf24);
+  background-size: 200% 200%;
+  color: #0f0f1a;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  animation: _s50_gradientShift 3s ease infinite;
+}
+
+.s50-vip-cta::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.5s ease, height 0.5s ease;
+}
+
+.s50-vip-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.35);
+}
+
+.s50-vip-cta:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.s50-vip-cta:active {
+  transform: translateY(0);
+}
+
+.s50-vip-cta-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  animation: _s50_ripple 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+.s50-vip-footer {
+  padding: 14px 28px 18px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.s50-vip-footer-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   2. Mega Jackpot Ticker (#megaJackpotTicker)
+   -------------------------------------------------------------------------- */
+
+#megaJackpotTicker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9500;
+  display: none;
+  height: 48px;
+  background: linear-gradient(90deg, #0a1628 0%, #1a1a2e 50%, #0a1628 100%);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+#megaJackpotTicker.active {
+  display: flex;
+  align-items: center;
+}
+
+.s50-jackpot-bg-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.06), transparent 70%);
+  animation: _s50_bannerPulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.s50-jackpot-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 100%;
+  gap: 8px;
+}
+
+.s50-jackpot-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.s50-jackpot-tiers {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+.s50-jackpot-tier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+}
+
+.s50-jackpot-tier:hover {
+  background: rgba(255, 215, 0, 0.06);
+  border-color: rgba(255, 215, 0, 0.2);
+}
+
+.s50-jackpot-tier-name {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.s50-jackpot-tier.s50-tier-mini .s50-jackpot-tier-name {
+  color: #7ec8e3;
+}
+
+.s50-jackpot-tier.s50-tier-major .s50-jackpot-tier-name {
+  color: #fbbf24;
+}
+
+.s50-jackpot-tier.s50-tier-grand .s50-jackpot-tier-name {
+  color: #ff6b6b;
+}
+
+.s50-jackpot-tier.s50-tier-grand {
+  border-color: rgba(255, 107, 107, 0.2);
+  background: rgba(255, 107, 107, 0.04);
+}
+
+.s50-jackpot-tier.s50-tier-grand:hover {
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.s50-jackpot-amount {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+}
+
+.s50-jackpot-currency {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin-right: 2px;
+}
+
+.s50-odometer-digit {
+  display: inline-block;
+  position: relative;
+  width: 0.62em;
+  height: 1.2em;
+  overflow: hidden;
+  text-align: center;
+}
+
+.s50-odometer-digit-inner {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.s50-odometer-digit-char {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2em;
+}
+
+.s50-odometer-sep {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+}
+
+.s50-jackpot-star {
+  display: inline-block;
+  color: #ffd700;
+  font-size: 14px;
+  margin-left: 6px;
+  animation: _s50_spinStar 4s linear infinite;
+  flex-shrink: 0;
+}
+
+.s50-jackpot-high-pulse {
+  animation: _s50_pulseGlow 2s ease-in-out infinite;
+}
+
+.s50-jackpot-close-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.s50-jackpot-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Ticker scroll for recent winners */
+.s50-jackpot-winners-scroll {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.s50-jackpot-winners-track {
+  display: flex;
+  gap: 40px;
+  white-space: nowrap;
+  animation: _s50_tickerSlide 25s linear infinite;
+  padding-top: 1px;
+}
+
+.s50-jackpot-winner-item {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.5px;
+}
+
+.s50-jackpot-winner-name {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.s50-jackpot-winner-amount {
+  color: #00ff88;
+}
+
+/* --------------------------------------------------------------------------
+   3. Player Dashboard Widget (#playerDashWidget)
+   -------------------------------------------------------------------------- */
+
+#playerDashWidget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9800;
+  display: none;
+  flex-direction: column;
+  width: 320px;
+  border-radius: 18px;
+  background: linear-gradient(165deg, #1a1a2e 0%, #0f0f1a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  animation: _s50_widgetSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+#playerDashWidget.active {
+  display: flex;
+}
+
+.s50-dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.s50-dash-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.s50-dash-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.s50-dash-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4a90d9, #7ec8e3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.s50-dash-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.s50-dash-username {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.s50-dash-session-time {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.s50-dash-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.s50-dash-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.s50-dash-toggle.s50-expanded {
+  transform: rotate(180deg);
+}
+
+.s50-dash-body {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.35s ease;
+}
+
+.s50-dash-body.s50-expanded {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.s50-dash-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 14px 18px 10px;
+}
+
+.s50-dash-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.2s ease;
+}
+
+.s50-dash-stat:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.s50-dash-stat-icon {
+  font-size: 16px;
+}
+
+.s50-dash-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  animation: _s50_countUp 0.5s ease-out;
+}
+
+.s50-dash-stat-value.s50-positive {
+  color: #00ff88;
+}
+
+.s50-dash-stat-value.s50-negative {
+  color: #ff4d4d;
+}
+
+.s50-dash-stat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Mini bar chart */
+.s50-dash-chart {
+  padding: 6px 18px 14px;
+}
+
+.s50-dash-chart-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 0 8px;
+}
+
+.s50-dash-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 50px;
+  padding: 0 2px;
+}
+
+.s50-dash-chart-bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  min-height: 3px;
+  background: linear-gradient(180deg, #4a90d9, rgba(74, 144, 217, 0.4));
+  animation: _s50_barGrow 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--s50-bar-delay, 0s);
+  transition: background 0.2s ease;
+  position: relative;
+}
+
+.s50-dash-chart-bar:hover {
+  background: linear-gradient(180deg, #7ec8e3, rgba(126, 200, 227, 0.5));
+}
+
+.s50-dash-chart-bar.s50-bar-win {
+  background: linear-gradient(180deg, #00ff88, rgba(0, 255, 136, 0.35));
+}
+
+.s50-dash-chart-bar.s50-bar-win:hover {
+  background: linear-gradient(180deg, #33ffaa, rgba(0, 255, 136, 0.55));
+}
+
+.s50-dash-chart-bar.s50-bar-loss {
+  background: linear-gradient(180deg, #ff4d4d, rgba(255, 77, 77, 0.3));
+}
+
+.s50-dash-chart-bar.s50-bar-loss:hover {
+  background: linear-gradient(180deg, #ff6b6b, rgba(255, 77, 77, 0.5));
+}
+
+.s50-dash-chart-bar-tooltip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.s50-dash-chart-bar:hover .s50-dash-chart-bar-tooltip {
+  opacity: 1;
+}
+
+.s50-dash-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 2px 0;
+}
+
+.s50-dash-chart-label {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Divider */
+.s50-dash-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0 18px;
+}
+
+/* Quick Actions */
+.s50-dash-actions {
+  display: flex;
+  gap: 6px;
+  padding: 12px 18px 16px;
+}
+
+.s50-dash-action {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.s50-dash-action:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.s50-dash-action-icon {
+  font-size: 18px;
+}
+
+.s50-dash-action-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.s50-dash-action.s50-action-deposit {
+  border-color: rgba(0, 255, 136, 0.15);
+  background: rgba(0, 255, 136, 0.03);
+}
+
+.s50-dash-action.s50-action-deposit:hover {
+  border-color: rgba(0, 255, 136, 0.3);
+  background: rgba(0, 255, 136, 0.08);
+  color: #00ff88;
+}
+
+.s50-dash-action.s50-action-withdraw {
+  border-color: rgba(255, 215, 0, 0.12);
+  background: rgba(255, 215, 0, 0.02);
+}
+
+.s50-dash-action.s50-action-withdraw:hover {
+  border-color: rgba(255, 215, 0, 0.25);
+  background: rgba(255, 215, 0, 0.06);
+  color: #ffd700;
+}
+
+.s50-dash-action.s50-action-settings {
+  border-color: rgba(74, 144, 217, 0.12);
+  background: rgba(74, 144, 217, 0.02);
+}
+
+.s50-dash-action.s50-action-settings:hover {
+  border-color: rgba(74, 144, 217, 0.25);
+  background: rgba(74, 144, 217, 0.06);
+  color: #4a90d9;
+}
+
+/* Minimized bubble state */
+.s50-dash-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9800;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 20px;
+}
+
+.s50-dash-bubble.active {
+  display: flex;
+}
+
+.s50-dash-bubble:hover {
+  transform: scale(1.08);
+  border-color: rgba(74, 144, 217, 0.3);
+  box-shadow: 0 4px 25px rgba(74, 144, 217, 0.2);
+}
+
+.s50-dash-bubble-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00ff88;
+  font-size: 9px;
+  font-weight: 700;
+  color: #0f0f1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile Responsive — Sprint 50
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  /* VIP Modal mobile */
+  .s50-vip-modal {
+    max-width: 100%;
+    border-radius: 16px;
+    margin: 10px;
+  }
+
+  .s50-vip-header {
+    padding: 24px 18px 16px;
+  }
+
+  .s50-vip-crown {
+    font-size: 36px;
+  }
+
+  .s50-vip-title {
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+
+  .s50-vip-body {
+    padding: 16px 18px 22px;
+  }
+
+  .s50-vip-benefit {
+    padding: 10px 12px;
+  }
+
+  .s50-vip-benefit-icon {
+    font-size: 18px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .s50-vip-benefit-label {
+    font-size: 13px;
+  }
+
+  .s50-vip-cta {
+    padding: 14px 20px;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+  }
+
+  /* Jackpot Ticker mobile — compact single-line */
+  #megaJackpotTicker {
+    height: 40px;
+  }
+
+  .s50-jackpot-inner {
+    gap: 4px;
+    padding: 0 10px;
+  }
+
+  .s50-jackpot-label {
+    display: none;
+  }
+
+  .s50-jackpot-tiers {
+    gap: 8px;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .s50-jackpot-tiers::-webkit-scrollbar {
+    display: none;
+  }
+
+  .s50-jackpot-tier {
+    padding: 3px 8px;
+    gap: 5px;
+  }
+
+  .s50-jackpot-tier-name {
+    font-size: 8px;
+  }
+
+  .s50-jackpot-amount {
+    font-size: 13px;
+  }
+
+  .s50-jackpot-winners-scroll {
+    display: none;
+  }
+
+  .s50-jackpot-close-btn {
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .s50-jackpot-star {
+    display: none;
+  }
+
+  /* Dashboard Widget mobile */
+  #playerDashWidget {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    border-radius: 14px;
+  }
+
+  .s50-dash-header {
+    padding: 12px 14px;
+  }
+
+  .s50-dash-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .s50-dash-username {
+    font-size: 12px;
+  }
+
+  .s50-dash-stats {
+    padding: 10px 14px 8px;
+    gap: 6px;
+  }
+
+  .s50-dash-stat {
+    padding: 8px 4px;
+  }
+
+  .s50-dash-stat-value {
+    font-size: 14px;
+  }
+
+  .s50-dash-chart {
+    padding: 6px 14px 12px;
+  }
+
+  .s50-dash-chart-bars {
+    height: 40px;
+  }
+
+  .s50-dash-actions {
+    padding: 10px 14px 14px;
+    gap: 5px;
+  }
+
+  .s50-dash-action {
+    padding: 8px 4px;
+  }
+
+  .s50-dash-action-icon {
+    font-size: 16px;
+  }
+
+  .s50-dash-action-label {
+    font-size: 8px;
+  }
+
+  .s50-dash-bubble {
+    bottom: 12px;
+    right: 12px;
+    width: 46px;
+    height: 46px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .s50-vip-modal {
+    border-radius: 12px;
+  }
+
+  .s50-vip-title {
+    font-size: 18px;
+  }
+
+  .s50-vip-benefit {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .s50-jackpot-tier {
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+
+  .s50-jackpot-amount {
+    font-size: 11px;
+  }
+
+  .s50-dash-stats {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .s50-vip-modal {
+    animation: none;
+  }
+  #playerDashWidget {
+    animation: none;
+  }
+  .s50-vip-sparkle {
+    animation: none;
+    display: none;
+  }
+  .s50-vip-crown {
+    animation: none;
+  }
+  .s50-jackpot-star {
+    animation: none;
+  }
+  .s50-jackpot-bg-glow {
+    animation: none;
+  }
+  .s50-jackpot-winners-track {
+    animation: none;
+  }
+  .s50-odometer-digit-inner {
+    transition-duration: 0.1s;
+  }
+  .s50-dash-body {
+    transition-duration: 0.1s;
+  }
+  .s50-dash-chart-bar {
+    animation: none;
+  }
+  .s50-vip-cta {
+    animation: none;
+  }
+  .s50-vip-tier-badge {
+    animation: none;
+  }
+}
