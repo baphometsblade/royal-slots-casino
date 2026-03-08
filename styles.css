@@ -56,13 +56,14 @@
 
         /* Promo Bar */
         .promo-bar {
-            background: linear-gradient(90deg, #003300, #005500, #007700, #005500, #003300);
-            padding: 8px 0;
+            background: linear-gradient(90deg, #0f2027, #203a43, #2c5364, #203a43, #0f2027);
+            padding: 10px 0;
             text-align: center;
-            font-weight: 900;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 13px;
             position: relative;
             overflow: hidden;
+            border-bottom: 1px solid rgba(251,191,36,0.15);
         }
 
         .promo-bar::before {
@@ -192,25 +193,30 @@
         }
 
         .balance-display {
-            background: linear-gradient(135deg, #059669, #047857);
-            border: 2px solid rgba(16, 185, 129, 0.5);
-            border-radius: 12px;
-            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,191,36,0.05));
+            border: 1px solid rgba(251,191,36,0.25);
+            border-radius: 10px;
+            padding: 8px 16px;
+            min-width: 140px;
+            text-align: center;
             position: relative;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
 
         .balance-label {
             font-size: 10px;
-            color: #a7f3d0;
             font-weight: 700;
+            letter-spacing: 1.5px;
+            color: rgba(251,191,36,0.7);
+            text-transform: uppercase;
             margin-bottom: 2px;
         }
 
         .balance-amount {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 900;
-            color: white;
+            color: #fbbf24;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.5px;
             font-variant-numeric: tabular-nums;
         }
 
@@ -232,27 +238,40 @@
         }
 
         .btn-deposit {
-            background: var(--rg-primary-200, #179163);
-            color: var(--rg-text-50, #f0f0f0);
-            border: 1px solid var(--rg-primary-300, #15523a);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: 1px solid rgba(16,185,129,0.4);
+            border-radius: 8px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            padding: 10px 18px;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+            transition: all 0.2s ease;
         }
 
         .btn-deposit:hover {
-            transform: translateY(-1px);
-            background: #21a170;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16,185,129,0.4);
+            background: linear-gradient(135deg, #34d399, #10b981);
         }
 
         .btn-user {
-            background: rgba(43, 43, 43, 0.78);
-            border: 1px solid rgba(86, 210, 160, 0.3);
-            width: auto;
-            min-width: 48px;
-            height: 48px;
-            border-radius: 4px;
+            background: rgba(30, 30, 50, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 40px;
+            height: 40px;
+            min-width: unset;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--rg-text-50, #f0f0f0);
+            color: rgba(255,255,255,0.8);
+            transition: all 0.2s ease;
+        }
+        .btn-user:hover {
+            background: rgba(251,191,36,0.1);
+            border-color: rgba(251,191,36,0.3);
+            color: #fbbf24;
         }
 
         /* Main Container */
@@ -266,26 +285,22 @@
 
         /* Hero Banner */
         .hero-banner {
-            background: linear-gradient(135deg, #7c3aed, #ec4899, #f97316);
-            border-radius: 24px;
+            background: linear-gradient(135deg, #1a0533 0%, #2d0b4a 25%, #1a1a2e 50%, #16213e 75%, #0f3460 100%);
+            border-radius: 20px;
             padding: 60px 48px;
             margin-bottom: 48px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            border: 1px solid rgba(251, 191, 36, 0.2);
         }
 
         .hero-banner::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 50px,
-                rgba(255,255,255,0.05) 50px,
-                rgba(255,255,255,0.05) 100px
-            );
+            background: radial-gradient(ellipse at 80% 50%, rgba(251,191,36,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.08) 0%, transparent 60%);
         }
 
         .hero-content {
@@ -333,6 +348,8 @@
             font-weight: 900;
             line-height: 1.1;
             margin-bottom: 16px;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 20px rgba(251,191,36,0.3), 0 0 40px rgba(139,92,246,0.2);
         }
 
         .hero-subtitle {
@@ -585,8 +602,13 @@
         }
 
         .section-title {
-            font-size: 32px;
-            font-weight: 900;
+            font-size: 18px;
+            font-weight: 800;
+            color: #f0f0f0;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             flex: 1;
         }
 
@@ -634,9 +656,9 @@
         }
 
         .game-card:hover {
-            transform: translateY(-4px) scale(1.02);
-            border-color: var(--rg-primary-200, #179163);
-            box-shadow: 0 8px 24px rgba(23, 145, 99, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-6px) scale(1.03);
+            border-color: rgba(251, 191, 36, 0.6);
+            box-shadow: 0 12px 32px rgba(251, 191, 36, 0.18), 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(251, 191, 36, 0.15);
         }
 
         .game-thumbnail {
@@ -683,11 +705,11 @@
         .tag-popular { background: var(--rg-yellow-300, #f59e0b); color: #101010; }
 
         .game-info {
-            padding: 8px 10px 10px;
+            padding: 10px 12px 12px;
         }
 
         .game-name {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--rg-text-50, #f0f0f0);
             margin-bottom: 3px;
@@ -748,6 +770,22 @@
 
         .game-card:hover .game-hover-overlay {
             opacity: 1;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            transition: left 0.5s ease;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .game-card:hover::before {
+            left: 150%;
         }
 
         .game-play-icon {
@@ -1552,10 +1590,12 @@
         .modal-content {
             max-width: 1200px;
             margin: 0 auto;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(10, 15, 30, 0.99));
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            border-radius: 20px;
             padding: 24px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04) inset;
+            backdrop-filter: blur(20px);
         }
 
         .back-btn {
@@ -4972,15 +5012,16 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 18px;
-            border-radius: 999px;
-            border: 1px solid var(--rg-border-subtle);
-            background: var(--rg-surface-200);
-            color: var(--rg-text-muted);
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.6);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .filter-tab svg {
@@ -4988,16 +5029,16 @@
         }
 
         .filter-tab:hover {
-            border-color: var(--rg-primary-200);
-            color: var(--rg-primary-100);
-            background: var(--rg-surface-300);
+            background: rgba(251,191,36,0.08);
+            border-color: rgba(251,191,36,0.2);
+            color: rgba(255,255,255,0.9);
         }
 
         .filter-tab-active {
-            background: linear-gradient(135deg, var(--rg-primary-200), var(--rg-primary-300));
-            border-color: var(--rg-primary-200);
-            color: var(--rg-text-50);
-            border-bottom: 2px solid #fbbf24;
+            background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(251,191,36,0.08));
+            border-color: rgba(251,191,36,0.4);
+            color: #fbbf24;
+            box-shadow: 0 0 12px rgba(251,191,36,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
         }
 
         .filter-count {
@@ -5154,9 +5195,12 @@
         }
 
         .win-ticker-bar {
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid rgba(71, 85, 105, 0.6);
-            border-radius: 8px;
+            background: linear-gradient(90deg, rgba(251,191,36,0.08), rgba(251,191,36,0.04), rgba(251,191,36,0.08));
+            border-top: 1px solid rgba(251,191,36,0.15);
+            border-bottom: 1px solid rgba(251,191,36,0.15);
+            border-left: none;
+            border-right: none;
+            border-radius: 0;
             padding: 10px 16px;
             margin-bottom: 28px;
             overflow: hidden;
@@ -5177,7 +5221,7 @@
         .ticker-content::-webkit-scrollbar { display: none; }
 
         .ticker-item {
-            color: #f0f0f0;
+            color: #fbbf24;
             font-weight: 700;
         }
 
