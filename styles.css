@@ -20411,3 +20411,184 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 @keyframes _s28fadeIn { from { opacity:0 } to { opacity:1 } }
 @keyframes _s28slideUp { from { opacity:0; transform:translateY(30px) } to { opacity:1; transform:translateY(0) } }
 @keyframes _s28pulse { 0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0.5)} 50%{box-shadow:0 0 0 10px rgba(251,191,36,0)} }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPRINT 29 — LOSS RECOVERY · HAPPY HOUR · FLASH SALE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Loss Recovery Popup ──────────────────────────────────────────────── */
+.loss-recovery-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 210000;
+    display: flex; align-items: center; justify-content: center;
+    animation: _s29fadeIn 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+.loss-recovery-card {
+    background: linear-gradient(160deg, #1a0000, #0f0f1a);
+    border: 1px solid rgba(239,68,68,0.4);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    max-width: 400px; width: 92%;
+    text-align: center; position: relative;
+    box-shadow: 0 0 50px rgba(239,68,68,0.15), 0 20px 50px rgba(0,0,0,0.6);
+    animation: _s29slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.lr-close {
+    position: absolute; top: 14px; right: 18px;
+    background: none; border: none; color: rgba(255,255,255,0.35);
+    font-size: 20px; cursor: pointer; transition: color 0.2s;
+}
+.lr-close:hover { color: #fff; }
+.lr-icon { font-size: 44px; margin-bottom: 10px; }
+.lr-title {
+    font-size: 22px; font-weight: 800; color: #fff;
+    margin-bottom: 6px;
+}
+.lr-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 16px; }
+.lr-amount-box {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px; padding: 12px;
+    margin-bottom: 16px;
+    font-size: 13px; color: rgba(255,255,255,0.7);
+}
+.lr-amount { font-size: 28px; font-weight: 900; color: #f87171; display: block; }
+.lr-offer-box {
+    background: rgba(74,222,128,0.08);
+    border: 1px solid rgba(74,222,128,0.25);
+    border-radius: 10px; padding: 12px 16px;
+    margin-bottom: 18px;
+    font-size: 13px; color: rgba(255,255,255,0.75);
+}
+.lr-offer-box b { color: #4ade80; font-size: 15px; }
+.lr-cta {
+    width: 100%; padding: 14px;
+    background: linear-gradient(90deg, #16a34a, #22c55e);
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 800; color: #fff;
+    cursor: pointer; margin-bottom: 10px;
+    transition: filter 0.2s;
+}
+.lr-cta:hover { filter: brightness(1.1); }
+.lr-dismiss {
+    font-size: 11px; color: rgba(255,255,255,0.3);
+    cursor: pointer; text-decoration: underline;
+    background: none; border: none;
+}
+
+/* ─── Happy Hour Banner ────────────────────────────────────────────────── */
+.happy-hour-banner {
+    background: linear-gradient(90deg, #7c2d12, #dc2626, #7c2d12);
+    background-size: 200% 100%;
+    animation: _s29hhShimmer 3s linear infinite;
+    padding: 10px 20px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; flex-wrap: wrap;
+    position: relative; z-index: 100;
+    border-bottom: 1px solid rgba(239,68,68,0.4);
+}
+.hh-icon { font-size: 20px; flex-shrink: 0; }
+.hh-text {
+    font-size: 13px; font-weight: 800;
+    color: #fff; letter-spacing: 0.5px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.hh-text b { color: #fde68a; }
+.hh-timer {
+    font-size: 12px; color: rgba(255,255,255,0.8);
+    font-variant-numeric: tabular-nums;
+}
+.hh-cta {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px; padding: 5px 14px;
+    font-size: 12px; font-weight: 700; color: #fff;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.2s;
+}
+.hh-cta:hover { background: rgba(255,255,255,0.25); }
+.hh-close {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    font-size: 16px; cursor: pointer; line-height: 1;
+    transition: color 0.2s;
+}
+.hh-close:hover { color: #fff; }
+@keyframes _s29hhShimmer {
+    0%,100% { background-position: 0% 0% }
+    50% { background-position: 100% 0% }
+}
+
+/* ─── Flash Sale Modal ─────────────────────────────────────────────────── */
+.flash-sale-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 220000;
+    display: flex; align-items: center; justify-content: center;
+    animation: _s29fadeIn 0.25s ease;
+    backdrop-filter: blur(6px);
+}
+.flash-sale-card {
+    background: linear-gradient(160deg, #1a1000, #0f0f1a);
+    border: 2px solid rgba(251,191,36,0.5);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    max-width: 420px; width: 92%;
+    text-align: center; position: relative;
+    box-shadow: 0 0 60px rgba(251,191,36,0.2), 0 24px 60px rgba(0,0,0,0.7);
+    animation: _s29slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.fs-close {
+    position: absolute; top: 14px; right: 18px;
+    background: none; border: none; color: rgba(255,255,255,0.35);
+    font-size: 20px; cursor: pointer; transition: color 0.2s;
+}
+.fs-close:hover { color: #fff; }
+.fs-icon { font-size: 48px; margin-bottom: 8px; animation: _s29zap 1s ease-in-out infinite; }
+.fs-title {
+    font-size: 11px; font-weight: 900; letter-spacing: 3px;
+    color: #fbbf24; text-transform: uppercase; margin-bottom: 4px;
+}
+.fs-headline {
+    font-size: 28px; font-weight: 900; color: #fff;
+    margin-bottom: 6px; line-height: 1.1;
+}
+.fs-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 18px; }
+.fs-countdown-wrap {
+    background: rgba(251,191,36,0.06);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 12px; padding: 14px;
+    margin-bottom: 18px;
+}
+.fs-countdown-label { font-size: 10px; letter-spacing: 1.5px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.fs-countdown {
+    font-size: 38px; font-weight: 900;
+    color: #fbbf24; font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+}
+.fs-cta {
+    width: 100%; padding: 16px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 900; color: #000;
+    cursor: pointer; margin-bottom: 10px;
+    animation: _s29pulse 1.8s ease-in-out infinite;
+    letter-spacing: 0.3px;
+}
+.fs-cta:hover { filter: brightness(1.1); }
+.fs-dismiss {
+    font-size: 11px; color: rgba(255,255,255,0.3);
+    cursor: pointer; text-decoration: underline;
+    background: none; border: none;
+}
+@keyframes _s29zap {
+    0%,100% { transform: scale(1) rotate(-5deg) }
+    50% { transform: scale(1.15) rotate(5deg) }
+}
+
+/* ─── Shared Sprint 29 keyframes ────────────────────────────────────────── */
+@keyframes _s29fadeIn { from { opacity:0 } to { opacity:1 } }
+@keyframes _s29slideUp { from { opacity:0; transform:translateY(32px) } to { opacity:1; transform:translateY(0) } }
+@keyframes _s29pulse { 0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0.5)} 50%{box-shadow:0 0 0 12px rgba(251,191,36,0)} }

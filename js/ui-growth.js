@@ -14,6 +14,8 @@
     var _woTimer = null;
 
     function _startWelcomeOffer() {
+        // Skip during QA runs (noBonus=1 suppresses all bonus popups)
+        try { if (new URLSearchParams(location.search).get('noBonus') === '1') return; } catch (e) {}
         // Only show to logged-out users who haven't dismissed
         if (typeof currentUser !== 'undefined' && currentUser) return;
         if (sessionStorage.getItem(WELCOME_KEY)) return;

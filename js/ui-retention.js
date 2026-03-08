@@ -78,6 +78,8 @@
     };
 
     function _initExitIntent() {
+        // Skip during QA runs (noBonus=1 suppresses all bonus popups)
+        try { if (new URLSearchParams(location.search).get('noBonus') === '1') return; } catch (e) {}
         // Don't activate for already-dismissed users
         try {
             if (localStorage.getItem(EXIT_KEY + '_perm')) {

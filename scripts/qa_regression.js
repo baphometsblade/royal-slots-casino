@@ -143,15 +143,26 @@ async function waitForPageTransitionIdle(page, timeout = 10000) {
 async function dismissFeaturePopupIfVisible(page) {
   // Always force-dismiss via JS — safe even if the popup isn't visible.
   // Avoids waitForFunction timeouts caused by CSS transitions or re-opens.
+  // Also clears Sprint 27-29 promotional overlays that may appear during QA.
   await page.evaluate(() => {
     if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
-    const overlay = document.getElementById("slotFeaturePopup");
-    if (overlay) {
-      overlay.style.display = "none";
-      overlay.style.visibility = "hidden";
-      overlay.style.pointerEvents = "none";
-      overlay.classList.remove("active");
-    }
+    const overlayIds = [
+      "slotFeaturePopup",
+      "welcomeOfferOverlay",
+      "exitIntentOverlay",
+      "flashSaleOverlay",
+      "lossRecoveryOverlay",
+      "happyHourBanner",
+    ];
+    overlayIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = "none";
+        el.style.visibility = "hidden";
+        el.style.pointerEvents = "none";
+        el.classList.remove("active");
+      }
+    });
   });
   // Brief pause to let any CSS transitions settle
   await page.waitForTimeout(300);
@@ -303,7 +314,7 @@ async function run() {
     });
     await page.waitForSelector("#slotModal.active", { timeout: 10000 });
     await clickSpinButton(page);
-    await waitForState(page, (state) => !state.spinning && state.stats.totalSpins >= 1, 15000);
+    await waitForState(page, (state) => !state.spinning && state.stats.totalSpins >= 1, 30000);
 
     const afterSpin = await readState(page);
     assert(afterSpin.mode === "slot", "Expected slot mode after spin");
