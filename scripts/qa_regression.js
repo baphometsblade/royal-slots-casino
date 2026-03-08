@@ -192,6 +192,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "dailyCashbackPanel",
       "slotRaceBar",
       "depositStreakPanel",
+      "vipWheelOverlay",
+      "lossLimitBar",
+      "quickBetStrip",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

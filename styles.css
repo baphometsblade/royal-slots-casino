@@ -28380,3 +28380,887 @@ body.s41-both-panels #dailyCashbackPanel {
 }
 
 /* END SPRINT 41 */
+
+
+/* ============================================================
+   SPRINT 42 — VIP Reward Wheel, Loss Limit Reminder, Quick Bet Presets
+   Gold design system: #fbbf24 primary, #0f0f1a / #1a1a2e backgrounds
+   ============================================================ */
+
+/* ------------------------------------------------------------------
+   S42 KEYFRAMES
+   ------------------------------------------------------------------ */
+
+@keyframes _s42_wheelSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(1800deg);
+  }
+  100% {
+    transform: rotate(1850deg);
+  }
+}
+
+@keyframes _s42_warningPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes _s42_slideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes _s42_chipBounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.25);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes _s42_overlayFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes _s42_cardPopIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes _s42_shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes _s42_pointerBob {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(4px);
+  }
+}
+
+@keyframes _s42_glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.4), 0 0 16px rgba(251, 191, 36, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.7), 0 0 32px rgba(251, 191, 36, 0.4);
+  }
+}
+
+
+/* ------------------------------------------------------------------
+   FEATURE 1: VIP REWARD WHEEL (#vipWheelOverlay)
+   ------------------------------------------------------------------ */
+
+#vipWheelOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10500;
+  animation: _s42_overlayFadeIn 0.3s ease-out;
+}
+
+#vipWheelOverlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.s42-wheel-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.s42-wheel-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92%;
+  max-width: 400px;
+  background: linear-gradient(165deg, #1a1a2e 0%, #0f0f1a 100%);
+  border: 2px solid #fbbf24;
+  border-radius: 18px;
+  padding: 28px 24px 24px;
+  box-shadow:
+    0 0 30px rgba(251, 191, 36, 0.25),
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(251, 191, 36, 0.15);
+  animation: _s42_cardPopIn 0.35s ease-out;
+  text-align: center;
+}
+
+.s42-wheel-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+}
+
+.s42-wheel-subtitle {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.s42-wheel-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 0 auto 20px;
+}
+
+.s42-wheel-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 22px solid #fbbf24;
+  z-index: 3;
+  filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.5));
+  animation: _s42_pointerBob 1.2s ease-in-out infinite;
+}
+
+.s42-wheel-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  border: 4px solid #fbbf24;
+  box-shadow:
+    0 0 20px rgba(251, 191, 36, 0.3),
+    inset 0 0 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.1s linear;
+}
+
+.s42-wheel-disc.spinning {
+  animation: _s42_wheelSpin 4.5s cubic-bezier(0.17, 0.67, 0.16, 1) forwards;
+}
+
+.s42-wheel-segment {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  top: 0;
+  left: 50%;
+  transform-origin: 0% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.s42-wheel-segment:nth-child(1) {
+  transform: rotate(0deg) skewY(-45deg);
+  background: #1a1a2e;
+}
+.s42-wheel-segment:nth-child(2) {
+  transform: rotate(45deg) skewY(-45deg);
+  background: #12122a;
+}
+.s42-wheel-segment:nth-child(3) {
+  transform: rotate(90deg) skewY(-45deg);
+  background: #1a1a2e;
+}
+.s42-wheel-segment:nth-child(4) {
+  transform: rotate(135deg) skewY(-45deg);
+  background: #12122a;
+}
+.s42-wheel-segment:nth-child(5) {
+  transform: rotate(180deg) skewY(-45deg);
+  background: #1a1a2e;
+}
+.s42-wheel-segment:nth-child(6) {
+  transform: rotate(225deg) skewY(-45deg);
+  background: #12122a;
+}
+.s42-wheel-segment:nth-child(7) {
+  transform: rotate(270deg) skewY(-45deg);
+  background: #1a1a2e;
+}
+.s42-wheel-segment:nth-child(8) {
+  transform: rotate(315deg) skewY(-45deg);
+  background: #12122a;
+}
+
+.s42-wheel-segment-label {
+  position: absolute;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  transform: skewY(45deg) rotate(22.5deg);
+  pointer-events: none;
+  letter-spacing: 0.5px;
+}
+
+.s42-wheel-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbbf24, #d4a017);
+  border: 3px solid #0f0f1a;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #0f0f1a;
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.5);
+}
+
+.s42-wheel-result {
+  display: none;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 16px;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.s42-wheel-result.visible {
+  display: block;
+}
+
+.s42-wheel-claim-btn {
+  display: inline-block;
+  padding: 12px 40px;
+  background: linear-gradient(135deg, #fbbf24, #d4a017);
+  color: #0f0f1a;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow:
+    0 4px 16px rgba(251, 191, 36, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  background-size: 200% auto;
+}
+
+.s42-wheel-claim-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 24px rgba(251, 191, 36, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #fcd34d, #fbbf24);
+}
+
+.s42-wheel-claim-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.s42-wheel-claim-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.s42-wheel-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  line-height: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.s42-wheel-close-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.s42-wheel-prizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.s42-wheel-prize-tag {
+  font-size: 0.68rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: rgba(251, 191, 36, 0.8);
+  font-weight: 600;
+}
+
+
+/* ------------------------------------------------------------------
+   FEATURE 2: LOSS LIMIT REMINDER (#lossLimitBar)
+   ------------------------------------------------------------------ */
+
+#lossLimitBar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 44px;
+  background: linear-gradient(90deg, #92400e 0%, #b45309 50%, #92400e 100%);
+  border-top: 2px solid #f59e0b;
+  z-index: 10200;
+  animation: _s42_slideUp 0.35s ease-out;
+  box-shadow: 0 -4px 20px rgba(245, 158, 11, 0.25);
+}
+
+#lossLimitBar.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.s42-loss-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 16px;
+  height: 100%;
+}
+
+.s42-loss-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: _s42_warningPulse 1.8s ease-in-out infinite;
+  color: #fbbf24;
+}
+
+.s42-loss-text {
+  font-size: 0.78rem;
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.3px;
+}
+
+.s42-loss-amount {
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.s42-loss-duration {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.75);
+  margin-left: 4px;
+}
+
+.s42-loss-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.s42-loss-break-btn {
+  padding: 5px 16px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  flex-shrink: 0;
+}
+
+.s42-loss-break-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.s42-loss-break-btn:active {
+  transform: translateY(0);
+}
+
+.s42-loss-dismiss-btn {
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.s42-loss-dismiss-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Critical state — high losses turn bar red */
+#lossLimitBar.s42-critical {
+  background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%);
+  border-top-color: #ef4444;
+  box-shadow: 0 -4px 24px rgba(239, 68, 68, 0.3);
+}
+
+#lossLimitBar.s42-critical .s42-loss-icon {
+  color: #fca5a5;
+}
+
+#lossLimitBar.s42-critical .s42-loss-amount {
+  color: #fca5a5;
+}
+
+#lossLimitBar.s42-critical .s42-loss-break-btn {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+#lossLimitBar.s42-critical .s42-loss-break-btn:hover {
+  background: rgba(239, 68, 68, 0.4);
+  border-color: rgba(239, 68, 68, 0.7);
+}
+
+/* Progress bar within loss bar */
+.s42-loss-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  transition: width 0.5s ease;
+  border-radius: 0 2px 0 0;
+}
+
+#lossLimitBar.s42-critical .s42-loss-progress {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+
+/* ------------------------------------------------------------------
+   FEATURE 3: QUICK BET PRESETS (#quickBetStrip)
+   ------------------------------------------------------------------ */
+
+#quickBetStrip {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  background: rgba(15, 15, 26, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(251, 191, 36, 0.12);
+  z-index: 120;
+}
+
+#quickBetStrip.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.s42-bet-strip-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  padding: 0 12px;
+}
+
+.s42-bet-strip-label {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.s42-bet-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+}
+
+.s42-bet-chip:hover {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.s42-bet-chip:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.s42-bet-chip.active {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.15);
+  animation: _s42_chipBounce 0.4s ease-out, _s42_glowPulse 2s ease-in-out infinite;
+}
+
+.s42-bet-chip-min {
+  font-size: 0.52rem;
+  letter-spacing: 0.3px;
+}
+
+.s42-bet-chip-max {
+  font-size: 0.52rem;
+  letter-spacing: 0.3px;
+}
+
+/* Divider between chips */
+.s42-bet-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+/* Current bet display */
+.s42-bet-current {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.s42-bet-current-value {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+
+/* ------------------------------------------------------------------
+   RESPONSIVE: TABLET (max-width: 768px)
+   ------------------------------------------------------------------ */
+
+@media (max-width: 768px) {
+
+  /* VIP Wheel */
+  .s42-wheel-card {
+    max-width: 340px;
+    padding: 22px 18px 20px;
+  }
+
+  .s42-wheel-container {
+    width: 240px;
+    height: 240px;
+  }
+
+  .s42-wheel-title {
+    font-size: 1.2rem;
+    letter-spacing: 1.5px;
+  }
+
+  .s42-wheel-subtitle {
+    font-size: 0.75rem;
+  }
+
+  .s42-wheel-center {
+    width: 44px;
+    height: 44px;
+    font-size: 0.95rem;
+  }
+
+  .s42-wheel-claim-btn {
+    padding: 10px 32px;
+    font-size: 0.9rem;
+  }
+
+  .s42-wheel-prize-tag {
+    font-size: 0.62rem;
+    padding: 2px 8px;
+  }
+
+  /* Loss Limit Bar */
+  .s42-loss-inner {
+    gap: 10px;
+    padding: 0 12px;
+  }
+
+  .s42-loss-text {
+    font-size: 0.72rem;
+  }
+
+  .s42-loss-break-btn {
+    padding: 4px 12px;
+    font-size: 0.68rem;
+  }
+
+  .s42-loss-separator {
+    height: 16px;
+  }
+
+  /* Quick Bet Strip */
+  .s42-bet-strip-inner {
+    gap: 8px;
+  }
+
+  .s42-bet-chip {
+    width: 26px;
+    height: 26px;
+    font-size: 0.56rem;
+  }
+
+  .s42-bet-strip-label {
+    font-size: 0.58rem;
+  }
+
+  .s42-bet-current {
+    font-size: 0.62rem;
+  }
+}
+
+
+/* ------------------------------------------------------------------
+   RESPONSIVE: MOBILE (max-width: 480px)
+   ------------------------------------------------------------------ */
+
+@media (max-width: 480px) {
+
+  /* VIP Wheel */
+  .s42-wheel-card {
+    max-width: 300px;
+    padding: 18px 14px 16px;
+    border-radius: 14px;
+  }
+
+  .s42-wheel-container {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 16px;
+  }
+
+  .s42-wheel-title {
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+  }
+
+  .s42-wheel-subtitle {
+    font-size: 0.7rem;
+    margin-bottom: 14px;
+  }
+
+  .s42-wheel-center {
+    width: 38px;
+    height: 38px;
+    font-size: 0.85rem;
+    border-width: 2px;
+  }
+
+  .s42-wheel-pointer {
+    border-left-width: 10px;
+    border-right-width: 10px;
+    border-top-width: 16px;
+    top: -8px;
+  }
+
+  .s42-wheel-claim-btn {
+    padding: 10px 28px;
+    font-size: 0.82rem;
+    border-radius: 8px;
+    letter-spacing: 1px;
+  }
+
+  .s42-wheel-result {
+    font-size: 1rem;
+  }
+
+  .s42-wheel-prizes {
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .s42-wheel-prize-tag {
+    font-size: 0.58rem;
+    padding: 2px 6px;
+  }
+
+  .s42-wheel-close-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 0.85rem;
+    line-height: 24px;
+    top: 10px;
+    right: 10px;
+  }
+
+  /* Loss Limit Bar */
+  #lossLimitBar {
+    height: 40px;
+  }
+
+  .s42-loss-inner {
+    gap: 6px;
+    padding: 0 8px;
+  }
+
+  .s42-loss-icon {
+    font-size: 0.95rem;
+  }
+
+  .s42-loss-text {
+    font-size: 0.65rem;
+  }
+
+  .s42-loss-duration {
+    display: none;
+  }
+
+  .s42-loss-separator {
+    display: none;
+  }
+
+  .s42-loss-break-btn {
+    padding: 4px 10px;
+    font-size: 0.62rem;
+    letter-spacing: 0.5px;
+    border-radius: 5px;
+  }
+
+  .s42-loss-dismiss-btn {
+    font-size: 0.85rem;
+    padding: 3px 6px;
+  }
+
+  /* Quick Bet Strip */
+  #quickBetStrip {
+    height: 34px;
+  }
+
+  .s42-bet-strip-inner {
+    gap: 6px;
+    padding: 0 8px;
+  }
+
+  .s42-bet-strip-label {
+    display: none;
+  }
+
+  .s42-bet-chip {
+    width: 24px;
+    height: 24px;
+    font-size: 0.52rem;
+    border-width: 1.5px;
+  }
+
+  .s42-bet-divider {
+    height: 12px;
+  }
+
+  .s42-bet-current {
+    font-size: 0.58rem;
+    margin-left: 4px;
+  }
+}
+
+/* END SPRINT 42 */
