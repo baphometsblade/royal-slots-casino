@@ -323,9 +323,6 @@
                     <button class="csb-item" onclick="if(typeof openAchievementsModal==='function')openAchievementsModal();closeSidebarMobile()">
                         <span class="csb-icon">&#x1F947;</span><span>Achievements</span>
                     </button>
-                    <button class="csb-item" onclick="if(typeof openSpinHistory==='function')openSpinHistory();closeSidebarMobile()">
-                        <span class="csb-icon">&#x1F4CB;</span><span>Spin History</span>
-                    </button>
                     <button class="csb-item" onclick="if(typeof openPlayerCard==='function')openPlayerCard();closeSidebarMobile()">
                         <span class="csb-icon">&#x1FAA7;</span><span>Player Card</span>
                     </button>
@@ -1621,22 +1618,6 @@
             </div>
             <div class="promo-result" id="promoResult"></div>
             <div class="promo-hint">Try: WELCOME500 · MATRIX100 · FREESPIN10 · DAILY200 · XPBOOST</div>
-        </div>
-    </div>
-
-    <!-- Spin History Modal (Sprint 32) -->
-    <div class="modal" id="spinHistoryModal">
-        <div class="modal-content spin-history-content">
-            <div class="modal-header">
-                <h2>📋 Spin History</h2>
-                <button class="modal-close" onclick="document.getElementById('spinHistoryModal').classList.remove('active')">&times;</button>
-            </div>
-            <div class="sh-filters" id="shFilters">
-                <button class="sh-filter-btn sh-filter-active" data-f="all"    onclick="if(typeof shSetFilter==='function')shSetFilter('all',this)">All</button>
-                <button class="sh-filter-btn"                   data-f="wins"   onclick="if(typeof shSetFilter==='function')shSetFilter('wins',this)">Wins</button>
-                <button class="sh-filter-btn"                   data-f="losses" onclick="if(typeof shSetFilter==='function')shSetFilter('losses',this)">Losses</button>
-            </div>
-            <div class="sh-list" id="shList"></div>
         </div>
     </div>
 

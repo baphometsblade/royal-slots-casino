@@ -1400,6 +1400,9 @@ function initPromoEngine() {
 
     if (!suppressPromos) {
         setTimeout(function() {
+            // Skip page_load popup triggers if we are still in the post-login
+            // grace period (daily bonus may still be showing).
+            if (window._postLoginGracePeriod) return;
             checkPromoTriggers('page_load');
         }, 3000);
     }

@@ -244,6 +244,11 @@
             if (!dailyBonusState.claimedToday && !suppressBonus) {
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
+            // Set a grace period flag so the promo engine doesn't auto-fire popups
+            // immediately after login (on top of the daily bonus). Promo popups
+            // triggered by gameplay events (spins, deposits) are unaffected.
+            window._postLoginGracePeriod = true;
+            setTimeout(function() { window._postLoginGracePeriod = false; }, 10000);
             if (typeof initPromoEngine === 'function') initPromoEngine();
             if (typeof initHourlyBonus === 'function') initHourlyBonus();
             if (typeof renderFavQuickBar === 'function') renderFavQuickBar();

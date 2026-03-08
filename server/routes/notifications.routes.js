@@ -4,16 +4,22 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../database');
 
 // Bootstrap: create notifications table
-db.run(`CREATE TABLE IF NOT EXISTS notifications (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+{
+  var _isPg  = !!process.env.DATABASE_URL;
+  var _idDef = _isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+  var _tsType    = _isPg ? 'TIMESTAMPTZ' : 'TEXT';
+  var _tsDefault = _isPg ? 'NOW()' : "(datetime('now'))";
+  db.run(`CREATE TABLE IF NOT EXISTS notifications (
+  id ${_idDef},
   user_id INTEGER NOT NULL,
   type TEXT NOT NULL,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   link_action TEXT,
   read INTEGER DEFAULT 0,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at ${_tsType} DEFAULT ${_tsDefault}
 )`).catch(function() {});
+}
 
 // GET /api/notifications — last 20, auth required
 router.get('/', authenticate, async function(req, res) {

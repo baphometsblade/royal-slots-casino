@@ -6,12 +6,12 @@ const db = require('../database');
 db.run("ALTER TABLE users ADD COLUMN cashback_last TEXT").catch(function() {});
 
 const CASHBACK_TIERS = [
-    { level: 0, label: 'Base',     rate: 0.05, cap: 10.00,  min: 0.50 },
-    { level: 1, label: 'Bronze',   rate: 0.06, cap: 15.00,  min: 0.50 },
-    { level: 2, label: 'Silver',   rate: 0.08, cap: 25.00,  min: 0.50 },
-    { level: 3, label: 'Gold',     rate: 0.10, cap: 50.00,  min: 0.25 },
-    { level: 4, label: 'Platinum', rate: 0.15, cap: 100.00, min: 0.10 },
-    { level: 5, label: 'Diamond',  rate: 0.20, cap: 250.00, min: 0.05 }
+    { level: 0, label: 'Base',     rate: 0.02, cap: 3.00,  min: 0.50 },
+    { level: 1, label: 'Bronze',   rate: 0.03, cap: 5.00,  min: 0.50 },
+    { level: 2, label: 'Silver',   rate: 0.04, cap: 10.00, min: 0.50 },
+    { level: 3, label: 'Gold',     rate: 0.05, cap: 20.00, min: 0.25 },
+    { level: 4, label: 'Platinum', rate: 0.07, cap: 40.00, min: 0.10 },
+    { level: 5, label: 'Diamond',  rate: 0.10, cap: 100.00, min: 0.05 }
 ];
 
 function getCashbackConfig(totalWagered) {

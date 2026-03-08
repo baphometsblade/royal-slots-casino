@@ -17,14 +17,14 @@
 
         // ── Daily Challenges ──────────────────────────────────────
         const DAILY_CHALLENGES = [
-            { id: 'spins_20',   label: 'Spin It Up',    desc: 'Complete 20 spins today',              target: 20,  xp: 50,  reward: 100, icon: '🎰', type: 'spins'   },
-            { id: 'spins_50',   label: 'Spin Machine',  desc: 'Complete 50 spins today',              target: 50,  xp: 100, reward: 150, icon: '⚡', type: 'spins'   },
-            { id: 'games_3',    label: 'Game Hopper',   desc: 'Play 3 different games today',         target: 3,   xp: 75,  reward: 100, icon: '🎮', type: 'games'   },
-            { id: 'win_once',   label: 'Lucky Break',   desc: 'Win at least once today',              target: 1,   xp: 40,  reward: 75,  icon: '🍀', type: 'wins'    },
-            { id: 'big_win_50', label: 'High Roller',   desc: 'Land a win worth 50x your bet',        target: 50,  xp: 150, reward: 500, icon: '💥', type: 'winMult' },
-            { id: 'bonus_1',    label: 'Bonus Hunter',  desc: 'Trigger a bonus or free spins round',  target: 1,   xp: 125, reward: 300, icon: '🎁', type: 'bonuses' },
-            { id: 'wager_500',  label: 'Whale Watch',   desc: 'Wager $500 total today',               target: 500, xp: 100, reward: 200, icon: '🐋', type: 'wager'   },
-            { id: 'streak_3',   label: 'Hot Streak',    desc: 'Win 3 spins in a row',                 target: 3,   xp: 120, reward: 250, icon: '🔥', type: 'streak'  },
+            { id: 'spins_20',   label: 'Spin It Up',    desc: 'Complete 20 spins today',              target: 20,  xp: 50,  reward: 60,  icon: '🎰', type: 'spins'   },
+            { id: 'spins_50',   label: 'Spin Machine',  desc: 'Complete 50 spins today',              target: 50,  xp: 100, reward: 90,  icon: '⚡', type: 'spins'   },
+            { id: 'games_3',    label: 'Game Hopper',   desc: 'Play 3 different games today',         target: 3,   xp: 75,  reward: 60,  icon: '🎮', type: 'games'   },
+            { id: 'win_once',   label: 'Lucky Break',   desc: 'Win at least once today',              target: 1,   xp: 40,  reward: 45,  icon: '🍀', type: 'wins'    },
+            { id: 'big_win_50', label: 'High Roller',   desc: 'Land a win worth 50x your bet',        target: 50,  xp: 150, reward: 300, icon: '💥', type: 'winMult' },
+            { id: 'bonus_1',    label: 'Bonus Hunter',  desc: 'Trigger a bonus or free spins round',  target: 1,   xp: 125, reward: 180, icon: '🎁', type: 'bonuses' },
+            { id: 'wager_500',  label: 'Whale Watch',   desc: 'Wager $500 total today',               target: 500, xp: 100, reward: 120, icon: '🐋', type: 'wager'   },
+            { id: 'streak_3',   label: 'Hot Streak',    desc: 'Win 3 spins in a row',                 target: 3,   xp: 120, reward: 150, icon: '🔥', type: 'streak'  },
         ];
         const CHALLENGE_STORAGE_KEY = 'matrixChallenges';
 
@@ -1241,7 +1241,7 @@
                     if (!_claimed.includes(playerLevel)) {
                         _claimed.push(playerLevel);
                         localStorage.setItem('matrixLevelMilestones', JSON.stringify(_claimed));
-                        const _bonus = playerLevel * 50;
+                        const _bonus = playerLevel * 20;
                         balance += _bonus;
                         if (typeof saveBalance === 'function') saveBalance();
                         if (typeof updateBalance === 'function') updateBalance();
@@ -1264,7 +1264,7 @@
                     showToast(`🎉 Level Up! Level ${playerLevel}! +${freeSpinsCount} FREE SPINS added!`, 'levelup');
                 } else {
                     // Not in a slot — award a small balance bonus instead
-                    const bonus = Math.round(playerLevel * 5 * 100) / 100; // $5 × level
+                    const bonus = Math.round(playerLevel * 2 * 100) / 100; // $2 × level
                     balance += bonus;
                     saveBalance();
                     updateBalance();
@@ -1908,8 +1908,8 @@
 
         const SCRATCH_STORAGE_KEY = 'matrix_scratch_card';
         const SCRATCH_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
-        const SCRATCH_PRIZES = [50, 100, 100, 250, 250, 500, 500, 1000, 2500];
-        const SCRATCH_SYMBOLS = { 50: '🍋', 100: '🍊', 250: '🍇', 500: '💎', 1000: '⭐', 2500: '7️⃣' };
+        const SCRATCH_PRIZES = [10, 25, 25, 50, 50, 75, 75, 100, 250];
+        const SCRATCH_SYMBOLS = { 10: '🍋', 25: '🍊', 50: '🍇', 75: '💎', 100: '⭐', 250: '7️⃣' };
 
         function canPlayScratchCard() {
             try {
@@ -2002,14 +2002,14 @@
                                 if (counts2[v] >= 3) winValue = Number(v);
                             });
 
-                            var prize = winValue || 50; // consolation $50
+                            var prize = winValue || 5; // consolation $5
                             var resultEl = document.getElementById('scratchResult');
                             if (winValue) {
                                 if (resultEl) resultEl.innerHTML = '<span class="scratch-win">🎉 You matched 3! Won <strong>$' + winValue + '</strong>!</span>';
                                 showToast('🎰 Scratch card: Won $' + winValue + '!', 'success');
                             } else {
                                 if (resultEl) resultEl.innerHTML = '<span class="scratch-consolation">No match — consolation prize: <strong>$50</strong></span>';
-                                showToast('Scratch card: Consolation $50', 'info');
+                                showToast('Scratch card: Consolation $5', 'info');
                             }
 
                             // Credit prize
@@ -2188,10 +2188,10 @@ var MYSTERY_BOX_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
 var MYSTERY_BOX_KEY = 'matrixMysteryBox';
 
 var MYSTERY_BOX_PRIZES = [
-    { label: 'Common',     weight: 60, cash: [50, 100],    spins: 0,  emoji: '📦' },
-    { label: 'Uncommon',   weight: 25, cash: [150, 300],   spins: 0,  emoji: '🎁' },
-    { label: 'Rare',       weight: 10, cash: [500, 1000],  spins: 0,  emoji: '💎' },
-    { label: 'Legendary',  weight: 5,  cash: [2000, 2000], spins: 10, emoji: '👑' },
+    { label: 'Common',     weight: 60, cash: [10, 25],   spins: 0,  emoji: '📦' },
+    { label: 'Uncommon',   weight: 25, cash: [30, 60],   spins: 0,  emoji: '🎁' },
+    { label: 'Rare',       weight: 10, cash: [75, 100],  spins: 0,  emoji: '💎' },
+    { label: 'Legendary',  weight: 5,  cash: [100, 100], spins: 5,  emoji: '👑' },
 ];
 
 function _pickMysteryPrize() {

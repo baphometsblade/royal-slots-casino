@@ -204,7 +204,6 @@
                 document.body.classList.remove('auth-gate');
                 hideAuthModal();
                 showToast(`Welcome back, ${response.user.username}!`, 'success');
-                if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
                 if (typeof onPostAuthInit === 'function') onPostAuthInit();
                 return;
             } catch (error) {
@@ -220,7 +219,6 @@
             document.body.classList.remove('auth-gate');
             hideAuthModal();
             showToast(`Welcome back, ${user.username}!`, 'success');
-            if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
             if (typeof onPostAuthInit === 'function') onPostAuthInit();
         }
 
@@ -243,7 +241,6 @@
                 document.body.classList.remove('auth-gate');
                 hideAuthModal();
                 showToast(`Welcome, ${response.user.username}! Your account has been created.`, 'success');
-                if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
                 if (typeof onPostAuthInit === 'function') onPostAuthInit();
                 return;
             } catch (error) {
@@ -259,7 +256,6 @@
             document.body.classList.remove('auth-gate');
             hideAuthModal();
             showToast(`Welcome, ${username}! Your account has been created.`, 'success');
-            if (typeof checkPromoTriggers === 'function') checkPromoTriggers('login');
             if (typeof onPostAuthInit === 'function') onPostAuthInit();
         }
 

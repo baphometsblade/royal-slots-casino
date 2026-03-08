@@ -22,11 +22,22 @@ const PARTICIPATION_GEMS = 10;
 // ── Schema ──────────────────────────────────────────────────────────────────
 
 async function initSchema() {
+    const isPg = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const tsType = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+
+    if (isPg) {
+        // Drop and recreate wager_race tables to fix column types (transient race data)
+        await db.run('DROP TABLE IF EXISTS wager_race_entries CASCADE').catch(() => {});
+        await db.run('DROP TABLE IF EXISTS wager_race_prizes CASCADE').catch(() => {});
+        await db.run('DROP TABLE IF EXISTS wager_races CASCADE').catch(() => {});
+    }
+
     await db.run(`
         CREATE TABLE IF NOT EXISTS wager_races (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            starts_at TEXT NOT NULL,
-            ends_at TEXT NOT NULL,
+            id ${idDef},
+            starts_at ${tsType} NOT NULL,
+            ends_at ${tsType} NOT NULL,
             status TEXT DEFAULT 'active',
             created_at TEXT DEFAULT (datetime('now'))
         )
@@ -34,7 +45,7 @@ async function initSchema() {
 
     await db.run(`
         CREATE TABLE IF NOT EXISTS wager_race_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id ${idDef},
             race_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
             total_wagered REAL DEFAULT 0,
@@ -46,7 +57,7 @@ async function initSchema() {
 
     await db.run(`
         CREATE TABLE IF NOT EXISTS wager_race_prizes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id ${idDef},
             race_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
             place INTEGER,

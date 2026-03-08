@@ -11,7 +11,7 @@ const jwt      = require('jsonwebtoken');
 const db       = require('../database');
 const { JWT_SECRET } = require('../config');
 
-const REFERRAL_BONUS_AMOUNT = 2.0; // $2 credited to both referrer and new user
+const REFERRAL_BONUS_AMOUNT = 1.0; // $1 credited to both referrer and new user
 
 // --- Auth middleware (JWT Bearer) ---
 function verifyToken(req, res, next) {
@@ -51,13 +51,18 @@ async function ensureSchema() {
     try { await db.run(sql); } catch (_) {}
   }
 
+  const isPg  = !!process.env.DATABASE_URL;
+  const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+  const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+  const tsDefault = isPg ? 'NOW()' : "(datetime('now'))";
+
   await db.run(
     'CREATE TABLE IF NOT EXISTS referrals (' +
-    '  id           INTEGER PRIMARY KEY AUTOINCREMENT,' +
+    '  id           ' + idDef + ',' +
     '  referrer_id  INTEGER NOT NULL,' +
     '  referred_id  INTEGER NOT NULL,' +
     '  bonus_amount REAL    DEFAULT 2.0,' +
-    "  created_at   TEXT    DEFAULT (datetime('now'))," +
+    '  created_at   ' + tsType + '    DEFAULT ' + tsDefault + ',' +
     '  UNIQUE(referred_id)' +
     ')'
   );

@@ -41,9 +41,13 @@ var schemaReady = false;
 
 async function ensureSchema() {
   if (schemaReady) return;
+  var isPg  = !!process.env.DATABASE_URL;
+  var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+  var tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+  var tsDefault = isPg ? 'NOW()' : "datetime('now')";
   await db.run(
     'CREATE TABLE IF NOT EXISTS tower_games (' +
-    'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
+    'id ' + idDef + ',' +
     'user_id INTEGER NOT NULL,' +
     'bet REAL NOT NULL,' +
     'risk TEXT NOT NULL,' +
@@ -51,7 +55,7 @@ async function ensureSchema() {
     'current_row INTEGER NOT NULL DEFAULT 0,' +
     'status TEXT NOT NULL DEFAULT \'active\',' +
     'payout REAL NOT NULL DEFAULT 0,' +
-    'created_at TEXT DEFAULT (datetime(\'now\'))' +
+    'created_at ' + tsType + ' DEFAULT (' + tsDefault + ')' +
     ')'
   );
   schemaReady = true;

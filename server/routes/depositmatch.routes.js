@@ -10,12 +10,12 @@ db.run('ALTER TABLE users ADD COLUMN deposit_match_last TEXT DEFAULT NULL').catc
 
 // VIP-tier-scaled deposit match configuration
 const DEPOSIT_MATCH_TIERS = [
-    { level: 0, label: 'Base',     rate: 0.50, cap: 5.00   },
-    { level: 1, label: 'Bronze',   rate: 0.75, cap: 15.00  },
-    { level: 2, label: 'Silver',   rate: 1.00, cap: 30.00  },
-    { level: 3, label: 'Gold',     rate: 1.25, cap: 75.00  },
-    { level: 4, label: 'Platinum', rate: 1.50, cap: 150.00 },
-    { level: 5, label: 'Diamond',  rate: 2.00, cap: 500.00 }
+    { level: 0, label: 'Base',     rate: 0.25, cap: 2.50   },
+    { level: 1, label: 'Bronze',   rate: 0.35, cap: 7.00   },
+    { level: 2, label: 'Silver',   rate: 0.50, cap: 15.00  },
+    { level: 3, label: 'Gold',     rate: 0.60, cap: 35.00  },
+    { level: 4, label: 'Platinum', rate: 0.75, cap: 75.00  },
+    { level: 5, label: 'Diamond',  rate: 1.00, cap: 200.00 }
 ];
 
 function getDepositMatchConfig(totalWagered) {

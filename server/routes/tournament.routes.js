@@ -38,9 +38,11 @@ let schemaReady = false;
 
 async function ensureSchema() {
   if (schemaReady) return;
+  const isPg = !!process.env.DATABASE_URL;
+  const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
   await db.run(
     'CREATE TABLE IF NOT EXISTS tournament_scores (' +
-    '  id               INTEGER PRIMARY KEY AUTOINCREMENT,' +
+    '  id               ' + idDef + ',' +
     '  user_id          INTEGER NOT NULL,' +
     '  week_start       TEXT    NOT NULL,' +
     '  best_multiplier  REAL    DEFAULT 0,' +

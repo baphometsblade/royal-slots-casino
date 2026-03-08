@@ -17,11 +17,11 @@ module.exports = {
     DEMO_BALANCE: 5000,
 
     // House edge — guaranteed profit
-    TARGET_RTP: 0.88,              // 88% payout = 12% house edge
+    TARGET_RTP: 0.86,              // 86% payout = 14% house edge
     RTP_ADJUSTMENT_THRESHOLD: 0.02,
-    MAX_WIN_MULTIPLIER: 500,       // No single spin can win more than 500x bet
+    MAX_WIN_MULTIPLIER: 200,       // No single spin can win more than 200x bet
     PROFIT_FLOOR: -500,            // Emergency mode if house is down $500+
-    SESSION_WIN_CAP: 50000,        // Player can't win more than $50k per session
+    SESSION_WIN_CAP: 10000,        // Player can't win more than $10k per session
     MAX_PAYOUT_PROFIT_PCT: 0.20,   // Single payout never exceeds 20% of total site profit
     MIN_WIN_MULTIPLIER_FLOOR: 2,   // Minimum win floor (2x bet) to keep game playable at low profit
 
@@ -40,12 +40,12 @@ module.exports = {
     PAYMENT_METHODS: ['visa', 'mastercard', 'payid', 'bank_transfer', 'crypto_btc', 'crypto_eth', 'crypto_usdt'],
 
     // First-deposit bonus
-    FIRST_DEPOSIT_BONUS_PCT: 100,    // 100% match
-    FIRST_DEPOSIT_BONUS_MAX: 500,    // cap at $500
-    FIRST_DEPOSIT_WAGERING_MULT: 30,  // 30x playthrough on first deposit bonus
-    RELOAD_BONUS_PCT: 50,             // 50% match on reload deposits
-    RELOAD_BONUS_MAX: 250,            // cap reload bonus at $250
-    RELOAD_WAGERING_MULT: 25,         // 25x playthrough on reload bonus
+    FIRST_DEPOSIT_BONUS_PCT: 50,     // 50% match
+    FIRST_DEPOSIT_BONUS_MAX: 200,    // cap at $200
+    FIRST_DEPOSIT_WAGERING_MULT: 40,  // 40x playthrough on first deposit bonus
+    RELOAD_BONUS_PCT: 25,             // 25% match on reload deposits
+    RELOAD_BONUS_MAX: 100,            // cap reload bonus at $100
+    RELOAD_WAGERING_MULT: 35,         // 35x playthrough on reload bonus
 
     // Password reset
     PASSWORD_RESET_EXPIRY_HOURS: 1,
@@ -74,11 +74,11 @@ module.exports = {
 
     // Loss-limit cashback
     DAILY_LOSS_LIMIT_DEFAULT: 500,          // default daily loss limit ($)
-    LOSS_CASHBACK_RATE: 0.10,               // 10% cashback on losses when limit hit
-    LOSS_CASHBACK_MAX: 100,                 // max $100 cashback per day
+    LOSS_CASHBACK_RATE: 0.05,               // 5% cashback on losses when limit hit
+    LOSS_CASHBACK_MAX: 50,                  // max $50 cashback per day
     LOSS_CASHBACK_VIP_RATES: {              // higher cashback for VIP tiers
-        0: 0.10, 1: 0.12, 2: 0.15,
-        3: 0.18, 4: 0.22, 5: 0.25
+        0: 0.05, 1: 0.06, 2: 0.08,
+        3: 0.10, 4: 0.12, 5: 0.15
     },
 
     // Spin-pack bundles
@@ -106,13 +106,13 @@ module.exports = {
     // Weekly auto-contests
     CONTESTS: {
         PRIZES: {
-            1: 500,
-            2: 200, 3: 200,
-            4: 100, 5: 100, 6: 100, 7: 100, 8: 100, 9: 100, 10: 100,
-            11: 50, 12: 50, 13: 50, 14: 50, 15: 50, 16: 50, 17: 50, 18: 50, 19: 50, 20: 50,
-            21: 50, 22: 50, 23: 50, 24: 50, 25: 50
+            1: 200,
+            2: 75, 3: 75,
+            4: 40, 5: 40, 6: 40, 7: 40, 8: 40, 9: 40, 10: 40,
+            11: 20, 12: 20, 13: 20, 14: 20, 15: 20, 16: 20, 17: 20, 18: 20, 19: 20, 20: 20,
+            21: 20, 22: 20, 23: 20, 24: 20, 25: 20
         },
-        PRIZE_WAGERING: 10,
+        PRIZE_WAGERING: 15,
         DEFAULT_METRIC: 'total_wagered'
     },
 };

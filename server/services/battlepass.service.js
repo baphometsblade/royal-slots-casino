@@ -53,15 +53,19 @@ const REWARD_TIERS = getRewardTiers();
 // ── Schema Init ─────────────────────────────────────────────────────────
 
 async function initSchema() {
+    const isPg  = !!process.env.DATABASE_URL;
+    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const tsType    = isPg ? 'TIMESTAMPTZ' : 'TEXT';
+
     await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_seasons (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         name TEXT NOT NULL,
-        starts_at TEXT NOT NULL,
-        ends_at TEXT NOT NULL,
+        starts_at ${tsType} NOT NULL,
+        ends_at ${tsType} NOT NULL,
         status TEXT DEFAULT 'active'
     )`);
     await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_progress (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         user_id INTEGER NOT NULL,
         season_id INTEGER NOT NULL,
         level INTEGER DEFAULT 0,

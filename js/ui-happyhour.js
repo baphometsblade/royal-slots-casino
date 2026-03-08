@@ -100,6 +100,12 @@
                 'background:linear-gradient(135deg,#f59e0b,#d97706);' +
                 'box-shadow:0 4px 16px rgba(245,158,11,.35)}',
             '#hhBanner.active{transform:translateY(0)}',
+            '#hhBanner .hh-close{position:absolute;right:10px;top:50%;transform:translateY(-50%);' +
+                'background:rgba(0,0,0,.25);border:none;color:#fff;font-size:16px;' +
+                'line-height:1;width:24px;height:24px;border-radius:50%;cursor:pointer;' +
+                'display:flex;align-items:center;justify-content:center;padding:0;' +
+                'transition:background .2s}',
+            '#hhBanner .hh-close:hover{background:rgba(0,0,0,.45)}',
             '.hh-emoji{font-size:20px}',
             '.hh-label{font-size:14px;font-weight:900;color:#fff;letter-spacing:1.2px;' +
                 'text-shadow:0 1px 3px rgba(0,0,0,.4);text-transform:uppercase}',
@@ -148,11 +154,23 @@
         weekend.className = 'hh-weekend';
         weekend.id = 'hhWeekend';
 
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'hh-close';
+        closeBtn.id = 'hhClose';
+        closeBtn.title = 'Dismiss';
+        closeBtn.textContent = '\u00D7';
+        closeBtn.addEventListener('click', function() {
+            hideBanner();
+            // Suppress for remainder of this browser session
+            try { sessionStorage.setItem('hhBannerDismissed', '1'); } catch(e) {}
+        });
+
         _bannerEl.appendChild(emoji);
         _bannerEl.appendChild(label);
         _bannerEl.appendChild(mult);
         _bannerEl.appendChild(timer);
         _bannerEl.appendChild(weekend);
+        _bannerEl.appendChild(closeBtn);
         document.body.appendChild(_bannerEl);
     }
 
@@ -162,6 +180,10 @@
             hideBanner();
             return;
         }
+        // If user dismissed the banner this session, don't re-show
+        try {
+            if (sessionStorage.getItem('hhBannerDismissed') === '1') return;
+        } catch(e) {}
 
         var emojiEl   = document.getElementById('hhEmoji');
         var labelEl   = document.getElementById('hhLabel');
