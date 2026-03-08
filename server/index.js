@@ -107,10 +107,19 @@ app.use('/api/admin', adminLimiter);
 app.get('/api/health', async (req, res) => {
     try {
         const db = require('./database');
-        await db.get('SELECT 1');
+        // Use a generous timeout for PG cold starts on Render free tier
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('DB ping timeout')), 25000));
+        await Promise.race([db.get('SELECT 1'), timeoutPromise]);
         res.json({ status: 'ok', uptime: process.uptime() });
     } catch (err) {
-        res.status(503).json({ status: 'error', message: err.message });
+        // Return 200 with degraded status during startup — Render health checks
+        // need a 200 response; 503 causes deploy failure on PG cold starts
+        if (process.uptime() < 60) {
+            res.json({ status: 'starting', uptime: process.uptime(), note: 'DB warming up' });
+        } else {
+            res.status(503).json({ status: 'error', message: err.message });
+        }
     }
 });
 

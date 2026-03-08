@@ -36,7 +36,7 @@ class PgBackend {
             connectionString: connectionString,
             max: 20,
             idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 5000,
+            connectionTimeoutMillis: 30000,
             ssl: sslSetting,
         });
 

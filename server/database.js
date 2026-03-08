@@ -29,8 +29,20 @@ async function initDatabase() {
         backend = new SqliteBackend(config.DB_PATH);
         console.log('[DB] Using SQLite backend');
     }
-    await backend.init();
-    return backend;
+    // Retry init up to 3 times — Render free-tier PG may need time to wake up
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            await backend.init();
+            return backend;
+        } catch (err) {
+            if (attempt < 3) {
+                console.warn(`[DB] Init attempt ${attempt}/3 failed: ${err.message} — retrying in ${attempt * 5}s…`);
+                await new Promise(r => setTimeout(r, attempt * 5000));
+            } else {
+                throw err;
+            }
+        }
+    }
 }
 
 function getBackend() {

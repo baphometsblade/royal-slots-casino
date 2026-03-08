@@ -6,18 +6,26 @@ const emailService = require('./email.service');
 const config = require('../config');
 
 let _started = false;
+let _tableReady = false;
 
-// Ensure email_log tracking table exists (dialect-aware: PG uses SERIAL, SQLite uses AUTOINCREMENT)
-{
-    const _isPg = !!process.env.DATABASE_URL;
-    const _idDef = _isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    db.run(`CREATE TABLE IF NOT EXISTS email_log (
-        id ${_idDef},
-        user_id INTEGER NOT NULL,
-        email_type TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        UNIQUE(user_id, email_type)
-    )`).catch(err => console.warn('[Scheduler] email_log table create:', err.message));
+// Moved table creation into ensureTable() — called from start() to avoid
+// module-level DB access that can crash on PG cold starts (Render free tier).
+async function _ensureEmailLogTable() {
+    if (_tableReady) return;
+    try {
+        const _isPg = !!process.env.DATABASE_URL;
+        const _idDef = _isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+        await db.run(`CREATE TABLE IF NOT EXISTS email_log (
+            id ${_idDef},
+            user_id INTEGER NOT NULL,
+            email_type TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            UNIQUE(user_id, email_type)
+        )`);
+        _tableReady = true;
+    } catch (err) {
+        console.warn('[Scheduler] email_log table create:', err.message);
+    }
 }
 
 /**
@@ -174,6 +182,9 @@ async function _sendVipTierUpEmails() {
 function start() {
     if (_started) return;
     _started = true;
+
+    // Create email_log table (deferred from module load to avoid PG cold-start crashes)
+    _ensureEmailLogTable();
 
     // Daily re-engagement: 10:00 AM
     cron.schedule('0 10 * * *', _sendReengagementEmails);
