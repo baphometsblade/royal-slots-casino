@@ -3186,15 +3186,163 @@
             saveStats();
             updateStatsSummary();
 
-            // Guest-to-registered conversion prompt — every 10 spins
-            if (currentUser && currentUser.isGuest && stats.totalSpins % 10 === 0) {
-                setTimeout(() => {
-                    showToast(
-                        'Create a free account to save your progress and unlock deposits!',
-                        'info', 6000
-                    );
-                }, 2000);
+            // Guest-to-registered conversion prompt — every 15 spins (after 5+)
+            if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
+                setTimeout(() => _showGuestConversionModal(), 1800);
             }
+        }
+
+        // ── Guest Conversion Modal ──────────────────────────────────────────────
+        // Shown to guest players every 15 spins to encourage registration.
+        function _showGuestConversionModal() {
+            // Don't stack modals
+            if (document.getElementById('guestConvertModal')) return;
+
+            var spinsText = stats && stats.totalSpins ? stats.totalSpins + ' spins played!' : 'Great start!';
+            var winText = stats && stats.biggestWin && stats.biggestWin > 0
+                ? 'Best win: $' + stats.biggestWin.toFixed(2)
+                : 'Unlock real prizes!';
+
+            // Inject styles once
+            if (!document.getElementById('guestConvertStyles')) {
+                var s = document.createElement('style');
+                s.id = 'guestConvertStyles';
+                s.textContent = [
+                    '#guestConvertOverlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);',
+                    'display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;',
+                    'animation:gcFadeIn .3s ease}',
+                    '@keyframes gcFadeIn{from{opacity:0}to{opacity:1}}',
+                    '#guestConvertModal{background:linear-gradient(160deg,#0d0d1a 0%,#1a0d2e 50%,#0d1a1a 100%);',
+                    'border:2px solid rgba(251,191,36,.45);border-radius:20px;padding:28px 24px;',
+                    'max-width:360px;width:100%;text-align:center;',
+                    'box-shadow:0 0 80px rgba(251,191,36,.2),0 20px 60px rgba(0,0,0,.8);',
+                    'position:relative}',
+                    '#guestConvertModal .gcm-close{position:absolute;top:12px;right:14px;',
+                    'background:none;border:none;color:rgba(255,255,255,.3);font-size:18px;',
+                    'cursor:pointer;line-height:1;padding:4px}',
+                    '#guestConvertModal .gcm-close:hover{color:rgba(255,255,255,.7)}',
+                    '#guestConvertModal .gcm-emoji{font-size:44px;display:block;margin-bottom:10px}',
+                    '#guestConvertModal .gcm-badge{display:inline-block;',
+                    'background:linear-gradient(135deg,#f59e0b,#d97706);',
+                    'color:#fff;font-size:11px;font-weight:800;letter-spacing:1px;',
+                    'padding:4px 12px;border-radius:20px;margin-bottom:14px}',
+                    '#guestConvertModal h3{color:#fbbf24;font-size:22px;font-weight:900;',
+                    'margin:0 0 8px;letter-spacing:.5px}',
+                    '#guestConvertModal .gcm-sub{color:rgba(255,255,255,.55);font-size:13px;margin-bottom:20px}',
+                    '#guestConvertModal .gcm-offer{',
+                    'background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);',
+                    'border-radius:12px;padding:14px;margin-bottom:18px}',
+                    '#guestConvertModal .gcm-offer-row{display:flex;justify-content:space-between;',
+                    'align-items:center;padding:4px 0}',
+                    '#guestConvertModal .gcm-offer-label{color:rgba(255,255,255,.5);font-size:12px}',
+                    '#guestConvertModal .gcm-offer-value{color:#fbbf24;font-size:14px;font-weight:800}',
+                    '#guestConvertModal .gcm-stat{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:16px}',
+                    '.gcm-cta{width:100%;padding:14px;',
+                    'background:linear-gradient(135deg,#f59e0b,#d97706);',
+                    'border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:900;',
+                    'cursor:pointer;letter-spacing:.5px;margin-bottom:10px;',
+                    'transition:opacity .15s,transform .15s;',
+                    'box-shadow:0 4px 20px rgba(251,191,36,.4)}',
+                    '.gcm-cta:hover{opacity:.9;transform:translateY(-1px)}',
+                    '.gcm-later{background:none;border:none;color:rgba(255,255,255,.3);',
+                    'font-size:12px;cursor:pointer;text-decoration:underline;display:block;',
+                    'width:100%;padding:4px;text-align:center}'
+                ].join('');
+                document.head.appendChild(s);
+            }
+
+            var overlay = document.createElement('div');
+            overlay.id = 'guestConvertOverlay';
+
+            var modal = document.createElement('div');
+            modal.id = 'guestConvertModal';
+
+            function closeModal() {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }
+
+            var closeBtn = document.createElement('button');
+            closeBtn.className = 'gcm-close';
+            closeBtn.textContent = '✕';
+            closeBtn.addEventListener('click', closeModal);
+            modal.appendChild(closeBtn);
+
+            var emoji = document.createElement('span');
+            emoji.className = 'gcm-emoji';
+            emoji.textContent = '🎰';
+            modal.appendChild(emoji);
+
+            var badge = document.createElement('div');
+            badge.className = 'gcm-badge';
+            badge.textContent = '🎁 WELCOME BONUS';
+            modal.appendChild(badge);
+
+            var title = document.createElement('h3');
+            title.textContent = 'Turn Demo Into Real Cash!';
+            modal.appendChild(title);
+
+            var sub = document.createElement('p');
+            sub.className = 'gcm-sub';
+            sub.textContent = 'Register free and get a massive welcome package on your first deposit';
+            modal.appendChild(sub);
+
+            var offer = document.createElement('div');
+            offer.className = 'gcm-offer';
+            var offerRows = [
+                { label: '1st Deposit', value: '100% Match up to $1,000' },
+                { label: 'Free Spins', value: '50 on top slots' },
+                { label: 'Register Bonus', value: '$5 free — no deposit!' }
+            ];
+            offerRows.forEach(function(row) {
+                var r = document.createElement('div');
+                r.className = 'gcm-offer-row';
+                var lbl = document.createElement('span');
+                lbl.className = 'gcm-offer-label';
+                lbl.textContent = row.label;
+                var val = document.createElement('span');
+                val.className = 'gcm-offer-value';
+                val.textContent = row.value;
+                r.appendChild(lbl);
+                r.appendChild(val);
+                offer.appendChild(r);
+            });
+            modal.appendChild(offer);
+
+            var stat = document.createElement('div');
+            stat.className = 'gcm-stat';
+            stat.textContent = spinsText + ' · ' + winText;
+            modal.appendChild(stat);
+
+            var ctaBtn = document.createElement('button');
+            ctaBtn.className = 'gcm-cta';
+            ctaBtn.textContent = '🚀 CREATE FREE ACCOUNT';
+            ctaBtn.addEventListener('click', function() {
+                closeModal();
+                // Open the auth modal in register mode
+                if (typeof openAuthModal === 'function') {
+                    openAuthModal('register');
+                } else if (typeof showAuthModal === 'function') {
+                    showAuthModal('register');
+                } else {
+                    // Fallback: open login modal
+                    var loginBtn = document.querySelector('.btn-user, .auth-btn, [onclick*="openAuth"], [onclick*="showAuth"]');
+                    if (loginBtn) loginBtn.click();
+                }
+            });
+            modal.appendChild(ctaBtn);
+
+            var laterBtn = document.createElement('button');
+            laterBtn.className = 'gcm-later';
+            laterBtn.textContent = 'Maybe later';
+            laterBtn.addEventListener('click', closeModal);
+            modal.appendChild(laterBtn);
+
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) closeModal(); });
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Auto-close after 20s
+            setTimeout(closeModal, 20000);
         }
 
 

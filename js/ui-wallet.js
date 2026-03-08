@@ -318,6 +318,45 @@ async function setDefaultPaymentMethod(id) {
 
 
 // ═══════════════════════════════════════════════════════
+// FIRST-DEPOSIT WELCOME BANNER
+// ═══════════════════════════════════════════════════════
+
+var _walletBannerStylesInjected = false;
+
+function _injectFirstDepositBannerStyles() {
+    if (_walletBannerStylesInjected) return;
+    _walletBannerStylesInjected = true;
+    var style = document.createElement('style');
+    style.id = 'wallet-first-deposit-banner-styles';
+    style.textContent = [
+        '.wallet-first-deposit-banner{background:linear-gradient(135deg,rgba(251,191,36,0.12),rgba(217,119,6,0.06));border:1.5px solid rgba(251,191,36,0.35);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;}',
+        '.wfdb-badge{display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 12px;border-radius:20px;margin-bottom:8px;}',
+        '.wfdb-title{color:#fbbf24;font-size:17px;font-weight:900;margin-bottom:12px;}',
+        '.wfdb-offers{display:flex;justify-content:center;gap:16px;margin-bottom:10px;}',
+        '.wfdb-offer{display:flex;flex-direction:column;align-items:center;}',
+        '.wfdb-num{color:#fff;font-size:20px;font-weight:900;line-height:1;}',
+        '.wfdb-lbl{color:rgba(255,255,255,0.45);font-size:10px;margin-top:3px;}',
+        '.wfdb-note{color:rgba(255,255,255,0.3);font-size:10px;}'
+    ].join('');
+    document.head.appendChild(style);
+}
+
+function _renderFirstDepositBanner() {
+    if (localStorage.getItem('hasEverDeposited')) return '';
+    _injectFirstDepositBannerStyles();
+    return '<div class="wallet-first-deposit-banner">' +
+        '<div class="wfdb-badge">\uD83C\uDF81 WELCOME OFFER</div>' +
+        '<div class="wfdb-title">100% Match on Your First Deposit!</div>' +
+        '<div class="wfdb-offers">' +
+            '<div class="wfdb-offer"><span class="wfdb-num">$1,000</span><span class="wfdb-lbl">Max Bonus</span></div>' +
+            '<div class="wfdb-offer"><span class="wfdb-num">50</span><span class="wfdb-lbl">Free Spins</span></div>' +
+            '<div class="wfdb-offer"><span class="wfdb-num">+$5</span><span class="wfdb-lbl">No-Deposit Gift</span></div>' +
+        '</div>' +
+        '<div class="wfdb-note">Minimum deposit $10 \xB7 T&Cs apply</div>' +
+    '</div>';
+}
+
+// ═══════════════════════════════════════════════════════
 // DEPOSIT FORM
 // ═══════════════════════════════════════════════════════
 
@@ -404,7 +443,7 @@ function renderDepositForm() {
         </div>
     </div>` : '';
 
-    container.innerHTML = vipBarHtml + sessionTrackerHtml + lowBalBanner + `
+    container.innerHTML = _renderFirstDepositBanner() + vipBarHtml + sessionTrackerHtml + lowBalBanner + `
         <div class="wallet-section">
             <div class="wallet-balance-display">
                 <span class="wallet-balance-display__label">Current Balance</span>
@@ -544,6 +583,7 @@ async function submitDeposit() {
             }
             const gemMsg = res.gemsAwarded ? ` + \u{1F48E} ${res.gemsAwarded} gems!` : '';
             showToast(`${formatMoney(amount)} deposited successfully!${gemMsg}`, 'success');
+            localStorage.setItem('hasEverDeposited', '1');
         }
         if (amountInput) amountInput.value = '';
         renderDepositForm(); // refresh to show updated state
@@ -1207,6 +1247,7 @@ async function walletCryptoDeposit() {
         balance = Number(result.balance);
         updateBalance();
         resetNudgeOnDeposit();
+        localStorage.setItem('hasEverDeposited', '1');
 
         const gemMsg = result.gemsAwarded ? ' + 💎 ' + result.gemsAwarded + ' gems!' : '';
         showToast('$' + result.deposit.amount.toFixed(2) + ' AUD deposited via ETH!' + gemMsg, 'success', 6000);

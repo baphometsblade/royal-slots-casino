@@ -216,4 +216,48 @@ router.post('/claim-vip-deposit-bonus', authenticate, async function(req, res) {
     }
 });
 
+// GET /api/user/weekend-cashback
+router.get('/weekend-cashback', authenticate, async function(req, res) {
+    try {
+        var now = new Date();
+        var dayOfWeek = now.getUTCDay(); // 0=Sunday, 6=Saturday
+        var isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+        if (isWeekend) {
+            // Calculate next Monday 00:00 UTC
+            var daysUntilMonday = dayOfWeek === 6 ? 2 : 1; // Sat → +2 days, Sun → +1 day
+            var nextMonday = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate() + daysUntilMonday,
+                0, 0, 0, 0
+            ));
+            return res.json({
+                active: true,
+                cashbackPercent: 15,
+                label: 'VIP Weekend Cashback',
+                message: 'Earn 15% cashback on all losses this weekend!',
+                expiresAt: nextMonday.toISOString()
+            });
+        } else {
+            // Calculate next Saturday 00:00 UTC
+            // dayOfWeek: 1=Mon,2=Tue,3=Wed,4=Thu,5=Fri → days to Sat = 6 - dayOfWeek
+            var daysUntilSaturday = 6 - dayOfWeek;
+            var nextSaturday = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate() + daysUntilSaturday,
+                0, 0, 0, 0
+            ));
+            return res.json({
+                active: false,
+                nextWeekendAt: nextSaturday.toISOString()
+            });
+        }
+    } catch (err) {
+        console.error('[vipdeposit] GET /weekend-cashback error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 module.exports = router;
