@@ -329,6 +329,58 @@ const USER_MIGRATIONS = [
     ['subscription_expires', 'TIMESTAMPTZ'],
     ['subscription_daily_claimed', 'DATE'],
     ['xp', 'INTEGER DEFAULT 0'],
+    // Birthday bonus
+    ['birth_month', 'INTEGER'],
+    ['birth_day', 'INTEGER'],
+    ['birthday_claimed', 'TEXT'],
+    // Daily cashback
+    ['cashback_last', 'TEXT'],
+    // First deposit bonus
+    ['first_deposit_bonus_claimed', 'INTEGER DEFAULT 0'],
+    // Free spins
+    ['free_spins_count', 'INTEGER DEFAULT 0'],
+    ['free_spins_expires', 'TEXT'],
+    ['free_spins_last_auto', 'TEXT'],
+    // Deposit streak
+    ['deposit_streak', 'INTEGER DEFAULT 0'],
+    ['deposit_streak_last', 'TEXT'],
+    ['deposit_streak_max', 'INTEGER DEFAULT 0'],
+    // Deposit match
+    ['deposit_match_credits', 'NUMERIC(15,2) DEFAULT 0'],
+    ['deposit_match_last', 'TEXT'],
+    // Fortune wheel
+    ['fortune_wheel_last', 'TEXT'],
+    ['free_spins_remaining', 'INTEGER DEFAULT 0'],
+    // Loyalty
+    ['loyalty_points', 'INTEGER DEFAULT 0'],
+    ['loyalty_lifetime', 'INTEGER DEFAULT 0'],
+    // Milestones
+    ['milestone_last_claimed', 'INTEGER DEFAULT 0'],
+    // Mystery drops
+    ['mystery_next_drop', 'INTEGER DEFAULT 0'],
+    // Reload bonus
+    ['reload_bonus_claimed_at', 'TEXT'],
+    ['reload_bonus_count', 'INTEGER DEFAULT 0'],
+    // Referral bonus
+    ['referral_count', 'INTEGER DEFAULT 0'],
+    ['referral_bonus_earned', 'NUMERIC(15,2) DEFAULT 0'],
+    // Scratch cards
+    ['scratch_last_date', 'TEXT'],
+    ['scratch_result', 'TEXT'],
+    // Spin streak
+    ['spin_streak_count', 'INTEGER DEFAULT 0'],
+    ['spin_streak_last', 'TEXT'],
+    // Login streak
+    ['streak_count', 'INTEGER DEFAULT 0'],
+    ['streak_last_date', 'TEXT'],
+    // VIP wheel
+    ['vip_wheel_last', 'TEXT'],
+    ['gems', 'INTEGER DEFAULT 0'],
+    // Win streak
+    ['win_streak_current', 'INTEGER DEFAULT 0'],
+    ['win_streak_max', 'INTEGER DEFAULT 0'],
+    // Level-up bonus
+    ['last_bonus_level', 'INTEGER DEFAULT 1'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → PG definition). */

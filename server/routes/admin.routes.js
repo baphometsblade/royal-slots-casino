@@ -38,7 +38,7 @@ router.get('/revenue', async (req, res) => {
             "ROUND(SUM(s.bet_amount)-SUM(s.win_amount),2) as profit_generated, " +
             "ROUND(u.balance,2) as current_balance " +
             "FROM spins s JOIN users u ON u.id=s.user_id " +
-            "GROUP BY s.user_id ORDER BY profit_generated DESC LIMIT 10"
+            "GROUP BY u.id, u.username, u.email, u.balance ORDER BY profit_generated DESC LIMIT 10"
         );
         const pending = await db.get(
             "SELECT (SELECT COUNT(*) FROM deposits WHERE status='pending') as pending_deposits, " +

@@ -74,13 +74,17 @@ async function recordContestEntry(userId, metricType, metricValue) {
 
     if (metricType === 'biggest_win') {
         // Only update if the new value is larger than the existing one
+        // Uses ON CONFLICT UPSERT (works on both SQLite 3.24+ and PostgreSQL)
         await db.run(
-            `INSERT OR REPLACE INTO contest_entries (contest_id, user_id, metric_type, metric_value, updated_at)
-             VALUES (?, ?, ?, MAX(
-                 COALESCE((SELECT metric_value FROM contest_entries WHERE contest_id = ? AND user_id = ? AND metric_type = ?), 0),
-                 ?
-             ), datetime('now'))`,
-            [contest.id, userId, metricType, contest.id, userId, metricType, metricValue]
+            `INSERT INTO contest_entries (contest_id, user_id, metric_type, metric_value, updated_at)
+             VALUES (?, ?, ?, ?, datetime('now'))
+             ON CONFLICT(contest_id, user_id, metric_type)
+             DO UPDATE SET metric_value = CASE
+                 WHEN excluded.metric_value > contest_entries.metric_value
+                 THEN excluded.metric_value
+                 ELSE contest_entries.metric_value END,
+                 updated_at = datetime('now')`,
+            [contest.id, userId, metricType, metricValue]
         );
     } else {
         // Accumulate: add to existing value

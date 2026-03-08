@@ -301,11 +301,15 @@ router.post('/', authenticate, async (req, res) => {
 
             if (sessionCapped > 0) {
                 // Atomic: clamp total_wins at SESSION_WIN_CAP to prevent concurrent spins from overshooting
+                // Uses CASE instead of MIN() scalar to be PG-compatible (PG only allows MIN as aggregate)
+                const clampedInsert = Math.min(sessionCapped, config.SESSION_WIN_CAP);
                 await db.run(
                     `INSERT INTO session_win_caps (user_id, total_wins, session_start)
-                     VALUES (?, MIN(?, ?), datetime('now'))
-                     ON CONFLICT(user_id) DO UPDATE SET total_wins = MIN(session_win_caps.total_wins + ?, ?)`,
-                    [userId, sessionCapped, config.SESSION_WIN_CAP, sessionCapped, config.SESSION_WIN_CAP]
+                     VALUES (?, ?, datetime('now'))
+                     ON CONFLICT(user_id) DO UPDATE SET total_wins = CASE
+                         WHEN session_win_caps.total_wins + ? > ? THEN ?
+                         ELSE session_win_caps.total_wins + ? END`,
+                    [userId, clampedInsert, sessionCapped, config.SESSION_WIN_CAP, config.SESSION_WIN_CAP, sessionCapped]
                 );
             }
         }

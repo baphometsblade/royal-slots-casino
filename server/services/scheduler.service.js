@@ -42,7 +42,7 @@ async function _sendReengagementEmails() {
             WHERE u.is_banned = 0
               AND u.email IS NOT NULL
               AND s.created_at < datetime('now', '-3 days')
-            GROUP BY u.id
+            GROUP BY u.id, u.email, u.username, u.balance
             HAVING MAX(s.created_at) > datetime('now', '-7 days')
             ORDER BY total_wagered DESC
             LIMIT 50
@@ -149,7 +149,7 @@ async function _sendVipTierUpEmails() {
                 FROM users u
                 JOIN spins s ON s.user_id = u.id
                 WHERE u.is_banned = 0 AND u.email IS NOT NULL
-                GROUP BY u.id
+                GROUP BY u.id, u.email, u.username
                 HAVING COUNT(s.id) >= ?
                   AND COUNT(s.id) < ? + 50
                   AND NOT EXISTS (
