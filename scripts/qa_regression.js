@@ -181,6 +181,11 @@ async function dismissFeaturePopupIfVisible(page) {
       "lossRecovery2Overlay",
       "sessionMilestoneBar",
       "betSuggestChip",
+      "loyaltyShop2Modal",
+      "loyaltyShop2Fab",
+      "winWheelOverlay",
+      "autoCashoutPanel",
+      "autoCashoutCelebration",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
