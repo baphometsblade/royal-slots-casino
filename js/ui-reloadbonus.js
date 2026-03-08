@@ -162,6 +162,7 @@
   }
 
   function checkBalance() {
+    if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
     var slotModal = document.getElementById('slotModal');
     if (slotModal && slotModal.classList.contains('active')) return; // don't interrupt slots
     if (_shown) return;

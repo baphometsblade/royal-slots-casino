@@ -6,7 +6,7 @@
   var STORAGE_KEY = 'ms_cashbackStreak';
   var MAX_STREAK = 7;
   var BASE_CASHBACK = 2;
-  var SPIN_AWARD_INTERVAL = 100;
+  var SPIN_AWARD_INTERVAL = 300;
 
   var streakDays = 0;
   var lastLoginDate = '';

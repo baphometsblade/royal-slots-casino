@@ -149,6 +149,7 @@
   }
 
   function checkBirthday() {
+    if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
     if (_checked) return;
     _checked = true;
     var token = getToken();

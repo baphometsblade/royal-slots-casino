@@ -7,7 +7,7 @@
 
     var STORAGE_KEY = 'ms_freeSpinMeter';
     var BAR_ID = 'freeSpinMeterBar';
-    var SPINS_TO_FILL = 50;
+    var SPINS_TO_FILL = 200;
     var FREE_SPIN_REWARD = 5;
 
     /* ---- Helpers ---- */

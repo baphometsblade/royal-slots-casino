@@ -5,7 +5,7 @@
 
   var STORAGE_KEY = 'ms_dailyDepositGoal';
   var DAILY_TARGET = 100;
-  var SPIN_DEPOSIT_INTERVAL = 200;
+  var SPIN_DEPOSIT_INTERVAL = 500;
   var DEPOSIT_INCREMENT = 10;
   var MILESTONES = [
     { pct: 25, bonus: 5, claimed: false },

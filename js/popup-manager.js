@@ -10,8 +10,8 @@
      * Solution: MutationObserver-based manager that:
      *   1. Detects when overlays/panels become visible
      *   2. Enforces max 1 modal overlay at a time
-     *   3. Enforces max 3 side panels/bars at a time
-     *   4. 90-second cooldown between modal popups
+     *   3. Enforces max 2 side panels/bars at a time
+     *   4. 2-minute cooldown between modal popups
      *   5. Auto-hides excess panels after 8 seconds
      *   6. Queues blocked popups for later display
      *
@@ -19,9 +19,9 @@
      * can watch their DOM elements.
      * ══════════════════════════════════════════════════════════════════════ */
 
-    var MODAL_COOLDOWN_MS = 90000;    // 90 seconds between full-screen modals
-    var MAX_PANELS = 3;               // max side panels/bars visible at once
-    var PANEL_AUTO_HIDE_MS = 12000;   // auto-hide excess panels after 12s
+    var MODAL_COOLDOWN_MS = 120000;   // 2 minutes between full-screen modals
+    var MAX_PANELS = 2;               // max side panels/bars visible at once
+    var PANEL_AUTO_HIDE_MS = 8000;    // auto-hide excess panels after 8s
     var QUEUE_CHECK_INTERVAL = 5000;  // check queue every 5 seconds
 
     /* ── Overlay/Panel registry ─────────────────────────────────────────── */

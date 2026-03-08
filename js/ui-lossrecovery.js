@@ -120,6 +120,7 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     function _init() {
+        if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
         // Restore session state
         try {
             var stored = parseFloat(sessionStorage.getItem(LR_KEY + '_loss') || '0');

@@ -14,7 +14,7 @@
     ];
     var DEAL_DURATION   = 300;        // 5 minutes in seconds
     var CHECK_INTERVAL  = 1800000;    // 30 minutes in ms
-    var TRIGGER_CHANCE  = 0.25;
+    var TRIGGER_CHANCE  = 0.03;
     var MIN_GAP_MS      = 3600000;    // minimum 1 hour between deals
 
     var _bannerEl    = null;

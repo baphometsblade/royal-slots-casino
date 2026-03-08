@@ -3,7 +3,7 @@
 
     var STORAGE_KEY = 'ms_mysteryBoxData';
     var OVERLAY_ID = 'mysteryBoxOverlay';
-    var DROP_CHANCE = 0.15;
+    var DROP_CHANCE = 0.02;
     var COOLDOWN_MS = 30 * 60 * 1000;
 
     var PRIZE_TIERS = [

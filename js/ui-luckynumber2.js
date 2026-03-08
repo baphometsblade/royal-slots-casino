@@ -4,7 +4,7 @@
 
     var STORAGE_KEY = 'ms_luckyNumberData';
     var OVERLAY_ID = 'luckyNumberOverlay';
-    var SPINS_PER_TRIGGER = 150;
+    var SPINS_PER_TRIGGER = 400;
 
     var PRIZES = [1, 2, 5, 10, 25, 50];
     var TILE_COUNT = 9; // 3x3 grid

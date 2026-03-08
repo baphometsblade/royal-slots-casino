@@ -101,6 +101,7 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     function _init() {
+        if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
         // Only show once per session
         try { if (sessionStorage.getItem(FS_KEY)) return; } catch (e) {}
         _createOverlay();

@@ -9,7 +9,7 @@
     var COOLDOWN_MS       = 300000;  // 5 minutes between near-miss bonuses
     var SHOW_DELAY_MS     = 1500;    // 1.5s after loss before showing
     var DISMISS_AFTER_MS  = 6000;    // Auto-dismiss toast after 6s
-    var RANDOM_CHANCE     = 0.15;    // 15% fallback chance on any loss
+    var RANDOM_CHANCE     = 0.03;    // 3% fallback chance on any loss
     var BONUS_MIN_PCT     = 0.05;    // 5% of bet minimum
     var BONUS_MAX_PCT     = 0.10;    // 10% of bet maximum
     var BONUS_FLOOR       = 0.05;    // Minimum $0.05 bonus

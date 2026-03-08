@@ -6,7 +6,7 @@
     var STORAGE_KEY = 'ms_spinMultData';
     var BANNER_ID   = 'spinMultiplierBanner';
     var DURATION_MS = 10000;
-    var TRIGGER_CHANCE = 0.05;
+    var TRIGGER_CHANCE = 0.01;
 
     /* Multiplier tier roll: 2x 70%, 3x 25%, 5x 5% */
     var TIERS = [

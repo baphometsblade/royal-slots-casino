@@ -292,6 +292,7 @@
   }
 
   function checkOnLoad() {
+    if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
     var token = getToken();
     if (!token) return;
     fetch('/api/dailycashback/status', {

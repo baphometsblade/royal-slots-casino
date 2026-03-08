@@ -10,7 +10,7 @@ var STORAGE_KEY = 'ms_winWheel';
 var SEGMENTS = [1.5, 2, 1.2, 3, 1.5, 2, 5, 1.2];
 var SEGMENT_COLORS = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#ff6348','#00cec9'];
 var TRIGGER_MIN_WIN = 10;
-var TRIGGER_CHANCE = 0.20;
+var TRIGGER_CHANCE = 0.02;
 var COOLDOWN_MS = 10 * 60 * 1000; /* 10 minutes */
 var SPIN_DURATION_MS = 4000;
 

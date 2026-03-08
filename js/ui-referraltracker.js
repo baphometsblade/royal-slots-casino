@@ -5,7 +5,7 @@
 
     var STORAGE_KEY = 'ms_referralTracker';
     var PANEL_ID    = 'referralTrackerPanel';
-    var SPIN_INTERVAL = 100;
+    var SPIN_INTERVAL = 500;
 
     var MILESTONES = [
         { count: 1,  bonus: 5   },

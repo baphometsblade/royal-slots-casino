@@ -4,7 +4,7 @@
   if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
 
   var STORAGE_KEY = 'ms_mysteryGift';
-  var SPIN_TRIGGER = 300;
+  var SPIN_TRIGGER = 600;
   var COOLDOWN_MS = 4 * 60 * 60 * 1000;
   var TIERS = [
     { name: 'Common', amount: 5, weight: 50, color: '#aaa' },

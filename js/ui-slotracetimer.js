@@ -3,7 +3,7 @@
 
     var STORAGE_KEY = 'ms_slotRaceTimer';
     var RACE_DURATION = 300;
-    var SPIN_TRIGGER = 500;
+    var SPIN_TRIGGER = 800;
     var BONUS_1ST = 50;
     var BONUS_2ND = 25;
     var BONUS_3RD = 10;

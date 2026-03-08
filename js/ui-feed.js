@@ -313,6 +313,7 @@
     }
 
     function init() {
+        if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
         injectStyles();
         fetch("/api/feed")
             .then(function (res) { return res.ok ? res.json() : null; })
