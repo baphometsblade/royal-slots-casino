@@ -178,6 +178,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "referralLeaderboard",
       "spinInsuranceBar",
       "happyHourBar",
+      "lossRecovery2Overlay",
+      "sessionMilestoneBar",
+      "betSuggestChip",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
