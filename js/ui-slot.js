@@ -3096,12 +3096,22 @@
             if (typeof spinHistory !== 'undefined' && Array.isArray(spinHistory) && spinHistory.length > 0) {
                 spins   = spinHistory.length;
                 wins    = spinHistory.filter(function(s) { return s.win > 0; }).length;
-                netVal  = spinHistory.reduce(function(acc, s) { return acc + (s.win - s.bet); }, 0);
+                // Use balance delta for net P/L — captures free spins, bonus wins, all paths
+                var _startBal = (typeof window._sessionStartBalance !== 'undefined' && window._sessionStartBalance !== null)
+                    ? window._sessionStartBalance : null;
+                netVal = (_startBal !== null && typeof balance !== 'undefined')
+                    ? balance - _startBal
+                    : spinHistory.reduce(function(acc, s) { return acc + (s.win - s.bet); }, 0);
                 bestWin = Math.max.apply(null, spinHistory.map(function(s) { return s.win; }));
             } else {
                 spins  = typeof sessionSpins   !== 'undefined' ? sessionSpins   : 0;
                 wins   = typeof sessionWins    !== 'undefined' ? sessionWins    : 0;
-                netVal = (typeof sessionWon    !== 'undefined' ? sessionWon     : 0)
+                // Use balance delta for accuracy
+                var _startBal2 = (typeof window._sessionStartBalance !== 'undefined' && window._sessionStartBalance !== null)
+                    ? window._sessionStartBalance : null;
+                netVal = (_startBal2 !== null && typeof balance !== 'undefined')
+                    ? balance - _startBal2
+                    : (typeof sessionWon    !== 'undefined' ? sessionWon     : 0)
                        - (typeof sessionWagered !== 'undefined' ? sessionWagered : 0);
             }
 
@@ -3120,6 +3130,7 @@
                 timeEl.textContent = Math.floor(elapsed / 60) + ':' + String(elapsed % 60).padStart(2, '0');
             }
         }
+        window._updateSlotSessionStats = _updateSlotSessionStats;
 
         // -- Session Stats Bar (session-stats-bar CSS class) ---
         function _initSessionStats(startBalance) {
@@ -4251,11 +4262,26 @@
                 `;
                 overlay.classList.add('active');
 
-                // Auto-dismiss after 3.5s — user clicks Spin to begin free spins
-                setTimeout(() => {
+                // Begin button so user knows to click
+                var _fsBeginBtn = document.createElement('button');
+                _fsBeginBtn.className = 'fs-begin-btn';
+                _fsBeginBtn.textContent = '▶  BEGIN FREE SPINS';
+                _fsBeginBtn.style.cssText = 'display:block;margin:20px auto 0;padding:14px 36px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0d0d1a;border:none;border-radius:30px;font-size:1.1rem;font-weight:900;letter-spacing:2px;cursor:pointer;box-shadow:0 0 30px rgba(251,191,36,0.6);animation:fsTapBlink 1.5s ease-in-out infinite;';
+                overlay.appendChild(_fsBeginBtn);
+
+                // Auto-dismiss after 5s or on click
+                var _fsDismissTimer = setTimeout(() => {
                     overlay.classList.remove('active');
                     showFreeSpinsHUD(game);
-                }, 3500);
+                }, 5000);
+
+                function _fsDismiss() {
+                    clearTimeout(_fsDismissTimer);
+                    overlay.classList.remove('active');
+                    showFreeSpinsHUD(game);
+                }
+                _fsBeginBtn.addEventListener('click', function(e) { e.stopPropagation(); _fsDismiss(); });
+                overlay.addEventListener('click', _fsDismiss);
             }, 700);
         }
 
@@ -8418,11 +8444,28 @@
                 `;
                 overlay.classList.add('active');
 
-                // Auto-dismiss after 3.5s — user clicks Spin to begin free spins
-                setTimeout(() => {
+                // Add begin button
+                var _fsBeginBtn2 = document.createElement('button');
+                _fsBeginBtn2.className = 'fs-begin-btn';
+                _fsBeginBtn2.textContent = '▶  BEGIN FREE SPINS';
+                _fsBeginBtn2.style.cssText = 'display:block;margin:20px auto 0;padding:14px 36px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0d0d1a;border:none;border-radius:30px;font-size:1.1rem;font-weight:900;letter-spacing:2px;cursor:pointer;box-shadow:0 0 30px rgba(251,191,36,0.6);animation:fsTapBlink 1.5s ease-in-out infinite;';
+                var _fsIntro2 = overlay.querySelector('.free-spins-intro');
+                if (_fsIntro2) _fsIntro2.appendChild(_fsBeginBtn2);
+                else overlay.appendChild(_fsBeginBtn2);
+
+                // Auto-dismiss after 5s or on click
+                var _fsDismissTimer2 = setTimeout(() => {
                     overlay.classList.remove('active');
                     showFreeSpinsHUD(game);
-                }, 3500);
+                }, 5000);
+
+                function _fsDismiss2() {
+                    clearTimeout(_fsDismissTimer2);
+                    overlay.classList.remove('active');
+                    showFreeSpinsHUD(game);
+                }
+                _fsBeginBtn2.addEventListener('click', function(e) { e.stopPropagation(); _fsDismiss2(); });
+                overlay.addEventListener('click', _fsDismiss2);
             }, 700);
         }
 

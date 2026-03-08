@@ -423,3 +423,59 @@
                     break;
             }
         });
+
+        // ═══════════════════════════════════════════════════════
+        // CLICK-OUTSIDE-TO-CLOSE — all modal overlays
+        // Clicking the dark backdrop (but NOT the inner content box)
+        // closes the topmost modal.  Auth and slot modals are excluded.
+        // ═══════════════════════════════════════════════════════
+        document.addEventListener('click', function(e) {
+            var el = e.target;
+
+            // Must be a modal/overlay element itself (not a child inside it)
+            var isModalOverlay = el.classList.contains('modal') ||
+                                 el.classList.contains('modal-overlay') ||
+                                 el.classList.contains('autoplay-modal-overlay');
+            if (!isModalOverlay) return;
+
+            // Never auto-close the auth gate or slot game modal
+            var excludedIds = ['authModal', 'slotModal'];
+            if (excludedIds.indexOf(el.id) !== -1) return;
+
+            // Only act if the modal is currently visible/active
+            var isActive = el.classList.contains('active') ||
+                           (el.style.display && el.style.display !== 'none');
+            if (!isActive) return;
+
+            // Try dedicated close button first, then named close functions,
+            // then fall back to removing the active class / hiding the element.
+            var closeBtn = el.querySelector(
+                '.modal-close, .close-btn, .auth-close-btn, .modal-close-btn, ' +
+                '.daily-skip-btn, .autoplay-modal-close, .back-btn[onclick*="close"]'
+            );
+            if (closeBtn) {
+                closeBtn.click();
+                return;
+            }
+
+            // Named close functions wired to specific modal IDs
+            var closeFnMap = {
+                'settingsModal':    function() { if (typeof closeSettingsModal === 'function') closeSettingsModal(); },
+                'statsModal':       function() { if (typeof closeStatsModal === 'function') closeStatsModal(); },
+                'walletModal':      function() { if (typeof hideWalletModal === 'function') hideWalletModal(); },
+                'dailyBonusModal':  function() { if (typeof closeDailyBonusModal === 'function') closeDailyBonusModal(); },
+                'bonusWheelModal':  function() { if (typeof closeBonusWheelModal === 'function') closeBonusWheelModal(); },
+                'bundleShopModal':  function() { if (typeof closeBundleShop === 'function') closeBundleShop(); },
+                'giftModal':        function() { if (typeof closeGiftModal === 'function') closeGiftModal(); },
+                'contestModal':     function() { if (typeof closeContestModal === 'function') closeContestModal(); },
+                'autoplayOverlay':  function() { if (typeof closeAutoplayModal === 'function') closeAutoplayModal(); }
+            };
+            if (el.id && closeFnMap[el.id]) {
+                closeFnMap[el.id]();
+                return;
+            }
+
+            // Generic fallback: remove active class and hide
+            el.classList.remove('active');
+            el.style.display = 'none';
+        });

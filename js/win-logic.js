@@ -1365,6 +1365,9 @@
                 return;
             }
 
+            // Refresh slot session stats (sssNet P/L) after every win/loss
+            if (typeof window._updateSlotSessionStats === 'function') window._updateSlotSessionStats();
+
             // ── Process free spin advancement ──
             if (freeSpinsActive) {
                 advanceFreeSpins(game);
