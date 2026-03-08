@@ -58,12 +58,28 @@ router.post('/redeem', authenticate, async function(req, res) {
     if (row.expires_at && new Date(row.expires_at) < new Date()) {
       return res.status(400).json({ error: 'Code has expired' });
     }
-    if (row.max_uses > 0 && row.uses_count >= row.max_uses) {
-      return res.status(400).json({ error: 'Code has reached its usage limit' });
+    // Atomic: increment uses_count only if under limit (prevents race condition)
+    if (row.max_uses > 0) {
+      var usesResult = await db.run(
+        'UPDATE promo_codes SET uses_count = uses_count + 1 WHERE id = ? AND uses_count < ?',
+        [row.id, row.max_uses]
+      );
+      if (!usesResult || usesResult.changes === 0) {
+        return res.status(400).json({ error: 'Code has reached its usage limit' });
+      }
+    } else {
+      await db.run('UPDATE promo_codes SET uses_count = uses_count + 1 WHERE id = ?', [row.id]);
     }
 
-    var existing = await db.get('SELECT id FROM promo_redemptions WHERE user_id = ? AND code_id = ?', [userId, row.id]);
-    if (existing) return res.status(400).json({ error: 'You have already redeemed this code' });
+    // Atomic: INSERT redemption with unique constraint to prevent race condition double-redeem
+    try {
+      await db.run('INSERT INTO promo_redemptions (user_id, code_id) VALUES (?, ?)', [userId, row.id]);
+    } catch (dupErr) {
+      // Unique constraint violation = already redeemed (concurrent request won the race)
+      // Undo the uses_count increment
+      await db.run('UPDATE promo_codes SET uses_count = uses_count - 1 WHERE id = ? AND uses_count > 0', [row.id]);
+      return res.status(400).json({ error: 'You have already redeemed this code' });
+    }
 
     if (row.reward_gems > 0) {
       await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [row.reward_gems, userId]);
@@ -73,9 +89,6 @@ router.post('/redeem', authenticate, async function(req, res) {
       await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'promo', ?, ?)",
         [userId, row.reward_credits, 'Promo code: ' + row.code]);
     }
-
-    await db.run('INSERT INTO promo_redemptions (user_id, code_id) VALUES (?, ?)', [userId, row.id]);
-    await db.run('UPDATE promo_codes SET uses_count = uses_count + 1 WHERE id = ?', [row.id]);
 
     var user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({

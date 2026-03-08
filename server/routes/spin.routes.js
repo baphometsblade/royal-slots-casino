@@ -224,30 +224,34 @@ router.post('/', authenticate, async (req, res) => {
         applyWinCapMetadata(spinResult, uncappedWinAmount, cappedWinAmount);
 
         // ── Enforce session win cap ($50k cumulative ceiling, persisted to DB) ──
-        const capRow = await db.get('SELECT total_wins, session_start FROM session_win_caps WHERE user_id = ?', [userId]);
-        let sessionWins = 0;
-        if (capRow) {
-            const sessionAge = (Date.now() - new Date(capRow.session_start + 'Z').getTime()) / 3600000;
-            if (sessionAge < SESSION_CAP_DURATION_HOURS) {
-                sessionWins = capRow.total_wins;
-            } else {
-                // Session expired — reset
-                await db.run("UPDATE session_win_caps SET total_wins = 0, session_start = datetime('now') WHERE user_id = ?", [userId]);
-            }
-        }
-        const remaining     = Math.max(0, config.SESSION_WIN_CAP - sessionWins);
-        const sessionCapped = Math.min(spinResult.winAmount, remaining);
-        if (sessionCapped < spinResult.winAmount) {
-            applyWinCapMetadata(spinResult, spinResult.winAmount, sessionCapped);
-            spinResult.winAmount = sessionCapped;
-        }
-        if (sessionCapped > 0) {
+        // Atomic: uses MIN(total_wins + ?, cap) to prevent concurrent spins from exceeding the cap
+        if (spinResult.winAmount > 0) {
+            // Expire old sessions atomically
             await db.run(
-                `INSERT INTO session_win_caps (user_id, total_wins, session_start)
-                 VALUES (?, ?, datetime('now'))
-                 ON CONFLICT(user_id) DO UPDATE SET total_wins = total_wins + ?`,
-                [userId, sessionCapped, sessionCapped]
+                "UPDATE session_win_caps SET total_wins = 0, session_start = datetime('now') WHERE user_id = ? AND (julianday('now') - julianday(session_start)) * 24 >= ?",
+                [userId, SESSION_CAP_DURATION_HOURS]
             );
+
+            // Read current total (may be stale under extreme concurrency, but atomic UPDATE below prevents over-cap)
+            const capRow = await db.get('SELECT total_wins FROM session_win_caps WHERE user_id = ?', [userId]);
+            const sessionWins = capRow ? capRow.total_wins : 0;
+            const remaining = Math.max(0, config.SESSION_WIN_CAP - sessionWins);
+            const sessionCapped = Math.min(spinResult.winAmount, remaining);
+
+            if (sessionCapped < spinResult.winAmount) {
+                applyWinCapMetadata(spinResult, spinResult.winAmount, sessionCapped);
+                spinResult.winAmount = sessionCapped;
+            }
+
+            if (sessionCapped > 0) {
+                // Atomic: clamp total_wins at SESSION_WIN_CAP to prevent concurrent spins from overshooting
+                await db.run(
+                    `INSERT INTO session_win_caps (user_id, total_wins, session_start)
+                     VALUES (?, MIN(?, ?), datetime('now'))
+                     ON CONFLICT(user_id) DO UPDATE SET total_wins = MIN(session_win_caps.total_wins + ?, ?)`,
+                    [userId, sessionCapped, config.SESSION_WIN_CAP, sessionCapped, config.SESSION_WIN_CAP]
+                );
+            }
         }
 
         // Persist/clear active free-spin runtime state for this user

@@ -155,18 +155,14 @@ router.post('/claim/:slot', authenticate, async function(req, res) {
     const mission = templates.find(function(t) { return t.slot === slot; });
     if (!mission) return res.status(400).json({ error: 'Invalid mission slot' });
 
-    const row = await db.get(
-      'SELECT completed, claimed FROM daily_mission_progress WHERE user_id = ? AND mission_date = ? AND slot = ?',
+    // Atomic claim: UPDATE WHERE claimed = 0 AND completed = 1 prevents race condition double-claim
+    const claimResult = await db.run(
+      'UPDATE daily_mission_progress SET claimed = 1 WHERE user_id = ? AND mission_date = ? AND slot = ? AND completed = 1 AND claimed = 0',
       [userId, today, slot]
     );
-    if (!row || !row.completed) return res.status(400).json({ error: 'Mission not yet completed' });
-    if (row.claimed) return res.status(409).json({ error: 'Mission reward already claimed' });
-
-    // Mark as claimed
-    await db.run(
-      'UPDATE daily_mission_progress SET claimed = 1 WHERE user_id = ? AND mission_date = ? AND slot = ?',
-      [userId, today, slot]
-    );
+    if (!claimResult || claimResult.changes === 0) {
+      return res.status(409).json({ error: 'Mission not completed or already claimed' });
+    }
 
     // Credit reward
     let newBalance = null;

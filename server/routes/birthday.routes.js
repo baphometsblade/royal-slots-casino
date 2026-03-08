@@ -114,17 +114,32 @@ router.post('/claim', authenticate, async (req, res) => {
     }
 });
 
-// POST /api/birthday/set — auth required, set/update birthday
+// POST /api/birthday/set — auth required, set birthday (ONE-TIME only)
+// Birthday can only be set once to prevent daily re-claiming exploit
 router.post('/set', authenticate, async (req, res) => {
     try {
+        // Check if birthday is already set — one-time only, no changes allowed
+        var existing = await db.get('SELECT birth_month, birth_day FROM users WHERE id = ?', [req.user.id]);
+        if (existing && existing.birth_month && existing.birth_day) {
+            return res.status(400).json({ error: 'Birthday is already set and cannot be changed. Contact support if needed.' });
+        }
+
         var { month, day } = req.body;
         var m = parseInt(month, 10);
         var d = parseInt(day, 10);
         if (!m || !d || m < 1 || m > 12 || d < 1 || d > 31) {
             return res.status(400).json({ error: 'Invalid month or day' });
         }
-        await db.run('UPDATE users SET birth_month = ?, birth_day = ? WHERE id = ?',
-            [m, d, req.user.id]);
+
+        // Atomic: only set if not already set (race condition guard)
+        var result = await db.run(
+            'UPDATE users SET birth_month = ?, birth_day = ? WHERE id = ? AND (birth_month IS NULL OR birth_day IS NULL)',
+            [m, d, req.user.id]
+        );
+        if (result.changes === 0) {
+            return res.status(400).json({ error: 'Birthday is already set and cannot be changed.' });
+        }
+
         res.json({ success: true, month: m, day: d });
     } catch (err) {
         console.error('[Birthday] Set error:', err.message);

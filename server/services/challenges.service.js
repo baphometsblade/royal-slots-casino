@@ -163,10 +163,22 @@ async function updateProgress(userId, challengeType, amount, extra) {
         var newProgress = ch.progress + amount;
         var nowCompleted = newProgress >= ch.target ? 1 : 0;
 
-        await db.run(
-            "UPDATE daily_challenges SET progress = ?, completed = ? WHERE id = ?",
-            [newProgress, nowCompleted, ch.id]
-        );
+        if (nowCompleted) {
+            // Atomic: set completed only if not already completed (prevents race condition double-award)
+            var completeResult = await db.run(
+                "UPDATE daily_challenges SET progress = ?, completed = 1 WHERE id = ? AND completed = 0",
+                [newProgress, ch.id]
+            );
+            if (!completeResult || completeResult.changes === 0) {
+                // Already completed by a concurrent request — skip reward
+                continue;
+            }
+        } else {
+            await db.run(
+                "UPDATE daily_challenges SET progress = ? WHERE id = ?",
+                [newProgress, ch.id]
+            );
+        }
 
         if (nowCompleted && !ch.completed) {
             anyCompleted = true;

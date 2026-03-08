@@ -506,6 +506,38 @@ router.post('/withdraw', authenticate, async (req, res) => {
             });
         }
 
+        // ── Must have at least one completed deposit to withdraw ──
+        // Prevents pure bonus abuse (users who never deposit accumulating free money)
+        if (!deposited || deposited <= 0) {
+            return res.status(400).json({
+                error: 'You must make at least one deposit before you can request a withdrawal.'
+            });
+        }
+
+        // ── Non-deposit bonus playthrough requirement (5x multiplier) ──
+        // All free bonus credits (birthday, daily missions, challenges, mystery drops,
+        // deposit streak, promo codes, free spins) must be wagered 5x before withdrawal
+        const BONUS_WAGER_MULT = 5;
+        const bonusCreditsRow = await db.get(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND amount > 0 AND type IN ('bonus', 'mystery_drop', 'birthday_bonus', 'deposit_streak', 'challenge_reward', 'streak_bonus', 'free_spin', 'promo')",
+            [req.user.id]
+        );
+        const totalBonusReceived = bonusCreditsRow ? bonusCreditsRow.total : 0;
+        const bonusWagerRequired = totalBonusReceived * BONUS_WAGER_MULT;
+        if (totalBonusReceived > 0 && wagered < bonusWagerRequired) {
+            const bonusRemaining = (bonusWagerRequired - wagered).toFixed(2);
+            return res.status(400).json({
+                error: `Free bonus playthrough not met. Wager $${bonusRemaining} more before withdrawing. (Wagered: $${wagered.toFixed(2)} / Required: $${bonusWagerRequired.toFixed(2)})`,
+                bonusPlaythrough: {
+                    totalBonusReceived: totalBonusReceived,
+                    multiplier: BONUS_WAGER_MULT,
+                    required: bonusWagerRequired,
+                    wagered: wagered,
+                    remaining: bonusWagerRequired - wagered
+                }
+            });
+        }
+
         // Validate payment method ownership if provided
         if (paymentMethodId) {
             const pm = await db.get(
