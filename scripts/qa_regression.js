@@ -273,6 +273,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "winConfettiBurst",
       "slotRecommendCard",
       "cashbackTimerOffer",
+      "speedBoostToken",
+      "balanceMilestonePopup",
+      "dailyJackpotPool",
+      "gameRatingPopup",
+      "betStreakTracker",
+      "promoCodeInput",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
