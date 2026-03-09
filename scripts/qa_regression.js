@@ -261,6 +261,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "dailyQuestBoard",
       "loyaltyStreakCounter",
       "vipExclusiveOffer",
+      "lossRecoveryWheel",
+      "betMultiplierTimer",
+      "achievementToast2",
+      "tournamentCountdownBanner",
+      "depositReminder",
+      "progressiveBonusMeter",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
