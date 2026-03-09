@@ -613,7 +613,6 @@ function renderGames() {
             container.innerHTML = recentGames.map(g => createGameCard(g)).join('');
             renderYouMightLike();
             renderBestWins();
-            _renderLeaderboardWidget();
         }
 
         function renderYouMightLike() {
@@ -741,222 +740,6 @@ function renderGames() {
                     </div>
                     `).join('')}
                 </div>`;
-        }
-
-
-        // ── Recent Big Wins Leaderboard Widget ──
-        let _leaderboardRefreshTimer = null;
-
-        function _renderLeaderboardWidget() {
-            fetch('/api/leaderboard/recent-wins').then(function(r) {
-                if (!r.ok) return null;
-                return r.json();
-            }).then(function(data) {
-                if (!data || !data.wins || data.wins.length === 0) return;
-                var section = document.getElementById('leaderboardWidget');
-                if (!section) {
-                    section = document.createElement('div');
-                    section.id = 'leaderboardWidget';
-                    section.className = 'leaderboard-widget';
-                    var bestWins = document.getElementById('bestWinsSection');
-                    var anchor = bestWins || document.querySelector('.lobby-content') || document.querySelector('main');
-                    if (anchor && anchor.parentNode && bestWins) {
-                        anchor.parentNode.insertBefore(section, bestWins.nextSibling);
-                    } else if (anchor) {
-                        anchor.appendChild(section);
-                    }
-                }
-
-                var rows = data.wins.map(function(w, i) {
-                    var mult = w.multiplier || (w.win_amount / Math.max(w.bet_amount, 0.01));
-                    var tierClass = mult >= 50 ? 'epic' : mult >= 20 ? 'mega' : mult >= 10 ? 'big' : '';
-                    return '<div class="leaderboard-entry" style="animation-delay:' + (i * 0.05) + 's">' +
-                        '<span class="lb-rank">#' + (i + 1) + '</span>' +
-                        '<span class="lb-user">' + (w.username || 'Player') + '</span>' +
-                        '<span class="lb-game">' + (w.game_name || w.game_id || '') + '</span>' +
-                        '<span class="win-multiplier-badge ' + tierClass + '">' + mult.toFixed(1) + 'x</span>' +
-                        '<span class="lb-amount">$' + Number(w.win_amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + '</span>' +
-                        '</div>';
-                }).join('');
-
-                section.innerHTML =
-                    '<div class="section-header">' +
-                    '<h3 class="section-title" style="font-size:14px"><span class="lb-live-dot"></span> Recent Big Wins</h3>' +
-                    '</div>' +
-                    '<div class="leaderboard-entries">' + rows + '</div>';
-
-                // Auto-refresh every 2 minutes
-                if (!_leaderboardRefreshTimer) {
-                    _leaderboardRefreshTimer = setInterval(_renderLeaderboardWidget, 120000);
-                }
-            }).catch(function() { /* silently ignore */ });
-        }
-
-        async function _updateHeroStats() {
-            try {
-                const res = await fetch('/api/leaderboard/recent-wins');
-                if (res.ok) {
-                    const data = await res.json();
-                    const wins = (data && data.wins) ? data.wins : [];
-                    const biggestWinEl = document.getElementById('biggestWin');
-                    const recentWinsCountEl = document.getElementById('recentWinsCount');
-                    if (wins.length > 0) {
-                        const maxWin = Math.max.apply(null, wins.map(function(w) { return Number(w.win_amount) || 0; }));
-                        if (biggestWinEl) biggestWinEl.textContent = Math.floor(maxWin).toLocaleString('en-US');
-                        if (recentWinsCountEl) recentWinsCountEl.textContent = wins.length;
-                    } else {
-                        // Seeded fallback values so site looks active
-                        const fakeAmount = Math.floor(((Date.now() / 3600000) % 100) * 45 + 500);
-                        const fakeCount = 12 + Math.floor((new Date().getMinutes()) / 5);
-                        if (biggestWinEl) biggestWinEl.textContent = fakeAmount.toLocaleString('en-US');
-                        if (recentWinsCountEl) recentWinsCountEl.textContent = fakeCount;
-                    }
-                }
-            } catch (_) { /* silently ignore */ }
-
-            try {
-                const jRes = await fetch('/api/jackpot/status');
-                if (jRes.ok) {
-                    const jData = await jRes.json();
-                    const grand = jData && (jData.grand || (jData.pools && jData.pools.grand));
-                    if (grand) {
-                        const heroJackpot = document.getElementById('heroJackpotDisplay');
-                        const heroJackpotAmount = document.getElementById('heroJackpotAmount');
-                        const grandVal = Number(grand.pool || grand.amount || grand) || 0;
-                        if (heroJackpotAmount) {
-                            heroJackpotAmount.textContent = '$' + grandVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        }
-                        if (heroJackpot) heroJackpot.style.display = '';
-                    }
-                }
-            } catch (_) { /* silently ignore */ }
-        }
-
-        function startJackpotTicker() {
-            const fmt = v => '$' + Number(v).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            // Live display values — ticked up between fetches
-            const _live = { mini: 500, major: 2500, mega: 10000 };
-
-            async function fetchAndUpdate() {
-                try {
-                    const res = await fetch('/api/jackpot');
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    // Snap live values to server truth
-                    _live.mini  = Number(data.mini)  || 500;
-                    _live.major = Number(data.major) || 2500;
-                    _live.mega  = Number(data.mega)  || 10000;
-                } catch (_) {}
-            }
-
-            // Inflate displayed values by a tiny random amount every 200ms
-            setInterval(function() {
-                _live.mini  += 0.01 + Math.random() * 0.02;
-                _live.major += 0.03 + Math.random() * 0.05;
-                _live.mega  += 0.10 + Math.random() * 0.15;
-                const mini  = document.getElementById('jackpot-mini-amount');
-                const major = document.getElementById('jackpot-major-amount');
-                const mega  = document.getElementById('jackpot-mega-amount');
-                if (mini)  mini.textContent  = fmt(_live.mini);
-                if (major) major.textContent = fmt(_live.major);
-                if (mega)  mega.textContent  = fmt(_live.mega);
-            }, 200);
-
-            // Sync with server every 10s
-            fetchAndUpdate();
-            setInterval(fetchAndUpdate, 10000);
-            startCardSpotlight();
-            initLeaderboard();
-            initTournamentBanner();
-            initLiveFeed();
-        }
-
-        // Random game-card spotlight — briefly highlights a random card every 3-5s
-        // to make the lobby feel alive. Idempotent: only one loop runs at a time.
-        let _spotlightRunning = false;
-        function startCardSpotlight() {
-            if (_spotlightRunning) return;
-            _spotlightRunning = true;
-            function _doSpotlight() {
-                const cards = document.querySelectorAll('.game-card');
-                if (cards.length > 0) {
-                    const card = cards[Math.floor(Math.random() * cards.length)];
-                    card.classList.add('game-card-spotlight');
-                    setTimeout(function() { card.classList.remove('game-card-spotlight'); }, 1400);
-                }
-                setTimeout(_doSpotlight, 3000 + Math.floor(Math.random() * 2000));
-            }
-            setTimeout(_doSpotlight, 5000); // First spotlight 5s after init
-        }
-
-
-        // ── Leaderboard ──
-        function initLeaderboard() {
-            let currentCat    = 'net';
-            let currentPeriod = 'today';
-            let collapsed     = false;
-
-            const section = document.getElementById('leaderboard-section');
-            const list    = document.getElementById('leaderboard-list');
-            const toggle  = document.getElementById('leaderboard-toggle');
-            if (!section || !list || !toggle) return;
-
-            async function loadLeaderboard() {
-                list.innerHTML = '<div class="lb-loading">Loading\u2026</div>';
-                try {
-                    const res = await fetch(`/api/leaderboard?period=${currentPeriod}&category=${currentCat}`);
-                    if (!res.ok) throw new Error('fetch failed');
-                    const { players } = await res.json();
-
-                    if (!players || players.length === 0) {
-                        list.innerHTML = '<div class="lb-empty">No entries yet \u2014 be the first!</div>';
-                        return;
-                    }
-
-                    const medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
-                    list.innerHTML = players.map(p => `
-                        <div class="lb-row">
-                          <span class="lb-rank">${medals[p.rank - 1] || p.rank}</span>
-                          <span class="lb-name">${p.username}</span>
-                          <span class="lb-spins">${p.spins} spins</span>
-                          <span class="lb-amount">$${Number(p.amount).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>`).join('');
-                } catch (_) {
-                    list.innerHTML = '<div class="lb-empty">Could not load leaderboard.</div>';
-                }
-            }
-
-            // Category tabs
-            section.querySelectorAll('.lb-tab').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    section.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentCat = btn.dataset.cat;
-                    loadLeaderboard();
-                });
-            });
-
-            // Period tabs
-            section.querySelectorAll('.lb-period').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    section.querySelectorAll('.lb-period').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentPeriod = btn.dataset.period;
-                    loadLeaderboard();
-                });
-            });
-
-            // Collapse toggle
-            toggle.addEventListener('click', () => {
-                collapsed = !collapsed;
-                section.classList.toggle('collapsed', collapsed);
-            });
-            toggle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggle.click(); });
-
-            loadLeaderboard();
-            setInterval(loadLeaderboard, 30000); // refresh every 30s
         }
 
 
@@ -2664,24 +2447,7 @@ async function _renderFeaturedSpotlight() {
   if (!container || typeof games === 'undefined') return;
   container.innerHTML = '';
 
-  // --- Try to fetch server-side profitability-ranked featured games ---
   var serverFeaturedGames = [];
-  try {
-    var resp = await fetch('/api/featured-games');
-    if (resp.ok) {
-      var data = await resp.json();
-      if (data && Array.isArray(data.games) && data.games.length > 0) {
-        var gamesById = {};
-        games.forEach(function(g) { gamesById[g.id] = g; });
-        data.games.forEach(function(id) {
-          var g = gamesById[id];
-          if (g) serverFeaturedGames.push(g);
-        });
-      }
-    }
-  } catch (e) {
-    // Server unreachable — fall through to tag-based picks
-  }
 
   // --- Tag-based picks (existing logic) ---
   function pickRandom(arr, n) {
@@ -2919,32 +2685,6 @@ async function _renderFeaturedSpotlight() {
     renderDailyGoalBar();
 })();
 
-// ── Jackpot Ticker (API-driven) ─────────────────────────────────
-function loadJackpotTicker() {
-    fetch('/api/jackpots')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            var bar = document.getElementById('jackpotTickerBar');
-            if (!bar || !data.jackpots) return;
-            bar.style.display = '';
-            data.jackpots.forEach(function(jp) {
-                var el = document.getElementById('jp' + jp.tier.charAt(0).toUpperCase() + jp.tier.slice(1) + 'Amt');
-                if (el) el.textContent = '$' + Number(jp.currentAmount).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-            });
-        })
-        .catch(function() {});
-}
-
-// Auto-refresh jackpot amounts every 15 seconds
-var _jpInterval = null;
-function startJackpotPolling() {
-    loadJackpotTicker();
-    if (_jpInterval) clearInterval(_jpInterval);
-    _jpInterval = setInterval(loadJackpotTicker, 15000);
-}
-function stopJackpotPolling() {
-    if (_jpInterval) { clearInterval(_jpInterval); _jpInterval = null; }
-}
 
 // ── Big Win Feed ─────────────────────────────────
 function loadBigWinFeed() {
@@ -4134,10 +3874,3 @@ window.applyLockedGameOverlays = applyLockedGameOverlays;
 // Initial call
 setTimeout(applyLockedGameOverlays, 500);
 
-// ── Hero stats live update (biggest win today + recent wins count + grand jackpot) ──
-setTimeout(function() {
-    if (typeof _updateHeroStats === 'function') {
-        _updateHeroStats();
-        setInterval(_updateHeroStats, 120000);
-    }
-}, 1500);
