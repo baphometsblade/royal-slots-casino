@@ -41,7 +41,8 @@
         'betBoostReward', 'bonusWheelInvite',
         'reloadBonusPop', 'lossRebateOffer', 'depositCountdownOffer',
         'sessionMilestone', 'nearWinFlash',
-        'nightOwlBonus', 'timedChallenge', 'luckyCharmSelector', 'collectionAlbumWidget'
+        'nightOwlBonus', 'timedChallenge', 'luckyCharmSelector', 'collectionAlbumWidget',
+        'comebackCashback', 'vipExclusiveOffer'
     ];
 
     // Side panels, bars, banners (don't block, but clutter the screen)
@@ -66,7 +67,8 @@
         'winHistoryToast', 'luckySpinNotice', 'achievementPop', 'dailyMissionBar', 'referralInviteWidget',
         'doubleOrUpWidget', 'bonusDropTimer', 'spinStreakBarV2', 'multiplayerTicker',
         'mysteryRewardBox', 'highRollerBadge', 'happyHourBannerV2', 'balanceAlertWidget',
-        'winGoalTracker', 'socialProofPop'
+        'winGoalTracker', 'socialProofPop',
+        'spinInsurance2', 'referralMilestoneBar', 'dailyQuestBoard', 'loyaltyStreakCounter'
     ];
 
     var _lastModalTime = 0;

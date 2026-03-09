@@ -255,6 +255,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "collectionAlbumWidget",
       "luckyCharmSelector",
       "timedChallenge",
+      "comebackCashback",
+      "spinInsurance2",
+      "referralMilestoneBar",
+      "dailyQuestBoard",
+      "loyaltyStreakCounter",
+      "vipExclusiveOffer",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
