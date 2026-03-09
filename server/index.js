@@ -22,10 +22,10 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],  // casino client uses inline scripts + ethers.js CDN
-            styleSrc: ["'self'", "'unsafe-inline'"],       // inline styles for dynamic theming
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],       // inline styles + Google Fonts
             imgSrc: ["'self'", "data:", "blob:"],           // data URIs for generated assets
             connectSrc: ["'self'", "https://api.coingecko.com", "https://cloudflare-eth.com"],  // API calls + crypto price feed + ETH RPC
-            fontSrc: ["'self'", "data:"],
+            fontSrc: ["'self'", "data:", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
             objectSrc: ["'none'"],                          // no Flash/Java
             frameAncestors: ["'none'"],                     // no iframing (clickjacking protection)
             baseUri: ["'self'"],                            // prevent base tag hijacking

@@ -1655,7 +1655,7 @@
             // Restore last used bet for this game
             (function() {
                 try {
-                    var _saved = localStorage.getItem('lastBet_' + game.id);
+                    var _saved = localStorage.getItem('lastBet_' + currentGame.id);
                     if (_saved) {
                         var _parsed = parseFloat(_saved);
                         var _min = game.minBet || 0.20;
