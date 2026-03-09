@@ -243,6 +243,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "spinStreakBarV2",
       "depositCountdownOffer",
       "multiplayerTicker",
+      "mysteryRewardBox",
+      "sessionMilestone",
+      "highRollerBadge",
+      "happyHourBannerV2",
+      "nearWinFlash",
+      "balanceAlertWidget",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
