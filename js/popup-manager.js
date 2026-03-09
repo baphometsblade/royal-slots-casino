@@ -37,7 +37,8 @@
         'winCelebrationOverlay', 'mysteryGiftOverlay', 'lossStreakComfort',
         'sessionRewardPopup', 'vipLoungeInvite', 'dailyLoginCalendar',
         'socialSharePanel',
-        'hotStreakBonus', 'comebackReward'
+        'hotStreakBonus', 'comebackReward',
+        'betBoostReward', 'bonusWheelInvite'
     ];
 
     // Side panels, bars, banners (don't block, but clutter the screen)
@@ -57,7 +58,8 @@
         'cashbackStreakBar', 'betLadderPanel', 'tournamentLeaderboard',
         'slotRaceTimer', 'jackpotContribMeter', 'megaJackpotTicker',
         'playerDashWidget', 'piggyBankWidget',
-        'depositBoostBanner', 'levelProgressBar', 'gameRecommendCard', 'loyaltyMultBoost'
+        'depositBoostBanner', 'levelProgressBar', 'gameRecommendCard', 'loyaltyMultBoost',
+        'spinCashbackWidget', 'progressiveJackpotMeter', 'vipUpgradeTeaser', 'freeSpinTeaser'
     ];
 
     var _lastModalTime = 0;

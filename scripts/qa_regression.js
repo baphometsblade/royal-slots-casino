@@ -225,6 +225,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "comebackReward",
       "gameRecommendCard",
       "loyaltyMultBoost",
+      "spinCashbackWidget",
+      "betBoostReward",
+      "progressiveJackpotMeter",
+      "vipUpgradeTeaser",
+      "freeSpinTeaser",
+      "bonusWheelInvite",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
