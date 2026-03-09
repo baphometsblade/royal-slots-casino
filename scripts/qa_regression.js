@@ -267,6 +267,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "tournamentCountdownBanner",
       "depositReminder",
       "progressiveBonusMeter",
+      "jackpotAlert",
+      "sessionTimeReward",
+      "luckyNumberGame2",
+      "winConfettiBurst",
+      "slotRecommendCard",
+      "cashbackTimerOffer",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

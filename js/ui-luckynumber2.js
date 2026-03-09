@@ -1,258 +1,259 @@
-/* ui-luckynumber.js — Lucky Number Picker mini-game overlay (Sprint 44) */
-(function () {
+(function() {
     'use strict';
 
-    var STORAGE_KEY = 'ms_luckyNumberData';
-    var OVERLAY_ID = 'luckyNumberOverlay';
-    var SPINS_PER_TRIGGER = 400;
+    var ELEMENT_ID = 'luckyNumberGame2';
+    var Z_INDEX = 10400;
+    var STORAGE_KEY = 'ms_luckyNumber2';
+    var NUM_COUNT = 10;
+    var SHUFFLE_DURATION = 2000;
+    var SHUFFLE_INTERVAL = 80;
 
-    var PRIZES = [1, 2, 5, 10, 25, 50];
-    var TILE_COUNT = 9; // 3x3 grid
+    var overlayEl = null;
 
-    var _revealed = false;
-    var _chosenIndex = -1;
-    var _tileValues = [];
+    function getTodayKey() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
 
-    // ── QA bypass ──
-    function _isQA() {
+    function hasPlayedToday() {
         try {
-            return new URLSearchParams(window.location.search).get('noBonus') === '1';
+            var saved = localStorage.getItem(STORAGE_KEY);
+            return saved === getTodayKey();
         } catch (e) {
             return false;
         }
     }
 
-    // ── localStorage helpers ──
-    function _loadData() {
+    function markPlayed() {
         try {
-            var raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) return JSON.parse(raw);
-        } catch (e) { /* ignore */ }
-        return { spinCount: 0, lastTriggered: 0 };
+            localStorage.setItem(STORAGE_KEY, getTodayKey());
+        } catch (e) { /* silent */ }
     }
 
-    function _saveData(data) {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        } catch (e) { /* ignore */ }
-    }
-
-    // ── Generate random tile values ──
-    function _generateTiles() {
-        _tileValues = [];
-        for (var i = 0; i < TILE_COUNT; i++) {
-            var idx = Math.floor(Math.random() * PRIZES.length);
-            _tileValues.push(PRIZES[idx]);
-        }
-    }
-
-    // ── Create a single tile element ──
-    function _createTile(index) {
-        var tile = document.createElement('div');
-        tile.className = 's44-lucky-tile';
-        tile.setAttribute('data-index', String(index));
-
-        var front = document.createElement('div');
-        front.className = 's44-lucky-tile-front';
-        front.textContent = '?';
-        tile.appendChild(front);
-
-        var back = document.createElement('div');
-        back.className = 's44-lucky-tile-back';
-        back.textContent = '$' + _tileValues[index];
-        tile.appendChild(back);
-
-        tile.addEventListener('click', function () {
-            if (_revealed) return;
-            _onTilePick(index);
-        });
-
-        return tile;
-    }
-
-    // ── Handle tile selection ──
-    function _onTilePick(index) {
-        if (_revealed) return;
-        _revealed = true;
-        _chosenIndex = index;
-
-        var overlay = document.getElementById(OVERLAY_ID);
-        if (!overlay) return;
-
-        var tiles = overlay.querySelectorAll('.s44-lucky-tile');
-        for (var i = 0; i < tiles.length; i++) {
-            tiles[i].classList.add('s44-revealed');
-            if (i === index) {
-                tiles[i].classList.add('s44-winner');
-            } else {
-                tiles[i].classList.add('s44-loser');
+    function creditBalance(amount) {
+        if (typeof balance !== 'undefined') {
+            balance += amount;
+            if (typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay();
             }
         }
-
-        // Show result
-        var winAmount = _tileValues[index];
-        _showResult(overlay, winAmount);
-
-        // Award prize
-        if (typeof window.balance === 'number') {
-            window.balance += winAmount;
-        }
-        if (typeof window.updateBalanceDisplay === 'function') {
-            window.updateBalanceDisplay();
-        }
     }
 
-    // ── Show result section ──
-    function _showResult(overlay, amount) {
-        var resultDiv = overlay.querySelector('.s44-lucky-result');
-        if (resultDiv && resultDiv.parentNode) {
-            resultDiv.parentNode.removeChild(resultDiv);
-        }
-
-        resultDiv = document.createElement('div');
-        resultDiv.className = 's44-lucky-result';
-
-        var prizeText = document.createElement('div');
-        prizeText.className = 's44-lucky-prize';
-        prizeText.textContent = '\uD83C\uDF1F You won $' + amount + '! \uD83C\uDF1F';
-        resultDiv.appendChild(prizeText);
-
-        var claimBtn = document.createElement('button');
-        claimBtn.className = 's44-lucky-claim-btn';
-        claimBtn.textContent = 'Claim Prize';
-        claimBtn.addEventListener('click', function () {
-            _dismiss();
-        });
-        resultDiv.appendChild(claimBtn);
-
-        var card = overlay.querySelector('.s44-lucky-card');
-        if (card) {
-            card.appendChild(resultDiv);
-        }
+    function formatCurrency(val) {
+        return '$' + val.toFixed(2);
     }
 
-    // ── Build overlay ──
-    function _buildOverlay() {
-        var existing = document.getElementById(OVERLAY_ID);
-        if (existing && existing.parentNode) {
-            existing.parentNode.removeChild(existing);
-        }
+    function showGame() {
+        if (document.getElementById(ELEMENT_ID)) return;
 
-        _revealed = false;
-        _chosenIndex = -1;
-        _generateTiles();
+        overlayEl = document.createElement('div');
+        overlayEl.id = ELEMENT_ID;
+        overlayEl.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;' +
+            'background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;' +
+            'z-index:' + Z_INDEX + ';font-family:Arial,sans-serif;opacity:0;transition:opacity 0.4s ease;';
 
-        var overlay = document.createElement('div');
-        overlay.id = OVERLAY_ID;
-        overlay.className = 'lucky-number-overlay';
+        var style = document.createElement('style');
+        style.textContent = '@keyframes luckyBounceIn{0%{transform:scale(0.3);opacity:0}' +
+            '60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}' +
+            '@keyframes luckyGlow{0%{box-shadow:0 0 8px rgba(155,89,182,0.4)}' +
+            '100%{box-shadow:0 0 24px rgba(155,89,182,0.9)}}' +
+            '@keyframes luckyWinPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}';
+        overlayEl.appendChild(style);
 
         var card = document.createElement('div');
-        card.className = 's44-lucky-card';
+        card.style.cssText = 'background:linear-gradient(135deg,#1a1a2e 0%,#2d1b4e 50%,#16213e 100%);' +
+            'border:2px solid #9b59b6;border-radius:20px;padding:28px;text-align:center;color:#fff;' +
+            'max-width:400px;width:92%;box-shadow:0 8px 40px rgba(155,89,182,0.4);' +
+            'animation:luckyBounceIn 0.6s ease forwards;';
 
-        // Close button
-        var closeBtn = document.createElement('button');
-        closeBtn.className = 's44-lucky-close-btn';
-        closeBtn.textContent = '\u2715';
-        closeBtn.addEventListener('click', function () {
-            _dismiss();
-        });
-        card.appendChild(closeBtn);
+        var titleEl = document.createElement('div');
+        titleEl.style.cssText = 'font-size:24px;font-weight:bold;color:#ffd700;margin-bottom:6px;';
+        titleEl.textContent = '\uD83D\uDD2E Lucky Number';
+        card.appendChild(titleEl);
 
-        // Title
-        var title = document.createElement('div');
-        title.className = 's44-lucky-title';
-        title.textContent = '\uD83C\uDFB0 Lucky Number Picker';
-        card.appendChild(title);
+        var subtitleEl = document.createElement('div');
+        subtitleEl.style.cssText = 'font-size:13px;color:#bbb;margin-bottom:20px;';
+        subtitleEl.textContent = 'Pick your lucky number!';
+        card.appendChild(subtitleEl);
 
-        // Subtitle
-        var subtitle = document.createElement('div');
-        subtitle.className = 's44-lucky-subtitle';
-        subtitle.textContent = 'Pick a tile to reveal your prize!';
-        card.appendChild(subtitle);
+        var gridEl = document.createElement('div');
+        gridEl.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;';
 
-        // Grid
-        var grid = document.createElement('div');
-        grid.className = 's44-lucky-grid';
+        var circles = [];
+        var playerPick = null;
+        var revealed = false;
 
-        for (var i = 0; i < TILE_COUNT; i++) {
-            var tile = _createTile(i);
-            grid.appendChild(tile);
+        for (var i = 1; i <= NUM_COUNT; i++) {
+            (function(num) {
+                var circle = document.createElement('div');
+                circle.style.cssText = 'width:54px;height:54px;border-radius:50%;' +
+                    'background:linear-gradient(135deg,#2d1b4e 0%,#3d2b5e 100%);' +
+                    'border:2px solid #9b59b6;display:flex;align-items:center;justify-content:center;' +
+                    'font-size:20px;font-weight:bold;color:#e8d5f5;cursor:pointer;' +
+                    'transition:all 0.25s ease;user-select:none;margin:0 auto;';
+                circle.textContent = String(num);
+                circle.addEventListener('mouseenter', function() {
+                    if (!revealed && playerPick === null) {
+                        circle.style.borderColor = '#ffd700';
+                        circle.style.transform = 'scale(1.1)';
+                    }
+                });
+                circle.addEventListener('mouseleave', function() {
+                    if (!revealed && playerPick === null) {
+                        circle.style.borderColor = '#9b59b6';
+                        circle.style.transform = 'scale(1)';
+                    }
+                });
+                circle.addEventListener('click', function() {
+                    if (revealed || playerPick !== null) return;
+                    playerPick = num;
+                    circle.style.background = 'linear-gradient(135deg,#6c3483 0%,#9b59b6 100%)';
+                    circle.style.borderColor = '#ffd700';
+                    circle.style.transform = 'scale(1.1)';
+                    circle.style.color = '#ffd700';
+                    startReveal();
+                });
+                circles.push({ el: circle, num: num });
+                gridEl.appendChild(circle);
+            })(i);
         }
-        card.appendChild(grid);
 
-        overlay.appendChild(card);
+        card.appendChild(gridEl);
 
-        // Click outside to dismiss
-        overlay.addEventListener('click', function (e) {
-            if (e.target === overlay) {
-                _dismiss();
-            }
+        var resultEl = document.createElement('div');
+        resultEl.style.cssText = 'font-size:16px;color:#bbb;min-height:28px;margin-bottom:16px;';
+        resultEl.textContent = 'Tap a number to play';
+        card.appendChild(resultEl);
+
+        var collectBtn = document.createElement('button');
+        collectBtn.style.cssText = 'background:linear-gradient(135deg,#daa520 0%,#ffd700 100%);color:#1a1a2e;' +
+            'border:none;border-radius:8px;padding:12px 32px;font-size:16px;font-weight:bold;cursor:pointer;' +
+            'display:none;transition:transform 0.2s,box-shadow 0.2s;';
+        collectBtn.textContent = 'Collect';
+        collectBtn.addEventListener('mouseenter', function() {
+            collectBtn.style.transform = 'scale(1.05)';
+            collectBtn.style.boxShadow = '0 4px 16px rgba(255,215,0,0.5)';
+        });
+        collectBtn.addEventListener('mouseleave', function() {
+            collectBtn.style.transform = 'scale(1)';
+            collectBtn.style.boxShadow = 'none';
+        });
+        card.appendChild(collectBtn);
+
+        overlayEl.appendChild(card);
+        document.body.appendChild(overlayEl);
+
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                overlayEl.style.opacity = '1';
+            });
         });
 
-        return overlay;
-    }
+        function startReveal() {
+            resultEl.textContent = 'Revealing...';
+            var winningNum = 1 + Math.floor(Math.random() * NUM_COUNT);
+            var shuffleCount = Math.floor(SHUFFLE_DURATION / SHUFFLE_INTERVAL);
+            var step = 0;
 
-    // ── Show the overlay ──
-    function _showOverlay() {
-        if (_isQA()) return;
+            var shuffleId = setInterval(function() {
+                var randomHighlight = 1 + Math.floor(Math.random() * NUM_COUNT);
+                for (var j = 0; j < circles.length; j++) {
+                    var c = circles[j];
+                    if (c.num === playerPick) continue;
+                    if (c.num === randomHighlight) {
+                        c.el.style.background = 'linear-gradient(135deg,#3d5a80 0%,#5a8ab5 100%)';
+                    } else {
+                        c.el.style.background = 'linear-gradient(135deg,#2d1b4e 0%,#3d2b5e 100%)';
+                    }
+                }
+                step++;
+                if (step >= shuffleCount) {
+                    clearInterval(shuffleId);
+                    finishReveal(winningNum);
+                }
+            }, SHUFFLE_INTERVAL);
+        }
 
-        var overlay = _buildOverlay();
-        document.body.appendChild(overlay);
-
-        requestAnimationFrame(function () {
-            overlay.classList.add('s44-active');
-        });
-    }
-
-    // ── Dismiss overlay ──
-    function _dismiss() {
-        var overlay = document.getElementById(OVERLAY_ID);
-        if (!overlay) return;
-
-        overlay.classList.remove('s44-active');
-        setTimeout(function () {
-            if (overlay.parentNode) {
-                overlay.parentNode.removeChild(overlay);
+        function finishReveal(winningNum) {
+            revealed = true;
+            for (var j = 0; j < circles.length; j++) {
+                var c = circles[j];
+                if (c.num === playerPick) continue;
+                c.el.style.background = 'linear-gradient(135deg,#2d1b4e 0%,#3d2b5e 100%)';
+                c.el.style.cursor = 'default';
             }
-        }, 300);
-    }
 
-    // ── Track spin and trigger at threshold ──
-    function _trackSpin() {
-        if (_isQA()) return;
+            var winCircle = circles[winningNum - 1];
+            if (winningNum !== playerPick) {
+                winCircle.el.style.background = 'linear-gradient(135deg,#e74c3c 0%,#c0392b 100%)';
+                winCircle.el.style.borderColor = '#ff6b6b';
+                winCircle.el.style.color = '#fff';
+                winCircle.el.style.transform = 'scale(1.15)';
+            }
 
-        var data = _loadData();
-        data.spinCount = (data.spinCount || 0) + 1;
+            var diff = Math.abs(playerPick - winningNum);
+            var prize = 0;
+            var msg = '';
 
-        if (data.spinCount >= SPINS_PER_TRIGGER) {
-            data.spinCount = 0;
-            data.lastTriggered = Date.now();
-            _saveData(data);
+            if (diff === 0) {
+                prize = 5 + Math.random() * 20;
+                msg = '\uD83C\uDF1F EXACT MATCH! You win ' + formatCurrency(prize) + '!';
+                winCircle.el.style.background = 'linear-gradient(135deg,#2ecc71 0%,#27ae60 100%)';
+                winCircle.el.style.borderColor = '#2ecc71';
+                winCircle.el.style.animation = 'luckyWinPulse 0.5s ease 3';
+            } else if (diff === 1) {
+                prize = 1 + Math.random() * 4;
+                msg = '\u2728 So close! Adjacent number! You win ' + formatCurrency(prize) + '!';
+                circles[playerPick - 1].el.style.borderColor = '#ffd700';
+                winCircle.el.style.borderColor = '#ffd700';
+            } else {
+                prize = 0.25;
+                msg = 'Not this time. Consolation: ' + formatCurrency(prize);
+                circles[playerPick - 1].el.style.borderColor = '#666';
+            }
 
-            // Delay overlay to avoid interrupting spin animation
-            setTimeout(function () {
-                _showOverlay();
-            }, 2000);
-        } else {
-            _saveData(data);
+            resultEl.style.color = diff === 0 ? '#2ecc71' : (diff === 1 ? '#ffd700' : '#999');
+            resultEl.style.fontWeight = 'bold';
+            resultEl.textContent = msg;
+
+            collectBtn.textContent = 'Collect ' + formatCurrency(prize);
+            collectBtn.style.display = 'inline-block';
+
+            var prizeToCredit = prize;
+            collectBtn.addEventListener('click', function() {
+                creditBalance(prizeToCredit);
+                markPlayed();
+                dismissOverlay();
+            });
         }
     }
 
-    // ── Public API ──
-    window._luckyNumberTrackSpin = _trackSpin;
-    window.dismissLuckyNumber = _dismiss;
+    function dismissOverlay() {
+        if (!overlayEl) return;
+        overlayEl.style.opacity = '0';
+        var el = overlayEl;
+        setTimeout(function() {
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+        }, 500);
+        overlayEl = null;
+    }
 
-    // ── Init ──
-    function _init() {
-        if (_isQA()) return;
-        // Pre-build nothing on init; overlay is created on demand
+    function init() {
+        if (hasPlayedToday()) return;
+        showGame();
+    }
+
+    function cleanup() {
+        dismissOverlay();
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(_init, 1000);
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(init, 7000);
         });
     } else {
-        setTimeout(_init, 1000);
+        setTimeout(init, 7000);
     }
+
+    window._luckyNumber2 = { cleanup: cleanup, show: showGame };
 })();

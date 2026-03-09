@@ -43,7 +43,8 @@
         'sessionMilestone', 'nearWinFlash',
         'nightOwlBonus', 'timedChallenge', 'luckyCharmSelector', 'collectionAlbumWidget',
         'comebackCashback', 'vipExclusiveOffer',
-        'lossRecoveryWheel', 'depositReminder'
+        'lossRecoveryWheel', 'depositReminder',
+        'sessionTimeReward', 'luckyNumberGame2', 'cashbackTimerOffer'
     ];
 
     // Side panels, bars, banners (don't block, but clutter the screen)
@@ -70,7 +71,8 @@
         'mysteryRewardBox', 'highRollerBadge', 'happyHourBannerV2', 'balanceAlertWidget',
         'winGoalTracker', 'socialProofPop',
         'spinInsurance2', 'referralMilestoneBar', 'dailyQuestBoard', 'loyaltyStreakCounter',
-        'betMultiplierTimer', 'achievementToast2', 'tournamentCountdownBanner', 'progressiveBonusMeter'
+        'betMultiplierTimer', 'achievementToast2', 'tournamentCountdownBanner', 'progressiveBonusMeter',
+        'jackpotAlert', 'winConfettiBurst', 'slotRecommendCard'
     ];
 
     var _lastModalTime = 0;
