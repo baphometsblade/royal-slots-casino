@@ -1,132 +1,93 @@
-(function () {
-  'use strict';
+(function(){
+    'use strict';
 
-  var NUDGE_THRESHOLD = 3.00;   // show when balance drops below $3
-  var POLL_MS         = 2500;
-  var HIDE_MS         = 8000;   // auto-hide after 8s if not interacted with
+    var ELEMENT_ID = 'quickDepositBanner';
+    var Z_INDEX = 10400;
+    var STORAGE_KEY = 'ms_quickDeposit';
+    var DISMISS_DURATION_MS = 30 * 60 * 1000;
 
-  var _bar        = null;
-  var _hideTimer  = null;
-  var _visible    = false;
-  var _lastBal    = null;
-
-  function getBalance() {
-    if (typeof balance !== 'undefined' && typeof balance === 'number') return balance;
-    return null;
-  }
-
-  function isLoggedIn() {
-    return typeof currentUser !== 'undefined' && currentUser !== null;
-  }
-
-  function openDeposit() {
-    hide();
-    if (typeof showWalletModal === 'function') {
-      showWalletModal();
+    function isDismissed() {
+        try {
+            var ts = localStorage.getItem(STORAGE_KEY);
+            if (!ts) return false;
+            var dismissedAt = parseInt(ts, 10);
+            if (isNaN(dismissedAt)) return false;
+            return (Date.now() - dismissedAt) < DISMISS_DURATION_MS;
+        } catch(e) { return false; }
     }
-  }
 
-  function buildBar() {
-    if (_bar) return;
-    var bar = document.createElement('div');
-    bar.id = 'qdNudge';
-    bar.style.cssText = [
-      'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px)',
-      'z-index:16000;background:linear-gradient(135deg,#1e1b4b,#312e81)',
-      'border:1px solid rgba(167,139,250,.4);border-radius:14px',
-      'padding:10px 16px;display:flex;align-items:center;gap:12px',
-      'box-shadow:0 8px 32px rgba(0,0,0,.6);opacity:0',
-      'transition:opacity .3s ease,transform .3s ease;pointer-events:none'
-    ].join(';');
+    function setDismissed() {
+        try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch(e) {}
+    }
 
-    var icon = document.createElement('span');
-    icon.style.cssText = 'font-size:20px;flex-shrink:0';
-    icon.textContent = '\uD83D\uDCB0';
-    bar.appendChild(icon);
+    function showToast(msg) {
+        var toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:50px;left:50%;transform:translateX(-50%);' +
+            'background:rgba(22,33,62,0.95);color:#ffd700;padding:8px 18px;border-radius:8px;' +
+            'font-size:12px;font-weight:600;z-index:' + (Z_INDEX + 10) + ';' +
+            'border:1px solid rgba(255,215,0,0.3);box-shadow:0 4px 12px rgba(0,0,0,0.5);' +
+            'transition:opacity 0.4s ease;font-family:inherit;';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(function() {
+            toast.style.opacity = '0';
+            setTimeout(function() {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 400);
+        }, 2000);
+    }
 
-    var msg = document.createElement('span');
-    msg.style.cssText = 'color:rgba(255,255,255,.85);font-size:12px;white-space:nowrap';
-    msg.textContent = 'Low balance — top up:';
-    bar.appendChild(msg);
+    function init() {
+        if (document.getElementById(ELEMENT_ID)) return;
+        if (isDismissed()) return;
 
-    var btns = [
-      { label: '+$5',  amt: 5  },
-      { label: '+$10', amt: 10 },
-      { label: '+$25', amt: 25 }
-    ];
+        var banner = document.createElement('div');
+        banner.id = ELEMENT_ID;
+        banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;height:28px;' +
+            'z-index:' + Z_INDEX + ';display:flex;align-items:center;justify-content:center;' +
+            'gap:10px;font-family:inherit;font-size:11px;color:#daa520;' +
+            'background:rgba(26,26,46,0.88);border-top:1px solid rgba(255,215,0,0.12);' +
+            'backdrop-filter:blur(4px);';
 
-    btns.forEach(function (b) {
-      var btn = document.createElement('button');
-      btn.style.cssText = [
-        'background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff',
-        'border:none;border-radius:8px;padding:5px 10px;font-size:12px',
-        'font-weight:700;cursor:pointer;white-space:nowrap'
-      ].join(';');
-      btn.textContent = b.label;
-      btn.addEventListener('click', openDeposit);
-      bar.appendChild(btn);
-    });
+        var shimmerStyle = document.createElement('style');
+        shimmerStyle.textContent = '@keyframes qdShimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}';
+        document.head.appendChild(shimmerStyle);
 
-    var close = document.createElement('button');
-    close.style.cssText = 'background:none;border:none;color:rgba(255,255,255,.35);font-size:16px;cursor:pointer;padding:0 0 0 4px;flex-shrink:0';
-    close.textContent = '\u00D7';
-    close.addEventListener('click', function () { hide(true); });
-    bar.appendChild(close);
+        var textEl = document.createElement('span');
+        textEl.style.cssText = 'background:linear-gradient(90deg,#daa520,#ffd700,#daa520);' +
+            'background-size:200px 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;' +
+            'background-clip:text;animation:qdShimmer 3s linear infinite;font-weight:600;';
+        textEl.textContent = '\uD83D\uDCB3 Quick Deposit \u2014 Instant play with bonus!';
 
-    document.body.appendChild(bar);
-    _bar = bar;
-  }
+        var depositBtn = document.createElement('button');
+        depositBtn.style.cssText = 'background:linear-gradient(135deg,#daa520,#b8860b);color:#fff;' +
+            'border:none;border-radius:4px;padding:2px 10px;font-size:10px;font-weight:700;' +
+            'cursor:pointer;font-family:inherit;';
+        depositBtn.textContent = 'Deposit';
+        depositBtn.addEventListener('click', function() {
+            showToast('Coming soon!');
+        });
 
-  function show() {
-    if (_visible) return;
-    buildBar();
-    _visible = true;
-    _bar.style.pointerEvents = 'auto';
-    // double-RAF for transition
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        _bar.style.opacity = '1';
-        _bar.style.transform = 'translateX(-50%) translateY(0)';
-      });
-    });
+        var dismissBtn = document.createElement('button');
+        dismissBtn.style.cssText = 'background:none;border:none;color:rgba(255,255,255,0.3);' +
+            'font-size:14px;cursor:pointer;padding:0 4px;line-height:1;font-family:inherit;';
+        dismissBtn.textContent = '\u00D7';
+        dismissBtn.addEventListener('click', function() {
+            setDismissed();
+            banner.style.display = 'none';
+        });
 
-    if (_hideTimer) clearTimeout(_hideTimer);
-    _hideTimer = setTimeout(function () { hide(); }, HIDE_MS);
-  }
+        banner.appendChild(textEl);
+        banner.appendChild(depositBtn);
+        banner.appendChild(dismissBtn);
+        document.body.appendChild(banner);
+    }
 
-  function hide(permanent) {
-    if (!_visible || !_bar) return;
-    _visible = false;
-    _bar.style.opacity = '0';
-    _bar.style.transform = 'translateX(-50%) translateY(20px)';
-    _bar.style.pointerEvents = 'none';
-    if (_hideTimer) { clearTimeout(_hideTimer); _hideTimer = null; }
-    if (permanent) _lastBal = NUDGE_THRESHOLD + 1; // suppress for this session
-  }
-
-  function check() {
-    if (!isLoggedIn()) { if (_visible) hide(); return; }
-
-    var bal = getBalance();
-    if (bal === null) return;
-
-    if (bal < NUDGE_THRESHOLD) {
-      show();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(init, 6000);
+        });
     } else {
-      if (_visible) hide();
-      _lastBal = bal;
+        setTimeout(init, 6000);
     }
-  }
-
-  function init() {
-    setInterval(check, POLL_MS);
-    check();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 3000); });
-  } else {
-    setTimeout(init, 3000);
-  }
-
-}());
+})();

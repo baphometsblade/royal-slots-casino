@@ -279,6 +279,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "gameRatingPopup",
       "betStreakTracker",
       "promoCodeInput",
+      "liveBetFeed",
+      "powerHourBanner",
+      "spinCounterBadge",
+      "hotColdIndicator",
+      "quickDepositBanner",
+      "seasonPassWidget",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

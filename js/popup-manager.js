@@ -74,7 +74,9 @@
         'spinInsurance2', 'referralMilestoneBar', 'dailyQuestBoard', 'loyaltyStreakCounter',
         'betMultiplierTimer', 'achievementToast2', 'tournamentCountdownBanner', 'progressiveBonusMeter',
         'jackpotAlert', 'winConfettiBurst', 'slotRecommendCard',
-        'speedBoostToken', 'dailyJackpotPool', 'betStreakTracker', 'promoCodeInput'
+        'speedBoostToken', 'dailyJackpotPool', 'betStreakTracker', 'promoCodeInput',
+        'liveBetFeed', 'powerHourBanner', 'spinCounterBadge', 'hotColdIndicator',
+        'quickDepositBanner', 'seasonPassWidget'
     ];
 
     var _lastModalTime = 0;
