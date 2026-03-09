@@ -1414,12 +1414,41 @@
         function showDailyBonusModal() {
             checkDailyBonusReset();
             renderDailyCalendar();
-            document.getElementById('dailyBonusModal').classList.add('active');
+            var modal = document.getElementById('dailyBonusModal');
+            modal.classList.add('active');
+            // Attach programmatic close handlers (backup for inline onclick)
+            _attachDailyBonusCloseHandlers(modal);
         }
 
 
         function closeDailyBonusModal() {
-            document.getElementById('dailyBonusModal').classList.remove('active');
+            var modal = document.getElementById('dailyBonusModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function _attachDailyBonusCloseHandlers(modal) {
+            if (!modal || modal._closeHandlersAttached) return;
+            modal._closeHandlersAttached = true;
+            // Backdrop click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeDailyBonusModal();
+            });
+            // SKIP button (programmatic, doesn't rely on inline onclick)
+            var skipBtns = modal.querySelectorAll('.daily-skip-btn');
+            for (var i = 0; i < skipBtns.length; i++) {
+                skipBtns[i].addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeDailyBonusModal();
+                });
+            }
+            // X close button
+            var closeBtns = modal.querySelectorAll('[aria-label="Close"]');
+            for (var j = 0; j < closeBtns.length; j++) {
+                closeBtns[j].addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeDailyBonusModal();
+                });
+            }
         }
 
 

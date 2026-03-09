@@ -14,7 +14,6 @@
             updateSoundButton();
             initQaTools();
             applyUrlDebugConfig();
-            startJackpotTicker();
         }
 
 
@@ -184,53 +183,6 @@
         }
 
 
-        // ── Notification Badge ─────────────────────────────────
-        async function updateNotifBadge() {
-            const token = localStorage.getItem(STORAGE_KEY_TOKEN);
-            const headers = token ? { Authorization: 'Bearer ' + token } : {};
-
-            const safeFetch = async (url) => {
-                try {
-                    const res = await fetch(url, { headers });
-                    if (!res.ok) return null;
-                    return await res.json();
-                } catch (_) {
-                    return null;
-                }
-            };
-
-            const [cashback, depositMatch, firstDeposit] = await Promise.all([
-                safeFetch('/api/dailycashback/status'),
-                safeFetch('/api/depositmatch/status'),
-                safeFetch('/api/firstdeposit/status'),
-            ]);
-
-            let count = 0;
-            if (cashback && cashback.eligible && !cashback.claimed) count++;
-            if (depositMatch && depositMatch.eligible && !depositMatch.claimed) count++;
-            if (firstDeposit && firstDeposit.eligible && !firstDeposit.claimed) count++;
-
-            const badge = document.getElementById('notifBadge');
-            if (!badge) return;
-            if (count > 0) {
-                badge.textContent = count;
-                badge.style.display = 'inline-flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
-        function initNotifBadge() {
-            if (!currentUser || currentUser.isGuest) return;
-            // Clear any existing poll to prevent duplication on re-login
-            if (window._notifPollInterval) {
-                clearInterval(window._notifPollInterval);
-                window._notifPollInterval = null;
-            }
-            updateNotifBadge();
-            window._notifPollInterval = setInterval(updateNotifBadge, 60000);
-        }
-
         // Post-auth initialization — runs after login or on page load if already authenticated
         function onPostAuthInit() {
             checkDailyBonusReset();
@@ -244,21 +196,6 @@
             if (!dailyBonusState.claimedToday && !suppressBonus) {
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
-            // Set a grace period flag so the promo engine doesn't auto-fire popups
-            // immediately after login (on top of the daily bonus). Promo popups
-            // triggered by gameplay events (spins, deposits) are unaffected.
-            window._postLoginGracePeriod = true;
-            setTimeout(function() { window._postLoginGracePeriod = false; }, 10000);
-            if (typeof initPromoEngine === 'function') initPromoEngine();
-            if (typeof initHourlyBonus === 'function') initHourlyBonus();
-            if (typeof renderFavQuickBar === 'function') renderFavQuickBar();
-            initNotifBadge();
-            // Load lobby enhancements
-            if (typeof startJackpotPolling === 'function') startJackpotPolling();
-            if (typeof loadBigWinFeed === 'function') loadBigWinFeed();
-            if (typeof loadPersonalizedOffers === 'function') setTimeout(loadPersonalizedOffers, 2000);
-            if (typeof loadCampaignBanners === 'function') setTimeout(loadCampaignBanners, 3000);
-            if (typeof loadActiveEvents === 'function') setTimeout(loadActiveEvents, 3500);
             startSessionDurationWatch();
         }
 
@@ -309,13 +246,6 @@
                 return;
             }
 
-            // Pre-fill referral code from ?ref= URL parameter
-            var _refParam = new URLSearchParams(window.location.search).get('ref');
-            if (_refParam) {
-                var refInput = document.getElementById('regReferral');
-                if (refInput) refInput.value = _refParam.toUpperCase();
-            }
-
             // Fast-path: if no session exists, show auth immediately.
             // currentUser is already restored from localStorage by globals.js.
             if (!currentUser) {
@@ -327,8 +257,6 @@
                 initBase();
                 updateAuthButton();
                 showAuthModal();
-                // If a referral code is in the URL, auto-switch to register tab
-                if (_refParam) switchAuthTab('register');
                 return;
             }
 
@@ -416,10 +344,6 @@
                     }
                     break;
                 default:
-                    if (e.key === '?' || e.key === '/') {
-                        if (typeof _toggleHotkeySheet === 'function') _toggleHotkeySheet();
-                        return;
-                    }
                     break;
             }
         });
@@ -465,9 +389,6 @@
                 'walletModal':      function() { if (typeof hideWalletModal === 'function') hideWalletModal(); },
                 'dailyBonusModal':  function() { if (typeof closeDailyBonusModal === 'function') closeDailyBonusModal(); },
                 'bonusWheelModal':  function() { if (typeof closeBonusWheelModal === 'function') closeBonusWheelModal(); },
-                'bundleShopModal':  function() { if (typeof closeBundleShop === 'function') closeBundleShop(); },
-                'giftModal':        function() { if (typeof closeGiftModal === 'function') closeGiftModal(); },
-                'contestModal':     function() { if (typeof closeContestModal === 'function') closeContestModal(); },
                 'autoplayOverlay':  function() { if (typeof closeAutoplayModal === 'function') closeAutoplayModal(); }
             };
             if (el.id && closeFnMap[el.id]) {
