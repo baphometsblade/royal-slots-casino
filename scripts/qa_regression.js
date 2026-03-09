@@ -219,6 +219,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "vipLoungeInvite",
       "megaJackpotTicker",
       "playerDashWidget",
+      "depositBoostBanner",
+      "hotStreakBonus",
+      "levelProgressBar",
+      "comebackReward",
+      "gameRecommendCard",
+      "loyaltyMultBoost",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

@@ -36,7 +36,8 @@
         'mysteryBoxOverlay', 'vipWheelOverlay', 'luckyNumberOverlay',
         'winCelebrationOverlay', 'mysteryGiftOverlay', 'lossStreakComfort',
         'sessionRewardPopup', 'vipLoungeInvite', 'dailyLoginCalendar',
-        'socialSharePanel'
+        'socialSharePanel',
+        'hotStreakBonus', 'comebackReward'
     ];
 
     // Side panels, bars, banners (don't block, but clutter the screen)
@@ -55,7 +56,8 @@
         'wagerProgressPanel', 'freeSpinMeterBar', 'dailyDepositGoal',
         'cashbackStreakBar', 'betLadderPanel', 'tournamentLeaderboard',
         'slotRaceTimer', 'jackpotContribMeter', 'megaJackpotTicker',
-        'playerDashWidget', 'piggyBankWidget'
+        'playerDashWidget', 'piggyBankWidget',
+        'depositBoostBanner', 'levelProgressBar', 'gameRecommendCard', 'loyaltyMultBoost'
     ];
 
     var _lastModalTime = 0;
@@ -83,8 +85,17 @@
         if (!el) return;
         el.style.display = 'none';
         el.style.visibility = 'hidden';
-        el.style.pointerEvents = 'none';
+        // NOTE: do NOT set pointerEvents here — display:none already blocks
+        // interaction, and setting pointerEvents:none persists if a feature
+        // script later re-shows the element, breaking close buttons.
         el.classList.remove('active');
+    }
+
+    function _restorePointerEvents(el) {
+        if (!el) return;
+        if (el.style.pointerEvents === 'none') {
+            el.style.pointerEvents = '';
+        }
     }
 
     function _isModal(id) {
@@ -121,6 +132,9 @@
             }
             return;
         }
+        // Ensure pointer events are working (may have been disabled by a prior hide)
+        var allowedEl = document.getElementById(id);
+        _restorePointerEvents(allowedEl);
         _activeModalId = id;
         _lastModalTime = Date.now();
     }
@@ -147,6 +161,10 @@
     }
 
     function _handlePanelShow(id) {
+        // Ensure pointer events work on the newly-shown panel
+        var shownEl = document.getElementById(id);
+        _restorePointerEvents(shownEl);
+
         var visibleCount = _countVisiblePanels();
         if (visibleCount > MAX_PANELS) {
             // Hide the oldest panels to stay under limit
@@ -183,7 +201,7 @@
         // Most features use display:block or classList.add('active')
         el.style.display = '';
         el.style.visibility = '';
-        el.style.pointerEvents = '';
+        el.style.pointerEvents = ''; // clear any previous block
         el.classList.add('active');
 
         _activeModalId = nextId;
@@ -225,6 +243,21 @@
             subtree: true,
             childList: true
         });
+    }
+
+    /* ── Startup pointer-events repair ──────────────────────────────────────
+     * Clears any lingering pointerEvents:none from previous popup-manager
+     * versions that incorrectly set it on modal/panel elements.
+     * ──────────────────────────────────────────────────────────────────── */
+
+    function _clearLegacyPointerEvents() {
+        var allIds = MODAL_IDS.concat(PANEL_IDS);
+        for (var i = 0; i < allIds.length; i++) {
+            var el = document.getElementById(allIds[i]);
+            if (el && el.style.pointerEvents === 'none') {
+                el.style.pointerEvents = '';
+            }
+        }
     }
 
     /* ── Initial cleanup ─────────────────────────────────────────────────── */
@@ -294,6 +327,9 @@
         if (new URLSearchParams(window.location.search).get('noBonus') === '1') return;
 
         _setupObserver();
+
+        // Clear any legacy pointerEvents:none stuck on modal/panel elements
+        _clearLegacyPointerEvents();
 
         // Initial cleanup after all features have initialized (they use 500-1200ms delays)
         setTimeout(_initialCleanup, 2500);
