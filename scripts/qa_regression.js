@@ -237,6 +237,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "achievementPop",
       "dailyMissionBar",
       "referralInviteWidget",
+      "doubleOrUpWidget",
+      "bonusDropTimer",
+      "lossRebateOffer",
+      "spinStreakBarV2",
+      "depositCountdownOffer",
+      "multiplayerTicker",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

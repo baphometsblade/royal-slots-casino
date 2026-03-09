@@ -39,7 +39,7 @@
         'socialSharePanel',
         'hotStreakBonus', 'comebackReward',
         'betBoostReward', 'bonusWheelInvite',
-        'reloadBonusPop'
+        'reloadBonusPop', 'lossRebateOffer', 'depositCountdownOffer'
     ];
 
     // Side panels, bars, banners (don't block, but clutter the screen)
@@ -61,7 +61,8 @@
         'playerDashWidget', 'piggyBankWidget',
         'depositBoostBanner', 'levelProgressBar', 'gameRecommendCard', 'loyaltyMultBoost',
         'spinCashbackWidget', 'progressiveJackpotMeter', 'vipUpgradeTeaser', 'freeSpinTeaser',
-        'winHistoryToast', 'luckySpinNotice', 'achievementPop', 'dailyMissionBar', 'referralInviteWidget'
+        'winHistoryToast', 'luckySpinNotice', 'achievementPop', 'dailyMissionBar', 'referralInviteWidget',
+        'doubleOrUpWidget', 'bonusDropTimer', 'spinStreakBarV2', 'multiplayerTicker'
     ];
 
     var _lastModalTime = 0;
