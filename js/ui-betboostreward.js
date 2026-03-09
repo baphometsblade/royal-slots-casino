@@ -24,7 +24,7 @@
             'position: fixed',
             'inset: 0',
             'background: rgba(8,20,40,0.9)',
-            'z-index: 99600',
+            'z-index:10400',
             'display: none',
             'align-items: center',
             'justify-content: center',

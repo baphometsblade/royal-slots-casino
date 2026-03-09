@@ -596,7 +596,7 @@ function renderGames() {
             recent = recent.filter(id => id !== gameId);
             recent.unshift(gameId);
             if (recent.length > MAX_RECENTLY_PLAYED) recent = recent.slice(0, MAX_RECENTLY_PLAYED);
-            localStorage.setItem(RECENTLY_PLAYED_KEY, JSON.stringify(recent));
+            try { localStorage.setItem(RECENTLY_PLAYED_KEY, JSON.stringify(recent)); } catch (e) { /* ignore */ }
             renderRecentlyPlayed();
         }
 
@@ -2087,7 +2087,7 @@ function claimHourlyBonus() {
     if (typeof updateBalance === 'function') updateBalance();
     if (typeof saveStats === 'function') saveStats();
     state.lastClaim = now;
-    localStorage.setItem(_HB_KEY, JSON.stringify(state));
+    try { localStorage.setItem(_HB_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
     _hbRefresh();
     if (typeof showToast === 'function') showToast('🎁 Free Bonus: $' + award + ' added!', 'success');
     else if (typeof showMessage === 'function') showMessage('🎁 Free Bonus: $' + award + '!', 'win');
@@ -4073,7 +4073,7 @@ function applyLockedGameOverlays() {
                 overlay.style.cssText = [
                     'position:absolute',
                     'inset:0',
-                    'z-index:10',
+                    'z-index:10400',
                     'background:rgba(0,0,0,0.65)',
                     'display:flex',
                     'flex-direction:column',

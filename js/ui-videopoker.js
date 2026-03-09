@@ -420,7 +420,7 @@
     var s = document.createElement('style');
     s.id  = 'vp-styles';
     s.textContent = [
-      '.vp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9500;align-items:center;justify-content:center;padding:.75rem;box-sizing:border-box}',
+      '.vp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:10400;align-items:center;justify-content:center;padding:.75rem;box-sizing:border-box}',
       '.vp-panel{background:#0d1b2a;border:2px solid #1e3a5f;border-radius:1rem;padding:1.2rem;width:100%;max-width:520px;max-height:96vh;overflow-y:auto;display:flex;flex-direction:column;gap:.75rem;color:#e2e8f0;font-family:inherit}',
       /* header */
       '.vp-header{display:flex;justify-content:space-between;align-items:flex-start}',

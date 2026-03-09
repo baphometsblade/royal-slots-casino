@@ -71,7 +71,7 @@
         bar.id = BAR_ID;
         bar.style.cssText = [
             'position:fixed', 'bottom:0', 'left:0', 'right:0',
-            'z-index:9700',
+            'z-index:10400',
             'height:38px',
             'background:#0d0d1a',
             'border-top:1px solid rgba(123,47,247,0.35)',

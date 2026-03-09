@@ -182,7 +182,7 @@
         style.textContent = [
             '/* Cashback Wheel FAB */',
             '.cbw-fab {',
-            '  position: fixed; bottom: 80px; left: 16px; z-index: 19400;',
+            '  position: fixed; bottom: 80px; left: 16px; z-index:10400;',
             '  width: 52px; height: 52px; border-radius: 50%;',
             '  background: linear-gradient(135deg, #f59e0b, #ef4444);',
             '  border: 2px solid rgba(255,255,255,0.25);',
@@ -214,7 +214,7 @@
             '',
             '/* Panel Overlay */',
             '.cbw-overlay {',
-            '  position: fixed; inset: 0; z-index: 19500;',
+            '  position: fixed; inset: 0; z-index:10400;',
             '  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);',
             '  display: none; align-items: center; justify-content: center;',
             '  opacity: 0; transition: opacity 0.3s ease;',
@@ -255,7 +255,7 @@
             '}',
             '.cbw-pointer {',
             '  position: absolute; top: -10px; left: 50%;',
-            '  transform: translateX(-50%); z-index: 2;',
+            '  transform: translateX(-50%); z-index:10400;',
             '  width: 0; height: 0;',
             '  border-left: 12px solid transparent;',
             '  border-right: 12px solid transparent;',
@@ -340,7 +340,7 @@
             '  width: 36px; height: 36px; border-radius: 50%;',
             '  background: radial-gradient(circle, #fbbf24 30%, #f59e0b);',
             '  border: 3px solid rgba(255,255,255,0.5);',
-            '  z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.4);',
+            '  z-index:10400; box-shadow: 0 2px 8px rgba(0,0,0,0.4);',
             '}'
         ].join('\n');
         document.head.appendChild(style);

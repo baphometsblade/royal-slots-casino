@@ -42,7 +42,7 @@
         wheelWrap.style.cssText = 'position:relative;width:260px;height:260px;margin:0 auto 20px auto;';
 
         var pointer = document.createElement('div');
-        pointer.style.cssText = 'position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid #ffd700;z-index:2;filter:drop-shadow(0 0 6px rgba(255,215,0,0.7));';
+        pointer.style.cssText = 'position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:20px solid #ffd700;z-index:10400;filter:drop-shadow(0 0 6px rgba(255,215,0,0.7));';
 
         var canvas = document.createElement('canvas');
         canvas.width = 260;

@@ -69,12 +69,12 @@
             date: new Date().toDateString(),
             quests: getTodaysQuests()
         };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
         return state;
     }
 
     function saveQuestState(state) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
     }
 
     function createQuestBoard() {

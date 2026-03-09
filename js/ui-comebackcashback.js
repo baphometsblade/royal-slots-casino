@@ -23,7 +23,7 @@
         var absentMs = lastVisit > 0 ? (now - lastVisit) : 0;
 
         // Always update last visit time
-        localStorage.setItem(STORAGE_KEY, String(now));
+        try { localStorage.setItem(STORAGE_KEY, String(now)); } catch (e) { /* ignore */ }
 
         // Only show panel if absent > 24 hours
         if (lastVisit === 0 || absentMs < ABSENCE_THRESHOLD_MS) return;

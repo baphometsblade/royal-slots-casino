@@ -38,7 +38,7 @@
         if (typeof showWinToast === 'function') { showWinToast(msg, 'epic'); return; }
         var t = document.createElement('div');
         t.textContent = msg;
-        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#fbbf24;color:#000;padding:10px 20px;border-radius:8px;font-weight:700;z-index:99999;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#fbbf24;color:#000;padding:10px 20px;border-radius:8px;font-weight:700;z-index:10400;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
         document.body.appendChild(t);
         setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 4000);
     }

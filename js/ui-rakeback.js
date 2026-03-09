@@ -14,7 +14,7 @@
             'position:fixed', 'bottom:80px', 'left:50%', 'transform:translateX(-50%)',
             'background:linear-gradient(135deg,#22c55e,#16a34a)', 'color:#fff',
             'padding:12px 20px', 'border-radius:10px', 'font-weight:800',
-            'font-size:14px', 'z-index:99999', 'box-shadow:0 4px 20px rgba(0,0,0,.5)',
+            'font-size:14px', 'z-index:10400', 'box-shadow:0 4px 20px rgba(0,0,0,.5)',
             'pointer-events:none', 'text-align:center', 'max-width:300px'
         ].join(';');
         t.textContent = msg;
@@ -68,7 +68,7 @@
         var s = document.createElement('style');
         s.id = 'rakebackStyles';
         s.textContent = [
-            '#rakebackOverlay{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
+            '#rakebackOverlay{display:none;position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
             '#rakebackOverlay.active{display:flex}',
             '#rakebackModal{width:90%;max-width:480px;max-height:85vh;overflow-y:auto;background:#0d0d1a;border-radius:16px;border:1px solid rgba(255,215,0,.2);box-shadow:0 20px 60px rgba(0,0,0,.8);padding:24px}',
             '.rb-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}',

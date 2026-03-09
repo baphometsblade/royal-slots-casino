@@ -37,7 +37,7 @@
             'position:fixed', 'bottom:80px', 'left:50%', 'transform:translateX(-50%)',
             'background:' + bg, 'color:#000',
             'padding:12px 22px', 'border-radius:10px', 'font-weight:800',
-            'font-size:14px', 'z-index:99999', 'box-shadow:0 4px 20px rgba(0,0,0,.5)',
+            'font-size:14px', 'z-index:10400', 'box-shadow:0 4px 20px rgba(0,0,0,.5)',
             'pointer-events:none', 'text-align:center', 'max-width:320px'
         ].join(';');
         t.textContent = msg;

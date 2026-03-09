@@ -100,7 +100,7 @@
         var s = document.createElement('style');
         s.id = 'vipPerksStyles';
         s.textContent = [
-            '#vpBadge{position:fixed;top:12px;right:12px;z-index:18000;' +
+            '#vpBadge{position:fixed;top:12px;right:12px;z-index:10400;' +
                 'display:flex;align-items:center;gap:6px;' +
                 'padding:6px 14px 6px 10px;border-radius:20px;' +
                 'cursor:pointer;user-select:none;font-family:inherit;' +
@@ -111,7 +111,7 @@
             '.vp-name{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff}',
             '.vp-bar-wrap{width:50px;height:4px;background:rgba(0,0,0,.35);border-radius:2px;overflow:hidden}',
             '.vp-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}',
-            '#vpTooltip{position:fixed;top:56px;right:12px;z-index:18001;' +
+            '#vpTooltip{position:fixed;top:56px;right:12px;z-index:10400;' +
                 'background:linear-gradient(160deg,#0f172a,#1e1b4b);' +
                 'border:1px solid rgba(255,255,255,.15);border-radius:12px;' +
                 'padding:14px 18px;min-width:240px;max-width:300px;' +

@@ -118,7 +118,7 @@
         s.id = 'jpPoolStyles';
         s.textContent = [
             /* ── Ticker bar ── */
-            '#jpBar{position:fixed;top:0;left:0;right:0;z-index:19000;height:42px;' +
+            '#jpBar{position:fixed;top:0;left:0;right:0;z-index:10400;height:42px;' +
                 'background:linear-gradient(135deg,#1a1500 0%,#3d2e00 30%,#614a00 60%,#3d2e00 100%);' +
                 'border-bottom:2px solid rgba(255,215,0,.35);' +
                 'display:flex;align-items:center;justify-content:center;gap:24px;' +
@@ -146,7 +146,7 @@
             '@keyframes jp-tick-pulse{0%{transform:scale(1.08);color:#fff}100%{transform:scale(1);color:#ffd700}}',
 
             /* ── Celebration overlay ── */
-            '#jpCelebration{position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.92);' +
+            '#jpCelebration{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.92);' +
                 'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
                 'padding:24px;box-sizing:border-box;opacity:0;transition:opacity .4s ease;pointer-events:none}',
             '#jpCelebration.active{opacity:1;pointer-events:auto}',

@@ -76,31 +76,31 @@
         card.style.animation = 'nightOwlSlideIn 0.5s ease-out';
 
         var moon = document.createElement('div');
-        moon.style.cssText = 'font-size:64px;margin-bottom:16px;position:relative;z-index:1;';
+        moon.style.cssText = 'font-size:64px;margin-bottom:16px;position:relative;z-index:10400;';
         moon.textContent = '\uD83C\uDF19';
         card.appendChild(moon);
 
         var title = document.createElement('div');
         title.style.cssText = 'font-size:24px;font-weight:bold;color:#c4b5fd;margin-bottom:8px;' +
-            'text-shadow:0 0 20px rgba(124,58,237,0.5);position:relative;z-index:1;';
+            'text-shadow:0 0 20px rgba(124,58,237,0.5);position:relative;z-index:10400;';
         title.textContent = 'NIGHT OWL BONUS!';
         card.appendChild(title);
 
         var desc = document.createElement('div');
-        desc.style.cssText = 'font-size:15px;color:#a5b4fc;margin-bottom:24px;line-height:1.5;position:relative;z-index:1;';
+        desc.style.cssText = 'font-size:15px;color:#a5b4fc;margin-bottom:24px;line-height:1.5;position:relative;z-index:10400;';
         desc.textContent = 'Playing late? Here\'s $' + BONUS_AMOUNT + ' for the grind!';
         card.appendChild(desc);
 
         var amount = document.createElement('div');
         amount.style.cssText = 'font-size:36px;font-weight:bold;color:#fbbf24;margin-bottom:24px;' +
-            'text-shadow:0 0 20px rgba(251,191,36,0.4);position:relative;z-index:1;';
+            'text-shadow:0 0 20px rgba(251,191,36,0.4);position:relative;z-index:10400;';
         amount.textContent = '+$' + BONUS_AMOUNT + '.00';
         card.appendChild(amount);
 
         var claimBtn = document.createElement('button');
         claimBtn.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;' +
             'border:none;padding:14px 40px;border-radius:10px;font-size:18px;font-weight:bold;' +
-            'cursor:pointer;transition:all 0.3s;box-shadow:0 4px 20px rgba(124,58,237,0.4);position:relative;z-index:1;';
+            'cursor:pointer;transition:all 0.3s;box-shadow:0 4px 20px rgba(124,58,237,0.4);position:relative;z-index:10400;';
         claimBtn.textContent = 'Claim Bonus';
         claimBtn.addEventListener('mouseenter', function () {
             claimBtn.style.transform = 'scale(1.05)';
@@ -130,7 +130,7 @@
 
         var closeBtn = document.createElement('div');
         closeBtn.style.cssText = 'position:absolute;top:12px;right:16px;color:#9ca3af;font-size:22px;' +
-            'cursor:pointer;z-index:2;line-height:1;';
+            'cursor:pointer;z-index:10400;line-height:1;';
         closeBtn.textContent = '\u2715';
         closeBtn.addEventListener('click', function () {
             window.dismissNightOwlBonus();

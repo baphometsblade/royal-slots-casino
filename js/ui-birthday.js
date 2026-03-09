@@ -13,7 +13,7 @@
     _stylesDone = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#bdayOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:19800;',
+      '#bdayOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10400;',
       'align-items:center;justify-content:center}',
       '#bdayOverlay.active{display:flex}',
       '#bdayModal{background:linear-gradient(160deg,#1a0533,#0d0d1a);',
@@ -136,7 +136,7 @@
   function _showToast(msg) {
     var t = document.createElement('div');
     t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#fbbf24,#d97706);color:#000;font-weight:800;font-size:14px;padding:12px 24px;border-radius:999px;z-index:99999;box-shadow:0 4px 24px rgba(251,191,36,0.5);pointer-events:none;transition:opacity 0.4s;white-space:nowrap';
+    t.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#fbbf24,#d97706);color:#000;font-weight:800;font-size:14px;padding:12px 24px;border-radius:999px;z-index:10400;box-shadow:0 4px 24px rgba(251,191,36,0.5);pointer-events:none;transition:opacity 0.4s;white-space:nowrap';
     document.body.appendChild(t);
     setTimeout(function () { t.style.opacity = '0'; }, 3000);
     setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3500);

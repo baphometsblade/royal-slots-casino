@@ -34,7 +34,7 @@
         var s = document.createElement('style');
         s.id = 'luckyTimeStyles';
         s.textContent = [
-            '#ltBanner{position:fixed;top:0;left:0;right:0;z-index:20000;' +
+            '#ltBanner{position:fixed;top:0;left:0;right:0;z-index:10400;' +
                 'height:44px;display:flex;align-items:center;justify-content:center;gap:12px;' +
                 'font-family:inherit;transform:translateY(-100%);transition:transform .4s cubic-bezier(.34,1.56,.64,1)}',
             '#ltBanner.active{transform:translateY(0)}',

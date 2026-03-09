@@ -39,7 +39,7 @@
         var el = document.createElement('div');
         el.id = 'depositMatchOverlay';
         el.className = 'deposit-match-overlay';
-        el.style.cssText = 'display:none;position:fixed;inset:0;z-index:20600;' +
+        el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10400;' +
             'background:rgba(0,0,0,0.82);align-items:center;justify-content:center;';
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-modal', 'true');

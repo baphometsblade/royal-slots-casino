@@ -45,7 +45,7 @@
         var s = document.createElement('style');
         s.id = 'referralBoardStyles';
         s.textContent = [
-            '#referralLeaderboard{position:fixed;bottom:16px;left:16px;z-index:15000;',
+            '#referralLeaderboard{position:fixed;bottom:16px;left:16px;z-index:10400;',
             '  width:260px;background:linear-gradient(145deg,#1a1a2e,#16213e);',
             '  border:1px solid rgba(255,215,0,.3);border-radius:12px;',
             '  box-shadow:0 8px 32px rgba(0,0,0,.5);font-family:inherit;',

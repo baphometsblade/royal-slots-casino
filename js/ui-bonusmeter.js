@@ -43,7 +43,7 @@
         if (typeof showToast === 'function') { showToast(msg, 'success'); return; }
         var t = document.createElement('div');
         t.textContent = msg;
-        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;z-index:99999;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;z-index:10400;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
         document.body.appendChild(t);
         setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 3000);
     }
@@ -70,7 +70,7 @@
 
         var bar = document.createElement('div');
         bar.id = BAR_ID;
-        bar.style.cssText = 'position:fixed;top:60px;left:0;width:100%;background:linear-gradient(90deg,#064e3b,#065f46);padding:8px 16px;z-index:9997;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;gap:12px;';
+        bar.style.cssText = 'position:fixed;top:60px;left:0;width:100%;background:linear-gradient(90deg,#064e3b,#065f46);padding:8px 16px;z-index:10400;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;gap:12px;';
 
         var label = document.createElement('span');
         label.textContent = '\uD83D\uDD25 Bonus Meter';
@@ -97,7 +97,7 @@
             var ms = MILESTONES[i];
             var marker = document.createElement('div');
             marker.className = 'bonus-meter-marker';
-            marker.style.cssText = 'position:absolute;top:-2px;left:' + ms.pct + '%;transform:translateX(-50%);width:20px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;z-index:2;cursor:default;transition:background 0.3s,box-shadow 0.3s;';
+            marker.style.cssText = 'position:absolute;top:-2px;left:' + ms.pct + '%;transform:translateX(-50%);width:20px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;z-index:10400;cursor:default;transition:background 0.3s,box-shadow 0.3s;';
 
             if (data.claimed[i]) {
                 marker.style.background = '#10b981';

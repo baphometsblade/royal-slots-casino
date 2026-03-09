@@ -21,7 +21,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#hiOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#hiOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#hiOverlay.active{display:flex}',
       '#hiModal{background:linear-gradient(135deg,#050a00,#0a1500);border:2px solid rgba(74,222,128,.25);border-radius:20px;padding:18px 20px;max-width:400px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#hiModal h2{color:#4ade80;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

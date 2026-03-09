@@ -498,7 +498,7 @@
     s.id  = 'rl-styles';
     s.textContent = [
       /* overlay */
-      '.rl-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9200;align-items:center;justify-content:center;padding:.5rem;box-sizing:border-box}',
+      '.rl-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10400;align-items:center;justify-content:center;padding:.5rem;box-sizing:border-box}',
       /* panel */
       '.rl-panel{background:#0f172a;border:1px solid #1e3a5f;border-radius:1rem;padding:1.2rem;width:100%;max-width:700px;max-height:98vh;overflow-y:auto;display:flex;flex-direction:column;gap:.75rem;color:#e2e8f0;font-family:inherit}',
       /* header */
@@ -528,7 +528,7 @@
       '.rl-num-cell:hover{filter:brightness(1.3)}',
       '.rl-num-red{background:#b91c1c}',
       '.rl-num-black{background:#1e1e1e}',
-      '.rl-num-label{pointer-events:none;z-index:1}',
+      '.rl-num-label{pointer-events:none;z-index:10400}',
       /* col bets */
       '.rl-col-bets{display:flex;flex-direction:column;gap:2px;width:42px;min-width:42px}',
       /* outside cells */
@@ -544,7 +544,7 @@
       '.rl-cell-landed{outline:3px solid #fbbf24!important;animation:rlLand .4s ease}',
       '@keyframes rlLand{0%{transform:scale(1.2)}100%{transform:scale(1)}}',
       /* chip on cell */
-      '.rl-chip{position:absolute;top:-6px;right:-6px;background:#fbbf24;color:#000;border-radius:50%;min-width:18px;height:18px;font-size:.58rem;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 3px;z-index:2;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
+      '.rl-chip{position:absolute;top:-6px;right:-6px;background:#fbbf24;color:#000;border-radius:50%;min-width:18px;height:18px;font-size:.58rem;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 3px;z-index:10400;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
       /* chip selector */
       '.rl-chip-row{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}',
       '.rl-chip-label{font-size:.78rem;color:#64748b;margin-right:.1rem}',

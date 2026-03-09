@@ -17,7 +17,7 @@
     _stylesInjected = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#rbOverlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:18500;display:none;align-items:center;justify-content:center}',
+      '#rbOverlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10400;display:none;align-items:center;justify-content:center}',
       '#rbOverlay.active{display:flex}',
       '#rbModal{background:linear-gradient(135deg,#1a1035,#0d0d1a);border:2px solid rgba(139,92,246,.4);border-radius:18px;padding:28px 32px;max-width:360px;width:90%;text-align:center}',
       '#rbModal h2{color:#a78bfa;font-size:20px;margin:0 0 8px}',

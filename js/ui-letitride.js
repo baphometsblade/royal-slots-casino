@@ -19,7 +19,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#lirOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#lirOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#lirOverlay.active{display:flex}',
       '#lirModal{background:linear-gradient(135deg,#0a0505,#1a0a0a);border:2px solid rgba(251,191,36,.3);border-radius:20px;padding:18px 20px;max-width:480px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#lirModal h2{color:#fde68a;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

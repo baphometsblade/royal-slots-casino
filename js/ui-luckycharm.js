@@ -111,7 +111,7 @@
             var confirm_el = document.createElement('div');
             confirm_el.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;' +
                 'background:linear-gradient(135deg,#0d1117,#1a2332);border-radius:0 12px 12px 0;' +
-                'display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;';
+                'display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10400;';
 
             var emojiEl = document.createElement('div');
             emojiEl.style.cssText = 'font-size:48px;margin-bottom:12px;animation:luckyBounce 0.5s ease-out;';
@@ -161,7 +161,7 @@
         // Close button
         var closeBtn = document.createElement('div');
         closeBtn.style.cssText = 'position:absolute;top:10px;right:12px;color:#64748b;' +
-            'font-size:16px;cursor:pointer;line-height:1;z-index:3;';
+            'font-size:16px;cursor:pointer;line-height:1;z-index:10400;';
         closeBtn.textContent = '\u2715';
         closeBtn.addEventListener('click', function () {
             window.dismissLuckyCharmSelector();

@@ -33,7 +33,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#scOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#scOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#scOverlay.active{display:flex}',
       '#scModal{background:linear-gradient(135deg,#0d0a00,#1a1400);border:2px solid rgba(251,191,36,.3);border-radius:20px;padding:18px 20px;max-width:400px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#scModal h2{color:#fde68a;font-size:20px;margin:0 0 2px;letter-spacing:2px}',
@@ -231,7 +231,7 @@
 
       var icon2 = document.createElement('div');
       icon2.className = 'sc-icon';
-      icon2.style.cssText = 'font-size:26px;position:relative;z-index:2';
+      icon2.style.cssText = 'font-size:26px;position:relative;z-index:10400';
       cell.appendChild(icon2);
 
       var cover = document.createElement('div');

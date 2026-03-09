@@ -5,7 +5,7 @@
     var _activeTab = 'bigwins';
 
     var STYLES = [
-        '#lb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;align-items:center;justify-content:center;}',
+        '#lb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10400;align-items:center;justify-content:center;}',
         '#lb-overlay.lb-visible{display:flex;}',
         '#lb-modal{background:#1a1a2e;border:1px solid #ffd700;border-radius:12px;width:min(700px,96vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}',
         '#lb-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #333;}',

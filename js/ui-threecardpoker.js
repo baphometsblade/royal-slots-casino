@@ -19,7 +19,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#tcpOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#tcpOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#tcpOverlay.active{display:flex}',
       '#tcpModal{background:linear-gradient(135deg,#020b14,#041526);border:2px solid rgba(96,165,250,.3);border-radius:20px;padding:18px 20px;max-width:460px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#tcpModal h2{color:#93c5fd;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

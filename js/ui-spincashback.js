@@ -71,7 +71,7 @@
             'border: 1px solid #00d4ff',
             'border-radius: 12px',
             'padding: 14px 16px',
-            'z-index: 8800',
+            'z-index:10400',
             'box-shadow: 0 4px 24px rgba(0,212,255,0.18)',
             'font-family: "Segoe UI", Arial, sans-serif',
             'color: #e0f7ff',

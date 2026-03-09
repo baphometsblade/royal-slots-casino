@@ -41,7 +41,7 @@
     t.textContent = msg;
     t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
       'background:#1e293b;color:#f1f5f9;padding:10px 20px;border-radius:8px;' +
-      'font-size:14px;z-index:20000;border:1px solid #334155;pointer-events:none;' +
+      'font-size:14px;z-index:10400;border:1px solid #334155;pointer-events:none;' +
       'box-shadow:0 4px 20px rgba(0,0,0,0.5);';
     document.body.appendChild(t);
     setTimeout(function () { t.remove(); }, 2800);
@@ -318,7 +318,7 @@
       document.head.appendChild(styleEl);
     }
     _overlayEl = _el('div',
-      'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;' +
+      'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10400;' +
       'display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);'
     );
     _overlayEl.addEventListener('click', function (e) {

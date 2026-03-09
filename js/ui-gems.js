@@ -165,7 +165,7 @@ function openGemsShop() {
     overlay.style.cssText = [
         'position:fixed',
         'inset:0',
-        'z-index:9999',
+        'z-index:10400',
         'background:rgba(0,0,0,0.85)',
         'display:flex',
         'align-items:center',

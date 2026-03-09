@@ -14,7 +14,7 @@
 
     var s = document.createElement('style');
     s.textContent = [
-      '#wrPanel{position:fixed;bottom:80px;left:18px;z-index:14000;width:220px;',
+      '#wrPanel{position:fixed;bottom:80px;left:18px;z-index:10400;width:220px;',
       'background:linear-gradient(160deg,#0d0d1a,#1a0a2e);',
       'border:1px solid rgba(139,92,246,.35);border-radius:12px;',
       'box-shadow:0 6px 24px rgba(0,0,0,.6);font-size:12px;color:rgba(255,255,255,.85);',

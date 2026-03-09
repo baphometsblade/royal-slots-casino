@@ -75,7 +75,7 @@
         var s = document.createElement('style');
         s.id = 'nearMissBonusStyles';
         s.textContent = [
-            '#nmToast{position:fixed;bottom:90px;right:16px;z-index:25000;' +
+            '#nmToast{position:fixed;bottom:90px;right:16px;z-index:10400;' +
                 'background:linear-gradient(160deg,#451a03,#78350f,#92400e);' +
                 'border:2px solid rgba(251,191,36,.5);border-radius:16px;' +
                 'padding:14px 18px;max-width:280px;' +

@@ -15,7 +15,7 @@
     var s = document.createElement('style');
     s.id = 'vipWheelStyles';
     s.textContent = [
-      '#vwOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:19800;display:none;align-items:center;justify-content:center}',
+      '#vwOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:10400;display:none;align-items:center;justify-content:center}',
       '#vwOverlay.active{display:flex}',
       '#vwModal{background:linear-gradient(160deg,#0d0d1a 0%,#1a1035 100%);border:2px solid rgba(255,215,0,.3);border-radius:20px;padding:28px;max-width:420px;width:92%;text-align:center}',
       '#vwModal h2{color:#ffd700;font-size:22px;margin:0 0 4px}',
@@ -23,8 +23,8 @@
       '.vw-wheel-wrap{position:relative;width:260px;height:260px;margin:0 auto 18px}',
       '.vw-wheel{width:260px;height:260px;border-radius:50%;border:4px solid rgba(255,215,0,.5);position:relative;transition:transform 4s cubic-bezier(.17,.67,.12,.99);overflow:hidden}',
       '.vw-segment{position:absolute;width:100%;height:100%;display:flex;align-items:flex-start;justify-content:center;padding-top:18px;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.5)}',
-      '.vw-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #ffd700;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}',
-      '.vw-center-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#ffd700,#f59e0b);border:3px solid rgba(255,255,255,.3);color:#000;font-weight:900;font-size:12px;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center}',
+      '.vw-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #ffd700;z-index:10400;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}',
+      '.vw-center-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#ffd700,#f59e0b);border:3px solid rgba(255,255,255,.3);color:#000;font-weight:900;font-size:12px;cursor:pointer;z-index:10400;display:flex;align-items:center;justify-content:center}',
       '.vw-center-btn:hover{opacity:.9}',
       '.vw-center-btn:disabled{opacity:.5;cursor:not-allowed}',
       '#vwPrize{display:none;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.3);border-radius:10px;padding:14px;margin-bottom:14px}',

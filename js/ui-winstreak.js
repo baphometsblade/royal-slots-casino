@@ -17,7 +17,7 @@
     _stylesInjected = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#wsBar{position:fixed;bottom:70px;left:12px;z-index:15500;background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid rgba(129,140,248,.4);border-radius:10px;padding:8px 12px;display:none;align-items:center;gap:8px;box-shadow:0 2px 12px rgba(99,102,241,.3);transition:all 0.3s ease}',
+      '#wsBar{position:fixed;bottom:70px;left:12px;z-index:10400;background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid rgba(129,140,248,.4);border-radius:10px;padding:8px 12px;display:none;align-items:center;gap:8px;box-shadow:0 2px 12px rgba(99,102,241,.3);transition:all 0.3s ease}',
       '#wsBar.active{display:flex}',
       '#wsBar.ws-fire{border-color:rgba(251,146,60,.6);background:linear-gradient(135deg,#431407,#7c2d12);box-shadow:0 2px 16px rgba(251,146,60,.4)}',
       '#wsBar.ws-epic{border-color:rgba(251,191,36,.7);background:linear-gradient(135deg,#1c1917,#44403c);box-shadow:0 2px 20px rgba(251,191,36,.5);animation:wsGlow 1.5s ease-in-out infinite alternate}',

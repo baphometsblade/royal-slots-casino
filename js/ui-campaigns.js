@@ -15,7 +15,7 @@
         var s = document.createElement('style');
         s.id = 'campaignStyles';
         s.textContent = [
-            '#campaignsOverlay{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
+            '#campaignsOverlay{display:none;position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
             '#campaignsOverlay.active{display:flex}',
             '#campaignsModal{position:relative;width:90%;max-width:560px;max-height:85vh;overflow-y:auto;background:#0d0d1a;border-radius:16px;border:1px solid rgba(255,215,0,.2);box-shadow:0 20px 60px rgba(0,0,0,.8);padding:24px}',
             '.cmp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}',
@@ -281,7 +281,7 @@
 
     function _showCampaignToast(count) {
         var t = document.createElement('div');
-        t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.5);animation:cmpToastIn .3s ease';
+        t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10400;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.5);animation:cmpToastIn .3s ease';
         var style = document.createElement('style');
         style.textContent = '@keyframes cmpToastIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
         document.head.appendChild(style);

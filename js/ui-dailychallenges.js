@@ -167,13 +167,13 @@
         s.id = 'dailyChallengeStyles';
         s.textContent = [
             '#dcPanel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.85);' +
-                'z-index:27000;background:linear-gradient(160deg,#0d1117,#161b22);' +
+                'z-index:10400;background:linear-gradient(160deg,#0d1117,#161b22);' +
                 'border:2px solid rgba(88,166,255,.4);border-radius:20px;padding:24px 20px;' +
                 'max-width:400px;width:92%;max-height:80vh;overflow-y:auto;' +
                 'box-shadow:0 0 40px rgba(88,166,255,.2);color:#e6edf3;font-family:inherit;' +
                 'opacity:0;transition:opacity .3s ease,transform .3s ease}',
             '#dcPanel.active{opacity:1;transform:translate(-50%,-50%) scale(1)}',
-            '#dcOverlay{position:fixed;inset:0;z-index:26500;background:rgba(0,0,0,.75);' +
+            '#dcOverlay{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.75);' +
                 'opacity:0;transition:opacity .3s ease}',
             '#dcOverlay.active{opacity:1}',
             '.dc-header{text-align:center;margin-bottom:16px}',
@@ -199,7 +199,7 @@
             '.dc-claim-btn:hover{opacity:.85}',
             '.dc-close-btn{display:block;margin:12px auto 0;background:none;border:none;' +
                 'color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;text-decoration:underline}',
-            '#dcFab{position:fixed;bottom:140px;left:16px;z-index:19000;width:48px;height:48px;' +
+            '#dcFab{position:fixed;bottom:140px;left:16px;z-index:10400;width:48px;height:48px;' +
                 'border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);' +
                 'border:2px solid rgba(139,92,246,.5);color:#fff;font-size:22px;' +
                 'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
@@ -479,7 +479,7 @@
         s.id = 'dcSlotWidgetStyles';
         s.textContent = [
             '#dcSlotWidget{',
-            '  position:fixed;bottom:90px;right:16px;z-index:1000;',
+            '  position:fixed;bottom:90px;right:16px;z-index:10400;',
             '  max-width:260px;width:max-content;',
             '  background:rgba(13,17,23,.92);',
             '  border:1.5px solid rgba(251,191,36,.55);',

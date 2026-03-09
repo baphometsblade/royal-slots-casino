@@ -50,7 +50,7 @@
     var s = document.createElement('style');
     s.id = 's42LossLimitStyles';
     s.textContent = [
-      '#lossLimitBar{position:fixed;bottom:0;left:0;right:0;z-index:18500;',
+      '#lossLimitBar{position:fixed;bottom:0;left:0;right:0;z-index:10400;',
       'background:linear-gradient(90deg,#1a1035 0%,#2d1b4e 100%);',
       'border-top:2px solid rgba(255,165,0,.5);padding:10px 18px;',
       'display:none;align-items:center;justify-content:space-between;',

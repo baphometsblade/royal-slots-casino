@@ -48,7 +48,7 @@
             }
         } catch (e) {
             var reset = { count: 1, lastDate: getTodayStr() };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(reset));
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reset)); } catch (e2) { /* ignore */ }
             return reset;
         }
     }

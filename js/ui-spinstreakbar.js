@@ -64,7 +64,7 @@
             'left:0',
             'width:100%',
             'height:' + BAR_HEIGHT,
-            'z-index:9500',
+            'z-index:10400',
             'font-family:sans-serif',
             'display:flex',
             'align-items:center',

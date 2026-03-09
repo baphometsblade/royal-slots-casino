@@ -28,7 +28,7 @@
                 `height:${size}px`,
                 `left:${x}px`,
                 `top:${y}px`,
-                'z-index:999',
+                'z-index:10400',
             ].join(';');
             btn.style.position = btn.style.position || 'relative';
             btn.style.overflow = btn.style.overflow || 'hidden';

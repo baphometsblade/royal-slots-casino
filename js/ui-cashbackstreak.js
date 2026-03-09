@@ -131,7 +131,7 @@
       'background:linear-gradient(135deg,#1a1a2e,#16213e);' +
       'border:1px solid rgba(255,215,0,0.4);border-radius:10px;' +
       'padding:10px 20px;color:#ffd700;font-size:14px;font-weight:700;' +
-      'z-index:10000;box-shadow:0 4px 16px rgba(0,0,0,0.5);' +
+      'z-index:10400;box-shadow:0 4px 16px rgba(0,0,0,0.5);' +
       'animation:ddg-fadein 0.3s ease;';
     toast.textContent = '\uD83D\uDCB0 Cashback +$' + amount.toFixed(2) + '!';
     document.body.appendChild(toast);
@@ -152,7 +152,7 @@
       'position:fixed;top:60px;left:50%;transform:translateX(-50%);' +
       'background:linear-gradient(135deg,#1a1a2e,#0f3460);' +
       'border:1px solid rgba(255,215,0,0.25);border-radius:12px;' +
-      'padding:10px 18px;z-index:9500;font-family:inherit;color:#fff;' +
+      'padding:10px 18px;z-index:10400;font-family:inherit;color:#fff;' +
       'box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;' +
       'align-items:center;gap:14px;display:none;';
 

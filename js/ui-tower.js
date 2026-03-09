@@ -23,7 +23,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#towerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#towerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#towerOverlay.active{display:flex}',
       '#towerModal{background:linear-gradient(135deg,#030a1a,#0a1628);border:2px solid rgba(56,189,248,.3);border-radius:20px;padding:18px 20px;max-width:400px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#towerModal h2{color:#38bdf8;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

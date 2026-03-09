@@ -15,7 +15,7 @@
         var style = document.createElement('style');
         style.id = 'mysteryDropStyles';
         style.textContent = [
-            '#mysteryDropOverlay{position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;animation:mdFadeIn .4s ease}',
+            '#mysteryDropOverlay{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;animation:mdFadeIn .4s ease}',
             '@keyframes mdFadeIn{from{opacity:0}to{opacity:1}}',
             '#mysteryDropCard{background:linear-gradient(135deg,#1a0533,#2d1b69);border:2px solid rgba(139,92,246,.6);border-radius:20px;padding:32px 28px;text-align:center;max-width:320px;width:90%;box-shadow:0 0 60px rgba(139,92,246,.4)}',
             '.md-chest{font-size:72px;display:block;margin-bottom:16px;animation:mdChestPop .6s ease .5s both}',
@@ -41,7 +41,7 @@
     function _showToast(msg) {
         var toast = document.createElement('div');
         toast.textContent = msg;
-        toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(139,92,246,.95);color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;z-index:30001;pointer-events:none;transition:opacity .4s';
+        toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(139,92,246,.95);color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;z-index:10400;pointer-events:none;transition:opacity .4s';
         document.body.appendChild(toast);
         setTimeout(function () {
             toast.style.opacity = '0';

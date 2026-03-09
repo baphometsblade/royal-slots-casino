@@ -100,7 +100,7 @@
         widget.id = WIDGET_ID;
         widget.style.cssText = [
             'position:fixed', 'bottom:48px', 'left:14px',
-            'z-index:9650',
+            'z-index:10400',
             'background:linear-gradient(145deg,#0f0820,#1e0e40)',
             'border:1px solid rgba(123,47,247,0.5)',
             'border-radius:14px', 'padding:10px 14px',

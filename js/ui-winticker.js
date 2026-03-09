@@ -105,7 +105,7 @@
         s.id = 'winTickerStyles';
         s.textContent = [
             '#wtToast{position:fixed;top:48px;left:50%;transform:translateX(-50%) translateY(-120%);' +
-                'z-index:18500;border-radius:10px;padding:8px 18px;' +
+                'z-index:10400;border-radius:10px;padding:8px 18px;' +
                 'max-width:440px;width:92%;display:flex;align-items:center;gap:8px;' +
                 'font-family:inherit;box-shadow:0 4px 16px rgba(0,0,0,.35);' +
                 'transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .25s ease;opacity:0}',

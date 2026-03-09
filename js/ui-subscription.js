@@ -13,7 +13,7 @@
         var s = document.createElement('style');
         s.id = 'subscriptionStyles';
         s.textContent = [
-            '#subOverlay{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
+            '#subOverlay{display:none;position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
             '#subOverlay.active{display:flex}',
             '#subModal{width:90%;max-width:540px;max-height:88vh;overflow-y:auto;background:#0d0d1a;border-radius:16px;border:1px solid rgba(255,215,0,.2);box-shadow:0 20px 60px rgba(0,0,0,.8);padding:0}',
             '.sub-header{padding:24px 24px 16px;background:linear-gradient(135deg,rgba(255,215,0,.08),transparent);border-bottom:1px solid rgba(255,255,255,.06)}',
@@ -44,7 +44,7 @@
     function _showToast(msg) {
         if (typeof showToast === 'function') { showToast(msg); return; }
         var t = document.createElement('div');
-        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid rgba(255,215,0,.3);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:99999;pointer-events:none;transition:opacity .4s';
+        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid rgba(255,215,0,.3);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:10400;pointer-events:none;transition:opacity .4s';
         t.textContent = msg;
         document.body.appendChild(t);
         setTimeout(function() { t.style.opacity = '0'; }, 3500);

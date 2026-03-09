@@ -57,7 +57,7 @@
 
         var chip = document.createElement('div');
         chip.id = 'betSuggestChip';
-        chip.style.cssText = 'position:fixed;bottom:52px;right:16px;z-index:9980;display:none;cursor:pointer;transition:transform 0.2s,opacity 0.3s;';
+        chip.style.cssText = 'position:fixed;bottom:52px;right:16px;z-index:10400;display:none;cursor:pointer;transition:transform 0.2s,opacity 0.3s;';
 
         // Inner container
         var inner = document.createElement('div');

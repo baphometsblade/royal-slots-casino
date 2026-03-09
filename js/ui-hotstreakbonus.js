@@ -37,7 +37,7 @@
         overlay.id = OVERLAY_ID;
         overlay.style.cssText = [
             'position:fixed', 'inset:0',
-            'z-index:99500',
+            'z-index:10400',
             'display:flex', 'flex-direction:column',
             'align-items:center', 'justify-content:center',
             'background:rgba(10,5,20,0.88)',

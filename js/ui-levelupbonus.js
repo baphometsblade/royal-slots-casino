@@ -16,7 +16,7 @@
     _stylesInjected = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#lubOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:20000;display:none;align-items:center;justify-content:center}',
+      '#lubOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:10400;display:none;align-items:center;justify-content:center}',
       '#lubOverlay.active{display:flex}',
       '#lubModal{background:linear-gradient(135deg,#0c0a1e,#1a1040);border:2px solid rgba(167,139,250,.5);border-radius:20px;padding:32px 36px;max-width:380px;width:90%;text-align:center;animation:lubPop .4s cubic-bezier(.175,.885,.32,1.275)}',
       '@keyframes lubPop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}',

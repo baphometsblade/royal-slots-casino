@@ -27,7 +27,7 @@
 
     // Snooze helpers
     function _snooze(tierId) {
-        localStorage.setItem('vft_snoozed_' + tierId, Date.now());
+        try { localStorage.setItem('vft_snoozed_' + tierId, Date.now()); } catch (e) { /* ignore */ }
     }
 
     function _isSnoozed(tierId) {
@@ -44,7 +44,7 @@
         var style = document.createElement('style');
         style.id = 'vftStyles';
         style.textContent = [
-            '#vftPanel{position:fixed;right:16px;bottom:80px;z-index:19000;width:300px;background:#0d0d1a;border:1px solid rgba(255,215,0,.4);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.7);animation:vftSlideIn .4s ease;overflow:hidden}',
+            '#vftPanel{position:fixed;right:16px;bottom:80px;z-index:10400;width:300px;background:#0d0d1a;border:1px solid rgba(255,215,0,.4);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.7);animation:vftSlideIn .4s ease;overflow:hidden}',
             '@keyframes vftSlideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}',
             '.vft-header{background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,215,0,.05));padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,215,0,.2)}',
             '.vft-badge{font-size:12px;font-weight:800;color:#ffd700;letter-spacing:1px}',

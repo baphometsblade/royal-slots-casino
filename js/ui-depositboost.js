@@ -40,7 +40,7 @@
         t.style.cssText = [
             'position:fixed', 'bottom:80px', 'left:50%', 'transform:translateX(-50%)',
             'background:#1a1a2e', 'color:#fff', 'padding:10px 20px',
-            'border-radius:8px', 'z-index:99999', 'font-size:14px',
+            'border-radius:8px', 'z-index:10400', 'font-size:14px',
             'pointer-events:none', 'opacity:0',
             'transition:opacity 0.3s ease'
         ].join(';');
@@ -62,7 +62,7 @@
         banner.id = BANNER_ID;
         banner.style.cssText = [
             'position:fixed', 'top:0', 'left:0', 'right:0',
-            'z-index:9800',
+            'z-index:10400',
             'background:linear-gradient(90deg,#7b2ff7,#f107a3)',
             'color:#fff', 'display:flex', 'align-items:center',
             'justify-content:center', 'gap:14px',

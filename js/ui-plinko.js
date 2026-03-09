@@ -18,7 +18,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#plOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#plOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#plOverlay.active{display:flex}',
       '#plModal{background:linear-gradient(135deg,#030712,#0a0520);border:2px solid rgba(167,139,250,.3);border-radius:20px;padding:16px 18px;max-width:460px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#plModal h2{color:#c4b5fd;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

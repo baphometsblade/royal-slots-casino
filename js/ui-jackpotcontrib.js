@@ -44,7 +44,7 @@
         containerEl = document.createElement('div');
         containerEl.id = 'jackpotContribMeter';
         containerEl.style.cssText = 'position:fixed;left:12px;top:50%;transform:translateY(-50%);' +
-            'z-index:9989;background:linear-gradient(180deg,#1a1a2e,#0f0f23);' +
+            'z-index:10400;background:linear-gradient(180deg,#1a1a2e,#0f0f23);' +
             'border:2px solid #ffd700;border-radius:14px;padding:12px 10px;color:#fff;' +
             'font-family:inherit;box-shadow:0 4px 20px rgba(255,215,0,0.25);width:56px;' +
             'display:none;transition:opacity 0.4s;';
@@ -114,7 +114,7 @@
         if (!containerEl) return;
 
         var overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.8);' +
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,0.8);' +
             'display:flex;align-items:center;justify-content:center;';
 
         var card = document.createElement('div');

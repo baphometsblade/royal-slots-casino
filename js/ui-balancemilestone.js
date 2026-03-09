@@ -25,7 +25,7 @@
         var s = document.createElement('style');
         s.id = 'balMilestoneStyles';
         s.textContent = [
-            '#bmOverlay{position:fixed;inset:0;z-index:28000;background:rgba(0,0,0,.85);' +
+            '#bmOverlay{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.85);' +
                 'display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;' +
                 'opacity:0;transition:opacity .3s ease}',
             '#bmOverlay.active{opacity:1}',

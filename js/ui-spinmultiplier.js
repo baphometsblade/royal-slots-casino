@@ -55,7 +55,7 @@
         _bannerEl = document.createElement('div');
         _bannerEl.id = BANNER_ID;
         _bannerEl.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);' +
-            'z-index:10200;background:linear-gradient(135deg,#1a0a2e,#2d1b69);border:2px solid #ffd700;' +
+            'z-index:10400;background:linear-gradient(135deg,#1a0a2e,#2d1b69);border:2px solid #ffd700;' +
             'border-radius:12px;padding:12px 24px;display:none;flex-direction:column;align-items:center;' +
             'gap:6px;box-shadow:0 0 30px rgba(255,215,0,0.4);min-width:220px;';
 

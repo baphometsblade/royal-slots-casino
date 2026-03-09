@@ -63,7 +63,7 @@
         var toast = _el('div', 's46-fsm-toast', msg);
         toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);' +
             'background:linear-gradient(135deg,#1a1a2e,#16213e);color:#ffd700;padding:12px 24px;' +
-            'border-radius:8px;z-index:100000;font-weight:bold;border:1px solid rgba(255,215,0,0.3);' +
+            'border-radius:8px;z-index:10400;font-weight:bold;border:1px solid rgba(255,215,0,0.3);' +
             'animation:fadeInDown 0.3s ease;';
         document.body.appendChild(toast);
         setTimeout(function () {

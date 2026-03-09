@@ -151,7 +151,7 @@
       'position:fixed;bottom:20px;left:20px;width:220px;' +
       'background:linear-gradient(135deg,#1a1a2e,#16213e);' +
       'border:1px solid rgba(0,230,118,0.3);border-radius:14px;' +
-      'padding:14px;z-index:9500;font-family:inherit;color:#fff;' +
+      'padding:14px;z-index:10400;font-family:inherit;color:#fff;' +
       'box-shadow:0 4px 20px rgba(0,0,0,0.5);display:none;';
 
     var header = document.createElement('div');

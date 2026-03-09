@@ -89,7 +89,7 @@
         s.id = STYLE_ID;
         s.textContent = [
             /* Badge */
-            '#lnBadge{position:fixed;top:12px;right:14px;z-index:15000;width:' + BADGE_SIZE + 'px;height:' + BADGE_SIZE + 'px;' +
+            '#lnBadge{position:fixed;top:12px;right:14px;z-index:10400;width:' + BADGE_SIZE + 'px;height:' + BADGE_SIZE + 'px;' +
                 'border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;' +
                 'font-size:18px;font-weight:900;font-family:inherit;color:#fff;border:2px solid rgba(255,255,255,.25);' +
                 'background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.15),transparent 70%),#1a1a2e;' +
@@ -97,7 +97,7 @@
                 'transition:transform .25s,box-shadow .25s;user-select:none}',
             '#lnBadge:hover{transform:scale(1.12);box-shadow:0 0 20px rgba(138,43,226,.7),0 0 40px rgba(138,43,226,.3)}',
             '#lnBadge.ln-empty{opacity:.55;font-size:14px}',
-            '#lnBadge .ln-num{position:relative;z-index:1;text-shadow:0 0 8px currentColor}',
+            '#lnBadge .ln-num{position:relative;z-index:10400;text-shadow:0 0 8px currentColor}',
             '#lnBadge .ln-glow{position:absolute;inset:0;border-radius:50%;opacity:0;transition:opacity .3s}',
 
             /* Badge celebration */
@@ -112,7 +112,7 @@
                 'background:radial-gradient(circle,rgba(255,215,0,.4),transparent 70%)}',
 
             /* Overlay */
-            '#lnOverlay{position:fixed;inset:0;z-index:25000;background:rgba(0,0,0,.7);' +
+            '#lnOverlay{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.7);' +
                 'display:flex;align-items:center;justify-content:center;opacity:0;' +
                 'transition:opacity .35s;pointer-events:none}',
             '#lnOverlay.active{opacity:1;pointer-events:auto}',

@@ -67,7 +67,7 @@
         backdrop.id = MODAL_ID;
         backdrop.style.cssText = [
             'position:fixed', 'inset:0',
-            'z-index:99200',
+            'z-index:10400',
             'background:rgba(0,0,0,0.72)',
             'display:flex', 'align-items:center', 'justify-content:center',
             'opacity:0', 'transition:opacity 0.35s ease'

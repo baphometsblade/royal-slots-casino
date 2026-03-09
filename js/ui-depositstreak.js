@@ -15,7 +15,7 @@
     _stylesInjected = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#dsPanel{position:fixed;bottom:70px;right:12px;z-index:15400;width:300px;max-width:92vw;background:#0d0d1a;border:1px solid rgba(99,102,241,.35);border-radius:14px;padding:14px 16px 12px;box-shadow:0 4px 24px rgba(99,102,241,.2);display:none;animation:dsFadeIn .3s ease}',
+      '#dsPanel{position:fixed;bottom:70px;right:12px;z-index:10400;width:300px;max-width:92vw;background:#0d0d1a;border:1px solid rgba(99,102,241,.35);border-radius:14px;padding:14px 16px 12px;box-shadow:0 4px 24px rgba(99,102,241,.2);display:none;animation:dsFadeIn .3s ease}',
       '#dsPanel.active{display:block}',
       '@keyframes dsFadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}',
       '.ds-title{font-size:12px;font-weight:800;color:#818cf8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}',

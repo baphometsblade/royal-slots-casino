@@ -583,7 +583,7 @@ async function submitDeposit() {
             }
             const gemMsg = res.gemsAwarded ? ` + \u{1F48E} ${res.gemsAwarded} gems!` : '';
             showToast(`${formatMoney(amount)} deposited successfully!${gemMsg}`, 'success');
-            localStorage.setItem('hasEverDeposited', '1');
+            try { localStorage.setItem('hasEverDeposited', '1'); } catch (e) { /* ignore */ }
         }
         if (amountInput) amountInput.value = '';
         renderDepositForm(); // refresh to show updated state
@@ -1247,7 +1247,7 @@ async function walletCryptoDeposit() {
         balance = Number(result.balance);
         updateBalance();
         resetNudgeOnDeposit();
-        localStorage.setItem('hasEverDeposited', '1');
+        try { localStorage.setItem('hasEverDeposited', '1'); } catch (e) { /* ignore */ }
 
         const gemMsg = result.gemsAwarded ? ' + 💎 ' + result.gemsAwarded + ' gems!' : '';
         showToast('$' + result.deposit.amount.toFixed(2) + ' AUD deposited via ETH!' + gemMsg, 'success', 6000);

@@ -17,7 +17,7 @@
     var s = document.createElement('style');
     s.id = 'msStyles';
     s.textContent = [
-      '#msClaimOverlay{display:none;position:fixed;inset:0;z-index:10500;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
+      '#msClaimOverlay{display:none;position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);align-items:center;justify-content:center}',
       '#msClaimOverlay.active{display:flex}',
       '#msClaimModal{background:#0d0d1a;border-radius:16px;border:1px solid rgba(255,215,0,.3);padding:28px;max-width:400px;width:90%;text-align:center;position:relative}',
       '.ms-emoji{font-size:48px;margin-bottom:8px}',
@@ -105,7 +105,7 @@
   function showToast(msg) {
     if (typeof window.showToast === 'function') { window.showToast(msg); return; }
     var t = document.createElement('div');
-    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#ffd700;color:#000;padding:10px 18px;border-radius:8px;font-weight:800;z-index:99999;font-size:14px;pointer-events:none';
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#ffd700;color:#000;padding:10px 18px;border-radius:8px;font-weight:800;z-index:10400;font-size:14px;pointer-events:none';
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(function () { t.remove(); }, 3500);

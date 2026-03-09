@@ -14,7 +14,7 @@
     var s = document.createElement('style');
     s.id = 'promoStyles';
     s.textContent = [
-      '#promoOverlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:19500;display:none;align-items:center;justify-content:center}',
+      '#promoOverlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10400;display:none;align-items:center;justify-content:center}',
       '#promoOverlay.active{display:flex}',
       '#promoModal{background:#0d0d1a;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:28px;max-width:380px;width:90%;text-align:center}',
       '#promoModal h2{color:#ffd700;font-size:20px;margin:0 0 6px}',

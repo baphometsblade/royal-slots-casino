@@ -32,7 +32,7 @@
     s.id = 'bsw-css';
     s.textContent = `
       #bswModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.82);
-        z-index:9000; align-items:center; justify-content:center; }
+        z-index:10400; align-items:center; justify-content:center; }
       #bswModal.active { display:flex; }
       .bsw-box { background:#1e1e2e; border:2px solid #fbbf24; border-radius:16px;
         padding:24px; max-width:560px; width:95%; color:#e2e8f0; font-family:sans-serif; }

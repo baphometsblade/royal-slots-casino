@@ -60,7 +60,7 @@ function _buildOverlay() {
 
   var ov = _el('div', 'ww-overlay');
   ov.id = 'winWheelOverlay';
-  ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:13000;background:rgba(0,0,0,0.88);' +
+  ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,0.88);' +
     'align-items:center;justify-content:center;flex-direction:column;';
 
   var title = _el('div', 'ww-title', '\uD83C\uDFA1 Multiplier Wheel!');
@@ -73,7 +73,7 @@ function _buildOverlay() {
 
   /* pointer */
   var pointer = _el('div', 'ww-pointer', '\u25BC');
-  pointer.style.cssText = 'position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:2;' +
+  pointer.style.cssText = 'position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:10400;' +
     'font-size:2rem;color:#ffd700;text-shadow:0 2px 6px rgba(0,0,0,0.5);';
 
   /* wheel ring */
@@ -101,7 +101,7 @@ function _buildOverlay() {
   /* center cap */
   var cap = _el('div', 'ww-cap');
   cap.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;' +
-    'border-radius:50%;background:linear-gradient(135deg,#1a1a2e,#16213e);border:3px solid #ffd700;z-index:1;' +
+    'border-radius:50%;background:linear-gradient(135deg,#1a1a2e,#16213e);border:3px solid #ffd700;z-index:10400;' +
     'display:flex;align-items:center;justify-content:center;';
   var capIcon = _el('span', '', '\u2B50');
   capIcon.style.cssText = 'font-size:1.2rem;';

@@ -107,7 +107,7 @@
             'border-right:1px solid rgba(255,215,0,0.3)',
             'border-radius:8px 8px 0 0',
             'padding:6px 18px',
-            'z-index:8600',
+            'z-index:10400',
             'font-family:sans-serif',
             'display:flex',
             'align-items:center',

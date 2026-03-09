@@ -17,7 +17,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#dtOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#dtOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#dtOverlay.active{display:flex}',
       '#dtModal{background:linear-gradient(135deg,#0a0500,#140800);border:2px solid rgba(251,146,60,.3);border-radius:20px;padding:22px 26px;max-width:440px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#dtModal h2{color:#fb923c;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

@@ -34,7 +34,7 @@ function loadVipState() {
 }
 
 function saveVipState() {
-    localStorage.setItem(STORAGE_KEY_VIP, JSON.stringify(vipState));
+    try { localStorage.setItem(STORAGE_KEY_VIP, JSON.stringify(vipState)); } catch (e) { /* ignore */ }
 }
 
 
@@ -451,7 +451,7 @@ function _renderWagerCountdown(nextTier, currentWagered) {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.94);
-    z-index: 2000;
+    z-index:10400;
     overflow-y: auto;
     padding: 20px;
     animation: vip-fadeIn 0.3s ease-out;
@@ -532,7 +532,7 @@ function _renderWagerCountdown(nextTier, currentWagered) {
     inset: 0;
     background: linear-gradient(135deg, var(--vip-color) 0%, var(--vip-color-dark) 100%);
     opacity: 0.18;
-    z-index: 0;
+    z-index:10400;
 }
 .vip-tier-card::after {
     content: '';
@@ -543,9 +543,9 @@ function _renderWagerCountdown(nextTier, currentWagered) {
     height: 300px;
     background: radial-gradient(circle, var(--vip-color) 0%, transparent 70%);
     opacity: 0.08;
-    z-index: 0;
+    z-index:10400;
 }
-.vip-tier-card > * { position: relative; z-index: 1; }
+.vip-tier-card > * { position: relative; z-index:10400; }
 
 .vip-tier-card-top {
     display: flex;
@@ -585,7 +585,7 @@ function _renderWagerCountdown(nextTier, currentWagered) {
     border: 2px solid var(--vip-color);
     opacity: 0.3;
     pointer-events: none;
-    z-index: 2;
+    z-index:10400;
 }
 .vip-tier-card-shimmer {
     position: absolute;
@@ -594,7 +594,7 @@ function _renderWagerCountdown(nextTier, currentWagered) {
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
     animation: vip-shimmer 4s ease-in-out infinite;
-    z-index: 1;
+    z-index:10400;
     pointer-events: none;
 }
 @keyframes vip-shimmer {
@@ -1345,7 +1345,7 @@ function showVipTierUpModal(tier) {
     var overlay = document.createElement('div');
     overlay.id = 'vipTierUpModal';
     overlay.style.cssText = [
-        'position:fixed', 'inset:0', 'z-index:99999',
+        'position:fixed', 'inset:0', 'z-index:10400',
         'display:flex', 'align-items:center', 'justify-content:center',
         'background:rgba(0,0,0,0.85)', 'backdrop-filter:blur(6px)',
         'animation:vipTuFadeIn 0.4s ease'
@@ -1497,7 +1497,7 @@ function _showVipAcceleratorOverlay(nextTier, needed, progress) {
     var overlay = document.createElement('div');
     overlay.id = 'vipAccelOverlay';
     overlay.style.cssText = [
-        'position:fixed', 'bottom:90px', 'right:20px', 'z-index:9500',
+        'position:fixed', 'bottom:90px', 'right:20px', 'z-index:10400',
         'background:linear-gradient(135deg,#1a1a2e,#16213e)',
         'border:2px solid ' + color,
         'border-radius:16px', 'padding:20px', 'max-width:300px',

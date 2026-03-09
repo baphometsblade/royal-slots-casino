@@ -187,7 +187,7 @@
         }
 
         function _saveChallengeState(state) {
-            localStorage.setItem(CHALLENGE_STORAGE_KEY, JSON.stringify(state));
+            try { localStorage.setItem(CHALLENGE_STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
         }
 
         function _loadAchState() {
@@ -261,7 +261,7 @@
             const emoji = streak >= 30 ? '🔥🔥🔥' : streak >= 7 ? '🔥🔥' : '🔥';
             t.style.cssText = 'position:fixed;top:70px;right:16px;transform:translateX(120%);'
                 + 'background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #ff6d00;'
-                + 'color:#fff;border-radius:12px;padding:10px 16px;font-size:13px;z-index:99999;'
+                + 'color:#fff;border-radius:12px;padding:10px 16px;font-size:13px;z-index:10400;'
                 + 'box-shadow:0 4px 20px rgba(255,109,0,0.3);transition:transform 0.4s ease;'
                 + 'max-width:220px;pointer-events:none;';
             t.innerHTML = `<div style="font-weight:700;margin-bottom:2px">${emoji} ${streak}-Day Streak!</div>`
@@ -637,7 +637,7 @@
             el.style.cssText = `
                 position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
                 background:linear-gradient(135deg,#065f46,#047857); color:#d1fae5;
-                padding:14px 24px; border-radius:12px; z-index:12000; font-weight:800;
+                padding:14px 24px; border-radius:12px; z-index:10400; font-weight:800;
                 box-shadow:0 8px 24px rgba(0,200,100,0.4); text-align:center;
                 animation:challengeToastIn 0.4s ease-out forwards;
                 border:1px solid rgba(52,211,153,0.4); min-width:260px;
@@ -782,7 +782,7 @@
                 padding: 20px;
                 border-radius: 16px;
                 box-shadow: 0 8px 32px rgba(251,191,36,0.6);
-                z-index: 10001;
+                z-index:10400;
                 font-weight: 900;
                 animation: slideInRight 0.5s ease-out;
                 max-width: 300px;
@@ -860,7 +860,7 @@
             t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;'
                 + 'background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #7b61ff;color:#fff;'
                 + 'border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;font-size:14px;'
-                + 'z-index:99999;box-shadow:0 4px 24px rgba(123,97,255,0.4);transition:all 0.4s ease;'
+                + 'z-index:10400;box-shadow:0 4px 24px rgba(123,97,255,0.4);transition:all 0.4s ease;'
                 + 'pointer-events:none;max-width:320px;';
             t.innerHTML = `<span style="font-size:28px">${ach.icon}</span><div>`
                 + `<div style="font-size:10px;color:#7b61ff;font-weight:700;letter-spacing:1px;text-transform:uppercase">Achievement Unlocked!</div>`
@@ -1012,7 +1012,7 @@
 
 
         function saveSettings() {
-            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(appSettings));
+            try { localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(appSettings)); } catch (e) { /* ignore */ }
         }
 
 
@@ -1191,7 +1191,7 @@
 
 
         function saveXP() {
-            localStorage.setItem(XP_STORAGE_KEY, JSON.stringify({ xp: playerXP, level: playerLevel }));
+            try { localStorage.setItem(XP_STORAGE_KEY, JSON.stringify({ xp: playerXP, level: playerLevel })); } catch (e) { /* ignore */ }
         }
 
 
@@ -1382,7 +1382,7 @@
 
 
         function saveDailyBonus() {
-            localStorage.setItem(DAILY_BONUS_KEY, JSON.stringify(dailyBonusState));
+            try { localStorage.setItem(DAILY_BONUS_KEY, JSON.stringify(dailyBonusState)); } catch (e) { /* ignore */ }
         }
 
 
@@ -1520,7 +1520,7 @@
 
 
         function saveWheelState() {
-            localStorage.setItem(WHEEL_STORAGE_KEY, JSON.stringify(wheelState));
+            try { localStorage.setItem(WHEEL_STORAGE_KEY, JSON.stringify(wheelState)); } catch (e) { /* ignore */ }
         }
 
 
@@ -2275,7 +2275,7 @@ function doOpenMysteryBox() {
     var cashAmt = cashMin + Math.floor(Math.random() * (cashMax - cashMin + 1));
 
     // Save cooldown
-    localStorage.setItem(MYSTERY_BOX_KEY, JSON.stringify({ lastOpen: Date.now() }));
+    try { localStorage.setItem(MYSTERY_BOX_KEY, JSON.stringify({ lastOpen: Date.now() })); } catch (e) { /* ignore */ }
 
     // Award prize
     if (typeof balance !== 'undefined') {
@@ -2338,7 +2338,7 @@ function _lcGetState() {
 }
 
 function _lcSaveState(state) {
-    localStorage.setItem(LC_KEY, JSON.stringify(state));
+    try { localStorage.setItem(LC_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
 }
 
 function _lcNow() {
@@ -2369,7 +2369,7 @@ function _lcCheckMilestones(state) {
     LC_MILESTONES.forEach(function(m) {
         if (count >= m.days && !claimed.days.includes(m.days)) {
             claimed.days.push(m.days);
-            localStorage.setItem(milesKey, JSON.stringify(claimed));
+            try { localStorage.setItem(milesKey, JSON.stringify(claimed)); } catch (e) { /* ignore */ }
             // Award
             if (typeof balance !== 'undefined') {
                 balance += m.cash;
@@ -2457,7 +2457,7 @@ function _cjGetPool() {
     } catch(e) { return { pool: CJ_SEED }; }
 }
 
-function _cjSave(s) { localStorage.setItem(CJ_KEY, JSON.stringify(s)); }
+function _cjSave(s) { try { localStorage.setItem(CJ_KEY, JSON.stringify(s)); } catch (e) { /* ignore */ } }
 
 function _cjUpdateTicker() {
     var ticker = document.getElementById('communityJackpotTicker');
@@ -2490,7 +2490,7 @@ function communityJackpotSpin(bet) {
         if (typeof showToast === 'function') showToast('🌐 COMMUNITY JACKPOT! +$' + Math.floor(winAmount).toLocaleString() + '!', 'bigwin');
         // Full-screen celebration
         var cel = document.createElement('div');
-        cel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;cursor:pointer;';
+        cel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10400;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;cursor:pointer;';
         cel.innerHTML = '<div style="font-size:72px;margin-bottom:16px">🌐</div><div style="font-size:36px;font-weight:900;color:#f0c040">COMMUNITY JACKPOT!</div><div style="font-size:24px;margin-top:12px">You won $' + Math.floor(winAmount).toLocaleString() + '!</div><div style="font-size:13px;margin-top:24px;opacity:0.6">Tap to continue</div>';
         cel.onclick = function() { document.body.removeChild(cel); };
         document.body.appendChild(cel);
@@ -2617,7 +2617,7 @@ async function redeemPromoCode() {
     }
     if (!storage.used) storage.used = {};
     storage.used[code] = def.type === 'daily' ? today : true;
-    localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage));
+    try { localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage)); } catch (e) { /* ignore */ }
     if (res) { res.textContent = '\u2705 ' + def.desc; res.className = 'promo-result promo-ok'; }
     if (typeof showToast === 'function') showToast('\uD83C\uDF9F\uFE0F Code redeemed: ' + def.desc, 'win');
     inp.value = '';
@@ -2646,7 +2646,7 @@ function checkCashback() {
         if (typeof updateBalance === 'function') updateBalance();
         if (typeof showToast === 'function') showToast('💰 5% Daily Cashback: +$' + cashback.toFixed(2), 'win');
     }
-    localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance }));
+    try { localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance })); } catch (e) { /* ignore */ }
 }
 
 (function() {
@@ -2872,7 +2872,7 @@ function doLuckySpin() {
         if (resultEl) resultEl.textContent = '🎉 You won ' + seg.label + '!';
         if (freeAvail) state.lastFreeDay = today;
         state.totalSpins = (state.totalSpins || 0) + 1;
-        localStorage.setItem(_LS_KEY, JSON.stringify(state));
+        try { localStorage.setItem(_LS_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
         _lsRefreshStatus();
     }, 3100);
 }
@@ -2982,7 +2982,7 @@ function openAvatarPicker() {
 }
 
 function setAvatar(emoji) {
-    localStorage.setItem(_AVATAR_KEY, emoji);
+    try { localStorage.setItem(_AVATAR_KEY, emoji); } catch (e) { /* ignore */ }
     _refreshAvatarDisplay();
     var modal = document.getElementById('avatarPickerModal');
     if (modal) modal.classList.remove('active');

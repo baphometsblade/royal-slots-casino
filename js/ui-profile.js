@@ -58,7 +58,7 @@ function getAvatarInitials(username) {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.92);
-    z-index: 2000;
+    z-index:10400;
     overflow-y: auto;
     padding: 20px;
     animation: profile-fadeIn 0.25s ease-out;
@@ -218,7 +218,7 @@ function getAvatarInitials(username) {
     font-size: 28px;
     cursor: pointer;
     line-height: 1;
-    z-index: 10;
+    z-index:10400;
     transition: color 0.2s;
 }
 .profile-close-btn:hover { color: #fbbf24; }

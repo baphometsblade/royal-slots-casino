@@ -137,7 +137,7 @@
 
         var bar = document.createElement('div');
         bar.id = 'weekendTournamentBar';
-        bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:10100;' +
+        bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:10400;' +
             'background:linear-gradient(90deg,#1a1a2e,#16213e);border-top:2px solid #fbbf24;' +
             'padding:10px 20px;display:flex;align-items:center;justify-content:space-between;' +
             'font-size:14px;color:#e0e0e0;cursor:pointer;transition:transform 0.3s;';
@@ -199,7 +199,7 @@
         var panel = document.createElement('div');
         panel.id = 'weekendLeaderboard';
         panel.style.cssText = 'position:fixed;bottom:46px;left:50%;transform:translateX(-50%) scaleY(0);' +
-            'z-index:10099;background:linear-gradient(180deg,#0f1629,#1a1a2e);border:2px solid #fbbf24;' +
+            'z-index:10400;background:linear-gradient(180deg,#0f1629,#1a1a2e);border:2px solid #fbbf24;' +
             'border-radius:16px 16px 0 0;width:380px;max-width:95vw;max-height:420px;overflow-y:auto;' +
             'padding:16px 0;transform-origin:bottom center;transition:transform 0.25s ease;';
 

@@ -198,7 +198,7 @@
         var s = document.createElement('style');
         s.id = STYLE_ID;
         s.textContent =
-            '#srFab{position:fixed;bottom:200px;left:16px;z-index:19200;' +
+            '#srFab{position:fixed;bottom:200px;left:16px;z-index:10400;' +
             'width:48px;height:48px;border-radius:50%;' +
             'background:linear-gradient(135deg,#7c3aed,#2563eb);' +
             'color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;' +
@@ -210,7 +210,7 @@
             'min-width:18px;height:18px;border-radius:9px;display:flex;' +
             'align-items:center;justify-content:center;padding:0 4px;' +
             'box-shadow:0 2px 6px rgba(0,0,0,.4)}' +
-            '#srPanel{position:fixed;bottom:256px;left:16px;z-index:19201;' +
+            '#srPanel{position:fixed;bottom:256px;left:16px;z-index:10400;' +
             'width:300px;max-width:90vw;' +
             'background:linear-gradient(160deg,#0d0d1a 0%,#1a0a2e 100%);' +
             'border:1px solid rgba(124,58,237,.4);border-radius:16px;' +

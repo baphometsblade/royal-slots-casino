@@ -76,7 +76,7 @@
         containerEl = document.createElement('div');
         containerEl.id = 'socialSharePanel';
         containerEl.style.cssText = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);' +
-            'z-index:9991;background:linear-gradient(135deg,#1a1a2e,#16213e);' +
+            'z-index:10400;background:linear-gradient(135deg,#1a1a2e,#16213e);' +
             'border:2px solid #3b82f6;border-bottom:none;border-radius:16px 16px 0 0;' +
             'padding:16px 20px 12px;color:#fff;font-family:inherit;' +
             'box-shadow:0 -4px 24px rgba(59,130,246,0.3);width:320px;max-width:90vw;' +

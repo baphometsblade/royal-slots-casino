@@ -79,7 +79,7 @@
         if (containerEl) return;
         containerEl = document.createElement('div');
         containerEl.id = 'slotRaceTimer';
-        containerEl.style.cssText = 'position:fixed;top:80px;right:16px;z-index:9990;' +
+        containerEl.style.cssText = 'position:fixed;top:80px;right:16px;z-index:10400;' +
             'background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #e94560;' +
             'border-radius:14px;padding:12px 16px;color:#fff;font-family:inherit;' +
             'box-shadow:0 4px 20px rgba(233,69,96,0.3);min-width:180px;display:none;' +

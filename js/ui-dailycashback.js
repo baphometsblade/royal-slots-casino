@@ -19,10 +19,10 @@
     var s = document.createElement('style');
     s.textContent = [
       /* ── overlay ── */
-      '#cbOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:19500;display:none;align-items:center;justify-content:center}',
+      '#cbOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10400;display:none;align-items:center;justify-content:center}',
       '#cbOverlay.active{display:flex}',
       /* ── badge ── */
-      '#cbBadge{position:fixed;top:72px;right:12px;z-index:14000;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:14px;font-weight:800;padding:8px 14px;border-radius:10px;cursor:pointer;box-shadow:0 4px 16px rgba(16,185,129,.55);display:none;animation:cbPulse 2s infinite;letter-spacing:.5px}',
+      '#cbBadge{position:fixed;top:72px;right:12px;z-index:10400;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:14px;font-weight:800;padding:8px 14px;border-radius:10px;cursor:pointer;box-shadow:0 4px 16px rgba(16,185,129,.55);display:none;animation:cbPulse 2s infinite;letter-spacing:.5px}',
       '#cbBadge .cb-badge-coin{display:inline-block;animation:cbCoinSpin 1.5s linear infinite;margin-right:4px}',
       '@keyframes cbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}',
       '@keyframes cbCoinSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}'

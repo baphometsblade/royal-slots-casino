@@ -64,7 +64,7 @@
         bar.id = 'reloadBonusBar';
         bar.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);' +
             'background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:12px 18px;' +
-            'z-index:9990;display:none;min-width:320px;max-width:420px;color:#fff;' +
+            'z-index:10400;display:none;min-width:320px;max-width:420px;color:#fff;' +
             'box-shadow:0 4px 20px rgba(0,0,0,0.5);border:1px solid rgba(255,215,0,0.25)';
 
         var label = document.createElement('div');

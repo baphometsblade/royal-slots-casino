@@ -90,7 +90,7 @@
         card.id = CARD_ID;
         card.style.cssText = [
             'position:fixed', 'bottom:60px', 'right:16px',
-            'z-index:9600',
+            'z-index:10400',
             'width:260px',
             'background:linear-gradient(145deg,#1a1040,#2d1b69)',
             'border:1px solid rgba(123,47,247,0.45)',

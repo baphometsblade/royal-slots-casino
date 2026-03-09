@@ -8278,18 +8278,6 @@
     right: 0;
 }
 
-.paytable-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    position: sticky;
-    top: 0;
-    background: rgba(26, 14, 46, 0.95);
-    backdrop-filter: blur(10px);
-    z-index: 1;
-}
 .paytable-title {
     font-size: 15px;
     font-weight: 700;
@@ -8297,20 +8285,7 @@
     margin: 0;
     letter-spacing: 0.5px;
 }
-.paytable-close {
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.5);
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-}
 .paytable-close:hover { color: #fff; }
-
-.paytable-body {
-    padding: 16px 20px;
-}
 
 .paytable-section {
     margin-bottom: 20px;
@@ -8402,16 +8377,6 @@
     font-weight: 600;
     color: var(--rg-accent, #10b981);
     text-align: right;
-}
-
-.paytable-bonus-desc {
-    font-size: 13px;
-    line-height: 1.6;
-    color: rgba(255,255,255,0.7);
-    background: rgba(255,255,255,0.03);
-    border-radius: 10px;
-    padding: 14px 16px;
-    border-left: 3px solid var(--rg-accent, #10b981);
 }
 
 .paytable-rtp {
@@ -9011,17 +8976,6 @@
 }
 
 /* Gamble overlay */
-.gamble-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.82);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9000;
-    backdrop-filter: blur(6px);
-    animation: gambleOverlayIn 0.3s ease;
-}
 @keyframes gambleOverlayIn {
     from { opacity: 0; }
     to   { opacity: 1; }
@@ -9045,13 +8999,6 @@
 }
 
 .gamble-header { margin-bottom: 16px; }
-.gamble-title {
-    font-size: 1.8rem;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    color: #e879f9;
-    text-shadow: 0 0 20px rgba(232,121,249,0.6);
-}
 .gamble-subtitle {
     font-size: 0.75rem;
     color: rgba(255,255,255,0.55);
@@ -9098,18 +9045,6 @@
     transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
 }
 .gamble-card-back,
-.gamble-card-front {
-    position: absolute;
-    inset: 0;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    backface-visibility: hidden;
-    border: 2px solid rgba(255,255,255,0.15);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-}
 .gamble-card-back {
     background: linear-gradient(135deg, #4c1d95, #7c3aed);
 }
@@ -9143,14 +9078,6 @@
 }
 
 /* Result message */
-.gamble-result {
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin: 10px 0;
-    animation: gambleResultPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
-}
 @keyframes gambleResultPop {
     from { transform: scale(0.8); opacity: 0; }
     to   { transform: scale(1); opacity: 1; }
@@ -9212,25 +9139,6 @@
 .gamble-choice-btn:active { transform: scale(0.97); }
 
 /* Bottom actions */
-.gamble-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 16px;
-}
-.gamble-collect-btn {
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #065f46, #059669);
-    border: 2px solid #34d399;
-    border-radius: 12px;
-    color: #fff;
-    font-size: 0.85rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(5,150,105,0.4);
-    transition: transform 0.15s, box-shadow 0.15s;
-}
 .gamble-collect-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(5,150,105,0.55); }
 .gamble-close-btn {
     padding: 12px 20px;
@@ -13736,22 +13644,6 @@
 /* ═══════════════════════════════════════════
    SPRINT 19 — LOBBY TAB COUNT BADGES
    ═══════════════════════════════════════════ */
-.filter-tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.55);
-  font-size: 10px;
-  font-weight: 700;
-  margin-left: 5px;
-  vertical-align: middle;
-  transition: background 0.2s, color 0.2s;
-}
 .filter-tab.active .filter-tab-count,
 .tab-btn.active .filter-tab-count,
 button.active .filter-tab-count {
@@ -14917,7 +14809,6 @@ button.active .filter-tab-count {
 .lc-item.lc-done {
     opacity: 0.5;
 }
-.lc-icon { font-size: 20px; width: 24px; text-align: center; flex-shrink: 0; }
 .lc-info { flex: 1; min-width: 0; }
 .lc-label {
     font-size: 12px;
@@ -15009,11 +14900,6 @@ button.active .filter-tab-count {
 /* — Mystery Box — */
 .mystery-box-content { max-width: 360px; text-align: center; }
 .mystery-box-body { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 10px 0 20px; }
-.mystery-box-icon {
-    font-size: 80px;
-    transition: transform 0.3s;
-    filter: drop-shadow(0 0 18px rgba(240,192,64,0.4));
-}
 .mystery-box-icon--ready { animation: mb-pulse 1.4s ease-in-out infinite; }
 .mystery-box-icon--locked { filter: grayscale(0.7) brightness(0.6); }
 .mystery-box-icon--opening { animation: mb-shake 0.5s ease-in-out; }
@@ -15023,18 +14909,6 @@ button.active .filter-tab-count {
 @keyframes mb-pop { 0%{transform:scale(0.6)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
 .mystery-box-status { font-size: 16px; font-weight: 600; color: #fff; }
 .mystery-box-countdown { font-size: 22px; font-weight: 700; color: #f0c040; font-variant-numeric: tabular-nums; }
-.mystery-box-open-btn {
-    background: linear-gradient(135deg, #f0c040, #e08020);
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 32px;
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-    letter-spacing: 1px;
-}
 .mystery-box-open-btn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.04); }
 .mystery-box-open-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
 
@@ -15057,13 +14931,6 @@ button.active .filter-tab-count {
     letter-spacing: 0.8px;
     margin-bottom: 4px;
 }
-.balance-sparkline {
-    width: 120px;
-    height: 36px;
-    display: block;
-    filter: drop-shadow(0 0 4px rgba(74,222,128,0.3));
-}
-
 /* ═══════════════════════════════════════════════════════
    SPRINT 30 — LOGIN CALENDAR + COMMUNITY JACKPOT
    ═══════════════════════════════════════════════════════ */
@@ -15113,7 +14980,6 @@ button.active .filter-tab-count {
     gap: 1px;
 }
 .lc-num { font-size: 10px; color: rgba(255,255,255,0.5); }
-.lc-icon { font-size: 12px; font-weight: 700; }
 .lc-day-done { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); }
 .lc-day-done .lc-icon { color: #4ade80; }
 .lc-day-missed { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); }
@@ -18625,8 +18491,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .leaderboard-table td { padding: 8px 12px; font-size: 14px; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .leaderboard-table tr.leaderboard-me { background: rgba(78,205,196,0.08); }
 .leaderboard-table tr.leaderboard-me td { color: #4ecdc4; font-weight: 700; }
-.lb-rank { font-size: 16px; min-width: 32px; }
-
 /* ── Prize Cards ─────────────────── */
 .prize-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(249,202,36,0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .prize-title { font-size: 14px; font-weight: 700; color: #f9ca24; }
@@ -20423,24 +20287,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Loss Recovery Popup ──────────────────────────────────────────────── */
-.loss-recovery-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 210000;
-    display: flex; align-items: center; justify-content: center;
-    animation: _s29fadeIn 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-.loss-recovery-card {
-    background: linear-gradient(160deg, #1a0000, #0f0f1a);
-    border: 1px solid rgba(239,68,68,0.4);
-    border-radius: 20px;
-    padding: 36px 32px 28px;
-    max-width: 400px; width: 92%;
-    text-align: center; position: relative;
-    box-shadow: 0 0 50px rgba(239,68,68,0.15), 0 20px 50px rgba(0,0,0,0.6);
-    animation: _s29slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
-}
 .lr-close {
     position: absolute; top: 14px; right: 18px;
     background: none; border: none; color: rgba(255,255,255,0.35);
@@ -20485,16 +20331,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 }
 
 /* ─── Happy Hour Banner ────────────────────────────────────────────────── */
-.happy-hour-banner {
-    background: linear-gradient(90deg, #7c2d12, #dc2626, #7c2d12);
-    background-size: 200% 100%;
-    animation: _s29hhShimmer 3s linear infinite;
-    padding: 10px 20px;
-    display: flex; align-items: center; justify-content: center;
-    gap: 14px; flex-wrap: wrap;
-    position: relative; z-index: 100;
-    border-bottom: 1px solid rgba(239,68,68,0.4);
-}
 .hh-icon { font-size: 20px; flex-shrink: 0; }
 .hh-text {
     font-size: 13px; font-weight: 800;
@@ -20850,12 +20686,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     animation: _s31rotate 6s linear infinite;
 }
 .fd-content { position: relative; z-index: 1; }
-.fd-badge {
-    display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #000; font-weight: 800; padding: 6px 20px; border-radius: 20px;
-    font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 16px;
-    text-transform: uppercase;
-}
 .fd-title {
     font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px;
     background: linear-gradient(135deg, #fbbf24, #fde68a);

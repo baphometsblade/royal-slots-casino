@@ -35,7 +35,7 @@
         var s = document.createElement('style');
         s.id = 'giftsStyles';
         s.textContent = [
-            '#giftsOverlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.78);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}',
+            '#giftsOverlay{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,0.78);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}',
             '.gifts-modal{background:#1a1a2e;border:1px solid #d4a032;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;box-sizing:border-box;font-family:inherit;color:#e2e8f0;position:relative;}',
             '.gifts-modal h2{margin:0;font-size:1.35rem;color:#f0c040;letter-spacing:1px;}',
             '.gifts-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}',
@@ -527,7 +527,7 @@
             if (ex && ex.parentNode) ex.parentNode.removeChild(ex);
             var toast = document.createElement('div');
             toast.id = 'giftNotificationToast';
-            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:20000;background:#d4a032;color:#1a1a2e;border-radius:10px;padding:12px 20px;font-size:0.9rem;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.5);cursor:pointer;';
+            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:10400;background:#d4a032;color:#1a1a2e;border-radius:10px;padding:12px 20px;font-size:0.9rem;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.5);cursor:pointer;';
             toast.textContent = msg;
             toast.addEventListener('click', function () {
                 if (toast.parentNode) toast.parentNode.removeChild(toast);

@@ -52,7 +52,7 @@ function _buildPanel() {
 
   var panel = _el('div', 'ac-panel');
   panel.id = 'autoCashoutPanel';
-  panel.style.cssText = 'position:fixed;top:80px;right:16px;z-index:9400;width:210px;' +
+  panel.style.cssText = 'position:fixed;top:80px;right:16px;z-index:10400;width:210px;' +
     'background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:14px;' +
     'border:1px solid rgba(255,215,0,0.2);box-shadow:0 4px 20px rgba(0,0,0,0.4);' +
     'color:#fff;font-family:inherit;font-size:0.85rem;display:none;';
@@ -184,7 +184,7 @@ function _updateProgress() {
 
 function _createFab() {
   var fab = _el('button', 'ac-fab', '\uD83C\uDFAF');
-  fab.style.cssText = 'position:fixed;top:80px;right:16px;z-index:9300;width:40px;height:40px;' +
+  fab.style.cssText = 'position:fixed;top:80px;right:16px;z-index:10400;width:40px;height:40px;' +
     'border-radius:50%;border:2px solid rgba(255,215,0,0.3);background:linear-gradient(135deg,#1a1a2e,#16213e);' +
     'color:#ffd700;font-size:1.1rem;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.3);' +
     'display:flex;align-items:center;justify-content:center;transition:transform 0.15s;';
@@ -216,7 +216,7 @@ function _createFab() {
 function _showCelebration(targetAmount) {
   var ov = _el('div', 'ac-celebration');
   ov.id = 'autoCashoutCelebration';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:14000;background:rgba(0,0,0,0.85);' +
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,0.85);' +
     'display:flex;align-items:center;justify-content:center;flex-direction:column;';
 
   var emoji = _el('div', '', '\uD83C\uDF89');

@@ -47,7 +47,7 @@
     function _showToast(msg) {
         var t = document.createElement('div');
         t.textContent = msg;
-        t.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#fbbf24,#d97706);color:#000;font-weight:800;font-size:15px;padding:12px 28px;border-radius:999px;z-index:99999;box-shadow:0 4px 24px rgba(251,191,36,0.5);pointer-events:none;transition:opacity 0.4s';
+        t.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#fbbf24,#d97706);color:#000;font-weight:800;font-size:15px;padding:12px 28px;border-radius:999px;z-index:10400;box-shadow:0 4px 24px rgba(251,191,36,0.5);pointer-events:none;transition:opacity 0.4s';
         document.body.appendChild(t);
         setTimeout(function () { t.style.opacity = '0'; }, 2200);
         setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2700);
@@ -60,7 +60,7 @@
         if (_overlay) return;
         _overlay = document.createElement('div');
         _overlay.id = 'rentalOverlay';
-        _overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:9500;align-items:center;justify-content:center;padding:16px';
+        _overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:10400;align-items:center;justify-content:center;padding:16px';
         _overlay.addEventListener('click', function (e) { if (e.target === _overlay) closeRentalModal(); });
         document.body.appendChild(_overlay);
     }

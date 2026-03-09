@@ -30,7 +30,7 @@
     }
 
     function saveState(state) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
     }
 
     function pickOffer() {

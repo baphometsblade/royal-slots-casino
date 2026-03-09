@@ -49,7 +49,7 @@
         var panel = document.createElement('div');
         panel.id = 'betLadderPanel';
         panel.style.cssText = 'position:fixed;right:12px;top:50%;transform:translateY(-50%);' +
-            'z-index:9000;display:flex;flex-direction:column-reverse;align-items:center;gap:0;' +
+            'z-index:10400;display:flex;flex-direction:column-reverse;align-items:center;gap:0;' +
             'pointer-events:auto;font-family:inherit;';
 
         // Title badge

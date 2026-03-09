@@ -43,7 +43,7 @@
 
     function showToast(msg) {
         var toast = document.createElement('div');
-        toast.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:100010;opacity:0;transition:opacity 0.3s;';
+        toast.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:10400;opacity:0;transition:opacity 0.3s;';
         toast.textContent = msg;
         document.body.appendChild(toast);
         requestAnimationFrame(function() { toast.style.opacity = '1'; });
@@ -59,7 +59,7 @@
 
         widgetEl = document.createElement('div');
         widgetEl.id = 'playerDashWidget';
-        widgetEl.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:99980;font-family:inherit;transition:all 0.3s ease;';
+        widgetEl.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:10400;font-family:inherit;transition:all 0.3s ease;';
 
         var container = document.createElement('div');
         container.style.cssText = 'background:linear-gradient(145deg,#1a1a2e,#16213e);border:1px solid #ffffff15;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.5);overflow:hidden;width:280px;';

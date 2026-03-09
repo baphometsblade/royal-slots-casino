@@ -56,7 +56,7 @@
       '#notifBadge.visible{display:block}',
       '#notifPanel{display:none;position:fixed;top:64px;right:12px;width:340px;max-width:95vw;',
       'background:#0d0d1a;border:1px solid rgba(255,255,255,.12);border-radius:14px;',
-      'box-shadow:0 8px 40px rgba(0,0,0,.7);z-index:20000;overflow:hidden}',
+      'box-shadow:0 8px 40px rgba(0,0,0,.7);z-index:10400;overflow:hidden}',
       '#notifPanel.active{display:block}',
       '.np-header{display:flex;align-items:center;justify-content:space-between;',
       'padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)}',

@@ -67,7 +67,7 @@
             'border-radius:12px',
             'box-shadow:0 4px 24px rgba(155,89,182,0.5)',
             'padding:16px',
-            'z-index:9400',
+            'z-index:10400',
             'font-family:sans-serif',
             'color:#fff',
             'animation:doubleUpFadeIn 0.35s ease'

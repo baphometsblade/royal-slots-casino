@@ -29,7 +29,7 @@
     s.id = 'kt-css';
     s.textContent = `
       #ktModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88);
-        z-index:9000; align-items:center; justify-content:center; }
+        z-index:10400; align-items:center; justify-content:center; }
       #ktModal.active { display:flex; }
       .kt-box { background:#1e1e2e; border:2px solid #a855f7; border-radius:16px;
         padding:20px; max-width:600px; width:97%; color:#e2e8f0;

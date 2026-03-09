@@ -330,7 +330,7 @@
             'border:1px solid rgba(16,185,129,0.5)',
             'border-radius:12px','padding:12px 20px',
             'color:#fff','font-size:13px','font-weight:600',
-            'z-index:99999','opacity:0','transition:all 0.3s ease',
+            'z-index:10400','opacity:0','transition:all 0.3s ease',
             'text-align:center','box-shadow:0 8px 32px rgba(0,0,0,0.6)',
             'pointer-events:none','min-width:220px'
         ].join(';');

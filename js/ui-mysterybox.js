@@ -118,7 +118,7 @@
         s.textContent = [
             // Container
             '#mboxContainer{position:fixed;top:50%;right:20px;transform:translateY(-50%) translateX(140%);' +
-                'z-index:25000;pointer-events:none;transition:transform .5s cubic-bezier(.34,1.56,.64,1),' +
+                'z-index:10400;pointer-events:none;transition:transform .5s cubic-bezier(.34,1.56,.64,1),' +
                 'opacity .4s ease}',
             '#mboxContainer.mbox-visible{transform:translateY(-50%) translateX(0);pointer-events:auto}',
             '#mboxContainer.mbox-fadeout{transform:translateY(-50%) translateX(140%);opacity:0;' +
@@ -146,24 +146,24 @@
                 '0 0 40px rgba(245,158,11,.2);opacity:1}}',
 
             // Gift icon
-            '.mbox-gift{font-size:48px;line-height:1;position:relative;z-index:1;' +
+            '.mbox-gift{font-size:48px;line-height:1;position:relative;z-index:10400;' +
                 'animation:mbox-giftBob 1.2s ease-in-out infinite;' +
                 'filter:drop-shadow(0 2px 8px rgba(245,158,11,.4))}',
             '@keyframes mbox-giftBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}',
 
             // Header text
             '.mbox-header{font-size:14px;font-weight:900;color:#f59e0b;letter-spacing:2px;' +
-                'text-transform:uppercase;margin-top:10px;position:relative;z-index:1;' +
+                'text-transform:uppercase;margin-top:10px;position:relative;z-index:10400;' +
                 'text-shadow:0 0 10px rgba(245,158,11,.5)}',
 
             // Subtitle
             '.mbox-subtitle{font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;' +
-                'position:relative;z-index:1;animation:mbox-subtitlePulse 1.5s ease-in-out infinite}',
+                'position:relative;z-index:10400;animation:mbox-subtitlePulse 1.5s ease-in-out infinite}',
             '@keyframes mbox-subtitlePulse{0%,100%{opacity:.6}50%{opacity:1}}',
 
             // Timer bar
             '.mbox-timer-bar{height:3px;background:rgba(255,255,255,.1);border-radius:2px;' +
-                'margin-top:12px;overflow:hidden;position:relative;z-index:1}',
+                'margin-top:12px;overflow:hidden;position:relative;z-index:10400}',
             '.mbox-timer-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#ef4444);' +
                 'border-radius:2px;width:100%;transition:width .1s linear}',
 
@@ -175,7 +175,7 @@
                 '75%{transform:translateX(4px) rotate(5deg)}}',
 
             // Reward reveal
-            '.mbox-reward{position:relative;z-index:1;opacity:0;transform:scale(.5);' +
+            '.mbox-reward{position:relative;z-index:10400;opacity:0;transform:scale(.5);' +
                 'transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.56,.64,1)}',
             '.mbox-reward.mbox-show{opacity:1;transform:scale(1)}',
             '.mbox-reward-amount{font-size:28px;font-weight:900;line-height:1.2;' +
@@ -192,7 +192,7 @@
                 '0 0 40px rgba(245,158,11,.5),0 2px 12px rgba(0,0,0,.5)}}',
 
             // Burst particles (CSS-only)
-            '.mbox-burst{position:absolute;top:50%;left:50%;width:0;height:0;z-index:0}',
+            '.mbox-burst{position:absolute;top:50%;left:50%;width:0;height:0;z-index:10400}',
             '.mbox-burst-dot{position:absolute;width:6px;height:6px;border-radius:50%;' +
                 'animation:mbox-burstOut .8s ease-out forwards;opacity:0}',
             '@keyframes mbox-burstOut{0%{transform:translate(0,0) scale(0);opacity:1}' +
@@ -200,7 +200,7 @@
 
             // Counter badge
             '.mbox-count{position:absolute;top:6px;right:8px;font-size:9px;color:rgba(255,255,255,.3);' +
-                'z-index:1;pointer-events:none}'
+                'z-index:10400;pointer-events:none}'
         ].join('\n');
         document.head.appendChild(s);
     }

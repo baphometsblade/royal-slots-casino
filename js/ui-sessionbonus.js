@@ -35,7 +35,7 @@
         var s = document.createElement('style');
         s.id = 'sessionBonusStyles';
         s.textContent = [
-            '#sbToast{position:fixed;bottom:90px;left:16px;z-index:25000;' +
+            '#sbToast{position:fixed;bottom:90px;left:16px;z-index:10400;' +
                 'background:linear-gradient(160deg,#064e3b,#065f46,#047857);' +
                 'border:2px solid rgba(52,211,153,.6);border-radius:16px;' +
                 'padding:16px 20px;max-width:290px;' +

@@ -23,7 +23,7 @@
   }
 
   function snooze() {
-    localStorage.setItem(_snoozeKey, String(Date.now()));
+    try { localStorage.setItem(_snoozeKey, String(Date.now())); } catch (e) { /* ignore */ }
   }
   function injectStyles() {
     if (_stylesInjected) return;
@@ -31,7 +31,7 @@
     var s = document.createElement('style');
     s.id = 'rcStyles';
     s.textContent = [
-      '#rcOverlay{display:none;position:fixed;bottom:0;right:0;z-index:19500;width:360px;max-width:95vw;padding:16px}',
+      '#rcOverlay{display:none;position:fixed;bottom:0;right:0;z-index:10400;width:360px;max-width:95vw;padding:16px}',
       '#rcOverlay.active{display:block}',
       '#rcModal{background:#0d0d1a;border-radius:16px;border:1px solid rgba(239,68,68,.25);padding:20px;box-shadow:0 -4px 30px rgba(239,68,68,.15);animation:rcSlideUp .35s ease;position:relative}',
       '@keyframes rcSlideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}',

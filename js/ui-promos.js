@@ -26,7 +26,7 @@
 .promo-popup-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 10050;
+    z-index:10400;
     pointer-events: none;
     display: flex;
     align-items: center;
@@ -51,7 +51,7 @@
 /* ── Promo Card ───────────────────────────────────────── */
 .promo-popup-card {
     position: relative;
-    z-index: 2;
+    z-index:10400;
     width: 380px;
     max-width: calc(100vw - 48px);
     max-height: calc(100vh - 48px);
@@ -259,7 +259,7 @@
 .promo-coin-drop {
     position: fixed;
     font-size: 28px;
-    z-index: 10051;
+    z-index:10400;
     pointer-events: none;
     animation: promo-coin-fall 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
@@ -273,7 +273,7 @@
 .promo-happy-hour-bar {
     position: fixed;
     top: 0; left: 0; right: 0;
-    z-index: 10040;
+    z-index:10400;
     background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24, #f59e0b, #d97706);
     background-size: 200% 100%;
     animation: promo-hh-shimmer 3s linear infinite;
@@ -448,7 +448,7 @@ function _promoIsSuppressed(promoId) {
 }
 
 function _promoSetSuppressed(promoId) {
-    localStorage.setItem(PROMO_KEY_SUPPRESS + promoId, '1');
+    try { localStorage.setItem(PROMO_KEY_SUPPRESS + promoId, '1'); } catch (e) { /* ignore */ }
 }
 
 function _promoSessionFlag(key) {
@@ -721,14 +721,14 @@ function _promoCheckFirstDeposit() {
     let deadline = localStorage.getItem(PROMO_KEY_FIRST_DEPOSIT + '_deadline');
     if (!deadline) {
         deadline = Date.now() + 24 * 60 * 60 * 1000;
-        localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT + '_deadline', String(deadline));
+        try { localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT + '_deadline', String(deadline)); } catch (e) { /* ignore */ }
     } else {
         deadline = Number(deadline);
     }
 
     // Expired?
     if (Date.now() > deadline) {
-        localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown');
+        try { localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown'); } catch (e) { /* ignore */ }
         return;
     }
 
@@ -747,7 +747,7 @@ function _promoCheckFirstDeposit() {
         timer: timerText,
         cta: 'Deposit Now & Claim Bonus',
         onCta: function() {
-            localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown');
+            try { localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown'); } catch (e) { /* ignore */ }
             if (typeof showWalletModal === 'function' && currentUser) {
                 showWalletModal();
             } else if (typeof addFunds === 'function') {
@@ -755,7 +755,7 @@ function _promoCheckFirstDeposit() {
             }
         },
         onDismiss: function() {
-            localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown');
+            try { localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown'); } catch (e) { /* ignore */ }
         }
     });
 
@@ -906,7 +906,7 @@ function _promoCheckWelcomeBack() {
         const existingEnd = localStorage.getItem(PROMO_KEY_HAPPY_HOUR_END);
         if (!existingEnd || Date.now() >= Number(existingEnd)) {
             const goldenEndTime = Date.now() + 60 * 60 * 1000; // 1 hour
-            localStorage.setItem(PROMO_KEY_HAPPY_HOUR_END, String(goldenEndTime));
+            try { localStorage.setItem(PROMO_KEY_HAPPY_HOUR_END, String(goldenEndTime)); } catch (e) { /* ignore */ }
             _promoActivateHappyHour(goldenEndTime);
             showToast('Golden Hour activated! All wins boosted 1.5x for 60 minutes!', 'success', 6000);
         }
@@ -995,10 +995,10 @@ function _promoCheckHappyHour() {
         body: 'All wins are <span class="promo-highlight">boosted 1.5x</span> for the next <span class="promo-highlight">30 minutes</span>! Make the most of it!',
         cta: 'Start Playing!',
         onCta: function() {
-            localStorage.setItem(PROMO_KEY_HAPPY_HOUR_END, String(endTime));
+            try { localStorage.setItem(PROMO_KEY_HAPPY_HOUR_END, String(endTime)); } catch (e) { /* ignore */ }
             _promoActivateHappyHour(endTime);
             // Reset play timer for next cycle
-            localStorage.setItem(PROMO_KEY_PLAY_START, String(Date.now()));
+            try { localStorage.setItem(PROMO_KEY_PLAY_START, String(Date.now())); } catch (e) { /* ignore */ }
         },
         suppressible: true
     });
@@ -1175,7 +1175,7 @@ function checkPromoTriggers(event, data) {
 
         case 'deposit':
             // After deposit, mark first deposit promo as used
-            localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown');
+            try { localStorage.setItem(PROMO_KEY_FIRST_DEPOSIT, 'shown'); } catch (e) { /* ignore */ }
             _promoState.lowBalanceShownThisSession = false; // allow re-trigger
             break;
 
@@ -1379,7 +1379,7 @@ function initPromoEngine() {
 
     // Record play session start time
     if (!localStorage.getItem(PROMO_KEY_PLAY_START)) {
-        localStorage.setItem(PROMO_KEY_PLAY_START, String(Date.now()));
+        try { localStorage.setItem(PROMO_KEY_PLAY_START, String(Date.now())); } catch (e) { /* ignore */ }
     }
 
     // Render deposit-streak card into the Bonuses & Promos sidebar section
@@ -1408,7 +1408,7 @@ function initPromoEngine() {
     }
 
     // Now update last visit (after reading for welcome-back)
-    localStorage.setItem(PROMO_KEY_LAST_VISIT, String(Date.now()));
+    try { localStorage.setItem(PROMO_KEY_LAST_VISIT, String(Date.now())); } catch (e) { /* ignore */ }
 
     // Happy hour check interval (every 5 minutes)
     _promoState.happyHourCheckInterval = setInterval(function() {

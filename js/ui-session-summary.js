@@ -65,7 +65,7 @@
         var style = document.createElement('style');
         style.id = 'sessStyles';
         var css = [
-            '#sessOverlay{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;justify-content:center;padding-bottom:0;animation:sessFadeIn .3s ease}',
+            '#sessOverlay{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;justify-content:center;padding-bottom:0;animation:sessFadeIn .3s ease}',
             '@keyframes sessFadeIn{from{opacity:0}to{opacity:1}}',
             '#sessCard{background:#0d0d1a;border:1px solid rgba(255,255,255,.1);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:420px;animation:sessSlideUp .35s ease}',
             '@keyframes sessSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}',

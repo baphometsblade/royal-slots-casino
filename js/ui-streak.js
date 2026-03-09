@@ -8,7 +8,7 @@
         if (document.getElementById("streakStyles")) return;
         var style = document.createElement("style"); style.id = "streakStyles";
         style.textContent = [
-            "#streakOverlay,#streakModalOverlay{position:fixed;inset:0;z-index:25000;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center}",
+            "#streakOverlay,#streakModalOverlay{position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center}",
             "@keyframes strPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}",
             "@keyframes strBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}",
             "#streakCard,#streakModalCard{background:#0d0d1a;border:2px solid rgba(255,100,0,.5);border-radius:20px;padding:28px;max-width:360px;width:90%;text-align:center;animation:strPop .4s ease}",
@@ -23,7 +23,7 @@
             "@keyframes strPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,100,0,.4)}50%{box-shadow:0 0 0 6px rgba(255,100,0,0)}}",
             ".str-progress{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px}",
             ".str-close-btn{background:linear-gradient(135deg,#ff6400,#d94f00);color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer;width:100%}",
-            "#streakBadge{position:fixed;top:8px;right:120px;z-index:9999;background:rgba(255,100,0,.2);border:1px solid rgba(255,100,0,.4);color:#ff8c40;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:800;pointer-events:none}"
+            "#streakBadge{position:fixed;top:8px;right:120px;z-index:10400;background:rgba(255,100,0,.2);border:1px solid rgba(255,100,0,.4);color:#ff8c40;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:800;pointer-events:none}"
         ].join(""); document.head.appendChild(style);
     }
     function _rewardDesc(reward) {

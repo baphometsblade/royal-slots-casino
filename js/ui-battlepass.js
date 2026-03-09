@@ -27,7 +27,7 @@
     function _toast(msg, type) {
         if (typeof showToast === 'function') { showToast(msg, type || 'success'); return; }
         var t = document.createElement('div');
-        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;z-index:99999;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;z-index:10400;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
         t.textContent = msg;
         document.body.appendChild(t);
         setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3000);
@@ -67,7 +67,7 @@
         var ov = document.createElement('div');
         ov.id = MODAL_ID;
         ov.style.position = 'fixed'; ov.style.top = '0'; ov.style.left = '0'; ov.style.right = '0'; ov.style.bottom = '0';
-        ov.style.background = 'rgba(0,0,0,0.82)'; ov.style.zIndex = '10000'; ov.style.display = 'flex';
+        ov.style.background = 'rgba(0,0,0,0.82)'; ov.style.zIndex = '10400'; ov.style.display = 'flex';
         ov.style.alignItems = 'center'; ov.style.justifyContent = 'center'; ov.style.padding = '16px'; ov.style.boxSizing = 'border-box';
         ov.addEventListener('click', function (e) { if (e.target === ov) closeBattlePassModal(); });
         document.body.appendChild(ov); return ov;

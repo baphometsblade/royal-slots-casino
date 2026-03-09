@@ -14,7 +14,7 @@
         _stylesInjected = true;
         var s = document.createElement('style');
         s.textContent = [
-            '#lbNudge{position:fixed;bottom:0;left:0;right:0;z-index:9990;' +
+            '#lbNudge{position:fixed;bottom:0;left:0;right:0;z-index:10400;' +
                 'background:linear-gradient(90deg,#7c3aed 0%,#4f46e5 100%);' +
                 'color:#fff;display:flex;align-items:center;justify-content:center;' +
                 'gap:14px;padding:10px 20px;font-family:inherit;font-size:14px;' +

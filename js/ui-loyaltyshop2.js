@@ -61,7 +61,7 @@ function _buildModal() {
 
   var overlay = _el('div', 'ls2-overlay');
   overlay.id = 'loyaltyShop2Modal';
-  overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,0.82);' +
+  overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:10400;background:rgba(0,0,0,0.82);' +
     'align-items:center;justify-content:center;';
 
   var box = _el('div', 'ls2-box');
@@ -182,7 +182,7 @@ function _hideModal() {
 function _createFab() {
   var fab = _el('button', 'ls2-fab', '\uD83D\uDED2');
   fab.id = 'loyaltyShop2Fab';
-  fab.style.cssText = 'position:fixed;bottom:90px;right:20px;z-index:9500;width:50px;height:50px;' +
+  fab.style.cssText = 'position:fixed;bottom:90px;right:20px;z-index:10400;width:50px;height:50px;' +
     'border-radius:50%;border:2px solid rgba(255,215,0,0.4);background:linear-gradient(135deg,#1a1a2e,#16213e);' +
     'color:#ffd700;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4);' +
     'transition:transform 0.2s;display:flex;align-items:center;justify-content:center;';

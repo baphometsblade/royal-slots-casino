@@ -123,7 +123,7 @@
             'border-radius:12px',
             'padding:12px 20px',
             'display:flex', 'align-items:center', 'gap:12px',
-            'z-index:9999',
+            'z-index:10400',
             'opacity:0',
             'transition:all 0.4s cubic-bezier(0.22,1,0.36,1)',
             'box-shadow:0 8px 32px rgba(0,0,0,0.5)',

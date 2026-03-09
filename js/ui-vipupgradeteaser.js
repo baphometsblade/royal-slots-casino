@@ -61,7 +61,7 @@
             'border-right: none',
             'border-radius: 12px 0 0 12px',
             'padding: 24px 20px',
-            'z-index: 9200',
+            'z-index:10400',
             'box-shadow: -4px 0 32px rgba(155,89,182,0.3)',
             'font-family: "Segoe UI", Arial, sans-serif',
             'transition: right 0.5s cubic-bezier(0.16,1,0.3,1)'

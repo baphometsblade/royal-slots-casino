@@ -400,7 +400,7 @@
     s.id  = 'bj-styles';
     s.textContent = [
       /* overlay */
-      '.bj-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9400;align-items:center;justify-content:center;padding:.75rem;box-sizing:border-box}',
+      '.bj-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:10400;align-items:center;justify-content:center;padding:.75rem;box-sizing:border-box}',
       /* panel */
       '.bj-panel{background:#0f2318;border:2px solid #1a4a2a;border-radius:1rem;padding:1.3rem;width:100%;max-width:500px;max-height:96vh;overflow-y:auto;display:flex;flex-direction:column;gap:.75rem;color:#e2e8f0;font-family:inherit}',
       /* header */

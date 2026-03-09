@@ -160,7 +160,7 @@
             'border:1px solid #1a3a6b',
             'border-right:none',
             'border-radius:12px 0 0 12px',
-            'z-index:8500',
+            'z-index:10400',
             'font-family:sans-serif',
             'overflow:hidden',
             'box-shadow:-4px 0 24px rgba(0,0,0,0.5)'

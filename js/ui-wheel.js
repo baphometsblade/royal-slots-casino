@@ -18,7 +18,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#wofOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#wofOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#wofOverlay.active{display:flex}',
       '#wofModal{background:linear-gradient(135deg,#0c0a1e,#140a2e);border:2px solid rgba(217,119,6,.4);border-radius:20px;padding:20px 22px;max-width:420px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#wofModal h2{color:#fbbf24;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

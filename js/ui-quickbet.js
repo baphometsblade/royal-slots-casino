@@ -32,7 +32,7 @@
     s.id = 's42QuickBetStyles';
     s.textContent = [
       '#quickBetStrip{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);',
-      'z-index:17500;display:none;align-items:center;gap:6px;',
+      'z-index:10400;display:none;align-items:center;gap:6px;',
       'background:linear-gradient(135deg,rgba(13,13,26,.92) 0%,rgba(26,16,53,.92) 100%);',
       'border:1px solid rgba(255,215,0,.2);border-radius:12px;',
       'padding:6px 10px;backdrop-filter:blur(8px)}',

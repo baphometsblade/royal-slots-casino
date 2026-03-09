@@ -54,7 +54,7 @@
         var el = document.createElement('div');
         el.id = 'achievementContainer';
         el.className = 'achievement-container';
-        el.style.cssText = 'position:fixed;top:80px;right:20px;z-index:10001;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+        el.style.cssText = 'position:fixed;top:80px;right:20px;z-index:10400;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
         document.body.appendChild(el);
         _containerEl = el;
     }

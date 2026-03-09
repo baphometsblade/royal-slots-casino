@@ -12,7 +12,7 @@
     s.id = 'cal-css';
     s.textContent = `
       #calModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.82);
-        z-index:9000; align-items:center; justify-content:center; }
+        z-index:10400; align-items:center; justify-content:center; }
       #calModal.active { display:flex; }
       .cal-box { background:#1e1e2e; border:2px solid #f59e0b; border-radius:16px;
         padding:24px; max-width:520px; width:95%; color:#e2e8f0; font-family:sans-serif;

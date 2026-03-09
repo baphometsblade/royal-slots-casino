@@ -40,7 +40,7 @@
         overlay.style.display = 'none';
         overlay.style.position = 'fixed';
         overlay.style.inset = '0';
-        overlay.style.zIndex = '10050';
+        overlay.style.zIndex = '10400';
         overlay.style.background = 'rgba(0,0,0,0.75)';
         overlay.style.display = 'none';
         overlay.style.alignItems = 'center';

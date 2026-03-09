@@ -176,7 +176,7 @@
   function _buildModal() {
     var overlay = document.createElement('div');
     overlay.id = 'megawheel-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:10000;padding:16px;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:10400;padding:16px;';
     overlay.addEventListener('click', function (e) { if (e.target === overlay) closeMegaWheelModal(); });
 
     var panel = document.createElement('div');
@@ -239,7 +239,7 @@
     var wArea = document.createElement('div');
     wArea.style.cssText = 'display:flex;flex-direction:column;align-items:center;margin-bottom:20px;position:relative;';
     var ptr = document.createElement('div');
-    ptr.style.cssText = 'width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:22px solid #ffd700;margin-bottom:-4px;z-index:2;position:relative;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));';
+    ptr.style.cssText = 'width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:22px solid #ffd700;margin-bottom:-4px;z-index:10400;position:relative;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));';
     wArea.appendChild(ptr);
     var wWrap = document.createElement('div');
     wWrap.id = 'mw-wheel-wrapper';
@@ -251,7 +251,7 @@
     // Prize popup
     var pzPop = document.createElement('div');
     pzPop.id = 'mw-prize-popup';
-    pzPop.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,#1a1a2e,#0d0d1a);border:2px solid #ffd700;border-radius:16px;padding:24px 32px;text-align:center;z-index:5;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;min-width:180px;';
+    pzPop.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,#1a1a2e,#0d0d1a);border:2px solid #ffd700;border-radius:16px;padding:24px 32px;text-align:center;z-index:10400;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;min-width:180px;';
     _prizePopupEl = pzPop;
     var pzE = document.createElement('div'); pzE.id = 'mw-prize-emoji'; pzE.style.cssText = 'font-size:2.5rem;margin-bottom:8px;';
     var pzL = document.createElement('div'); pzL.id = 'mw-prize-label'; pzL.style.cssText = 'color:#ffd700;font-size:1.4rem;font-weight:bold;';

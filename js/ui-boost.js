@@ -4,6 +4,7 @@
   var TOKEN_KEY  = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
   var _overlay   = null;
   var _stylesDone = false;
+  var _expiryPollTimer = null;
 
   // ── Expiry nudge tracking ─────────────────────────────────────────────────
   var _boostExpiryNotified = new Set();
@@ -42,7 +43,7 @@
     _stylesDone = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#boostOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:19500;',
+      '#boostOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10400;',
       'display:none;align-items:center;justify-content:center}',
       '#boostOverlay.active{display:flex}',
       '#boostModal{background:linear-gradient(160deg,#0d0d1a,#1a1035);',
@@ -302,6 +303,7 @@
   // Polls active boosts every 30 s so expiry toasts fire even when the modal
   // is closed. Only runs when a user token is present.
   (function _startExpiryPoller() {
+    if (_expiryPollTimer) { clearInterval(_expiryPollTimer); _expiryPollTimer = null; }
     function _pollExpiries() {
       var token = localStorage.getItem(TOKEN_KEY);
       if (!token) return;
@@ -313,11 +315,14 @@
     // Delay first poll by 5 s to avoid competing with page load
     setTimeout(function () {
       _pollExpiries();
-      setInterval(_pollExpiries, 30000);
+      _expiryPollTimer = setInterval(_pollExpiries, 30000);
     }, 5000);
   }());
 
   window.openBoostModal  = openBoostModal;
   window.closeBoostModal = closeBoostModal;
+  window.destroyBoostPoller = function () {
+    if (_expiryPollTimer) { clearInterval(_expiryPollTimer); _expiryPollTimer = null; }
+  };
 
 }());

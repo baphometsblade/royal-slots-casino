@@ -70,7 +70,7 @@
             _toastEl = document.createElement('div');
             _toastEl.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
                 'background:#1a1a2e;color:#ffd700;padding:8px 18px;border-radius:8px;font-size:13px;' +
-                'font-weight:bold;z-index:10300;border:1px solid #ffd700;opacity:0;transition:opacity 0.3s;' +
+                'font-weight:bold;z-index:10400;border:1px solid #ffd700;opacity:0;transition:opacity 0.3s;' +
                 'pointer-events:none;';
             document.body.appendChild(_toastEl);
         }
@@ -86,7 +86,7 @@
 
         _panelEl = document.createElement('div');
         _panelEl.id = PANEL_ID;
-        _panelEl.style.cssText = 'position:fixed;bottom:140px;right:16px;z-index:10100;' +
+        _panelEl.style.cssText = 'position:fixed;bottom:140px;right:16px;z-index:10400;' +
             'background:linear-gradient(135deg,#0a1628,#1a2a4a);border:1px solid #4a90d9;' +
             'border-radius:12px;padding:14px 18px;width:260px;display:none;' +
             'box-shadow:0 4px 20px rgba(74,144,217,0.3);font-family:inherit;';

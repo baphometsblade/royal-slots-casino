@@ -49,7 +49,7 @@
         if (typeof showToast === 'function') { showToast(msg, 'success'); return; }
         var t = document.createElement('div');
         t.textContent = msg;
-        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;z-index:99999;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;z-index:10400;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
         document.body.appendChild(t);
         setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 3000);
     }
@@ -60,7 +60,7 @@
 
         var overlay = document.createElement('div');
         overlay.id = OVERLAY_ID;
-        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:100000;opacity:0;transition:opacity 0.3s ease;';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:10400;opacity:0;transition:opacity 0.3s ease;';
 
         var card = document.createElement('div');
         card.style.cssText = 'background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid ' + tier.color + ';border-radius:16px;padding:40px;text-align:center;max-width:360px;width:90%;box-shadow:0 0 40px ' + tier.glow + ';transform:scale(0.5);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);';

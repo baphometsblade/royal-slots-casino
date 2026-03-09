@@ -222,7 +222,7 @@
     }
 
     function saveState() {
-        if (_state) localStorage.setItem(STORAGE_KEY, JSON.stringify(_state));
+        try { if (_state) localStorage.setItem(STORAGE_KEY, JSON.stringify(_state)); } catch (e) { /* ignore */ }
     }
 
     function handleCycleReset(newCycleStart, now) {

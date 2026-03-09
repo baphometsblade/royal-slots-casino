@@ -86,7 +86,7 @@
             'display:flex',
             'align-items:center',
             'justify-content:center',
-            'z-index:99300',
+            'z-index:10400',
             'font-family:sans-serif',
             'animation:lossRebateFadeIn 0.4s ease'
         ].join(';');

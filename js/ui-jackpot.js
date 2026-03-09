@@ -97,7 +97,7 @@
         _overlay.style.cssText = [
             'position:fixed',
             'inset:0',
-            'z-index:10000',
+            'z-index:10400',
             'background:rgba(0,0,0,0.75)',
             'display:flex',
             'align-items:center',
@@ -402,7 +402,7 @@
         }
         var toast = document.createElement('div');
         toast.style.cssText = [
-            'position:fixed', 'bottom:80px', 'right:20px', 'z-index:99999',
+            'position:fixed', 'bottom:80px', 'right:20px', 'z-index:10400',
             'background:linear-gradient(135deg,#1a0a2e,#0f0a1e)',
             'border:2px solid #fbbf24', 'border-radius:12px',
             'padding:14px 18px', 'max-width:300px',

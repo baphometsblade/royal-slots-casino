@@ -16,7 +16,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#limboOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#limboOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#limboOverlay.active{display:flex}',
       '#limboModal{background:linear-gradient(135deg,#030712,#0f0520);border:2px solid rgba(139,92,246,.3);border-radius:20px;padding:22px 26px;max-width:420px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#limboModal h2{color:#a78bfa;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

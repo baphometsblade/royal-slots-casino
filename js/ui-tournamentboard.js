@@ -93,7 +93,7 @@
         var board = document.createElement('div');
         board.id = 'tournamentLeaderboard';
         board.style.cssText = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);' +
-            'z-index:8900;width:420px;max-width:95vw;font-family:inherit;' +
+            'z-index:10400;width:420px;max-width:95vw;font-family:inherit;' +
             'transition:transform 0.3s ease;';
 
         // Toggle bar

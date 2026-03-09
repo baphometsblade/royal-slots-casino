@@ -83,7 +83,7 @@
             'border: 2px solid #ffd700',
             'border-radius: 10px',
             'padding: 10px 16px',
-            'z-index: 9700',
+            'z-index:10400',
             'box-shadow: 0 4px 20px rgba(255,215,0,0.25)',
             'font-family: "Segoe UI", Arial, sans-serif',
             'cursor: pointer',

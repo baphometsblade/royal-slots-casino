@@ -83,7 +83,7 @@
     s.id = 'horse-racing-css';
     s.textContent = [
       /* overlay */
-      '#hrOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace;padding:12px;box-sizing:border-box}',
+      '#hrOverlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace;padding:12px;box-sizing:border-box}',
       '#hrOverlay.active{display:flex}',
       /* modal */
       '#hrModal{background:linear-gradient(160deg,#052210,#0a3622 60%,#071c0f);border:2px solid rgba(251,191,36,.25);border-radius:20px;width:100%;max-width:780px;max-height:96vh;overflow-y:auto;padding:22px 22px 18px;box-sizing:border-box;color:#fff;position:relative}',

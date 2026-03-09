@@ -20,7 +20,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#kenoOverlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#kenoOverlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#kenoOverlay.active{display:flex}',
       '#kenoModal{background:linear-gradient(135deg,#050510,#0a1628);border:2px solid rgba(99,102,241,.35);border-radius:20px;padding:20px 24px;max-width:540px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#kenoModal h2{color:#818cf8;font-size:20px;margin:0 0 2px;letter-spacing:1px}',

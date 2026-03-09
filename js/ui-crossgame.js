@@ -25,7 +25,7 @@
         var s = document.createElement('style');
         s.id = 'crossGameStyles';
         s.textContent = [
-            '#cgToast{position:fixed;bottom:90px;right:16px;z-index:25000;' +
+            '#cgToast{position:fixed;bottom:90px;right:16px;z-index:10400;' +
                 'background:linear-gradient(160deg,#0f172a,#1e1b4b);' +
                 'border:2px solid rgba(139,92,246,.6);border-radius:16px;' +
                 'padding:16px 20px;max-width:300px;' +

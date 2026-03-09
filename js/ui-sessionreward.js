@@ -50,7 +50,7 @@
         _popupEl = document.createElement('div');
         _popupEl.id = POPUP_ID;
         _popupEl.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
-            'z-index:10500;background:linear-gradient(135deg,#1a0a2e,#2d1b69);border:2px solid #ffd700;' +
+            'z-index:10400;background:linear-gradient(135deg,#1a0a2e,#2d1b69);border:2px solid #ffd700;' +
             'border-radius:16px;padding:24px 30px;width:300px;display:none;text-align:center;' +
             'box-shadow:0 0 40px rgba(255,215,0,0.3);font-family:inherit;';
 
@@ -110,7 +110,7 @@
         if (!_overlayEl) {
             _overlayEl = document.createElement('div');
             _overlayEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;' +
-                'background:rgba(0,0,0,0.5);z-index:10499;';
+                'background:rgba(0,0,0,0.5);z-index:10400;';
             _overlayEl.addEventListener('click', function () { window.dismissSessionReward(); });
         }
         document.body.appendChild(_overlayEl);

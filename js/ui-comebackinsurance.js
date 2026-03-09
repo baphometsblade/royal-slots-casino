@@ -86,7 +86,7 @@
             '    top: 0;',
             '    left: 0;',
             '    right: 0;',
-            '    z-index: 10060;',
+            '    z-index:10400;',
             '    transform: translateY(-100%);',
             '    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);',
             '    pointer-events: none;',

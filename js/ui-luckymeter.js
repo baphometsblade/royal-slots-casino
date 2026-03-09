@@ -91,7 +91,7 @@
         var s = document.createElement('style');
         s.id = 'luckyMeterStyles';
         s.textContent = [
-            '.lmtr-wrap{position:fixed;bottom:80px;right:16px;z-index:9900;' +
+            '.lmtr-wrap{position:fixed;bottom:80px;right:16px;z-index:10400;' +
                 'display:flex;flex-direction:column;align-items:center;gap:3px;' +
                 'pointer-events:auto;user-select:none;transition:opacity .3s ease;opacity:1}',
             '.lmtr-wrap.lmtr-hidden{opacity:0;pointer-events:none}',
@@ -102,7 +102,7 @@
 
             '.lmtr-pct{font-size:13px;font-weight:800;color:#fff;' +
                 'text-shadow:0 1px 3px rgba(0,0,0,.6);letter-spacing:-.5px;' +
-                'position:relative;z-index:2}',
+                'position:relative;z-index:10400}',
 
             '.lmtr-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.7);' +
                 'letter-spacing:.5px;text-transform:uppercase;text-align:center;' +
@@ -141,7 +141,7 @@
                 '100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}',
 
             /* Overlay */
-            '.lmtr-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:20000;' +
+            '.lmtr-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:10400;' +
                 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;' +
                 'background:rgba(0,0,0,.65);opacity:0;transition:opacity .35s ease;pointer-events:none}',
             '.lmtr-overlay.lmtr-show{opacity:1;pointer-events:auto}',

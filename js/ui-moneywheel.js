@@ -32,7 +32,7 @@
     s.id = 'mw-css';
     s.textContent = `
       #mwModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85);
-        z-index:9000; align-items:center; justify-content:center; }
+        z-index:10400; align-items:center; justify-content:center; }
       #mwModal.active { display:flex; }
       .mw-box { background:#1e1e2e; border:2px solid #22c55e; border-radius:16px;
         padding:24px; max-width:500px; width:95%; color:#e2e8f0; font-family:sans-serif; }

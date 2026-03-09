@@ -59,7 +59,7 @@
 
         var el = document.createElement('div');
         el.id = 'luckyWheelOverlay';
-        el.style.cssText = 'display:none;position:fixed;inset:0;z-index:20700;' +
+        el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10400;' +
             'background:rgba(0,0,0,0.85);align-items:center;justify-content:center;flex-direction:column;';
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-modal', 'true');
@@ -67,7 +67,7 @@
         // Close button
         var closeBtn = document.createElement('button');
         closeBtn.style.cssText = 'position:absolute;top:16px;right:20px;background:none;border:none;' +
-            'color:#aaa;font-size:28px;cursor:pointer;z-index:2;';
+            'color:#aaa;font-size:28px;cursor:pointer;z-index:10400;';
         closeBtn.textContent = '\u2715';
         closeBtn.addEventListener('click', function () {
             if (typeof window.closeLuckyWheel === 'function') window.closeLuckyWheel();
@@ -89,7 +89,7 @@
         var pointer = document.createElement('div');
         pointer.style.cssText = 'position:absolute;top:-18px;left:50%;transform:translateX(-50%);' +
             'width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;' +
-            'border-top:24px solid #fbbf24;z-index:3;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));';
+            'border-top:24px solid #fbbf24;z-index:10400;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));';
         wheelContainer.appendChild(pointer);
 
         // Wheel
@@ -127,7 +127,7 @@
         var center = document.createElement('div');
         center.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);' +
             'width:50px;height:50px;border-radius:50%;background:#1a1a2e;border:3px solid #fbbf24;' +
-            'display:flex;align-items:center;justify-content:center;font-size:20px;z-index:2;';
+            'display:flex;align-items:center;justify-content:center;font-size:20px;z-index:10400;';
         center.textContent = '\uD83C\uDFB0';
         wheel.appendChild(center);
 
@@ -176,7 +176,7 @@
         fab.id = 'luckyWheelFAB';
         fab.style.cssText = 'position:fixed;bottom:90px;right:20px;width:' + FAB_SIZE + 'px;height:' + FAB_SIZE + 'px;' +
             'border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);border:none;' +
-            'font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(251,191,36,0.4);z-index:10000;' +
+            'font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(251,191,36,0.4);z-index:10400;' +
             'display:flex;align-items:center;justify-content:center;transition:transform 0.2s;';
         fab.textContent = '\uD83C\uDFC6';
         fab.title = 'Daily Lucky Wheel';

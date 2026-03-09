@@ -46,7 +46,7 @@
     function createTicker() {
         tickerEl = document.createElement('div');
         tickerEl.id = 'megaJackpotTicker';
-        tickerEl.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99990;background:linear-gradient(180deg,#0d0d1a,#1a1a2e);border-bottom:2px solid #FFD70044;padding:0;font-family:inherit;transition:max-height 0.3s ease,padding 0.3s ease;overflow:hidden;';
+        tickerEl.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10400;background:linear-gradient(180deg,#0d0d1a,#1a1a2e);border-bottom:2px solid #FFD70044;padding:0;font-family:inherit;transition:max-height 0.3s ease,padding 0.3s ease;overflow:hidden;';
 
         var inner = document.createElement('div');
         inner.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:24px;padding:8px 16px;flex-wrap:wrap;';
@@ -141,7 +141,7 @@
 
     function showWinAlert(tierName, amount, color) {
         var alert = document.createElement('div');
-        alert.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:100010;background:linear-gradient(145deg,#1a1a2e,#0d0d1a);border:3px solid ' + color + ';border-radius:20px;padding:40px;text-align:center;box-shadow:0 0 60px ' + color + '66;transition:transform 0.5s cubic-bezier(0.175,0.885,0.32,1.275);';
+        alert.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:10400;background:linear-gradient(145deg,#1a1a2e,#0d0d1a);border:3px solid ' + color + ';border-radius:20px;padding:40px;text-align:center;box-shadow:0 0 60px ' + color + '66;transition:transform 0.5s cubic-bezier(0.175,0.885,0.32,1.275);';
 
         var icon = document.createElement('div');
         icon.textContent = '\uD83C\uDFC6';

@@ -119,7 +119,7 @@
 
         badge.onclick = function() {
             isActive = !isActive;
-            localStorage.setItem(STORAGE_KEY, String(isActive));
+            try { localStorage.setItem(STORAGE_KEY, String(isActive)); } catch (e) { /* ignore */ }
             applyState();
             if (isActive) {
                 showToast('\uD83D\uDEE1\uFE0F Spin Insurance ON \u2014 10% premium, 50% loss refund', true);

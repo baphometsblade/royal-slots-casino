@@ -387,7 +387,7 @@
     var s = document.createElement('style');
     s.id  = 'dice-styles';
     s.textContent = [
-      '.dice-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9300;align-items:center;justify-content:center;padding:1rem;box-sizing:border-box}',
+      '.dice-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:10400;align-items:center;justify-content:center;padding:1rem;box-sizing:border-box}',
       '.dice-panel{background:#0f172a;border:1px solid #1e3a5f;border-radius:1rem;padding:1.4rem;width:100%;max-width:440px;max-height:96vh;overflow-y:auto;display:flex;flex-direction:column;gap:.8rem;color:#e2e8f0;font-family:inherit}',
       /* header */
       '.dice-header{display:flex;justify-content:space-between;align-items:center}',

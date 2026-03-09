@@ -17,7 +17,7 @@
     _stylesInj = true;
     var s = document.createElement('style');
     s.textContent = [
-      '#baccaratOverlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:20000;display:none;align-items:center;justify-content:center;font-family:monospace}',
+      '#baccaratOverlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:10400;display:none;align-items:center;justify-content:center;font-family:monospace}',
       '#baccaratOverlay.active{display:flex}',
       '#baccaratModal{background:linear-gradient(135deg,#020b0a,#05160e);border:2px solid rgba(16,185,129,.3);border-radius:20px;padding:22px 26px;max-width:480px;width:96%;text-align:center;max-height:96vh;overflow-y:auto}',
       '#baccaratModal h2{color:#34d399;font-size:20px;margin:0 0 2px;letter-spacing:2px}',

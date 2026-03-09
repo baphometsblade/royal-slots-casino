@@ -201,7 +201,7 @@
         var overlay = document.createElement('div');
         overlay.id = 'bundleOverlay';
         overlay.className = 'modal-overlay';
-        overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10000;display:flex;align-items:center;justify-content:center';
+        overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10400;display:flex;align-items:center;justify-content:center';
         overlay.addEventListener('click', function (e) { if (e.target === overlay) closeBundleStore(); });
 
         var modal = document.createElement('div');

@@ -57,7 +57,7 @@
     overlayEl.id = 'mysteryGiftOverlay';
     overlayEl.style.cssText =
       'position:fixed;top:0;left:0;width:100%;height:100%;' +
-      'background:rgba(0,0,0,0.85);z-index:10500;display:none;' +
+      'background:rgba(0,0,0,0.85);z-index:10400;display:none;' +
       'align-items:center;justify-content:center;flex-direction:column;' +
       'font-family:inherit;';
 

@@ -29,7 +29,7 @@
         var t = document.createElement('div');
         t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
             'background:#10b981;color:#fff;padding:10px 20px;border-radius:8px;' +
-            'font-weight:700;z-index:9999;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+            'font-weight:700;z-index:10400;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
         t.textContent = msg;
         document.body.appendChild(t);
         setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 3000);
@@ -50,7 +50,7 @@
         overlay.style.right          = '0';
         overlay.style.bottom         = '0';
         overlay.style.background     = 'rgba(0,0,0,0.75)';
-        overlay.style.zIndex         = '10000';
+        overlay.style.zIndex = '10400';
         overlay.style.display        = 'flex';
         overlay.style.alignItems     = 'center';
         overlay.style.justifyContent = 'center';

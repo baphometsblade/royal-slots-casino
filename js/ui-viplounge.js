@@ -39,7 +39,7 @@
     function createModal(tier, state) {
         var overlay = document.createElement('div');
         overlay.id = 'vipLoungeInvite';
-        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:100000;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s ease;';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10400;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s ease;';
 
         var modal = document.createElement('div');
         modal.style.cssText = 'background:linear-gradient(145deg,#1a1a2e,#16213e);border:2px solid ' + tier.color + ';border-radius:16px;padding:32px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 40px ' + tier.color + '44;position:relative;';

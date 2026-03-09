@@ -26,7 +26,7 @@
         var s = document.createElement('style');
         s.id = 'happyHourStyles37';
         s.textContent = [
-            '#happyHourBar{position:fixed;top:0;left:0;right:0;z-index:19000;',
+            '#happyHourBar{position:fixed;top:0;left:0;right:0;z-index:10400;',
             '  height:46px;display:flex;align-items:center;justify-content:center;gap:12px;',
             '  font-family:inherit;transform:translateY(-100%);transition:transform .5s cubic-bezier(.34,1.56,.64,1);',
             '  background:linear-gradient(135deg,#ffd700,#9333ea);',
