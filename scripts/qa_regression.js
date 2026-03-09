@@ -249,6 +249,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "happyHourBannerV2",
       "nearWinFlash",
       "balanceAlertWidget",
+      "nightOwlBonus",
+      "winGoalTracker",
+      "socialProofPop",
+      "collectionAlbumWidget",
+      "luckyCharmSelector",
+      "timedChallenge",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
