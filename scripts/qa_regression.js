@@ -231,6 +231,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "vipUpgradeTeaser",
       "freeSpinTeaser",
       "bonusWheelInvite",
+      "winHistoryToast",
+      "reloadBonusPop",
+      "luckySpinNotice",
+      "achievementPop",
+      "dailyMissionBar",
+      "referralInviteWidget",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
