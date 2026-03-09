@@ -223,7 +223,7 @@
             if (remaining <= 0) {
                 clearInterval(_tickTimer);
                 _toast('\uD83C\uDFC6 Tournament ended! New one starting...');
-                localStorage.removeItem(STORAGE_KEY);
+                try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
                 setTimeout(_createBar, 2000);
             }
         }, TICK_INTERVAL);

@@ -1042,7 +1042,7 @@ function _promoActivateHappyHour(endTime) {
 
 function _promoDeactivateHappyHour() {
     _promoState.happyHourActive = false;
-    localStorage.removeItem(PROMO_KEY_HAPPY_HOUR_END);
+    try { localStorage.removeItem(PROMO_KEY_HAPPY_HOUR_END); } catch (e) { /* ignore */ }
 
     if (_promoState.happyHourBarTimer) {
         clearInterval(_promoState.happyHourBarTimer);

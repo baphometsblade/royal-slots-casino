@@ -2569,7 +2569,7 @@ async function redeemPromoCode() {
                 try { storage = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || '{}'); } catch(e) { storage = {}; }
                 if (!storage.used) storage.used = {};
                 storage.used[code] = def.type === 'daily' ? new Date().toISOString().slice(0, 10) : true;
-                localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage));
+                try { localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(storage)); } catch (e) { /* ignore */ }
 
                 if (res) { res.textContent = '\u2705 ' + serverRes.desc; res.className = 'promo-result promo-ok'; }
                 if (typeof showToast === 'function') showToast('\uD83C\uDF9F\uFE0F Code redeemed: ' + serverRes.desc, 'win');
@@ -2634,7 +2634,7 @@ function checkCashback() {
     try { s = JSON.parse(localStorage.getItem(CASHBACK_KEY) || 'null'); } catch(e) { s = null; }
     var now = Date.now();
     if (!s) {
-        localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance }));
+        try { localStorage.setItem(CASHBACK_KEY, JSON.stringify({ lastCheck: now, lastBalance: balance })); } catch (e) { /* ignore */ }
         return;
     }
     if (now - s.lastCheck < CASHBACK_INTERVAL_MS) return;

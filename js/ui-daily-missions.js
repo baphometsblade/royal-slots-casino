@@ -77,8 +77,8 @@
                 _progress = {};
                 _claimed  = {};
                 _allClaimed = false;
-                localStorage.setItem(LAST_RESET_KEY, today);
-                localStorage.removeItem(MISSIONS_KEY);
+                try { localStorage.setItem(LAST_RESET_KEY, today); } catch (e) { /* ignore */ }
+                try { localStorage.removeItem(MISSIONS_KEY); } catch (e) { /* ignore */ }
                 return;
             }
             var raw = localStorage.getItem(MISSIONS_KEY);
