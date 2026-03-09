@@ -1,5 +1,11 @@
         html {
             scroll-behavior: smooth;
+            /* Prevent mobile browsers from auto-enlarging text after render (Android Chrome font boosting) */
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            /* Disable double-tap zoom globally — keeps pinch-zoom for accessibility */
+            touch-action: manipulation;
         }
 
         * {

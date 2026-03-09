@@ -82,7 +82,7 @@
         overlay.id = 'dailyLoginCalendar';
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;' +
             'background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;' +
-            'z-index:99999;opacity:0;transition:opacity 0.3s ease';
+            'z-index:10500;opacity:0;transition:opacity 0.3s ease';
 
         var panel = document.createElement('div');
         panel.style.cssText = 'background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;' +
@@ -237,7 +237,16 @@
         _createOverlay();
 
         if (!alreadyClaimed) {
-            setTimeout(_show, 3000);
+            // Wait for daily bonus modal to close before showing calendar
+            var _tryShow = function () {
+                var dbm = document.getElementById('dailyBonusModal');
+                if (dbm && dbm.classList.contains('active')) {
+                    setTimeout(_tryShow, 1500); // re-check after 1.5s
+                    return;
+                }
+                _show();
+            };
+            setTimeout(_tryShow, 3000);
         }
     }
 
