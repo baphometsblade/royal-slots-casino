@@ -79,8 +79,9 @@ function showWalletModal() {
     renderWalletContent();
     // Inject gem balance badge + Gem Shop button into wallet header (once)
     _injectWalletGemBar(modal);
-    // Refresh gem balance from server
+    // Refresh gem and loyalty balances from server
     if (typeof refreshGemBalance === 'function') refreshGemBalance();
+    refreshLoyaltyBalance();
 }
 
 function _injectWalletGemBar(modal) {
@@ -125,6 +126,45 @@ function _injectWalletGemBar(modal) {
     bar.appendChild(gemBadge);
     bar.appendChild(shopBtn);
     header.appendChild(bar);
+
+    // ── Loyalty Points bar (injected right after gem bar) ──
+    const loyaltyBar = document.createElement('div');
+    loyaltyBar.id = 'walletLoyaltyBar';
+    loyaltyBar.style.cssText = [
+        'display:flex',
+        'align-items:center',
+        'justify-content:space-between',
+        'padding:7px 20px',
+        'background:rgba(52,211,153,0.06)',
+        'border-top:1px solid rgba(52,211,153,0.12)'
+    ].join(';');
+
+    const loyaltyBadge = document.createElement('span');
+    loyaltyBadge.style.cssText = 'font-size:0.82rem;color:#6ee7b7;font-weight:600;display:flex;align-items:center;gap:5px;';
+    loyaltyBadge.innerHTML = '\u{1F3AF} Loyalty: <span id="walletLoyaltyPoints" style="color:#a7f3d0;">...</span> pts';
+
+    const redeemBtn = document.createElement('button');
+    redeemBtn.id = 'walletLoyaltyRedeemBtn';
+    redeemBtn.textContent = 'Redeem';
+    redeemBtn.title = '100 pts = $1.00 — minimum 100 pts';
+    redeemBtn.style.cssText = [
+        'background:linear-gradient(135deg,#34d399,#059669)',
+        'color:#fff',
+        'border:none',
+        'border-radius:6px',
+        'padding:4px 12px',
+        'font-size:0.75rem',
+        'font-weight:700',
+        'cursor:pointer',
+        'letter-spacing:0.3px'
+    ].join(';');
+    redeemBtn.addEventListener('click', function() {
+        _redeemLoyaltyPoints();
+    });
+
+    loyaltyBar.appendChild(loyaltyBadge);
+    loyaltyBar.appendChild(redeemBtn);
+    header.appendChild(loyaltyBar);
 }
 
 function refreshGemBalance() {
@@ -139,6 +179,58 @@ function refreshGemBalance() {
             }
         })
         .catch(function() {});
+}
+
+function refreshLoyaltyBalance() {
+    const token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token || typeof isServerAuthToken === 'function' && !isServerAuthToken(token)) return;
+    fetch('/api/loyaltyshop/status', { headers: { Authorization: 'Bearer ' + token } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (data && typeof data.points !== 'undefined') {
+                const el = document.getElementById('walletLoyaltyPoints');
+                if (el) el.textContent = (data.points || 0).toLocaleString();
+                const btn = document.getElementById('walletLoyaltyRedeemBtn');
+                if (btn) btn.disabled = (data.points || 0) < 100;
+            }
+        })
+        .catch(function() {});
+}
+
+function _redeemLoyaltyPoints() {
+    const el = document.getElementById('walletLoyaltyPoints');
+    const currentPts = el ? parseInt(el.textContent.replace(/,/g, ''), 10) || 0 : 0;
+    if (currentPts < 100) {
+        if (typeof showToast === 'function') showToast('Need at least 100 loyalty pts to redeem (100 pts = $1.00)', 'info', 3000);
+        return;
+    }
+    // Redeem in 100-pt blocks (= $1 each)
+    const blocks = Math.floor(currentPts / 100);
+    const redeemPts = blocks * 100;
+    const creditAmt = (redeemPts / 100).toFixed(2);
+    if (!confirm('Redeem ' + redeemPts.toLocaleString() + ' loyalty pts for $' + creditAmt + '?')) return;
+    const token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    fetch('/api/loyaltyshop/redeem', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ points: redeemPts })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            if (typeof showToast === 'function') showToast('\uD83C\uDFAF Redeemed ' + redeemPts.toLocaleString() + ' pts → $' + creditAmt + ' credited!', 'win', 4000);
+            if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(data.newBalance);
+            else if (typeof balance !== 'undefined') { balance = data.newBalance; }
+            refreshLoyaltyBalance();
+            refreshGemBalance();
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Redemption failed', 'error', 3000);
+        }
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') showToast('Redemption failed — try again', 'error', 3000);
+    });
 }
 
 function _checkFirstDepositStatus() {
