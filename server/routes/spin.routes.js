@@ -386,7 +386,7 @@ router.post('/', authenticate, async (req, res) => {
                             "   updated_at      = datetime('now')",
                             [userId, weekStart, _winMult, spinResult.winAmount, initScore]
                         ).catch(function() {});
-                    } catch (e) {}
+                    } catch (e) { console.error('[Tournament] score update error:', e.message); }
                 }());
             }
         }
@@ -577,7 +577,7 @@ router.post('/', authenticate, async (req, res) => {
                     pct: Math.min(100, Math.round((wu.wagering_progress / wu.wagering_requirement) * 100)),
                 };
             }
-        } catch (_) {}
+        } catch (_wagerErr) { console.error('[Wagering] status check error:', _wagerErr.message); }
 
         // ── Achievement check (non-blocking) ──
         let newAchievements = [];

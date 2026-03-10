@@ -81,24 +81,24 @@ router.post('/claim', authenticate, async (req, res) => {
         } else if (reward.type === 'gems') {
             try {
                 await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [reward.amount, userId]);
-            } catch (e) {}
+            } catch (e) { console.error('[MysteryDrop] reward grant error:', e.message); }
             try {
                 await db.run(
                     'INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)',
                     [userId, 'mystery_drop_gems', 0, 'Mystery Drop: ' + reward.amount + ' gems']
                 );
-            } catch (e) {}
+            } catch (e) { console.error('[MysteryDrop] reward grant error:', e.message); }
         } else if (reward.type === 'wheel_spins') {
             try {
                 await db.run('UPDATE users SET bonus_wheel_spins = COALESCE(bonus_wheel_spins, 0) + ? WHERE id = ?', [reward.amount, userId]);
-            } catch (e) {}
+            } catch (e) { console.error('[MysteryDrop] reward grant error:', e.message); }
         } else if (reward.type === 'promo') {
             try {
                 await db.run(
                     "INSERT INTO campaigns (name, type, bonus_pct, max_bonus, wagering_mult, min_deposit, end_at, promo_code) VALUES (?, 'promo_code', 0, 0, 1, 0, datetime('now', '+7 days'), ?)",
                     ['Mystery Drop Promo', reward.code]
                 );
-            } catch (e) {}
+            } catch (e) { console.error('[MysteryDrop] reward grant error:', e.message); }
         }
 
         const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);

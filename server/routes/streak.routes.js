@@ -45,17 +45,17 @@ router.post('/', authenticate, async function(req, res) {
             if (reward.type === 'gems') {
                 try {
                     await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [reward.amount, userId]);
-                } catch (e) {}
+                } catch (e) { console.error('[Streak] transaction record error:', e.message); }
                 try {
                     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'streak_reward', ?, ?)",
                         [userId, reward.amount, 'Daily streak reward: ' + reward.amount + ' gems (day ' + newCount + ')']);
-                } catch (e) {}
+                } catch (e) { console.error('[Streak] transaction record error:', e.message); }
             } else if (reward.type === 'credits') {
                 await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [reward.amount, userId]);
                 try {
                     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'streak_reward', ?, ?)",
                         [userId, reward.amount, 'Daily streak reward: $' + reward.amount + ' credits (day ' + newCount + ')']);
-                } catch (e) {}
+                } catch (e) { console.error('[Streak] transaction record error:', e.message); }
             } else if (reward.type === 'weekly' || reward.type === 'biweekly' || reward.type === 'monthly') {
                 var creditAmount = reward.credits || reward.amount || 0;
                 if (creditAmount > 0) {
@@ -63,12 +63,12 @@ router.post('/', authenticate, async function(req, res) {
                     try {
                         await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'streak_reward', ?, ?)",
                             [userId, creditAmount, 'Daily streak reward: $' + creditAmount + ' credits (' + reward.type + ' bonus, day ' + newCount + ')']);
-                    } catch (e) {}
+                    } catch (e) { console.error('[Streak] transaction record error:', e.message); }
                 }
                 if (reward.wheelSpins && reward.wheelSpins > 0) {
                     try {
                         await db.run('UPDATE users SET bonus_wheel_spins = COALESCE(bonus_wheel_spins, 0) + ? WHERE id = ?', [reward.wheelSpins, userId]);
-                    } catch (e) {}
+                    } catch (e) { console.error('[Streak] transaction record error:', e.message); }
                 }
             }
         }
