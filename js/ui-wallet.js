@@ -99,6 +99,8 @@ function showWalletModal() {
     walletRenderVipDepositSection(modal);
     // Render the Weekend Cashback card section below VIP Deposit Bonus
     walletRenderWeekendCashbackSection(modal);
+    // Render the Win-Back Bonus card section at the top (after modal is in place)
+    walletRenderWinbackSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -3720,4 +3722,107 @@ async function walletRenderWeekendCashbackSection(parentContainer) {
         infoP.textContent = 'VIP players receive cashback on weekend losses. Reach Silver tier or above to unlock this benefit.';
         section.appendChild(infoP);
     }
+}
+
+/**
+ * Renders the Win-Back Bonus status card in the wallet modal.
+ * Shows active bonus balance and remaining wagering requirement when the
+ * player has a win-back bonus that has not yet been fully cleared.
+ *
+ * @param {HTMLElement} parentContainer  The #walletModal element.
+ */
+async function walletRenderWinbackSection(parentContainer) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    if (document.getElementById('walletWinbackSection')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('walletWinback-css')) {
+        var s = document.createElement('style');
+        s.id = 'walletWinback-css';
+        s.textContent = '#walletWinbackSection { background: linear-gradient(135deg,#1a1200,#2d2000); border:1px solid rgba(251,191,36,0.5); border-radius:12px; padding:14px; margin-bottom:14px; } .wb-title { color:#fbbf24; font-size:14px; font-weight:700; margin:0 0 8px 0; } .wb-row { display:flex; justify-content:space-between; color:#aaa; font-size:12px; margin:4px 0; } .wb-row span:last-child { color:#fff; font-weight:600; } .wb-cta { background:linear-gradient(135deg,#d97706,#f59e0b); color:#000; font-weight:700; padding:8px 16px; border-radius:8px; border:none; cursor:pointer; font-size:13px; margin-top:10px; width:100%; }';
+        document.head.appendChild(s);
+    }
+
+    // Create placeholder section immediately — no flash / layout shift
+    var section = document.createElement('div');
+    section.id = 'walletWinbackSection';
+    parentContainer.appendChild(section);
+
+    var data = null;
+    try {
+        var resp = await fetch('/api/user/winback-status', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) {
+            data = await resp.json();
+        }
+    } catch (e) {
+        console.error('[Winback]', e);
+    }
+
+    // No active winback — silently remove the placeholder and bail out
+    if (!data || data.hasActiveWinback !== true) {
+        if (section.parentNode) {
+            section.parentNode.removeChild(section);
+        }
+        return;
+    }
+
+    // ── Title ─────────────────────────────────────────────────────────────
+    var title = document.createElement('p');
+    title.className = 'wb-title';
+    title.textContent = '\uD83C\uDF81 Win-Back Bonus Active';
+    section.appendChild(title);
+
+    // ── Bonus balance row ─────────────────────────────────────────────────
+    var balRow = document.createElement('div');
+    balRow.className = 'wb-row';
+
+    var balLabel = document.createElement('span');
+    balLabel.textContent = 'Bonus Credits:';
+    balRow.appendChild(balLabel);
+
+    var balValue = document.createElement('span');
+    balValue.textContent = '$' + parseFloat(data.bonusBalance || 0).toFixed(2);
+    balRow.appendChild(balValue);
+
+    section.appendChild(balRow);
+
+    // ── Wagering requirement row ──────────────────────────────────────────
+    var wagRow = document.createElement('div');
+    wagRow.className = 'wb-row';
+
+    var wagLabel = document.createElement('span');
+    wagLabel.textContent = 'Wagering Required:';
+    wagRow.appendChild(wagLabel);
+
+    var wagValue = document.createElement('span');
+    wagValue.textContent = '$' + parseFloat(data.wageringRequirement || 0).toFixed(2);
+    wagRow.appendChild(wagValue);
+
+    section.appendChild(wagRow);
+
+    // ── Helper line ───────────────────────────────────────────────────────
+    var helpRow = document.createElement('div');
+    helpRow.className = 'wb-row';
+
+    var helpSpan = document.createElement('span');
+    helpSpan.textContent = 'Wager $' + parseFloat(data.wageringRequirement || 0).toFixed(2) + ' to release your bonus';
+    helpRow.appendChild(helpSpan);
+
+    section.appendChild(helpRow);
+
+    // ── CTA button ────────────────────────────────────────────────────────
+    var cta = document.createElement('button');
+    cta.className = 'wb-cta';
+    cta.textContent = 'Play any slot to wager through your bonus!';
+    cta.addEventListener('click', function () {
+        if (typeof showWalletModal === 'function') {
+            var modal = document.getElementById('walletModal');
+            if (modal) modal.classList.remove('active');
+        }
+    });
+    section.appendChild(cta);
 }

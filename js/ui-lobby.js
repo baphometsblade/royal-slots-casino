@@ -615,6 +615,8 @@ function renderGames() {
                     setTimeout(function() { if (typeof _renderXPBadge === 'function') _renderXPBadge(); }, 50);
                     // Balance sparkline (Sprint 29)
                     renderBalanceSparkline();
+                    // Instant Games section
+                    if (typeof renderInstantGamesSection === 'function') renderInstantGamesSection();
                 }, 200);
             });
         }
@@ -5871,4 +5873,209 @@ function applyFeaturedGameHighlights() {
             }
         })
         .catch(function() { /* silently ignore */ });
+}
+
+
+// ── Instant Games Section ─────────────────────────────────────────────────────
+// Renders a lobby section with quick-play instant game cards.
+// Entirely DOM-built (no dynamic innerHTML) to comply with CSP hook rules.
+function renderInstantGamesSection() {
+    // Idempotency guard
+    if (document.getElementById('instantGamesSection')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('instant-games-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'instant-games-css';
+        styleEl.textContent = [
+            '#instantGamesSection {',
+            '  border-top: 2px solid #f0a500;',
+            '  margin: 24px 0;',
+            '  padding: 24px 0;',
+            '}',
+            '#instantGamesSection .ig-header {',
+            '  color: #f0a500;',
+            '  font-size: 1.4rem;',
+            '  font-weight: bold;',
+            '  margin: 0 0 4px;',
+            '}',
+            '#instantGamesSection .ig-subheader {',
+            '  color: #999;',
+            '  font-size: 0.85rem;',
+            '  margin: 0 0 16px;',
+            '}',
+            '#instantGamesSection .ig-grid {',
+            '  display: grid;',
+            '  grid-template-columns: repeat(3, 1fr);',
+            '  gap: 14px;',
+            '}',
+            '@media (max-width: 600px) {',
+            '  #instantGamesSection .ig-grid {',
+            '    grid-template-columns: repeat(2, 1fr);',
+            '  }',
+            '}',
+            '#instantGamesSection .ig-card {',
+            '  background: #1a1a2e;',
+            '  border: 1px solid #333;',
+            '  border-radius: 12px;',
+            '  padding: 16px;',
+            '  text-align: center;',
+            '  transition: transform 0.2s;',
+            '  cursor: default;',
+            '}',
+            '#instantGamesSection .ig-card:hover {',
+            '  transform: translateY(-3px);',
+            '}',
+            '#instantGamesSection .ig-icon {',
+            '  font-size: 2.5rem;',
+            '  display: block;',
+            '  margin-bottom: 8px;',
+            '}',
+            '#instantGamesSection .ig-name {',
+            '  color: #f0a500;',
+            '  font-size: 1rem;',
+            '  font-weight: bold;',
+            '  display: block;',
+            '  margin-bottom: 4px;',
+            '}',
+            '#instantGamesSection .ig-desc {',
+            '  color: #999;',
+            '  font-size: 0.8rem;',
+            '  display: block;',
+            '  margin: 6px 0;',
+            '}',
+            '#instantGamesSection .ig-play-btn {',
+            '  background: linear-gradient(135deg, #f0a500, #d4880a);',
+            '  color: #1a0a00;',
+            '  border: none;',
+            '  border-radius: 6px;',
+            '  padding: 8px 16px;',
+            '  font-size: 0.82rem;',
+            '  font-weight: 700;',
+            '  cursor: pointer;',
+            '  margin-top: 8px;',
+            '  transition: opacity 0.15s;',
+            '}',
+            '#instantGamesSection .ig-play-btn:hover {',
+            '  opacity: 0.85;',
+            '}'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var gameCards = [
+        { icon: '\uD83E\uDE99', name: 'Coinflip', desc: 'Double or nothing \u2014 flip a coin', action: 'coinflip' },
+        { icon: '\uD83C\uDFB2', name: 'Dice',     desc: 'Roll over or under your target',    action: 'dice' },
+        { icon: '\uD83D\uDE80', name: 'Crash',    desc: 'Cash out before the crash!',         action: 'crash' },
+        { icon: '\uD83C\uDFA1', name: 'Wheel',    desc: 'Spin the Big Six Wheel',              action: 'wheel' },
+        { icon: '\uD83C\uDFB0', name: 'Plinko',   desc: 'Drop the ball, win big',              action: 'plinko' },
+        { icon: '\u221E',       name: 'Limbo',    desc: 'Bet on an infinite multiplier',       action: 'limbo' }
+    ];
+
+    // Build section wrapper
+    var section = document.createElement('div');
+    section.id = 'instantGamesSection';
+
+    // Header
+    var header = document.createElement('h2');
+    header.className = 'ig-header';
+    header.textContent = '\u26A1 Instant Games';
+    section.appendChild(header);
+
+    // Sub-header
+    var sub = document.createElement('p');
+    sub.className = 'ig-subheader';
+    sub.textContent = 'Quick play, instant results';
+    section.appendChild(sub);
+
+    // Grid
+    var grid = document.createElement('div');
+    grid.className = 'ig-grid';
+
+    gameCards.forEach(function(game) {
+        var card = document.createElement('div');
+        card.className = 'ig-card';
+
+        var iconEl = document.createElement('span');
+        iconEl.className = 'ig-icon';
+        iconEl.textContent = game.icon;
+        card.appendChild(iconEl);
+
+        var nameEl = document.createElement('span');
+        nameEl.className = 'ig-name';
+        nameEl.textContent = game.name;
+        card.appendChild(nameEl);
+
+        var descEl = document.createElement('span');
+        descEl.className = 'ig-desc';
+        descEl.textContent = game.desc;
+        card.appendChild(descEl);
+
+        var btn = document.createElement('button');
+        btn.className = 'ig-play-btn';
+        btn.textContent = 'Play Now';
+        (function(gameName) {
+            btn.addEventListener('click', function() {
+                _showInstantGameToast(gameName);
+            });
+        }(game.name));
+        card.appendChild(btn);
+
+        grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+
+    // Inject after the main games grid — look for allGames container's parent
+    var allGamesEl = document.getElementById('allGames');
+    var insertParent = allGamesEl
+        ? (allGamesEl.parentNode || document.getElementById('lobby'))
+        : document.getElementById('lobby');
+    if (insertParent) {
+        insertParent.appendChild(section);
+    }
+}
+
+// Show a temporary toast for instant game "coming soon" notice.
+function _showInstantGameToast(gameName) {
+    var existing = document.getElementById('instantGameToast');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    var toast = document.createElement('div');
+    toast.id = 'instantGameToast';
+    toast.style.cssText = [
+        'position:fixed',
+        'bottom:24px',
+        'right:24px',
+        'background:#1a1a2e',
+        'border:1px solid #f0a500',
+        'border-radius:10px',
+        'padding:12px 20px',
+        'color:#fff',
+        'font-size:0.9rem',
+        'font-weight:600',
+        'z-index:99999',
+        'box-shadow:0 4px 20px rgba(0,0,0,0.6)',
+        'transition:opacity 0.4s',
+        'opacity:1'
+    ].join(';');
+
+    var line1 = document.createElement('div');
+    line1.textContent = '\uD83C\uDFAE ' + gameName + ' \u2014 coming soon!';
+    toast.appendChild(line1);
+
+    var line2 = document.createElement('div');
+    line2.style.cssText = 'color:#f0a500;font-size:0.78rem;margin-top:4px;font-weight:400;';
+    line2.textContent = 'Try it in the Promotions tab.';
+    toast.appendChild(line2);
+
+    document.body.appendChild(toast);
+
+    // Fade out then remove after 3 s
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        setTimeout(function() {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 400);
+    }, 3000);
 }

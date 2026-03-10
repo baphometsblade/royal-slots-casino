@@ -2210,6 +2210,8 @@ function initPromoEngine() {
             if (!window._firstDepositCardInit) { window._firstDepositCardInit = true; renderFirstDepositCard(promosSidebar); }
             if (!window._reloadBonusCardInit) { window._reloadBonusCardInit = true; renderReloadBonusCard(promosSidebar); }
             if (!window._birthdaySetCardInit) { window._birthdaySetCardInit = true; renderBirthdaySetCard(promosSidebar); }
+            if (!window._coinflipCardInit) { window._coinflipCardInit = true; renderCoinflipCard(promosSidebar); }
+            if (!window._diceCardInit) { window._diceCardInit = true; renderDiceCard(promosSidebar); }
         }
     }, 4000);
 
@@ -4843,6 +4845,423 @@ async function renderBirthdaySetCard(container) {
         claimedRow.appendChild(claimedText);
         card.appendChild(claimedRow);
     }
+
+    container.appendChild(card);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// renderCoinflipCard(container)
+// Playable coinflip mini-game widget in the promo sidebar.
+// POST /api/coinflip/play  { bet, pick }  → { result, win, payout, newBalance }
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCoinflipCard(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    if (document.getElementById('coinflipPromoCard')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('coinflip-css')) {
+        var style = document.createElement('style');
+        style.id = 'coinflip-css';
+        style.textContent = '#coinflipPromoCard { background:#0f1520; border:1px solid #3a3a6a; border-radius:12px; padding:16px; margin-bottom:14px; color:#fff; } #coinflipPromoCard h4 { color:#fbbf24; margin:0 0 6px 0; font-size:15px; } #coinflipPromoCard p { color:#aaa; font-size:12px; margin:0 0 12px 0; } .cf-bet-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:13px; color:#ccc; } .cf-bet-input { background:#1a1f2e; border:1px solid #4a4a7a; color:#fff; padding:6px 10px; border-radius:6px; width:80px; font-size:13px; } .cf-buttons { display:flex; gap:10px; margin-bottom:10px; } .cf-btn { flex:1; padding:10px; border:none; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; transition:opacity 0.2s; } #cfHeadsBtn { background:linear-gradient(135deg,#d97706,#fbbf24); color:#000; } #cfTailsBtn { background:linear-gradient(135deg,#1d4ed8,#3b82f6); color:#fff; } .cf-btn:disabled { opacity:0.5; cursor:not-allowed; } .cf-result { text-align:center; padding:10px 0; } .cf-coin { font-size:36px; margin-bottom:6px; } .cf-result-msg { font-size:14px; font-weight:600; } .cf-result-msg.win { color:#4ade80; } .cf-result-msg.loss { color:#f87171; } .cf-balance { font-size:12px; color:#aaa; text-align:center; margin-top:6px; } .cf-balance strong { color:#fff; }';
+        document.head.appendChild(style);
+    }
+
+    // Card root
+    var card = document.createElement('div');
+    card.id = 'coinflipPromoCard';
+
+    // Title
+    var title = document.createElement('h4');
+    title.textContent = '\uD83E\uDE99 Coin Flip \u2014 2x Payout';
+    card.appendChild(title);
+
+    // Description
+    var desc = document.createElement('p');
+    desc.textContent = 'Pick heads or tails. Win 2x your bet!';
+    card.appendChild(desc);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'cf-bet-row';
+
+    var betLabel = document.createElement('label');
+    betLabel.textContent = 'Bet: $';
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.min = '0.25';
+    betInput.max = '1000';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.id = 'cfBetInput';
+    betInput.className = 'cf-bet-input';
+
+    betRow.appendChild(betLabel);
+    betRow.appendChild(betInput);
+    card.appendChild(betRow);
+
+    // Heads / Tails buttons
+    var buttonsRow = document.createElement('div');
+    buttonsRow.className = 'cf-buttons';
+
+    var headsBtn = document.createElement('button');
+    headsBtn.id = 'cfHeadsBtn';
+    headsBtn.className = 'cf-btn';
+    headsBtn.textContent = '\uD83D\uDFE1 HEADS';
+
+    var tailsBtn = document.createElement('button');
+    tailsBtn.id = 'cfTailsBtn';
+    tailsBtn.className = 'cf-btn';
+    tailsBtn.textContent = '\uD83D\uDD35 TAILS';
+
+    buttonsRow.appendChild(headsBtn);
+    buttonsRow.appendChild(tailsBtn);
+    card.appendChild(buttonsRow);
+
+    // Result area
+    var resultArea = document.createElement('div');
+    resultArea.id = 'cfResult';
+    resultArea.className = 'cf-result';
+    resultArea.style.display = 'none';
+
+    var coinEl = document.createElement('div');
+    coinEl.id = 'cfCoin';
+    coinEl.className = 'cf-coin';
+
+    var resultMsg = document.createElement('div');
+    resultMsg.id = 'cfResultMsg';
+    resultMsg.className = 'cf-result-msg';
+
+    resultArea.appendChild(coinEl);
+    resultArea.appendChild(resultMsg);
+    card.appendChild(resultArea);
+
+    // Balance display
+    var balanceRow = document.createElement('div');
+    balanceRow.id = 'cfBalance';
+    balanceRow.className = 'cf-balance';
+    balanceRow.style.display = 'none';
+
+    var balanceLabel = document.createElement('span');
+    balanceLabel.textContent = 'Balance: $';
+
+    var balanceAmt = document.createElement('strong');
+    balanceAmt.id = 'cfBalanceAmt';
+
+    balanceRow.appendChild(balanceLabel);
+    balanceRow.appendChild(balanceAmt);
+    card.appendChild(balanceRow);
+
+    // ── Flip handler ──────────────────────────────────────────────────────────
+    function doFlip(pick) {
+        var rawBet = parseFloat(betInput.value);
+        if (isNaN(rawBet) || rawBet < 0.25) rawBet = 1.00;
+        if (rawBet > 1000) rawBet = 1000;
+        var bet = Math.round(rawBet * 100) / 100;
+
+        headsBtn.disabled = true;
+        tailsBtn.disabled = true;
+
+        resultArea.style.display = 'block';
+        coinEl.textContent = '\uD83D\uDD04 Flipping\u2026';
+        resultMsg.textContent = '';
+        resultMsg.className = 'cf-result-msg';
+        balanceRow.style.display = 'none';
+
+        fetch('/api/coinflip/play', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ bet: bet, pick: pick })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data && typeof data.result !== 'undefined') {
+                coinEl.textContent = data.result === 'heads' ? '\uD83D\uDFE1' : '\uD83D\uDD35';
+
+                if (data.win) {
+                    resultMsg.className = 'cf-result-msg win';
+                    var winMsg = document.createElement('span');
+                    winMsg.textContent = '\u2705 You won $' + data.payout.toFixed(2) + '!';
+                    resultMsg.appendChild(winMsg);
+                } else {
+                    resultMsg.className = 'cf-result-msg loss';
+                    var lossMsg = document.createElement('span');
+                    lossMsg.textContent = '\u274C You lost. Better luck next time!';
+                    resultMsg.appendChild(lossMsg);
+                }
+
+                if (typeof data.newBalance !== 'undefined') {
+                    balanceAmt.textContent = data.newBalance.toFixed(2);
+                    balanceRow.style.display = 'block';
+                    if (typeof updateBalanceDisplay === 'function') {
+                        updateBalanceDisplay(data.newBalance);
+                    }
+                }
+            } else {
+                var errMsg = document.createElement('span');
+                errMsg.textContent = (data && data.error) ? data.error : 'Unexpected error. Please try again.';
+                resultMsg.className = 'cf-result-msg loss';
+                resultMsg.appendChild(errMsg);
+            }
+
+            setTimeout(function() {
+                headsBtn.disabled = false;
+                tailsBtn.disabled = false;
+            }, 1500);
+        })
+        .catch(function(err) {
+            console.error('[CoinFlip]', err);
+            coinEl.textContent = '\u26A0\uFE0F';
+            var netErrMsg = document.createElement('span');
+            netErrMsg.textContent = 'Network error. Please try again.';
+            resultMsg.className = 'cf-result-msg loss';
+            resultMsg.appendChild(netErrMsg);
+            setTimeout(function() {
+                headsBtn.disabled = false;
+                tailsBtn.disabled = false;
+            }, 1500);
+        });
+    }
+
+    headsBtn.addEventListener('click', function() { doFlip('heads'); });
+    tailsBtn.addEventListener('click', function() { doFlip('tails'); });
+
+    container.appendChild(card);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// renderDiceCard(container)
+// Playable dice mini-game widget in the promo sidebar.
+// POST /api/dice/roll  { bet, target, direction }
+//   → { roll, won, payout, newBalance, chance, multiplier }
+// ─────────────────────────────────────────────────────────────────────────────
+function renderDiceCard(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    if (document.getElementById('dicePromoCard')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('dice-card-css')) {
+        var style = document.createElement('style');
+        style.id = 'dice-card-css';
+        style.textContent = '#dicePromoCard { background:#1a1a2e; border:1px solid #3a3a6a; border-radius:12px; padding:16px; margin-bottom:14px; color:#fff; } #dicePromoCard h4 { color:#fbbf24; margin:0 0 4px 0; font-size:15px; } #dicePromoCard .dc-desc { color:#aaa; font-size:12px; margin:0 0 12px 0; } .dc-roll-display { font-size:3rem; font-family:monospace; color:#f59e0b; text-align:center; letter-spacing:2px; padding:10px 0; min-height:60px; line-height:1; } .dc-dir-row { display:flex; gap:8px; margin-bottom:10px; } .dc-dir-btn { flex:1; padding:8px; border:1px solid #4a4a7a; border-radius:7px; background:#0f1520; color:#aaa; font-weight:700; font-size:13px; cursor:pointer; transition:all 0.15s; } .dc-dir-btn.over-active { background:#16a34a; border-color:#22c55e; color:#fff; } .dc-dir-btn.under-active { background:#b91c1c; border-color:#ef4444; color:#fff; } .dc-target-row { margin-bottom:8px; } .dc-target-label { display:flex; justify-content:space-between; font-size:12px; color:#ccc; margin-bottom:4px; } .dc-target-val { color:#fbbf24; font-weight:700; } .dc-slider { width:100%; accent-color:#f59e0b; cursor:pointer; } .dc-chance { font-size:12px; color:#94a3b8; margin-bottom:10px; text-align:center; } .dc-bet-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; } .dc-bet-label { font-size:13px; color:#ccc; white-space:nowrap; } .dc-bet-input { background:#0f1520; border:1px solid #4a4a7a; color:#fff; padding:6px 10px; border-radius:6px; width:80px; font-size:13px; flex-shrink:0; } .dc-roll-btn { flex:1; padding:9px; border:none; border-radius:8px; background:linear-gradient(135deg,#d97706,#fbbf24); color:#000; font-weight:700; font-size:14px; cursor:pointer; transition:opacity 0.2s; } .dc-roll-btn:disabled { opacity:0.5; cursor:not-allowed; } .dc-result { font-size:14px; font-weight:600; text-align:center; min-height:20px; margin-top:4px; } .dc-result.win { color:#4ade80; } .dc-result.loss { color:#f87171; } .dc-result.err { color:#fb923c; }';
+        document.head.appendChild(style);
+    }
+
+    // Card root
+    var card = document.createElement('div');
+    card.id = 'dicePromoCard';
+
+    // Title
+    var title = document.createElement('h4');
+    title.textContent = '\uD83C\uDFB2 Dice';
+    card.appendChild(title);
+
+    // Description
+    var desc = document.createElement('p');
+    desc.className = 'dc-desc';
+    desc.textContent = 'Roll over or under your target. Multiplier scales with difficulty.';
+    card.appendChild(desc);
+
+    // Roll display
+    var rollDisplay = document.createElement('div');
+    rollDisplay.className = 'dc-roll-display';
+    rollDisplay.textContent = '--';
+    card.appendChild(rollDisplay);
+
+    // Direction toggle
+    var dirRow = document.createElement('div');
+    dirRow.className = 'dc-dir-row';
+
+    var overBtn = document.createElement('button');
+    overBtn.className = 'dc-dir-btn over-active';
+    overBtn.textContent = 'OVER';
+
+    var underBtn = document.createElement('button');
+    underBtn.className = 'dc-dir-btn';
+    underBtn.textContent = 'UNDER';
+
+    dirRow.appendChild(overBtn);
+    dirRow.appendChild(underBtn);
+    card.appendChild(dirRow);
+
+    // Target slider row
+    var targetRow = document.createElement('div');
+    targetRow.className = 'dc-target-row';
+
+    var targetLabel = document.createElement('div');
+    targetLabel.className = 'dc-target-label';
+
+    var targetLabelText = document.createElement('span');
+    targetLabelText.textContent = 'Target:';
+
+    var targetValEl = document.createElement('span');
+    targetValEl.className = 'dc-target-val';
+    targetValEl.textContent = '50';
+
+    targetLabel.appendChild(targetLabelText);
+    targetLabel.appendChild(targetValEl);
+    targetRow.appendChild(targetLabel);
+
+    var slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = '1';
+    slider.max = '99';
+    slider.value = '50';
+    slider.className = 'dc-slider';
+    targetRow.appendChild(slider);
+    card.appendChild(targetRow);
+
+    // Win chance display
+    var chanceEl = document.createElement('div');
+    chanceEl.className = 'dc-chance';
+    card.appendChild(chanceEl);
+
+    // Compute and display win chance
+    var _direction = 'over';
+    function updateChance() {
+        var target = parseInt(slider.value, 10);
+        var chance;
+        if (_direction === 'over') {
+            chance = (100 - target) / 100 * 97;
+        } else {
+            chance = target / 100 * 97;
+        }
+        targetValEl.textContent = String(target);
+        chanceEl.textContent = 'Win chance: ' + chance.toFixed(2) + '%';
+    }
+    updateChance();
+
+    slider.addEventListener('input', updateChance);
+
+    overBtn.addEventListener('click', function() {
+        _direction = 'over';
+        overBtn.className = 'dc-dir-btn over-active';
+        underBtn.className = 'dc-dir-btn';
+        updateChance();
+    });
+    underBtn.addEventListener('click', function() {
+        _direction = 'under';
+        underBtn.className = 'dc-dir-btn under-active';
+        overBtn.className = 'dc-dir-btn';
+        updateChance();
+    });
+
+    // Bet row (bet input + roll button inline)
+    var betRow = document.createElement('div');
+    betRow.className = 'dc-bet-row';
+
+    var betLabel = document.createElement('label');
+    betLabel.className = 'dc-bet-label';
+    betLabel.textContent = 'Bet: $';
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.min = '0.20';
+    betInput.max = '1000';
+    betInput.step = '0.20';
+    betInput.value = '1.00';
+    betInput.className = 'dc-bet-input';
+
+    var rollBtn = document.createElement('button');
+    rollBtn.className = 'dc-roll-btn';
+    rollBtn.textContent = 'Roll';
+
+    betRow.appendChild(betLabel);
+    betRow.appendChild(betInput);
+    betRow.appendChild(rollBtn);
+    card.appendChild(betRow);
+
+    // Result area
+    var resultEl = document.createElement('div');
+    resultEl.className = 'dc-result';
+    card.appendChild(resultEl);
+
+    // Roll handler
+    rollBtn.addEventListener('click', function() {
+        var bet = parseFloat(betInput.value);
+        if (!bet || bet <= 0) {
+            resultEl.className = 'dc-result err';
+            var errMsg = document.createElement('span');
+            errMsg.textContent = 'Enter a valid bet amount.';
+            resultEl.textContent = '';
+            resultEl.appendChild(errMsg);
+            return;
+        }
+
+        var target = parseInt(slider.value, 10);
+        var direction = _direction;
+
+        rollBtn.disabled = true;
+        resultEl.className = 'dc-result';
+        resultEl.textContent = '';
+
+        var spinFrames = 0;
+        var spinMax = 12;
+        var spinInterval = setInterval(function() {
+            spinFrames++;
+            rollDisplay.textContent = String(Math.floor(Math.random() * 100));
+            if (spinFrames >= spinMax) clearInterval(spinInterval);
+        }, 60);
+
+        fetch('/api/dice/roll', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ bet: bet, target: target, direction: direction })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            clearInterval(spinInterval);
+
+            if (data.error) {
+                rollDisplay.textContent = '--';
+                resultEl.className = 'dc-result err';
+                var errSpan = document.createElement('span');
+                errSpan.textContent = data.error;
+                resultEl.appendChild(errSpan);
+                rollBtn.disabled = false;
+                return;
+            }
+
+            rollDisplay.textContent = String(data.roll);
+
+            if (data.won) {
+                resultEl.className = 'dc-result win';
+                var winSpan = document.createElement('span');
+                winSpan.textContent = 'WIN! +'  + (typeof data.payout === 'number' ? '$' + data.payout.toFixed(2) : '') + ' (' + (data.multiplier ? data.multiplier.toFixed(2) + 'x' : '') + ')';
+                resultEl.appendChild(winSpan);
+            } else {
+                resultEl.className = 'dc-result loss';
+                var lossSpan = document.createElement('span');
+                lossSpan.textContent = 'LOSS! -$' + bet.toFixed(2);
+                resultEl.appendChild(lossSpan);
+            }
+
+            if (typeof data.newBalance === 'number' && typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay(data.newBalance);
+            }
+
+            rollBtn.disabled = false;
+        })
+        .catch(function(err) {
+            clearInterval(spinInterval);
+            console.error('[Dice]', err);
+            rollDisplay.textContent = '--';
+            resultEl.className = 'dc-result err';
+            var netErr = document.createElement('span');
+            netErr.textContent = 'Network error. Please try again.';
+            resultEl.appendChild(netErr);
+            rollBtn.disabled = false;
+        });
+    });
 
     container.appendChild(card);
 }
