@@ -203,6 +203,8 @@
             }
             _checkAchievements();
             _checkLevelUpBonus();
+            _checkMilestones();
+            _checkStreakBonuses();
             _initNotificationBell();
             startSessionDurationWatch();
             // Periodic loss-streak check — fires every 3 minutes during active play
@@ -629,6 +631,76 @@
                                 showMessage('\uD83C\uDD99 Level up bonus claimed! +$' + amt + ' for reaching Level ' + currentLevel, 'big-win');
                             }
                         });
+                })
+                .catch(function() {});
+        }
+
+        // ── Milestone auto-claim ───────────────────────────────────────────────
+        function _checkMilestones(isRecurse) {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/milestones/status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.pendingClaim) return;
+                    return fetch('/api/milestones/claim', {
+                        method: 'POST',
+                        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+                    })
+                        .then(function(r) { return r.ok ? r.json() : null; })
+                        .then(function(res) {
+                            if (!res || !res.success) return;
+                            if (res.newBalance !== undefined) {
+                                balance = res.newBalance;
+                                if (typeof updateBalance === 'function') updateBalance();
+                                if (typeof saveBalance === 'function') saveBalance();
+                            }
+                            var label = res.milestoneName || 'Milestone';
+                            var cashAmt = res.cashReward ? '$' + parseFloat(res.cashReward).toFixed(2) : '';
+                            var gemsAmt = res.gemReward ? res.gemReward + ' gems' : '';
+                            var parts = [];
+                            if (cashAmt) parts.push(cashAmt);
+                            if (gemsAmt) parts.push(gemsAmt);
+                            var rewardStr = parts.length ? ' +' + parts.join(' + ') + ' claimed!' : ' claimed!';
+                            var msg = '\uD83C\uDFC6 Milestone: ' + label + '!' + rewardStr;
+                            if (typeof showWinToast === 'function') {
+                                showWinToast(msg);
+                            } else {
+                                var t = document.createElement('div');
+                                t.textContent = msg;
+                                t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;z-index:99999;pointer-events:none;';
+                                document.body.appendChild(t);
+                                setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 3500);
+                            }
+                            // Recurse once in case multiple milestones are pending
+                            if (!isRecurse) {
+                                setTimeout(function() { _checkMilestones(true); }, 500);
+                            }
+                        });
+                })
+                .catch(function() {});
+        }
+
+        // ── Streak bonus status ────────────────────────────────────────────────
+        function _checkStreakBonuses() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/spinstreak/status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    window._spinStreakStatus = data || null;
+                    if (data && data.multiplier && parseFloat(data.multiplier) > 1.0) {
+                        // Multiplier is active — store for use by spin engine if needed
+                        window._spinStreakMultiplier = parseFloat(data.multiplier);
+                    }
+                })
+                .catch(function() {});
+            fetch('/api/winstreak/status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    window._winStreakStatus = data || null;
                 })
                 .catch(function() {});
         }

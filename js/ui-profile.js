@@ -1030,107 +1030,322 @@ async function renderReferralsTab() {
     spinner.appendChild(sp);
     el.appendChild(spinner);
 
-    var data = null;
+    // Fetch info and stats in parallel from the correct endpoints
+    var infoData = null;
+    var statsData = null;
     try {
-        data = await apiRequest('/api/user/referral', { requireAuth: true });
-    } catch (e) { /* offline */ }
+        var results = await Promise.allSettled([
+            apiRequest('/api/referral/info', { requireAuth: true }),
+            apiRequest('/api/referral/stats', { requireAuth: true })
+        ]);
+        if (results[0].status === 'fulfilled') infoData = results[0].value;
+        if (results[1].status === 'fulfilled') statsData = results[1].value;
+    } catch (e) { /* offline — continue with defaults */ }
 
-    var code = (data && data.referralCode) ? data.referralCode : '---';
-    var count = (data && data.referralCount) ? data.referralCount : 0;
-    var earned = (data && data.totalEarned) ? data.totalEarned : 0;
-    var perRef = (data && data.bonusPerReferral) ? data.bonusPerReferral : 500;
-    var refBonus = (data && data.refereeBonusAmount) ? data.refereeBonusAmount : 250;
-    var origin = window.location.origin || 'https://www.msaart.online';
-    var shareLink = origin + '?ref=' + code;
+    var code = (infoData && infoData.code) ? infoData.code : '------';
+    var referralUrl = (infoData && infoData.referralUrl)
+        ? infoData.referralUrl
+        : (window.location.origin + '?ref=' + code);
+    var totalReferrals  = (infoData && infoData.totalReferrals  != null) ? infoData.totalReferrals  : 0;
+    var pendingReferrals = (infoData && infoData.pendingReferrals != null) ? infoData.pendingReferrals : 0;
+    var totalEarned     = (infoData && infoData.totalEarned     != null) ? infoData.totalEarned     : 0;
+    var referrals       = (statsData && Array.isArray(statsData.referrals)) ? statsData.referrals : [];
+
+    // Detect whether this user has already applied a referral code (any completed entry)
+    var hasBeenReferred = referrals.some(function(r) { return r.status === 'completed'; });
 
     el.textContent = '';
 
+    // ── Section title ────────────────────────────────────
     var header = document.createElement('h2');
     header.className = 'profile-section-title';
-    header.textContent = 'Invite Friends & Earn';
+    header.textContent = 'Referral Program';
     el.appendChild(header);
 
-    var desc = document.createElement('p');
-    desc.style.cssText = 'color:#94a3b8; margin-bottom:20px; font-size:14px; line-height:1.5;';
-    desc.textContent = 'Share your referral code with friends. When they sign up and make their first deposit ($' +
-        (typeof REFERRAL_MIN_DEPOSIT !== 'undefined' ? REFERRAL_MIN_DEPOSIT : 10) + '+), you both earn bonus cash!';
-    el.appendChild(desc);
+    // ── My Referral Code card (dark green gradient) ──────
+    var codeCard = document.createElement('div');
+    codeCard.className = 'referral-my-code-card';
 
-    // Rewards info cards
-    var rewardsRow = document.createElement('div');
-    rewardsRow.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;';
-    rewardsRow.appendChild(_makeRewardCard(perRef, 'You receive'));
-    rewardsRow.appendChild(_makeRewardCard(refBonus, 'Friend receives'));
-    el.appendChild(rewardsRow);
+    var codeCardTitle = document.createElement('div');
+    codeCardTitle.className = 'profile-card-title';
+    codeCardTitle.textContent = 'MY REFERRAL CODE';
+    codeCard.appendChild(codeCardTitle);
 
-    // Referral code display + copy button
-    var codeSection = document.createElement('div');
-    codeSection.className = 'referral-code-section';
-
-    var codeLabel = document.createElement('label');
-    codeLabel.textContent = 'Your Referral Code';
-    codeLabel.style.cssText = 'color:#e2e8f0; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:block;';
-    codeSection.appendChild(codeLabel);
-
+    // Big code display
     var codeRow = document.createElement('div');
-    codeRow.style.cssText = 'display:flex; gap:8px; align-items:center;';
+    codeRow.style.cssText = 'display:flex; gap:10px; align-items:center; margin-bottom:14px;';
 
     var codeDisplay = document.createElement('div');
     codeDisplay.className = 'referral-code-display';
     codeDisplay.textContent = code;
     codeRow.appendChild(codeDisplay);
 
-    var copyBtn = document.createElement('button');
-    copyBtn.className = 'referral-copy-btn';
-    copyBtn.textContent = 'COPY';
-    copyBtn.onclick = function() {
-        navigator.clipboard.writeText(code).then(function() {
-            copyBtn.textContent = 'COPIED!';
-            setTimeout(function() { copyBtn.textContent = 'COPY'; }, 2000);
-        });
+    var copyCodeBtn = document.createElement('button');
+    copyCodeBtn.className = 'referral-copy-btn';
+    copyCodeBtn.textContent = 'COPY CODE';
+    copyCodeBtn.onclick = function() {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).then(function() {
+                copyCodeBtn.textContent = 'COPIED!';
+                setTimeout(function() { copyCodeBtn.textContent = 'COPY CODE'; }, 2000);
+            }).catch(function() {
+                _referralFallbackCopy(code, copyCodeBtn, 'COPY CODE');
+            });
+        } else {
+            _referralFallbackCopy(code, copyCodeBtn, 'COPY CODE');
+        }
     };
-    codeRow.appendChild(copyBtn);
-    codeSection.appendChild(codeRow);
-    el.appendChild(codeSection);
+    codeRow.appendChild(copyCodeBtn);
+    codeCard.appendChild(codeRow);
 
-    // Share link
-    var linkSection = document.createElement('div');
-    linkSection.style.cssText = 'margin-top:16px;';
-
-    var linkLabel = document.createElement('label');
-    linkLabel.textContent = 'Share Link';
-    linkLabel.style.cssText = 'color:#e2e8f0; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:block;';
-    linkSection.appendChild(linkLabel);
-
+    // Copy link row
     var linkRow = document.createElement('div');
-    linkRow.style.cssText = 'display:flex; gap:8px; align-items:center;';
+    linkRow.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:16px;';
 
     var linkInput = document.createElement('input');
     linkInput.type = 'text';
     linkInput.readOnly = true;
-    linkInput.value = shareLink;
+    linkInput.value = referralUrl;
     linkInput.className = 'referral-link-input';
     linkRow.appendChild(linkInput);
 
-    var linkCopy = document.createElement('button');
-    linkCopy.className = 'referral-copy-btn';
-    linkCopy.textContent = 'COPY';
-    linkCopy.onclick = function() {
-        navigator.clipboard.writeText(shareLink).then(function() {
-            linkCopy.textContent = 'COPIED!';
-            setTimeout(function() { linkCopy.textContent = 'COPY'; }, 2000);
-        });
+    var copyLinkBtn = document.createElement('button');
+    copyLinkBtn.className = 'referral-copy-btn';
+    copyLinkBtn.textContent = 'COPY LINK';
+    copyLinkBtn.onclick = function() {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(referralUrl).then(function() {
+                copyLinkBtn.textContent = 'COPIED!';
+                setTimeout(function() { copyLinkBtn.textContent = 'COPY LINK'; }, 2000);
+            }).catch(function() {
+                _referralFallbackCopy(referralUrl, copyLinkBtn, 'COPY LINK');
+            });
+        } else {
+            _referralFallbackCopy(referralUrl, copyLinkBtn, 'COPY LINK');
+        }
     };
-    linkRow.appendChild(linkCopy);
-    linkSection.appendChild(linkRow);
-    el.appendChild(linkSection);
+    linkRow.appendChild(copyLinkBtn);
+    codeCard.appendChild(linkRow);
 
-    // Stats
-    var statsSection = document.createElement('div');
-    statsSection.style.cssText = 'margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:12px;';
-    statsSection.appendChild(_makeStatCard(String(count), 'Friends Referred'));
-    statsSection.appendChild(_makeStatCard('$' + formatMoney(earned), 'Total Earned'));
-    el.appendChild(statsSection);
+    // Stats summary row
+    var statsRow = document.createElement('div');
+    statsRow.className = 'referral-stats-row';
+
+    var s1 = document.createElement('span');
+    s1.className = 'referral-stats-item';
+    var s1Label = document.createElement('span');
+    s1Label.className = 'referral-stats-label';
+    s1Label.textContent = 'Total Referrals';
+    var s1Val = document.createElement('span');
+    s1Val.className = 'referral-stats-value';
+    s1Val.textContent = String(totalReferrals);
+    s1.appendChild(s1Label);
+    s1.appendChild(s1Val);
+    statsRow.appendChild(s1);
+
+    var s2 = document.createElement('span');
+    s2.className = 'referral-stats-item';
+    var s2Label = document.createElement('span');
+    s2Label.className = 'referral-stats-label';
+    s2Label.textContent = 'Pending';
+    var s2Val = document.createElement('span');
+    s2Val.className = 'referral-stats-value';
+    s2Val.textContent = String(pendingReferrals);
+    s2.appendChild(s2Label);
+    s2.appendChild(s2Val);
+    statsRow.appendChild(s2);
+
+    var s3 = document.createElement('span');
+    s3.className = 'referral-stats-item';
+    var s3Label = document.createElement('span');
+    s3Label.className = 'referral-stats-label';
+    s3Label.textContent = 'Total Earned';
+    var s3Val = document.createElement('span');
+    s3Val.className = 'referral-stats-value referral-stats-value--green';
+    s3Val.textContent = '$' + (typeof formatMoney === 'function' ? formatMoney(totalEarned) : Number(totalEarned).toFixed(2));
+    s3.appendChild(s3Label);
+    s3.appendChild(s3Val);
+    statsRow.appendChild(s3);
+
+    codeCard.appendChild(statsRow);
+    el.appendChild(codeCard);
+
+    // ── Recent referrals table ───────────────────────────
+    if (referrals.length > 0) {
+        var tableCard = document.createElement('div');
+        tableCard.className = 'referral-table-card';
+
+        var tableTitle = document.createElement('div');
+        tableTitle.className = 'profile-card-title';
+        tableTitle.textContent = 'RECENT REFERRALS';
+        tableCard.appendChild(tableTitle);
+
+        var tableWrap = document.createElement('div');
+        tableWrap.style.cssText = 'overflow-x:auto;';
+
+        var table = document.createElement('table');
+        table.className = 'referral-table';
+
+        var thead = document.createElement('thead');
+        var hrow = document.createElement('tr');
+        ['Username', 'Status', 'Bonus Paid', 'Date'].forEach(function(h) {
+            var th = document.createElement('th');
+            th.textContent = h;
+            hrow.appendChild(th);
+        });
+        thead.appendChild(hrow);
+        table.appendChild(thead);
+
+        var tbody = document.createElement('tbody');
+        referrals.forEach(function(r) {
+            var tr = document.createElement('tr');
+
+            // Masked username: show first 2 chars + ***
+            var rawName = r.referee_username || 'Unknown';
+            var masked = rawName.length > 2
+                ? rawName.substring(0, 2) + '***'
+                : rawName.charAt(0) + '***';
+
+            var tdName = document.createElement('td');
+            tdName.textContent = masked;
+            tr.appendChild(tdName);
+
+            var tdStatus = document.createElement('td');
+            var badge = document.createElement('span');
+            badge.className = 'referral-status-badge referral-status-badge--' + (r.status || 'pending');
+            badge.textContent = (r.status || 'pending').charAt(0).toUpperCase() + (r.status || 'pending').slice(1);
+            tdStatus.appendChild(badge);
+            tr.appendChild(tdStatus);
+
+            var tdBonus = document.createElement('td');
+            var bonusPaid = r.bonus_paid != null ? r.bonus_paid : 0;
+            tdBonus.textContent = bonusPaid > 0 ? ('$' + (typeof formatMoney === 'function' ? formatMoney(bonusPaid) : Number(bonusPaid).toFixed(2))) : '-';
+            if (bonusPaid > 0) tdBonus.style.cssText = 'color:#22c55e; font-weight:700;';
+            tr.appendChild(tdBonus);
+
+            var tdDate = document.createElement('td');
+            if (r.created_at) {
+                try {
+                    tdDate.textContent = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                } catch(e) {
+                    tdDate.textContent = r.created_at;
+                }
+            } else {
+                tdDate.textContent = '-';
+            }
+            tr.appendChild(tdDate);
+
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        tableWrap.appendChild(table);
+        tableCard.appendChild(tableWrap);
+        el.appendChild(tableCard);
+    }
+
+    // ── Apply a Referral Code card (only if not yet referred) ──
+    if (!hasBeenReferred) {
+        var applyCard = document.createElement('div');
+        applyCard.className = 'referral-apply-card';
+
+        var applyTitle = document.createElement('div');
+        applyTitle.className = 'profile-card-title';
+        applyTitle.textContent = 'APPLY A REFERRAL CODE';
+        applyCard.appendChild(applyTitle);
+
+        var applyDesc = document.createElement('p');
+        applyDesc.style.cssText = 'color:#94a3b8; font-size:12px; margin-bottom:12px; line-height:1.5;';
+        applyDesc.textContent = 'If a friend referred you, enter their code to claim your sign-up bonus.';
+        applyCard.appendChild(applyDesc);
+
+        var applyRow = document.createElement('div');
+        applyRow.style.cssText = 'display:flex; gap:8px; align-items:center;';
+
+        var applyInput = document.createElement('input');
+        applyInput.type = 'text';
+        applyInput.maxLength = 10;
+        applyInput.placeholder = 'Enter referral code';
+        applyInput.className = 'referral-apply-input';
+        applyRow.appendChild(applyInput);
+
+        var applyBtn = document.createElement('button');
+        applyBtn.className = 'referral-copy-btn';
+        applyBtn.textContent = 'APPLY';
+        applyBtn.onclick = function() {
+            var enteredCode = applyInput.value.trim().toUpperCase();
+            if (!enteredCode) {
+                _referralShowMsg(applyMsg, 'Please enter a referral code.', 'error');
+                return;
+            }
+            applyBtn.disabled = true;
+            applyBtn.textContent = '...';
+
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) {
+                _referralShowMsg(applyMsg, 'You must be logged in to apply a referral code.', 'error');
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'APPLY';
+                return;
+            }
+
+            fetch('/api/referral/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ code: enteredCode })
+            }).then(function(res) {
+                return res.json().then(function(body) { return { ok: res.ok, body: body }; });
+            }).then(function(result) {
+                if (result.ok && result.body && result.body.success) {
+                    _referralShowMsg(applyMsg, result.body.message || 'Referral code applied! Bonus credited.', 'success');
+                    applyInput.value = '';
+                    applyInput.disabled = true;
+                    applyBtn.disabled = true;
+                    applyBtn.textContent = 'APPLIED';
+                } else {
+                    var errMsg = (result.body && result.body.message) ? result.body.message : 'Failed to apply referral code.';
+                    _referralShowMsg(applyMsg, errMsg, 'error');
+                    applyBtn.disabled = false;
+                    applyBtn.textContent = 'APPLY';
+                }
+            }).catch(function() {
+                _referralShowMsg(applyMsg, 'Network error. Please try again.', 'error');
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'APPLY';
+            });
+        };
+        applyRow.appendChild(applyBtn);
+        applyCard.appendChild(applyRow);
+
+        var applyMsg = document.createElement('div');
+        applyMsg.className = 'referral-apply-msg';
+        applyCard.appendChild(applyMsg);
+
+        el.appendChild(applyCard);
+    }
+}
+
+// Helper: clipboard fallback using textarea
+function _referralFallbackCopy(text, btn, originalLabel) {
+    try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = 'COPIED!';
+        setTimeout(function() { btn.textContent = originalLabel; }, 2000);
+    } catch(e) {
+        btn.textContent = originalLabel;
+    }
+}
+
+// Helper: show apply message
+function _referralShowMsg(el, text, type) {
+    el.textContent = text;
+    el.className = 'referral-apply-msg referral-apply-msg--' + type;
+    el.style.display = 'block';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1986,4 +2201,482 @@ function buildCountryOptions(selected) {
     return countries.map(code =>
         `<option value="${code}" ${selected === code ? 'selected' : ''}>${labels[code] || code}</option>`
     ).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════
+// REFERRAL SECTION — standalone embed helper
+// ═══════════════════════════════════════════════════════
+//
+// renderReferralSection(container)
+//
+// Renders a self-contained referral UI block into `container`.
+// Can be called from any page context — it fetches its own data
+// and does NOT depend on the profile modal being open.
+//
+// Design: dark green gradient theme ("money / growth").
+// All dynamic user data uses textContent. Static CSS is injected once.
+
+function renderReferralSection(container) {
+    if (!container) return;
+
+    // Inject CSS once
+    if (!document.getElementById('referralSectionCss')) {
+        var style = document.createElement('style');
+        style.id = 'referralSectionCss';
+        style.textContent = [
+            '.ref-section {',
+            '  font-family: inherit;',
+            '  color: #e2e8f0;',
+            '}',
+            '.ref-card {',
+            '  background: linear-gradient(135deg, rgba(6,78,59,0.55) 0%, rgba(5,46,22,0.70) 100%);',
+            '  border: 1px solid rgba(34,197,94,0.35);',
+            '  border-radius: 14px;',
+            '  padding: 20px;',
+            '  margin-bottom: 16px;',
+            '}',
+            '.ref-card-title {',
+            '  font-size: 11px;',
+            '  font-weight: 700;',
+            '  color: #4ade80;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 1px;',
+            '  margin-bottom: 14px;',
+            '}',
+            '.ref-code-big {',
+            '  font-size: 2rem;',
+            '  font-weight: 900;',
+            '  color: #4ade80;',
+            '  letter-spacing: 6px;',
+            '  font-family: "Courier New", monospace;',
+            '  background: rgba(0,0,0,0.3);',
+            '  border: 2px dashed rgba(74,222,128,0.4);',
+            '  border-radius: 8px;',
+            '  padding: 10px 18px;',
+            '  display: inline-block;',
+            '  margin-bottom: 10px;',
+            '}',
+            '.ref-copy-btn {',
+            '  background: linear-gradient(135deg, #22c55e, #16a34a);',
+            '  color: #fff;',
+            '  border: none;',
+            '  border-radius: 8px;',
+            '  padding: 10px 18px;',
+            '  font-weight: 700;',
+            '  font-size: 12px;',
+            '  cursor: pointer;',
+            '  transition: transform 0.15s, box-shadow 0.15s;',
+            '  white-space: nowrap;',
+            '}',
+            '.ref-copy-btn:hover {',
+            '  transform: translateY(-1px);',
+            '  box-shadow: 0 4px 14px rgba(34,197,94,0.35);',
+            '}',
+            '.ref-link-input {',
+            '  flex: 1;',
+            '  background: rgba(0,0,0,0.3);',
+            '  border: 1px solid rgba(34,197,94,0.25);',
+            '  border-radius: 8px;',
+            '  padding: 9px 12px;',
+            '  color: #86efac;',
+            '  font-size: 12px;',
+            '  font-family: "Courier New", monospace;',
+            '  outline: none;',
+            '}',
+            '.ref-stats-bar {',
+            '  display: flex;',
+            '  gap: 16px;',
+            '  flex-wrap: wrap;',
+            '  margin-top: 14px;',
+            '  padding-top: 12px;',
+            '  border-top: 1px solid rgba(34,197,94,0.2);',
+            '  font-size: 12px;',
+            '}',
+            '.ref-stat {',
+            '  display: flex;',
+            '  flex-direction: column;',
+            '  gap: 2px;',
+            '}',
+            '.ref-stat-label {',
+            '  color: #6b7280;',
+            '  font-size: 10px;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 0.5px;',
+            '}',
+            '.ref-stat-value {',
+            '  font-weight: 800;',
+            '  color: #e2e8f0;',
+            '}',
+            '.ref-stat-value--green { color: #4ade80; }',
+            '.ref-table {',
+            '  width: 100%;',
+            '  border-collapse: collapse;',
+            '  font-size: 12px;',
+            '}',
+            '.ref-table th {',
+            '  text-align: left;',
+            '  padding: 8px 10px;',
+            '  font-size: 10px;',
+            '  font-weight: 700;',
+            '  color: #4ade80;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 0.5px;',
+            '  border-bottom: 1px solid rgba(34,197,94,0.2);',
+            '}',
+            '.ref-table td {',
+            '  padding: 8px 10px;',
+            '  color: #cbd5e1;',
+            '  border-bottom: 1px solid rgba(34,197,94,0.08);',
+            '}',
+            '.ref-badge {',
+            '  display: inline-block;',
+            '  padding: 2px 8px;',
+            '  border-radius: 4px;',
+            '  font-size: 10px;',
+            '  font-weight: 700;',
+            '  text-transform: uppercase;',
+            '}',
+            '.ref-badge--pending   { background: rgba(251,191,36,0.15);  color: #fbbf24; }',
+            '.ref-badge--completed { background: rgba(34,197,94,0.15);   color: #4ade80; }',
+            '.ref-apply-card {',
+            '  background: linear-gradient(135deg, rgba(6,78,59,0.35) 0%, rgba(5,46,22,0.50) 100%);',
+            '  border: 1px solid rgba(34,197,94,0.2);',
+            '  border-radius: 14px;',
+            '  padding: 20px;',
+            '  margin-bottom: 16px;',
+            '}',
+            '.ref-apply-input {',
+            '  flex: 1;',
+            '  background: rgba(0,0,0,0.3);',
+            '  border: 1px solid rgba(34,197,94,0.3);',
+            '  border-radius: 8px;',
+            '  padding: 9px 12px;',
+            '  color: #e2e8f0;',
+            '  font-size: 13px;',
+            '  font-family: "Courier New", monospace;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 2px;',
+            '  outline: none;',
+            '}',
+            '.ref-apply-input:focus { border-color: rgba(74,222,128,0.5); }',
+            '.ref-msg {',
+            '  margin-top: 8px;',
+            '  font-size: 12px;',
+            '  display: none;',
+            '}',
+            '.ref-msg--success { color: #4ade80; }',
+            '.ref-msg--error   { color: #f87171; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // Loading state
+    container.textContent = '';
+    var wrap = document.createElement('div');
+    wrap.className = 'ref-section';
+
+    var loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = 'text-align:center; padding:30px; color:#4ade80; font-size:13px;';
+    loadingDiv.textContent = 'Loading referral info...';
+    wrap.appendChild(loadingDiv);
+    container.appendChild(wrap);
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) {
+        loadingDiv.textContent = 'Please log in to view your referral program.';
+        return;
+    }
+
+    // Fetch both endpoints in parallel
+    var headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+    Promise.allSettled([
+        fetch('/api/referral/info', { headers: headers }).then(function(r) { return r.json(); }),
+        fetch('/api/referral/stats', { headers: headers }).then(function(r) { return r.json(); })
+    ]).then(function(results) {
+        var infoData  = results[0].status === 'fulfilled' ? results[0].value : null;
+        var statsData = results[1].status === 'fulfilled' ? results[1].value : null;
+
+        var code            = (infoData && infoData.code)             ? infoData.code             : '------';
+        var referralUrl     = (infoData && infoData.referralUrl)      ? infoData.referralUrl      : (window.location.origin + '?ref=' + code);
+        var totalReferrals  = (infoData && infoData.totalReferrals  != null) ? infoData.totalReferrals  : 0;
+        var pendingReferrals = (infoData && infoData.pendingReferrals != null) ? infoData.pendingReferrals : 0;
+        var totalEarned     = (infoData && infoData.totalEarned     != null) ? infoData.totalEarned     : 0;
+        var referrals       = (statsData && Array.isArray(statsData.referrals)) ? statsData.referrals : [];
+        var hasBeenReferred = referrals.some(function(r) { return r.status === 'completed'; });
+
+        // Clear loading
+        wrap.textContent = '';
+
+        // ── My Code Card ───────────────────────────────────
+        var codeCard = document.createElement('div');
+        codeCard.className = 'ref-card';
+
+        var codeCardTitle = document.createElement('div');
+        codeCardTitle.className = 'ref-card-title';
+        codeCardTitle.textContent = 'My Referral Code';
+        codeCard.appendChild(codeCardTitle);
+
+        var codeRow = document.createElement('div');
+        codeRow.style.cssText = 'display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;';
+
+        var codeDisp = document.createElement('div');
+        codeDisp.className = 'ref-code-big';
+        codeDisp.textContent = code;
+        codeRow.appendChild(codeDisp);
+
+        var cpCodeBtn = document.createElement('button');
+        cpCodeBtn.className = 'ref-copy-btn';
+        cpCodeBtn.textContent = 'Copy Code';
+        cpCodeBtn.onclick = function() {
+            var txt = code;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(function() {
+                    cpCodeBtn.textContent = 'Copied!';
+                    setTimeout(function() { cpCodeBtn.textContent = 'Copy Code'; }, 2000);
+                }).catch(function() { _refFallbackCopy(txt, cpCodeBtn, 'Copy Code'); });
+            } else {
+                _refFallbackCopy(txt, cpCodeBtn, 'Copy Code');
+            }
+        };
+        codeRow.appendChild(cpCodeBtn);
+        codeCard.appendChild(codeRow);
+
+        // Share link row
+        var linkRow = document.createElement('div');
+        linkRow.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:0;';
+
+        var linkInp = document.createElement('input');
+        linkInp.type = 'text';
+        linkInp.readOnly = true;
+        linkInp.value = referralUrl;
+        linkInp.className = 'ref-link-input';
+        linkRow.appendChild(linkInp);
+
+        var cpLinkBtn = document.createElement('button');
+        cpLinkBtn.className = 'ref-copy-btn';
+        cpLinkBtn.textContent = 'Copy Link';
+        cpLinkBtn.onclick = function() {
+            var txt = referralUrl;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(function() {
+                    cpLinkBtn.textContent = 'Copied!';
+                    setTimeout(function() { cpLinkBtn.textContent = 'Copy Link'; }, 2000);
+                }).catch(function() { _refFallbackCopy(txt, cpLinkBtn, 'Copy Link'); });
+            } else {
+                _refFallbackCopy(txt, cpLinkBtn, 'Copy Link');
+            }
+        };
+        linkRow.appendChild(cpLinkBtn);
+        codeCard.appendChild(linkRow);
+
+        // Stats bar
+        var statsBar = document.createElement('div');
+        statsBar.className = 'ref-stats-bar';
+
+        function _makeRefStat(labelText, valueText, green) {
+            var s = document.createElement('div');
+            s.className = 'ref-stat';
+            var lbl = document.createElement('div');
+            lbl.className = 'ref-stat-label';
+            lbl.textContent = labelText;
+            var val = document.createElement('div');
+            val.className = green ? 'ref-stat-value ref-stat-value--green' : 'ref-stat-value';
+            val.textContent = valueText;
+            s.appendChild(lbl);
+            s.appendChild(val);
+            return s;
+        }
+
+        statsBar.appendChild(_makeRefStat('Total Referrals', String(totalReferrals), false));
+        statsBar.appendChild(_makeRefStat('Pending', String(pendingReferrals), false));
+        statsBar.appendChild(_makeRefStat('Total Earned', '$' + (typeof formatMoney === 'function' ? formatMoney(totalEarned) : Number(totalEarned).toFixed(2)), true));
+        codeCard.appendChild(statsBar);
+
+        wrap.appendChild(codeCard);
+
+        // ── Recent referrals table ─────────────────────────
+        if (referrals.length > 0) {
+            var tableCard = document.createElement('div');
+            tableCard.className = 'ref-card';
+
+            var tblTitle = document.createElement('div');
+            tblTitle.className = 'ref-card-title';
+            tblTitle.textContent = 'Recent Referrals';
+            tableCard.appendChild(tblTitle);
+
+            var tblWrap = document.createElement('div');
+            tblWrap.style.cssText = 'overflow-x:auto;';
+
+            var tbl = document.createElement('table');
+            tbl.className = 'ref-table';
+
+            var thead = document.createElement('thead');
+            var hrow = document.createElement('tr');
+            ['Username', 'Status', 'Bonus Paid', 'Date'].forEach(function(h) {
+                var th = document.createElement('th');
+                th.textContent = h;
+                hrow.appendChild(th);
+            });
+            thead.appendChild(hrow);
+            tbl.appendChild(thead);
+
+            var tbody = document.createElement('tbody');
+            referrals.forEach(function(r) {
+                var tr = document.createElement('tr');
+
+                var rawName = r.referee_username || 'Unknown';
+                var masked = rawName.length > 2 ? rawName.substring(0, 2) + '***' : rawName.charAt(0) + '***';
+
+                var tdN = document.createElement('td');
+                tdN.textContent = masked;
+                tr.appendChild(tdN);
+
+                var tdS = document.createElement('td');
+                var bdg = document.createElement('span');
+                bdg.className = 'ref-badge ref-badge--' + (r.status || 'pending');
+                bdg.textContent = (r.status || 'pending').charAt(0).toUpperCase() + (r.status || 'pending').slice(1);
+                tdS.appendChild(bdg);
+                tr.appendChild(tdS);
+
+                var tdB = document.createElement('td');
+                var bonusPaid = r.bonus_paid != null ? r.bonus_paid : 0;
+                tdB.textContent = bonusPaid > 0 ? ('$' + (typeof formatMoney === 'function' ? formatMoney(bonusPaid) : Number(bonusPaid).toFixed(2))) : '-';
+                if (bonusPaid > 0) tdB.style.cssText = 'color:#4ade80; font-weight:700;';
+                tr.appendChild(tdB);
+
+                var tdD = document.createElement('td');
+                if (r.created_at) {
+                    try {
+                        tdD.textContent = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    } catch(e) {
+                        tdD.textContent = r.created_at;
+                    }
+                } else {
+                    tdD.textContent = '-';
+                }
+                tr.appendChild(tdD);
+
+                tbody.appendChild(tr);
+            });
+            tbl.appendChild(tbody);
+            tblWrap.appendChild(tbl);
+            tableCard.appendChild(tblWrap);
+            wrap.appendChild(tableCard);
+        }
+
+        // ── Apply a Referral Code (only if not yet referred) ──
+        if (!hasBeenReferred) {
+            var applyCard = document.createElement('div');
+            applyCard.className = 'ref-apply-card';
+
+            var applyTitle = document.createElement('div');
+            applyTitle.className = 'ref-card-title';
+            applyTitle.textContent = 'Apply a Referral Code';
+            applyCard.appendChild(applyTitle);
+
+            var applyDesc = document.createElement('p');
+            applyDesc.style.cssText = 'color:#94a3b8; font-size:12px; margin-bottom:12px; line-height:1.5;';
+            applyDesc.textContent = 'Enter a friend\'s referral code to claim your sign-up bonus.';
+            applyCard.appendChild(applyDesc);
+
+            var applyRow = document.createElement('div');
+            applyRow.style.cssText = 'display:flex; gap:8px; align-items:center;';
+
+            var applyInp = document.createElement('input');
+            applyInp.type = 'text';
+            applyInp.maxLength = 10;
+            applyInp.placeholder = 'XXXXXX';
+            applyInp.className = 'ref-apply-input';
+            applyRow.appendChild(applyInp);
+
+            var applyMsg = document.createElement('div');
+            applyMsg.className = 'ref-msg';
+
+            var applyBtn = document.createElement('button');
+            applyBtn.className = 'ref-copy-btn';
+            applyBtn.textContent = 'Apply';
+            applyBtn.onclick = function() {
+                var enteredCode = applyInp.value.trim().toUpperCase();
+                if (!enteredCode) {
+                    applyMsg.textContent = 'Please enter a referral code.';
+                    applyMsg.className = 'ref-msg ref-msg--error';
+                    applyMsg.style.display = 'block';
+                    return;
+                }
+                applyBtn.disabled = true;
+                applyBtn.textContent = '...';
+
+                var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                if (!currentToken) {
+                    applyMsg.textContent = 'You must be logged in to apply a referral code.';
+                    applyMsg.className = 'ref-msg ref-msg--error';
+                    applyMsg.style.display = 'block';
+                    applyBtn.disabled = false;
+                    applyBtn.textContent = 'Apply';
+                    return;
+                }
+
+                fetch('/api/referral/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+                    body: JSON.stringify({ code: enteredCode })
+                }).then(function(res) {
+                    return res.json().then(function(body) { return { ok: res.ok, body: body }; });
+                }).then(function(result) {
+                    if (result.ok && result.body && result.body.success) {
+                        var successMsg = (result.body.message) ? result.body.message : 'Referral code applied! Bonus credited.';
+                        applyMsg.textContent = successMsg;
+                        applyMsg.className = 'ref-msg ref-msg--success';
+                        applyMsg.style.display = 'block';
+                        applyInp.value = '';
+                        applyInp.disabled = true;
+                        applyBtn.disabled = true;
+                        applyBtn.textContent = 'Applied';
+                    } else {
+                        var errText = (result.body && result.body.message) ? result.body.message : 'Failed to apply referral code.';
+                        applyMsg.textContent = errText;
+                        applyMsg.className = 'ref-msg ref-msg--error';
+                        applyMsg.style.display = 'block';
+                        applyBtn.disabled = false;
+                        applyBtn.textContent = 'Apply';
+                    }
+                }).catch(function() {
+                    applyMsg.textContent = 'Network error. Please try again.';
+                    applyMsg.className = 'ref-msg ref-msg--error';
+                    applyMsg.style.display = 'block';
+                    applyBtn.disabled = false;
+                    applyBtn.textContent = 'Apply';
+                });
+            };
+            applyRow.appendChild(applyBtn);
+            applyCard.appendChild(applyRow);
+            applyCard.appendChild(applyMsg);
+            wrap.appendChild(applyCard);
+        }
+    }).catch(function() {
+        wrap.textContent = '';
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171; text-align:center; padding:20px; font-size:13px;';
+        errDiv.textContent = 'Failed to load referral data. Please try again later.';
+        wrap.appendChild(errDiv);
+    });
+}
+
+// Internal clipboard fallback for renderReferralSection
+function _refFallbackCopy(text, btn, label) {
+    try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = label; }, 2000);
+    } catch(e) {
+        btn.textContent = label;
+    }
 }

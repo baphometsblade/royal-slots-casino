@@ -84,6 +84,8 @@ function showWalletModal() {
     refreshLoyaltyBalance();
     refreshRakebackBalance();
     refreshCashbackBalance();
+    // Render the full Loyalty Points card section (persistent slot above walletContent)
+    _renderLoyaltySection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -1619,3 +1621,288 @@ function hideLowBalanceNudge() {
 function resetNudgeOnDeposit() {
     _nudgeShownThisSession = false;
 }
+
+
+// ═══════════════════════════════════════════════════════
+// LOYALTY POINTS CARD SECTION
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Renders (or re-renders) the full Loyalty Points card into a persistent
+ * slot inside the wallet modal, between the tab bar and walletContent.
+ * The card is injected once and updated in-place on subsequent calls,
+ * so tab switching does not destroy it.
+ *
+ * Fetches live status from /api/loyaltyshop/status and builds a card
+ * showing the current balance, conversion rate, lifetime total, and
+ * preset redemption buttons (100 / 500 / 1000 pts).
+ *
+ * Uses createElement/textContent throughout — no dynamic innerHTML
+ * concatenation — to satisfy the security hook rules.
+ *
+ * @param {HTMLElement} modal  The #walletModal element (or any ancestor
+ *                             that contains .wallet-modal).
+ */
+function _renderLoyaltySection(modal) {
+    if (!modal) return;
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Find (or create) the persistent wrapper div that sits between the
+    // .wallet-tabs bar and #walletContent.
+    var walletInner = modal.querySelector('.wallet-modal');
+    if (!walletInner) walletInner = modal;
+
+    var wrapper = walletInner.querySelector('#walletLoyaltyCardWrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = 'walletLoyaltyCardWrapper';
+        wrapper.style.cssText = 'padding:0 16px 0 16px;';
+        // Insert between .wallet-tabs and #walletContent
+        var walletContentEl = walletInner.querySelector('#walletContent');
+        if (walletContentEl) {
+            walletInner.insertBefore(wrapper, walletContentEl);
+        } else {
+            walletInner.appendChild(wrapper);
+        }
+    }
+
+    // Remove any existing card inside the wrapper (full re-render)
+    var existing = wrapper.querySelector('#walletLoyaltyCard');
+    if (existing) existing.remove();
+
+    // ── Build the card shell (shows "Loading…" state initially) ──
+    var card = document.createElement('div');
+    card.id = 'walletLoyaltyCard';
+    card.style.cssText = [
+        'background:linear-gradient(135deg,rgba(52,211,153,0.10),rgba(16,185,129,0.05))',
+        'border:1.5px solid rgba(52,211,153,0.28)',
+        'border-radius:14px',
+        'padding:16px 18px',
+        'margin:12px 0'
+    ].join(';');
+
+    // Title row
+    var titleRow = document.createElement('div');
+    titleRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+
+    var title = document.createElement('span');
+    title.style.cssText = 'font-size:1rem;font-weight:800;color:#34d399;letter-spacing:0.3px;';
+    title.textContent = '\u2B50 Loyalty Points';
+
+    var rateNote = document.createElement('span');
+    rateNote.style.cssText = 'font-size:0.72rem;color:#6ee7b7;opacity:0.8;';
+    rateNote.textContent = '100 pts = $1.00';
+
+    titleRow.appendChild(title);
+    titleRow.appendChild(rateNote);
+
+    // Points balance display
+    var balRow = document.createElement('div');
+    balRow.style.cssText = 'display:flex;align-items:baseline;gap:8px;margin-bottom:8px;';
+
+    var pointsDisplay = document.createElement('span');
+    pointsDisplay.id = 'loyaltyCardPoints';
+    pointsDisplay.style.cssText = 'font-size:2rem;font-weight:900;color:#a7f3d0;line-height:1;';
+    pointsDisplay.textContent = '...';
+
+    var pointsLabel = document.createElement('span');
+    pointsLabel.style.cssText = 'font-size:0.78rem;color:#6ee7b7;font-weight:600;';
+    pointsLabel.textContent = 'points';
+
+    balRow.appendChild(pointsDisplay);
+    balRow.appendChild(pointsLabel);
+
+    // Lifetime row
+    var lifetimeRow = document.createElement('div');
+    lifetimeRow.style.cssText = 'font-size:0.72rem;color:#6ee7b7;opacity:0.65;margin-bottom:14px;';
+    var lifetimeLabel = document.createElement('span');
+    lifetimeLabel.textContent = 'Lifetime total: ';
+    var lifetimeValue = document.createElement('span');
+    lifetimeValue.id = 'loyaltyCardLifetime';
+    lifetimeValue.textContent = '...';
+    lifetimeRow.appendChild(lifetimeLabel);
+    lifetimeRow.appendChild(lifetimeValue);
+
+    // Redemption buttons row
+    var btnRow = document.createElement('div');
+    btnRow.id = 'loyaltyCardBtnRow';
+    btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+
+    var PRESETS = [
+        { pts: 100,  label: 'Redeem 100 pts \u2192 $1' },
+        { pts: 500,  label: 'Redeem 500 pts \u2192 $5' },
+        { pts: 1000, label: 'Redeem 1000 pts \u2192 $10' }
+    ];
+
+    PRESETS.forEach(function(preset) {
+        var btn = document.createElement('button');
+        btn.dataset.loyaltyPts = preset.pts;
+        btn.textContent = preset.label;
+        btn.style.cssText = [
+            'flex:1 1 auto',
+            'min-width:130px',
+            'padding:7px 10px',
+            'border:none',
+            'border-radius:8px',
+            'font-size:0.74rem',
+            'font-weight:700',
+            'cursor:not-allowed',
+            'background:linear-gradient(135deg,#34d399,#059669)',
+            'color:#fff',
+            'letter-spacing:0.2px',
+            'opacity:0.4',
+            'transition:opacity 0.2s'
+        ].join(';');
+        btn.disabled = true; // enabled once we know the live balance
+        btn.addEventListener('click', function() {
+            window.redeemLoyaltyPoints(preset.pts);
+        });
+        btnRow.appendChild(btn);
+    });
+
+    // Assemble card
+    card.appendChild(titleRow);
+    card.appendChild(balRow);
+    card.appendChild(lifetimeRow);
+    card.appendChild(btnRow);
+    wrapper.appendChild(card);
+
+    // ── Fetch live status and populate ──
+    fetch('/api/loyaltyshop/status', {
+        headers: { Authorization: 'Bearer ' + token }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+        if (!data) return;
+        var pts = parseInt(data.points, 10) || 0;
+        var lifetime = parseInt(data.lifetimePoints, 10) || 0;
+
+        var pdEl = document.getElementById('loyaltyCardPoints');
+        if (pdEl) pdEl.textContent = pts.toLocaleString();
+
+        var ltEl = document.getElementById('loyaltyCardLifetime');
+        if (ltEl) ltEl.textContent = lifetime.toLocaleString() + ' pts earned';
+
+        // Enable/disable preset buttons based on current balance
+        var btnRowEl = document.getElementById('loyaltyCardBtnRow');
+        if (btnRowEl) {
+            btnRowEl.querySelectorAll('button').forEach(function(btn) {
+                var required = parseInt(btn.dataset.loyaltyPts, 10);
+                var canAfford = pts >= required;
+                btn.disabled = !canAfford;
+                btn.style.opacity = canAfford ? '1' : '0.4';
+                btn.style.cursor = canAfford ? 'pointer' : 'not-allowed';
+            });
+        }
+
+        // Also keep the compact header bar in sync
+        var headerEl = document.getElementById('walletLoyaltyPoints');
+        if (headerEl) headerEl.textContent = pts.toLocaleString();
+        var headerBtn = document.getElementById('walletLoyaltyRedeemBtn');
+        if (headerBtn) headerBtn.disabled = pts < 100;
+    })
+    .catch(function() {
+        var pdEl = document.getElementById('loyaltyCardPoints');
+        if (pdEl) pdEl.textContent = '\u2014';
+    });
+}
+
+
+/**
+ * Globally accessible loyalty redemption function.
+ * Redeems exactly `points` loyalty points (must be a multiple of 100,
+ * minimum 100) and credits the equivalent cash to the player's balance.
+ *
+ * @param {number} points  Number of points to redeem.
+ */
+window.redeemLoyaltyPoints = function(points) {
+    points = parseInt(points, 10) || 0;
+    if (points < 100 || points % 100 !== 0) {
+        if (typeof showToast === 'function') {
+            showToast('Minimum redemption is 100 pts (multiples of 100 only).', 'info', 3000);
+        }
+        return;
+    }
+
+    var creditAmt = (points / 100).toFixed(2);
+    if (!confirm('Redeem ' + points.toLocaleString() + ' loyalty pts for $' + creditAmt + '?')) return;
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) {
+        if (typeof showToast === 'function') showToast('Please log in to redeem points.', 'error', 3000);
+        return;
+    }
+
+    // Disable all preset buttons while the request is in-flight
+    var btnRowEl = document.getElementById('loyaltyCardBtnRow');
+    if (btnRowEl) {
+        btnRowEl.querySelectorAll('button').forEach(function(btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        });
+    }
+
+    fetch('/api/loyaltyshop/redeem', {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ points: points })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            // Update global balance
+            if (typeof data.newBalance !== 'undefined') {
+                balance = parseFloat(data.newBalance);
+                if (typeof updateBalance === 'function') updateBalance();
+                if (typeof saveBalance === 'function') saveBalance();
+                // Sync the wallet header balance display
+                var walletBal = document.getElementById('walletBalance');
+                if (walletBal) walletBal.textContent = formatMoney(balance);
+            }
+
+            if (typeof showToast === 'function') {
+                showToast(
+                    '\uD83C\uDFAF Redeemed ' + points.toLocaleString() + ' pts \u2192 $' + creditAmt + ' credited!',
+                    'win',
+                    4000
+                );
+            }
+
+            // Refresh the loyalty card to show updated balance
+            var walletModal = document.getElementById('walletModal');
+            if (walletModal) _renderLoyaltySection(walletModal);
+
+            // Also refresh the compact header bar
+            if (typeof refreshLoyaltyBalance === 'function') refreshLoyaltyBalance();
+        } else {
+            if (typeof showToast === 'function') {
+                showToast(data.error || 'Redemption failed — please try again.', 'error', 3500);
+            }
+            // Re-enable buttons on failure
+            var innerBtnRow = document.getElementById('loyaltyCardBtnRow');
+            if (innerBtnRow) {
+                innerBtnRow.querySelectorAll('button').forEach(function(btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                });
+            }
+        }
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') {
+            showToast('Redemption failed \u2014 please try again.', 'error', 3000);
+        }
+        var innerBtnRow = document.getElementById('loyaltyCardBtnRow');
+        if (innerBtnRow) {
+            innerBtnRow.querySelectorAll('button').forEach(function(btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }
+    });
+};

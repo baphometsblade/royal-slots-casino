@@ -1462,6 +1462,364 @@ async function claimDailyMission(slot) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// 4h. Daily Challenges Card
+// ─────────────────────────────────────────────────────────────────────
+
+(function _injectChallengeStyles() {
+    if (document.getElementById('dailyChallengeCss')) return;
+    var s = document.createElement('style');
+    s.id = 'dailyChallengeCss';
+    s.textContent =
+        '.dch-card{background:linear-gradient(145deg,rgba(20,5,40,.96),rgba(30,10,60,.98));' +
+        'border:1.5px solid rgba(167,139,250,.45);border-radius:16px;padding:18px 16px 14px;' +
+        'color:#e0e7ff;margin-bottom:16px;box-shadow:0 4px 24px rgba(167,139,250,.12);}' +
+        '.dch-title{font-size:15px;font-weight:900;color:#c084fc;text-align:center;margin-bottom:12px;letter-spacing:.3px;}' +
+        '.dch-item{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,.03);}' +
+        '.dch-info{flex:1;min-width:0;}' +
+        '.dch-desc{font-size:12px;color:#d8b4fe;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+        '.dch-prog-text{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;}' +
+        '.dch-bar-track{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px;}' +
+        '.dch-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#a855f7,#c084fc);transition:width .4s;}' +
+        '.dch-reward-badge{font-size:10px;color:#c084fc;margin-top:2px;}' +
+        '.dch-claim-btn{flex-shrink:0;padding:5px 10px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;' +
+        'background:linear-gradient(135deg,#9333ea,#c084fc);color:#fff;transition:opacity .2s;}' +
+        '.dch-claim-btn:hover{opacity:.85;}' +
+        '.dch-claimed{flex-shrink:0;font-size:18px;}' +
+        '.dch-streak{font-size:11px;text-align:center;margin-top:8px;color:#a78bfa;font-weight:600;}';
+    document.head.appendChild(s);
+})();
+
+async function renderDailyChallengesCard(container) {
+    if (!container) return;
+    if (document.getElementById('dailyChallengesCard')) return;
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var card = document.createElement('div');
+    card.id = 'dailyChallengesCard';
+    card.className = 'dch-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'dch-title';
+    titleEl.textContent = '\u2694\uFE0F Daily Challenges';
+    card.appendChild(titleEl);
+
+    var listEl = document.createElement('div');
+    listEl.id = 'dchChallengeList';
+    var loadingEl = document.createElement('div');
+    loadingEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
+    loadingEl.textContent = 'Loading\u2026';
+    listEl.appendChild(loadingEl);
+    card.appendChild(listEl);
+
+    var streakEl = document.createElement('div');
+    streakEl.id = 'dchStreakRow';
+    streakEl.className = 'dch-streak';
+    card.appendChild(streakEl);
+
+    container.insertBefore(card, container.firstChild);
+
+    await _refreshDailyChallenges(token);
+}
+
+async function _refreshDailyChallenges(token) {
+    var list = document.getElementById('dchChallengeList');
+    var streakRow = document.getElementById('dchStreakRow');
+    if (!list) return;
+
+    try {
+        var res = await fetch('/api/challenges', { headers: { Authorization: 'Bearer ' + token } });
+        if (!res.ok) {
+            while (list.firstChild) list.removeChild(list.firstChild);
+            return;
+        }
+        var data = await res.json();
+        var challenges = data.challenges || [];
+
+        while (list.firstChild) list.removeChild(list.firstChild);
+
+        if (challenges.length === 0) {
+            var emptyEl = document.createElement('div');
+            emptyEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
+            emptyEl.textContent = 'No challenges today';
+            list.appendChild(emptyEl);
+        } else {
+            challenges.forEach(function(ch) {
+                var pct = ch.target > 0 ? Math.min(100, Math.round((ch.progress / ch.target) * 100)) : 0;
+
+                var item = document.createElement('div');
+                item.className = 'dch-item';
+
+                var info = document.createElement('div');
+                info.className = 'dch-info';
+
+                var descEl = document.createElement('div');
+                descEl.className = 'dch-desc';
+                descEl.textContent = ch.description || 'Challenge';
+                info.appendChild(descEl);
+
+                var progEl = document.createElement('div');
+                progEl.className = 'dch-prog-text';
+                progEl.textContent = String(ch.progress) + ' / ' + String(ch.target) + (ch.completed ? ' \u2713' : '');
+                info.appendChild(progEl);
+
+                var barTrack = document.createElement('div');
+                barTrack.className = 'dch-bar-track';
+                var barFill = document.createElement('div');
+                barFill.className = 'dch-bar-fill';
+                barFill.style.width = pct + '%';
+                barTrack.appendChild(barFill);
+                info.appendChild(barTrack);
+
+                var rewardEl = document.createElement('div');
+                rewardEl.className = 'dch-reward-badge';
+                var rewardParts = [];
+                if (ch.reward_gems) rewardParts.push('\uD83D\uDC8E ' + String(ch.reward_gems) + ' gems');
+                if (ch.reward_credits) rewardParts.push('\uD83D\uDCB0 $' + parseFloat(ch.reward_credits).toFixed(2));
+                rewardEl.textContent = rewardParts.length ? rewardParts.join(' + ') : '';
+                info.appendChild(rewardEl);
+
+                item.appendChild(info);
+
+                if (ch.claimed) {
+                    var claimedEl = document.createElement('span');
+                    claimedEl.className = 'dch-claimed';
+                    claimedEl.textContent = '\u2705';
+                    item.appendChild(claimedEl);
+                } else if (ch.completed) {
+                    var claimBtn = document.createElement('button');
+                    claimBtn.className = 'dch-claim-btn';
+                    claimBtn.textContent = 'Claim';
+                    (function(id) {
+                        claimBtn.addEventListener('click', function() { claimChallenge(id); });
+                    }(ch.id));
+                    item.appendChild(claimBtn);
+                } else {
+                    var pctBtn = document.createElement('button');
+                    pctBtn.className = 'dch-claim-btn';
+                    pctBtn.disabled = true;
+                    pctBtn.style.background = 'rgba(255,255,255,.1)';
+                    pctBtn.style.color = 'rgba(255,255,255,.3)';
+                    pctBtn.style.cursor = 'not-allowed';
+                    pctBtn.textContent = String(pct) + '%';
+                    item.appendChild(pctBtn);
+                }
+
+                list.appendChild(item);
+            });
+        }
+
+        if (streakRow) {
+            var streak = data.streak || 0;
+            streakRow.textContent = '\uD83D\uDD25 Challenge streak: ' + String(streak) + ' day' + (streak === 1 ? '' : 's');
+        }
+    } catch (e) {
+        while (list.firstChild) list.removeChild(list.firstChild);
+    }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
+// 4i. Battle Pass Card
+// ─────────────────────────────────────────────────────────────────────
+
+(function _injectBattlePassStyles() {
+    if (document.getElementById('battlePassCss')) return;
+    var s = document.createElement('style');
+    s.id = 'battlePassCss';
+    s.textContent =
+        '.bp-card{background:linear-gradient(145deg,rgba(5,15,40,.96),rgba(10,25,55,.98));' +
+        'border:1.5px solid rgba(251,191,36,.45);border-radius:16px;padding:18px 16px 14px;' +
+        'color:#e0e7ff;margin-bottom:16px;box-shadow:0 4px 24px rgba(251,191,36,.1);}' +
+        '.bp-title{font-size:14px;font-weight:900;color:#fbbf24;text-align:center;margin-bottom:4px;letter-spacing:.3px;}' +
+        '.bp-season-end{font-size:10px;color:rgba(255,255,255,.45);text-align:center;margin-bottom:10px;}' +
+        '.bp-level-row{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:6px;}' +
+        '.bp-level-num{font-size:22px;font-weight:900;color:#fbbf24;}' +
+        '.bp-level-label{font-size:11px;color:rgba(255,255,255,.5);}' +
+        '.bp-xp-text{font-size:10px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:4px;}' +
+        '.bp-xp-track{height:6px;background:rgba(255,255,255,.08);border-radius:3px;margin-bottom:12px;overflow:hidden;}' +
+        '.bp-xp-fill{height:100%;background:linear-gradient(90deg,#d97706,#fbbf24);border-radius:3px;transition:width .5s;}' +
+        '.bp-rewards-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}' +
+        '.bp-reward-item{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:8px;margin-bottom:5px;background:rgba(255,255,255,.03);}' +
+        '.bp-tier-badge{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;' +
+        'font-size:11px;font-weight:800;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.35);color:#fbbf24;}' +
+        '.bp-reward-info{flex:1;min-width:0;}' +
+        '.bp-reward-name{font-size:11px;color:#fde68a;}' +
+        '.bp-claim-btn{flex-shrink:0;padding:5px 10px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;' +
+        'background:linear-gradient(135deg,#d97706,#fbbf24);color:#000;transition:opacity .2s;}' +
+        '.bp-claim-btn:hover{opacity:.85;}' +
+        '.bp-claimed-mark{flex-shrink:0;font-size:16px;}' +
+        '.bp-locked{flex-shrink:0;font-size:14px;opacity:.4;}';
+    document.head.appendChild(s);
+})();
+
+async function renderBattlePassCard(container) {
+    if (!container) return;
+    if (document.getElementById('battlePassCard')) return;
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var card = document.createElement('div');
+    card.id = 'battlePassCard';
+    card.className = 'bp-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'bp-title';
+    titleEl.id = 'bpTitle';
+    titleEl.textContent = '\uD83C\uDF96\uFE0F Battle Pass';
+    card.appendChild(titleEl);
+
+    var seasonEndEl = document.createElement('div');
+    seasonEndEl.className = 'bp-season-end';
+    seasonEndEl.id = 'bpSeasonEnd';
+    seasonEndEl.textContent = 'Loading\u2026';
+    card.appendChild(seasonEndEl);
+
+    var levelRow = document.createElement('div');
+    levelRow.className = 'bp-level-row';
+    var levelNum = document.createElement('div');
+    levelNum.className = 'bp-level-num';
+    levelNum.id = 'bpLevelNum';
+    levelNum.textContent = '\u2014';
+    var levelLabel = document.createElement('div');
+    levelLabel.className = 'bp-level-label';
+    levelLabel.textContent = 'Level';
+    levelRow.appendChild(levelNum);
+    levelRow.appendChild(levelLabel);
+    card.appendChild(levelRow);
+
+    var xpText = document.createElement('div');
+    xpText.className = 'bp-xp-text';
+    xpText.id = 'bpXpText';
+    card.appendChild(xpText);
+
+    var xpTrack = document.createElement('div');
+    xpTrack.className = 'bp-xp-track';
+    var xpFill = document.createElement('div');
+    xpFill.className = 'bp-xp-fill';
+    xpFill.id = 'bpXpFill';
+    xpFill.style.width = '0%';
+    xpTrack.appendChild(xpFill);
+    card.appendChild(xpTrack);
+
+    var rewardsLabel = document.createElement('div');
+    rewardsLabel.className = 'bp-rewards-label';
+    rewardsLabel.textContent = 'Upcoming Free Rewards';
+    card.appendChild(rewardsLabel);
+
+    var rewardsList = document.createElement('div');
+    rewardsList.id = 'bpRewardsList';
+    card.appendChild(rewardsList);
+
+    container.insertBefore(card, container.firstChild);
+
+    await _refreshBattlePass(token);
+}
+
+async function _refreshBattlePass(token) {
+    try {
+        var res = await fetch('/api/battlepass', { headers: { Authorization: 'Bearer ' + token } });
+        if (!res.ok) return;
+        var data = await res.json();
+
+        var titleEl = document.getElementById('bpTitle');
+        if (titleEl) {
+            var seasonName = (data.season && data.season.name) ? data.season.name : '';
+            titleEl.textContent = '\uD83C\uDF96\uFE0F Battle Pass' + (seasonName ? ' \u2014 ' + seasonName : '');
+        }
+
+        var seasonEndEl = document.getElementById('bpSeasonEnd');
+        if (seasonEndEl && data.season && data.season.endsAt) {
+            var endsAt = new Date(data.season.endsAt);
+            var diff = endsAt - Date.now();
+            var daysLeft = Math.max(0, Math.ceil(diff / 86400000));
+            seasonEndEl.textContent = 'Season ends in ' + String(daysLeft) + ' day' + (daysLeft === 1 ? '' : 's');
+        } else if (seasonEndEl) {
+            seasonEndEl.textContent = '';
+        }
+
+        var levelNum = document.getElementById('bpLevelNum');
+        if (levelNum) levelNum.textContent = String(data.level || 1);
+
+        var xpText = document.getElementById('bpXpText');
+        var xpFill = document.getElementById('bpXpFill');
+        var currentXp = data.xp || 0;
+        var xpToNext = data.xpToNext || 1;
+        if (xpText) xpText.textContent = String(currentXp) + ' / ' + String(xpToNext) + ' XP';
+        if (xpFill) {
+            var xpPct = Math.min(100, Math.round((currentXp / xpToNext) * 100));
+            xpFill.style.width = xpPct + '%';
+        }
+
+        var rewardsList = document.getElementById('bpRewardsList');
+        if (rewardsList) {
+            while (rewardsList.firstChild) rewardsList.removeChild(rewardsList.firstChild);
+
+            var freeRewards = data.freeRewards || [];
+            var playerLevel = data.level || 1;
+            var upcoming = freeRewards.filter(function(r) { return !r.claimed; }).slice(0, 3);
+
+            if (upcoming.length === 0) {
+                var noneEl = document.createElement('div');
+                noneEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
+                noneEl.textContent = 'All rewards claimed!';
+                rewardsList.appendChild(noneEl);
+            } else {
+                upcoming.forEach(function(r) {
+                    var isUnlocked = playerLevel >= r.level;
+
+                    var item = document.createElement('div');
+                    item.className = 'bp-reward-item';
+
+                    var tierBadge = document.createElement('div');
+                    tierBadge.className = 'bp-tier-badge';
+                    tierBadge.textContent = String(r.level);
+                    item.appendChild(tierBadge);
+
+                    var rewardInfo = document.createElement('div');
+                    rewardInfo.className = 'bp-reward-info';
+                    var rewardName = document.createElement('div');
+                    rewardName.className = 'bp-reward-name';
+                    var rewardText = '';
+                    if (r.reward_type === 'gems') {
+                        rewardText = '\uD83D\uDC8E ' + String(r.reward_amount) + ' gems';
+                    } else if (r.reward_type === 'credits') {
+                        rewardText = '\uD83D\uDCB0 $' + parseFloat(r.reward_amount).toFixed(2);
+                    } else {
+                        rewardText = String(r.reward_amount);
+                    }
+                    rewardName.textContent = rewardText;
+                    rewardInfo.appendChild(rewardName);
+                    item.appendChild(rewardInfo);
+
+                    if (isUnlocked) {
+                        var claimBtn = document.createElement('button');
+                        claimBtn.className = 'bp-claim-btn';
+                        claimBtn.textContent = 'Claim';
+                        (function(lvl) {
+                            claimBtn.addEventListener('click', function() { claimBattlePassReward(lvl); });
+                        }(r.level));
+                        item.appendChild(claimBtn);
+                    } else {
+                        var lockEl = document.createElement('span');
+                        lockEl.className = 'bp-locked';
+                        lockEl.textContent = '\uD83D\uDD12';
+                        item.appendChild(lockEl);
+                    }
+
+                    rewardsList.appendChild(item);
+                });
+            }
+        }
+    } catch (e) {
+        // silent fail — card remains with loading state
+    }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
 // 6. ENGINE INITIALISATION
 // ─────────────────────────────────────────────────────────────────────
 
@@ -1484,6 +1842,8 @@ function initPromoEngine() {
         if (promosSidebar) {
             renderDepositStreakCard(promosSidebar);
             renderDailyMissionsCard(promosSidebar);
+            renderDailyChallengesCard(promosSidebar);
+            renderBattlePassCard(promosSidebar);
         }
     }, 4000);
 
@@ -1537,4 +1897,55 @@ function initPromoEngine() {
 //   showPromoPopup(config)           — render a custom promo popup
 //   dismissPromo(promoId)            — close popup (and optionally suppress)
 //   getHappyHourMultiplier()         — returns 1.0 or 1.5 (for win calculation)
+//   claimChallenge(id)               — POST /api/challenges/:id/claim
+//   claimBattlePassReward(level)     — POST /api/battlepass/claim/:level
 // ─────────────────────────────────────────────────────────────────────
+
+async function claimChallenge(id) {
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    try {
+        var res = await fetch('/api/challenges/' + id + '/claim', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        var data = await res.json();
+        if (data.success) {
+            var parts = [];
+            if (data.gemsAwarded) parts.push(String(data.gemsAwarded) + ' gems');
+            if (data.credits) parts.push('$' + parseFloat(data.credits).toFixed(2) + ' credits');
+            var msg = parts.length ? parts.join(' + ') : 'reward';
+            if (typeof showToast === 'function') showToast('\u2694\uFE0F Challenge claimed! You earned ' + msg, 'win');
+            await _refreshDailyChallenges(token);
+        }
+    } catch (e) {}
+}
+
+async function claimBattlePassReward(level) {
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    try {
+        var res = await fetch('/api/battlepass/claim/' + level, {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ track: 'free' })
+        });
+        var data = await res.json();
+        if (data.success) {
+            var reward = data.reward || {};
+            var rewardMsg = '';
+            if (reward.reward_type === 'gems') {
+                rewardMsg = String(reward.reward_amount) + ' gems';
+            } else if (reward.reward_type === 'credits') {
+                rewardMsg = '$' + parseFloat(reward.reward_amount).toFixed(2) + ' credits';
+            } else {
+                rewardMsg = 'reward';
+            }
+            if (typeof showToast === 'function') showToast('\uD83C\uDF96\uFE0F Battle Pass Level ' + String(level) + ' reward claimed! ' + rewardMsg, 'win');
+            await _refreshBattlePass(token);
+        }
+    } catch (e) {}
+}
