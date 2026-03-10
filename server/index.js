@@ -104,6 +104,15 @@ const adminLimiter = rateLimit({
 });
 app.use('/api/admin', adminLimiter);
 
+// Spin endpoint rate limit — caps automated spin abuse at Express layer
+// (in addition to the per-user in-memory check in spin.routes.js)
+const spinLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 120, // 2 spins/sec sustained — matches MAX_SPINS_PER_SECOND=2
+    message: { error: 'Spinning too fast. Please slow down.' },
+});
+app.use('/api/spin', spinLimiter);
+
 // ─── Health Check (used by Render / load balancers) ───
 app.get('/api/health', async (req, res) => {
     try {

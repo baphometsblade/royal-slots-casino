@@ -899,12 +899,20 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
             wageringMult = config.FIRST_DEPOSIT_WAGERING_MULT || 30;
             bonusType = 'first_deposit_bonus';
         } else {
-            bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 50) / 100), config.RELOAD_BONUS_MAX || 250);
-            wageringMult = config.RELOAD_WAGERING_MULT || 25;
-            bonusType = 'reload_bonus';
+            // Reload bonus limited to once per 24 hours
+            const recentReload = await db.get(
+                "SELECT id FROM transactions WHERE user_id = ? AND type = 'reload_bonus' AND created_at >= datetime('now', '-24 hours') LIMIT 1",
+                [deposit.user_id]
+            );
+            if (!recentReload) {
+                bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 25) / 100), config.RELOAD_BONUS_MAX || 100);
+                wageringMult = config.RELOAD_WAGERING_MULT || 35;
+                bonusType = 'reload_bonus';
+            }
         }
 
-        await db.run('UPDATE users SET balance = ? WHERE id = ?', [balanceAfter, deposit.user_id]);
+        // Atomic credit — prevents race condition balance overwrites from concurrent wins
+        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [deposit.amount, deposit.user_id]);
 
         await db.run(
             "UPDATE deposits SET status = 'completed', completed_at = datetime('now') WHERE id = ?",
@@ -918,8 +926,9 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
 
         if (bonusAmount > 0) {
             const wagerReq = bonusAmount * wageringMult;
+            // Accumulate wagering requirement — don't wipe prior in-progress wagering
             await db.run(
-                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = wagering_requirement + ?, wagering_progress = wagering_progress WHERE id = ?',
                 [bonusAmount, wagerReq, deposit.user_id]
             );
             const refLabel = bonusType === 'first_deposit_bonus'
@@ -1019,9 +1028,16 @@ router.post('/webhook/confirm', async (req, res) => {
             wageringMult = config.FIRST_DEPOSIT_WAGERING_MULT || 30;
             bonusType = 'first_deposit_bonus';
         } else {
-            bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 50) / 100), config.RELOAD_BONUS_MAX || 250);
-            wageringMult = config.RELOAD_WAGERING_MULT || 25;
-            bonusType = 'reload_bonus';
+            // Reload bonus limited to once per 24 hours
+            const recentReload = await db.get(
+                "SELECT id FROM transactions WHERE user_id = ? AND type = 'reload_bonus' AND created_at >= datetime('now', '-24 hours') LIMIT 1",
+                [deposit.user_id]
+            );
+            if (!recentReload) {
+                bonusAmount = Math.min(deposit.amount * ((config.RELOAD_BONUS_PCT || 25) / 100), config.RELOAD_BONUS_MAX || 100);
+                wageringMult = config.RELOAD_WAGERING_MULT || 35;
+                bonusType = 'reload_bonus';
+            }
         }
 
         // Atomic balance credit — prevents race condition overwrites
@@ -1034,8 +1050,9 @@ router.post('/webhook/confirm', async (req, res) => {
 
         if (bonusAmount > 0) {
             const wagerReq = bonusAmount * wageringMult;
+            // Accumulate wagering requirement — don't wipe prior in-progress wagering
             await db.run(
-                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                'UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = wagering_requirement + ? WHERE id = ?',
                 [bonusAmount, wagerReq, deposit.user_id]
             );
             const refLabel = bonusType === 'first_deposit_bonus'
