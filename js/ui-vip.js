@@ -994,6 +994,9 @@ function _renderVipModalContent() {
         <!-- Cashback Summary -->
         ${_renderCashbackSection(tier, wagered)}
 
+        <!-- VIP Wheel -->
+        <div id="vipWheelSection" style="margin:16px 0;"></div>
+
         <!-- Tier Comparison Table -->
         ${_renderComparisonTable(tierIdx)}
 
@@ -1014,6 +1017,111 @@ function _renderVipModalContent() {
     _renderEnhancedProgress(tier, nextTier, progress);
     _renderTierCards(tierIdx);
     _renderWagerCountdown(nextTier, wagered);
+
+    // Load VIP Wheel section asynchronously
+    _refreshVipWheelSection();
+}
+
+// ─── VIP Wheel ────────────────────────────────────────────────────────────────
+
+async function _refreshVipWheelSection() {
+    var el = document.getElementById('vipWheelSection');
+    if (!el) return;
+
+    var token = typeof authToken !== 'undefined' ? authToken :
+                (typeof getAuthToken === 'function' ? getAuthToken() : null);
+    if (!token) {
+        el.innerHTML = '';
+        return;
+    }
+
+    try {
+        var res = await fetch('/api/vipwheel/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var data = await res.json();
+        el.innerHTML = _buildVipWheelHtml(data);
+    } catch (e) {
+        el.innerHTML = '';
+    }
+}
+
+function _buildVipWheelHtml(status) {
+    var prizesHtml = [
+        { label: '500 Gems', weight: '30%' },
+        { label: '$2',       weight: '25%' },
+        { label: '1K Gems',  weight: '18%' },
+        { label: '$5',       weight: '12%' },
+        { label: '2.5K Gems',weight: '7%' },
+        { label: '$10',      weight: '4%' },
+        { label: '5K Gems',  weight: '3%' },
+        { label: '$25',      weight: '1%' }
+    ].map(function(p) {
+        return '<span style="display:inline-block;padding:3px 8px;margin:2px;background:rgba(255,255,255,0.08);border-radius:12px;font-size:11px;color:#e2e8f0;">' + p.label + ' <span style="opacity:0.5;">(' + p.weight + ')</span></span>';
+    }).join('');
+
+    var actionHtml;
+    if (!status.eligible) {
+        actionHtml = '<div style="text-align:center;padding:10px;color:rgba(255,255,255,0.5);font-size:13px;">🔒 Reach VIP Level ' + status.vipRequired + ' ($2,000 wagered) to unlock</div>';
+    } else if (!status.available) {
+        var cooldownMs = new Date(status.cooldownEnds).getTime() - Date.now();
+        var h = Math.floor(cooldownMs / 3600000);
+        var m = Math.floor((cooldownMs % 3600000) / 60000);
+        actionHtml = '<div style="text-align:center;padding:10px;">' +
+            '<button disabled style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border:none;padding:10px 28px;border-radius:8px;font-size:14px;cursor:not-allowed;">Next spin in ' + h + 'h ' + m + 'm</button>' +
+            '</div>';
+    } else {
+        actionHtml = '<div style="text-align:center;padding:10px;">' +
+            '<button onclick="spinVipWheel()" id="vipWheelSpinBtn" ' +
+            'style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;padding:10px 32px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(124,58,237,0.4);">' +
+            '🎡 Spin VIP Wheel</button>' +
+            '</div>';
+    }
+
+    return '<div style="background:linear-gradient(135deg,#1e1040,#0f172a);border:1px solid rgba(139,92,246,0.35);border-radius:12px;padding:16px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+            '<span style="font-size:18px;">🎡</span>' +
+            '<span style="font-size:15px;font-weight:700;color:#c4b5fd;">VIP Wheel</span>' +
+            '<span style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:auto;">VIP Level 3+ · 24h cooldown</span>' +
+        '</div>' +
+        '<div style="margin-bottom:10px;">' + prizesHtml + '</div>' +
+        actionHtml +
+        '</div>';
+}
+
+async function spinVipWheel() {
+    var btn = document.getElementById('vipWheelSpinBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Spinning…'; }
+
+    var token = typeof authToken !== 'undefined' ? authToken :
+                (typeof getAuthToken === 'function' ? getAuthToken() : null);
+    if (!token) return;
+
+    try {
+        var res = await fetch('/api/vipwheel/spin', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+        });
+        var data = await res.json();
+        if (!res.ok) {
+            if (typeof showToast === 'function') showToast(data.error || 'Spin failed', 'error');
+            if (btn) { btn.disabled = false; btn.textContent = '🎡 Spin VIP Wheel'; }
+            return;
+        }
+        // Show prize toast
+        var msg = '🎡 VIP Wheel: You won ' + data.prize.label + '!';
+        if (typeof showToast === 'function') showToast(msg, 'win');
+        // Update balance if credits were won
+        if (data.prize.type === 'credits' && typeof saveBalance === 'function') {
+            saveBalance(data.newBalance);
+        }
+        // Refresh wheel section to show cooldown
+        _refreshVipWheelSection();
+    } catch (e) {
+        if (typeof showToast === 'function') showToast('Spin failed. Try again.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = '🎡 Spin VIP Wheel'; }
+    }
 }
 
 

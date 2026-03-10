@@ -22,6 +22,10 @@
         let _tournamentCountdownInterval = null;
         let _tournamentRefreshInterval = null;
 
+        // Wager Race banner state
+        let _wagerRaceRefreshInterval = null;
+        let _wagerRaceCountdownInterval = null;
+
         // Quick-resume banner state
         var _resumeBannerTimer = null;
         var _lastPlayedGameForResume = null;
@@ -486,6 +490,8 @@ function fetchGameStats() {
 
 function renderGames() {
             renderLobbyChallengeWidget();
+            initTournamentBanner();
+            initWagerRaceBanner();
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -1666,6 +1672,143 @@ function renderGames() {
             } catch (e) {
                 btn.textContent = 'JOIN FREE';
                 btn.disabled = false;
+            }
+        }
+
+        // ================================================================
+        // WAGER RACE BANNER
+        // ================================================================
+
+        function _wrEscHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function initWagerRaceBanner() {
+            // Inject banner CSS once
+            if (!document.getElementById('wrBannerStyles')) {
+                var style = document.createElement('style');
+                style.id = 'wrBannerStyles';
+                style.textContent = [
+                    '.wager-race-banner{background:linear-gradient(135deg,#1a0a2e 0%,#0f172a 100%);border:1px solid rgba(139,92,246,0.4);border-radius:12px;padding:14px 18px;margin:0 0 16px 0;color:#e2e8f0;font-family:inherit;position:relative;overflow:hidden;}',
+                    '.wager-race-banner::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#a78bfa,#7c3aed);animation:wrShimmer 2s linear infinite;}',
+                    '@keyframes wrShimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}',
+                    '.wr-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}',
+                    '.wr-live-dot{width:8px;height:8px;border-radius:50%;background:#a78bfa;animation:wrPulse 1.2s ease-in-out infinite;flex-shrink:0;}',
+                    '@keyframes wrPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}',
+                    '.wr-title{font-size:15px;font-weight:700;color:#c4b5fd;flex:1;}',
+                    '.wr-badge{background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.5px;}',
+                    '.wr-timer{font-size:12px;color:#a78bfa;font-variant-numeric:tabular-nums;min-width:90px;text-align:right;}',
+                    '.wr-col-hdr{display:grid;grid-template-columns:38px 1fr 80px 90px;font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.5px;padding:0 4px 4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;}',
+                    '.wr-row{display:grid;grid-template-columns:38px 1fr 80px 90px;align-items:center;padding:5px 4px;border-radius:6px;font-size:13px;transition:background 0.15s;}',
+                    '.wr-row:hover{background:rgba(124,58,237,0.12);}',
+                    '.wr-row--me{background:rgba(124,58,237,0.2);border:1px solid rgba(167,139,250,0.3);}',
+                    '.wr-rank{font-size:16px;}',
+                    '.wr-name{color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+                    '.wr-wagered{color:#a78bfa;font-weight:600;text-align:right;}',
+                    '.wr-prize{color:#fbbf24;font-size:11px;font-weight:600;text-align:right;}',
+                    '.wr-my-rank{margin-top:8px;padding:6px 10px;background:rgba(124,58,237,0.15);border-radius:6px;font-size:12px;color:#c4b5fd;text-align:center;}',
+                    '.wr-footer{margin-top:10px;font-size:11px;color:rgba(255,255,255,0.4);text-align:center;}'
+                ].join('');
+                document.head.appendChild(style);
+            }
+
+            if (document.getElementById('wagerRaceBanner')) {
+                _fetchAndRenderWagerRace();
+                return;
+            }
+
+            var banner = document.createElement('div');
+            banner.id = 'wagerRaceBanner';
+            banner.className = 'wager-race-banner';
+            banner.style.display = 'none';
+
+            // Insert before game grid
+            var gamesSection = document.getElementById('games-section') || document.getElementById('gamesContainer') || document.querySelector('.games-grid') || document.querySelector('.game-grid');
+            if (gamesSection && gamesSection.parentNode) {
+                gamesSection.parentNode.insertBefore(banner, gamesSection);
+            } else {
+                var main = document.getElementById('main-content') || document.getElementById('lobby') || document.querySelector('.lobby-content');
+                if (main) main.appendChild(banner);
+            }
+
+            _fetchAndRenderWagerRace();
+            _wagerRaceRefreshInterval = setInterval(_fetchAndRenderWagerRace, 60000);
+        }
+
+        async function _fetchAndRenderWagerRace() {
+            var banner = document.getElementById('wagerRaceBanner');
+            if (!banner) return;
+            try {
+                var res = await fetch('/api/wagerace');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var data = await res.json();
+                _renderWagerRaceBanner(data.race, data.leaderboard || []);
+            } catch (e) {
+                if (banner) banner.style.display = 'none';
+            }
+        }
+
+        function _renderWagerRaceBanner(race, leaderboard) {
+            var banner = document.getElementById('wagerRaceBanner');
+            if (!banner) return;
+            if (!race) { banner.style.display = 'none'; return; }
+
+            banner.style.display = '';
+            var myUsername = (typeof currentUser !== 'undefined' && currentUser) ? (currentUser.username || '') : '';
+            var medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+            var prizes = ['$50+500💎', '$25+300💎', '$15+200💎', '$5+100💎', '$5+100💎'];
+            var myEntry = leaderboard.find(function(p) { return myUsername && p.username === myUsername; });
+
+            var rows = leaderboard.slice(0, 5).map(function(p, i) {
+                var isMe = myUsername && p.username === myUsername;
+                return '<div class="wr-row' + (isMe ? ' wr-row--me' : '') + '">' +
+                    '<span class="wr-rank">' + (medals[i] || '#' + (i + 1)) + '</span>' +
+                    '<span class="wr-name">' + _wrEscHtml(p.display_name || p.username || 'Player') + (isMe ? ' ★' : '') + '</span>' +
+                    '<span class="wr-wagered">$' + parseFloat(p.total_wagered || 0).toFixed(2) + '</span>' +
+                    '<span class="wr-prize">' + (prizes[i] || '') + '</span>' +
+                    '</div>';
+            }).join('');
+
+            if (leaderboard.length === 0) {
+                rows = '<div style="text-align:center;opacity:0.6;padding:8px 0;font-size:12px;">No players yet — spin any game to enter the race!</div>';
+            }
+
+            var myRankHtml = '';
+            if (myEntry && myEntry.place > 5) {
+                myRankHtml = '<div class="wr-my-rank">Your current rank: #' + myEntry.place + ' · $' + parseFloat(myEntry.total_wagered || 0).toFixed(2) + ' wagered</div>';
+            }
+
+            banner.innerHTML =
+                '<div class="wr-header">' +
+                    '<span class="wr-live-dot"></span>' +
+                    '<span class="wr-title">⚡ Hourly Wager Race</span>' +
+                    '<span class="wr-badge">LIVE</span>' +
+                    '<span class="wr-timer" id="wagerRaceTimer" data-ends="' + race.ends_at + '">--:--</span>' +
+                '</div>' +
+                '<div class="wr-top5">' +
+                    '<div class="wr-col-hdr"><span></span><span>Player</span><span>Wagered</span><span>Prize</span></div>' +
+                    rows +
+                '</div>' +
+                myRankHtml +
+                '<div class="wr-footer">🎰 Spin any game to enter · Prizes credited automatically · All participants earn 10💎</div>';
+
+            if (_wagerRaceCountdownInterval) clearInterval(_wagerRaceCountdownInterval);
+            _updateWagerRaceTimer();
+            _wagerRaceCountdownInterval = setInterval(_updateWagerRaceTimer, 1000);
+        }
+
+        function _updateWagerRaceTimer() {
+            var el = document.getElementById('wagerRaceTimer');
+            if (!el) { clearInterval(_wagerRaceCountdownInterval); return; }
+            var endsAt = el.dataset.ends;
+            if (!endsAt) return;
+            var diff = Math.max(0, new Date(endsAt).getTime() - Date.now());
+            var m = Math.floor(diff / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            el.textContent = 'Ends in ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            if (diff === 0) {
+                clearInterval(_wagerRaceCountdownInterval);
+                setTimeout(_fetchAndRenderWagerRace, 3000);
             }
         }
 
