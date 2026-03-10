@@ -127,6 +127,20 @@ function _injectWalletGemBar(modal) {
     header.appendChild(bar);
 }
 
+function refreshGemBalance() {
+    const token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token || typeof isServerAuthToken === 'function' && !isServerAuthToken(token)) return;
+    fetch('/api/gems', { headers: { Authorization: 'Bearer ' + token } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (data && typeof data.gems !== 'undefined') {
+                const el = document.getElementById('walletGemBalance');
+                if (el) el.textContent = (data.gems || 0).toLocaleString();
+            }
+        })
+        .catch(function() {});
+}
+
 function _checkFirstDepositStatus() {
     if (window._walletHasCompletedDeposit !== undefined) return; // already checked
     const token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');

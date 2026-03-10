@@ -227,6 +227,12 @@ router.post('/', authenticate, async (req, res) => {
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
                 [userId, 'bet', -bet, balanceBefore, balanceAfterBet, `spin:${gameId}`]
             );
+
+            // Award loyalty point (fire-and-forget — never blocks spin)
+            db.run(
+                'UPDATE users SET loyalty_points = COALESCE(loyalty_points, 0) + 1, loyalty_lifetime = COALESCE(loyalty_lifetime, 0) + 1 WHERE id = ?',
+                [userId]
+            ).catch(function() {});
         }
 
         // ── Resolve spin (server-side RNG + win calc) ──

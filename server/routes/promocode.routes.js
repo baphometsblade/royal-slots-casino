@@ -80,7 +80,6 @@ router.post('/redeem', authenticate, async function(req, res) {
       await db.run('UPDATE promo_codes SET uses_count = uses_count - 1 WHERE id = ? AND uses_count > 0', [row.id]);
       return res.status(400).json({ error: 'You have already redeemed this code' });
     }
-
     if (row.reward_gems > 0) {
       await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [row.reward_gems, userId]);
     }
@@ -97,6 +96,7 @@ router.post('/redeem', authenticate, async function(req, res) {
       newBalance: user ? user.balance : 0
     });
   } catch(err) {
+    console.error('[PromoCode] Redemption error:', err.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
