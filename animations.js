@@ -258,7 +258,7 @@ function showBonusEffect(text, color) {
 
 function showPageTransition(callback) {
     const transition = document.getElementById('pageTransition');
-    if (!_animSettingEnabled('animations')) {
+    if (!transition || !_animSettingEnabled('animations')) {
         // Skip animation but still execute callback
         if (callback) callback();
         return;

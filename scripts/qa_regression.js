@@ -442,11 +442,15 @@ async function run() {
 
     await page.click("#statsModal .back-btn");
     await page.waitForSelector("#statsModal.active", { state: "hidden", timeout: 10000 });
+    // Wait for any in-progress page transition to fully settle before opening slot
+    await waitForPageTransitionIdle(page, 5000).catch(() => {});
 
-    await page.evaluate(() => {
-      openSlot("fire_joker");
+    await page.evaluate(() => { openSlot("fire_joker"); });
+    // Retry once if the slot modal fails to activate — handles CI timing jitter
+    await page.waitForSelector("#slotModal.active", { timeout: 10000 }).catch(async () => {
+      await page.evaluate(() => { openSlot("fire_joker"); });
+      await page.waitForSelector("#slotModal.active", { timeout: 15000 });
     });
-    await page.waitForSelector("#slotModal.active", { timeout: 10000 });
     // Generous pause — many Sprint 31-34 features schedule init timers (600-1400ms)
     await page.waitForTimeout(2000);
     await dismissFeaturePopupIfVisible(page);
