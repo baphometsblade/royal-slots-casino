@@ -617,6 +617,8 @@ function renderGames() {
                     renderBalanceSparkline();
                     // Instant Games section
                     if (typeof renderInstantGamesSection === 'function') renderInstantGamesSection();
+                    // Weekly Leaderboard widget
+                    if (typeof renderWeeklyLeaderboard === 'function') renderWeeklyLeaderboard();
                 }, 200);
             });
         }
@@ -6078,4 +6080,160 @@ function _showInstantGameToast(gameName) {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         }, 400);
     }, 3000);
+}
+
+// ── Weekly Leaderboard Widget ──────────────────────────────────────────────────
+// Fetches /api/leaderboard/weekly (public, no auth) and renders a top-10 wager
+// race table below the instant games section. All DOM built via createElement
+// (no dynamic innerHTML) to comply with CSP hook rules.
+function renderWeeklyLeaderboard() {
+    // Idempotency guard
+    if (document.getElementById('weeklyLeaderboardSection')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('weekly-lb-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'weekly-lb-css';
+        styleEl.textContent = [
+            '#weeklyLeaderboardSection {',
+            '  border-top: 2px solid #f0a500;',
+            '  margin: 32px 0 0;',
+            '  padding: 24px 0;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-header {',
+            '  color: #f0a500;',
+            '  font-size: 1.3rem;',
+            '  font-weight: bold;',
+            '  margin: 0 0 4px;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-subheader {',
+            '  color: #999;',
+            '  font-size: 0.82rem;',
+            '  margin: 0 0 14px;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-row {',
+            '  display: flex;',
+            '  justify-content: space-between;',
+            '  align-items: center;',
+            '  padding: 8px 0;',
+            '  border-bottom: 1px solid #222;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-rank {',
+            '  font-size: 1.2rem;',
+            '  min-width: 32px;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-user {',
+            '  color: #ddd;',
+            '  flex: 1;',
+            '  padding: 0 8px;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-wagered {',
+            '  color: #f0a500;',
+            '  font-weight: bold;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-spins {',
+            '  color: #888;',
+            '  font-size: 0.8rem;',
+            '  margin-left: 8px;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-empty {',
+            '  color: #666;',
+            '  font-size: 0.9rem;',
+            '  padding: 16px 0;',
+            '}',
+            '#weeklyLeaderboardSection .wlb-footer {',
+            '  color: #666;',
+            '  font-size: 0.75rem;',
+            '  margin-top: 12px;',
+            '}'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    fetch('/api/leaderboard/weekly')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var entries = (data && Array.isArray(data.entries)) ? data.entries : [];
+
+            // Build section wrapper
+            var section = document.createElement('div');
+            section.id = 'weeklyLeaderboardSection';
+
+            // Header
+            var header = document.createElement('h2');
+            header.className = 'wlb-header';
+            header.textContent = '\uD83C\uDFC6 Weekly Wager Race';
+            section.appendChild(header);
+
+            // Sub-header
+            var sub = document.createElement('p');
+            sub.className = 'wlb-subheader';
+            sub.textContent = 'Top players by total wagered this week';
+            section.appendChild(sub);
+
+            if (entries.length === 0) {
+                // Empty state
+                var emptyEl = document.createElement('p');
+                emptyEl.className = 'wlb-empty';
+                emptyEl.textContent = 'No data yet \u2014 start spinning!';
+                section.appendChild(emptyEl);
+            } else {
+                // Medal map
+                var medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+
+                // Render up to top 10 rows
+                var limit = Math.min(entries.length, 10);
+                for (var i = 0; i < limit; i++) {
+                    var entry = entries[i];
+
+                    var row = document.createElement('div');
+                    row.className = 'wlb-row';
+
+                    var rankEl = document.createElement('span');
+                    rankEl.className = 'wlb-rank';
+                    rankEl.textContent = i < 3 ? medals[i] : String(entry.rank);
+                    row.appendChild(rankEl);
+
+                    var userEl = document.createElement('span');
+                    userEl.className = 'wlb-user';
+                    userEl.textContent = entry.maskedUser;
+                    row.appendChild(userEl);
+
+                    var wageredEl = document.createElement('span');
+                    wageredEl.className = 'wlb-wagered';
+                    wageredEl.textContent = '$' + Number(entry.totalWagered).toFixed(2);
+                    row.appendChild(wageredEl);
+
+                    var spinsEl = document.createElement('span');
+                    spinsEl.className = 'wlb-spins';
+                    spinsEl.textContent = entry.spinCount + ' spins';
+                    row.appendChild(spinsEl);
+
+                    section.appendChild(row);
+                }
+            }
+
+            // Footer note
+            var footer = document.createElement('p');
+            footer.className = 'wlb-footer';
+            footer.textContent = 'Resets every Monday at 00:00 UTC';
+            section.appendChild(footer);
+
+            // Inject after instantGamesSection if present, otherwise after allGames parent
+            var anchor = document.getElementById('instantGamesSection');
+            if (anchor && anchor.parentNode) {
+                anchor.parentNode.insertBefore(section, anchor.nextSibling);
+            } else {
+                var allGamesEl = document.getElementById('allGames');
+                var insertParent = allGamesEl
+                    ? (allGamesEl.parentNode || document.getElementById('lobby'))
+                    : document.getElementById('lobby');
+                if (insertParent) {
+                    insertParent.appendChild(section);
+                }
+            }
+        })
+        .catch(function() {
+            // Silently fail — no widget shown on network error
+        });
 }

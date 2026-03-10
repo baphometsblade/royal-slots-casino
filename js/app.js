@@ -206,6 +206,7 @@
             _checkMilestones();
             _checkDailyStreak();
             setTimeout(function() { _checkWeekendCashback(); }, 2000);
+            setTimeout(function() { _checkComebackBonus(); }, 4000);
             _checkStreakBonuses();
             _checkSubscriptionDailyGems();
             _checkGiftsInbox();
@@ -1554,3 +1555,147 @@
             el.classList.remove('active');
             el.style.display = 'none';
         });
+
+        function _checkComebackBonus() {
+            if (sessionStorage.getItem('_comebackBonusChecked')) return;
+            sessionStorage.setItem('_comebackBonusChecked', '1');
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/user/comeback-bonus', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (data && data.eligible === true) {
+                        _showComebackBonusModal(data);
+                    }
+                })
+                .catch(function() {});
+        }
+
+        function _showComebackBonusModal(data) {
+            if (document.getElementById('comebackBonusOverlay')) return;
+
+            var tierColors = {
+                gold:   { pill: '#f0a500', text: '#1a1a00', border: '#f0a500' },
+                silver: { pill: '#a8a9ad', text: '#111',    border: '#a8a9ad' },
+                bronze: { pill: '#cd7f32', text: '#1a0a00', border: '#cd7f32' }
+            };
+            var tier = (data.tier && tierColors[data.tier]) ? data.tier : 'gold';
+            var tc = tierColors[tier];
+
+            var overlay = document.createElement('div');
+            overlay.id = 'comebackBonusOverlay';
+            overlay.style.cssText = [
+                'position:fixed', 'top:0', 'left:0', 'right:0', 'bottom:0',
+                'background:rgba(0,0,0,0.82)', 'display:flex', 'align-items:center',
+                'justify-content:center', 'z-index:9000', 'padding:16px'
+            ].join(';');
+
+            var card = document.createElement('div');
+            card.style.cssText = [
+                'background:#1a1a2e',
+                'border:2px solid #f0a500',
+                'border-radius:16px',
+                'padding:28px 32px',
+                'max-width:380px',
+                'width:100%',
+                'text-align:center',
+                'position:relative',
+                'box-shadow:0 16px 48px rgba(240,165,0,0.25)'
+            ].join(';');
+
+            var tierBadge = document.createElement('div');
+            tierBadge.style.cssText = [
+                'display:inline-block',
+                'background:' + tc.pill,
+                'color:' + tc.text,
+                'border-radius:20px',
+                'padding:3px 14px',
+                'font-size:0.72rem',
+                'font-weight:800',
+                'letter-spacing:1px',
+                'text-transform:uppercase',
+                'margin-bottom:14px'
+            ].join(';');
+            tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1) + ' Offer';
+
+            var headline = document.createElement('h2');
+            headline.style.cssText = 'font-size:1.4rem;font-weight:900;color:#fff;margin:0 0 10px;';
+            headline.textContent = "You've Hit a Rough Patch!";
+
+            var subText = document.createElement('p');
+            subText.style.cssText = 'font-size:0.88rem;color:#c9b86c;margin:0 0 18px;line-height:1.55;';
+            subText.textContent = data.message;
+
+            var amountDisplay = document.createElement('div');
+            amountDisplay.style.cssText = [
+                'font-size:2rem',
+                'font-weight:900',
+                'color:#f0a500',
+                'margin-bottom:22px',
+                'letter-spacing:0.5px'
+            ].join(';');
+            amountDisplay.textContent = '$' + Number(data.amount).toFixed(2) + ' Bonus';
+
+            var claimBtn = document.createElement('button');
+            claimBtn.style.cssText = [
+                'background:linear-gradient(135deg,#f0a500,#e67e00)',
+                'color:#1a0a00', 'border:none', 'border-radius:10px',
+                'padding:13px 40px', 'font-size:0.95rem', 'font-weight:800',
+                'cursor:pointer', 'width:100%', 'margin-bottom:10px',
+                'letter-spacing:0.4px'
+            ].join(';');
+            claimBtn.textContent = 'Claim Bonus';
+            claimBtn.addEventListener('click', function() {
+                claimBtn.disabled = true;
+                claimBtn.textContent = 'Claiming...';
+                var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                fetch('/api/user/claim-comeback-bonus', {
+                    method: 'POST',
+                    headers: { Authorization: 'Bearer ' + claimToken, 'Content-Type': 'application/json' }
+                })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(resp) {
+                        overlay.remove();
+                        if (resp && resp.success) {
+                            if (typeof updateBalanceDisplay === 'function' && resp.bonusBalance != null) {
+                                updateBalanceDisplay(resp.bonusBalance);
+                            }
+                            var msg = resp.message || ('Comeback bonus of $' + Number(data.amount).toFixed(2) + ' credited!');
+                            if (typeof showWinToast === 'function') {
+                                showWinToast(msg);
+                            } else {
+                                var toast = document.createElement('div');
+                                toast.style.cssText = [
+                                    'position:fixed', 'bottom:30px', 'left:50%', 'transform:translateX(-50%)',
+                                    'background:#f0a500', 'color:#1a0a00', 'padding:12px 24px',
+                                    'border-radius:10px', 'font-weight:800', 'font-size:0.95rem',
+                                    'z-index:9100', 'box-shadow:0 4px 20px rgba(0,0,0,0.4)'
+                                ].join(';');
+                                toast.textContent = msg;
+                                document.body.appendChild(toast);
+                                setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3500);
+                            }
+                        }
+                    })
+                    .catch(function() { overlay.remove(); });
+            });
+
+            var noThanksBtn = document.createElement('button');
+            noThanksBtn.style.cssText = [
+                'background:#2a2a40', 'color:#9ca3af', 'border:1px solid #3a3a55',
+                'border-radius:10px', 'padding:10px 40px', 'font-size:0.88rem',
+                'font-weight:600', 'cursor:pointer', 'width:100%'
+            ].join(';');
+            noThanksBtn.textContent = 'No Thanks';
+            noThanksBtn.addEventListener('click', function() { overlay.remove(); });
+
+            card.appendChild(tierBadge);
+            card.appendChild(headline);
+            card.appendChild(subText);
+            card.appendChild(amountDisplay);
+            card.appendChild(claimBtn);
+            card.appendChild(noThanksBtn);
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
+        }

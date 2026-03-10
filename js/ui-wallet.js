@@ -101,6 +101,8 @@ function showWalletModal() {
     walletRenderWeekendCashbackSection(modal);
     // Render the Win-Back Bonus card section at the top (after modal is in place)
     walletRenderWinbackSection(modal);
+    // Render the VIP Deposit Bonus section (new /api/vipdeposit/ endpoints)
+    walletRenderVipDepositBonusSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -3825,4 +3827,211 @@ async function walletRenderWinbackSection(parentContainer) {
         }
     });
     section.appendChild(cta);
+}
+
+/**
+ * Renders the VIP Deposit Bonus section in the wallet modal.
+ * Uses /api/vipdeposit/ endpoints.  Shows tier badge, bonus details,
+ * and a claim button when the bonus is available.
+ *
+ * @param {HTMLElement} parentContainer  The #walletModal element.
+ */
+async function walletRenderVipDepositBonusSection(parentContainer) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // ID guard — remove stale element so it refreshes on wallet reopen
+    var existing = parentContainer.querySelector('#walletVipDepositSection');
+    if (existing) {
+        existing.parentNode.removeChild(existing);
+    }
+
+    // Inject CSS once
+    if (!document.getElementById('wallet-vip-deposit-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'wallet-vip-deposit-css';
+        styleEl.textContent = [
+            '#walletVipDepositSection {',
+            '  background: #1a1a2e;',
+            '  border-radius: 12px;',
+            '  padding: 14px;',
+            '  margin-bottom: 14px;',
+            '}',
+            '#walletVipDepositSection.tier-gold   { border: 1px solid #f0a500; }',
+            '#walletVipDepositSection.tier-silver { border: 1px solid #aaa; }',
+            '#walletVipDepositSection.tier-bronze { border: 1px solid #cd7f32; }',
+            '.wvdb-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }',
+            '.wvdb-headline { color:#fbbf24; font-size:14px; font-weight:800; }',
+            '.wvdb-tier-badge { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; text-transform:capitalize; }',
+            '.wvdb-tier-badge.gold   { background:#f0a500; color:#000; }',
+            '.wvdb-tier-badge.silver { background:#aaa;    color:#000; }',
+            '.wvdb-tier-badge.bronze { background:#cd7f32; color:#fff; }',
+            '.wvdb-detail { color:#ccc; font-size:12px; margin:4px 0; }',
+            '.wvdb-detail span { color:#fff; font-weight:600; }',
+            '.wvdb-status-row { display:flex; align-items:center; gap:8px; margin-top:10px; }',
+            '.wvdb-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }',
+            '.wvdb-badge.available   { background:#27ae60; color:#fff; }',
+            '.wvdb-badge.deposit-req { background:#f39c12; color:#fff; }',
+            '.wvdb-badge.cooldown    { background:#666;    color:#fff; }',
+            '.wvdb-next { font-size:11px; color:#999; margin-top:4px; }',
+            '.wvdb-claim-btn { margin-top:10px; width:100%; padding:9px 0; border:none; border-radius:8px; cursor:pointer; font-weight:700; font-size:13px; background:linear-gradient(135deg,#d97706,#f59e0b); color:#000; }',
+            '.wvdb-claim-btn:disabled { opacity:0.55; cursor:not-allowed; }',
+            '.wvdb-feedback { font-size:12px; margin-top:6px; min-height:1em; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    // Fetch status
+    var data = null;
+    try {
+        var resp = await fetch('/api/vipdeposit/vip-deposit-bonus', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) data = await resp.json();
+    } catch (err) {
+        console.error('[VipDepositBonus]', err);
+    }
+
+    // If no data or tier is none, don't render anything
+    if (!data || data.tier === 'none' || !data.tier) return;
+
+    var section = document.createElement('div');
+    section.id = 'walletVipDepositSection';
+    section.classList.add('tier-' + data.tier);
+    parentContainer.appendChild(section);
+
+    // ── Header row ────────────────────────────────────────────────────────
+    var header = document.createElement('div');
+    header.className = 'wvdb-header';
+
+    var headline = document.createElement('span');
+    headline.className = 'wvdb-headline';
+    headline.textContent = 'VIP Deposit Match';
+    header.appendChild(headline);
+
+    var tierBadge = document.createElement('span');
+    tierBadge.className = 'wvdb-tier-badge ' + data.tier;
+    tierBadge.textContent = data.tier.charAt(0).toUpperCase() + data.tier.slice(1);
+    header.appendChild(tierBadge);
+
+    section.appendChild(header);
+
+    // ── Detail rows ───────────────────────────────────────────────────────
+    var bonusRow = document.createElement('div');
+    bonusRow.className = 'wvdb-detail';
+    var bonusLabel = document.createTextNode('Bonus: ');
+    var bonusVal = document.createElement('span');
+    bonusVal.textContent = data.bonusPct + '% on your next deposit';
+    bonusRow.appendChild(bonusLabel);
+    bonusRow.appendChild(bonusVal);
+    section.appendChild(bonusRow);
+
+    var capRow = document.createElement('div');
+    capRow.className = 'wvdb-detail';
+    var capLabel = document.createTextNode('Cap: ');
+    var capVal = document.createElement('span');
+    capVal.textContent = 'Up to $' + data.bonusCap;
+    capRow.appendChild(capLabel);
+    capRow.appendChild(capVal);
+    section.appendChild(capRow);
+
+    var wageredRow = document.createElement('div');
+    wageredRow.className = 'wvdb-detail';
+    var wageredLabel = document.createTextNode('Lifetime wagered: ');
+    var wageredVal = document.createElement('span');
+    wageredVal.textContent = '$' + (parseFloat(data.lifetimeWagered) || 0).toFixed(2) + ' wagered';
+    wageredRow.appendChild(wageredLabel);
+    wageredRow.appendChild(wageredVal);
+    section.appendChild(wageredRow);
+
+    // ── Status section ────────────────────────────────────────────────────
+    var statusRow = document.createElement('div');
+    statusRow.className = 'wvdb-status-row';
+
+    var statusBadge = document.createElement('span');
+    statusBadge.className = 'wvdb-badge';
+
+    if (data.available && data.hasMinDeposit) {
+        // Available — show claim button
+        statusBadge.classList.add('available');
+        statusBadge.textContent = 'Available';
+        statusRow.appendChild(statusBadge);
+        section.appendChild(statusRow);
+
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'wvdb-claim-btn';
+        claimBtn.textContent = 'Claim Now';
+        section.appendChild(claimBtn);
+
+        var feedbackEl = document.createElement('div');
+        feedbackEl.className = 'wvdb-feedback';
+        section.appendChild(feedbackEl);
+
+        claimBtn.addEventListener('click', async function () {
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'Claiming\u2026';
+            var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            var claimResult = null;
+            try {
+                var claimResp = await fetch('/api/vipdeposit/claim-vip-deposit-bonus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + claimToken
+                    }
+                });
+                claimResult = await claimResp.json();
+            } catch (claimErr) {
+                console.error('[VipDepositBonus claim]', claimErr);
+            }
+
+            if (claimResult && claimResult.success) {
+                feedbackEl.style.color = '#6ee7b7';
+                feedbackEl.textContent = 'Bonus granted: $' + parseFloat(claimResult.bonus).toFixed(2) + '!';
+                claimBtn.textContent = 'Claimed';
+                claimBtn.disabled = true;
+                if (typeof updateBalanceDisplay === 'function') {
+                    updateBalanceDisplay(claimResult.newBalance);
+                }
+            } else {
+                feedbackEl.style.color = '#f87171';
+                feedbackEl.textContent = (claimResult && claimResult.error) ? claimResult.error : 'Claim failed. Please try again.';
+                claimBtn.disabled = false;
+                claimBtn.textContent = 'Claim Now';
+            }
+        });
+
+    } else if (data.available && !data.hasMinDeposit) {
+        // Available but needs deposit first
+        statusBadge.classList.add('deposit-req');
+        statusBadge.textContent = 'Deposit Required';
+        statusRow.appendChild(statusBadge);
+        section.appendChild(statusRow);
+
+        var depositHint = document.createElement('div');
+        depositHint.className = 'wvdb-next';
+        depositHint.textContent = 'Make a qualifying deposit to activate your VIP match bonus.';
+        section.appendChild(depositHint);
+
+    } else {
+        // On cooldown
+        statusBadge.classList.add('cooldown');
+        statusBadge.textContent = 'On Cooldown';
+        statusRow.appendChild(statusBadge);
+        section.appendChild(statusRow);
+
+        if (data.nextAvailableAt) {
+            var nextEl = document.createElement('div');
+            nextEl.className = 'wvdb-next';
+            var nextDate = new Date(data.nextAvailableAt);
+            var nextText = document.createTextNode('Next available: ');
+            var nextDateSpan = document.createElement('span');
+            nextDateSpan.style.cssText = 'color:#d1d5db; font-weight:600;';
+            nextDateSpan.textContent = nextDate.toLocaleString();
+            nextEl.appendChild(nextText);
+            nextEl.appendChild(nextDateSpan);
+            section.appendChild(nextEl);
+        }
+    }
 }

@@ -2212,6 +2212,7 @@ function initPromoEngine() {
             if (!window._birthdaySetCardInit) { window._birthdaySetCardInit = true; renderBirthdaySetCard(promosSidebar); }
             if (!window._coinflipCardInit) { window._coinflipCardInit = true; renderCoinflipCard(promosSidebar); }
             if (!window._diceCardInit) { window._diceCardInit = true; renderDiceCard(promosSidebar); }
+            if (!window._lossStreakCardInit) { window._lossStreakCardInit = true; renderLossStreakCard(promosSidebar); }
         }
     }, 4000);
 
@@ -5264,4 +5265,224 @@ function renderDiceCard(container) {
     });
 
     container.appendChild(card);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// LOSS STREAK OFFER CARD
+// ─────────────────────────────────────────────────────────────────────
+
+function renderLossStreakCard(container) {
+    // Auth check
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // ID guard — prevent duplicate cards
+    if (document.getElementById('lossStreakCard')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('loss-streak-css')) {
+        var style = document.createElement('style');
+        style.id = 'loss-streak-css';
+        style.textContent = [
+            '#lossStreakCard {',
+            '  background: #1a1a2e;',
+            '  border: 1px solid #e74c3c;',
+            '  border-radius: 12px;',
+            '  padding: 16px;',
+            '  margin-bottom: 12px;',
+            '  color: #fff;',
+            '}',
+            '#lossStreakCard .lsc-header {',
+            '  display: flex;',
+            '  align-items: center;',
+            '  gap: 8px;',
+            '  margin-bottom: 12px;',
+            '}',
+            '#lossStreakCard .lsc-title {',
+            '  color: #e74c3c;',
+            '  font-size: 16px;',
+            '  font-weight: 700;',
+            '  margin: 0;',
+            '}',
+            '#lossStreakCard .lsc-details {',
+            '  list-style: none;',
+            '  padding: 0;',
+            '  margin: 0 0 12px 0;',
+            '  display: flex;',
+            '  flex-direction: column;',
+            '  gap: 6px;',
+            '}',
+            '#lossStreakCard .lsc-details li {',
+            '  font-size: 13px;',
+            '  color: #ccc;',
+            '}',
+            '#lossStreakCard .lsc-input-row {',
+            '  display: flex;',
+            '  gap: 8px;',
+            '  align-items: center;',
+            '  margin-bottom: 10px;',
+            '}',
+            '#lossStreakCard .lsc-deposit-input {',
+            '  background: #111;',
+            '  border: 1px solid #444;',
+            '  border-radius: 6px;',
+            '  color: #fff;',
+            '  padding: 6px 10px;',
+            '  font-size: 14px;',
+            '  width: 120px;',
+            '}',
+            '#lossStreakCard .lsc-claim-btn {',
+            '  background: linear-gradient(135deg, #e74c3c, #c0392b);',
+            '  color: #fff;',
+            '  border: none;',
+            '  border-radius: 6px;',
+            '  padding: 8px 16px;',
+            '  font-size: 14px;',
+            '  font-weight: 600;',
+            '  cursor: pointer;',
+            '}',
+            '#lossStreakCard .lsc-claim-btn:disabled {',
+            '  opacity: 0.5;',
+            '  cursor: not-allowed;',
+            '}',
+            '#lossStreakCard .lsc-result {',
+            '  font-size: 13px;',
+            '  min-height: 18px;',
+            '}'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // Fetch eligibility
+    fetch('/api/user/loss-streak-offer', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (!data.eligible) return;
+
+        var offer = data.offer;
+
+        // Card wrapper
+        var card = document.createElement('div');
+        card.id = 'lossStreakCard';
+
+        // Header row
+        var header = document.createElement('div');
+        header.className = 'lsc-header';
+
+        var flame = document.createElement('span');
+        flame.textContent = '\uD83D\uDD25';
+
+        var title = document.createElement('h3');
+        title.className = 'lsc-title';
+        title.textContent = 'Loss Streak Offer';
+
+        header.appendChild(flame);
+        header.appendChild(title);
+        card.appendChild(header);
+
+        // Offer details list
+        var details = document.createElement('ul');
+        details.className = 'lsc-details';
+
+        var liMatch = document.createElement('li');
+        liMatch.textContent = '\uD83D\uDCC8 ' + offer.matchPct + '% Deposit Match';
+        details.appendChild(liMatch);
+
+        var liMax = document.createElement('li');
+        liMax.textContent = '\uD83D\uDC8E Up to $' + offer.maxMatch;
+        details.appendChild(liMax);
+
+        var liMin = document.createElement('li');
+        liMin.textContent = '\uD83D\uDCB3 Min Deposit: $' + offer.minDeposit;
+        details.appendChild(liMin);
+
+        card.appendChild(details);
+
+        // Deposit input row
+        var inputRow = document.createElement('div');
+        inputRow.className = 'lsc-input-row';
+
+        var depositInput = document.createElement('input');
+        depositInput.type = 'number';
+        depositInput.className = 'lsc-deposit-input';
+        depositInput.min = String(offer.minDeposit);
+        depositInput.value = String(offer.minDeposit);
+        depositInput.step = '1';
+
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'lsc-claim-btn';
+        claimBtn.textContent = 'Claim Offer';
+
+        inputRow.appendChild(depositInput);
+        inputRow.appendChild(claimBtn);
+        card.appendChild(inputRow);
+
+        // Result message div (initially empty)
+        var resultDiv = document.createElement('div');
+        resultDiv.className = 'lsc-result';
+        card.appendChild(resultDiv);
+
+        // Claim button handler
+        claimBtn.addEventListener('click', function() {
+            var depositAmount = parseFloat(depositInput.value);
+            if (!depositAmount || depositAmount < offer.minDeposit) {
+                resultDiv.style.color = '#e74c3c';
+                resultDiv.textContent = '';
+                var errMsg = document.createElement('span');
+                errMsg.textContent = 'Minimum deposit is $' + offer.minDeposit;
+                resultDiv.appendChild(errMsg);
+                return;
+            }
+
+            claimBtn.disabled = true;
+            resultDiv.textContent = '';
+
+            fetch('/api/user/claim-loss-offer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ depositAmount: depositAmount })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(resp) {
+                if (resp.error) {
+                    resultDiv.style.color = '#e74c3c';
+                    resultDiv.textContent = '';
+                    var errSpan = document.createElement('span');
+                    errSpan.textContent = resp.error;
+                    resultDiv.appendChild(errSpan);
+                    claimBtn.disabled = false;
+                    return;
+                }
+                resultDiv.style.color = '#2ecc71';
+                resultDiv.textContent = '';
+                var okSpan = document.createElement('span');
+                okSpan.textContent = 'Bonus granted: $' + (typeof resp.bonus === 'number' ? resp.bonus.toFixed(2) : resp.bonus) + ' added!';
+                resultDiv.appendChild(okSpan);
+                claimBtn.disabled = true;
+                if (typeof resp.newBalance === 'number' && typeof updateBalanceDisplay === 'function') {
+                    updateBalanceDisplay(resp.newBalance);
+                }
+            })
+            .catch(function(err) {
+                console.error('[LossStreakOffer]', err);
+                resultDiv.style.color = '#e74c3c';
+                resultDiv.textContent = '';
+                var netErr = document.createElement('span');
+                netErr.textContent = 'Network error. Please try again.';
+                resultDiv.appendChild(netErr);
+                claimBtn.disabled = false;
+            });
+        });
+
+        container.appendChild(card);
+    })
+    .catch(function(err) {
+        console.error('[LossStreakOffer] eligibility check failed', err);
+    });
 }
