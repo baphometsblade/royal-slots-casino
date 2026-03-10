@@ -198,8 +198,12 @@
             }
             if (!suppressBonus) {
                 _checkReturnStatus();
+                _checkBirthday();
             }
+            _checkAchievements();
+            _initNotificationBell();
             startSessionDurationWatch();
+
         }
 
         // Responsible gambling: remind player every 60 minutes of continuous play
@@ -341,6 +345,280 @@
             card.appendChild(skipBtn);
             overlay.appendChild(card);
             document.body.appendChild(overlay);
+        }
+
+        // ── Birthday bonus ─────────────────────────────────────────────────────
+        function _checkBirthday() {
+            if (sessionStorage.getItem('_birthdayChecked')) return;
+            sessionStorage.setItem('_birthdayChecked', '1');
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/birthday/status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (data && data.isBirthday && !data.alreadyClaimed) {
+                        setTimeout(function() { _showBirthdayModal(data); }, 5500);
+                    }
+                })
+                .catch(function() {});
+        }
+
+        function _showBirthdayModal(data) {
+            if (document.getElementById('birthdayModal')) return;
+            var overlay = document.createElement('div');
+            overlay.id = 'birthdayModal';
+            overlay.style.cssText = [
+                'position:fixed', 'top:0', 'left:0', 'right:0', 'bottom:0',
+                'background:rgba(0,0,0,0.85)', 'display:flex', 'align-items:center',
+                'justify-content:center', 'z-index:9998', 'padding:16px'
+            ].join(';');
+            var card = document.createElement('div');
+            card.style.cssText = [
+                'background:linear-gradient(135deg,#1e1b4b,#312e81)',
+                'border:2px solid #f59e0b', 'border-radius:20px',
+                'padding:36px 32px', 'max-width:380px', 'width:100%',
+                'text-align:center', 'position:relative'
+            ].join(';');
+            var closeBtn = document.createElement('button');
+            closeBtn.style.cssText = 'position:absolute;top:12px;right:14px;background:none;border:none;color:#9ca3af;font-size:1.4rem;cursor:pointer;line-height:1;';
+            closeBtn.textContent = '\u00D7';
+            closeBtn.addEventListener('click', function() { overlay.remove(); });
+            var emoji = document.createElement('div');
+            emoji.style.cssText = 'font-size:3.5rem;margin-bottom:12px;';
+            emoji.textContent = '\uD83C\uDF82';
+            var title = document.createElement('div');
+            title.style.cssText = 'font-size:1.6rem;font-weight:900;color:#fbbf24;margin-bottom:8px;';
+            title.textContent = 'Happy Birthday!';
+            var sub = document.createElement('div');
+            sub.style.cssText = 'color:#c4b5fd;font-size:0.95rem;margin-bottom:20px;line-height:1.5;';
+            sub.textContent = 'A special gift awaits you on your special day!';
+            var rewardBox = document.createElement('div');
+            rewardBox.style.cssText = [
+                'background:rgba(251,191,36,0.1)', 'border:1px solid rgba(251,191,36,0.3)',
+                'border-radius:12px', 'padding:16px', 'margin-bottom:22px'
+            ].join(';');
+            if (data.bonusCredits > 0) {
+                var credLine = document.createElement('div');
+                credLine.style.cssText = 'font-size:1.2rem;font-weight:800;color:#fbbf24;';
+                credLine.textContent = '$' + data.bonusCredits.toFixed(2) + ' Birthday Bonus';
+                rewardBox.appendChild(credLine);
+            }
+            if (data.bonusGems > 0) {
+                var gemsLine = document.createElement('div');
+                gemsLine.style.cssText = 'font-size:0.9rem;color:#a78bfa;font-weight:700;margin-top:4px;';
+                gemsLine.textContent = '+ ' + data.bonusGems + ' Gems';
+                rewardBox.appendChild(gemsLine);
+            }
+            if (data.bonusFreeSpins > 0) {
+                var spinsLine = document.createElement('div');
+                spinsLine.style.cssText = 'font-size:0.9rem;color:#34d399;font-weight:700;margin-top:4px;';
+                spinsLine.textContent = '+ ' + data.bonusFreeSpins + ' Free Spins';
+                rewardBox.appendChild(spinsLine);
+            }
+            var claimBtn = document.createElement('button');
+            claimBtn.style.cssText = [
+                'background:linear-gradient(135deg,#f59e0b,#d97706)',
+                'color:#fff', 'border:none', 'border-radius:10px',
+                'padding:13px 40px', 'font-size:1rem', 'font-weight:800',
+                'cursor:pointer', 'width:100%', 'margin-bottom:10px'
+            ].join(';');
+            claimBtn.textContent = '\uD83C\uDF81 Claim Birthday Gift';
+            claimBtn.addEventListener('click', function() {
+                claimBtn.disabled = true;
+                claimBtn.textContent = 'Claiming...';
+                var tok = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                fetch('/api/birthday/claim', {
+                    method: 'POST',
+                    headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' }
+                })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (res.success) {
+                            if (res.newBalance !== undefined) {
+                                balance = res.newBalance;
+                                if (typeof updateBalance === 'function') updateBalance();
+                                if (typeof saveBalance === 'function') saveBalance();
+                            }
+                            if (typeof showMessage === 'function') {
+                                showMessage('\uD83C\uDF82 Birthday gift claimed! Enjoy your bonus!', 'big-win');
+                            }
+                            overlay.remove();
+                        } else {
+                            claimBtn.disabled = false;
+                            claimBtn.textContent = '\uD83C\uDF81 Claim Birthday Gift';
+                        }
+                    })
+                    .catch(function() {
+                        claimBtn.disabled = false;
+                        claimBtn.textContent = '\uD83C\uDF81 Claim Birthday Gift';
+                    });
+            });
+            var skipLink = document.createElement('button');
+            skipLink.style.cssText = 'background:none;border:none;color:#6b7280;font-size:0.78rem;cursor:pointer;';
+            skipLink.textContent = 'Maybe later';
+            skipLink.addEventListener('click', function() { overlay.remove(); });
+            card.appendChild(closeBtn);
+            card.appendChild(emoji);
+            card.appendChild(title);
+            card.appendChild(sub);
+            card.appendChild(rewardBox);
+            card.appendChild(claimBtn);
+            card.appendChild(skipLink);
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
+        }
+
+        // ── Achievements check ─────────────────────────────────────────────────
+        function _checkAchievements() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/achievements/check', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+            })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.newlyUnlocked || !data.newlyUnlocked.length) return;
+                    data.newlyUnlocked.forEach(function(ach, i) {
+                        setTimeout(function() {
+                            if (typeof showMessage === 'function') {
+                                showMessage((ach.icon || '\uD83C\uDFC6') + ' Achievement Unlocked: ' + ach.name, 'big-win');
+                            }
+                        }, i * 2500);
+                    });
+                })
+                .catch(function() {});
+        }
+
+        // ── Notification bell ──────────────────────────────────────────────────
+        function _initNotificationBell() {
+            if (document.getElementById('notifBellBtn')) return;
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var headerActions = document.querySelector('.header-actions');
+            if (!headerActions) return;
+            var settingsBtn = headerActions.querySelector('.btn-settings');
+            var bellBtn = document.createElement('button');
+            bellBtn.id = 'notifBellBtn';
+            bellBtn.className = 'btn-icon btn-notif';
+            bellBtn.title = 'Notifications';
+            bellBtn.style.cssText = 'position:relative;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;cursor:pointer;color:#e2e8f0;font-size:1rem;line-height:1;';
+            bellBtn.textContent = '\uD83D\uDD14';
+            bellBtn.addEventListener('click', _toggleNotifPanel);
+            var badge = document.createElement('span');
+            badge.id = 'notifBadge';
+            badge.style.cssText = [
+                'position:absolute', 'top:-5px', 'right:-5px',
+                'background:#ef4444', 'color:#fff', 'border-radius:999px',
+                'font-size:0.65rem', 'font-weight:800', 'min-width:16px',
+                'height:16px', 'line-height:16px', 'text-align:center',
+                'padding:0 3px', 'display:none'
+            ].join(';');
+            bellBtn.appendChild(badge);
+            if (settingsBtn) {
+                headerActions.insertBefore(bellBtn, settingsBtn);
+            } else {
+                headerActions.appendChild(bellBtn);
+            }
+            var tok = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            _refreshNotifications(tok);
+            setInterval(function() {
+                var t = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                _refreshNotifications(t);
+            }, 60000);
+        }
+
+        function _refreshNotifications(token) {
+            if (!token) return;
+            fetch('/api/notifications', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data) return;
+                    window._notifCache = data.notifications || [];
+                    var badge = document.getElementById('notifBadge');
+                    if (badge) {
+                        var cnt = data.unreadCount || 0;
+                        badge.textContent = cnt > 9 ? '9+' : String(cnt);
+                        badge.style.display = cnt > 0 ? 'block' : 'none';
+                    }
+                })
+                .catch(function() {});
+        }
+
+        function _toggleNotifPanel() {
+            var existing = document.getElementById('notifPanel');
+            if (existing) { existing.remove(); return; }
+            var panel = document.createElement('div');
+            panel.id = 'notifPanel';
+            panel.style.cssText = [
+                'position:fixed', 'top:72px', 'right:16px', 'width:320px',
+                'max-height:420px', 'overflow-y:auto',
+                'background:#1e1b4b', 'border:1px solid rgba(139,92,246,0.3)',
+                'border-radius:12px', 'box-shadow:0 8px 32px rgba(0,0,0,0.6)',
+                'z-index:8000', 'padding:12px 0'
+            ].join(';');
+            var header = document.createElement('div');
+            header.style.cssText = 'padding:8px 16px 12px;font-weight:800;font-size:0.9rem;color:#e2e8f0;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;';
+            var headerTitle = document.createElement('span');
+            headerTitle.textContent = '\uD83D\uDD14 Notifications';
+            var readAllBtn = document.createElement('button');
+            readAllBtn.style.cssText = 'background:none;border:none;color:#8b5cf6;font-size:0.75rem;cursor:pointer;font-weight:700;';
+            readAllBtn.textContent = 'Mark all read';
+            readAllBtn.addEventListener('click', function() {
+                var tok = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                fetch('/api/notifications/read-all', { method: 'POST', headers: { Authorization: 'Bearer ' + tok } })
+                    .then(function() { _refreshNotifications(tok); panel.remove(); })
+                    .catch(function() {});
+            });
+            header.appendChild(headerTitle);
+            header.appendChild(readAllBtn);
+            panel.appendChild(header);
+            var notifs = window._notifCache || [];
+            if (notifs.length === 0) {
+                var empty = document.createElement('div');
+                empty.style.cssText = 'padding:24px 16px;text-align:center;color:#6b7280;font-size:0.85rem;';
+                empty.textContent = 'No notifications yet';
+                panel.appendChild(empty);
+            } else {
+                notifs.forEach(function(n) {
+                    var item = document.createElement('div');
+                    item.style.cssText = 'padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;' + (n.read_at ? 'opacity:0.6;' : 'background:rgba(139,92,246,0.05);');
+                    var nTitle = document.createElement('div');
+                    nTitle.style.cssText = 'font-weight:700;font-size:0.85rem;color:#e2e8f0;margin-bottom:3px;';
+                    nTitle.textContent = n.title || '';
+                    var nBody = document.createElement('div');
+                    nBody.style.cssText = 'font-size:0.78rem;color:#9ca3af;line-height:1.4;';
+                    nBody.textContent = n.body || n.message || '';
+                    item.appendChild(nTitle);
+                    item.appendChild(nBody);
+                    item.addEventListener('click', function() {
+                        var tok = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                        fetch('/api/notifications/read/' + n.id, { method: 'POST', headers: { Authorization: 'Bearer ' + tok } })
+                            .then(function() { _refreshNotifications(tok); })
+                            .catch(function() {});
+                        if (n.link_action === 'wallet') {
+                            panel.remove();
+                            if (typeof showWalletModal === 'function') showWalletModal();
+                        } else if (n.link_action === 'vip') {
+                            panel.remove();
+                            if (typeof openVipModal === 'function') openVipModal();
+                        } else {
+                            panel.remove();
+                        }
+                    });
+                    panel.appendChild(item);
+                });
+            }
+            document.body.appendChild(panel);
+            setTimeout(function() {
+                document.addEventListener('click', function _closeNotif(ev) {
+                    if (!panel.contains(ev.target) && ev.target.id !== 'notifBellBtn') {
+                        panel.remove();
+                        document.removeEventListener('click', _closeNotif);
+                    }
+                });
+            }, 0);
         }
 
         window.addEventListener('beforeunload', function () {

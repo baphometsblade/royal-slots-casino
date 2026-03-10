@@ -1234,6 +1234,29 @@ var _STREAK_REWARDS_STATIC = {
     document.head.appendChild(s);
 })();
 
+(function _injectDailyMissionStyles() {
+    if (document.getElementById('dailyMissionCss')) return;
+    var s = document.createElement('style');
+    s.id = 'dailyMissionCss';
+    s.textContent =
+        '.dm-card{background:linear-gradient(145deg,rgba(10,10,30,.95),rgba(5,20,40,.98));' +
+        'border:1.5px solid rgba(99,102,241,.45);border-radius:16px;padding:18px 16px 14px;' +
+        'color:#e0e7ff;margin-bottom:16px;box-shadow:0 4px 24px rgba(99,102,241,.12);}' +
+        '.dm-title{font-size:15px;font-weight:900;color:#818cf8;text-align:center;margin-bottom:12px;letter-spacing:.3px;}' +
+        '.dm-mission{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,.03);}' +
+        '.dm-mission-info{flex:1;min-width:0;}' +
+        '.dm-mission-label{font-size:12px;color:#c7d2fe;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+        '.dm-mission-progress{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;}' +
+        '.dm-bar-track{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px;}' +
+        '.dm-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#6366f1,#818cf8);transition:width .4s;}' +
+        '.dm-claim-btn{flex-shrink:0;padding:5px 10px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;' +
+        'background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;}' +
+        '.dm-claim-btn:disabled{background:rgba(255,255,255,.1);color:rgba(255,255,255,.3);cursor:not-allowed;}' +
+        '.dm-claimed{flex-shrink:0;font-size:18px;}' +
+        '.dm-reward{font-size:10px;color:#a5b4fc;margin-top:2px;}';
+    document.head.appendChild(s);
+})();
+
 function _buildDepositStreakCardEl(data) {
     var streak         = (data && typeof data.streak === 'number')  ? data.streak  : 0;
     var nextDay        = (data && typeof data.nextDay === 'number') ? data.nextDay : 1;
@@ -1365,6 +1388,79 @@ function renderDepositStreakCard(container) {
 }
 
 
+async function renderDailyMissionsCard(container) {
+    if (!container) return;
+    if (document.getElementById('dailyMissionsCard')) return;
+
+    var token = typeof authToken !== 'undefined' ? authToken :
+                (localStorage.getItem('casinoToken') || null);
+    if (!token) return;
+
+    var card = document.createElement('div');
+    card.id = 'dailyMissionsCard';
+    card.className = 'dm-card';
+    card.innerHTML = '<div class="dm-title">🎯 Daily Missions</div><div id="dmMissionList"><div style="text-align:center;padding:8px;opacity:.5;font-size:12px;">Loading…</div></div>';
+    container.insertBefore(card, container.firstChild);
+
+    await _refreshDailyMissions(token);
+}
+
+async function _refreshDailyMissions(token) {
+    var list = document.getElementById('dmMissionList');
+    if (!list) return;
+    try {
+        var res = await fetch('/api/dailymissions', { headers: { Authorization: 'Bearer ' + token } });
+        if (!res.ok) { list.innerHTML = ''; return; }
+        var data = await res.json();
+        var missions = data.missions || [];
+        if (missions.length === 0) {
+            list.innerHTML = '<div style="text-align:center;padding:8px;opacity:.5;font-size:12px;">No missions today</div>';
+            return;
+        }
+        list.innerHTML = missions.map(function(m) {
+            var pct = m.target > 0 ? Math.min(100, Math.round((m.progress / m.target) * 100)) : 0;
+            var done = m.completed;
+            var claimed = m.claimed;
+            var rewardStr = m.reward_type === 'gems' ? m.reward_amount + '💎' :
+                            m.reward_type === 'credits' ? '$' + parseFloat(m.reward_amount).toFixed(2) : m.reward_amount;
+            return '<div class="dm-mission">' +
+                '<div class="dm-mission-info">' +
+                    '<div class="dm-mission-label">' + (m.label || 'Mission') + '</div>' +
+                    '<div class="dm-mission-progress">' + m.progress + ' / ' + m.target + (done ? ' ✓' : '') + '</div>' +
+                    '<div class="dm-bar-track"><div class="dm-bar-fill" style="width:' + pct + '%"></div></div>' +
+                    '<div class="dm-reward">Reward: ' + rewardStr + '</div>' +
+                '</div>' +
+                (claimed ? '<span class="dm-claimed">✅</span>' :
+                 done ? '<button class="dm-claim-btn" onclick="claimDailyMission(' + m.slot + ')">Claim</button>' :
+                        '<button class="dm-claim-btn" disabled>' + pct + '%</button>') +
+                '</div>';
+        }).join('');
+    } catch (e) {
+        list.innerHTML = '';
+    }
+}
+
+async function claimDailyMission(slot) {
+    var token = typeof authToken !== 'undefined' ? authToken :
+                (localStorage.getItem('casinoToken') || null);
+    if (!token) return;
+    try {
+        var res = await fetch('/api/dailymissions/claim/' + slot, {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        var data = await res.json();
+        if (data.success) {
+            var rewardMsg = data.reward_type === 'gems' ? data.reward_amount + ' gems!' :
+                            data.reward_type === 'credits' ? '$' + parseFloat(data.reward_amount).toFixed(2) + ' credits!' :
+                            'reward!';
+            if (typeof showToast === 'function') showToast('🎯 Mission complete! You earned ' + rewardMsg, 'win');
+            if (data.newBalance !== undefined && typeof saveBalance === 'function') saveBalance(data.newBalance);
+            await _refreshDailyMissions(token);
+        }
+    } catch (e) {}
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // 6. ENGINE INITIALISATION
 // ─────────────────────────────────────────────────────────────────────
@@ -1387,6 +1483,7 @@ function initPromoEngine() {
         var promosSidebar = document.querySelector('#csbDdPromos .csb-dd-body');
         if (promosSidebar) {
             renderDepositStreakCard(promosSidebar);
+            renderDailyMissionsCard(promosSidebar);
         }
     }, 4000);
 
