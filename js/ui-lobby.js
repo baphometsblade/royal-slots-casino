@@ -503,6 +503,7 @@ function renderGames() {
             initLuckyHourBanner();
             initHotGameHighlight();
             if (!window._loyaltyHookInit) { window._loyaltyHookInit = true; initLoyaltyEarnHook(); }
+            if (!window._socialProofInit) { window._socialProofInit = true; initSocialProofTicker(); }
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -4214,5 +4215,168 @@ function initLoyaltyEarnHook() {
             body: JSON.stringify({ spinsCount: 1 })
         }).catch(function() { /* fire and forget */ });
     });
+}
+
+
+// ── Social Proof Stats Ticker ───────────────────────────────────────────────
+function initSocialProofTicker() {
+    // Inject CSS once
+    if (!document.getElementById('social-proof-css')) {
+        var style = document.createElement('style');
+        style.id = 'social-proof-css';
+        style.textContent = [
+            '#social-proof-bar {',
+            '  display: flex;',
+            '  align-items: center;',
+            '  justify-content: center;',
+            '  gap: 20px;',
+            '  padding: 8px 16px;',
+            '  margin: 0 0 10px 0;',
+            '  background: rgba(0,0,0,0.45);',
+            '  border: 1px solid rgba(255,200,60,0.18);',
+            '  border-radius: 10px;',
+            '  font-size: 13px;',
+            '  color: rgba(255,255,255,0.85);',
+            '  letter-spacing: 0.02em;',
+            '  backdrop-filter: blur(6px);',
+            '  -webkit-backdrop-filter: blur(6px);',
+            '  overflow: hidden;',
+            '  flex-wrap: wrap;',
+            '}',
+            '#social-proof-bar .sp-stat {',
+            '  display: flex;',
+            '  align-items: center;',
+            '  gap: 5px;',
+            '  white-space: nowrap;',
+            '}',
+            '#social-proof-bar .sp-num {',
+            '  font-weight: 700;',
+            '  font-size: 14px;',
+            '  color: #ffd700;',
+            '  transition: opacity 0.4s ease;',
+            '  min-width: 30px;',
+            '  text-align: right;',
+            '}',
+            '#social-proof-bar .sp-num.sp-fade {',
+            '  opacity: 0;',
+            '}',
+            '#social-proof-bar .sp-dot {',
+            '  color: rgba(255,255,255,0.25);',
+            '  font-size: 10px;',
+            '  align-self: center;',
+            '}',
+            '@media (max-width: 480px) {',
+            '  #social-proof-bar { gap: 10px; font-size: 11px; }',
+            '  #social-proof-bar .sp-num { font-size: 12px; }',
+            '}'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // Create bar DOM if not already present
+    if (!document.getElementById('social-proof-bar')) {
+        var bar = document.createElement('div');
+        bar.id = 'social-proof-bar';
+
+        // Stat: online now
+        var statOnline = document.createElement('div');
+        statOnline.className = 'sp-stat';
+        var iconOnline = document.createElement('span');
+        iconOnline.textContent = '\uD83D\uDD25';
+        var numOnline = document.createElement('span');
+        numOnline.className = 'sp-num';
+        numOnline.id = 'sp-online';
+        numOnline.textContent = '...';
+        var labelOnline = document.createElement('span');
+        labelOnline.textContent = 'online now';
+        statOnline.appendChild(iconOnline);
+        statOnline.appendChild(numOnline);
+        statOnline.appendChild(labelOnline);
+
+        var dot1 = document.createElement('span');
+        dot1.className = 'sp-dot';
+        dot1.textContent = '\u00B7';
+
+        // Stat: spins today
+        var statSpins = document.createElement('div');
+        statSpins.className = 'sp-stat';
+        var iconSpins = document.createElement('span');
+        iconSpins.textContent = '\uD83C\uDFB0';
+        var numSpins = document.createElement('span');
+        numSpins.className = 'sp-num';
+        numSpins.id = 'sp-spins';
+        numSpins.textContent = '...';
+        var labelSpins = document.createElement('span');
+        labelSpins.textContent = 'spins today';
+        statSpins.appendChild(iconSpins);
+        statSpins.appendChild(numSpins);
+        statSpins.appendChild(labelSpins);
+
+        var dot2 = document.createElement('span');
+        dot2.className = 'sp-dot';
+        dot2.textContent = '\u00B7';
+
+        // Stat: members
+        var statMembers = document.createElement('div');
+        statMembers.className = 'sp-stat';
+        var iconMembers = document.createElement('span');
+        iconMembers.textContent = '\uD83D\uDC65';
+        var numMembers = document.createElement('span');
+        numMembers.className = 'sp-num';
+        numMembers.id = 'sp-members';
+        numMembers.textContent = '...';
+        var labelMembers = document.createElement('span');
+        labelMembers.textContent = 'members';
+        statMembers.appendChild(iconMembers);
+        statMembers.appendChild(numMembers);
+        statMembers.appendChild(labelMembers);
+
+        bar.appendChild(statOnline);
+        bar.appendChild(dot1);
+        bar.appendChild(statSpins);
+        bar.appendChild(dot2);
+        bar.appendChild(statMembers);
+
+        // Insert before #filterTabs
+        var filterTabs = document.getElementById('filterTabs');
+        if (filterTabs && filterTabs.parentNode) {
+            filterTabs.parentNode.insertBefore(bar, filterTabs);
+        }
+    }
+
+    // Fetch and update stats, with fade animation on number change
+    function _updateSocialProof() {
+        fetch('/api/socialproof')
+            .then(function(res) { return res.ok ? res.json() : null; })
+            .then(function(data) {
+                if (!data) return;
+                var elOnline  = document.getElementById('sp-online');
+                var elSpins   = document.getElementById('sp-spins');
+                var elMembers = document.getElementById('sp-members');
+                if (!elOnline || !elSpins || !elMembers) return;
+
+                // Fade out, update value, fade in
+                function _fadeUpdate(el, newVal) {
+                    el.classList.add('sp-fade');
+                    setTimeout(function() {
+                        el.textContent = newVal.toLocaleString();
+                        el.classList.remove('sp-fade');
+                    }, 420);
+                }
+
+                _fadeUpdate(elOnline,  data.onlineNow       || 0);
+                _fadeUpdate(elSpins,   data.spinsToday      || 0);
+                _fadeUpdate(elMembers, data.registeredUsers || 0);
+            })
+            .catch(function() { /* silently ignore — endpoint may not exist yet */ });
+    }
+
+    // Initial fetch
+    _updateSocialProof();
+
+    // Auto-refresh every 30 seconds
+    if (!window._socialProofInterval) {
+        window._socialProofInterval = setInterval(_updateSocialProof, 30000);
+    }
 }
 

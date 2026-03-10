@@ -1846,6 +1846,7 @@ function initPromoEngine() {
             renderBattlePassCard(promosSidebar);
             renderScratchCardCard(promosSidebar);
             renderCasinoPassCard(promosSidebar);
+            renderBoostCard(promosSidebar);
         }
     }, 4000);
 
@@ -2585,4 +2586,201 @@ async function claimBattlePassReward(level) {
             await _refreshBattlePass(token);
         }
     } catch (e) {}
+}
+
+// ─── Power Boosts card ────────────────────────────────────────────────────────
+
+async function renderBoostCard(container) {
+    if (!container) return;
+    if (document.getElementById('boostCard')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('boostCardStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'boostCardStyles';
+        styleEl.textContent = [
+            '.promo-boost-card { background: linear-gradient(135deg,#1a0a2e,#0d1a3a); border: 1px solid #6c3fc5; border-radius: 12px; padding: 14px; margin-bottom: 12px; }',
+            '.pbc-title { font-size: 1rem; font-weight: 700; color: #c084fc; margin-bottom: 10px; }',
+            '.pbc-loading { color: #8888aa; font-size: 0.85rem; }',
+            '.pbc-boost-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #2a1a4a; }',
+            '.pbc-boost-row:last-child { border-bottom: none; }',
+            '.pbc-boost-info { flex: 1; min-width: 0; }',
+            '.pbc-boost-name { font-size: 0.88rem; font-weight: 600; color: #e0d0ff; }',
+            '.pbc-boost-desc { font-size: 0.75rem; color: #9a87cc; margin-top: 1px; }',
+            '.pbc-boost-cost { font-size: 0.82rem; color: #a78bfa; white-space: nowrap; }',
+            '.pbc-active-badge { font-size: 0.75rem; background: #14532d; color: #86efac; border-radius: 6px; padding: 2px 7px; white-space: nowrap; }',
+            '.pbc-buy-btn { font-size: 0.78rem; background: #6c3fc5; color: #fff; border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }',
+            '.pbc-buy-btn:disabled { opacity: 0.5; cursor: default; }',
+            '.pbc-error { font-size: 0.78rem; color: #f87171; margin-top: 6px; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var card = document.createElement('div');
+    card.id = 'boostCard';
+    card.className = 'promo-card promo-boost-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'pbc-title';
+    titleEl.textContent = '\u26A1 Power Boosts';
+    card.appendChild(titleEl);
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'pbc-loading';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    container.appendChild(card);
+
+    // Fetch available boost definitions (no auth needed)
+    var availableBoosts = [];
+    try {
+        var availRes = await fetch('/api/boosts/available');
+        if (availRes.ok) {
+            var availData = await availRes.json();
+            availableBoosts = availData.boosts || [];
+        }
+    } catch (e) {
+        loadingEl.textContent = 'Could not load boosts.';
+        return;
+    }
+
+    // Fetch active boosts for the authenticated user (auth required)
+    var activeMap = {};
+    if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+        var authToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (authToken) {
+            try {
+                var activeRes = await fetch('/api/boosts', {
+                    headers: { Authorization: 'Bearer ' + authToken }
+                });
+                if (activeRes.ok) {
+                    var activeData = await activeRes.json();
+                    var activeBoosts = activeData.boosts || [];
+                    for (var ai = 0; ai < activeBoosts.length; ai++) {
+                        activeMap[activeBoosts[ai].type] = activeBoosts[ai];
+                    }
+                }
+            } catch (e) { /* silent — show purchase buttons anyway */ }
+        }
+    }
+
+    card.removeChild(loadingEl);
+
+    if (!availableBoosts.length) {
+        var emptyEl = document.createElement('div');
+        emptyEl.className = 'pbc-loading';
+        emptyEl.textContent = 'No boosts available right now.';
+        card.appendChild(emptyEl);
+        return;
+    }
+
+    // Build a row per boost
+    for (var bi = 0; bi < availableBoosts.length; bi++) {
+        (function(boost) {
+            var row = document.createElement('div');
+            row.className = 'pbc-boost-row';
+
+            var info = document.createElement('div');
+            info.className = 'pbc-boost-info';
+
+            var nameEl = document.createElement('div');
+            nameEl.className = 'pbc-boost-name';
+            nameEl.textContent = boost.name || boost.type;
+
+            var descEl = document.createElement('div');
+            descEl.className = 'pbc-boost-desc';
+            descEl.textContent = boost.desc || '';
+
+            info.appendChild(nameEl);
+            info.appendChild(descEl);
+            row.appendChild(info);
+
+            var costEl = document.createElement('div');
+            costEl.className = 'pbc-boost-cost';
+            costEl.textContent = String(boost.gemCost) + '\uD83D\uDC8E';
+            row.appendChild(costEl);
+
+            var activeBoost = activeMap[boost.type];
+
+            if (activeBoost) {
+                // Show active badge with time remaining
+                var badge = document.createElement('div');
+                badge.className = 'pbc-active-badge';
+                var remaining = '';
+                if (activeBoost.expiresAt) {
+                    var msLeft = new Date(activeBoost.expiresAt).getTime() - Date.now();
+                    if (msLeft > 0) {
+                        var minsLeft = Math.ceil(msLeft / 60000);
+                        if (minsLeft >= 60) {
+                            remaining = ' (' + Math.floor(minsLeft / 60) + 'h ' + (minsLeft % 60) + 'm)';
+                        } else {
+                            remaining = ' (' + String(minsLeft) + 'm)';
+                        }
+                    }
+                }
+                badge.textContent = '\u2705 Active' + remaining;
+                row.appendChild(badge);
+            } else {
+                // Show purchase button
+                var buyBtn = document.createElement('button');
+                buyBtn.className = 'pbc-buy-btn';
+                buyBtn.textContent = 'Purchase';
+
+                buyBtn.addEventListener('click', function() {
+                    if (!isServerAuthToken || !isServerAuthToken()) {
+                        if (typeof showToast === 'function') showToast('Please log in to purchase boosts.', 'info');
+                        return;
+                    }
+                    var tok = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                    if (!tok) {
+                        if (typeof showToast === 'function') showToast('Please log in to purchase boosts.', 'info');
+                        return;
+                    }
+
+                    buyBtn.disabled = true;
+                    buyBtn.textContent = 'Purchasing\u2026';
+
+                    // Remove any prior error
+                    var prevErr = row.querySelector('.pbc-error');
+                    if (prevErr) row.removeChild(prevErr);
+
+                    fetch('/api/boosts/purchase', {
+                        method: 'POST',
+                        headers: {
+                            Authorization: 'Bearer ' + tok,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ boostType: boost.type })
+                    }).then(function(r) { return r.json(); }).then(function(d) {
+                        if (d.success) {
+                            buyBtn.textContent = '\u2705 Active';
+                            buyBtn.disabled = true;
+                            if (typeof showToast === 'function') {
+                                showToast('\u26A1 ' + (boost.name || boost.type) + ' activated!', 'win');
+                            }
+                        } else {
+                            buyBtn.disabled = false;
+                            buyBtn.textContent = 'Purchase';
+                            var errEl = document.createElement('div');
+                            errEl.className = 'pbc-error';
+                            errEl.textContent = d.error || 'Purchase failed. Check gem balance.';
+                            row.appendChild(errEl);
+                        }
+                    }).catch(function() {
+                        buyBtn.disabled = false;
+                        buyBtn.textContent = 'Purchase';
+                        var errEl = document.createElement('div');
+                        errEl.className = 'pbc-error';
+                        errEl.textContent = 'Network error. Please try again.';
+                        row.appendChild(errEl);
+                    });
+                });
+
+                row.appendChild(buyBtn);
+            }
+
+            card.appendChild(row);
+        })(availableBoosts[bi]);
+    }
 }
