@@ -558,8 +558,8 @@ async function submitDeposit() {
             method: 'POST',
             body: {
                 amount,
-                payment_type: paymentType,
-                saved_method_id: savedMethodId ? parseInt(savedMethodId, 10) : undefined
+                paymentType,
+                paymentMethodId: savedMethodId ? parseInt(savedMethodId, 10) : undefined
             },
             requireAuth: true
         });
@@ -756,7 +756,7 @@ async function submitWithdrawal() {
     try {
         const res = await apiRequest('/api/payment/withdraw', {
             method: 'POST',
-            body: { amount, payment_type: paymentType },
+            body: { amount, paymentType },
             requireAuth: true
         });
 
