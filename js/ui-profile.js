@@ -892,7 +892,8 @@ const PROFILE_TABS = [
     { id: 'gifts',        icon: '\u{1F381}', label: 'Gifts' },
     { id: 'milestones',   icon: '\u{1F3C6}', label: 'Milestones' },
     { id: 'achievements', icon: '\u{1F396}\uFE0F', label: 'Achievements' },
-    { id: 'referral',     icon: '\u{1F465}', label: 'Referral' }
+    { id: 'referral',     icon: '\u{1F465}', label: 'Referral' },
+    { id: 'cosmetics',    icon: '\u{1F3A8}', label: 'Cosmetics' }
 ];
 
 function renderProfileSidebar() {
@@ -991,6 +992,7 @@ function renderProfileContent() {
         case 'milestones':    renderMilestonesTab(); break;
         case 'achievements':  renderAchievementsTab(); break;
         case 'referral':      renderReferralTab(); break;
+        case 'cosmetics':     renderCosmeticsTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -3666,5 +3668,473 @@ function renderReferralTab() {
         errDiv.style.cssText = 'color:#f87171;text-align:center;padding:20px;font-size:13px;';
         errDiv.textContent = 'Failed to load referral info. Please try again later.';
         el.appendChild(errDiv);
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// COSMETICS TAB — CSS (injected once)
+// ═══════════════════════════════════════════════════════
+
+function injectGiftsCosmeticsCss() {
+    if (document.getElementById('profile-gc-css')) return;
+    var style = document.createElement('style');
+    style.id = 'profile-gc-css';
+    style.textContent = [
+        '.cosmetics-subtabs { display:flex; gap:6px; margin-bottom:18px; }',
+        '.cosmetics-subtab-btn {',
+        '  flex:1; padding:8px 0; border:1px solid rgba(168,85,247,0.35);',
+        '  border-radius:8px; background:rgba(88,28,135,0.25); color:#c4b5fd;',
+        '  font-size:13px; font-weight:600; cursor:pointer; transition:background 0.18s,color 0.18s;',
+        '}',
+        '.cosmetics-subtab-btn.active {',
+        '  background:linear-gradient(135deg,rgba(126,34,206,0.75),rgba(88,28,135,0.85));',
+        '  color:#f3e8ff; border-color:rgba(168,85,247,0.7);',
+        '}',
+        '.cosmetics-subtab-btn:hover:not(.active) { background:rgba(88,28,135,0.45); }',
+        '.cosmetics-panel { display:none; }',
+        '.cosmetics-panel.active { display:block; }',
+        '.cosmetics-shop-section { margin-bottom:22px; }',
+        '.cosmetics-shop-section-title {',
+        '  font-size:11px; font-weight:700; letter-spacing:1.2px; color:#a78bfa;',
+        '  text-transform:uppercase; margin-bottom:12px;',
+        '}',
+        '.cosmetics-shop-grid {',
+        '  display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px;',
+        '}',
+        '.cosmetics-item-card {',
+        '  background:linear-gradient(135deg,rgba(88,28,135,0.35) 0%,rgba(49,10,101,0.55) 100%);',
+        '  border:1px solid rgba(168,85,247,0.30); border-radius:12px;',
+        '  padding:14px 12px; display:flex; flex-direction:column; gap:8px;',
+        '  position:relative; transition:border-color 0.18s;',
+        '}',
+        '.cosmetics-item-card:hover { border-color:rgba(168,85,247,0.65); }',
+        '.cosmetics-item-name { font-size:13px; font-weight:700; color:#e2e8f0; line-height:1.3; }',
+        '.cosmetics-item-badges { display:flex; flex-wrap:wrap; gap:4px; }',
+        '.cosmetics-item-price {',
+        '  font-size:13px; font-weight:800; color:#c4b5fd; margin-top:auto;',
+        '}',
+        '.badge-limited {',
+        '  display:inline-block; font-size:9px; font-weight:800; letter-spacing:0.8px;',
+        '  text-transform:uppercase; padding:2px 7px; border-radius:20px;',
+        '  background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.4);',
+        '}',
+        '.badge-rarity-common {',
+        '  display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.6px;',
+        '  text-transform:uppercase; padding:2px 7px; border-radius:20px;',
+        '  background:rgba(100,116,139,0.2); color:#94a3b8; border:1px solid rgba(100,116,139,0.35);',
+        '}',
+        '.badge-rarity-rare {',
+        '  display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.6px;',
+        '  text-transform:uppercase; padding:2px 7px; border-radius:20px;',
+        '  background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4);',
+        '}',
+        '.badge-rarity-epic {',
+        '  display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.6px;',
+        '  text-transform:uppercase; padding:2px 7px; border-radius:20px;',
+        '  background:rgba(168,85,247,0.2); color:#d8b4fe; border:1px solid rgba(168,85,247,0.4);',
+        '}',
+        '.badge-rarity-legendary {',
+        '  display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.6px;',
+        '  text-transform:uppercase; padding:2px 7px; border-radius:20px;',
+        '  background:rgba(234,179,8,0.2); color:#fde047; border:1px solid rgba(234,179,8,0.5);',
+        '}',
+        '.cosmetics-buy-btn {',
+        '  width:100%; padding:8px 0; border:none; border-radius:8px;',
+        '  background:linear-gradient(135deg,#7c3aed,#5b21b6);',
+        '  color:#fff; font-size:12px; font-weight:700; cursor:pointer; transition:opacity 0.18s;',
+        '}',
+        '.cosmetics-buy-btn:disabled { opacity:0.45; cursor:default; }',
+        '.cosmetics-buy-btn:hover:not(:disabled) { opacity:0.84; }',
+        '.cosmetics-buy-btn.owned {',
+        '  background:rgba(34,197,94,0.15); color:#86efac;',
+        '  border:1px solid rgba(34,197,94,0.3); cursor:default;',
+        '}',
+        '.cosmetics-equip-btn {',
+        '  width:100%; padding:8px 0; border:none; border-radius:8px;',
+        '  background:linear-gradient(135deg,#0284c7,#0369a1);',
+        '  color:#fff; font-size:12px; font-weight:700; cursor:pointer; transition:opacity 0.18s;',
+        '}',
+        '.cosmetics-equip-btn:disabled { opacity:0.45; cursor:default; }',
+        '.cosmetics-equip-btn.equipped {',
+        '  background:rgba(34,197,94,0.15); color:#86efac;',
+        '  border:1px solid rgba(34,197,94,0.3); cursor:default;',
+        '}',
+        '.cosmetics-equip-btn:hover:not(:disabled):not(.equipped) { opacity:0.84; }',
+        '.cosmetics-empty {',
+        '  text-align:center; color:#94a3b8; font-size:13px; padding:32px 0;',
+        '}'
+    ].join('\n');
+    document.head.appendChild(style);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// COSMETICS TAB
+// ═══════════════════════════════════════════════════════
+
+function renderCosmeticsTab() {
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    injectGiftsCosmeticsCss();
+
+    var header = document.createElement('h2');
+    header.className = 'profile-section-title';
+    header.textContent = 'Cosmetics';
+    el.appendChild(header);
+
+    // Sub-tab bar: Shop / Inventory
+    var subTabBar = document.createElement('div');
+    subTabBar.className = 'cosmetics-subtabs';
+
+    var shopBtn = document.createElement('button');
+    shopBtn.className = 'cosmetics-subtab-btn active';
+    shopBtn.textContent = '\uD83D\uDED2 Shop';
+    shopBtn.setAttribute('data-ctab', 'shop');
+    subTabBar.appendChild(shopBtn);
+
+    var invBtn = document.createElement('button');
+    invBtn.className = 'cosmetics-subtab-btn';
+    invBtn.textContent = '\uD83C\uDF92 Inventory';
+    invBtn.setAttribute('data-ctab', 'inventory');
+    subTabBar.appendChild(invBtn);
+
+    el.appendChild(subTabBar);
+
+    // Panels
+    var shopPanel = document.createElement('div');
+    shopPanel.className = 'cosmetics-panel active';
+    shopPanel.setAttribute('data-cpanel', 'shop');
+    el.appendChild(shopPanel);
+
+    var invPanel = document.createElement('div');
+    invPanel.className = 'cosmetics-panel';
+    invPanel.setAttribute('data-cpanel', 'inventory');
+    el.appendChild(invPanel);
+
+    function _switchCosmeticsTab(tabId) {
+        subTabBar.querySelectorAll('.cosmetics-subtab-btn').forEach(function(b) {
+            b.className = 'cosmetics-subtab-btn' + (b.getAttribute('data-ctab') === tabId ? ' active' : '');
+        });
+        el.querySelectorAll('.cosmetics-panel').forEach(function(p) {
+            p.className = 'cosmetics-panel' + (p.getAttribute('data-cpanel') === tabId ? ' active' : '');
+        });
+        if (tabId === 'shop') _cosmeticsLoadShop(shopPanel);
+        if (tabId === 'inventory') _cosmeticsLoadInventory(invPanel);
+    }
+
+    shopBtn.addEventListener('click', function() { _switchCosmeticsTab('shop'); });
+    invBtn.addEventListener('click', function() { _switchCosmeticsTab('inventory'); });
+
+    // Load shop by default
+    _cosmeticsLoadShop(shopPanel);
+}
+
+
+// ── Cosmetics: load shop ─────────────────────────────────
+
+function _cosmeticsLoadShop(panel) {
+    panel.textContent = '';
+
+    var spinner = document.createElement('div');
+    spinner.className = 'profile-loading';
+    var sp = document.createElement('div');
+    sp.className = 'profile-spinner';
+    spinner.appendChild(sp);
+    panel.appendChild(spinner);
+
+    // Fetch shop (public) and inventory (auth, optional) in parallel
+    var token = null;
+    if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+        token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    }
+
+    var shopPromise = fetch('/api/cosmetics/shop').then(function(r) { return r.json(); });
+    var invPromise = token
+        ? fetch('/api/cosmetics/inventory', { headers: { 'Authorization': 'Bearer ' + token } }).then(function(r) { return r.json(); })
+        : Promise.resolve({ inventory: [] });
+
+    Promise.all([shopPromise, invPromise]).then(function(results) {
+        var shopData = results[0];
+        var invData = results[1];
+        panel.textContent = '';
+
+        var shop = (shopData && shopData.shop) ? shopData.shop : {};
+        var inventory = (invData && Array.isArray(invData.inventory)) ? invData.inventory : [];
+
+        // Build a set of owned item IDs for quick lookup
+        var ownedIds = {};
+        inventory.forEach(function(it) { ownedIds[it.item_id] = it; });
+
+        var categories = [
+            { key: 'avatarFrames',  label: 'Avatar Frames' },
+            { key: 'cardThemes',    label: 'Card Themes' },
+            { key: 'spinEffects',   label: 'Spin Effects' }
+        ];
+
+        var hasAny = false;
+
+        categories.forEach(function(cat) {
+            var items = (Array.isArray(shop[cat.key])) ? shop[cat.key] : [];
+            if (items.length === 0) return;
+            hasAny = true;
+
+            var section = document.createElement('div');
+            section.className = 'cosmetics-shop-section';
+
+            var sectionTitle = document.createElement('div');
+            sectionTitle.className = 'cosmetics-shop-section-title';
+            sectionTitle.textContent = cat.label;
+            section.appendChild(sectionTitle);
+
+            var grid = document.createElement('div');
+            grid.className = 'cosmetics-shop-grid';
+
+            items.forEach(function(item) {
+                var card = document.createElement('div');
+                card.className = 'cosmetics-item-card';
+
+                var nameEl = document.createElement('div');
+                nameEl.className = 'cosmetics-item-name';
+                nameEl.textContent = item.name || item.id;
+                card.appendChild(nameEl);
+
+                var badgeRow = document.createElement('div');
+                badgeRow.className = 'cosmetics-item-badges';
+
+                // Rarity badge
+                var rarity = (item.rarity || 'common').toLowerCase();
+                var rarityBadge = document.createElement('span');
+                rarityBadge.className = 'badge-rarity-' + rarity;
+                rarityBadge.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+                badgeRow.appendChild(rarityBadge);
+
+                // Limited badge
+                if (item.is_limited) {
+                    var limitedBadge = document.createElement('span');
+                    limitedBadge.className = 'badge-limited';
+                    limitedBadge.textContent = item.limited_label || 'Limited';
+                    badgeRow.appendChild(limitedBadge);
+                }
+
+                card.appendChild(badgeRow);
+
+                var priceEl = document.createElement('div');
+                priceEl.className = 'cosmetics-item-price';
+                priceEl.textContent = '\uD83D\uDC8E ' + (item.gem_price !== undefined ? item.gem_price : '?');
+                card.appendChild(priceEl);
+
+                var buyBtn = document.createElement('button');
+                var isOwned = Boolean(ownedIds[item.id]);
+
+                if (isOwned) {
+                    buyBtn.className = 'cosmetics-buy-btn owned';
+                    buyBtn.textContent = '\u2713 Owned';
+                    buyBtn.disabled = true;
+                } else {
+                    buyBtn.className = 'cosmetics-buy-btn';
+                    buyBtn.textContent = 'Buy';
+                    buyBtn.addEventListener('click', function() {
+                        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+                            if (typeof showToast === 'function') showToast('Please log in to purchase items.');
+                            return;
+                        }
+                        var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                        if (!currentToken) return;
+
+                        buyBtn.disabled = true;
+                        buyBtn.textContent = 'Buying\u2026';
+
+                        fetch('/api/cosmetics/purchase', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+                            body: JSON.stringify({ itemId: item.id })
+                        }).then(function(res) { return res.json(); }).then(function(data) {
+                            if (data && data.success) {
+                                buyBtn.className = 'cosmetics-buy-btn owned';
+                                buyBtn.textContent = '\u2713 Owned';
+                                buyBtn.disabled = true;
+                                ownedIds[item.id] = { item_id: item.id, category: cat.key, equipped: false };
+                                if (typeof showToast === 'function') showToast('Purchased! \uD83C\uDF89');
+                            } else {
+                                var errMsg = (data && data.error) ? data.error : 'Purchase failed.';
+                                if (errMsg === 'already own') errMsg = 'Already owned';
+                                if (errMsg === 'Not enough gems') errMsg = 'Need more gems \uD83D\uDC8E';
+                                if (typeof showToast === 'function') showToast(errMsg);
+                                buyBtn.disabled = false;
+                                buyBtn.textContent = 'Buy';
+                            }
+                        }).catch(function() {
+                            if (typeof showToast === 'function') showToast('Network error. Please try again.');
+                            buyBtn.disabled = false;
+                            buyBtn.textContent = 'Buy';
+                        });
+                    });
+                }
+
+                card.appendChild(buyBtn);
+                grid.appendChild(card);
+            });
+
+            section.appendChild(grid);
+            panel.appendChild(section);
+        });
+
+        if (!hasAny) {
+            var emptyEl = document.createElement('div');
+            emptyEl.className = 'cosmetics-empty';
+            emptyEl.textContent = 'No items available in the shop right now.';
+            panel.appendChild(emptyEl);
+        }
+
+    }).catch(function() {
+        panel.textContent = '';
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171;text-align:center;padding:24px;font-size:13px;';
+        errDiv.textContent = 'Failed to load shop. Please try again later.';
+        panel.appendChild(errDiv);
+    });
+}
+
+
+// ── Cosmetics: load inventory ────────────────────────────
+
+function _cosmeticsLoadInventory(panel) {
+    panel.textContent = '';
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        var authMsg = document.createElement('div');
+        authMsg.className = 'cosmetics-empty';
+        authMsg.textContent = 'Please log in to view your inventory.';
+        panel.appendChild(authMsg);
+        return;
+    }
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var spinner = document.createElement('div');
+    spinner.className = 'profile-loading';
+    var sp = document.createElement('div');
+    sp.className = 'profile-spinner';
+    spinner.appendChild(sp);
+    panel.appendChild(spinner);
+
+    // Fetch inventory + shop (for item names/details)
+    var invPromise = fetch('/api/cosmetics/inventory', { headers: { 'Authorization': 'Bearer ' + token } }).then(function(r) { return r.json(); });
+    var shopPromise = fetch('/api/cosmetics/shop').then(function(r) { return r.json(); });
+
+    Promise.all([invPromise, shopPromise]).then(function(results) {
+        var invData = results[0];
+        var shopData = results[1];
+        panel.textContent = '';
+
+        var inventory = (invData && Array.isArray(invData.inventory)) ? invData.inventory : [];
+
+        if (inventory.length === 0) {
+            var emptyEl = document.createElement('div');
+            emptyEl.className = 'cosmetics-empty';
+            emptyEl.textContent = 'You don\'t own any cosmetics yet. Visit the Shop!';
+            panel.appendChild(emptyEl);
+            return;
+        }
+
+        // Build item detail lookup from shop data
+        var itemDetails = {};
+        var shop = (shopData && shopData.shop) ? shopData.shop : {};
+        var allShopItems = [].concat(
+            Array.isArray(shop.avatarFrames) ? shop.avatarFrames : [],
+            Array.isArray(shop.cardThemes) ? shop.cardThemes : [],
+            Array.isArray(shop.spinEffects) ? shop.spinEffects : []
+        );
+        allShopItems.forEach(function(it) { itemDetails[it.id] = it; });
+
+        var grid = document.createElement('div');
+        grid.className = 'cosmetics-shop-grid';
+
+        inventory.forEach(function(owned) {
+            var detail = itemDetails[owned.item_id] || {};
+            var card = document.createElement('div');
+            card.className = 'cosmetics-item-card';
+
+            var nameEl = document.createElement('div');
+            nameEl.className = 'cosmetics-item-name';
+            nameEl.textContent = detail.name || owned.item_id;
+            card.appendChild(nameEl);
+
+            var catEl = document.createElement('div');
+            catEl.style.cssText = 'font-size:11px;color:#94a3b8;';
+            // Humanise category
+            var catMap = { avatarFrames: 'Avatar Frame', cardThemes: 'Card Theme', spinEffects: 'Spin Effect' };
+            catEl.textContent = catMap[owned.category] || owned.category || 'Item';
+            card.appendChild(catEl);
+
+            if (detail.rarity) {
+                var rarity = detail.rarity.toLowerCase();
+                var rarityBadge = document.createElement('span');
+                rarityBadge.className = 'badge-rarity-' + rarity;
+                rarityBadge.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+                card.appendChild(rarityBadge);
+            }
+
+            var equipBtn = document.createElement('button');
+            if (owned.equipped) {
+                equipBtn.className = 'cosmetics-equip-btn equipped';
+                equipBtn.textContent = '\u2713 Equipped';
+                equipBtn.disabled = true;
+            } else {
+                equipBtn.className = 'cosmetics-equip-btn';
+                equipBtn.textContent = 'Equip';
+                equipBtn.addEventListener('click', function() {
+                    var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                    if (!currentToken) return;
+
+                    equipBtn.disabled = true;
+                    equipBtn.textContent = 'Equipping\u2026';
+
+                    fetch('/api/cosmetics/equip', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+                        body: JSON.stringify({ itemId: owned.item_id })
+                    }).then(function(res) { return res.json(); }).then(function(data) {
+                        if (data && data.success) {
+                            // Mark previously equipped items in same category as unequipped in UI
+                            grid.querySelectorAll('.cosmetics-equip-btn.equipped').forEach(function(b) {
+                                b.className = 'cosmetics-equip-btn';
+                                b.textContent = 'Equip';
+                                b.disabled = false;
+                            });
+                            equipBtn.className = 'cosmetics-equip-btn equipped';
+                            equipBtn.textContent = '\u2713 Equipped';
+                            equipBtn.disabled = true;
+                            owned.equipped = true;
+                            if (typeof showToast === 'function') showToast('Equipped!');
+                        } else {
+                            var errMsg = (data && data.error) ? data.error : 'Equip failed.';
+                            if (typeof showToast === 'function') showToast(errMsg);
+                            equipBtn.disabled = false;
+                            equipBtn.textContent = 'Equip';
+                        }
+                    }).catch(function() {
+                        if (typeof showToast === 'function') showToast('Network error. Please try again.');
+                        equipBtn.disabled = false;
+                        equipBtn.textContent = 'Equip';
+                    });
+                });
+            }
+
+            card.appendChild(equipBtn);
+            grid.appendChild(card);
+        });
+
+        panel.appendChild(grid);
+
+    }).catch(function() {
+        panel.textContent = '';
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171;text-align:center;padding:24px;font-size:13px;';
+        errDiv.textContent = 'Failed to load inventory. Please try again later.';
+        panel.appendChild(errDiv);
     });
 }

@@ -90,6 +90,10 @@ function showWalletModal() {
     _renderDepositMatchSection(modal);
     // Render the Rakeback card section below Deposit Match
     _renderRakebackSection(modal);
+    // Render the Daily Cashback card section below Rakeback
+    _renderDailyCashbackSection(modal);
+    // Render the Loyalty Shop card section below Daily Cashback
+    _renderLoyaltyShopSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -2427,4 +2431,560 @@ async function _renderRakebackSection(modal) {
             card.appendChild(row);
         });
     }
+}
+
+// ── Daily Cashback CSS (injected once) ────────────────────────────────────────
+(function _injectDailyCashbackCSS() {
+    if (document.getElementById('walletDailyCashbackCSS')) return;
+    var s = document.createElement('style');
+    s.id = 'walletDailyCashbackCSS';
+    s.textContent = [
+        '#wallet-cashback-section{background:linear-gradient(135deg,rgba(249,115,22,0.10),rgba(234,88,12,0.05));border:1.5px solid rgba(249,115,22,0.28);border-radius:14px;padding:16px 18px;margin:12px 0;}',
+        '.cashback-eligible-box{background:rgba(34,197,94,0.10);border-left:3px solid #22c55e;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:0.82rem;color:#bbf7d0;}',
+        '.cashback-claimed-box{background:rgba(156,163,175,0.08);border-left:3px solid #6b7280;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:0.82rem;color:#9ca3af;}',
+        '.cashback-inactive-box{background:rgba(107,114,128,0.06);border-left:3px solid rgba(107,114,128,0.3);border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:0.82rem;color:#9ca3af;}',
+        '.cashback-tier-table{width:100%;border-collapse:collapse;font-size:0.72rem;margin-top:10px;}',
+        '.cashback-tier-table th{color:#9ca3af;font-weight:600;text-align:left;padding:3px 4px;border-bottom:1px solid rgba(249,115,22,0.15);}',
+        '.cashback-tier-table td{color:#d1d5db;padding:3px 4px;border-bottom:1px solid rgba(249,115,22,0.08);}',
+        '.cashback-tier-table tr.cb-current-tier td{color:#fb923c;font-weight:700;}',
+        '#wallet-loyalty-shop-section{background:linear-gradient(135deg,rgba(52,211,153,0.10),rgba(16,185,129,0.05));border:1.5px solid rgba(52,211,153,0.28);border-radius:14px;padding:16px 18px;margin:12px 0;}',
+        '.loyalty-pts-display{font-size:2rem;font-weight:900;color:#a7f3d0;line-height:1;display:block;margin-bottom:2px;}',
+        '.loyalty-pts-sub{font-size:0.72rem;color:#6ee7b7;opacity:0.65;margin-bottom:12px;display:block;}',
+        '.loyalty-redeem-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}',
+        '.loyalty-redeem-btns button{flex:1 1 auto;min-width:110px;padding:7px 10px;border:none;border-radius:8px;font-size:0.74rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#34d399,#059669);color:#fff;letter-spacing:0.2px;transition:opacity 0.2s;}',
+        '.loyalty-custom-redeem{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}',
+        '.loyalty-custom-redeem input{flex:1 1 100px;padding:7px 10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:8px;color:#a7f3d0;font-size:0.82rem;min-width:80px;}',
+        '.loyalty-custom-redeem button{padding:7px 14px;border:none;border-radius:8px;font-size:0.8rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#34d399,#059669);color:#fff;white-space:nowrap;}'
+    ].join('');
+    document.head.appendChild(s);
+})();
+
+/**
+ * Renders the Daily Cashback card in the wallet modal.
+ * Shows VIP tier, eligibility, claim button, and tier rate table.
+ * All dynamic text uses .textContent — no innerHTML with variables.
+ * @param {HTMLElement} modal  The #walletModal element
+ */
+async function _renderDailyCashbackSection(modal) {
+    if (!modal) return;
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var walletInner = modal.querySelector('.wallet-modal');
+    if (!walletInner) walletInner = modal;
+
+    // Find or create the persistent wrapper placed after the rakeback wrapper
+    var wrapper = walletInner.querySelector('#walletDailyCashbackCardWrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = 'walletDailyCashbackCardWrapper';
+        wrapper.style.cssText = 'padding:0 16px 0 16px;';
+        // Insert after rakeback wrapper if present, else before walletContent
+        var rakeWrapper = walletInner.querySelector('#walletRakebackCardWrapper');
+        var walletContentEl = walletInner.querySelector('#walletContent');
+        if (rakeWrapper && rakeWrapper.nextSibling) {
+            walletInner.insertBefore(wrapper, rakeWrapper.nextSibling);
+        } else if (walletContentEl) {
+            walletInner.insertBefore(wrapper, walletContentEl);
+        } else {
+            walletInner.appendChild(wrapper);
+        }
+    }
+
+    // Remove any existing card for full re-render
+    var existingCard = wrapper.querySelector('#wallet-cashback-section');
+    if (existingCard) existingCard.remove();
+
+    // Build card shell
+    var card = document.createElement('div');
+    card.id = 'wallet-cashback-section';
+
+    // ── Header row ──
+    var titleRow = document.createElement('div');
+    titleRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+
+    var title = document.createElement('span');
+    title.style.cssText = 'font-size:1rem;font-weight:800;color:#fb923c;letter-spacing:0.3px;';
+    title.textContent = '\uD83D\uDCB8 Daily Cashback';
+
+    var subNote = document.createElement('span');
+    subNote.style.cssText = 'font-size:0.72rem;color:#fdba74;opacity:0.8;';
+    subNote.textContent = '2\u201310% of net losses';
+
+    titleRow.appendChild(title);
+    titleRow.appendChild(subNote);
+    card.appendChild(titleRow);
+
+    // Loading state
+    var loadingEl = document.createElement('div');
+    loadingEl.style.cssText = 'color:#fdba74;font-size:0.82rem;opacity:0.7;margin-bottom:8px;';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    wrapper.appendChild(card);
+
+    // ── Fetch status ──
+    var data = null;
+    try {
+        var resp = await fetch('/api/dailycashback/status', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) data = await resp.json();
+    } catch (_e) {}
+
+    // Remove loading placeholder
+    if (loadingEl.parentNode) loadingEl.remove();
+
+    if (!data) {
+        var errEl = document.createElement('div');
+        errEl.style.cssText = 'color:#f87171;font-size:0.82rem;';
+        errEl.textContent = 'Could not load cashback data.';
+        card.appendChild(errEl);
+        return;
+    }
+
+    var eligible = !!data.eligible;
+    var claimed  = !!data.claimed;
+    var amount   = parseFloat(data.amount) || 0;
+    var netLosses = parseFloat(data.netLosses) || 0;
+    var vipLabel = data.vipLabel || 'Base';
+    var cashbackRate = parseFloat(data.cashbackRate) || 0;
+    var cashbackCap  = parseFloat(data.cashbackCap) || 0;
+    var vipLevel = parseInt(data.vipLevel, 10) || 0;
+
+    // ── VIP badge ──
+    var vipBadge = document.createElement('span');
+    vipBadge.style.cssText = 'display:inline-block;font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:20px;margin-bottom:10px;background:rgba(249,115,22,0.18);color:#fb923c;border:1px solid rgba(249,115,22,0.35);';
+    vipBadge.textContent = vipLabel + ' \u2014 ' + Math.round(cashbackRate * 100) + '% cashback (up to $' + cashbackCap.toFixed(2) + ')';
+    card.appendChild(vipBadge);
+
+    if (claimed) {
+        // ── Claimed / cooldown state ──
+        var claimedBox = document.createElement('div');
+        claimedBox.className = 'cashback-claimed-box';
+
+        var claimedTitle = document.createElement('div');
+        claimedTitle.style.cssText = 'font-weight:700;margin-bottom:4px;color:#9ca3af;';
+        claimedTitle.textContent = '\u2713 Daily Cashback Claimed';
+        claimedBox.appendChild(claimedTitle);
+
+        // Compute next-eligible countdown from claimedAt + 24 h
+        if (data.claimedAt) {
+            var claimedAt = new Date(data.claimedAt);
+            var nextAt = new Date(claimedAt.getTime() + 24 * 3600 * 1000);
+            var nowMs  = Date.now();
+            var diffMs = nextAt - nowMs;
+            var countdownEl = document.createElement('div');
+            countdownEl.style.cssText = 'font-size:0.78rem;color:#9ca3af;';
+            if (diffMs > 0) {
+                var diffH = Math.floor(diffMs / 3600000);
+                var diffM = Math.floor((diffMs % 3600000) / 60000);
+                countdownEl.textContent = 'Next cashback in ' + diffH + 'h ' + diffM + 'm';
+            } else {
+                countdownEl.textContent = 'Next cashback available now \u2014 refresh to claim.';
+            }
+            claimedBox.appendChild(countdownEl);
+        }
+
+        card.appendChild(claimedBox);
+
+    } else if (eligible && amount > 0) {
+        // ── Eligible / available state ──
+        var eligibleBox = document.createElement('div');
+        eligibleBox.className = 'cashback-eligible-box';
+
+        var eligMsg = document.createElement('div');
+        eligMsg.style.cssText = 'font-weight:700;margin-bottom:4px;color:#4ade80;font-size:0.88rem;';
+        eligMsg.textContent = '\uD83D\uDCB0 Claim Your Cashback!';
+        eligibleBox.appendChild(eligMsg);
+
+        var eligDetail = document.createElement('div');
+        eligDetail.style.cssText = 'font-size:0.8rem;color:#86efac;';
+        var detailAmtStr = '$' + amount.toFixed(2);
+        var detailPctStr = Math.round(cashbackRate * 100) + '%';
+        var detailLossStr = '$' + netLosses.toFixed(2);
+        eligDetail.textContent = detailAmtStr + ' available (' + detailPctStr + ' of ' + detailLossStr + ' losses)';
+        eligibleBox.appendChild(eligDetail);
+
+        card.appendChild(eligibleBox);
+
+        var claimBtn = document.createElement('button');
+        claimBtn.style.cssText = [
+            'width:100%',
+            'padding:10px',
+            'background:linear-gradient(135deg,#f97316,#ea580c)',
+            'color:#fff',
+            'font-weight:800',
+            'border-radius:8px',
+            'border:none',
+            'cursor:pointer',
+            'font-size:0.88rem',
+            'margin-bottom:10px',
+            'letter-spacing:0.3px'
+        ].join(';');
+        claimBtn.textContent = 'Claim $' + amount.toFixed(2) + ' Cashback';
+
+        claimBtn.addEventListener('click', function() {
+            var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!claimToken) return;
+            claimBtn.disabled = true;
+            claimBtn.style.opacity = '0.6';
+
+            fetch('/api/dailycashback/claim', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + claimToken, 'Content-Type': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    var credited = parseFloat(result.credited) || 0;
+                    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(result.newBalance);
+                    else if (typeof balance !== 'undefined') balance = result.newBalance;
+                    if (typeof showToast === 'function') {
+                        showToast('\uD83D\uDCB8 $' + credited.toFixed(2) + ' cashback credited!', 'win', 4000);
+                    }
+                    refreshCashbackBalance();
+                    // Re-render section to show claimed state
+                    var walletModalEl = document.getElementById('walletModal');
+                    if (walletModalEl) _renderDailyCashbackSection(walletModalEl);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(result.error || 'Cashback not available', 'info', 3000);
+                    }
+                    claimBtn.disabled = false;
+                    claimBtn.style.opacity = '1';
+                }
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') {
+                    showToast('Claim failed \u2014 please try again.', 'error', 3000);
+                }
+                claimBtn.disabled = false;
+                claimBtn.style.opacity = '1';
+            });
+        });
+
+        card.appendChild(claimBtn);
+
+    } else {
+        // ── Not eligible / no qualifying losses ──
+        var inactiveBox = document.createElement('div');
+        inactiveBox.className = 'cashback-inactive-box';
+
+        var inactiveMsg = document.createElement('div');
+        inactiveMsg.style.cssText = 'font-size:0.82rem;color:#9ca3af;';
+        inactiveMsg.textContent = 'No qualifying losses in the past 24 hours.';
+        inactiveBox.appendChild(inactiveMsg);
+
+        var inactiveSub = document.createElement('div');
+        inactiveSub.style.cssText = 'font-size:0.75rem;color:#6b7280;margin-top:3px;';
+        inactiveSub.textContent = 'Play more to earn cashback on net losses.';
+        inactiveBox.appendChild(inactiveSub);
+
+        card.appendChild(inactiveBox);
+    }
+
+    // ── VIP Tier Rate Table (static labels, current tier highlighted) ──
+    var tierTableTitle = document.createElement('div');
+    tierTableTitle.style.cssText = 'font-size:0.76rem;font-weight:700;color:#fb923c;margin:10px 0 4px;letter-spacing:0.2px;';
+    tierTableTitle.textContent = 'Cashback Tiers';
+    card.appendChild(tierTableTitle);
+
+    var table = document.createElement('table');
+    table.className = 'cashback-tier-table';
+
+    var thead = document.createElement('thead');
+    var headerRow = document.createElement('tr');
+    var th1 = document.createElement('th');
+    th1.textContent = 'Tier';
+    var th2 = document.createElement('th');
+    th2.textContent = 'Rate';
+    var th3 = document.createElement('th');
+    th3.textContent = 'Cap';
+    headerRow.appendChild(th1);
+    headerRow.appendChild(th2);
+    headerRow.appendChild(th3);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+
+    // Static tier definitions — no variable interpolation
+    var tierRows = [
+        { name: 'Base',     rate: '2%',  cap: '$3',   level: 0 },
+        { name: 'Bronze',   rate: '3%',  cap: '$5',   level: 1 },
+        { name: 'Silver',   rate: '4%',  cap: '$10',  level: 2 },
+        { name: 'Gold',     rate: '5%',  cap: '$20',  level: 3 },
+        { name: 'Platinum', rate: '7%',  cap: '$40',  level: 4 },
+        { name: 'Diamond',  rate: '10%', cap: '$100', level: 5 }
+    ];
+
+    tierRows.forEach(function(tier) {
+        var tr = document.createElement('tr');
+        if (tier.level === vipLevel) tr.className = 'cb-current-tier';
+
+        var tdName = document.createElement('td');
+        tdName.textContent = tier.name + (tier.level === vipLevel ? ' \u2190' : '');
+        var tdRate = document.createElement('td');
+        tdRate.textContent = tier.rate;
+        var tdCap = document.createElement('td');
+        tdCap.textContent = tier.cap;
+
+        tr.appendChild(tdName);
+        tr.appendChild(tdRate);
+        tr.appendChild(tdCap);
+        tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    card.appendChild(table);
+}
+
+// ── Loyalty Shop CSS (injected once) ──────────────────────────────────────────
+// (Styles already injected by _injectDailyCashbackCSS above, which includes
+//  #wallet-loyalty-shop-section and associated class names.)
+
+/**
+ * Renders the Loyalty Shop card in the wallet modal.
+ * Shows points balance, earning rate, progress bar, preset redeem buttons,
+ * and a custom-amount redeem field.
+ * All dynamic text uses .textContent — no innerHTML with variables.
+ * @param {HTMLElement} modal  The #walletModal element
+ */
+async function _renderLoyaltyShopSection(modal) {
+    if (!modal) return;
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var walletInner = modal.querySelector('.wallet-modal');
+    if (!walletInner) walletInner = modal;
+
+    // Find or create persistent wrapper placed after the cashback wrapper
+    var wrapper = walletInner.querySelector('#walletLoyaltyShopCardWrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = 'walletLoyaltyShopCardWrapper';
+        wrapper.style.cssText = 'padding:0 16px 16px 16px;';
+        // Insert after cashback wrapper if present, else after rakeback, else before walletContent
+        var cbWrapper = walletInner.querySelector('#walletDailyCashbackCardWrapper');
+        var rakeWrapper = walletInner.querySelector('#walletRakebackCardWrapper');
+        var walletContentEl = walletInner.querySelector('#walletContent');
+        if (cbWrapper && cbWrapper.nextSibling) {
+            walletInner.insertBefore(wrapper, cbWrapper.nextSibling);
+        } else if (rakeWrapper && rakeWrapper.nextSibling) {
+            walletInner.insertBefore(wrapper, rakeWrapper.nextSibling);
+        } else if (walletContentEl) {
+            walletInner.insertBefore(wrapper, walletContentEl);
+        } else {
+            walletInner.appendChild(wrapper);
+        }
+    }
+
+    // Remove any existing card for full re-render
+    var existingCard = wrapper.querySelector('#wallet-loyalty-shop-section');
+    if (existingCard) existingCard.remove();
+
+    // Build card shell
+    var card = document.createElement('div');
+    card.id = 'wallet-loyalty-shop-section';
+
+    // ── Header row ──
+    var titleRow = document.createElement('div');
+    titleRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+
+    var title = document.createElement('span');
+    title.style.cssText = 'font-size:1rem;font-weight:800;color:#34d399;letter-spacing:0.3px;';
+    title.textContent = '\u2B50 Loyalty Shop';
+
+    var rateNote = document.createElement('span');
+    rateNote.style.cssText = 'font-size:0.72rem;color:#6ee7b7;opacity:0.8;';
+    rateNote.textContent = '100 pts = $1.00';
+
+    titleRow.appendChild(title);
+    titleRow.appendChild(rateNote);
+    card.appendChild(titleRow);
+
+    // Loading state
+    var loadingEl = document.createElement('div');
+    loadingEl.style.cssText = 'color:#6ee7b7;font-size:0.82rem;opacity:0.7;margin-bottom:8px;';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    wrapper.appendChild(card);
+
+    // ── Fetch status ──
+    var data = null;
+    try {
+        var resp = await fetch('/api/loyaltyshop/status', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) data = await resp.json();
+    } catch (_e) {}
+
+    // Remove loading placeholder
+    if (loadingEl.parentNode) loadingEl.remove();
+
+    if (!data) {
+        var errEl = document.createElement('div');
+        errEl.style.cssText = 'color:#f87171;font-size:0.82rem;';
+        errEl.textContent = 'Could not load loyalty shop data.';
+        card.appendChild(errEl);
+        return;
+    }
+
+    var pts          = parseInt(data.points, 10) || 0;
+    var lifetimePts  = parseInt(data.lifetimePoints, 10) || 0;
+    var pendingPts   = parseInt(data.pendingPoints, 10) || 0;
+
+    // ── Points display ──
+    var ptsDisplay = document.createElement('span');
+    ptsDisplay.id = 'loyaltyShopPtsDisplay';
+    ptsDisplay.className = 'loyalty-pts-display';
+    ptsDisplay.textContent = pts.toLocaleString();
+    card.appendChild(ptsDisplay);
+
+    var ptsSub = document.createElement('span');
+    ptsSub.className = 'loyalty-pts-sub';
+    var subText = 'Loyalty Points';
+    if (lifetimePts > 0) {
+        subText += ' \u00B7 lifetime: ' + lifetimePts.toLocaleString();
+    }
+    if (pendingPts > 0) {
+        subText += ' \u00B7 pending: +' + pendingPts.toLocaleString();
+    }
+    ptsSub.textContent = subText;
+    card.appendChild(ptsSub);
+
+    // ── Earning rate note ──
+    var earnNote = document.createElement('div');
+    earnNote.style.cssText = 'font-size:0.75rem;color:#6ee7b7;opacity:0.7;margin-bottom:10px;';
+    earnNote.textContent = '1 point per spin \u00B7 100 points = $1.00';
+    card.appendChild(earnNote);
+
+    // ── Progress bar toward next 100-pt threshold ──
+    var progressPts = pts % 100;
+    var progressPct = progressPts; // 0-100
+    var progressWrap = document.createElement('div');
+    progressWrap.style.cssText = 'background:rgba(52,211,153,0.12);border-radius:6px;height:8px;margin-bottom:14px;overflow:hidden;';
+    var progressBar = document.createElement('div');
+    progressBar.style.cssText = 'height:100%;border-radius:6px;background:linear-gradient(90deg,#34d399,#059669);width:' + progressPct + '%;transition:width 0.4s;';
+    progressWrap.appendChild(progressBar);
+    card.appendChild(progressWrap);
+
+    var progressLabel = document.createElement('div');
+    progressLabel.style.cssText = 'font-size:0.72rem;color:#6ee7b7;opacity:0.6;margin-top:-10px;margin-bottom:12px;';
+    progressLabel.textContent = progressPts + ' / 100 pts toward next redemption';
+    card.appendChild(progressLabel);
+
+    // ── Status message display (for success/error feedback) ──
+    var statusMsg = document.createElement('div');
+    statusMsg.id = 'loyaltyShopStatusMsg';
+    statusMsg.style.cssText = 'font-size:0.82rem;min-height:1.2em;margin-bottom:8px;';
+    card.appendChild(statusMsg);
+
+    // ── Helper: perform redemption ──
+    function doRedeem(redeemPts) {
+        redeemPts = parseInt(redeemPts, 10) || 0;
+        if (redeemPts < 100 || redeemPts % 100 !== 0) {
+            statusMsg.style.color = '#f87171';
+            statusMsg.textContent = 'Minimum 100 pts, multiples of 100 only.';
+            return;
+        }
+        var currentPts = parseInt((document.getElementById('loyaltyShopPtsDisplay') || {}).textContent || '0', 10);
+        if (redeemPts > currentPts) {
+            statusMsg.style.color = '#f87171';
+            statusMsg.textContent = 'Insufficient loyalty points.';
+            return;
+        }
+
+        var redeemToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!redeemToken) return;
+
+        // Disable all buttons while in-flight
+        card.querySelectorAll('button').forEach(function(b) { b.disabled = true; b.style.opacity = '0.5'; });
+        statusMsg.style.color = '#6ee7b7';
+        statusMsg.textContent = 'Redeeming\u2026';
+
+        fetch('/api/loyaltyshop/redeem', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + redeemToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ points: redeemPts })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                var credited = parseFloat(result.credited) || 0;
+                if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(result.newBalance);
+                else if (typeof balance !== 'undefined') balance = result.newBalance;
+                statusMsg.style.color = '#4ade80';
+                statusMsg.textContent = '\u2705 $' + credited.toFixed(2) + ' credited! ' + (result.newPoints || 0).toLocaleString() + ' pts remaining';
+                if (typeof refreshLoyaltyBalance === 'function') refreshLoyaltyBalance();
+                // Re-render to show updated balance
+                var walletModalEl = document.getElementById('walletModal');
+                if (walletModalEl) _renderLoyaltyShopSection(walletModalEl);
+            } else {
+                statusMsg.style.color = '#f87171';
+                statusMsg.textContent = result.error || 'Redemption failed.';
+                card.querySelectorAll('button').forEach(function(b) {
+                    b.disabled = false;
+                    b.style.opacity = '1';
+                });
+            }
+        })
+        .catch(function() {
+            statusMsg.style.color = '#f87171';
+            statusMsg.textContent = 'Redemption failed \u2014 please try again.';
+            card.querySelectorAll('button').forEach(function(b) {
+                b.disabled = false;
+                b.style.opacity = '1';
+            });
+        });
+    }
+
+    // ── Preset redeem buttons ──
+    var presets = [
+        { pts: 100,  label: '100 pts \u2192 $1.00' },
+        { pts: 500,  label: '500 pts \u2192 $5.00' },
+        { pts: 1000, label: '1,000 pts \u2192 $10.00' }
+    ];
+
+    var btnRow = document.createElement('div');
+    btnRow.className = 'loyalty-redeem-btns';
+
+    presets.forEach(function(preset) {
+        var btn = document.createElement('button');
+        btn.textContent = preset.label;
+        btn.disabled = pts < preset.pts;
+        btn.style.opacity = pts >= preset.pts ? '1' : '0.4';
+        btn.style.cursor = pts >= preset.pts ? 'pointer' : 'not-allowed';
+        btn.addEventListener('click', function() { doRedeem(preset.pts); });
+        btnRow.appendChild(btn);
+    });
+
+    card.appendChild(btnRow);
+
+    // ── Custom redeem row ──
+    var customRow = document.createElement('div');
+    customRow.className = 'loyalty-custom-redeem';
+
+    var customInput = document.createElement('input');
+    customInput.type = 'number';
+    customInput.min = '100';
+    customInput.step = '100';
+    customInput.placeholder = '100, 200, \u2026';
+    customInput.style.cssText = 'flex:1 1 100px;padding:7px 10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:8px;color:#a7f3d0;font-size:0.82rem;min-width:80px;';
+
+    var customBtn = document.createElement('button');
+    customBtn.textContent = 'Redeem';
+    customBtn.style.cssText = 'padding:7px 14px;border:none;border-radius:8px;font-size:0.8rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#34d399,#059669);color:#fff;white-space:nowrap;';
+    customBtn.addEventListener('click', function() {
+        var val = parseInt(customInput.value, 10) || 0;
+        doRedeem(val);
+    });
+
+    customRow.appendChild(customInput);
+    customRow.appendChild(customBtn);
+    card.appendChild(customRow);
 }

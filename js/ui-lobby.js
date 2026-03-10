@@ -508,6 +508,9 @@ function renderGames() {
             if (!window._luckyHoursBannerInit) initLuckyHoursBanner();
             if (!window._loyaltyHookInit) { window._loyaltyHookInit = true; initLoyaltyEarnHook(); }
             if (!window._socialProofInit) { window._socialProofInit = true; initSocialProofTicker(); }
+            if (!window._leaderboardWidgetInit) initLeaderboardWidget();
+            if (!window._bigWinsFeedInit)       initBigWinsFeed();
+            if (!window._promoCodeWidgetInit)   initPromoCodeWidget();
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -4782,5 +4785,467 @@ function _updateLuckyHoursBannerCountdown() {
         _luckyHoursBannerCountdownInterval = null;
         setTimeout(_fetchLuckyHoursBanner, 3000);
     }
+}
+
+// ── 4. Leaderboard Widget ────────────────────────────────────────────────────
+function initLeaderboardWidget() {
+    if (window._leaderboardWidgetInit) return; window._leaderboardWidgetInit = true;
+
+    // Inject CSS once
+    if (!document.getElementById('leaderboard-widget-css')) {
+        var style = document.createElement('style');
+        style.id = 'leaderboard-widget-css';
+        style.textContent = [
+            '#leaderboard-widget{background:linear-gradient(135deg,#0a0f1e 0%,#111827 100%);',
+            'border:1px solid rgba(99,102,241,0.35);border-radius:12px;padding:14px 16px;',
+            'margin:0 0 14px 0;font-family:inherit;}',
+            '.lbw-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}',
+            '.lbw-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;',
+            'color:rgba(255,255,255,0.55);}',
+            '.lbw-refresh{background:none;border:none;color:rgba(255,255,255,0.35);',
+            'font-size:14px;cursor:pointer;padding:0;line-height:1;transition:color 0.15s;}',
+            '.lbw-refresh:hover{color:rgba(255,255,255,0.7);}',
+            '.lbw-tabs{display:flex;gap:4px;margin-bottom:10px;}',
+            '.lbw-tab{flex:1;padding:6px 4px;border-radius:7px;border:1px solid rgba(255,255,255,0.1);',
+            'background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);',
+            'font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center;}',
+            '.lbw-tab.active{background:rgba(99,102,241,0.25);border-color:rgba(99,102,241,0.5);',
+            'color:#a5b4fc;}',
+            '.lbw-tab:hover:not(.active){background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.75);}',
+            '.lbw-body{min-height:80px;}',
+            '.lbw-loading{text-align:center;padding:20px 0;color:rgba(255,255,255,0.3);font-size:12px;}',
+            '.lbw-row{display:flex;align-items:center;gap:8px;padding:5px 0;',
+            'border-bottom:1px solid rgba(255,255,255,0.05);}',
+            '.lbw-row:last-child{border-bottom:none;}',
+            '.lbw-rank{font-size:12px;font-weight:800;color:rgba(255,255,255,0.35);',
+            'min-width:22px;text-align:center;flex-shrink:0;}',
+            '.lbw-rank-1{color:#f59e0b;}.lbw-rank-2{color:#94a3b8;}.lbw-rank-3{color:#b45309;}',
+            '.lbw-user{flex:1;font-size:12px;color:rgba(255,255,255,0.7);',
+            'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}',
+            '.lbw-value{font-size:11px;color:rgba(255,255,255,0.45);',
+            'white-space:nowrap;flex-shrink:0;text-align:right;}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+
+    if (!document.getElementById('leaderboard-widget')) {
+        var widget = document.createElement('div');
+        widget.id = 'leaderboard-widget';
+
+        var header = document.createElement('div');
+        header.className = 'lbw-header';
+
+        var titleEl = document.createElement('div');
+        titleEl.className = 'lbw-title';
+        titleEl.textContent = '\uD83C\uDFC6 Leaderboards';
+
+        var refreshBtn = document.createElement('button');
+        refreshBtn.className = 'lbw-refresh';
+        refreshBtn.title = 'Refresh';
+        refreshBtn.textContent = '\u21BB';
+        refreshBtn.addEventListener('click', function() { _fetchLeaderboard(_lbwActiveTab); });
+
+        header.appendChild(titleEl);
+        header.appendChild(refreshBtn);
+
+        var tabsEl = document.createElement('div');
+        tabsEl.className = 'lbw-tabs';
+        tabsEl.id = 'lbw-tabs';
+
+        var tabDefs = [
+            { key: 'weekly', label: '\uD83C\uDFC6 Weekly' },
+            { key: 'bigwins', label: '\uD83D\uDCB0 Big Wins' },
+            { key: 'richlist', label: '\uD83D\uDC51 Rich List' }
+        ];
+        tabDefs.forEach(function(td) {
+            var btn = document.createElement('button');
+            btn.className = 'lbw-tab' + (td.key === 'weekly' ? ' active' : '');
+            btn.dataset.tab = td.key;
+            btn.textContent = td.label;
+            btn.addEventListener('click', function() {
+                var tabs = document.querySelectorAll('.lbw-tab');
+                for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+                btn.classList.add('active');
+                _lbwActiveTab = td.key;
+                _fetchLeaderboard(td.key);
+            });
+            tabsEl.appendChild(btn);
+        });
+
+        var bodyEl = document.createElement('div');
+        bodyEl.className = 'lbw-body';
+        bodyEl.id = 'lbw-body';
+
+        widget.appendChild(header);
+        widget.appendChild(tabsEl);
+        widget.appendChild(bodyEl);
+
+        var anchor = document.getElementById('jackpot-ticker-bar')
+            || document.getElementById('jackpot-ticker-bar')
+            || document.getElementById('games-section')
+            || document.getElementById('gamesContainer')
+            || document.querySelector('.games-grid')
+            || document.querySelector('.game-grid');
+        if (anchor && anchor.parentNode) {
+            anchor.parentNode.insertBefore(widget, anchor.nextSibling);
+        } else {
+            var main = document.getElementById('main-content')
+                || document.getElementById('lobby')
+                || document.querySelector('.lobby-content');
+            if (main) main.insertBefore(widget, main.firstChild);
+        }
+    }
+
+    _fetchLeaderboard('weekly');
+    setInterval(function() { _fetchLeaderboard(_lbwActiveTab); }, 300000);
+}
+
+var _lbwActiveTab = 'weekly';
+
+function _fetchLeaderboard(tab) {
+    var body = document.getElementById('lbw-body');
+    if (!body) return;
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'lbw-loading';
+    loadingEl.textContent = 'Loading\u2026';
+    while (body.firstChild) body.removeChild(body.firstChild);
+    body.appendChild(loadingEl);
+
+    var url = '/api/leaderboard/' + (tab || 'weekly');
+    fetch(url)
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) { _renderLeaderboard(tab, data); })
+        .catch(function() { _renderLeaderboard(tab, null); });
+}
+
+function _renderLeaderboard(tab, data) {
+    var body = document.getElementById('lbw-body');
+    if (!body) return;
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    var entries = data && data.entries ? data.entries.slice(0, 5) : [];
+    if (entries.length === 0) {
+        var emptyEl = document.createElement('div');
+        emptyEl.className = 'lbw-loading';
+        emptyEl.textContent = 'No data yet';
+        body.appendChild(emptyEl);
+        return;
+    }
+
+    entries.forEach(function(entry) {
+        var row = document.createElement('div');
+        row.className = 'lbw-row';
+
+        var rankEl = document.createElement('div');
+        rankEl.className = 'lbw-rank' + (entry.rank <= 3 ? ' lbw-rank-' + entry.rank : '');
+        rankEl.textContent = '#' + entry.rank;
+
+        var userEl = document.createElement('div');
+        userEl.className = 'lbw-user';
+        userEl.textContent = entry.maskedUser || 'Player';
+
+        var valueEl = document.createElement('div');
+        valueEl.className = 'lbw-value';
+
+        if (tab === 'weekly') {
+            var wagered = parseFloat(entry.totalWagered || 0);
+            var spins = entry.spinCount || 0;
+            valueEl.textContent = '$' + wagered.toFixed(2) + ' (' + spins + ' spins)';
+        } else if (tab === 'bigwins') {
+            var win = parseFloat(entry.winAmount || 0);
+            var mult = parseFloat(entry.multiplier || 0);
+            var gameLabel = entry.gameId || '';
+            userEl.textContent = (entry.maskedUser || 'Player') + ' \u2014 ' + gameLabel;
+            valueEl.textContent = '$' + win.toFixed(2) + ' (' + mult.toFixed(0) + 'x)';
+        } else if (tab === 'richlist') {
+            var bal = parseFloat(entry.balance || 0);
+            valueEl.textContent = '$' + bal.toFixed(2);
+        }
+
+        row.appendChild(rankEl);
+        row.appendChild(userEl);
+        row.appendChild(valueEl);
+        body.appendChild(row);
+    });
+}
+
+// ── 5. Big Wins Feed ─────────────────────────────────────────────────────────
+function initBigWinsFeed() {
+    if (window._bigWinsFeedInit) return; window._bigWinsFeedInit = true;
+
+    // Inject CSS once
+    if (!document.getElementById('big-wins-feed-css')) {
+        var style = document.createElement('style');
+        style.id = 'big-wins-feed-css';
+        style.textContent = [
+            '#big-wins-feed{background:linear-gradient(135deg,#0c1a0a 0%,#111a0d 100%);',
+            'border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:12px 16px;',
+            'margin:0 0 14px 0;font-family:inherit;}',
+            '.bwf-header{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;',
+            'color:rgba(255,255,255,0.55);margin-bottom:8px;}',
+            '.bwf-list{display:flex;flex-direction:column;gap:4px;}',
+            '@keyframes bwfSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}',
+            '.bwf-entry{display:flex;align-items:center;gap:8px;padding:5px 0;',
+            'border-bottom:1px solid rgba(255,255,255,0.05);',
+            'animation:bwfSlideIn 0.25s ease both;}',
+            '.bwf-entry:last-child{border-bottom:none;}',
+            '.bwf-icon{font-size:14px;flex-shrink:0;}',
+            '.bwf-text{flex:1;font-size:12px;color:rgba(255,255,255,0.7);',
+            'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}',
+            '.bwf-text strong{color:#4ade80;}',
+            '.bwf-mult{font-size:11px;color:rgba(255,255,255,0.35);flex-shrink:0;}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+
+    if (!document.getElementById('big-wins-feed')) {
+        var widget = document.createElement('div');
+        widget.id = 'big-wins-feed';
+        widget.style.display = 'none';
+
+        var headerEl = document.createElement('div');
+        headerEl.className = 'bwf-header';
+        headerEl.textContent = '\uD83D\uDD25 Recent Big Wins';
+
+        var listEl = document.createElement('div');
+        listEl.className = 'bwf-list';
+        listEl.id = 'bwf-list';
+
+        widget.appendChild(headerEl);
+        widget.appendChild(listEl);
+
+        var lbWidget = document.getElementById('leaderboard-widget');
+        var anchor = lbWidget
+            || document.getElementById('jackpot-ticker-bar')
+            || document.getElementById('games-section')
+            || document.getElementById('gamesContainer')
+            || document.querySelector('.games-grid')
+            || document.querySelector('.game-grid');
+        if (anchor && anchor.parentNode) {
+            anchor.parentNode.insertBefore(widget, anchor.nextSibling);
+        } else {
+            var main = document.getElementById('main-content')
+                || document.getElementById('lobby')
+                || document.querySelector('.lobby-content');
+            if (main) main.insertBefore(widget, main.firstChild);
+        }
+    }
+
+    _fetchBigWinsFeed();
+    setInterval(_fetchBigWinsFeed, 30000);
+}
+
+function _fetchBigWinsFeed() {
+    fetch('/api/feed')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) { _renderBigWinsFeed(data); })
+        .catch(function() { /* silently ignore */ });
+}
+
+function _renderBigWinsFeed(data) {
+    var widget = document.getElementById('big-wins-feed');
+    var list = document.getElementById('bwf-list');
+    if (!widget || !list) return;
+
+    var feed = data && data.feed ? data.feed.slice(0, 5) : [];
+    if (feed.length === 0) {
+        widget.style.display = 'none';
+        return;
+    }
+
+    while (list.firstChild) list.removeChild(list.firstChild);
+
+    feed.forEach(function(item) {
+        var entry = document.createElement('div');
+        entry.className = 'bwf-entry';
+
+        var iconEl = document.createElement('div');
+        iconEl.className = 'bwf-icon';
+        iconEl.textContent = '\uD83D\uDCB0';
+
+        var textEl = document.createElement('div');
+        textEl.className = 'bwf-text';
+
+        var userSpan = document.createElement('span');
+        userSpan.textContent = '[' + (item.username || 'Player') + '] won ';
+
+        var winSpan = document.createElement('strong');
+        winSpan.textContent = '$' + parseFloat(item.win || 0).toFixed(2);
+
+        var gameSpan = document.createElement('span');
+        gameSpan.textContent = ' on ' + (item.gameId || 'slots');
+
+        textEl.appendChild(userSpan);
+        textEl.appendChild(winSpan);
+        textEl.appendChild(gameSpan);
+
+        var multEl = document.createElement('div');
+        multEl.className = 'bwf-mult';
+        multEl.textContent = '(' + parseFloat(item.mult || 0).toFixed(0) + 'x)';
+
+        entry.appendChild(iconEl);
+        entry.appendChild(textEl);
+        entry.appendChild(multEl);
+        list.appendChild(entry);
+    });
+
+    widget.style.display = '';
+}
+
+// ── 6. Promo Code Widget ─────────────────────────────────────────────────────
+function initPromoCodeWidget() {
+    if (window._promoCodeWidgetInit) return; window._promoCodeWidgetInit = true;
+
+    // Only show when user is authenticated
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Inject CSS once
+    if (!document.getElementById('promo-code-widget-css')) {
+        var style = document.createElement('style');
+        style.id = 'promo-code-widget-css';
+        style.textContent = [
+            '#promo-code-widget{background:rgba(255,255,255,0.04);',
+            'border:1px solid rgba(255,255,255,0.12);border-radius:10px;',
+            'padding:10px 14px;margin:0 0 14px 0;font-family:inherit;',
+            'display:flex;align-items:center;flex-wrap:wrap;gap:8px;}',
+            '.pcw-label{font-size:12px;color:rgba(255,255,255,0.5);flex-shrink:0;}',
+            '.pcw-input{flex:1;min-width:100px;padding:7px 10px;',
+            'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);',
+            'border-radius:7px;color:#fff;font-size:12px;font-family:inherit;',
+            'letter-spacing:0.5px;outline:none;transition:border-color 0.15s;}',
+            '.pcw-input:focus{border-color:rgba(99,102,241,0.5);}',
+            '.pcw-btn{padding:7px 14px;background:linear-gradient(135deg,#6366f1,#4f46e5);',
+            'border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;',
+            'cursor:pointer;transition:opacity 0.15s;flex-shrink:0;}',
+            '.pcw-btn:hover{opacity:0.85;}',
+            '.pcw-btn:disabled{opacity:0.45;cursor:not-allowed;}',
+            '.pcw-msg{width:100%;font-size:12px;font-weight:600;',
+            'padding:4px 0 0;display:none;}',
+            '.pcw-msg.success{color:#4ade80;display:block;}',
+            '.pcw-msg.error{color:#f87171;display:block;}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+
+    if (!document.getElementById('promo-code-widget')) {
+        var widget = document.createElement('div');
+        widget.id = 'promo-code-widget';
+
+        var labelEl = document.createElement('span');
+        labelEl.className = 'pcw-label';
+        labelEl.textContent = '\uD83C\uDF9F\uFE0F Have a promo code?';
+
+        var inputEl = document.createElement('input');
+        inputEl.type = 'text';
+        inputEl.className = 'pcw-input';
+        inputEl.id = 'pcw-input';
+        inputEl.placeholder = 'ENTER CODE';
+        inputEl.maxLength = 32;
+        inputEl.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        var redeemBtn = document.createElement('button');
+        redeemBtn.className = 'pcw-btn';
+        redeemBtn.id = 'pcw-btn';
+        redeemBtn.textContent = 'Redeem';
+        redeemBtn.addEventListener('click', _redeemPromoCode);
+
+        inputEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') _redeemPromoCode();
+        });
+
+        var msgEl = document.createElement('div');
+        msgEl.className = 'pcw-msg';
+        msgEl.id = 'pcw-msg';
+
+        widget.appendChild(labelEl);
+        widget.appendChild(inputEl);
+        widget.appendChild(redeemBtn);
+        widget.appendChild(msgEl);
+
+        var filterTabs = document.getElementById('filterTabs');
+        if (filterTabs && filterTabs.parentNode) {
+            filterTabs.parentNode.insertBefore(widget, filterTabs);
+        } else {
+            var main = document.getElementById('main-content')
+                || document.getElementById('lobby')
+                || document.querySelector('.lobby-content');
+            if (main) main.appendChild(widget);
+        }
+    }
+}
+
+function _redeemPromoCode() {
+    var inputEl = document.getElementById('pcw-input');
+    var btn = document.getElementById('pcw-btn');
+    var msgEl = document.getElementById('pcw-msg');
+    if (!inputEl || !btn || !msgEl) return;
+
+    var code = inputEl.value.trim().toUpperCase();
+    if (!code) return;
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) {
+        _showPromoMsg('Please log in to redeem a promo code.', 'error');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Redeeming\u2026';
+    msgEl.className = 'pcw-msg';
+    msgEl.textContent = '';
+
+    fetch('/api/promocode/redeem', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ code: code })
+    })
+        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            btn.disabled = false;
+            btn.textContent = 'Redeem';
+            if (result.ok && result.data.success) {
+                var reward = result.data.reward || {};
+                var parts = [];
+                if (reward.gems) parts.push(reward.gems + ' gems');
+                if (reward.credits) parts.push('$' + parseFloat(reward.credits).toFixed(2) + ' credited');
+                if (reward.spins) parts.push(reward.spins + ' free spins');
+                var successMsg = '\u2705 ' + (parts.length ? parts.join(' + ') + '!' : 'Code redeemed!');
+                _showPromoMsg(successMsg, 'success');
+                if (inputEl) inputEl.value = '';
+                if (result.data.newBalance !== undefined && typeof updateBalance === 'function') {
+                    balance = parseFloat(result.data.newBalance);
+                    updateBalance();
+                }
+            } else {
+                var errMsg = (result.data && result.data.error) ? result.data.error : 'Invalid code';
+                _showPromoMsg('\u274C ' + errMsg, 'error');
+                if (inputEl) inputEl.value = '';
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Redeem';
+            _showPromoMsg('\u274C Network error. Please try again.', 'error');
+        });
+}
+
+function _showPromoMsg(text, type) {
+    var msgEl = document.getElementById('pcw-msg');
+    if (!msgEl) return;
+    msgEl.textContent = text;
+    msgEl.className = 'pcw-msg ' + type;
+    setTimeout(function() {
+        if (msgEl) {
+            msgEl.className = 'pcw-msg';
+            msgEl.textContent = '';
+        }
+    }, 3000);
 }
 

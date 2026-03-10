@@ -1819,6 +1819,7 @@ async function renderBattlePassCard(container) {
     if (!container) return;
     if (document.getElementById('battlePassCard')) return;
 
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
     var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
 
@@ -1865,6 +1866,43 @@ async function renderBattlePassCard(container) {
     xpTrack.appendChild(xpFill);
     card.appendChild(xpTrack);
 
+    // Track indicator
+    var trackBadge = document.createElement('div');
+    trackBadge.id = 'bpTrackBadge';
+    trackBadge.style.cssText = 'text-align:center;margin-bottom:8px;';
+    card.appendChild(trackBadge);
+
+    // Buy premium button (only shown when not premium)
+    var buyPremiumBtn = document.createElement('button');
+    buyPremiumBtn.id = 'bpBuyPremiumBtn';
+    buyPremiumBtn.className = 'bp-claim-btn';
+    buyPremiumBtn.style.cssText = 'width:100%;margin-bottom:10px;display:none;';
+    buyPremiumBtn.textContent = 'Buy Premium \u2014 500 Gems';
+    buyPremiumBtn.addEventListener('click', function() {
+        buyPremiumBtn.disabled = true;
+        buyPremiumBtn.textContent = 'Purchasing\u2026';
+        fetch('/api/battlepass/buy-premium', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            if (d.success) {
+                if (typeof showToast === 'function') showToast('\uD83C\uDF96\uFE0F Premium Unlocked!', 'win');
+                _refreshBattlePass(token);
+            } else {
+                buyPremiumBtn.disabled = false;
+                buyPremiumBtn.textContent = 'Buy Premium \u2014 500 Gems';
+                if (typeof showToast === 'function') showToast(d.error || 'Purchase failed', 'error');
+            }
+        }).catch(function() {
+            buyPremiumBtn.disabled = false;
+            buyPremiumBtn.textContent = 'Buy Premium \u2014 500 Gems';
+        });
+    });
+    card.appendChild(buyPremiumBtn);
+
     var rewardsLabel = document.createElement('div');
     rewardsLabel.className = 'bp-rewards-label';
     rewardsLabel.textContent = 'Upcoming Free Rewards';
@@ -1885,19 +1923,31 @@ async function _refreshBattlePass(token) {
         if (!res.ok) return;
         var data = await res.json();
 
+        // Handle no active season
+        if (data.error) {
+            var titleEl = document.getElementById('bpTitle');
+            if (titleEl) titleEl.textContent = '\uD83C\uDF96\uFE0F Battle Pass';
+            var seasonEndEl = document.getElementById('bpSeasonEnd');
+            if (seasonEndEl) seasonEndEl.textContent = 'No active season';
+            var rewardsList = document.getElementById('bpRewardsList');
+            if (rewardsList) {
+                while (rewardsList.firstChild) rewardsList.removeChild(rewardsList.firstChild);
+                var noSeasonEl = document.createElement('div');
+                noSeasonEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
+                noSeasonEl.textContent = 'Check back soon for the next season!';
+                rewardsList.appendChild(noSeasonEl);
+            }
+            return;
+        }
+
         var titleEl = document.getElementById('bpTitle');
         if (titleEl) {
-            var seasonName = (data.season && data.season.name) ? data.season.name : '';
-            titleEl.textContent = '\uD83C\uDF96\uFE0F Battle Pass' + (seasonName ? ' \u2014 ' + seasonName : '');
+            var seasonLabel = data.season ? 'Season ' + String(data.season) : '';
+            titleEl.textContent = '\uD83C\uDF96\uFE0F Battle Pass' + (seasonLabel ? ' \u2014 ' + seasonLabel : '');
         }
 
         var seasonEndEl = document.getElementById('bpSeasonEnd');
-        if (seasonEndEl && data.season && data.season.endsAt) {
-            var endsAt = new Date(data.season.endsAt);
-            var diff = endsAt - Date.now();
-            var daysLeft = Math.max(0, Math.ceil(diff / 86400000));
-            seasonEndEl.textContent = 'Season ends in ' + String(daysLeft) + ' day' + (daysLeft === 1 ? '' : 's');
-        } else if (seasonEndEl) {
+        if (seasonEndEl) {
             seasonEndEl.textContent = '';
         }
 
@@ -1914,42 +1964,73 @@ async function _refreshBattlePass(token) {
             xpFill.style.width = xpPct + '%';
         }
 
+        // Track badge
+        var trackBadge = document.getElementById('bpTrackBadge');
+        if (trackBadge) {
+            while (trackBadge.firstChild) trackBadge.removeChild(trackBadge.firstChild);
+            var freeBadge = document.createElement('span');
+            freeBadge.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:rgba(251,191,36,.15);color:#fbbf24;margin-right:4px;';
+            freeBadge.textContent = 'FREE';
+            trackBadge.appendChild(freeBadge);
+            if (data.isPremium) {
+                var premBadge = document.createElement('span');
+                premBadge.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:rgba(167,139,250,.2);color:#c084fc;';
+                premBadge.textContent = 'PREMIUM \u2714';
+                trackBadge.appendChild(premBadge);
+            }
+        }
+
+        // Show/hide buy premium button
+        var buyPremiumBtn = document.getElementById('bpBuyPremiumBtn');
+        if (buyPremiumBtn) {
+            buyPremiumBtn.style.display = data.isPremium ? 'none' : 'block';
+            buyPremiumBtn.disabled = false;
+            buyPremiumBtn.textContent = 'Buy Premium \u2014 500 Gems';
+        }
+
         var rewardsList = document.getElementById('bpRewardsList');
         if (rewardsList) {
             while (rewardsList.firstChild) rewardsList.removeChild(rewardsList.firstChild);
 
-            var freeRewards = data.freeRewards || [];
             var playerLevel = data.level || 1;
-            var upcoming = freeRewards.filter(function(r) { return !r.claimed; }).slice(0, 3);
+            var freeTier = data.freeTier || [];
+            // Show unlocked unclaimed free rewards
+            var claimableFree = freeTier.filter(function(r) {
+                return !r.claimed && r.level <= playerLevel;
+            });
+            // Also show upcoming (locked) up to 3 total
+            var upcomingFree = freeTier.filter(function(r) {
+                return !r.claimed && r.level > playerLevel;
+            });
+            var freeToShow = claimableFree.concat(upcomingFree).slice(0, 4);
 
-            if (upcoming.length === 0) {
-                var noneEl = document.createElement('div');
-                noneEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
-                noneEl.textContent = 'All rewards claimed!';
-                rewardsList.appendChild(noneEl);
-            } else {
-                upcoming.forEach(function(r) {
+            if (freeToShow.length > 0) {
+                var freeLabel = document.createElement('div');
+                freeLabel.className = 'bp-rewards-label';
+                freeLabel.textContent = 'Free Track';
+                rewardsList.appendChild(freeLabel);
+
+                freeToShow.forEach(function(r) {
                     var isUnlocked = playerLevel >= r.level;
-
                     var item = document.createElement('div');
                     item.className = 'bp-reward-item';
 
                     var tierBadge = document.createElement('div');
                     tierBadge.className = 'bp-tier-badge';
-                    tierBadge.textContent = String(r.level);
+                    tierBadge.textContent = 'Lv ' + String(r.level);
                     item.appendChild(tierBadge);
 
                     var rewardInfo = document.createElement('div');
                     rewardInfo.className = 'bp-reward-info';
                     var rewardName = document.createElement('div');
                     rewardName.className = 'bp-reward-name';
-                    var rewardText = '';
-                    if (r.reward_type === 'gems') {
-                        rewardText = '\uD83D\uDC8E ' + String(r.reward_amount) + ' gems';
-                    } else if (r.reward_type === 'credits') {
-                        rewardText = '\uD83D\uDCB0 $' + parseFloat(r.reward_amount).toFixed(2);
+                    var rewardText = 'Lv ' + String(r.level) + ' \u2014 ';
+                    if (r.type === 'gems') {
+                        rewardText += '\uD83D\uDC8E ' + String(r.amount) + ' gems';
+                    } else if (r.type === 'credits' || r.type === 'cash') {
+                        rewardText += '\uD83D\uDCB0 $' + parseFloat(r.amount).toFixed(2);
                     } else {
-                        rewardText = String(r.reward_amount);
+                        rewardText += String(r.type) + ' ' + String(r.amount);
                     }
                     rewardName.textContent = rewardText;
                     rewardInfo.appendChild(rewardName);
@@ -1960,7 +2041,29 @@ async function _refreshBattlePass(token) {
                         claimBtn.className = 'bp-claim-btn';
                         claimBtn.textContent = 'Claim';
                         (function(lvl) {
-                            claimBtn.addEventListener('click', function() { claimBattlePassReward(lvl); });
+                            claimBtn.addEventListener('click', function() {
+                                claimBtn.disabled = true;
+                                fetch('/api/battlepass/claim/' + String(lvl), {
+                                    method: 'POST',
+                                    headers: {
+                                        'Authorization': 'Bearer ' + token,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ track: 'free' })
+                                }).then(function(r2) { return r2.json(); }).then(function(d2) {
+                                    if (d2.success) {
+                                        var rwd = d2.reward || {};
+                                        var msg = 'reward';
+                                        if (rwd.type === 'gems') msg = String(rwd.amount) + ' gems';
+                                        else if (rwd.type === 'credits' || rwd.type === 'cash') msg = '$' + parseFloat(rwd.amount).toFixed(2);
+                                        if (typeof showToast === 'function') showToast('\uD83C\uDF96\uFE0F Lv ' + String(lvl) + ' reward: ' + msg, 'win');
+                                        if (d2.newBalance !== undefined && typeof updateBalanceDisplay === 'function') updateBalanceDisplay(d2.newBalance);
+                                        _refreshBattlePass(token);
+                                    } else {
+                                        claimBtn.disabled = false;
+                                    }
+                                }).catch(function() { claimBtn.disabled = false; });
+                            });
                         }(r.level));
                         item.appendChild(claimBtn);
                     } else {
@@ -1972,10 +2075,100 @@ async function _refreshBattlePass(token) {
 
                     rewardsList.appendChild(item);
                 });
+            } else {
+                var noneEl = document.createElement('div');
+                noneEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
+                noneEl.textContent = 'All free rewards claimed!';
+                rewardsList.appendChild(noneEl);
+            }
+
+            // Premium track rewards (only if user has premium)
+            if (data.isPremium) {
+                var premTier = data.premiumTier || [];
+                var claimablePrem = premTier.filter(function(r) {
+                    return !r.claimed && r.level <= playerLevel;
+                });
+                if (claimablePrem.length > 0) {
+                    var premLabel = document.createElement('div');
+                    premLabel.className = 'bp-rewards-label';
+                    premLabel.style.marginTop = '8px';
+                    premLabel.textContent = 'Premium Track';
+                    rewardsList.appendChild(premLabel);
+
+                    claimablePrem.slice(0, 3).forEach(function(r) {
+                        var item = document.createElement('div');
+                        item.className = 'bp-reward-item';
+
+                        var tierBadge = document.createElement('div');
+                        tierBadge.className = 'bp-tier-badge';
+                        tierBadge.style.background = 'rgba(167,139,250,.2)';
+                        tierBadge.style.borderColor = 'rgba(167,139,250,.4)';
+                        tierBadge.style.color = '#c084fc';
+                        tierBadge.textContent = 'Lv ' + String(r.level);
+                        item.appendChild(tierBadge);
+
+                        var rewardInfo = document.createElement('div');
+                        rewardInfo.className = 'bp-reward-info';
+                        var rewardName = document.createElement('div');
+                        rewardName.className = 'bp-reward-name';
+                        var rewardText = 'Lv ' + String(r.level) + ' \u2014 ';
+                        if (r.type === 'gems') {
+                            rewardText += '\uD83D\uDC8E ' + String(r.amount) + ' gems';
+                        } else if (r.type === 'credits' || r.type === 'cash') {
+                            rewardText += '\uD83D\uDCB0 $' + parseFloat(r.amount).toFixed(2);
+                        } else {
+                            rewardText += String(r.type) + ' ' + String(r.amount);
+                        }
+                        rewardName.textContent = rewardText;
+                        rewardInfo.appendChild(rewardName);
+                        item.appendChild(rewardInfo);
+
+                        var claimBtn = document.createElement('button');
+                        claimBtn.className = 'bp-claim-btn';
+                        claimBtn.style.background = 'linear-gradient(135deg,#7c3aed,#c084fc)';
+                        claimBtn.textContent = 'Claim';
+                        (function(lvl) {
+                            claimBtn.addEventListener('click', function() {
+                                claimBtn.disabled = true;
+                                fetch('/api/battlepass/claim/' + String(lvl), {
+                                    method: 'POST',
+                                    headers: {
+                                        'Authorization': 'Bearer ' + token,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ track: 'premium' })
+                                }).then(function(r2) { return r2.json(); }).then(function(d2) {
+                                    if (d2.success) {
+                                        var rwd = d2.reward || {};
+                                        var msg = 'reward';
+                                        if (rwd.type === 'gems') msg = String(rwd.amount) + ' gems';
+                                        else if (rwd.type === 'credits' || rwd.type === 'cash') msg = '$' + parseFloat(rwd.amount).toFixed(2);
+                                        if (typeof showToast === 'function') showToast('\uD83D\uDC8E Premium Lv ' + String(lvl) + ' reward: ' + msg, 'win');
+                                        if (d2.newBalance !== undefined && typeof updateBalanceDisplay === 'function') updateBalanceDisplay(d2.newBalance);
+                                        _refreshBattlePass(token);
+                                    } else {
+                                        claimBtn.disabled = false;
+                                    }
+                                }).catch(function() { claimBtn.disabled = false; });
+                            });
+                        }(r.level));
+                        item.appendChild(claimBtn);
+
+                        rewardsList.appendChild(item);
+                    });
+                }
             }
         }
     } catch (e) {
         // silent fail — card remains with loading state
+        var rewardsList = document.getElementById('bpRewardsList');
+        if (rewardsList) {
+            while (rewardsList.firstChild) rewardsList.removeChild(rewardsList.firstChild);
+            var errEl = document.createElement('div');
+            errEl.style.cssText = 'text-align:center;padding:8px;color:#f87171;font-size:12px;';
+            errEl.textContent = 'Could not load Battle Pass data';
+            rewardsList.appendChild(errEl);
+        }
     }
 }
 
@@ -2005,6 +2198,7 @@ function initPromoEngine() {
             renderDailyMissionsCard(promosSidebar);
             renderDailyChallengesCard(promosSidebar);
             renderBattlePassCard(promosSidebar);
+            renderVipWheelCard(promosSidebar);
             renderScratchCardCard(promosSidebar);
             renderCasinoPassCard(promosSidebar);
             renderBoostCard(promosSidebar);
@@ -3600,4 +3794,268 @@ async function renderComebackBonusCard(container) {
     card.appendChild(btnRow);
 
     container.appendChild(card);
+}
+
+
+// ─── VIP Wheel card ───────────────────────────────────────────────────────────
+
+(function _injectVipWheelStyles() {
+    if (document.getElementById('vipWheelCardStyles')) return;
+    var s = document.createElement('style');
+    s.id = 'vipWheelCardStyles';
+    s.textContent = [
+        '.promo-vipwheel-card{background:linear-gradient(145deg,rgba(15,5,40,.97),rgba(30,10,60,.98));',
+        'border:1.5px solid rgba(167,139,250,.5);border-radius:16px;padding:18px 16px 14px;',
+        'color:#e0e7ff;margin-bottom:16px;box-shadow:0 4px 24px rgba(167,139,250,.15);}',
+        '.vwc-title{font-size:15px;font-weight:900;color:#c084fc;text-align:center;margin-bottom:10px;letter-spacing:.3px;}',
+        '.vwc-level-badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;',
+        'background:rgba(167,139,250,.2);color:#c084fc;border:1px solid rgba(167,139,250,.4);margin-bottom:8px;}',
+        '.vwc-ineligible{text-align:center;font-size:12px;color:rgba(255,255,255,.5);padding:8px 0 4px;}',
+        '.vwc-progress-hint{text-align:center;font-size:11px;color:#a78bfa;margin-bottom:10px;}',
+        '.vwc-countdown{text-align:center;font-size:13px;color:#f87171;font-weight:600;margin-bottom:10px;}',
+        '.vwc-spin-btn{display:block;width:100%;padding:11px 0;border:none;border-radius:10px;font-size:14px;font-weight:800;',
+        'cursor:pointer;text-transform:uppercase;letter-spacing:.6px;',
+        'background:linear-gradient(135deg,#7c3aed,#c084fc);color:#fff;',
+        'box-shadow:0 4px 16px rgba(124,58,237,.35);margin-bottom:12px;transition:opacity .2s;}',
+        '.vwc-spin-btn:hover{opacity:.88;}',
+        '.vwc-spin-btn:disabled{opacity:.45;cursor:default;}',
+        '.vwc-prize-result{text-align:center;font-size:14px;font-weight:700;color:#fbbf24;padding:6px 0 10px;}',
+        '.vwc-prize-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px;}',
+        '.vwc-prize-row{display:flex;justify-content:space-between;align-items:center;',
+        'padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.04);font-size:11px;}',
+        '.vwc-prize-label{color:#d8b4fe;}',
+        '.vwc-prize-pct{color:rgba(255,255,255,.4);font-size:10px;}'
+    ].join('\n');
+    document.head.appendChild(s);
+})();
+
+async function renderVipWheelCard(container) {
+    if (!container) return;
+    if (document.getElementById('vipWheelCard')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Clear any existing refresh interval
+    if (window._vipWheelInterval) {
+        clearInterval(window._vipWheelInterval);
+        window._vipWheelInterval = null;
+    }
+
+    var card = document.createElement('div');
+    card.id = 'vipWheelCard';
+    card.className = 'promo-card promo-vipwheel-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'vwc-title';
+    titleEl.textContent = '\uD83D\uDC8E VIP Wheel';
+    card.appendChild(titleEl);
+
+    // Level badge placeholder
+    var levelBadge = document.createElement('div');
+    levelBadge.style.cssText = 'text-align:center;margin-bottom:6px;';
+    levelBadge.id = 'vwcLevelBadge';
+    card.appendChild(levelBadge);
+
+    // Main content area (status, button, countdown)
+    var contentArea = document.createElement('div');
+    contentArea.id = 'vwcContent';
+    card.appendChild(contentArea);
+
+    // Prize table (always visible)
+    var prizeTableLabel = document.createElement('div');
+    prizeTableLabel.style.cssText = 'font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-top:6px;margin-bottom:4px;';
+    prizeTableLabel.textContent = 'Prize Table';
+    card.appendChild(prizeTableLabel);
+
+    var prizeGrid = document.createElement('div');
+    prizeGrid.className = 'vwc-prize-grid';
+    var prizeSegments = [
+        { label: '500 Gems', pct: '18%' },
+        { label: '$2', pct: '17%' },
+        { label: '1K Gems', pct: '15%' },
+        { label: '$5', pct: '14%' },
+        { label: '2.5K Gems', pct: '12%' },
+        { label: '$10', pct: '10%' },
+        { label: '5K Gems', pct: '8%' },
+        { label: '$25', pct: '6%' }
+    ];
+    prizeSegments.forEach(function(seg) {
+        var row = document.createElement('div');
+        row.className = 'vwc-prize-row';
+        var lbl = document.createElement('span');
+        lbl.className = 'vwc-prize-label';
+        lbl.textContent = seg.label;
+        var pct = document.createElement('span');
+        pct.className = 'vwc-prize-pct';
+        pct.textContent = seg.pct;
+        row.appendChild(lbl);
+        row.appendChild(pct);
+        prizeGrid.appendChild(row);
+    });
+    card.appendChild(prizeGrid);
+
+    container.appendChild(card);
+
+    // Countdown interval (stored so it can be cleared)
+    var _countdownInterval = null;
+
+    function _clearCountdown() {
+        if (_countdownInterval) {
+            clearInterval(_countdownInterval);
+            _countdownInterval = null;
+        }
+    }
+
+    function _renderIneligible(vipLevel, vipRequired) {
+        _clearCountdown();
+        var content = document.getElementById('vwcContent');
+        if (!content) return;
+        while (content.firstChild) content.removeChild(content.firstChild);
+
+        var msgEl = document.createElement('div');
+        msgEl.className = 'vwc-ineligible';
+        msgEl.textContent = 'VIP Level ' + String(vipRequired) + '+ Required';
+        content.appendChild(msgEl);
+
+        var hintEl = document.createElement('div');
+        hintEl.className = 'vwc-progress-hint';
+        hintEl.textContent = 'Your Level: ' + String(vipLevel) + ' \u2014 ' + String(vipRequired - vipLevel) + ' more level(s) to unlock';
+        content.appendChild(hintEl);
+    }
+
+    function _renderCooldown(cooldownEnds) {
+        _clearCountdown();
+        var content = document.getElementById('vwcContent');
+        if (!content) return;
+        while (content.firstChild) content.removeChild(content.firstChild);
+
+        var cdEl = document.createElement('div');
+        cdEl.className = 'vwc-countdown';
+        cdEl.id = 'vwcCountdownText';
+        content.appendChild(cdEl);
+
+        function _tick() {
+            var el = document.getElementById('vwcCountdownText');
+            if (!el) { _clearCountdown(); return; }
+            var diff = new Date(cooldownEnds) - Date.now();
+            if (diff <= 0) {
+                el.textContent = 'Ready to spin!';
+                _clearCountdown();
+                _fetchAndRender();
+                return;
+            }
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            el.textContent = 'Next spin in ' + String(h) + 'h ' + String(m) + 'm ' + String(s) + 's';
+        }
+        _tick();
+        _countdownInterval = setInterval(_tick, 1000);
+    }
+
+    function _renderSpinButton() {
+        _clearCountdown();
+        var content = document.getElementById('vwcContent');
+        if (!content) return;
+        while (content.firstChild) content.removeChild(content.firstChild);
+
+        var prizeResult = document.createElement('div');
+        prizeResult.className = 'vwc-prize-result';
+        prizeResult.id = 'vwcPrizeResult';
+        prizeResult.style.display = 'none';
+        content.appendChild(prizeResult);
+
+        var spinBtn = document.createElement('button');
+        spinBtn.className = 'vwc-spin-btn';
+        spinBtn.id = 'vwcSpinBtn';
+        spinBtn.textContent = 'SPIN';
+        spinBtn.addEventListener('click', function() {
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'Spinning\u2026';
+            fetch('/api/vipwheel/spin', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.prize && d.prize.label) {
+                    var resultEl = document.getElementById('vwcPrizeResult');
+                    if (resultEl) {
+                        resultEl.textContent = '\uD83C\uDF89 You won: ' + d.prize.label + '!';
+                        resultEl.style.display = 'block';
+                    }
+                    if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                        updateBalanceDisplay(d.newBalance);
+                    }
+                    if (typeof showToast === 'function') showToast('\uD83D\uDC8E VIP Wheel: ' + d.prize.label, 'win');
+                    setTimeout(function() { _fetchAndRender(); }, 3000);
+                } else if (d.status === 429 || (d.error && d.error.toLowerCase().indexOf('cooldown') !== -1)) {
+                    if (typeof showToast === 'function') showToast('VIP Wheel cooldown active \u2014 try again later', 'info');
+                    setTimeout(function() { _fetchAndRender(); }, 1500);
+                } else if (d.status === 403 || (d.error && d.error.toLowerCase().indexOf('level') !== -1)) {
+                    if (typeof showToast === 'function') showToast('VIP Level 3+ required for VIP Wheel', 'error');
+                    setTimeout(function() { _fetchAndRender(); }, 1500);
+                } else {
+                    spinBtn.disabled = false;
+                    spinBtn.textContent = 'SPIN';
+                }
+            }).catch(function() {
+                spinBtn.disabled = false;
+                spinBtn.textContent = 'SPIN';
+            });
+        });
+        content.appendChild(spinBtn);
+    }
+
+    async function _fetchAndRender() {
+        try {
+            var res = await fetch('/api/vipwheel/status', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) return;
+            var data = await res.json();
+
+            // Update level badge
+            var badge = document.getElementById('vwcLevelBadge');
+            if (badge) {
+                while (badge.firstChild) badge.removeChild(badge.firstChild);
+                var badgeSpan = document.createElement('span');
+                badgeSpan.className = 'vwc-level-badge';
+                badgeSpan.textContent = 'VIP Level ' + String(data.vipLevel || 0);
+                badge.appendChild(badgeSpan);
+            }
+
+            if (!data.eligible) {
+                _renderIneligible(data.vipLevel || 0, data.vipRequired || 3);
+            } else if (!data.available && data.cooldownEnds) {
+                _renderCooldown(data.cooldownEnds);
+            } else {
+                _renderSpinButton();
+            }
+        } catch (e) {
+            var content = document.getElementById('vwcContent');
+            if (content) {
+                while (content.firstChild) content.removeChild(content.firstChild);
+                var errEl = document.createElement('div');
+                errEl.className = 'vwc-ineligible';
+                errEl.textContent = 'Could not load VIP Wheel status';
+                content.appendChild(errEl);
+            }
+        }
+    }
+
+    await _fetchAndRender();
+
+    // Refresh status every 60 seconds
+    window._vipWheelInterval = setInterval(function() {
+        if (!document.getElementById('vipWheelCard')) {
+            clearInterval(window._vipWheelInterval);
+            window._vipWheelInterval = null;
+            return;
+        }
+        _fetchAndRender();
+    }, 60000);
 }
