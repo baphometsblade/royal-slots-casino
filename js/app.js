@@ -207,6 +207,7 @@
             _checkStreakBonuses();
             _checkSubscriptionDailyGems();
             _checkGiftsInbox();
+            _syncXpWithServer();
             _initNotificationBell();
             startSessionDurationWatch();
             // Periodic loss-streak check — fires every 3 minutes during active play
@@ -761,6 +762,47 @@
                     }
                 })
                 .catch(function() {});
+        }
+
+        // ── XP server sync ────────────────────────────────────────────────────
+        async function _syncXpWithServer() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            var xpKey = typeof STORAGE_KEY_XP !== 'undefined' ? STORAGE_KEY_XP : 'casinoXP';
+            var clientXpData = localStorage.getItem(xpKey);
+            if (!clientXpData) return;
+            var xp = 0;
+            try {
+                var parsed = JSON.parse(clientXpData);
+                xp = (parsed && typeof parsed === 'object') ? (parsed.totalXP || parsed.xp || 0) : (Number(parsed) || 0);
+            } catch (e) { return; }
+            if (!xp || xp <= 0) return;
+            try {
+                var resp = await fetch('/api/xpshop/sync-xp', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ xp: Math.floor(xp) })
+                });
+                if (!resp.ok) return;
+                var result = await resp.json();
+                if (result && typeof result.xp === 'number' && result.xp > xp) {
+                    // Server is authoritative — update localStorage if server has a higher value
+                    try {
+                        var stored = JSON.parse(localStorage.getItem(xpKey));
+                        if (stored && typeof stored === 'object') {
+                            stored.xp = result.xp;
+                            if (typeof stored.totalXP !== 'undefined') stored.totalXP = result.xp;
+                            localStorage.setItem(xpKey, JSON.stringify(stored));
+                        } else {
+                            localStorage.setItem(xpKey, JSON.stringify({ xp: result.xp }));
+                        }
+                    } catch (e) { /* ignore storage errors */ }
+                }
+            } catch (e) { /* network / parse errors are non-fatal */ }
         }
 
         // ── Achievements check ─────────────────────────────────────────────────

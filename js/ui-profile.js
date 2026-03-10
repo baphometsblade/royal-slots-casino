@@ -888,7 +888,8 @@ const PROFILE_TABS = [
     { id: 'verification', icon: '\u{2705}',  label: 'Verification' },
     { id: 'limits',       icon: '\u{1F6E1}\uFE0F', label: 'Responsible Play' },
     { id: 'history',      icon: '\u{1F4CB}', label: 'History' },
-    { id: 'badges',       icon: '\u{1F3C5}', label: 'Badges' }
+    { id: 'badges',       icon: '\u{1F3C5}', label: 'Badges' },
+    { id: 'gifts',        icon: '\u{1F381}', label: 'Gifts' }
 ];
 
 function renderProfileSidebar() {
@@ -983,6 +984,7 @@ function renderProfileContent() {
         case 'limits':        renderLimitsTab(); break;
         case 'history':       renderHistoryTab(); break;
         case 'badges':        renderBadgeGallery(); break;
+        case 'gifts':         renderGiftsTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -2679,4 +2681,522 @@ function _refFallbackCopy(text, btn, label) {
     } catch(e) {
         btn.textContent = label;
     }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// GIFTS TAB — tab entry point
+// ═══════════════════════════════════════════════════════
+
+function renderGiftsTab() {
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    var header = document.createElement('h2');
+    header.className = 'profile-section-title';
+    header.textContent = 'Gifts';
+    el.appendChild(header);
+
+    renderGiftsSection(el);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// GIFTS SECTION — standalone embed helper
+// ═══════════════════════════════════════════════════════
+//
+// renderGiftsSection(container)
+//
+// Renders a self-contained gifts UI block into `container`.
+// Three sub-tabs: Send Gift | Inbox | Sent.
+// All dynamic content uses textContent / createElement — no innerHTML with variables.
+
+function renderGiftsSection(container) {
+    if (!container) return;
+
+    // ── Inject CSS once ────────────────────────────────
+    if (!document.getElementById('giftsSectionCss')) {
+        var style = document.createElement('style');
+        style.id = 'giftsSectionCss';
+        style.textContent = [
+            '.gifts-section { font-family: inherit; color: #e2e8f0; }',
+            '.gifts-tab-bar {',
+            '  display: flex; gap: 6px; margin-bottom: 18px;',
+            '}',
+            '.gifts-tab-btn {',
+            '  flex: 1; padding: 8px 0; border: 1px solid rgba(168,85,247,0.35);',
+            '  border-radius: 8px; background: rgba(88,28,135,0.25); color: #c4b5fd;',
+            '  font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.18s, color 0.18s;',
+            '}',
+            '.gifts-tab-btn.active {',
+            '  background: linear-gradient(135deg, rgba(126,34,206,0.75), rgba(88,28,135,0.85));',
+            '  color: #f3e8ff; border-color: rgba(168,85,247,0.7);',
+            '}',
+            '.gifts-tab-btn:hover:not(.active) { background: rgba(88,28,135,0.45); }',
+            '.gifts-panel { display: none; }',
+            '.gifts-panel.active { display: block; }',
+            '.gifts-card {',
+            '  background: linear-gradient(135deg, rgba(88,28,135,0.35) 0%, rgba(49,10,101,0.55) 100%);',
+            '  border: 1px solid rgba(168,85,247,0.30); border-radius: 14px;',
+            '  padding: 20px; margin-bottom: 14px;',
+            '}',
+            '.gifts-card-title {',
+            '  font-size: 11px; font-weight: 700; letter-spacing: 1.2px;',
+            '  color: #a78bfa; text-transform: uppercase; margin-bottom: 14px;',
+            '}',
+            '.gifts-field-row { margin-bottom: 12px; }',
+            '.gifts-field-row label {',
+            '  display: block; font-size: 12px; font-weight: 600;',
+            '  color: #c4b5fd; margin-bottom: 5px;',
+            '}',
+            '.gifts-field-row input[type="text"], .gifts-field-row input[type="number"] {',
+            '  width: 100%; box-sizing: border-box;',
+            '  background: rgba(30,0,60,0.55); border: 1px solid rgba(168,85,247,0.40);',
+            '  border-radius: 8px; color: #e2e8f0; font-size: 14px;',
+            '  padding: 9px 12px; outline: none; transition: border-color 0.18s;',
+            '}',
+            '.gifts-field-row input:focus { border-color: rgba(168,85,247,0.85); }',
+            '.gifts-send-btn {',
+            '  width: 100%; padding: 11px 0; border: none; border-radius: 10px;',
+            '  background: linear-gradient(135deg, #7c3aed, #5b21b6);',
+            '  color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;',
+            '  transition: opacity 0.18s; margin-top: 4px;',
+            '}',
+            '.gifts-send-btn:disabled { opacity: 0.5; cursor: default; }',
+            '.gifts-send-btn:hover:not(:disabled) { opacity: 0.88; }',
+            '.gifts-msg {',
+            '  margin-top: 10px; font-size: 13px; text-align: center;',
+            '  padding: 8px 12px; border-radius: 8px; display: none;',
+            '}',
+            '.gifts-msg.success { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }',
+            '.gifts-msg.error   { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }',
+            '.gifts-empty {',
+            '  text-align: center; color: #94a3b8; font-size: 13px; padding: 28px 0;',
+            '}',
+            '.gift-row {',
+            '  display: flex; align-items: center; gap: 12px;',
+            '  border-bottom: 1px solid rgba(168,85,247,0.15);',
+            '  padding: 12px 0;',
+            '}',
+            '.gift-row:last-child { border-bottom: none; }',
+            '.gift-row-info { flex: 1; min-width: 0; }',
+            '.gift-row-user { font-size: 13px; font-weight: 700; color: #ddd6fe; }',
+            '.gift-row-msg  { font-size: 12px; color: #94a3b8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+            '.gift-row-amount { font-size: 15px; font-weight: 800; color: #a78bfa; white-space: nowrap; }',
+            '.gift-row-date   { font-size: 11px; color: #64748b; white-space: nowrap; }',
+            '.gift-claim-btn {',
+            '  padding: 7px 14px; border: none; border-radius: 8px;',
+            '  background: linear-gradient(135deg, #7c3aed, #5b21b6);',
+            '  color: #fff; font-size: 12px; font-weight: 700; cursor: pointer;',
+            '  white-space: nowrap; transition: opacity 0.18s;',
+            '}',
+            '.gift-claim-btn:disabled { opacity: 0.45; cursor: default; }',
+            '.gift-claim-btn:hover:not(:disabled) { opacity: 0.84; }',
+            '.gift-status-badge {',
+            '  display: inline-block; font-size: 10px; font-weight: 700;',
+            '  letter-spacing: 0.8px; text-transform: uppercase;',
+            '  padding: 2px 8px; border-radius: 20px;',
+            '}',
+            '.gift-status-badge.pending { background: rgba(234,179,8,0.2); color: #fde047; border: 1px solid rgba(234,179,8,0.4); }',
+            '.gift-status-badge.claimed { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }',
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // ── Root wrapper ───────────────────────────────────
+    var wrap = document.createElement('div');
+    wrap.className = 'gifts-section';
+
+    // ── Sub-tab bar ────────────────────────────────────
+    var tabBar = document.createElement('div');
+    tabBar.className = 'gifts-tab-bar';
+
+    var subTabs = [
+        { id: 'send',  label: 'Send Gift' },
+        { id: 'inbox', label: 'Inbox' },
+        { id: 'sent',  label: 'Sent' }
+    ];
+    var activeSubTab = 'send';
+
+    var panels = {};
+
+    subTabs.forEach(function(t) {
+        var btn = document.createElement('button');
+        btn.className = 'gifts-tab-btn' + (t.id === activeSubTab ? ' active' : '');
+        btn.textContent = t.label;
+        btn.setAttribute('data-subtab', t.id);
+        btn.addEventListener('click', function() {
+            activeSubTab = t.id;
+            tabBar.querySelectorAll('.gifts-tab-btn').forEach(function(b) {
+                b.className = 'gifts-tab-btn' + (b.getAttribute('data-subtab') === activeSubTab ? ' active' : '');
+            });
+            Object.keys(panels).forEach(function(pid) {
+                panels[pid].className = 'gifts-panel' + (pid === activeSubTab ? ' active' : '');
+            });
+            if (activeSubTab === 'inbox') _giftsLoadInbox(panels.inbox);
+            if (activeSubTab === 'sent')  _giftsLoadSent(panels.sent);
+        });
+        tabBar.appendChild(btn);
+    });
+    wrap.appendChild(tabBar);
+
+    // ── Panel: Send ────────────────────────────────────
+    var sendPanel = document.createElement('div');
+    sendPanel.className = 'gifts-panel active';
+    panels.send = sendPanel;
+
+    var sendCard = document.createElement('div');
+    sendCard.className = 'gifts-card';
+
+    var sendTitle = document.createElement('div');
+    sendTitle.className = 'gifts-card-title';
+    sendTitle.textContent = 'Send a Gift';
+    sendCard.appendChild(sendTitle);
+
+    // Recipient
+    var recipientRow = document.createElement('div');
+    recipientRow.className = 'gifts-field-row';
+    var recipientLabel = document.createElement('label');
+    recipientLabel.textContent = 'Recipient Username';
+    recipientRow.appendChild(recipientLabel);
+    var recipientInput = document.createElement('input');
+    recipientInput.type = 'text';
+    recipientInput.placeholder = 'Enter exact username';
+    recipientInput.maxLength = 50;
+    recipientRow.appendChild(recipientInput);
+    sendCard.appendChild(recipientRow);
+
+    // Amount
+    var amountRow = document.createElement('div');
+    amountRow.className = 'gifts-field-row';
+    var amountLabel = document.createElement('label');
+    amountLabel.textContent = 'Amount ($1 – $500)';
+    amountRow.appendChild(amountLabel);
+    var amountInput = document.createElement('input');
+    amountInput.type = 'number';
+    amountInput.min = '1';
+    amountInput.max = '500';
+    amountInput.step = '1';
+    amountInput.placeholder = '10';
+    amountRow.appendChild(amountInput);
+    sendCard.appendChild(amountRow);
+
+    // Message
+    var msgRow = document.createElement('div');
+    msgRow.className = 'gifts-field-row';
+    var msgLabel = document.createElement('label');
+    msgLabel.textContent = 'Message (optional, max 100 chars)';
+    msgRow.appendChild(msgLabel);
+    var msgInput = document.createElement('input');
+    msgInput.type = 'text';
+    msgInput.maxLength = 100;
+    msgInput.placeholder = 'Good luck!';
+    msgRow.appendChild(msgInput);
+    sendCard.appendChild(msgRow);
+
+    // Send button
+    var sendBtn = document.createElement('button');
+    sendBtn.className = 'gifts-send-btn';
+    sendBtn.textContent = 'Send Gift';
+    sendCard.appendChild(sendBtn);
+
+    // Feedback message
+    var feedbackEl = document.createElement('div');
+    feedbackEl.className = 'gifts-msg';
+    sendCard.appendChild(feedbackEl);
+
+    sendBtn.addEventListener('click', function() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+            _giftsShowMsg(feedbackEl, 'Please log in to send gifts.', false);
+            return;
+        }
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) {
+            _giftsShowMsg(feedbackEl, 'Please log in to send gifts.', false);
+            return;
+        }
+
+        var toUsername = recipientInput.value.trim();
+        var amount = parseInt(amountInput.value, 10);
+        var message = msgInput.value.trim();
+
+        if (!toUsername) {
+            _giftsShowMsg(feedbackEl, 'Please enter a recipient username.', false);
+            return;
+        }
+        if (!amount || amount < 1 || amount > 500) {
+            _giftsShowMsg(feedbackEl, 'Amount must be between $1 and $500.', false);
+            return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Sending…';
+        feedbackEl.style.display = 'none';
+
+        fetch('/api/gifts/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ toUsername: toUsername, amount: amount, message: message })
+        }).then(function(res) { return res.json(); }).then(function(data) {
+            if (data && data.ok) {
+                // Update client balance if possible
+                if (typeof balance !== 'undefined' && typeof data.newBalance === 'number') {
+                    balance = data.newBalance;
+                    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+                }
+                _giftsShowMsg(feedbackEl, 'Gift sent successfully!', true);
+                recipientInput.value = '';
+                amountInput.value = '';
+                msgInput.value = '';
+            } else {
+                var errMsg = (data && data.error) ? data.error : 'Failed to send gift.';
+                _giftsShowMsg(feedbackEl, errMsg, false);
+            }
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send Gift';
+        }).catch(function() {
+            _giftsShowMsg(feedbackEl, 'Network error. Please try again.', false);
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send Gift';
+        });
+    });
+
+    sendPanel.appendChild(sendCard);
+    wrap.appendChild(sendPanel);
+
+    // ── Panel: Inbox ───────────────────────────────────
+    var inboxPanel = document.createElement('div');
+    inboxPanel.className = 'gifts-panel';
+    panels.inbox = inboxPanel;
+    wrap.appendChild(inboxPanel);
+
+    // ── Panel: Sent ────────────────────────────────────
+    var sentPanel = document.createElement('div');
+    sentPanel.className = 'gifts-panel';
+    panels.sent = sentPanel;
+    wrap.appendChild(sentPanel);
+
+    container.appendChild(wrap);
+}
+
+// ── Helpers ─────────────────────────────────────────────
+
+function _giftsShowMsg(el, text, ok) {
+    el.textContent = text;
+    el.className = 'gifts-msg ' + (ok ? 'success' : 'error');
+    el.style.display = 'block';
+}
+
+function _giftsFormatDate(str) {
+    if (!str) return '';
+    try {
+        var d = new Date(str);
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch(e) { return str; }
+}
+
+function _giftsLoadInbox(panel) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    panel.textContent = '';
+    var spinner = document.createElement('div');
+    spinner.className = 'profile-loading';
+    var sp = document.createElement('div');
+    sp.className = 'profile-spinner';
+    spinner.appendChild(sp);
+    panel.appendChild(spinner);
+
+    fetch('/api/gifts/inbox', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(res) { return res.json(); }).then(function(data) {
+        panel.textContent = '';
+
+        var card = document.createElement('div');
+        card.className = 'gifts-card';
+
+        var cardTitle = document.createElement('div');
+        cardTitle.className = 'gifts-card-title';
+        cardTitle.textContent = 'Pending Gifts';
+        card.appendChild(cardTitle);
+
+        var gifts = (data && Array.isArray(data.gifts)) ? data.gifts : [];
+
+        if (gifts.length === 0) {
+            var empty = document.createElement('div');
+            empty.className = 'gifts-empty';
+            empty.textContent = 'No pending gifts';
+            card.appendChild(empty);
+        } else {
+            gifts.forEach(function(gift) {
+                var row = document.createElement('div');
+                row.className = 'gift-row';
+                row.setAttribute('data-gift-id', String(gift.id));
+
+                var info = document.createElement('div');
+                info.className = 'gift-row-info';
+
+                var userEl = document.createElement('div');
+                userEl.className = 'gift-row-user';
+                userEl.textContent = 'From: ' + (gift.fromUsername || '—');
+                info.appendChild(userEl);
+
+                if (gift.message) {
+                    var msgEl = document.createElement('div');
+                    msgEl.className = 'gift-row-msg';
+                    msgEl.textContent = gift.message;
+                    info.appendChild(msgEl);
+                }
+
+                var dateEl = document.createElement('div');
+                dateEl.className = 'gift-row-date';
+                dateEl.textContent = _giftsFormatDate(gift.createdAt);
+                info.appendChild(dateEl);
+
+                row.appendChild(info);
+
+                var amtEl = document.createElement('div');
+                amtEl.className = 'gift-row-amount';
+                amtEl.textContent = '$' + Number(gift.amount).toFixed(2);
+                row.appendChild(amtEl);
+
+                var claimBtn = document.createElement('button');
+                claimBtn.className = 'gift-claim-btn';
+                claimBtn.textContent = 'Claim $' + Number(gift.amount).toFixed(2);
+                claimBtn.addEventListener('click', function() {
+                    claimBtn.disabled = true;
+                    claimBtn.textContent = 'Claiming…';
+
+                    var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                    if (!currentToken) { claimBtn.textContent = 'Error'; return; }
+
+                    fetch('/api/gifts/claim/' + gift.id, {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + currentToken }
+                    }).then(function(res) { return res.json(); }).then(function(resp) {
+                        if (resp && resp.ok) {
+                            if (typeof balance !== 'undefined' && typeof resp.newBalance === 'number') {
+                                balance = resp.newBalance;
+                                if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+                            }
+                            // Remove the row from DOM
+                            var rowEl = card.querySelector('[data-gift-id="' + gift.id + '"]');
+                            if (rowEl) rowEl.parentNode.removeChild(rowEl);
+                            // If no rows remain, show empty state
+                            if (card.querySelectorAll('.gift-row').length === 0) {
+                                var emptyEl = document.createElement('div');
+                                emptyEl.className = 'gifts-empty';
+                                emptyEl.textContent = 'No pending gifts';
+                                card.appendChild(emptyEl);
+                            }
+                        } else {
+                            claimBtn.disabled = false;
+                            claimBtn.textContent = 'Claim $' + Number(gift.amount).toFixed(2);
+                        }
+                    }).catch(function() {
+                        claimBtn.disabled = false;
+                        claimBtn.textContent = 'Claim $' + Number(gift.amount).toFixed(2);
+                    });
+                });
+                row.appendChild(claimBtn);
+
+                card.appendChild(row);
+            });
+        }
+
+        panel.appendChild(card);
+    }).catch(function() {
+        panel.textContent = '';
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171; text-align:center; padding:20px; font-size:13px;';
+        errDiv.textContent = 'Failed to load inbox. Please try again later.';
+        panel.appendChild(errDiv);
+    });
+}
+
+function _giftsLoadSent(panel) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    panel.textContent = '';
+    var spinner = document.createElement('div');
+    spinner.className = 'profile-loading';
+    var sp = document.createElement('div');
+    sp.className = 'profile-spinner';
+    spinner.appendChild(sp);
+    panel.appendChild(spinner);
+
+    fetch('/api/gifts/sent', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(res) { return res.json(); }).then(function(data) {
+        panel.textContent = '';
+
+        var card = document.createElement('div');
+        card.className = 'gifts-card';
+
+        var cardTitle = document.createElement('div');
+        cardTitle.className = 'gifts-card-title';
+        cardTitle.textContent = 'Sent Gifts';
+        card.appendChild(cardTitle);
+
+        var gifts = (data && Array.isArray(data.gifts)) ? data.gifts : [];
+
+        if (gifts.length === 0) {
+            var empty = document.createElement('div');
+            empty.className = 'gifts-empty';
+            empty.textContent = 'No gifts sent yet';
+            card.appendChild(empty);
+        } else {
+            gifts.forEach(function(gift) {
+                var row = document.createElement('div');
+                row.className = 'gift-row';
+
+                var info = document.createElement('div');
+                info.className = 'gift-row-info';
+
+                var userEl = document.createElement('div');
+                userEl.className = 'gift-row-user';
+                userEl.textContent = 'To: ' + (gift.toUsername || '—');
+                info.appendChild(userEl);
+
+                if (gift.message) {
+                    var msgEl = document.createElement('div');
+                    msgEl.className = 'gift-row-msg';
+                    msgEl.textContent = gift.message;
+                    info.appendChild(msgEl);
+                }
+
+                var dateEl = document.createElement('div');
+                dateEl.className = 'gift-row-date';
+                dateEl.textContent = _giftsFormatDate(gift.createdAt);
+                info.appendChild(dateEl);
+
+                row.appendChild(info);
+
+                var amtEl = document.createElement('div');
+                amtEl.className = 'gift-row-amount';
+                amtEl.textContent = '$' + Number(gift.amount).toFixed(2);
+                row.appendChild(amtEl);
+
+                var statusBadge = document.createElement('span');
+                var statusStr = gift.status || 'pending';
+                statusBadge.className = 'gift-status-badge ' + statusStr;
+                statusBadge.textContent = statusStr.charAt(0).toUpperCase() + statusStr.slice(1);
+                row.appendChild(statusBadge);
+
+                card.appendChild(row);
+            });
+        }
+
+        panel.appendChild(card);
+    }).catch(function() {
+        panel.textContent = '';
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171; text-align:center; padding:20px; font-size:13px;';
+        errDiv.textContent = 'Failed to load sent gifts. Please try again later.';
+        panel.appendChild(errDiv);
+    });
 }
