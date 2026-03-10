@@ -26,6 +26,13 @@
         let _wagerRaceRefreshInterval = null;
         let _wagerRaceCountdownInterval = null;
 
+        // Jackpot Ticker state
+        let _jackpotRefreshInterval = null;
+
+        // Lucky Hour banner state
+        let _luckyHourRefreshInterval = null;
+        let _luckyHourCountdownInterval = null;
+
         // Quick-resume banner state
         var _resumeBannerTimer = null;
         var _lastPlayedGameForResume = null;
@@ -492,6 +499,8 @@ function renderGames() {
             renderLobbyChallengeWidget();
             initTournamentBanner();
             initWagerRaceBanner();
+            initJackpotTicker();
+            initLuckyHourBanner();
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -1809,6 +1818,291 @@ function renderGames() {
             if (diff === 0) {
                 clearInterval(_wagerRaceCountdownInterval);
                 setTimeout(_fetchAndRenderWagerRace, 3000);
+            }
+        }
+
+        // ── Jackpot Ticker ────────────────────────────────────────────────────
+
+        function initJackpotTicker() {
+            // Inject CSS once
+            if (!document.getElementById('jackpotTickerStyles')) {
+                var style = document.createElement('style');
+                style.id = 'jackpotTickerStyles';
+                style.textContent = [
+                    '.jackpot-ticker{background:linear-gradient(135deg,#12071f 0%,#1a0a2e 50%,#0f0718 100%);border:1px solid rgba(139,92,246,0.35);border-radius:12px;padding:12px 16px;margin:0 0 14px 0;color:#e2e8f0;font-family:inherit;position:relative;overflow:hidden;}',
+                    '.jackpot-ticker::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#f59e0b,#7c3aed);background-size:200%;animation:jtShimmer 3s linear infinite;}',
+                    '@keyframes jtShimmer{0%{background-position:0%}100%{background-position:200%}}',
+                    '.jackpot-ticker-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.45);margin-bottom:10px;display:flex;align-items:center;gap:6px;}',
+                    '.jackpot-ticker-label::after{content:"";flex:1;height:1px;background:rgba(255,255,255,0.1);}',
+                    '.jackpot-tiers{display:flex;gap:10px;flex-wrap:wrap;}',
+                    '.jackpot-tier{flex:1;min-width:120px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;text-align:center;transition:transform 0.15s;}',
+                    '.jackpot-tier:hover{transform:translateY(-2px);}',
+                    '.jackpot-tier--grand{background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(180,83,9,0.08));border-color:#f59e0b;box-shadow:0 0 12px rgba(245,158,11,0.2);}',
+                    '.jt-icon{font-size:18px;line-height:1;margin-bottom:4px;}',
+                    '.jt-tier-name{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);margin-bottom:6px;}',
+                    '.jackpot-tier--grand .jt-tier-name{color:#fbbf24;}',
+                    '.jt-amount{font-size:17px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;}',
+                    '.jackpot-tier--grand .jt-amount{color:#f59e0b;text-shadow:0 0 8px rgba(245,158,11,0.5);}',
+                    '.jt-last-winner{font-size:10px;color:rgba(255,255,255,0.45);margin-top:5px;}'
+                ].join('');
+                document.head.appendChild(style);
+            }
+
+            if (document.getElementById('jackpotTicker')) {
+                _fetchAndRenderJackpot();
+                return;
+            }
+
+            var ticker = document.createElement('div');
+            ticker.id = 'jackpotTicker';
+            ticker.className = 'jackpot-ticker';
+            ticker.style.display = 'none';
+
+            // Insert before game grid — same pattern as wager race banner
+            var gamesSection = document.getElementById('games-section') || document.getElementById('gamesContainer') || document.querySelector('.games-grid') || document.querySelector('.game-grid');
+            if (gamesSection && gamesSection.parentNode) {
+                gamesSection.parentNode.insertBefore(ticker, gamesSection);
+            } else {
+                var main = document.getElementById('main-content') || document.getElementById('lobby') || document.querySelector('.lobby-content');
+                if (main) main.appendChild(ticker);
+            }
+
+            _fetchAndRenderJackpot();
+            _jackpotRefreshInterval = setInterval(_fetchAndRenderJackpot, 30000);
+        }
+
+        async function _fetchAndRenderJackpot() {
+            var ticker = document.getElementById('jackpotTicker');
+            if (!ticker) return;
+            try {
+                var res = await fetch('/api/jackpot/status');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var data = await res.json();
+                var pools = data.pools || [];
+                if (pools.length === 0) { ticker.style.display = 'none'; return; }
+                _renderJackpotTicker(pools);
+            } catch (e) {
+                if (ticker) ticker.style.display = 'none';
+            }
+        }
+
+        function _renderJackpotTicker(pools) {
+            var ticker = document.getElementById('jackpotTicker');
+            if (!ticker || !pools || pools.length === 0) { if (ticker) ticker.style.display = 'none'; return; }
+
+            var tierMeta = {
+                mini:  { icon: '🥉', label: 'Mini' },
+                minor: { icon: '🥈', label: 'Minor' },
+                major: { icon: '🥇', label: 'Major' },
+                grand: { icon: '🏆', label: 'Grand' }
+            };
+
+            // Build label row
+            var labelDiv = document.createElement('div');
+            labelDiv.className = 'jackpot-ticker-label';
+            var labelSpan = document.createElement('span');
+            labelSpan.textContent = '💰 Live Jackpots';
+            labelDiv.appendChild(labelSpan);
+
+            // Build tiers container
+            var tiersDiv = document.createElement('div');
+            tiersDiv.className = 'jackpot-tiers';
+
+            // Sort by size so Grand is last (most prominent on right)
+            var order = ['mini', 'minor', 'major', 'grand'];
+            var sorted = order.map(function(t) { return pools.find(function(p) { return p.tier === t; }); }).filter(Boolean);
+            // Also include any tiers not in order array
+            pools.forEach(function(p) { if (order.indexOf(p.tier) === -1) sorted.push(p); });
+
+            sorted.forEach(function(pool) {
+                var meta = tierMeta[pool.tier] || { icon: '🎰', label: pool.tier };
+                var isGrand = pool.tier === 'grand';
+
+                var card = document.createElement('div');
+                card.className = 'jackpot-tier' + (isGrand ? ' jackpot-tier--grand' : '');
+
+                var iconDiv = document.createElement('div');
+                iconDiv.className = 'jt-icon';
+                iconDiv.textContent = meta.icon;
+
+                var nameDiv = document.createElement('div');
+                nameDiv.className = 'jt-tier-name';
+                nameDiv.textContent = meta.label.toUpperCase();
+
+                var amountDiv = document.createElement('div');
+                amountDiv.className = 'jt-amount';
+                var amount = parseFloat(pool.currentAmount || 0);
+                amountDiv.textContent = '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                card.appendChild(iconDiv);
+                card.appendChild(nameDiv);
+                card.appendChild(amountDiv);
+
+                // Grand jackpot last winner note
+                if (isGrand && pool.lastWinner && pool.lastWinner.username) {
+                    var winnerDiv = document.createElement('div');
+                    winnerDiv.className = 'jt-last-winner';
+                    // Use textContent for server-provided username — safe from XSS
+                    var wonAt = pool.lastWinner.wonAt ? new Date(pool.lastWinner.wonAt).toLocaleDateString() : '';
+                    var prefix = document.createTextNode('\uD83C\uDF89 Last won by ');
+                    var usernameSpan = document.createElement('strong');
+                    usernameSpan.textContent = pool.lastWinner.username;
+                    var suffix = wonAt ? document.createTextNode(' · ' + wonAt) : document.createTextNode('');
+                    winnerDiv.appendChild(prefix);
+                    winnerDiv.appendChild(usernameSpan);
+                    winnerDiv.appendChild(suffix);
+                    card.appendChild(winnerDiv);
+                }
+
+                tiersDiv.appendChild(card);
+            });
+
+            // Clear and rebuild
+            while (ticker.firstChild) ticker.removeChild(ticker.firstChild);
+            ticker.appendChild(labelDiv);
+            ticker.appendChild(tiersDiv);
+            ticker.style.display = '';
+        }
+
+        // ── Lucky Hour Banner ─────────────────────────────────────────────────
+
+        function initLuckyHourBanner() {
+            // Inject CSS once
+            if (!document.getElementById('luckyHourStyles')) {
+                var style = document.createElement('style');
+                style.id = 'luckyHourStyles';
+                style.textContent = [
+                    '.lucky-hour-banner{border-radius:10px;padding:10px 16px;margin:0 0 14px 0;font-family:inherit;display:flex;align-items:center;gap:12px;transition:all 0.3s;}',
+                    '.lucky-hour-banner--active{background:linear-gradient(135deg,#064e3b 0%,#065f46 50%,#047857 100%);border:1px solid #10b981;box-shadow:0 0 16px rgba(16,185,129,0.25);animation:lhPulse 2s ease-in-out infinite;}',
+                    '.lucky-hour-banner--inactive{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);}',
+                    '@keyframes lhPulse{0%,100%{box-shadow:0 0 16px rgba(16,185,129,0.25)}50%{box-shadow:0 0 28px rgba(16,185,129,0.45)}}',
+                    '.lh-icon{font-size:22px;flex-shrink:0;line-height:1;}',
+                    '.lh-body{flex:1;min-width:0;}',
+                    '.lh-title{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+                    '.lucky-hour-banner--active .lh-title{color:#6ee7b7;}',
+                    '.lucky-hour-banner--inactive .lh-title{color:rgba(255,255,255,0.55);font-weight:600;font-size:12px;}',
+                    '.lh-countdown{font-size:11px;font-variant-numeric:tabular-nums;margin-top:2px;}',
+                    '.lucky-hour-banner--active .lh-countdown{color:#a7f3d0;}',
+                    '.lucky-hour-banner--inactive .lh-countdown{color:rgba(255,255,255,0.35);}'
+                ].join('');
+                document.head.appendChild(style);
+            }
+
+            if (document.getElementById('luckyHourBanner')) {
+                _fetchAndRenderLuckyHour();
+                return;
+            }
+
+            var banner = document.createElement('div');
+            banner.id = 'luckyHourBanner';
+            banner.className = 'lucky-hour-banner';
+            banner.style.display = 'none';
+
+            // Insert before game grid — same pattern as other banners
+            var gamesSection = document.getElementById('games-section') || document.getElementById('gamesContainer') || document.querySelector('.games-grid') || document.querySelector('.game-grid');
+            if (gamesSection && gamesSection.parentNode) {
+                gamesSection.parentNode.insertBefore(banner, gamesSection);
+            } else {
+                var main = document.getElementById('main-content') || document.getElementById('lobby') || document.querySelector('.lobby-content');
+                if (main) main.appendChild(banner);
+            }
+
+            _fetchAndRenderLuckyHour();
+            _luckyHourRefreshInterval = setInterval(_fetchAndRenderLuckyHour, 60000);
+        }
+
+        async function _fetchAndRenderLuckyHour() {
+            var banner = document.getElementById('luckyHourBanner');
+            if (!banner) return;
+            try {
+                var res = await fetch('/api/lucky-hour');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var data = await res.json();
+                _renderLuckyHourBanner(data);
+            } catch (e) {
+                if (banner) banner.style.display = 'none';
+            }
+        }
+
+        function _renderLuckyHourBanner(data) {
+            var banner = document.getElementById('luckyHourBanner');
+            if (!banner || !data) { if (banner) banner.style.display = 'none'; return; }
+
+            // Clear existing content
+            while (banner.firstChild) banner.removeChild(banner.firstChild);
+
+            // Clear any existing countdown interval
+            if (_luckyHourCountdownInterval) {
+                clearInterval(_luckyHourCountdownInterval);
+                _luckyHourCountdownInterval = null;
+            }
+
+            var isActive = !!data.active;
+            var multiplier = parseFloat(data.multiplier || 1.5);
+            var targetTime = isActive ? data.endsAt : data.nextAt;
+
+            banner.className = 'lucky-hour-banner ' + (isActive ? 'lucky-hour-banner--active' : 'lucky-hour-banner--inactive');
+            banner.style.display = '';
+
+            // Icon
+            var iconDiv = document.createElement('div');
+            iconDiv.className = 'lh-icon';
+            iconDiv.textContent = '\uD83C\uDF40'; // 🍀
+
+            // Body
+            var bodyDiv = document.createElement('div');
+            bodyDiv.className = 'lh-body';
+
+            var titleDiv = document.createElement('div');
+            titleDiv.className = 'lh-title';
+
+            if (isActive) {
+                // Build: "🍀 LUCKY HOUR ACTIVE — 1.5× Win Multiplier!"
+                titleDiv.textContent = 'LUCKY HOUR ACTIVE \u2014 ' + multiplier + '\u00D7 Win Multiplier!';
+            } else {
+                titleDiv.textContent = '\uD83C\uDF40 Lucky Hour starts in\u2026';
+            }
+
+            var countdownDiv = document.createElement('div');
+            countdownDiv.className = 'lh-countdown';
+            countdownDiv.id = 'luckyHourCountdown';
+            if (targetTime) {
+                countdownDiv.dataset.target = targetTime;
+                countdownDiv.dataset.mode = isActive ? 'ends' : 'starts';
+            }
+            countdownDiv.textContent = isActive ? 'Ends in --:--' : 'Starts in --:--';
+
+            bodyDiv.appendChild(titleDiv);
+            bodyDiv.appendChild(countdownDiv);
+
+            banner.appendChild(iconDiv);
+            banner.appendChild(bodyDiv);
+
+            if (targetTime) {
+                _updateLuckyHourCountdown();
+                _luckyHourCountdownInterval = setInterval(_updateLuckyHourCountdown, 1000);
+            }
+        }
+
+        function _updateLuckyHourCountdown() {
+            var el = document.getElementById('luckyHourCountdown');
+            if (!el) { clearInterval(_luckyHourCountdownInterval); _luckyHourCountdownInterval = null; return; }
+            var target = el.dataset.target;
+            var mode = el.dataset.mode;
+            if (!target) return;
+            var diff = Math.max(0, new Date(target).getTime() - Date.now());
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            var timeStr = h > 0
+                ? String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0')
+                : String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            el.textContent = (mode === 'ends' ? 'Ends in ' : 'Starts in ') + timeStr;
+            if (diff === 0) {
+                clearInterval(_luckyHourCountdownInterval);
+                _luckyHourCountdownInterval = null;
+                // Refresh after 3s to pick up new state
+                setTimeout(_fetchAndRenderLuckyHour, 3000);
             }
         }
 

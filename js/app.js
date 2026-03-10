@@ -199,10 +199,18 @@
             if (!suppressBonus) {
                 _checkReturnStatus();
                 _checkBirthday();
+                _checkLossStreakOffer();
             }
             _checkAchievements();
+            _checkLevelUpBonus();
             _initNotificationBell();
             startSessionDurationWatch();
+            // Periodic loss-streak check — fires every 3 minutes during active play
+            if (!window._lossStreakCheckTimer) {
+                window._lossStreakCheckTimer = setInterval(function() {
+                    _checkLossStreakOffer();
+                }, 180000);
+            }
 
         }
 
@@ -467,6 +475,162 @@
             card.appendChild(skipLink);
             overlay.appendChild(card);
             document.body.appendChild(overlay);
+        }
+
+        // ── Loss Streak Offer ──────────────────────────────────────────────────
+        function _checkLossStreakOffer() {
+            if (sessionStorage.getItem('_lossStreakOfferShown')) return;
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/user/loss-streak-offer', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (data && data.eligible && data.offer) {
+                        sessionStorage.setItem('_lossStreakOfferShown', '1');
+                        setTimeout(function() { _showLossStreakModal(data.offer); }, 1500);
+                    }
+                })
+                .catch(function() {});
+        }
+
+        function _showLossStreakModal(offer) {
+            if (document.getElementById('lossStreakModal')) return;
+            var overlay = document.createElement('div');
+            overlay.id = 'lossStreakModal';
+            overlay.style.cssText = [
+                'position:fixed', 'top:0', 'left:0', 'right:0', 'bottom:0',
+                'background:rgba(0,0,0,0.85)', 'display:flex', 'align-items:center',
+                'justify-content:center', 'z-index:9998', 'padding:16px'
+            ].join(';');
+
+            var card = document.createElement('div');
+            card.style.cssText = [
+                'background:linear-gradient(135deg,#1a0a00,#2d0f00)',
+                'border:2px solid #ef4444',
+                'border-radius:20px',
+                'padding:36px 32px',
+                'max-width:400px',
+                'width:100%',
+                'text-align:center',
+                'position:relative',
+                'box-shadow:0 20px 60px rgba(239,68,68,0.3)'
+            ].join(';');
+
+            var closeBtn = document.createElement('button');
+            closeBtn.textContent = '\u00D7';
+            closeBtn.style.cssText = 'position:absolute;top:12px;right:14px;background:none;border:none;color:#9ca3af;font-size:1.4rem;cursor:pointer;line-height:1;';
+            closeBtn.addEventListener('click', function() { overlay.remove(); });
+
+            var title = document.createElement('h2');
+            title.style.cssText = 'font-size:1.55rem;font-weight:900;color:#fff;margin:0 0 8px;';
+            title.textContent = '\u26A1 Bad Luck Protection Activated';
+
+            var subtitle = document.createElement('p');
+            subtitle.style.cssText = 'font-size:0.9rem;color:#fca5a5;margin:0 0 20px;line-height:1.5;';
+            subtitle.textContent = "We see you've had a rough streak \u2014 here's a boost!";
+
+            var offerBox = document.createElement('div');
+            offerBox.style.cssText = [
+                'background:rgba(239,68,68,0.1)',
+                'border:1px solid rgba(239,68,68,0.35)',
+                'border-radius:12px',
+                'padding:18px 16px',
+                'margin-bottom:20px'
+            ].join(';');
+
+            var matchLine = document.createElement('div');
+            matchLine.style.cssText = 'font-size:1.4rem;font-weight:900;color:#f97316;margin-bottom:6px;';
+            var matchPct = document.createElement('span');
+            matchPct.textContent = String(offer.matchPct || 50);
+            matchLine.textContent = '';
+            matchLine.appendChild(matchPct);
+            var matchSuffix = document.createElement('span');
+            matchSuffix.textContent = '% MATCH ON YOUR NEXT DEPOSIT';
+            matchLine.appendChild(matchSuffix);
+
+            var maxLine = document.createElement('div');
+            maxLine.style.cssText = 'font-size:1rem;font-weight:700;color:#fdba74;margin-bottom:4px;';
+            var upTo = document.createElement('span');
+            upTo.textContent = 'Up to $';
+            var maxAmt = document.createElement('span');
+            maxAmt.textContent = String(offer.maxMatch || 25);
+            maxLine.appendChild(upTo);
+            maxLine.appendChild(maxAmt);
+
+            var minNote = document.createElement('div');
+            minNote.style.cssText = 'font-size:0.8rem;color:#9ca3af;margin-top:6px;';
+            var minLabel = document.createElement('span');
+            minLabel.textContent = 'Min deposit $';
+            var minAmt = document.createElement('span');
+            minAmt.textContent = String(offer.minDeposit || 10);
+            minNote.appendChild(minLabel);
+            minNote.appendChild(minAmt);
+
+            offerBox.appendChild(matchLine);
+            offerBox.appendChild(maxLine);
+            offerBox.appendChild(minNote);
+
+            var depositBtn = document.createElement('button');
+            depositBtn.style.cssText = [
+                'background:linear-gradient(135deg,#ef4444,#f97316)',
+                'color:#fff', 'border:none', 'border-radius:10px',
+                'padding:13px 40px', 'font-size:0.95rem', 'font-weight:800',
+                'cursor:pointer', 'width:100%', 'margin-bottom:10px',
+                'letter-spacing:0.4px'
+            ].join(';');
+            depositBtn.textContent = '\uD83D\uDCB0 Deposit & Claim';
+            depositBtn.addEventListener('click', function() {
+                overlay.remove();
+                if (typeof showWalletModal === 'function') showWalletModal();
+            });
+
+            var skipBtn = document.createElement('button');
+            skipBtn.style.cssText = 'background:none;border:none;color:#6b7280;font-size:0.78rem;cursor:pointer;padding:4px;';
+            skipBtn.textContent = 'Maybe later';
+            skipBtn.addEventListener('click', function() { overlay.remove(); });
+
+            card.appendChild(closeBtn);
+            card.appendChild(title);
+            card.appendChild(subtitle);
+            card.appendChild(offerBox);
+            card.appendChild(depositBtn);
+            card.appendChild(skipBtn);
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
+        }
+
+        // ── Level-Up Bonus ─────────────────────────────────────────────────────
+        function _checkLevelUpBonus() {
+            if (sessionStorage.getItem('_levelUpChecked')) return;
+            sessionStorage.setItem('_levelUpChecked', '1');
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/levelupbonus/status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.claimable) return;
+                    var currentLevel = data.currentLevel;
+                    return fetch('/api/levelupbonus/claim', {
+                        method: 'POST',
+                        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+                    })
+                        .then(function(r) { return r.ok ? r.json() : null; })
+                        .then(function(res) {
+                            if (!res || !res.success) return;
+                            if (res.newBalance !== undefined) {
+                                balance = res.newBalance;
+                                if (typeof updateBalance === 'function') updateBalance();
+                                if (typeof saveBalance === 'function') saveBalance();
+                            }
+                            if (typeof showMessage === 'function') {
+                                var amt = res.bonusAmount ? res.bonusAmount.toFixed(2) : '0.00';
+                                showMessage('\uD83C\uDD99 Level up bonus claimed! +$' + amt + ' for reaching Level ' + currentLevel, 'big-win');
+                            }
+                        });
+                })
+                .catch(function() {});
         }
 
         // ── Achievements check ─────────────────────────────────────────────────
