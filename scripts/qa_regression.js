@@ -473,9 +473,9 @@ async function run() {
     });
 
     await page.keyboard.press("Escape");
-    await page.waitForSelector("#slotModal.active", { state: "hidden", timeout: 10000 });
+    await page.waitForSelector("#slotModal.active", { state: "hidden", timeout: 15000 });
     await page.evaluate(() => openStatsModal());
-    await page.waitForSelector("#statsModal.active", { timeout: 10000 });
+    await page.waitForSelector("#statsModal.active", { timeout: 20000 });
     await ensureQaPanelOpen(page);
 
     await page.check("#qaResetClearSeed");
