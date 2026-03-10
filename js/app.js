@@ -204,6 +204,7 @@
             _checkAchievements();
             _checkLevelUpBonus();
             _checkMilestones();
+            _checkDailyStreak();
             _checkStreakBonuses();
             _checkSubscriptionDailyGems();
             _checkGiftsInbox();
@@ -702,6 +703,55 @@
                     window._winStreakStatus = data || null;
                 })
                 .catch(function() {});
+        }
+
+        // ── Daily login streak reward ──────────────────────────────────────────
+        function _checkDailyStreak() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            if (sessionStorage.getItem('_dailyStreakChecked')) return;
+            sessionStorage.setItem('_dailyStreakChecked', '1');
+            setTimeout(function() {
+                fetch('/api/streak', {
+                    method: 'POST',
+                    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+                })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                        if (!data || !data.isNewDay) return;
+                        var n = data.streakCount || 1;
+                        var reward = data.reward || {};
+                        var msg = '';
+                        if (reward.type === 'gems') {
+                            msg = '\uD83D\uDD25 Day ' + n + ' streak! +' + reward.amount + ' Gems!';
+                        } else if (reward.type === 'credits') {
+                            msg = '\uD83D\uDD25 Day ' + n + ' streak! +$' + parseFloat(reward.amount).toFixed(2) + ' bonus!';
+                        } else if (reward.type === 'weekly') {
+                            msg = '\uD83C\uDFC6 7-Day Streak! +$' + parseFloat(reward.credits).toFixed(2) + ' + ' + reward.wheelSpins + ' wheel spins!';
+                        } else if (reward.type === 'biweekly') {
+                            msg = '\uD83C\uDFC6 14-Day Streak! +$' + parseFloat(reward.credits).toFixed(2) + ' mega bonus!';
+                        } else if (reward.type === 'monthly') {
+                            msg = '\uD83D\uDC51 30-Day Streak! +$' + parseFloat(reward.credits).toFixed(2) + ' monthly bonus!';
+                        } else {
+                            msg = '\uD83D\uDD25 Day ' + n + ' streak! Keep it up!';
+                        }
+                        if (data.newBalance !== undefined) {
+                            balance = data.newBalance;
+                            if (typeof updateBalance === 'function') updateBalance();
+                        }
+                        if (typeof showWinToast === 'function') {
+                            showWinToast(msg);
+                        } else {
+                            var toast = document.createElement('div');
+                            toast.textContent = msg;
+                            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:12px 20px;border-radius:10px;z-index:99999;font-size:1rem;pointer-events:none;';
+                            document.body.appendChild(toast);
+                            setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3500);
+                        }
+                    })
+                    .catch(function() {});
+            }, 3000);
         }
 
         // ── Subscription daily gem auto-claim ─────────────────────────────────

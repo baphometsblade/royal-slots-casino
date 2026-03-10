@@ -2207,6 +2207,7 @@ function initPromoEngine() {
             renderWagerRaceCard(promosSidebar);
             renderComebackBonusCard(promosSidebar);
             if (!window._fortuneWheelCardInit) { window._fortuneWheelCardInit = true; renderFortuneWheelCard(promosSidebar); }
+            if (!window._firstDepositCardInit) { window._firstDepositCardInit = true; renderFirstDepositCard(promosSidebar); }
         }
     }, 4000);
 
@@ -4265,4 +4266,159 @@ async function renderFortuneWheelCard(container) {
         }
         _fetchAndRender();
     }, 60000);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
+// FIRST DEPOSIT BONUS CARD
+// ─────────────────────────────────────────────────────────────────────
+
+(function _injectFirstDepositCss() {
+    if (document.getElementById('firstDeposit-css')) return;
+    var s = document.createElement('style');
+    s.id = 'firstDeposit-css';
+    s.textContent = [
+        '.fd-card { padding: 14px; border: 1px solid rgba(52,211,153,0.35); border-radius: 10px; background: rgba(52,211,153,0.06); margin-bottom: 12px; }',
+        '.fd-card-header { margin-bottom: 10px; }',
+        '.fd-card-title { font-size: 15px; font-weight: 700; color: #34d399; margin: 0 0 4px; }',
+        '.fd-card-subtitle { font-size: 12px; color: #9ca3af; margin: 0; }',
+        '.fd-reward-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; padding: 10px; border-radius: 8px; background: rgba(52,211,153,0.10); }',
+        '.fd-reward-icon { font-size: 22px; }',
+        '.fd-reward-text { font-size: 14px; font-weight: 700; color: #d1fae5; }',
+        '.fd-reward-sub { font-size: 11px; color: #6ee7b7; margin-top: 2px; }',
+        '.fd-claim-btn { width: 100%; padding: 10px; border-radius: 8px; border: none; background: linear-gradient(135deg, #059669, #34d399); color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; }',
+        '.fd-claim-btn:hover { opacity: 0.85; }',
+        '.fd-claim-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
+        '.fd-claimed-msg { text-align: center; padding: 10px 0; font-size: 13px; font-weight: 700; color: #34d399; }'
+    ].join('\n');
+    document.head.appendChild(s);
+})();
+
+async function renderFirstDepositCard(container) {
+    if (!container) return;
+
+    // Auth guard — same pattern as renderFortuneWheelCard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Fetch eligibility status first; only render if eligible and unclaimed
+    var statusData = null;
+    try {
+        var statusRes = await fetch('/api/firstdeposit/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!statusRes.ok) return;
+        statusData = await statusRes.json();
+    } catch (e) {
+        return;
+    }
+
+    // Not eligible (no first deposit yet) or already claimed — nothing to show
+    if (!statusData || !statusData.eligible || statusData.claimed) return;
+
+    // Remove any pre-existing card
+    var existing = document.getElementById('firstDepositCard');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    // ── Build card ────────────────────────────────────────────────────
+
+    var card = document.createElement('div');
+    card.className = 'fd-card';
+    card.id = 'firstDepositCard';
+
+    // Header
+    var header = document.createElement('div');
+    header.className = 'fd-card-header';
+
+    var title = document.createElement('h3');
+    title.className = 'fd-card-title';
+    title.textContent = '\uD83C\uDF81 First Deposit Bonus';
+    header.appendChild(title);
+
+    var subtitle = document.createElement('p');
+    subtitle.className = 'fd-card-subtitle';
+    subtitle.textContent = 'You made your first deposit! Claim your welcome bonus.';
+    header.appendChild(subtitle);
+
+    card.appendChild(header);
+
+    // Reward display row
+    var rewardRow = document.createElement('div');
+    rewardRow.className = 'fd-reward-row';
+
+    var rewardIcon = document.createElement('div');
+    rewardIcon.className = 'fd-reward-icon';
+    rewardIcon.textContent = '\uD83D\uDC8E';
+    rewardRow.appendChild(rewardIcon);
+
+    var rewardInfo = document.createElement('div');
+
+    var rewardText = document.createElement('div');
+    rewardText.className = 'fd-reward-text';
+    rewardText.textContent = '+500 Gems & +$2.00 Credits';
+    rewardInfo.appendChild(rewardText);
+
+    var rewardSub = document.createElement('div');
+    rewardSub.className = 'fd-reward-sub';
+    rewardSub.textContent = 'One-time welcome bonus';
+    rewardInfo.appendChild(rewardSub);
+
+    rewardRow.appendChild(rewardInfo);
+    card.appendChild(rewardRow);
+
+    // Claim button
+    var claimBtn = document.createElement('button');
+    claimBtn.className = 'fd-claim-btn';
+    claimBtn.id = 'fdClaimBtn';
+    claimBtn.textContent = 'Claim Bonus';
+
+    claimBtn.addEventListener('click', function() {
+        if (claimBtn.disabled) return;
+        claimBtn.disabled = true;
+        claimBtn.textContent = 'Claiming\u2026';
+
+        fetch('/api/firstdeposit/claim', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d && d.success) {
+                // Update balance display
+                if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                    updateBalanceDisplay(d.newBalance);
+                }
+                // Show toast notification
+                if (typeof showToast === 'function') {
+                    var label = (d.reward && d.reward.gems)
+                        ? '\uD83C\uDF81 Welcome bonus: +' + d.reward.gems + ' gems!'
+                        : '\uD83C\uDF81 First deposit bonus claimed!';
+                    showToast(label, 'win');
+                }
+                // Swap button area for success message
+                if (claimBtn.parentNode) claimBtn.parentNode.removeChild(claimBtn);
+                var claimedMsg = document.createElement('div');
+                claimedMsg.className = 'fd-claimed-msg';
+                claimedMsg.textContent = '\u2705 Claimed! Welcome to Matrix Spins.';
+                card.appendChild(claimedMsg);
+            } else {
+                claimBtn.disabled = false;
+                claimBtn.textContent = 'Claim Bonus';
+                if (typeof showToast === 'function') {
+                    showToast(d && d.error ? d.error : 'Could not claim bonus. Try again.', 'error');
+                }
+            }
+        })
+        .catch(function() {
+            claimBtn.disabled = false;
+            claimBtn.textContent = 'Claim Bonus';
+        });
+    });
+
+    card.appendChild(claimBtn);
+    container.appendChild(card);
 }

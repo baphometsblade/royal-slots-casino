@@ -511,6 +511,9 @@ function renderGames() {
             if (!window._leaderboardWidgetInit) initLeaderboardWidget();
             if (!window._bigWinsFeedInit)       initBigWinsFeed();
             if (!window._promoCodeWidgetInit)   initPromoCodeWidget();
+            // Apply HOT/COLD RTP labels from game-stats API (reset flag so re-render refreshes labels)
+            window._gameStatsApplied = false;
+            setTimeout(fetchAndApplyGameStats, 100);
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -4181,10 +4184,95 @@ function _applyHotGameBadge(gameId) {
     card.appendChild(badge);
 }
 
+function _startHotGameCountdown(gameId, expiresAt) {
+    // Clear any previous countdown interval
+    if (window._hotGameCountdownInterval) {
+        clearInterval(window._hotGameCountdownInterval);
+        window._hotGameCountdownInterval = null;
+    }
+
+    function _updateCountdown() {
+        var card = document.querySelector('[data-game-id="' + gameId.toLowerCase() + '"]');
+        if (!card) return;
+        var countdownEl = card.querySelector('.hot-game-countdown');
+        if (!countdownEl) return;
+        var msLeft = new Date(expiresAt).getTime() - Date.now();
+        if (msLeft <= 0) {
+            countdownEl.textContent = '\uD83D\uDD25 Changes soon';
+            clearInterval(window._hotGameCountdownInterval);
+            window._hotGameCountdownInterval = null;
+            return;
+        }
+        var totalSec = Math.floor(msLeft / 1000);
+        var mm = Math.floor(totalSec / 60);
+        var ss = totalSec % 60;
+        var ssStr = ss < 10 ? '0' + ss : '' + ss;
+        countdownEl.textContent = '\uD83D\uDD25 Changes in ' + mm + ':' + ssStr;
+    }
+
+    _updateCountdown();
+    window._hotGameCountdownInterval = setInterval(_updateCountdown, 1000);
+}
+
+function _applyHotGameEnhancedBadge(gameId, expiresAt) {
+    if (!gameId) return;
+
+    // Remove previous enhanced badges and countdowns
+    var prevBadges = document.querySelectorAll('.hot-game-enhanced-badge');
+    for (var i = 0; i < prevBadges.length; i++) {
+        prevBadges[i].parentNode && prevBadges[i].parentNode.removeChild(prevBadges[i]);
+    }
+    var prevCountdowns = document.querySelectorAll('.hot-game-countdown');
+    for (var j = 0; j < prevCountdowns.length; j++) {
+        prevCountdowns[j].parentNode && prevCountdowns[j].parentNode.removeChild(prevCountdowns[j]);
+    }
+
+    var card = document.querySelector('[data-game-id="' + gameId.toLowerCase() + '"]');
+    if (!card) return;
+
+    // Add enhanced RTP badge
+    var rtpBadge = document.createElement('span');
+    rtpBadge.className = 'hot-game-enhanced-badge';
+    rtpBadge.textContent = '\uD83D\uDD25 HOT +20% RTP';
+    card.appendChild(rtpBadge);
+
+    // Add countdown element
+    if (expiresAt) {
+        var countdown = document.createElement('span');
+        countdown.className = 'hot-game-countdown';
+        countdown.textContent = '\uD83D\uDD25 Changes in ...';
+        card.appendChild(countdown);
+        _startHotGameCountdown(gameId, expiresAt);
+    }
+}
+
 function initHotGameHighlight() {
+    // Inject CSS once (covers both basic badge and enhanced badge/countdown)
+    if (!document.getElementById('hot-game-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'hot-game-css';
+        styleEl.textContent = [
+            '.hot-game-badge { position:absolute; top:8px; right:8px; padding:3px 7px;',
+            '  border-radius:10px; background:linear-gradient(135deg,#ff5500,#ff9500);',
+            '  color:#fff; font-size:11px; font-weight:700; letter-spacing:.5px;',
+            '  z-index:10; pointer-events:none; }',
+            '.game-card-hot-highlight { box-shadow:0 0 16px 4px rgba(255,80,0,0.6) !important; }',
+            '.hot-game-enhanced-badge { position:absolute; top:8px; left:8px; padding:3px 8px;',
+            '  border-radius:10px; background:linear-gradient(135deg,#ff2200,#ff7700);',
+            '  color:#fff; font-size:11px; font-weight:800; letter-spacing:.4px;',
+            '  z-index:11; pointer-events:none; white-space:nowrap; }',
+            '.hot-game-countdown { position:absolute; bottom:8px; left:8px; padding:2px 7px;',
+            '  border-radius:8px; background:rgba(0,0,0,0.65); color:#ffcc00;',
+            '  font-size:10px; font-weight:700; letter-spacing:.3px;',
+            '  z-index:11; pointer-events:none; white-space:nowrap; }'
+        ].join(' ');
+        document.head.appendChild(styleEl);
+    }
+
     // If we already have cached data, just re-apply the badge (cards may have re-rendered)
     if (window._hotGameData && window._hotGameData.gameId) {
         _applyHotGameBadge(window._hotGameData.gameId);
+        _applyHotGameEnhancedBadge(window._hotGameData.gameId, window._hotGameData.expiresAt);
         return;
     }
 
@@ -4195,6 +4283,7 @@ function initHotGameHighlight() {
             if (!data || !data.gameId) return;
             window._hotGameData = data;
             _applyHotGameBadge(data.gameId);
+            _applyHotGameEnhancedBadge(data.gameId, data.expiresAt);
 
             // Re-fetch when the hot game expires
             if (data.expiresAt) {
@@ -4207,6 +4296,76 @@ function initHotGameHighlight() {
             }
         })
         .catch(function() { /* silently ignore — endpoint may not exist */ });
+}
+
+
+// ── Game Stats HOT/COLD RTP Labels ──────────────────────────────────────────
+function fetchAndApplyGameStats() {
+    if (window._gameStatsApplied) return;
+
+    // Inject CSS once
+    if (!document.getElementById('game-stats-rtp-css')) {
+        var style = document.createElement('style');
+        style.id = 'game-stats-rtp-css';
+        style.textContent = [
+            '.rtp-hot-badge { position:absolute; bottom:8px; right:8px; padding:2px 7px;',
+            '  border-radius:8px; background:linear-gradient(135deg,#00c853,#69f0ae);',
+            '  color:#003300; font-size:10px; font-weight:800; letter-spacing:.3px;',
+            '  z-index:10; pointer-events:none; white-space:nowrap; }',
+            '.rtp-cold-badge { position:absolute; bottom:8px; right:8px; padding:2px 7px;',
+            '  border-radius:8px; background:linear-gradient(135deg,#0288d1,#4fc3f7);',
+            '  color:#001a33; font-size:10px; font-weight:800; letter-spacing:.3px;',
+            '  z-index:10; pointer-events:none; white-space:nowrap; }'
+        ].join(' ');
+        document.head.appendChild(style);
+    }
+
+    fetch('/api/game-stats')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!data || !Array.isArray(data.stats)) return;
+
+            // Build lookup map: gameId (lowercase) → { actualRtp, totalSpins }
+            var rtpMap = {};
+            for (var i = 0; i < data.stats.length; i++) {
+                var entry = data.stats[i];
+                if (entry && entry.gameId) {
+                    rtpMap[entry.gameId.toLowerCase()] = { actualRtp: entry.actualRtp, totalSpins: entry.totalSpins };
+                }
+            }
+
+            // Apply badges to all game cards in the DOM
+            var cards = document.querySelectorAll('.game-card[data-game-id]');
+            for (var k = 0; k < cards.length; k++) {
+                var card = cards[k];
+                var gid = card.getAttribute('data-game-id');
+                if (!gid) continue;
+                var stat = rtpMap[gid.toLowerCase()];
+                if (!stat) continue;
+
+                var rtp = stat.actualRtp;
+                var spins = stat.totalSpins;
+
+                // Remove any previous RTP badge on this card
+                var prev = card.querySelector('.rtp-hot-badge, .rtp-cold-badge');
+                if (prev) prev.parentNode && prev.parentNode.removeChild(prev);
+
+                if (rtp >= 0.90) {
+                    var hotBadge = document.createElement('span');
+                    hotBadge.className = 'rtp-hot-badge';
+                    hotBadge.textContent = '\uD83D\uDD25 HOT';
+                    card.appendChild(hotBadge);
+                } else if (rtp < 0.80 && spins >= 50) {
+                    var coldBadge = document.createElement('span');
+                    coldBadge.className = 'rtp-cold-badge';
+                    coldBadge.textContent = '\u2744\uFE0F COLD';
+                    card.appendChild(coldBadge);
+                }
+            }
+
+            window._gameStatsApplied = true;
+        })
+        .catch(function() { /* silently ignore — endpoint may not have data yet */ });
 }
 
 

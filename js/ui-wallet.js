@@ -93,7 +93,8 @@ function showWalletModal() {
     // Render the Daily Cashback card section below Rakeback
     _renderDailyCashbackSection(modal);
     // Render the Loyalty Shop card section below Daily Cashback
-    _renderLoyaltyShopSection(modal);
+    // walletRenderLoyaltySection applies the ID guard then delegates to _renderLoyaltyShopSection
+    walletRenderLoyaltySection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -3302,7 +3303,46 @@ async function _renderLoyaltyShopSection(modal) {
         doRedeem(val);
     });
 
+    // ── Live credit preview label ──
+    var previewLabel = document.createElement('span');
+    previewLabel.id = 'loyaltyCustomPreview';
+    previewLabel.style.cssText = 'font-size:0.78rem;color:#6ee7b7;min-width:72px;white-space:nowrap;';
+    previewLabel.textContent = '= $0.00';
+
+    customInput.addEventListener('input', function() {
+        var v = parseInt(customInput.value, 10) || 0;
+        // snap to nearest lower multiple of 100
+        var snapped = Math.floor(v / 100) * 100;
+        var credit = (snapped / 100).toFixed(2);
+        previewLabel.textContent = snapped > 0 ? '= $' + credit + ' credits' : '= $0.00';
+    });
+
     customRow.appendChild(customInput);
+    customRow.appendChild(previewLabel);
     customRow.appendChild(customBtn);
     card.appendChild(customRow);
+}
+
+/**
+ * Public entry point for rendering the loyalty points balance + redeem section
+ * inside the wallet modal.  Delegates to _renderLoyaltyShopSection (the full
+ * async implementation) with an ID guard so duplicate calls are no-ops.
+ *
+ * Layout rendered by the delegate:
+ *   - Section header "⭐ Loyalty Shop" + "100 pts = $1.00" rate note
+ *   - Large points balance display
+ *   - Lifetime earned + pending points
+ *   - Earning rate note (1 point per spin)
+ *   - Progress bar toward next 100-pt redemption threshold
+ *   - If >= 100 pts: preset redeem buttons + custom amount input with live
+ *     "$X.XX credits" preview + Redeem button
+ *   - If < 100 pts: "Earn points by playing slots!" hint + progress text
+ *
+ * @param {HTMLElement} parentContainer  The #walletModal element (or .wallet-modal inner element).
+ */
+async function walletRenderLoyaltySection(parentContainer) {
+    if (!parentContainer) return;
+    // ID guard: skip if section wrapper already exists in DOM
+    if (document.getElementById('walletLoyaltyShopCardWrapper')) return;
+    await _renderLoyaltyShopSection(parentContainer);
 }
