@@ -192,14 +192,15 @@ router.put('/stats', authenticate, async (req, res) => {
 //  DAILY BONUS (server-validated)
 // ═══════════════════════════════════════════════════════════
 
+// Must match DAILY_REWARDS in constants.js — server is the source of truth for payouts
 const DAILY_REWARDS_SERVER = [
-    { amount: 500,  xp: 25  },
-    { amount: 750,  xp: 35  },
-    { amount: 1000, xp: 50  },
-    { amount: 1500, xp: 75  },
-    { amount: 2000, xp: 100 },
-    { amount: 3000, xp: 150 },
-    { amount: 5000, xp: 250 },
+    { amount: 300,  xp: 25  },
+    { amount: 450,  xp: 35  },
+    { amount: 600,  xp: 50  },
+    { amount: 900,  xp: 75  },
+    { amount: 1200, xp: 100 },
+    { amount: 1800, xp: 150 },
+    { amount: 3000, xp: 250 },
 ];
 
 function getTodayStr() {
@@ -262,15 +263,16 @@ router.post('/claim-daily-bonus', authenticate, async (req, res) => {
 //  BONUS WHEEL (server-validated)
 // ═══════════════════════════════════════════════════════════
 
+// Must match WHEEL_SEGMENTS in constants.js — server is the source of truth for payouts
 const WHEEL_SEGMENTS_SERVER = [
-    { label: '$250',  value: 250,  xp: 20  },
+    { label: '$25',  value: 25,  xp: 20  },
     { label: '5 FS',  value: 5, type: 'freespins', xp: 15 },
-    { label: '$500',  value: 500,  xp: 30  },
-    { label: '$1000', value: 1000, xp: 50  },
-    { label: '$2500', value: 2500, xp: 75  },
-    { label: '10 FS', value: 10, type: 'freespins', xp: 25 },
-    { label: '$250',  value: 250,  xp: 20  },
-    { label: '$5000', value: 5000, xp: 150 },
+    { label: '$50',  value: 50,  xp: 30  },
+    { label: '$75', value: 75, xp: 50  },
+    { label: '$100', value: 100, xp: 75  },
+    { label: '5 FS', value: 5, type: 'freespins', xp: 25 },
+    { label: '$25',  value: 25,  xp: 20  },
+    { label: '$100', value: 100, xp: 150 },
 ];
 const WHEEL_COOLDOWN_HOURS = 4;
 
