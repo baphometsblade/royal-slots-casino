@@ -1541,12 +1541,22 @@
         }
 
 
+        function _wheelCooldownLabel() {
+            if (!wheelState.lastSpin) return null;
+            const msLeft = (new Date(wheelState.lastSpin).getTime() + BONUS_WHEEL_COOLDOWN_HOURS * 3600000) - Date.now();
+            if (msLeft <= 0) return null;
+            const h = Math.floor(msLeft / 3600000);
+            const m = Math.floor((msLeft % 3600000) / 60000);
+            return h > 0 ? `NEXT SPIN IN ${h}h ${m}m` : `NEXT SPIN IN ${m}m`;
+        }
+
         function showBonusWheelModal() {
             loadWheelState();
             const spinBtn = document.getElementById('wheelSpinBtn');
-            if (!canSpinWheel()) {
+            const label = _wheelCooldownLabel();
+            if (label) {
                 spinBtn.disabled = true;
-                spinBtn.textContent = 'NEXT SPIN IN A FEW HOURS';
+                spinBtn.textContent = label;
             } else {
                 spinBtn.disabled = false;
                 spinBtn.textContent = 'SPIN THE WHEEL';
@@ -1591,7 +1601,7 @@
                         // Cooldown enforced server-side — sync local state
                         wheelState.lastSpin = new Date().toISOString();
                         saveWheelState();
-                        spinBtn.textContent = 'NEXT SPIN IN A FEW HOURS';
+                        spinBtn.textContent = _wheelCooldownLabel() || 'NEXT SPIN IN A FEW HOURS';
                         showToast('Wheel cooldown still active!', 'info');
                     } else {
                         spinBtn.disabled = false;
@@ -1716,7 +1726,7 @@
                     }
 
                     wheelSpinning = false;
-                    spinBtn.textContent = 'NEXT SPIN IN A FEW HOURS';
+                    spinBtn.textContent = _wheelCooldownLabel() || 'NEXT SPIN IN A FEW HOURS';
 
                     setTimeout(() => closeBonusWheelModal(), 3000);
                 }
