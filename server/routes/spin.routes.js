@@ -536,6 +536,7 @@ router.post('/', authenticate, async (req, res) => {
                         // Wagering complete — convert bonus to real balance
                         const userNow = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [userId]);
                         const convertAmount = userNow.bonus_balance;
+                        const balanceBeforeConversion = userNow.balance;
                         await db.run(
                             'UPDATE users SET wagering_progress = ?, bonus_balance = 0, balance = balance + ? WHERE id = ?',
                             [newProgress, convertAmount, userId]
@@ -543,7 +544,7 @@ router.post('/', authenticate, async (req, res) => {
                         finalBalance += convertAmount;
                         await db.run(
                             'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                            [userId, 'bonus_conversion', convertAmount, finalBalance - convertAmount, finalBalance, 'Wagering requirement completed']
+                            [userId, 'bonus_conversion', convertAmount, balanceBeforeConversion, balanceBeforeConversion + convertAmount, 'Wagering requirement completed']
                         );
                         // Grant wagering_done achievement (fire-and-forget)
                         require('../services/achievement.service').grant(userId, 'wagering_done').catch(function() {});

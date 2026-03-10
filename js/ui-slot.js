@@ -2945,6 +2945,20 @@
                 spinBtn.disabled = currentBet > balance;
                 spinBtn.textContent = '';
                 refreshBetControls();
+                // Stop autoplay on HTTP 400 (insufficient balance) to prevent tight retry loop
+                if (error && error.status === 400) {
+                    if (window._autoplayActive) {
+                        window._autoplayActive = false;
+                        window._autoplayRemaining = 0;
+                        window._autoplayStopping = false;
+                        if (typeof _updateAutoplayBtn === 'function') _updateAutoplayBtn();
+                    }
+                    if (typeof autoSpinActive !== 'undefined' && autoSpinActive) {
+                        if (typeof stopAutoSpin === 'function') stopAutoSpin();
+                    }
+                    if (typeof _showLowBalanceQuickDeposit === 'function') _showLowBalanceQuickDeposit();
+                    else if (typeof showToast === 'function') showToast('Top up to keep spinning!', 'warning', 4000);
+                }
                 showMessage(error?.message || 'Spin failed. Please try again.', 'lose');
                 return;
             }
