@@ -209,6 +209,8 @@
             _checkGiftsInbox();
             _syncXpWithServer();
             _initTournamentRecording();
+            _initLossStreakMonitor();
+            _initSpinStreakTicker();
             _initNotificationBell();
             startSessionDurationWatch();
             // Periodic loss-streak check — fires every 3 minutes during active play
@@ -820,6 +822,197 @@
                     body: JSON.stringify(payload)
                 }).catch(function() {});
             });
+        }
+
+        // ── Loss Streak Monitor ────────────────────────────────────────────────
+        // Watches client-side spin results; shows a 50% deposit-match popup after
+        // 8 of 10 consecutive losses without having shown the offer this session.
+        function _initLossStreakMonitor() {
+            if (window._lossStreakMonitorInit) return;
+            window._lossStreakMonitorInit = true;
+
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+
+            // Inject CSS for the loss-streak modal (static string, no interpolation)
+            if (!document.getElementById('loss-streak-monitor-css')) {
+                var styleEl = document.createElement('style');
+                styleEl.id = 'loss-streak-monitor-css';
+                styleEl.textContent = '#loss-streak-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; }' +
+                    '#loss-streak-modal { background:#1a1a2e; border:2px solid #f7931e; border-radius:12px; padding:30px; max-width:380px; width:90%; text-align:center; color:#fff; }' +
+                    '#loss-streak-modal h3 { color:#ffd700; font-size:22px; margin:0 0 12px; }' +
+                    '#loss-streak-modal p { color:#ccc; font-size:14px; margin:0 0 20px; line-height:1.5; }' +
+                    '.loss-streak-btn-primary { background:linear-gradient(135deg,#f7931e,#ffd700); color:#000; font-weight:700; padding:12px 24px; border-radius:8px; border:none; cursor:pointer; font-size:15px; margin-right:10px; }' +
+                    '.loss-streak-btn-secondary { background:transparent; color:#888; padding:12px 24px; border-radius:8px; border:1px solid #444; cursor:pointer; font-size:14px; }';
+                document.head.appendChild(styleEl);
+            }
+
+            window._lossStreakSpinResults = window._lossStreakSpinResults || [];
+
+            window.addEventListener('spin:complete', function(evt) {
+                var detail = evt && evt.detail;
+                if (!detail) return;
+
+                // Push result (cap array at 10)
+                window._lossStreakSpinResults.push({ won: !!detail.won });
+                if (window._lossStreakSpinResults.length > 10) {
+                    window._lossStreakSpinResults.shift();
+                }
+
+                // Only evaluate when we have 10 results
+                if (window._lossStreakSpinResults.length < 10) return;
+                if (window._lossStreakOfferShown === true) return;
+
+                // Count losses
+                var lossCount = 0;
+                for (var i = 0; i < window._lossStreakSpinResults.length; i++) {
+                    if (!window._lossStreakSpinResults[i].won) lossCount++;
+                }
+                if (lossCount < 8) return;
+
+                // Check eligibility with server
+                var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                if (!token) return;
+
+                fetch('/api/user/loss-streak-offer', { headers: { Authorization: 'Bearer ' + token } })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                        if (!data || !data.eligible || !data.offer) return;
+                        window._lossStreakOfferShown = true;
+                        window._lossStreakSpinResults = [];
+                        _showLossStreakMonitorModal(data.offer);
+                    })
+                    .catch(function() {});
+            });
+        }
+
+        function _showLossStreakMonitorModal(offer) {
+            if (document.getElementById('loss-streak-modal-overlay')) return;
+
+            var overlay = document.createElement('div');
+            overlay.id = 'loss-streak-modal-overlay';
+
+            var modal = document.createElement('div');
+            modal.id = 'loss-streak-modal';
+
+            var title = document.createElement('h3');
+            title.textContent = '\uD83C\uDF81 Exclusive Offer!';
+
+            var body = document.createElement('p');
+            body.textContent = "You've been unlucky lately. Claim a 50% deposit bonus up to $25 when you deposit $10+";
+
+            var btnRow = document.createElement('div');
+
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'loss-streak-btn-primary';
+            claimBtn.textContent = 'Claim Now';
+            claimBtn.addEventListener('click', function() {
+                overlay.remove();
+                if (typeof openWalletModal === 'function') {
+                    openWalletModal();
+                } else if (typeof showWalletModal === 'function') {
+                    showWalletModal();
+                }
+            });
+
+            var dismissBtn = document.createElement('button');
+            dismissBtn.className = 'loss-streak-btn-secondary';
+            dismissBtn.textContent = 'No Thanks';
+            dismissBtn.addEventListener('click', function() {
+                overlay.remove();
+            });
+
+            btnRow.appendChild(claimBtn);
+            btnRow.appendChild(dismissBtn);
+            modal.appendChild(title);
+            modal.appendChild(body);
+            modal.appendChild(btnRow);
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+        }
+
+        // ── Spin Streak Ticker ─────────────────────────────────────────────────
+        // Calls POST /api/spinstreak/tick after every spin and shows a badge
+        // next to the spin button indicating the current streak tier.
+        function _initSpinStreakTicker() {
+            if (window._spinStreakTickerInit) return;
+            window._spinStreakTickerInit = true;
+
+            // Inject CSS for the spin streak badge (static string, no interpolation)
+            if (!document.getElementById('spin-streak-css')) {
+                var styleEl = document.createElement('style');
+                styleEl.id = 'spin-streak-css';
+                styleEl.textContent = '#spin-streak-badge { display:inline-block; padding:3px 10px; background:linear-gradient(135deg,#ff6b35,#f7931e); color:#fff; font-weight:700; font-size:12px; border-radius:20px; margin-left:8px; transition:transform 0.2s; }' +
+                    '#spin-streak-badge.streak-tier-up { transform:scale(1.3); background:linear-gradient(135deg,#f7931e,#ffd700); }' +
+                    '#spin-streak-badge.hidden { display:none; }';
+                document.head.appendChild(styleEl);
+            }
+
+            window.addEventListener('spin:complete', function() {
+                var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                if (!token) return;
+
+                fetch('/api/spinstreak/tick', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                        if (!data) return;
+                        _updateSpinStreakBadge(data);
+                    })
+                    .catch(function() {});
+            });
+        }
+
+        function _updateSpinStreakBadge(data) {
+            // Find or create the badge element
+            var badge = document.getElementById('spin-streak-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'spin-streak-badge';
+                badge.className = 'hidden';
+                // Insert after the spin button (try several selector patterns)
+                var spinBtn = document.getElementById('spin-btn') ||
+                              document.getElementById('spinBtn') ||
+                              document.querySelector('.spin-button');
+                if (spinBtn && spinBtn.parentNode) {
+                    spinBtn.parentNode.insertBefore(badge, spinBtn.nextSibling);
+                } else {
+                    // Fallback: append to body (won't be visible in slot UI but won't throw)
+                    document.body.appendChild(badge);
+                }
+            }
+
+            var count = data.count || 0;
+            var tierLabel = data.tierLabel || 'No Streak';
+
+            if (count === 0 || tierLabel === 'No Streak') {
+                badge.className = 'hidden';
+                return;
+            }
+
+            // Build label text using safe textContent
+            var labelText = '\uD83D\uDD25 ' + count + ' \u00B7 ' + tierLabel;
+            badge.textContent = labelText;
+            badge.className = '';
+
+            // Tooltip for next tier
+            if (data.nextTier && data.nextTier.spinsNeeded && data.nextTier.label) {
+                badge.title = data.nextTier.spinsNeeded + ' more for ' + data.nextTier.label;
+            } else {
+                badge.title = '';
+            }
+
+            // Animate on tier-up
+            if (data.tieredUp) {
+                badge.classList.add('streak-tier-up');
+                setTimeout(function() {
+                    badge.classList.remove('streak-tier-up');
+                }, 2000);
+            }
         }
 
         // ── Achievements check ─────────────────────────────────────────────────

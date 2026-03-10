@@ -1388,74 +1388,217 @@ function renderDepositStreakCard(container) {
 }
 
 
+// ─────────────────────────────────────────────────────────────────────
+// 4g-bis. Daily Missions Card — CSS (promo-missions-css)
+// ─────────────────────────────────────────────────────────────────────
+(function _injectPromoMissionsCss() {
+    if (document.getElementById('promo-missions-css')) return;
+    var s = document.createElement('style');
+    s.id = 'promo-missions-css';
+    s.textContent = [
+        '.promo-missions-card{background:linear-gradient(135deg,#0a0a1a,#111128);border:1px solid #2a2a4a;border-radius:12px;padding:16px;margin-bottom:14px;color:#fff;}',
+        '.promo-missions-title{font-size:16px;font-weight:700;color:#ffd700;margin:0 0 4px;}',
+        '.promo-missions-subtitle{font-size:12px;color:#888;margin:0 0 12px;}',
+        '.pm-mission-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #1a1a3a;}',
+        '.pm-mission-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}',
+        '.pm-mission-label{font-size:13px;color:#ccc;}',
+        '.pm-mission-progress-bar{height:6px;background:#222;border-radius:3px;overflow:hidden;}',
+        '.pm-mission-progress-fill{height:100%;background:linear-gradient(90deg,#6c63ff,#a78bfa);border-radius:3px;transition:width 0.3s;}',
+        '.pm-mission-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;}',
+        '.pm-mission-count{color:#888;}',
+        '.pm-mission-reward-cash{color:#4ade80;font-weight:700;}',
+        '.pm-mission-reward-pts{color:#60a5fa;font-weight:700;}',
+        '.pm-claim-btn{padding:4px 12px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;font-size:12px;border-radius:6px;border:none;cursor:pointer;}',
+        '.pm-claimed-text{color:#555;font-size:12px;}',
+        '.pm-challenge-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #1a1a3a;}',
+        '.pm-challenge-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}',
+        '.pm-challenge-title{font-size:13px;font-weight:600;color:#e2e8f0;}',
+        '.pm-challenge-desc{font-size:11px;color:#888;}',
+        '.pm-challenge-claim-btn{padding:4px 12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-weight:700;font-size:12px;border-radius:6px;border:none;cursor:pointer;}',
+        '.pm-streak-badge{font-size:12px;color:#f59e0b;font-weight:700;margin-bottom:8px;}'
+    ].join('');
+    document.head.appendChild(s);
+})();
+
+// ─────────────────────────────────────────────────────────────────────
+// 4g. Daily Missions Card
+// ─────────────────────────────────────────────────────────────────────
+
 async function renderDailyMissionsCard(container) {
     if (!container) return;
     if (document.getElementById('dailyMissionsCard')) return;
 
-    var token = typeof authToken !== 'undefined' ? authToken :
-                (localStorage.getItem('casinoToken') || null);
+    if (typeof isServerAuthToken === 'function' && !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
 
+    // Build card shell using createElement only
     var card = document.createElement('div');
     card.id = 'dailyMissionsCard';
-    card.className = 'dm-card';
-    card.innerHTML = '<div class="dm-title">🎯 Daily Missions</div><div id="dmMissionList"><div style="text-align:center;padding:8px;opacity:.5;font-size:12px;">Loading…</div></div>';
+    card.className = 'promo-missions-card';
+
+    var titleEl = document.createElement('p');
+    titleEl.className = 'promo-missions-title';
+    titleEl.textContent = '\uD83D\uDCCB Daily Missions';
+    card.appendChild(titleEl);
+
+    var subtitleEl = document.createElement('p');
+    subtitleEl.className = 'promo-missions-subtitle';
+    subtitleEl.textContent = "Today's Tasks";
+    card.appendChild(subtitleEl);
+
+    var listEl = document.createElement('div');
+    listEl.id = 'dmMissionList';
+    var loadingEl = document.createElement('div');
+    loadingEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
+    loadingEl.textContent = 'Loading\u2026';
+    listEl.appendChild(loadingEl);
+    card.appendChild(listEl);
+
     container.insertBefore(card, container.firstChild);
 
     await _refreshDailyMissions(token);
+
+    // Refresh every 30 seconds
+    var _dmInterval = setInterval(function() {
+        if (!document.getElementById('dailyMissionsCard')) {
+            clearInterval(_dmInterval);
+            return;
+        }
+        _refreshDailyMissions(token);
+    }, 30000);
 }
 
 async function _refreshDailyMissions(token) {
     var list = document.getElementById('dmMissionList');
     if (!list) return;
     try {
-        var res = await fetch('/api/dailymissions', { headers: { Authorization: 'Bearer ' + token } });
-        if (!res.ok) { list.innerHTML = ''; return; }
-        var data = await res.json();
-        var missions = data.missions || [];
-        if (missions.length === 0) {
-            list.innerHTML = '<div style="text-align:center;padding:8px;opacity:.5;font-size:12px;">No missions today</div>';
+        var res = await fetch('/api/dailymissions', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) {
+            while (list.firstChild) list.removeChild(list.firstChild);
             return;
         }
-        list.innerHTML = missions.map(function(m) {
+        var data = await res.json();
+        var missions = data.missions || [];
+
+        while (list.firstChild) list.removeChild(list.firstChild);
+
+        if (missions.length === 0) {
+            var emptyEl = document.createElement('div');
+            emptyEl.style.cssText = 'text-align:center;padding:8px;opacity:.5;font-size:12px;';
+            emptyEl.textContent = 'No missions today';
+            list.appendChild(emptyEl);
+            return;
+        }
+
+        missions.forEach(function(m) {
             var pct = m.target > 0 ? Math.min(100, Math.round((m.progress / m.target) * 100)) : 0;
-            var done = m.completed;
-            var claimed = m.claimed;
-            var rewardStr = m.reward_type === 'gems' ? m.reward_amount + '💎' :
-                            m.reward_type === 'credits' ? '$' + parseFloat(m.reward_amount).toFixed(2) : m.reward_amount;
-            return '<div class="dm-mission">' +
-                '<div class="dm-mission-info">' +
-                    '<div class="dm-mission-label">' + (m.label || 'Mission') + '</div>' +
-                    '<div class="dm-mission-progress">' + m.progress + ' / ' + m.target + (done ? ' ✓' : '') + '</div>' +
-                    '<div class="dm-bar-track"><div class="dm-bar-fill" style="width:' + pct + '%"></div></div>' +
-                    '<div class="dm-reward">Reward: ' + rewardStr + '</div>' +
-                '</div>' +
-                (claimed ? '<span class="dm-claimed">✅</span>' :
-                 done ? '<button class="dm-claim-btn" onclick="claimDailyMission(' + m.slot + ')">Claim</button>' :
-                        '<button class="dm-claim-btn" disabled>' + pct + '%</button>') +
-                '</div>';
-        }).join('');
+            var done = !!m.completed;
+            var claimed = !!m.claimed;
+
+            var row = document.createElement('div');
+            row.className = 'pm-mission-row';
+
+            // Label
+            var labelEl = document.createElement('div');
+            labelEl.className = 'pm-mission-label';
+            labelEl.textContent = m.label || 'Mission';
+            row.appendChild(labelEl);
+
+            // Progress bar
+            var barOuter = document.createElement('div');
+            barOuter.className = 'pm-mission-progress-bar';
+            var barFill = document.createElement('div');
+            barFill.className = 'pm-mission-progress-fill';
+            barFill.style.width = String(pct) + '%';
+            barOuter.appendChild(barFill);
+            row.appendChild(barOuter);
+
+            // Meta row: count + reward/action
+            var metaEl = document.createElement('div');
+            metaEl.className = 'pm-mission-meta';
+
+            var countEl = document.createElement('span');
+            countEl.className = 'pm-mission-count';
+            countEl.textContent = String(m.progress) + ' / ' + String(m.target);
+            metaEl.appendChild(countEl);
+
+            if (claimed) {
+                var claimedEl = document.createElement('span');
+                claimedEl.className = 'pm-claimed-text';
+                claimedEl.textContent = '\u2705 Claimed';
+                metaEl.appendChild(claimedEl);
+            } else if (done) {
+                // Reward badge
+                var rewardBadge = document.createElement('span');
+                if (m.reward_type === 'cash' || m.reward_type === 'credits') {
+                    rewardBadge.className = 'pm-mission-reward-cash';
+                    rewardBadge.textContent = '$' + parseFloat(m.reward_amount).toFixed(2);
+                } else if (m.reward_type === 'points') {
+                    rewardBadge.className = 'pm-mission-reward-pts';
+                    rewardBadge.textContent = String(m.reward_amount) + ' pts';
+                } else {
+                    rewardBadge.className = 'pm-mission-reward-cash';
+                    rewardBadge.textContent = String(m.reward_amount);
+                }
+                metaEl.appendChild(rewardBadge);
+
+                var claimBtn = document.createElement('button');
+                claimBtn.className = 'pm-claim-btn';
+                claimBtn.textContent = m.reward_type === 'cash' || m.reward_type === 'credits'
+                    ? 'Claim $' + parseFloat(m.reward_amount).toFixed(2)
+                    : 'Claim';
+                (function(slot) {
+                    claimBtn.addEventListener('click', function() { claimDailyMission(slot); });
+                }(m.slot));
+                metaEl.appendChild(claimBtn);
+            } else {
+                // Not yet complete — show reward badge only
+                var rewardOnly = document.createElement('span');
+                if (m.reward_type === 'cash' || m.reward_type === 'credits') {
+                    rewardOnly.className = 'pm-mission-reward-cash';
+                    rewardOnly.textContent = '$' + parseFloat(m.reward_amount).toFixed(2);
+                } else if (m.reward_type === 'points') {
+                    rewardOnly.className = 'pm-mission-reward-pts';
+                    rewardOnly.textContent = String(m.reward_amount) + ' pts';
+                } else {
+                    rewardOnly.className = 'pm-mission-reward-cash';
+                    rewardOnly.textContent = String(m.reward_amount);
+                }
+                metaEl.appendChild(rewardOnly);
+            }
+
+            row.appendChild(metaEl);
+            list.appendChild(row);
+        });
     } catch (e) {
-        list.innerHTML = '';
+        // Silently fail
     }
 }
 
 async function claimDailyMission(slot) {
-    var token = typeof authToken !== 'undefined' ? authToken :
-                (localStorage.getItem('casinoToken') || null);
+    if (typeof isServerAuthToken === 'function' && !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     try {
-        var res = await fetch('/api/dailymissions/claim/' + slot, {
+        var res = await fetch('/api/dailymissions/claim/' + String(slot), {
             method: 'POST',
-            headers: { Authorization: 'Bearer ' + token }
+            headers: { 'Authorization': 'Bearer ' + token }
         });
         var data = await res.json();
         if (data.success) {
-            var rewardMsg = data.reward_type === 'gems' ? data.reward_amount + ' gems!' :
-                            data.reward_type === 'credits' ? '$' + parseFloat(data.reward_amount).toFixed(2) + ' credits!' :
-                            'reward!';
-            if (typeof showToast === 'function') showToast('🎯 Mission complete! You earned ' + rewardMsg, 'win');
-            if (data.newBalance !== undefined && typeof saveBalance === 'function') saveBalance(data.newBalance);
+            var rewardMsg;
+            if (data.reward_type === 'gems') {
+                rewardMsg = String(data.reward_amount) + ' gems!';
+            } else if (data.reward_type === 'credits' || data.reward_type === 'cash') {
+                rewardMsg = '$' + parseFloat(data.reward_amount).toFixed(2) + ' credited!';
+            } else {
+                rewardMsg = 'reward!';
+            }
+            if (typeof showToast === 'function') showToast('\uD83D\uDCCB Mission complete! You earned ' + rewardMsg, 'win');
+            if (data.newBalance !== undefined && typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay(data.newBalance);
+            }
             await _refreshDailyMissions(token);
         }
     } catch (e) {}
@@ -1493,17 +1636,24 @@ async function renderDailyChallengesCard(container) {
     if (!container) return;
     if (document.getElementById('dailyChallengesCard')) return;
 
+    if (typeof isServerAuthToken === 'function' && !isServerAuthToken()) return;
     var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
 
     var card = document.createElement('div');
     card.id = 'dailyChallengesCard';
-    card.className = 'dch-card';
+    card.className = 'promo-missions-card';
 
-    var titleEl = document.createElement('div');
-    titleEl.className = 'dch-title';
-    titleEl.textContent = '\u2694\uFE0F Daily Challenges';
+    var titleEl = document.createElement('p');
+    titleEl.className = 'promo-missions-title';
+    titleEl.textContent = '\uD83C\uDFC6 Daily Challenges';
     card.appendChild(titleEl);
+
+    // Streak badge (populated after fetch)
+    var streakEl = document.createElement('div');
+    streakEl.id = 'dchStreakRow';
+    streakEl.className = 'pm-streak-badge';
+    card.appendChild(streakEl);
 
     var listEl = document.createElement('div');
     listEl.id = 'dchChallengeList';
@@ -1513,14 +1663,18 @@ async function renderDailyChallengesCard(container) {
     listEl.appendChild(loadingEl);
     card.appendChild(listEl);
 
-    var streakEl = document.createElement('div');
-    streakEl.id = 'dchStreakRow';
-    streakEl.className = 'dch-streak';
-    card.appendChild(streakEl);
-
     container.insertBefore(card, container.firstChild);
 
     await _refreshDailyChallenges(token);
+
+    // Refresh every 30 seconds
+    var _dchInterval = setInterval(function() {
+        if (!document.getElementById('dailyChallengesCard')) {
+            clearInterval(_dchInterval);
+            return;
+        }
+        _refreshDailyChallenges(token);
+    }, 30000);
 }
 
 async function _refreshDailyChallenges(token) {
@@ -1529,7 +1683,7 @@ async function _refreshDailyChallenges(token) {
     if (!list) return;
 
     try {
-        var res = await fetch('/api/challenges', { headers: { Authorization: 'Bearer ' + token } });
+        var res = await fetch('/api/challenges', { headers: { 'Authorization': 'Bearer ' + token } });
         if (!res.ok) {
             while (list.firstChild) list.removeChild(list.firstChild);
             return;
@@ -1538,6 +1692,16 @@ async function _refreshDailyChallenges(token) {
         var challenges = data.challenges || [];
 
         while (list.firstChild) list.removeChild(list.firstChild);
+
+        // Update streak badge
+        if (streakRow) {
+            var streak = data.streak || 0;
+            if (streak > 0) {
+                streakRow.textContent = 'Day Streak: ' + String(streak) + ' \uD83D\uDD25';
+            } else {
+                streakRow.textContent = '';
+            }
+        }
 
         if (challenges.length === 0) {
             var emptyEl = document.createElement('div');
@@ -1548,71 +1712,68 @@ async function _refreshDailyChallenges(token) {
             challenges.forEach(function(ch) {
                 var pct = ch.target > 0 ? Math.min(100, Math.round((ch.progress / ch.target) * 100)) : 0;
 
-                var item = document.createElement('div');
-                item.className = 'dch-item';
+                var row = document.createElement('div');
+                row.className = 'pm-challenge-row';
 
-                var info = document.createElement('div');
-                info.className = 'dch-info';
+                // Title
+                var titleEl = document.createElement('div');
+                titleEl.className = 'pm-challenge-title';
+                titleEl.textContent = ch.title || 'Challenge';
+                row.appendChild(titleEl);
 
+                // Description
                 var descEl = document.createElement('div');
-                descEl.className = 'dch-desc';
-                descEl.textContent = ch.description || 'Challenge';
-                info.appendChild(descEl);
+                descEl.className = 'pm-challenge-desc';
+                descEl.textContent = ch.description || '';
+                row.appendChild(descEl);
 
-                var progEl = document.createElement('div');
-                progEl.className = 'dch-prog-text';
-                progEl.textContent = String(ch.progress) + ' / ' + String(ch.target) + (ch.completed ? ' \u2713' : '');
-                info.appendChild(progEl);
-
-                var barTrack = document.createElement('div');
-                barTrack.className = 'dch-bar-track';
+                // Progress bar
+                var barOuter = document.createElement('div');
+                barOuter.className = 'pm-mission-progress-bar';
                 var barFill = document.createElement('div');
-                barFill.className = 'dch-bar-fill';
-                barFill.style.width = pct + '%';
-                barTrack.appendChild(barFill);
-                info.appendChild(barTrack);
+                barFill.className = 'pm-mission-progress-fill';
+                barFill.style.width = String(pct) + '%';
+                barOuter.appendChild(barFill);
+                row.appendChild(barOuter);
 
-                var rewardEl = document.createElement('div');
-                rewardEl.className = 'dch-reward-badge';
+                // Meta row: progress count + reward/action
+                var metaEl = document.createElement('div');
+                metaEl.className = 'pm-mission-meta';
+
+                var countEl = document.createElement('span');
+                countEl.className = 'pm-mission-count';
+                countEl.textContent = String(ch.progress) + ' / ' + String(ch.target);
+                metaEl.appendChild(countEl);
+
+                // Reward display
                 var rewardParts = [];
                 if (ch.reward_gems) rewardParts.push('\uD83D\uDC8E ' + String(ch.reward_gems) + ' gems');
-                if (ch.reward_credits) rewardParts.push('\uD83D\uDCB0 $' + parseFloat(ch.reward_credits).toFixed(2));
-                rewardEl.textContent = rewardParts.length ? rewardParts.join(' + ') : '';
-                info.appendChild(rewardEl);
+                if (ch.reward_credits) rewardParts.push('$' + parseFloat(ch.reward_credits).toFixed(2));
+                var rewardEl = document.createElement('span');
+                rewardEl.className = 'pm-mission-reward-cash';
+                rewardEl.textContent = rewardParts.join(' + ');
+                metaEl.appendChild(rewardEl);
 
-                item.appendChild(info);
+                row.appendChild(metaEl);
 
+                // Action: claimed / claim button / no button
                 if (ch.claimed) {
-                    var claimedEl = document.createElement('span');
-                    claimedEl.className = 'dch-claimed';
-                    claimedEl.textContent = '\u2705';
-                    item.appendChild(claimedEl);
+                    var doneEl = document.createElement('span');
+                    doneEl.className = 'pm-claimed-text';
+                    doneEl.textContent = '\u2705 Done';
+                    row.appendChild(doneEl);
                 } else if (ch.completed) {
                     var claimBtn = document.createElement('button');
-                    claimBtn.className = 'dch-claim-btn';
+                    claimBtn.className = 'pm-challenge-claim-btn';
                     claimBtn.textContent = 'Claim';
                     (function(id) {
                         claimBtn.addEventListener('click', function() { claimChallenge(id); });
                     }(ch.id));
-                    item.appendChild(claimBtn);
-                } else {
-                    var pctBtn = document.createElement('button');
-                    pctBtn.className = 'dch-claim-btn';
-                    pctBtn.disabled = true;
-                    pctBtn.style.background = 'rgba(255,255,255,.1)';
-                    pctBtn.style.color = 'rgba(255,255,255,.3)';
-                    pctBtn.style.cursor = 'not-allowed';
-                    pctBtn.textContent = String(pct) + '%';
-                    item.appendChild(pctBtn);
+                    row.appendChild(claimBtn);
                 }
 
-                list.appendChild(item);
+                list.appendChild(row);
             });
-        }
-
-        if (streakRow) {
-            var streak = data.streak || 0;
-            streakRow.textContent = '\uD83D\uDD25 Challenge streak: ' + String(streak) + ' day' + (streak === 1 ? '' : 's');
         }
     } catch (e) {
         while (list.firstChild) list.removeChild(list.firstChild);
@@ -2542,20 +2703,23 @@ async function renderCasinoPassCard(container) {
 }
 
 async function claimChallenge(id) {
+    if (typeof isServerAuthToken === 'function' && !isServerAuthToken()) return;
     var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
     if (!token) return;
     try {
-        var res = await fetch('/api/challenges/' + id + '/claim', {
+        var res = await fetch('/api/challenges/' + String(id) + '/claim', {
             method: 'POST',
-            headers: { Authorization: 'Bearer ' + token }
+            headers: { 'Authorization': 'Bearer ' + token }
         });
         var data = await res.json();
         if (data.success) {
-            var parts = [];
-            if (data.gemsAwarded) parts.push(String(data.gemsAwarded) + ' gems');
-            if (data.credits) parts.push('$' + parseFloat(data.credits).toFixed(2) + ' credits');
-            var msg = parts.length ? parts.join(' + ') : 'reward';
-            if (typeof showToast === 'function') showToast('\u2694\uFE0F Challenge claimed! You earned ' + msg, 'win');
+            if (data.gemsAwarded && typeof showToast === 'function') {
+                showToast('\uD83D\uDC8E +' + String(data.gemsAwarded) + ' gems claimed!', 'win');
+            } else if (data.credits && typeof showToast === 'function') {
+                showToast('$' + parseFloat(data.credits).toFixed(2) + ' credited!', 'win');
+            } else if (typeof showToast === 'function') {
+                showToast('\uD83C\uDFC6 Challenge claimed!', 'win');
+            }
             await _refreshDailyChallenges(token);
         }
     } catch (e) {}

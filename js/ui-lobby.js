@@ -502,6 +502,10 @@ function renderGames() {
             initJackpotTicker();
             initLuckyHourBanner();
             initHotGameHighlight();
+            if (!window._jackpotTickerInit) initJackpotTicker();
+            if (!window._jackpotTickerBarInit) initJackpotTickerBar();
+            if (!window._gameOfDayInit)    initGameOfDayHighlight();
+            if (!window._luckyHoursBannerInit) initLuckyHoursBanner();
             if (!window._loyaltyHookInit) { window._loyaltyHookInit = true; initLoyaltyEarnHook(); }
             if (!window._socialProofInit) { window._socialProofInit = true; initSocialProofTicker(); }
 
@@ -1827,6 +1831,7 @@ function renderGames() {
         // ── Jackpot Ticker ────────────────────────────────────────────────────
 
         function initJackpotTicker() {
+            if (window._jackpotTickerInit) return; window._jackpotTickerInit = true;
             // Inject CSS once
             if (!document.getElementById('jackpotTickerStyles')) {
                 var style = document.createElement('style');
@@ -4377,6 +4382,405 @@ function initSocialProofTicker() {
     // Auto-refresh every 30 seconds
     if (!window._socialProofInterval) {
         window._socialProofInterval = setInterval(_updateSocialProof, 30000);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOBBY FEATURE WIDGETS — Game of Day Banner, Jackpot Ticker Bar, Lucky Hours
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── 1. Game of Day Highlight Banner ─────────────────────────────────────────
+function initGameOfDayHighlight() {
+    if (window._gameOfDayInit) return; window._gameOfDayInit = true;
+
+    // Inject CSS once
+    if (!document.getElementById('game-of-day-css')) {
+        var style = document.createElement('style');
+        style.id = 'game-of-day-css';
+        style.textContent = [
+            '#game-of-day-banner{background:linear-gradient(135deg,#1a0a00 0%,#2d1a00 50%,#1a0a00 100%);',
+            'border:1px solid rgba(251,191,36,0.5);border-radius:12px;padding:14px 18px;margin:0 0 14px 0;',
+            'display:flex;align-items:center;gap:14px;font-family:inherit;position:relative;overflow:hidden;}',
+            '#game-of-day-banner::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;',
+            'background:linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b);background-size:200%;',
+            'animation:godShimmer 3s linear infinite;}',
+            '@keyframes godShimmer{0%{background-position:0%}100%{background-position:200%}}',
+            '.god-icon{font-size:28px;flex-shrink:0;line-height:1;}',
+            '.god-body{flex:1;min-width:0;}',
+            '.god-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;',
+            'color:#fbbf24;margin-bottom:3px;}',
+            '.god-name{font-size:17px;font-weight:800;color:#fff;white-space:nowrap;',
+            'overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}',
+            '.god-countdown{font-size:11px;color:rgba(255,255,255,0.5);}',
+            '.god-play-btn{flex-shrink:0;background:linear-gradient(135deg,#f59e0b,#d97706);',
+            'border:none;border-radius:8px;color:#1a0a00;font-size:12px;font-weight:800;',
+            'letter-spacing:.5px;padding:9px 16px;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}',
+            '.god-play-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(245,158,11,0.4);}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+
+    if (!document.getElementById('game-of-day-banner')) {
+        var banner = document.createElement('div');
+        banner.id = 'game-of-day-banner';
+        banner.style.display = 'none';
+
+        var gamesSection = document.getElementById('games-section')
+            || document.getElementById('gamesContainer')
+            || document.querySelector('.games-grid')
+            || document.querySelector('.game-grid');
+        if (gamesSection && gamesSection.parentNode) {
+            gamesSection.parentNode.insertBefore(banner, gamesSection);
+        } else {
+            var main = document.getElementById('main-content')
+                || document.getElementById('lobby')
+                || document.querySelector('.lobby-content');
+            if (main) main.appendChild(banner);
+        }
+    }
+
+    _fetchGameOfDayHighlight();
+    setInterval(_fetchGameOfDayHighlight, 60000);
+}
+
+function _fetchGameOfDayHighlight() {
+    fetch('/api/game-of-day')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!data || !data.gameId) return;
+            _renderGameOfDayHighlight(data);
+        })
+        .catch(function() { /* silently ignore */ });
+}
+
+function _renderGameOfDayHighlight(data) {
+    var banner = document.getElementById('game-of-day-banner');
+    if (!banner) return;
+
+    // Clear existing content
+    while (banner.firstChild) banner.removeChild(banner.firstChild);
+
+    var iconDiv = document.createElement('div');
+    iconDiv.className = 'god-icon';
+    iconDiv.textContent = '\u2B50'; // ⭐
+
+    var bodyDiv = document.createElement('div');
+    bodyDiv.className = 'god-body';
+
+    var labelDiv = document.createElement('div');
+    labelDiv.className = 'god-label';
+    labelDiv.textContent = '\u2B50 GAME OF THE DAY';
+
+    var nameDiv = document.createElement('div');
+    nameDiv.className = 'god-name';
+    nameDiv.textContent = data.gameName || data.gameId;
+
+    var countdownDiv = document.createElement('div');
+    countdownDiv.className = 'god-countdown';
+    if (data.secondsUntilNext > 0) {
+        var h = Math.floor(data.secondsUntilNext / 3600);
+        var m = Math.floor((data.secondsUntilNext % 3600) / 60);
+        countdownDiv.textContent = 'Refreshes in ' + h + 'h ' + m + 'm';
+    } else {
+        countdownDiv.textContent = 'Refreshes at midnight';
+    }
+
+    bodyDiv.appendChild(labelDiv);
+    bodyDiv.appendChild(nameDiv);
+    bodyDiv.appendChild(countdownDiv);
+
+    var playBtn = document.createElement('button');
+    playBtn.className = 'god-play-btn';
+    playBtn.textContent = 'PLAY NOW';
+    var gameId = data.gameId;
+    playBtn.addEventListener('click', function() {
+        if (typeof openSlot !== 'undefined') {
+            openSlot(gameId);
+        }
+    });
+
+    banner.appendChild(iconDiv);
+    banner.appendChild(bodyDiv);
+    banner.appendChild(playBtn);
+    banner.style.display = '';
+}
+
+// ── 2. Jackpot Ticker Bar ────────────────────────────────────────────────────
+// Separate from the pre-existing initJackpotTicker() (#jackpotTicker).
+// Uses #jackpot-ticker-bar and window._jackpotTickerBarInit to avoid collision.
+function initJackpotTickerBar() {
+    if (window._jackpotTickerBarInit) return; window._jackpotTickerBarInit = true;
+
+    // Inject CSS once
+    if (!document.getElementById('jackpot-ticker-bar-css')) {
+        var style = document.createElement('style');
+        style.id = 'jackpot-ticker-bar-css';
+        style.textContent = [
+            '#jackpot-ticker-bar{background:linear-gradient(90deg,#0f0718 0%,#1a0a2e 50%,#0f0718 100%);',
+            'border:1px solid rgba(139,92,246,0.4);border-radius:10px;padding:10px 16px;margin:0 0 12px 0;',
+            'display:flex;align-items:center;gap:12px;font-family:inherit;flex-wrap:wrap;}',
+            '.jtb-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;',
+            'color:rgba(255,255,255,0.55);white-space:nowrap;flex-shrink:0;}',
+            '.jtb-pools{display:flex;gap:8px;flex:1;flex-wrap:wrap;}',
+            '.jtb-pool{display:flex;flex-direction:column;align-items:center;',
+            'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);',
+            'border-radius:8px;padding:6px 12px;min-width:80px;flex:1;}',
+            '.jtb-pool--grand{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(180,83,9,0.1));',
+            'border-color:rgba(245,158,11,0.5);}',
+            '.jtb-pool-name{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;',
+            'color:rgba(255,255,255,0.45);margin-bottom:3px;}',
+            '.jtb-pool--grand .jtb-pool-name{color:#fbbf24;}',
+            '.jtb-pool-amount{font-size:14px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}',
+            '.jtb-pool--grand .jtb-pool-amount{color:#f59e0b;text-shadow:0 0 6px rgba(245,158,11,0.4);}',
+            '@keyframes jtbPulse{0%,100%{opacity:1}50%{opacity:0.5}}',
+            '.jtb-pulse{animation:jtbPulse 0.6s ease-in-out;}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+
+    if (!document.getElementById('jackpot-ticker-bar')) {
+        var bar = document.createElement('div');
+        bar.id = 'jackpot-ticker-bar';
+        bar.style.display = 'none';
+
+        var labelEl = document.createElement('span');
+        labelEl.className = 'jtb-label';
+        labelEl.textContent = '\uD83C\uDFB0 LIVE JACKPOTS:';
+        bar.appendChild(labelEl);
+
+        var poolsEl = document.createElement('div');
+        poolsEl.id = 'jackpot-ticker-bar-pools';
+        poolsEl.className = 'jtb-pools';
+        bar.appendChild(poolsEl);
+
+        var gamesSection = document.getElementById('games-section')
+            || document.getElementById('gamesContainer')
+            || document.querySelector('.games-grid')
+            || document.querySelector('.game-grid');
+        if (gamesSection && gamesSection.parentNode) {
+            gamesSection.parentNode.insertBefore(bar, gamesSection);
+        } else {
+            var main = document.getElementById('main-content')
+                || document.getElementById('lobby')
+                || document.querySelector('.lobby-content');
+            if (main) main.insertBefore(bar, main.firstChild);
+        }
+    }
+
+    _fetchJackpotTickerBar();
+    setInterval(_fetchJackpotTickerBar, 15000);
+}
+
+var _jtbPrevAmounts = {};
+
+function _fetchJackpotTickerBar() {
+    fetch('/api/jackpot/status')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!data || !data.pools) return;
+            _renderJackpotTickerBar(data.pools);
+        })
+        .catch(function() { /* silently ignore */ });
+}
+
+function _renderJackpotTickerBar(pools) {
+    var bar = document.getElementById('jackpot-ticker-bar');
+    var poolsEl = document.getElementById('jackpot-ticker-bar-pools');
+    if (!bar || !poolsEl || !pools || pools.length === 0) {
+        if (bar) bar.style.display = 'none';
+        return;
+    }
+
+    var order = ['mini', 'minor', 'major', 'grand'];
+    var sorted = order.map(function(t) { return pools.find(function(p) { return p.tier === t; }); }).filter(Boolean);
+    pools.forEach(function(p) { if (order.indexOf(p.tier) === -1) sorted.push(p); });
+
+    // Clear and rebuild pool cards
+    while (poolsEl.firstChild) poolsEl.removeChild(poolsEl.firstChild);
+
+    sorted.forEach(function(pool) {
+        var isGrand = pool.tier === 'grand';
+        var amount = parseFloat(pool.currentAmount || 0);
+        var amountStr = '$' + amount.toFixed(2);
+        var prevAmount = _jtbPrevAmounts[pool.tier];
+        _jtbPrevAmounts[pool.tier] = amount;
+
+        var card = document.createElement('div');
+        card.className = 'jtb-pool' + (isGrand ? ' jtb-pool--grand' : '');
+
+        var nameEl = document.createElement('div');
+        nameEl.className = 'jtb-pool-name';
+        nameEl.textContent = pool.tier.toUpperCase();
+
+        var amountEl = document.createElement('div');
+        amountEl.className = 'jtb-pool-amount';
+        amountEl.textContent = amountStr;
+
+        // Pulse if amount changed
+        if (prevAmount !== undefined && prevAmount !== amount) {
+            amountEl.classList.add('jtb-pulse');
+            setTimeout(function() { amountEl.classList.remove('jtb-pulse'); }, 700);
+        }
+
+        card.appendChild(nameEl);
+        card.appendChild(amountEl);
+        poolsEl.appendChild(card);
+    });
+
+    bar.style.display = '';
+}
+
+// ── 3. Lucky Hours Banner ────────────────────────────────────────────────────
+// Distinct from initLuckyHourBanner() which hits /api/lucky-hour.
+// This widget hits /api/luckyhours/status and uses element #lucky-hours-banner.
+function initLuckyHoursBanner() {
+    if (window._luckyHoursBannerInit) return; window._luckyHoursBannerInit = true;
+
+    // Inject CSS once
+    if (!document.getElementById('lucky-hours-banner-css')) {
+        var style = document.createElement('style');
+        style.id = 'lucky-hours-banner-css';
+        style.textContent = [
+            '#lucky-hours-banner{border-radius:10px;padding:10px 16px;margin:0 0 14px 0;',
+            'font-family:inherit;display:flex;align-items:center;gap:12px;transition:all 0.3s;}',
+            '#lucky-hours-banner.lhb-active{background:linear-gradient(135deg,#064e3b 0%,#065f46 50%,#047857 100%);',
+            'border:1px solid #10b981;box-shadow:0 0 16px rgba(16,185,129,0.3);',
+            'animation:lhbPulse 2.5s ease-in-out infinite;}',
+            '#lucky-hours-banner.lhb-inactive{background:rgba(255,255,255,0.04);',
+            'border:1px solid rgba(255,255,255,0.1);}',
+            '@keyframes lhbPulse{0%,100%{box-shadow:0 0 16px rgba(16,185,129,0.3)}',
+            '50%{box-shadow:0 0 28px rgba(16,185,129,0.5)}}',
+            '.lhb-icon{font-size:22px;flex-shrink:0;line-height:1;}',
+            '.lhb-body{flex:1;min-width:0;}',
+            '.lhb-title{font-size:13px;font-weight:700;color:#fff;',
+            'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+            '#lucky-hours-banner.lhb-active .lhb-title{color:#6ee7b7;}',
+            '#lucky-hours-banner.lhb-inactive .lhb-title{color:rgba(255,255,255,0.55);font-size:12px;}',
+            '.lhb-countdown{font-size:11px;font-variant-numeric:tabular-nums;margin-top:2px;}',
+            '#lucky-hours-banner.lhb-active .lhb-countdown{color:#a7f3d0;}',
+            '#lucky-hours-banner.lhb-inactive .lhb-countdown{color:rgba(255,255,255,0.35);}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+
+    if (!document.getElementById('lucky-hours-banner')) {
+        var banner = document.createElement('div');
+        banner.id = 'lucky-hours-banner';
+        banner.style.display = 'none';
+
+        var gamesSection = document.getElementById('games-section')
+            || document.getElementById('gamesContainer')
+            || document.querySelector('.games-grid')
+            || document.querySelector('.game-grid');
+        if (gamesSection && gamesSection.parentNode) {
+            gamesSection.parentNode.insertBefore(banner, gamesSection);
+        } else {
+            var main = document.getElementById('main-content')
+                || document.getElementById('lobby')
+                || document.querySelector('.lobby-content');
+            if (main) main.appendChild(banner);
+        }
+    }
+
+    _fetchLuckyHoursBanner();
+    setInterval(_fetchLuckyHoursBanner, 60000);
+}
+
+var _luckyHoursBannerCountdownInterval = null;
+
+function _fetchLuckyHoursBanner() {
+    fetch('/api/luckyhours/status')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!data) return;
+            _renderLuckyHoursBanner(data);
+        })
+        .catch(function() {
+            var banner = document.getElementById('lucky-hours-banner');
+            if (banner) banner.style.display = 'none';
+        });
+}
+
+function _renderLuckyHoursBanner(data) {
+    var banner = document.getElementById('lucky-hours-banner');
+    if (!banner) return;
+
+    // Clear existing content
+    while (banner.firstChild) banner.removeChild(banner.firstChild);
+
+    // Clear any existing countdown
+    if (_luckyHoursBannerCountdownInterval) {
+        clearInterval(_luckyHoursBannerCountdownInterval);
+        _luckyHoursBannerCountdownInterval = null;
+    }
+
+    var isActive = !!data.active;
+    var multiplier = data.multiplier || 2;
+    var label = data.label || (multiplier + '\u00D7 Gems');
+    var targetTime = isActive ? data.endsAt : data.nextWindowAt;
+
+    banner.className = isActive ? 'lhb-active' : 'lhb-inactive';
+    banner.style.display = '';
+
+    var iconDiv = document.createElement('div');
+    iconDiv.className = 'lhb-icon';
+    iconDiv.textContent = '\uD83C\uDF40'; // 🍀
+
+    var bodyDiv = document.createElement('div');
+    bodyDiv.className = 'lhb-body';
+
+    var titleDiv = document.createElement('div');
+    titleDiv.className = 'lhb-title';
+    if (isActive) {
+        titleDiv.textContent = '\uD83C\uDF40 LUCKY HOUR ACTIVE \u2014 ' + label + '!';
+    } else {
+        titleDiv.textContent = '\uD83C\uDF40 Next Lucky Hour in\u2026';
+    }
+
+    var countdownDiv = document.createElement('div');
+    countdownDiv.className = 'lhb-countdown';
+    countdownDiv.id = 'lucky-hours-banner-countdown';
+    if (targetTime) {
+        countdownDiv.dataset.target = targetTime;
+        countdownDiv.dataset.mode = isActive ? 'ends' : 'starts';
+    }
+    countdownDiv.textContent = isActive ? 'Ends in --:--' : 'Starts in --:--';
+
+    bodyDiv.appendChild(titleDiv);
+    bodyDiv.appendChild(countdownDiv);
+
+    banner.appendChild(iconDiv);
+    banner.appendChild(bodyDiv);
+
+    if (targetTime) {
+        _updateLuckyHoursBannerCountdown();
+        _luckyHoursBannerCountdownInterval = setInterval(_updateLuckyHoursBannerCountdown, 1000);
+    }
+}
+
+function _updateLuckyHoursBannerCountdown() {
+    var el = document.getElementById('lucky-hours-banner-countdown');
+    if (!el) {
+        clearInterval(_luckyHoursBannerCountdownInterval);
+        _luckyHoursBannerCountdownInterval = null;
+        return;
+    }
+    var target = el.dataset.target;
+    var mode = el.dataset.mode;
+    if (!target) return;
+    var diff = Math.max(0, new Date(target).getTime() - Date.now());
+    var secs = Math.floor(diff / 1000);
+    var h = Math.floor(secs / 3600);
+    var m = Math.floor((secs % 3600) / 60);
+    var s = secs % 60;
+    var timeStr = h > 0
+        ? h + 'h ' + m + 'm'
+        : String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    el.textContent = (mode === 'ends' ? 'Ends in ' : 'Starts in ') + timeStr;
+    if (diff === 0) {
+        clearInterval(_luckyHoursBannerCountdownInterval);
+        _luckyHoursBannerCountdownInterval = null;
+        setTimeout(_fetchLuckyHoursBanner, 3000);
     }
 }
 
