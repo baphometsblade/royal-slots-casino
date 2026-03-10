@@ -2010,6 +2010,8 @@ function initPromoEngine() {
             renderBoostCard(promosSidebar);
             renderTournamentCard(promosSidebar);
             renderDailyCashbackCard(promosSidebar);
+            renderWagerRaceCard(promosSidebar);
+            renderComebackBonusCard(promosSidebar);
         }
     }, 4000);
 
@@ -3300,4 +3302,302 @@ async function renderDailyCashbackCard(container) {
     noLossEl.className = 'dcc-no-losses';
     noLossEl.textContent = 'No losses in last 24h to recover';
     card.appendChild(noLossEl);
+}
+
+
+// ─── Weekly Wager Race card ───────────────────────────────────────────────────
+
+async function renderWagerRaceCard(container) {
+    if (!container) return;
+    if (document.getElementById('wagerRaceCard')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('wagerRaceCardStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'wagerRaceCardStyles';
+        styleEl.textContent = [
+            '.promo-wagerrace-card { background:linear-gradient(135deg,#0d0d2b,#1a0a3e); border:1px solid #6c63ff; border-radius:12px; padding:16px; margin-bottom:14px; color:#fff; }',
+            '.promo-wagerrace-title { font-size:16px; font-weight:700; color:#c084fc; margin:0 0 4px; }',
+            '.promo-wagerrace-timer { font-size:12px; color:#888; margin:0 0 10px; }',
+            '.promo-race-prize-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:13px; }',
+            '.promo-race-prize-rank { font-size:16px; width:24px; }',
+            '.promo-race-prize-amount { color:#ffd700; font-weight:700; }',
+            '.promo-race-prize-gems { color:#c084fc; font-size:11px; }',
+            '.promo-lb-row { display:flex; align-items:center; justify-content:space-between; padding:5px 0; border-bottom:1px solid #1a1a3a; font-size:12px; }',
+            '.promo-lb-row.me { background:rgba(108,99,255,0.15); border-radius:4px; padding:5px 4px; }',
+            '.promo-lb-rank { color:#888; width:20px; }',
+            '.promo-lb-name { color:#e2e8f0; flex:1; margin-left:6px; }',
+            '.promo-lb-wagered { color:#60a5fa; }',
+            '.promo-myrank-section { background:rgba(108,99,255,0.1); border-radius:6px; padding:8px; margin-top:8px; font-size:12px; color:#a78bfa; text-align:center; }',
+            '.promo-race-section-label { font-size:11px; font-weight:700; color:#6c63ff; text-transform:uppercase; letter-spacing:0.5px; margin:8px 0 6px; }',
+            '.promo-race-empty { font-size:12px; color:#6b7280; font-style:italic; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var card = document.createElement('div');
+    card.id = 'wagerRaceCard';
+    card.className = 'promo-card promo-wagerrace-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'promo-wagerrace-title';
+    titleEl.textContent = '\uD83C\uDFC1 Weekly Wager Race';
+    card.appendChild(titleEl);
+
+    var timerEl = document.createElement('div');
+    timerEl.className = 'promo-wagerrace-timer';
+    timerEl.textContent = 'Loading\u2026';
+    card.appendChild(timerEl);
+
+    container.appendChild(card);
+
+    // Countdown interval handle (stored on card element for cleanup)
+    var _countdownInterval = null;
+
+    function _startCountdown(endsAt) {
+        if (_countdownInterval) clearInterval(_countdownInterval);
+        function _tick() {
+            var diff = new Date(endsAt) - Date.now();
+            if (diff <= 0) {
+                timerEl.textContent = 'Race ended';
+                clearInterval(_countdownInterval);
+                return;
+            }
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            timerEl.textContent = 'Race ends in ' + String(h) + 'h ' + String(m) + 'm ' + String(s) + 's';
+        }
+        _tick();
+        _countdownInterval = setInterval(_tick, 1000);
+    }
+
+    function _buildLeaderboard(data) {
+        // Remove everything after title + timer
+        var children = Array.prototype.slice.call(card.childNodes);
+        for (var ci = 2; ci < children.length; ci++) {
+            card.removeChild(children[ci]);
+        }
+
+        var race = data.race;
+        var leaderboard = data.leaderboard || [];
+        var myEntry = data.myEntry || null;
+
+        if (!race || race.status !== 'active') {
+            timerEl.textContent = '';
+            var emptyEl = document.createElement('div');
+            emptyEl.className = 'promo-race-empty';
+            emptyEl.textContent = 'No active race \u2014 check back soon';
+            card.appendChild(emptyEl);
+            return;
+        }
+
+        _startCountdown(race.endsAt);
+
+        // TOP PRIZES section
+        var prizeLabel = document.createElement('div');
+        prizeLabel.className = 'promo-race-section-label';
+        prizeLabel.textContent = 'TOP PRIZES';
+        card.appendChild(prizeLabel);
+
+        var prizes = [
+            { rankEmoji: '\uD83E\uDD47', amount: '$50', gems: '500\uD83D\uDC8E' },
+            { rankEmoji: '\uD83E\uDD48', amount: '$25', gems: '300\uD83D\uDC8E' },
+            { rankEmoji: '\uD83E\uDD49', amount: '$15', gems: '200\uD83D\uDC8E' }
+        ];
+        for (var pi = 0; pi < prizes.length; pi++) {
+            var p = prizes[pi];
+            var prizeRow = document.createElement('div');
+            prizeRow.className = 'promo-race-prize-row';
+
+            var rankSpan = document.createElement('span');
+            rankSpan.className = 'promo-race-prize-rank';
+            rankSpan.textContent = p.rankEmoji;
+
+            var amountSpan = document.createElement('span');
+            amountSpan.className = 'promo-race-prize-amount';
+            amountSpan.textContent = p.amount;
+
+            var gemsSpan = document.createElement('span');
+            gemsSpan.className = 'promo-race-prize-gems';
+            gemsSpan.textContent = '+ ' + p.gems;
+
+            prizeRow.appendChild(rankSpan);
+            prizeRow.appendChild(amountSpan);
+            prizeRow.appendChild(gemsSpan);
+            card.appendChild(prizeRow);
+        }
+
+        // LEADERBOARD section
+        var lbLabel = document.createElement('div');
+        lbLabel.className = 'promo-race-section-label';
+        lbLabel.textContent = 'LEADERBOARD';
+        card.appendChild(lbLabel);
+
+        // Determine current user's username for highlighting
+        var myUsername = (typeof currentUser !== 'undefined' && currentUser && currentUser.username)
+            ? currentUser.username : null;
+
+        var top5 = leaderboard.slice(0, 5);
+        if (top5.length === 0) {
+            var noEntrantsEl = document.createElement('div');
+            noEntrantsEl.className = 'promo-race-empty';
+            noEntrantsEl.textContent = 'No entries yet \u2014 be the first!';
+            card.appendChild(noEntrantsEl);
+        }
+        for (var li = 0; li < top5.length; li++) {
+            var entry = top5[li];
+            var isMe = myUsername && entry.username === myUsername;
+            var row = document.createElement('div');
+            row.className = isMe ? 'promo-lb-row me' : 'promo-lb-row';
+
+            var rankEl = document.createElement('span');
+            rankEl.className = 'promo-lb-rank';
+            rankEl.textContent = String(entry.rank);
+
+            var nameEl = document.createElement('span');
+            nameEl.className = 'promo-lb-name';
+            nameEl.textContent = entry.username || 'Player';
+
+            var wageredEl = document.createElement('span');
+            wageredEl.className = 'promo-lb-wagered';
+            wageredEl.textContent = '$' + Number(entry.totalWagered).toFixed(2);
+
+            row.appendChild(rankEl);
+            row.appendChild(nameEl);
+            row.appendChild(wageredEl);
+            card.appendChild(row);
+        }
+
+        // MY RANK section
+        if (myEntry) {
+            var mySection = document.createElement('div');
+            mySection.className = 'promo-myrank-section';
+            var myText = document.createElement('span');
+            myText.textContent = 'MY RANK: #' + String(myEntry.rank) + ' \u2014 $' + Number(myEntry.totalWagered).toFixed(2) + ' wagered';
+            mySection.appendChild(myText);
+            card.appendChild(mySection);
+        }
+    }
+
+    async function _fetchAndRender() {
+        try {
+            var res = await fetch('/api/wager-races');
+            if (!res.ok) {
+                timerEl.textContent = 'Race data unavailable';
+                return;
+            }
+            var data = await res.json();
+            _buildLeaderboard(data);
+        } catch (e) {
+            timerEl.textContent = 'Could not load race data';
+        }
+    }
+
+    await _fetchAndRender();
+
+    // Refresh leaderboard every 60 seconds
+    setInterval(_fetchAndRender, 60000);
+}
+
+
+// ─── Comeback Bonus card ──────────────────────────────────────────────────────
+
+async function renderComebackBonusCard(container) {
+    if (!container) return;
+    if (document.getElementById('comebackBonusCard')) return;
+
+    // Skip if already dismissed this session
+    if (sessionStorage.getItem('_comebackCardDismissed') === '1') return;
+
+    // Auth required — check silently before rendering anything
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Inject CSS once
+    if (!document.getElementById('comebackBonusCardStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'comebackBonusCardStyles';
+        styleEl.textContent = [
+            '.promo-comeback-card { background:linear-gradient(135deg,#1a0808,#2d1010); border:2px solid #ef4444; border-radius:12px; padding:16px; margin-bottom:14px; color:#fff; }',
+            '.promo-comeback-title { font-size:16px; font-weight:700; color:#ef4444; margin:0 0 6px; }',
+            '.promo-comeback-msg { font-size:13px; color:#fca5a5; margin:0 0 8px; line-height:1.4; }',
+            '.promo-comeback-tier { display:inline-block; padding:2px 8px; background:#7f1d1d; color:#fca5a5; border-radius:4px; font-size:11px; font-weight:700; margin-bottom:10px; }',
+            '.promo-comeback-claim-btn { padding:8px 18px; background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff; font-weight:700; border-radius:8px; border:none; cursor:pointer; font-size:14px; margin-right:8px; }',
+            '.promo-comeback-claim-btn:hover { opacity:0.88; }',
+            '.promo-comeback-later-btn { padding:8px 18px; background:transparent; color:#888; border:1px solid #333; border-radius:8px; cursor:pointer; font-size:13px; }',
+            '.promo-comeback-later-btn:hover { color:#aaa; border-color:#555; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    // Fetch eligibility — only render if eligible
+    var offerData = null;
+    try {
+        var res = await fetch('/api/user/comeback-bonus', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        var data = await res.json();
+        if (!data.eligible || !data.offer) return;
+        offerData = data.offer;
+    } catch (e) {
+        return;
+    }
+
+    // Build the card
+    var card = document.createElement('div');
+    card.id = 'comebackBonusCard';
+    card.className = 'promo-card promo-comeback-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'promo-comeback-title';
+    titleEl.textContent = '\uD83D\uDD25 Comeback Bonus';
+    card.appendChild(titleEl);
+
+    var msgEl = document.createElement('div');
+    msgEl.className = 'promo-comeback-msg';
+    msgEl.textContent = offerData.message || 'Claim your comeback bonus!';
+    card.appendChild(msgEl);
+
+    // Tier badge label
+    var tierRaw = (offerData.tier || 'bronze').toLowerCase();
+    var tierLabel = tierRaw.charAt(0).toUpperCase() + tierRaw.slice(1) + ' Recovery';
+    var tierEl = document.createElement('div');
+    tierEl.className = 'promo-comeback-tier';
+    tierEl.textContent = tierLabel;
+    card.appendChild(tierEl);
+
+    // Buttons row
+    var btnRow = document.createElement('div');
+
+    var claimBtn = document.createElement('button');
+    claimBtn.className = 'promo-comeback-claim-btn';
+    claimBtn.textContent = 'Claim Now';
+    claimBtn.addEventListener('click', function() {
+        // Open wallet modal for user to make the qualifying deposit
+        if (typeof openWalletModal === 'function') {
+            openWalletModal();
+        } else if (typeof showWalletModal === 'function') {
+            showWalletModal();
+        }
+        // Dismiss card for this session
+        sessionStorage.setItem('_comebackCardDismissed', '1');
+        card.style.display = 'none';
+    });
+
+    var laterBtn = document.createElement('button');
+    laterBtn.className = 'promo-comeback-later-btn';
+    laterBtn.textContent = 'Later';
+    laterBtn.addEventListener('click', function() {
+        sessionStorage.setItem('_comebackCardDismissed', '1');
+        card.style.display = 'none';
+    });
+
+    btnRow.appendChild(claimBtn);
+    btnRow.appendChild(laterBtn);
+    card.appendChild(btnRow);
+
+    container.appendChild(card);
 }

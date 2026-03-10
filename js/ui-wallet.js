@@ -86,7 +86,9 @@ function showWalletModal() {
     refreshCashbackBalance();
     // Render the full Loyalty Points card section (persistent slot above walletContent)
     _renderLoyaltySection(modal);
-    // Render the Rakeback card section below Loyalty
+    // Render the Deposit Match card section below Loyalty, above Rakeback
+    _renderDepositMatchSection(modal);
+    // Render the Rakeback card section below Deposit Match
     _renderRakebackSection(modal);
 }
 
@@ -1910,6 +1912,276 @@ window.redeemLoyaltyPoints = function(points) {
 };
 
 // ── Rakeback Section ─────────────────────────────────────────────────────────
+// ── Deposit Match CSS (injected once) ────────────────────────────────────────
+(function _injectDepositMatchCSS() {
+    if (document.getElementById('walletDepositMatchCSS')) return;
+    var s = document.createElement('style');
+    s.id = 'walletDepositMatchCSS';
+    s.textContent = '.wallet-deposit-match-card{background:linear-gradient(135deg,#0a1f0a,#0d2b0d);border:1px solid #22c55e;border-radius:10px;padding:14px;margin:14px 0;color:#fff;}.wallet-dm-title{font-size:15px;font-weight:700;color:#4ade80;margin:0 0 4px;}.wallet-dm-tier{font-size:12px;color:#86efac;margin:0 0 10px;}.wallet-dm-eligible-box{background:rgba(34,197,94,0.1);border:1px solid #166534;border-radius:6px;padding:10px;margin-bottom:10px;font-size:13px;color:#bbf7d0;}.wallet-dm-claim-btn{width:100%;padding:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;border-radius:8px;border:none;cursor:pointer;font-size:14px;margin-top:6px;}.wallet-dm-not-eligible{font-size:13px;color:#888;margin-bottom:10px;}.wallet-dm-rates-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}.wallet-dm-rates-table th{color:#888;font-weight:600;text-align:left;padding:3px 4px;border-bottom:1px solid #1a1a2e;}.wallet-dm-rates-table td{color:#ccc;padding:3px 4px;border-bottom:1px solid #111;}.wallet-dm-rates-table tr.current-tier td{color:#4ade80;font-weight:700;}';
+    document.head.appendChild(s);
+})();
+
+/**
+ * Renders a Deposit Match Bonus card below the Loyalty section in the wallet modal.
+ * Shows VIP tier, eligibility status, claim button, and rates table.
+ * All dynamic text uses .textContent (no innerHTML with variables).
+ * @param {HTMLElement} modal  The #walletModal element (or any ancestor containing .wallet-modal)
+ */
+async function _renderDepositMatchSection(modal) {
+    if (!modal) return;
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Find (or create) the persistent wrapper div that sits below the Loyalty card
+    var walletInner = modal.querySelector('.wallet-modal');
+    if (!walletInner) walletInner = modal;
+
+    var wrapper = walletInner.querySelector('#walletDepositMatchCardWrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = 'walletDepositMatchCardWrapper';
+        wrapper.style.cssText = 'padding:0 16px 0 16px;';
+        // Insert after the loyalty card wrapper if present, else before walletContent
+        var loyaltyWrapper = walletInner.querySelector('#walletLoyaltyCardWrapper');
+        var walletContentEl = walletInner.querySelector('#walletContent');
+        if (loyaltyWrapper && loyaltyWrapper.nextSibling) {
+            walletInner.insertBefore(wrapper, loyaltyWrapper.nextSibling);
+        } else if (walletContentEl) {
+            walletInner.insertBefore(wrapper, walletContentEl);
+        } else {
+            walletInner.appendChild(wrapper);
+        }
+    }
+
+    // Remove any existing card inside the wrapper (full re-render)
+    var existingCard = wrapper.querySelector('#walletDepositMatchCard');
+    if (existingCard) existingCard.remove();
+
+    // Build card shell
+    var card = document.createElement('div');
+    card.id = 'walletDepositMatchCard';
+    card.className = 'wallet-deposit-match-card';
+
+    // ── Header ──
+    var titleEl = document.createElement('p');
+    titleEl.className = 'wallet-dm-title';
+    titleEl.textContent = '\uD83C\uDF81 Deposit Match Bonus';
+    card.appendChild(titleEl);
+
+    // Tier placeholder shown while loading
+    var tierEl = document.createElement('p');
+    tierEl.className = 'wallet-dm-tier';
+    tierEl.textContent = 'Loading\u2026';
+    card.appendChild(tierEl);
+
+    wrapper.appendChild(card);
+
+    // ── Fetch status from server ──
+    var data = null;
+    try {
+        var resp = await fetch('/api/depositmatch/status', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) data = await resp.json();
+    } catch (_e) {}
+
+    if (!data) {
+        tierEl.textContent = 'Could not load deposit match data.';
+        tierEl.style.color = '#f87171';
+        return;
+    }
+
+    var matchRate = parseFloat(data.matchRate) || 0;
+    var matchCap = parseFloat(data.matchCap) || 0;
+    var pendingMatch = parseFloat(data.pendingMatch) || 0;
+    var lastDepositAmount = parseFloat(data.lastDepositAmount) || 0;
+    var matchAmount = parseFloat(data.matchAmount) || 0;
+    var vipLabel = data.vipLabel || 'Base';
+    var eligible = !!data.eligible;
+
+    // Update tier label with real data
+    var matchRatePct = Math.round(matchRate * 100);
+    var tierText = vipLabel + ' Tier \u2014 ' + matchRatePct + '% match up to $' + matchCap.toFixed(2);
+    tierEl.textContent = tierText;
+
+    // ── Eligible state ──
+    if (eligible) {
+        var eligibleBox = document.createElement('div');
+        eligibleBox.className = 'wallet-dm-eligible-box';
+
+        var eligibleMsg = document.createElement('span');
+        var depositStr = '$' + lastDepositAmount.toFixed(2);
+        var matchStr = '$' + matchAmount.toFixed(2);
+        eligibleMsg.textContent = 'Your last deposit of ' + depositStr + ' qualifies for a ' + matchStr + ' match bonus!';
+        eligibleBox.appendChild(eligibleMsg);
+        card.appendChild(eligibleBox);
+
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'wallet-dm-claim-btn';
+        claimBtn.textContent = 'Claim ' + matchStr + ' Match Bonus';
+        claimBtn.addEventListener('click', function() {
+            var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!claimToken) return;
+            claimBtn.disabled = true;
+            claimBtn.style.opacity = '0.6';
+
+            fetch('/api/depositmatch/claim', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + claimToken, 'Content-Type': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    var credited = parseFloat(result.matchAmount) || 0;
+                    if (typeof showToast === 'function') {
+                        showToast('\uD83C\uDF81 $' + credited.toFixed(2) + ' match bonus credited!', 'win', 4000);
+                    }
+                    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+                    // Replace claim button with confirmed text
+                    claimBtn.remove();
+                    var confirmedEl = document.createElement('div');
+                    confirmedEl.style.cssText = 'color:#4ade80;font-weight:700;font-size:14px;margin-top:6px;';
+                    confirmedEl.textContent = '\u2705 Claimed!';
+                    card.appendChild(confirmedEl);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(result.error || 'Nothing to claim right now.', 'info', 3000);
+                    }
+                    claimBtn.disabled = false;
+                    claimBtn.style.opacity = '1';
+                }
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') {
+                    showToast('Claim failed \u2014 please try again.', 'error', 3000);
+                }
+                claimBtn.disabled = false;
+                claimBtn.style.opacity = '1';
+            });
+        });
+        card.appendChild(claimBtn);
+
+    } else if (pendingMatch > 0.009) {
+        // ── Pending match (already accrued, not yet claimed) ──
+        var pendingBox = document.createElement('div');
+        pendingBox.className = 'wallet-dm-eligible-box';
+
+        var pendingMsg = document.createElement('span');
+        var pendingStr = '$' + pendingMatch.toFixed(2);
+        pendingMsg.textContent = 'You have ' + pendingStr + ' pending match \u2014 claim it!';
+        pendingBox.appendChild(pendingMsg);
+        card.appendChild(pendingBox);
+
+        var pendingClaimBtn = document.createElement('button');
+        pendingClaimBtn.className = 'wallet-dm-claim-btn';
+        pendingClaimBtn.textContent = 'Claim ' + pendingStr + ' Match Bonus';
+        pendingClaimBtn.addEventListener('click', function() {
+            var claimToken2 = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!claimToken2) return;
+            pendingClaimBtn.disabled = true;
+            pendingClaimBtn.style.opacity = '0.6';
+
+            fetch('/api/depositmatch/claim', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + claimToken2, 'Content-Type': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    var credited2 = parseFloat(result.matchAmount) || 0;
+                    if (typeof showToast === 'function') {
+                        showToast('\uD83C\uDF81 $' + credited2.toFixed(2) + ' match bonus credited!', 'win', 4000);
+                    }
+                    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+                    pendingClaimBtn.remove();
+                    var confirmedEl2 = document.createElement('div');
+                    confirmedEl2.style.cssText = 'color:#4ade80;font-weight:700;font-size:14px;margin-top:6px;';
+                    confirmedEl2.textContent = '\u2705 Claimed!';
+                    card.appendChild(confirmedEl2);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(result.error || 'Nothing to claim right now.', 'info', 3000);
+                    }
+                    pendingClaimBtn.disabled = false;
+                    pendingClaimBtn.style.opacity = '1';
+                }
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') {
+                    showToast('Claim failed \u2014 please try again.', 'error', 3000);
+                }
+                pendingClaimBtn.disabled = false;
+                pendingClaimBtn.style.opacity = '1';
+            });
+        });
+        card.appendChild(pendingClaimBtn);
+
+    } else {
+        // ── Not eligible ──
+        var notEligEl = document.createElement('div');
+        notEligEl.className = 'wallet-dm-not-eligible';
+        var depositPrompt = 'Make a deposit to unlock your ' + vipLabel + ' ' + matchRatePct + '% match bonus (up to $' + matchCap.toFixed(2) + ')';
+        notEligEl.textContent = depositPrompt;
+        card.appendChild(notEligEl);
+
+        var depositNowBtn = document.createElement('button');
+        depositNowBtn.className = 'wallet-dm-claim-btn';
+        depositNowBtn.style.cssText = 'width:100%;padding:8px;background:linear-gradient(135deg,#374151,#1f2937);color:#9ca3af;font-weight:700;border-radius:8px;border:1px solid #374151;cursor:pointer;font-size:13px;margin-top:4px;';
+        depositNowBtn.textContent = 'Deposit Now';
+        depositNowBtn.addEventListener('click', function() {
+            var depositSection = document.getElementById('depositSection');
+            if (depositSection) depositSection.scrollIntoView({ behavior: 'smooth' });
+        });
+        card.appendChild(depositNowBtn);
+    }
+
+    // ── VIP Rates table ──
+    var RATES_TABLE = [
+        { label: 'Base',     rate: '25%',  cap: '$2.50'  },
+        { label: 'Bronze',   rate: '35%',  cap: '$7'     },
+        { label: 'Silver',   rate: '50%',  cap: '$15'    },
+        { label: 'Gold',     rate: '60%',  cap: '$35'    },
+        { label: 'Platinum', rate: '75%',  cap: '$75'    },
+        { label: 'Diamond',  rate: '100%', cap: '$200'   }
+    ];
+
+    var table = document.createElement('table');
+    table.className = 'wallet-dm-rates-table';
+
+    var thead = document.createElement('thead');
+    var headerRow = document.createElement('tr');
+    var thTier = document.createElement('th');
+    thTier.textContent = 'VIP Tier';
+    var thRate = document.createElement('th');
+    thRate.textContent = 'Match Rate';
+    var thCap = document.createElement('th');
+    thCap.textContent = 'Max Bonus';
+    headerRow.appendChild(thTier);
+    headerRow.appendChild(thRate);
+    headerRow.appendChild(thCap);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    RATES_TABLE.forEach(function(row) {
+        var tr = document.createElement('tr');
+        if (row.label === vipLabel) tr.className = 'current-tier';
+        var tdLabel = document.createElement('td');
+        tdLabel.textContent = row.label;
+        var tdRate = document.createElement('td');
+        tdRate.textContent = row.rate;
+        var tdCap = document.createElement('td');
+        tdCap.textContent = row.cap;
+        tr.appendChild(tdLabel);
+        tr.appendChild(tdRate);
+        tr.appendChild(tdCap);
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    card.appendChild(table);
+}
+
 /**
  * Renders a Weekly Rakeback card below the Loyalty section in the wallet modal.
  * Shows weekly stats, pending amount, claim button, history, and next payout countdown.

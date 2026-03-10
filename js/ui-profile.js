@@ -889,7 +889,10 @@ const PROFILE_TABS = [
     { id: 'limits',       icon: '\u{1F6E1}\uFE0F', label: 'Responsible Play' },
     { id: 'history',      icon: '\u{1F4CB}', label: 'History' },
     { id: 'badges',       icon: '\u{1F3C5}', label: 'Badges' },
-    { id: 'gifts',        icon: '\u{1F381}', label: 'Gifts' }
+    { id: 'gifts',        icon: '\u{1F381}', label: 'Gifts' },
+    { id: 'milestones',   icon: '\u{1F3C6}', label: 'Milestones' },
+    { id: 'achievements', icon: '\u{1F396}\uFE0F', label: 'Achievements' },
+    { id: 'referral',     icon: '\u{1F465}', label: 'Referral' }
 ];
 
 function renderProfileSidebar() {
@@ -985,6 +988,9 @@ function renderProfileContent() {
         case 'history':       renderHistoryTab(); break;
         case 'badges':        renderBadgeGallery(); break;
         case 'gifts':         renderGiftsTab(); break;
+        case 'milestones':    renderMilestonesTab(); break;
+        case 'achievements':  renderAchievementsTab(); break;
+        case 'referral':      renderReferralTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -3198,5 +3204,467 @@ function _giftsLoadSent(panel) {
         errDiv.style.cssText = 'color:#f87171; text-align:center; padding:20px; font-size:13px;';
         errDiv.textContent = 'Failed to load sent gifts. Please try again later.';
         panel.appendChild(errDiv);
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// MILESTONES / ACHIEVEMENTS / REFERRAL — CSS (injected once)
+// ═══════════════════════════════════════════════════════
+
+(function injectMilestonesAchievementsReferralCss() {
+    if (document.getElementById('milestoneAchieveReferralCss')) return;
+    var style = document.createElement('style');
+    style.id = 'milestoneAchieveReferralCss';
+    style.textContent = [
+        '.profile-milestone-bar { height:8px; background:#222; border-radius:4px; overflow:hidden; margin:6px 0; }',
+        '.profile-milestone-fill { height:100%; background:linear-gradient(90deg,#f59e0b,#fcd34d); border-radius:4px; transition:width 0.3s; }',
+        '.profile-milestone-item { display:flex; align-items:center; gap:8px; padding:5px 0; font-size:13px; border-bottom:1px solid #1a1a3a; }',
+        '.profile-milestone-item:last-child { border-bottom:none; }',
+        '.profile-milestone-check { font-size:14px; width:20px; text-align:center; }',
+        '.profile-milestone-label { flex:1; color:#ccc; }',
+        '.profile-milestone-reward { font-size:11px; color:#888; }',
+        '.profile-claim-btn { padding:8px 16px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#000; font-weight:700; border-radius:8px; border:none; cursor:pointer; font-size:13px; margin-top:8px; width:100%; }',
+        '.profile-achieve-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #1a1a3a; }',
+        '.profile-achieve-item:last-child { border-bottom:none; }',
+        '.profile-achieve-icon { font-size:22px; line-height:1; }',
+        '.profile-achieve-body { flex:1; }',
+        '.profile-achieve-name { font-size:13px; font-weight:600; color:#e2e8f0; }',
+        '.profile-achieve-desc { font-size:11px; color:#888; margin-top:2px; }',
+        '.profile-achieve-claim-btn { padding:4px 10px; background:linear-gradient(135deg,#6c63ff,#a78bfa); color:#fff; font-weight:700; border-radius:6px; border:none; cursor:pointer; font-size:11px; }',
+        '.profile-achieve-claimed { font-size:12px; color:#4ade80; }',
+        '.profile-achieve-locked { font-size:12px; color:#555; }',
+        '.profile-referral-code-box { background:#111; border:2px solid #6c63ff; border-radius:8px; padding:12px 16px; text-align:center; font-size:24px; font-weight:900; color:#ffd700; letter-spacing:4px; margin:8px 0; }',
+        '.profile-referral-copy-btn { width:100%; padding:8px; background:linear-gradient(135deg,#6c63ff,#a78bfa); color:#fff; font-weight:700; border-radius:8px; border:none; cursor:pointer; font-size:13px; margin-bottom:10px; }',
+        '.profile-referral-stats { font-size:13px; color:#888; text-align:center; }',
+        '.profile-referral-stats strong { color:#e2e8f0; }',
+        '.profile-referral-note { font-size:12px; color:#6c63ff; text-align:center; margin-top:8px; }'
+    ].join('\n');
+    document.head.appendChild(style);
+})();
+
+
+// ═══════════════════════════════════════════════════════
+// MILESTONES TAB
+// ═══════════════════════════════════════════════════════
+
+function renderMilestonesTab() {
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    injectMilestonesAchievementsReferralCss();
+
+    var header = document.createElement('h2');
+    header.className = 'profile-section-title';
+    header.textContent = 'Milestones';
+    el.appendChild(header);
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        var authMsg = document.createElement('div');
+        authMsg.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
+        authMsg.textContent = 'Please log in to view milestones.';
+        el.appendChild(authMsg);
+        return;
+    }
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
+    loadingDiv.textContent = 'Loading milestones…';
+    el.appendChild(loadingDiv);
+
+    fetch('/api/milestones/status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(res) { return res.json(); }).then(function(data) {
+        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
+
+        var card = document.createElement('div');
+        card.className = 'profile-card';
+
+        var cardTitle = document.createElement('div');
+        cardTitle.className = 'profile-card-title';
+        cardTitle.textContent = 'Your Progress';
+        card.appendChild(cardTitle);
+
+        var totalSpins = Number(data.totalSpins) || 0;
+        var totalSpinsEl = document.createElement('div');
+        totalSpinsEl.style.cssText = 'font-size:15px;color:#e2e8f0;margin-bottom:10px;';
+        totalSpinsEl.textContent = 'Total Spins: ' + totalSpins;
+        card.appendChild(totalSpinsEl);
+
+        var nextMilestone = Number(data.nextMilestone) || 0;
+        var spinsUntilNext = Number(data.spinsUntilNext) || 0;
+        var nextLabel = data.nextMilestoneLabel || '';
+
+        if (nextMilestone > 0) {
+            var progressLabel = document.createElement('div');
+            progressLabel.style.cssText = 'font-size:12px;color:#94a3b8;margin-bottom:4px;';
+            progressLabel.textContent = spinsUntilNext + ' spins until next milestone';
+            card.appendChild(progressLabel);
+
+            var barWrap = document.createElement('div');
+            barWrap.className = 'profile-milestone-bar';
+            var fill = document.createElement('div');
+            fill.className = 'profile-milestone-fill';
+            var pct = Math.min(100, Math.round((totalSpins / nextMilestone) * 100));
+            fill.style.width = pct + '%';
+            barWrap.appendChild(fill);
+            card.appendChild(barWrap);
+
+            var nextLabelEl = document.createElement('div');
+            nextLabelEl.style.cssText = 'font-size:12px;color:#94a3b8;margin-top:4px;';
+            nextLabelEl.textContent = 'Next: ' + nextLabel + ' (' + nextMilestone + ' spins)';
+            card.appendChild(nextLabelEl);
+        }
+
+        if (data.pendingClaim && data.pendingMilestone) {
+            var pm = data.pendingMilestone;
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'profile-claim-btn';
+
+            var rewardParts = [];
+            if (pm.gems) rewardParts.push('+' + pm.gems + '\uD83D\uDC8E');
+            if (pm.credits) rewardParts.push('+$' + Number(pm.credits).toFixed(2));
+            var rewardStr = rewardParts.join(' ');
+            claimBtn.textContent = '\uD83C\uDF81 Claim: ' + (pm.label || '') + ' \u2014 ' + rewardStr;
+
+            claimBtn.addEventListener('click', function() {
+                claimBtn.disabled = true;
+                claimBtn.textContent = 'Claiming\u2026';
+                var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                if (!claimToken) { claimBtn.textContent = 'Error'; return; }
+                fetch('/api/milestones/claim', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + claimToken, 'Content-Type': 'application/json' }
+                }).then(function(r) { return r.json(); }).then(function(res) {
+                    if (res.success) {
+                        if (typeof showToast === 'function') {
+                            var toastGems = res.gems ? ('+' + res.gems + '\uD83D\uDC8E') : '';
+                            showToast('\uD83C\uDF89 Milestone: ' + (res.label || '') + '! ' + toastGems);
+                        }
+                        if (typeof updateBalanceDisplay === 'function' && res.newBalance !== undefined) {
+                            updateBalanceDisplay(res.newBalance);
+                        }
+                        renderMilestonesTab();
+                    } else {
+                        claimBtn.disabled = false;
+                        claimBtn.textContent = 'Claim failed \u2014 try again';
+                    }
+                }).catch(function() {
+                    claimBtn.disabled = false;
+                    claimBtn.textContent = 'Claim failed \u2014 try again';
+                });
+            });
+            card.appendChild(claimBtn);
+        }
+
+        el.appendChild(card);
+
+        var listCard = document.createElement('div');
+        listCard.className = 'profile-card';
+
+        var listTitle = document.createElement('div');
+        listTitle.className = 'profile-card-title';
+        listTitle.textContent = 'All Milestones';
+        listCard.appendChild(listTitle);
+
+        var MILESTONE_DEFS = [
+            { spins: 100,   gems: 50,   credits: 0,  label: 'First Century' },
+            { spins: 250,   gems: 100,  credits: 0,  label: 'Quarter Thousand' },
+            { spins: 500,   gems: 200,  credits: 1,  label: 'Half Grand' },
+            { spins: 1000,  gems: 400,  credits: 2,  label: 'One Grand' },
+            { spins: 2500,  gems: 750,  credits: 5,  label: 'Two-Five Hundred' },
+            { spins: 5000,  gems: 1500, credits: 10, label: 'Five Grand' },
+            { spins: 10000, gems: 3000, credits: 25, label: 'Ten Grand' }
+        ];
+
+        MILESTONE_DEFS.forEach(function(m) {
+            var item = document.createElement('div');
+            item.className = 'profile-milestone-item';
+
+            var check = document.createElement('span');
+            check.className = 'profile-milestone-check';
+            check.textContent = totalSpins >= m.spins ? '\u2705' : '\u2B55';
+            item.appendChild(check);
+
+            var lbl = document.createElement('span');
+            lbl.className = 'profile-milestone-label';
+            lbl.textContent = m.label + ' (' + m.spins + ' spins)';
+            item.appendChild(lbl);
+
+            var reward = document.createElement('span');
+            reward.className = 'profile-milestone-reward';
+            var rParts = [];
+            if (m.gems) rParts.push(m.gems + '\uD83D\uDC8E');
+            if (m.credits) rParts.push('$' + m.credits.toFixed(2));
+            reward.textContent = rParts.join(' ');
+            item.appendChild(reward);
+
+            listCard.appendChild(item);
+        });
+
+        el.appendChild(listCard);
+    }).catch(function() {
+        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171;text-align:center;padding:20px;font-size:13px;';
+        errDiv.textContent = 'Failed to load milestones. Please try again later.';
+        el.appendChild(errDiv);
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// ACHIEVEMENTS TAB
+// ═══════════════════════════════════════════════════════
+
+function renderAchievementsTab() {
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    injectMilestonesAchievementsReferralCss();
+
+    var header = document.createElement('h2');
+    header.className = 'profile-section-title';
+    header.textContent = 'Achievements';
+    el.appendChild(header);
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        var authMsg = document.createElement('div');
+        authMsg.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
+        authMsg.textContent = 'Please log in to view achievements.';
+        el.appendChild(authMsg);
+        return;
+    }
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
+    loadingDiv.textContent = 'Loading achievements\u2026';
+    el.appendChild(loadingDiv);
+
+    fetch('/api/achievements', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(res) { return res.json(); }).then(function(data) {
+        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
+
+        var achievements = data.achievements || [];
+        var unlockedCount = achievements.filter(function(a) { return a.unlocked; }).length;
+
+        var countEl = document.createElement('div');
+        countEl.style.cssText = 'font-size:14px;color:#94a3b8;margin-bottom:16px;';
+        var countStrong = document.createElement('strong');
+        countStrong.style.color = '#e2e8f0';
+        countStrong.textContent = unlockedCount + ' / ' + achievements.length;
+        countEl.appendChild(countStrong);
+        countEl.appendChild(document.createTextNode(' achievements unlocked'));
+        el.appendChild(countEl);
+
+        if (achievements.length === 0) {
+            var emptyEl = document.createElement('div');
+            emptyEl.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
+            emptyEl.textContent = 'No achievements available yet.';
+            el.appendChild(emptyEl);
+            return;
+        }
+
+        var card = document.createElement('div');
+        card.className = 'profile-card';
+
+        achievements.forEach(function(ach) {
+            var item = document.createElement('div');
+            item.className = 'profile-achieve-item';
+            if (!ach.unlocked) {
+                item.style.opacity = '0.5';
+            }
+
+            var iconEl = document.createElement('div');
+            iconEl.className = 'profile-achieve-icon';
+            iconEl.textContent = ach.unlocked ? (ach.icon || '\uD83C\uDFC5') : '\uD83D\uDD12';
+            item.appendChild(iconEl);
+
+            var body = document.createElement('div');
+            body.className = 'profile-achieve-body';
+
+            var nameEl = document.createElement('div');
+            nameEl.className = 'profile-achieve-name';
+            nameEl.textContent = ach.name || '';
+            body.appendChild(nameEl);
+
+            var descEl = document.createElement('div');
+            descEl.className = 'profile-achieve-desc';
+            descEl.textContent = ach.description || '';
+            body.appendChild(descEl);
+
+            item.appendChild(body);
+
+            var actionEl = document.createElement('div');
+            actionEl.style.cssText = 'flex-shrink:0;display:flex;align-items:center;';
+
+            if (!ach.unlocked) {
+                var lockedEl = document.createElement('span');
+                lockedEl.className = 'profile-achieve-locked';
+                lockedEl.textContent = '\uD83D\uDD12 Locked';
+                actionEl.appendChild(lockedEl);
+            } else if (ach.claimed) {
+                var claimedEl = document.createElement('span');
+                claimedEl.className = 'profile-achieve-claimed';
+                claimedEl.textContent = '\u2705 Claimed';
+                actionEl.appendChild(claimedEl);
+            } else {
+                var claimBtn = document.createElement('button');
+                claimBtn.className = 'profile-achieve-claim-btn';
+                var rewardStr = ach.rewardAmount
+                    ? ('+' + ach.rewardAmount + (ach.rewardType === 'gems' ? '\uD83D\uDC8E' : ' credits'))
+                    : 'Claim';
+                claimBtn.textContent = rewardStr;
+
+                (function(btn, achId, achRewardType, achRewardAmount) {
+                    btn.addEventListener('click', function() {
+                        btn.disabled = true;
+                        btn.textContent = '\u2026';
+                        var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                        if (!claimToken) { btn.textContent = 'Error'; return; }
+                        fetch('/api/achievements/claim/' + achId, {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + claimToken, 'Content-Type': 'application/json' }
+                        }).then(function(r) { return r.json(); }).then(function(res) {
+                            if (res.success) {
+                                if (typeof showToast === 'function') {
+                                    var amt = res.rewardAmount || achRewardAmount;
+                                    var suffix = res.rewardType === 'gems' ? '\uD83D\uDC8E' : ' credits';
+                                    showToast('\uD83C\uDF89 Achievement claimed! +' + amt + suffix);
+                                }
+                                renderAchievementsTab();
+                            } else {
+                                btn.disabled = false;
+                                btn.textContent = 'Retry';
+                            }
+                        }).catch(function() {
+                            btn.disabled = false;
+                            btn.textContent = 'Retry';
+                        });
+                    });
+                })(claimBtn, ach.id, ach.rewardType, ach.rewardAmount);
+
+                actionEl.appendChild(claimBtn);
+            }
+
+            item.appendChild(actionEl);
+            card.appendChild(item);
+        });
+
+        el.appendChild(card);
+    }).catch(function() {
+        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171;text-align:center;padding:20px;font-size:13px;';
+        errDiv.textContent = 'Failed to load achievements. Please try again later.';
+        el.appendChild(errDiv);
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// REFERRAL TAB
+// ═══════════════════════════════════════════════════════
+
+function renderReferralTab() {
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    injectMilestonesAchievementsReferralCss();
+
+    var header = document.createElement('h2');
+    header.className = 'profile-section-title';
+    header.textContent = 'Referral Program';
+    el.appendChild(header);
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        var authMsg = document.createElement('div');
+        authMsg.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
+        authMsg.textContent = 'Please log in to view your referral code.';
+        el.appendChild(authMsg);
+        return;
+    }
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
+    loadingDiv.textContent = 'Loading referral info\u2026';
+    el.appendChild(loadingDiv);
+
+    fetch('/api/referralbonus/mycode', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(res) { return res.json(); }).then(function(data) {
+        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
+
+        var card = document.createElement('div');
+        card.className = 'profile-card';
+
+        var cardTitle = document.createElement('div');
+        cardTitle.className = 'profile-card-title';
+        cardTitle.textContent = 'Your Referral Code';
+        card.appendChild(cardTitle);
+
+        var codeLabel = document.createElement('div');
+        codeLabel.style.cssText = 'font-size:12px;color:#94a3b8;margin-bottom:4px;';
+        codeLabel.textContent = 'Share this code with friends:';
+        card.appendChild(codeLabel);
+
+        var codeBox = document.createElement('div');
+        codeBox.className = 'profile-referral-code-box';
+        codeBox.textContent = data.code || '\u2014';
+        card.appendChild(codeBox);
+
+        var copyCode = data.code || '';
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'profile-referral-copy-btn';
+        copyBtn.textContent = 'Copy Code';
+        copyBtn.addEventListener('click', function() {
+            if (!copyCode) return;
+            navigator.clipboard.writeText(copyCode).then(function() {
+                copyBtn.textContent = 'Copied!';
+                setTimeout(function() { copyBtn.textContent = 'Copy Code'; }, 2000);
+            }).catch(function() {
+                copyBtn.textContent = 'Copy failed';
+                setTimeout(function() { copyBtn.textContent = 'Copy Code'; }, 2000);
+            });
+        });
+        card.appendChild(copyBtn);
+
+        var statsEl = document.createElement('div');
+        statsEl.className = 'profile-referral-stats';
+        var totalReferrals = Number(data.totalReferrals) || 0;
+        var totalEarned = Number(data.totalEarned) || 0;
+
+        var refStrong = document.createElement('strong');
+        refStrong.textContent = String(totalReferrals);
+        statsEl.appendChild(refStrong);
+        statsEl.appendChild(document.createTextNode(' friends referred \u00B7 '));
+        var earnedStrong = document.createElement('strong');
+        earnedStrong.textContent = '$' + totalEarned.toFixed(2);
+        statsEl.appendChild(earnedStrong);
+        statsEl.appendChild(document.createTextNode(' earned'));
+        card.appendChild(statsEl);
+
+        var noteEl = document.createElement('div');
+        noteEl.className = 'profile-referral-note';
+        noteEl.textContent = 'Earn $1 for each friend who joins using your code!';
+        card.appendChild(noteEl);
+
+        el.appendChild(card);
+    }).catch(function() {
+        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'color:#f87171;text-align:center;padding:20px;font-size:13px;';
+        errDiv.textContent = 'Failed to load referral info. Please try again later.';
+        el.appendChild(errDiv);
     });
 }
