@@ -1847,6 +1847,7 @@ function initPromoEngine() {
             renderScratchCardCard(promosSidebar);
             renderCasinoPassCard(promosSidebar);
             renderBoostCard(promosSidebar);
+            renderTournamentCard(promosSidebar);
         }
     }, 4000);
 
@@ -2782,5 +2783,199 @@ async function renderBoostCard(container) {
 
             card.appendChild(row);
         })(availableBoosts[bi]);
+    }
+}
+
+async function renderTournamentCard(container) {
+    if (!container) return;
+    if (document.getElementById('tournamentCard')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('tournamentCardStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'tournamentCardStyles';
+        styleEl.textContent = [
+            '.promo-tournament-card { background: linear-gradient(135deg,#1a0d00,#0d1a10); border: 1px solid #b45309; border-radius: 12px; padding: 14px; margin-bottom: 12px; }',
+            '.ptc-title { font-size: 1rem; font-weight: 700; color: #fbbf24; margin-bottom: 8px; }',
+            '.ptc-prizes { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }',
+            '.ptc-prize-chip { font-size: 0.78rem; background: rgba(251,191,36,0.12); border: 1px solid #92400e; border-radius: 6px; padding: 2px 7px; color: #fcd34d; white-space: nowrap; }',
+            '.ptc-section-label { font-size: 0.75rem; font-weight: 600; color: #92400e; text-transform: uppercase; letter-spacing: 0.04em; margin: 8px 0 4px; }',
+            '.ptc-my-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }',
+            '.ptc-my-stat { font-size: 0.82rem; color: #e0c070; }',
+            '.ptc-my-stat span { color: #fbbf24; font-weight: 700; }',
+            '.ptc-lb-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #2a1a00; font-size: 0.82rem; }',
+            '.ptc-lb-row:last-child { border-bottom: none; }',
+            '.ptc-lb-rank { width: 22px; text-align: center; font-weight: 700; color: #fbbf24; }',
+            '.ptc-lb-user { flex: 1; color: #d4b483; }',
+            '.ptc-lb-score { color: #86efac; font-weight: 600; white-space: nowrap; }',
+            '.ptc-countdown { font-size: 0.78rem; color: #7c6a40; margin-top: 8px; }',
+            '.ptc-loading { color: #8888aa; font-size: 0.85rem; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var card = document.createElement('div');
+    card.id = 'tournamentCard';
+    card.className = 'promo-card promo-tournament-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'ptc-title';
+    titleEl.textContent = '\uD83C\uDFC6 Weekly Tournament';
+    card.appendChild(titleEl);
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'ptc-loading';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    container.appendChild(card);
+
+    // Fetch leaderboard (no auth required)
+    var leaderboard = [];
+    var weekStart = '';
+    var nextReset = null;
+    var prizes = [];
+    try {
+        var lbRes = await fetch('/api/tournament/leaderboard');
+        if (lbRes.ok) {
+            var lbData = await lbRes.json();
+            leaderboard = lbData.leaderboard || [];
+            weekStart = lbData.weekStart || '';
+        }
+    } catch (e) {
+        loadingEl.textContent = 'Could not load tournament data.';
+        return;
+    }
+
+    // Fetch my stats if authenticated
+    var myStats = null;
+    if (typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (token) {
+            try {
+                var myRes = await fetch('/api/tournament/mystats', {
+                    headers: { Authorization: 'Bearer ' + token }
+                });
+                if (myRes.ok) {
+                    var myData = await myRes.json();
+                    myStats = myData.myStats || null;
+                    prizes = myData.prizes || [];
+                    nextReset = myData.nextReset || null;
+                }
+            } catch (e) { /* silent — show leaderboard without personal stats */ }
+        }
+    }
+
+    card.removeChild(loadingEl);
+
+    // Use prizes from mystats if available, otherwise use defaults
+    var prizeList = prizes.length ? prizes : [
+        { position: 1, amount: 15 },
+        { position: 2, amount: 8 },
+        { position: 3, amount: 4 }
+    ];
+
+    // Prizes row (top 3)
+    var prizesRow = document.createElement('div');
+    prizesRow.className = 'ptc-prizes';
+    var medalEmojis = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+    for (var pi = 0; pi < Math.min(3, prizeList.length); pi++) {
+        var chip = document.createElement('div');
+        chip.className = 'ptc-prize-chip';
+        var medal = medalEmojis[pi] || String(prizeList[pi].position) + '.';
+        chip.textContent = medal + ' ' + String(prizeList[pi].position) + (prizeList[pi].position === 1 ? 'st' : prizeList[pi].position === 2 ? 'nd' : 'rd') + ': $' + String(prizeList[pi].amount);
+        prizesRow.appendChild(chip);
+    }
+    card.appendChild(prizesRow);
+
+    // My Standing section (auth only)
+    if (myStats) {
+        var myLabel = document.createElement('div');
+        myLabel.className = 'ptc-section-label';
+        myLabel.textContent = 'My Standing';
+        card.appendChild(myLabel);
+
+        var myRow = document.createElement('div');
+        myRow.className = 'ptc-my-row';
+
+        var rankStat = document.createElement('div');
+        rankStat.className = 'ptc-my-stat';
+        var rankSpan = document.createElement('span');
+        rankSpan.textContent = myStats.rank != null ? String(myStats.rank) : '\u2014';
+        rankStat.textContent = 'Rank: ';
+        rankStat.appendChild(rankSpan);
+        myRow.appendChild(rankStat);
+
+        var scoreStat = document.createElement('div');
+        scoreStat.className = 'ptc-my-stat';
+        var scoreSpan = document.createElement('span');
+        scoreSpan.textContent = myStats.score != null ? String(myStats.score.toFixed(1)) : '0.0';
+        scoreStat.textContent = 'Score: ';
+        scoreStat.appendChild(scoreSpan);
+        myRow.appendChild(scoreStat);
+
+        var multStat = document.createElement('div');
+        multStat.className = 'ptc-my-stat';
+        var multSpan = document.createElement('span');
+        multSpan.textContent = myStats.bestMultiplier != null ? String(myStats.bestMultiplier.toFixed(1)) + 'x' : '0.0x';
+        multStat.textContent = 'Best Multi: ';
+        multStat.appendChild(multSpan);
+        myRow.appendChild(multStat);
+
+        card.appendChild(myRow);
+    }
+
+    // Leaderboard top 5
+    if (leaderboard.length) {
+        var lbLabel = document.createElement('div');
+        lbLabel.className = 'ptc-section-label';
+        lbLabel.textContent = 'Leaderboard';
+        card.appendChild(lbLabel);
+
+        var top5 = leaderboard.slice(0, 5);
+        for (var li = 0; li < top5.length; li++) {
+            var entry = top5[li];
+            var row = document.createElement('div');
+            row.className = 'ptc-lb-row';
+
+            var rankEl = document.createElement('div');
+            rankEl.className = 'ptc-lb-rank';
+            rankEl.textContent = String(entry.rank || li + 1);
+            row.appendChild(rankEl);
+
+            var userEl = document.createElement('div');
+            userEl.className = 'ptc-lb-user';
+            userEl.textContent = entry.username || 'Player';
+            row.appendChild(userEl);
+
+            var scoreEl = document.createElement('div');
+            scoreEl.className = 'ptc-lb-score';
+            var scoreVal = entry.score != null ? entry.score : 0;
+            scoreEl.textContent = String(typeof scoreVal === 'number' ? scoreVal.toFixed(1) : scoreVal);
+            row.appendChild(scoreEl);
+
+            card.appendChild(row);
+        }
+    }
+
+    // Countdown to reset
+    var resetDate = nextReset ? new Date(nextReset) : null;
+    if (!resetDate && weekStart) {
+        // Fallback: next Monday from weekStart
+        var ws = new Date(weekStart);
+        ws.setDate(ws.getDate() + 7);
+        resetDate = ws;
+    }
+    if (resetDate) {
+        var msUntil = resetDate.getTime() - Date.now();
+        if (msUntil > 0) {
+            var totalHours = Math.floor(msUntil / 3600000);
+            var days = Math.floor(totalHours / 24);
+            var hours = totalHours % 24;
+            var countdownEl = document.createElement('div');
+            countdownEl.className = 'ptc-countdown';
+            countdownEl.textContent = 'Resets in ' + String(days) + 'd ' + String(hours) + 'h';
+            card.appendChild(countdownEl);
+        }
     }
 }

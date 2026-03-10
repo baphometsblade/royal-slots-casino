@@ -208,6 +208,7 @@
             _checkSubscriptionDailyGems();
             _checkGiftsInbox();
             _syncXpWithServer();
+            _initTournamentRecording();
             _initNotificationBell();
             startSessionDurationWatch();
             // Periodic loss-streak check — fires every 3 minutes during active play
@@ -606,36 +607,29 @@
         }
 
         // ── Level-Up Bonus ─────────────────────────────────────────────────────
-        function _checkLevelUpBonus() {
-            if (sessionStorage.getItem('_levelUpChecked')) return;
-            sessionStorage.setItem('_levelUpChecked', '1');
+        async function _checkLevelUpBonus() {
+            if (sessionStorage.getItem('_lvlBonusChecked')) return;
+            sessionStorage.setItem('_lvlBonusChecked', '1');
             if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
             var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
             if (!token) return;
-            fetch('/api/levelupbonus/status', { headers: { Authorization: 'Bearer ' + token } })
-                .then(function(r) { return r.ok ? r.json() : null; })
-                .then(function(data) {
-                    if (!data || !data.claimable) return;
-                    var currentLevel = data.currentLevel;
-                    return fetch('/api/levelupbonus/claim', {
-                        method: 'POST',
-                        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
-                    })
-                        .then(function(r) { return r.ok ? r.json() : null; })
-                        .then(function(res) {
-                            if (!res || !res.success) return;
-                            if (res.newBalance !== undefined) {
-                                balance = res.newBalance;
-                                if (typeof updateBalance === 'function') updateBalance();
-                                if (typeof saveBalance === 'function') saveBalance();
-                            }
-                            if (typeof showMessage === 'function') {
-                                var amt = res.bonusAmount ? res.bonusAmount.toFixed(2) : '0.00';
-                                showMessage('\uD83C\uDD99 Level up bonus claimed! +$' + amt + ' for reaching Level ' + currentLevel, 'big-win');
-                            }
-                        });
-                })
-                .catch(function() {});
+            try {
+                var statusResp = await fetch('/api/levelupbonus/status', { headers: { Authorization: 'Bearer ' + token } });
+                if (!statusResp.ok) return;
+                var data = await statusResp.json();
+                if (!data || !data.claimable) return;
+                var claimResp = await fetch('/api/levelupbonus/claim', {
+                    method: 'POST',
+                    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+                });
+                if (!claimResp.ok) return;
+                var result = await claimResp.json();
+                if (!result || !result.success) return;
+                if (typeof updateBalance === 'function') updateBalance();
+                if (typeof showToast === 'function') {
+                    showToast('\uD83C\uDF89 Level ' + result.newLevel + ' reached! +' + result.bonus);
+                }
+            } catch (e) { /* network / parse errors are non-fatal */ }
         }
 
         // ── Milestone auto-claim ───────────────────────────────────────────────
@@ -803,6 +797,29 @@
                     } catch (e) { /* ignore storage errors */ }
                 }
             } catch (e) { /* network / parse errors are non-fatal */ }
+        }
+
+        // ── Tournament score recording ─────────────────────────────────────────
+        function _initTournamentRecording() {
+            if (window._tournamentRecordingInit) return;
+            window._tournamentRecordingInit = true;
+            window.addEventListener('spin:complete', function(evt) {
+                var detail = evt && evt.detail;
+                if (!detail || detail.won !== true || !(detail.winAmount > 0)) return;
+                if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+                var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                if (!token) return;
+                var payload = {
+                    winAmount: detail.winAmount,
+                    betAmount: detail.betAmount,
+                    multiplier: detail.winAmount / Math.max(detail.betAmount, 0.01)
+                };
+                fetch('/api/tournament/record', {
+                    method: 'POST',
+                    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(function() {});
+            });
         }
 
         // ── Achievements check ─────────────────────────────────────────────────
