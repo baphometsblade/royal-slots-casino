@@ -2208,6 +2208,7 @@ function initPromoEngine() {
             renderComebackBonusCard(promosSidebar);
             if (!window._fortuneWheelCardInit) { window._fortuneWheelCardInit = true; renderFortuneWheelCard(promosSidebar); }
             if (!window._firstDepositCardInit) { window._firstDepositCardInit = true; renderFirstDepositCard(promosSidebar); }
+            if (!window._reloadBonusCardInit) { window._reloadBonusCardInit = true; renderReloadBonusCard(promosSidebar); }
         }
     }, 4000);
 
@@ -4420,5 +4421,156 @@ async function renderFirstDepositCard(container) {
     });
 
     card.appendChild(claimBtn);
+    container.appendChild(card);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
+// RELOAD BONUS CARD
+// ─────────────────────────────────────────────────────────────────────
+
+(function _injectReloadBonusCss() {
+    if (document.getElementById('reloadBonus-css')) return;
+    var s = document.createElement('style');
+    s.id = 'reloadBonus-css';
+    s.textContent = [
+        '.rb-card { padding: 14px; border: 1px solid rgba(251,191,36,0.35); border-radius: 10px; background: rgba(251,191,36,0.06); margin-bottom: 12px; }',
+        '.rb-title { font-size: 15px; font-weight: 700; color: #fbbf24; margin: 0 0 4px; }',
+        '.rb-subtitle { font-size: 12px; color: #9ca3af; margin: 0 0 10px; }',
+        '.rb-claim-btn { width: 100%; padding: 10px; border-radius: 8px; border: none; background: linear-gradient(135deg, #d97706, #fbbf24); color: #1a1a2e; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; margin-bottom: 8px; display: block; }',
+        '.rb-claim-btn:hover { opacity: 0.85; }',
+        '.rb-claim-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
+        '.rb-cooldown-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; background: rgba(107,114,128,0.25); color: #9ca3af; font-size: 12px; font-weight: 600; margin-bottom: 8px; }',
+        '.rb-success-msg { text-align: center; padding: 10px 0; font-size: 13px; font-weight: 700; color: #fbbf24; margin-bottom: 8px; }',
+        '.rb-terms { font-size: 10px; color: #6b7280; margin: 0; }'
+    ].join('\n');
+    document.head.appendChild(s);
+})();
+
+async function renderReloadBonusCard(container) {
+    if (!container) return;
+
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        // Show a minimal login-prompt card
+        if (document.getElementById('reloadBonusCard')) return;
+        var loginCard = document.createElement('div');
+        loginCard.className = 'rb-card';
+        loginCard.id = 'reloadBonusCard';
+        var loginTitle = document.createElement('h3');
+        loginTitle.className = 'rb-title';
+        loginTitle.textContent = '\uD83D\uDD04 Reload Bonus';
+        loginCard.appendChild(loginTitle);
+        var loginMsg = document.createElement('p');
+        loginMsg.className = 'rb-subtitle';
+        loginMsg.textContent = 'Login to check your reload bonus eligibility.';
+        loginCard.appendChild(loginMsg);
+        var loginTerms = document.createElement('p');
+        loginTerms.className = 'rb-terms';
+        loginTerms.textContent = 'Min $5 deposit \u2022 7-day cooldown \u2022 25% match';
+        loginCard.appendChild(loginTerms);
+        container.appendChild(loginCard);
+        return;
+    }
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Fetch status
+    var statusData = null;
+    try {
+        var statusRes = await fetch('/api/reloadbonus/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!statusRes.ok) return;
+        statusData = await statusRes.json();
+    } catch (e) {
+        return;
+    }
+
+    if (!statusData) return;
+
+    // Remove any pre-existing card
+    var existing = document.getElementById('reloadBonusCard');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    // Build card
+    var card = document.createElement('div');
+    card.className = 'rb-card';
+    card.id = 'reloadBonusCard';
+
+    var title = document.createElement('h3');
+    title.className = 'rb-title';
+    title.textContent = '\uD83D\uDD04 Reload Bonus';
+    card.appendChild(title);
+
+    var subtitle = document.createElement('p');
+    subtitle.className = 'rb-subtitle';
+    subtitle.textContent = 'Get 25% back on your next deposit, up to $2.50';
+    card.appendChild(subtitle);
+
+    if (statusData.eligible) {
+        // Eligible — show claim button
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'rb-claim-btn';
+        claimBtn.id = 'rbClaimBtn';
+        claimBtn.textContent = 'Claim Reload Bonus \u2192';
+
+        claimBtn.addEventListener('click', function() {
+            if (claimBtn.disabled) return;
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'Claiming\u2026';
+
+            fetch('/api/reloadbonus/claim', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d && d.success) {
+                    if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                        updateBalanceDisplay(d.newBalance);
+                    }
+                    if (typeof showToast === 'function') {
+                        var bonusAmt = d.bonus !== undefined ? '$' + d.bonus.toFixed(2) : '';
+                        showToast('\uD83D\uDD04 Reload bonus' + (bonusAmt ? ': +' + bonusAmt : '') + ' credited!', 'win');
+                    }
+                    if (claimBtn.parentNode) claimBtn.parentNode.removeChild(claimBtn);
+                    var successMsg = document.createElement('div');
+                    successMsg.className = 'rb-success-msg';
+                    successMsg.textContent = '\u2705 Bonus credited to your account!';
+                    card.insertBefore(successMsg, card.querySelector('.rb-terms'));
+                } else {
+                    claimBtn.disabled = false;
+                    claimBtn.textContent = 'Claim Reload Bonus \u2192';
+                    if (typeof showToast === 'function') {
+                        showToast(d && d.error ? d.error : 'Could not claim reload bonus. Try again.', 'error');
+                    }
+                }
+            })
+            .catch(function() {
+                claimBtn.disabled = false;
+                claimBtn.textContent = 'Claim Reload Bonus \u2192';
+            });
+        });
+
+        card.appendChild(claimBtn);
+    } else if (statusData.cooldownActive) {
+        // Cooldown active — show countdown badge
+        var badge = document.createElement('div');
+        badge.className = 'rb-cooldown-badge';
+        var days = statusData.daysUntilNext !== undefined ? statusData.daysUntilNext : '?';
+        badge.textContent = '\uD83D\uDD50 Available in ' + days + (days === 1 ? ' day' : ' days');
+        card.appendChild(badge);
+    }
+
+    var terms = document.createElement('p');
+    terms.className = 'rb-terms';
+    terms.textContent = 'Min $5 deposit \u2022 7-day cooldown \u2022 25% match';
+    card.appendChild(terms);
+
     container.appendChild(card);
 }

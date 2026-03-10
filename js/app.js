@@ -212,6 +212,7 @@
             _initTournamentRecording();
             _initLossStreakMonitor();
             _initSpinStreakTicker();
+            _initMysteryDropChecker();
             _initNotificationBell();
             startSessionDurationWatch();
             // Periodic loss-streak check — fires every 3 minutes during active play
@@ -1063,6 +1064,118 @@
                     badge.classList.remove('streak-tier-up');
                 }, 2000);
             }
+        }
+
+        // ── Mystery Drop Checker ───────────────────────────────────────────────
+        // Polls /api/mystery every 10 spins (and once at startup after 15s)
+        // to detect and auto-claim pending mystery drops.
+        function _initMysteryDropChecker() {
+            if (window._mysteryDropInit) return;
+            window._mysteryDropInit = true;
+
+            window._mysteryDropCheckCount = 0;
+
+            window.addEventListener('spin:complete', function() {
+                window._mysteryDropCheckCount = (window._mysteryDropCheckCount || 0) + 1;
+                if (window._mysteryDropCheckCount % 10 === 0) {
+                    _checkMysteryDropPending();
+                }
+            });
+
+            // Also check once at startup in case a drop is already pending
+            setTimeout(function() {
+                _checkMysteryDropPending();
+            }, 15000);
+        }
+
+        function _checkMysteryDropPending() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/mystery', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.pending) return;
+                    _showMysteryDropToast();
+                    setTimeout(function() { _claimMysteryDrop(token); }, 2000);
+                })
+                .catch(function() {});
+        }
+
+        function _showMysteryDropToast() {
+            // Inject CSS once
+            if (!document.getElementById('mystery-drop-css')) {
+                var styleEl = document.createElement('style');
+                styleEl.id = 'mystery-drop-css';
+                styleEl.textContent = '#mystery-drop-toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:99999; background:linear-gradient(135deg,#6a0dad,#ffd700); color:#fff; font-weight:700; font-size:15px; padding:12px 28px; border-radius:30px; box-shadow:0 4px 24px rgba(106,13,173,0.5); pointer-events:none; opacity:1; transition:opacity 0.5s; }';
+                document.head.appendChild(styleEl);
+            }
+
+            // Remove any existing toast first
+            var existing = document.getElementById('mystery-drop-toast');
+            if (existing) { existing.remove(); }
+
+            var toast = document.createElement('div');
+            toast.id = 'mystery-drop-toast';
+            toast.textContent = '\uD83C\uDF81 Mystery Drop incoming! Claiming your reward...';
+            document.body.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                setTimeout(function() { toast.remove(); }, 500);
+            }, 4000);
+        }
+
+        function _claimMysteryDrop(token) {
+            fetch('/api/mystery/claim', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.reward) return;
+                    var reward = data.reward;
+                    var msg = '';
+                    if (reward.type === 'gems') {
+                        msg = '\uD83C\uDF81 Mystery Drop: +' + reward.amount + ' Gems!';
+                    } else if (reward.type === 'credits') {
+                        var amt = typeof data.newBalance !== 'undefined'
+                            ? reward.amount
+                            : reward.amount;
+                        var formatted = (typeof amt === 'number') ? amt.toFixed(2) : amt;
+                        msg = '\uD83C\uDF81 Mystery Drop: +$' + formatted + ' Credits!';
+                        if (typeof data.newBalance !== 'undefined' && typeof updateBalanceDisplay === 'function') {
+                            updateBalanceDisplay(data.newBalance);
+                        }
+                    } else if (reward.type === 'wheel_spins') {
+                        msg = '\uD83C\uDF81 Mystery Drop: +' + reward.amount + ' Bonus Wheel Spins!';
+                    } else if (reward.type === 'promo') {
+                        msg = '\uD83C\uDF81 Mystery Drop: Promo Code ' + (reward.code || '') + ' saved!';
+                    } else {
+                        msg = '\uD83C\uDF81 Mystery Drop claimed!';
+                    }
+                    _showMysteryDropResultToast(msg);
+                })
+                .catch(function() {});
+        }
+
+        function _showMysteryDropResultToast(message) {
+            var existing = document.getElementById('mystery-drop-result-toast');
+            if (existing) { existing.remove(); }
+
+            var toast = document.createElement('div');
+            toast.id = 'mystery-drop-result-toast';
+            toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(135deg,#1a0535,#ffd700);color:#fff;font-weight:700;font-size:15px;padding:12px 28px;border-radius:30px;box-shadow:0 4px 24px rgba(255,215,0,0.5);pointer-events:none;transition:opacity 0.5s;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                setTimeout(function() { toast.remove(); }, 500);
+            }, 5000);
         }
 
         // ── Achievements check ─────────────────────────────────────────────────

@@ -504,7 +504,9 @@ function renderGames() {
             initHotGameHighlight();
             if (!window._jackpotTickerInit) initJackpotTicker();
             if (!window._jackpotTickerBarInit) initJackpotTickerBar();
-            if (!window._gameOfDayInit)    initGameOfDayHighlight();
+            if (!window._gameOfDayInit)    initGameOfDayBanner();
+            window._featuredHighlightsApplied = false;
+            setTimeout(applyFeaturedGameHighlights, 150);
             if (!window._luckyHoursBannerInit) initLuckyHoursBanner();
             if (!window._loyaltyHookInit) { window._loyaltyHookInit = true; initLoyaltyEarnHook(); }
             if (!window._socialProofInit) { window._socialProofInit = true; initSocialProofTicker(); }
@@ -5699,3 +5701,174 @@ function _doRent(gameId, tierId, payWith, backdrop, btn) {
 window.initRentalSystem = initRentalSystem;
 window.applyRentalOverlays = applyRentalOverlays;
 window.showRentModal = showRentModal;
+
+
+// ── Game of the Day Banner ───────────────────────────────────────────────────
+// Fetches /api/game-of-day and renders a banner above the game grid plus a
+// badge on the featured game card with a live HH:MM:SS countdown.
+function initGameOfDayBanner() {
+    if (window._gameOfDayInit) return; window._gameOfDayInit = true;
+
+    // Inject CSS once (guard by id)
+    if (!document.getElementById('gotd-css')) {
+        var style = document.createElement('style');
+        style.id = 'gotd-css';
+        style.textContent = [
+            '#gameOfDayBanner{background:linear-gradient(135deg,#1a0a00 0%,#2d1a00 50%,#1a0a00 100%);',
+            'border:1px solid rgba(251,191,36,0.5);border-radius:12px;padding:14px 18px;margin:0 0 14px 0;',
+            'display:flex;align-items:center;gap:14px;font-family:inherit;position:relative;overflow:hidden;}',
+            '#gameOfDayBanner::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;',
+            'background:linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b);background-size:200%;',
+            'animation:gotdShimmer 3s linear infinite;}',
+            '@keyframes gotdShimmer{0%{background-position:0%}100%{background-position:200%}}',
+            '.gotd-badge{position:absolute;top:6px;left:6px;',
+            'background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;',
+            'font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;z-index:5;}',
+            '.gotd-featured{border:1px solid rgba(245,158,11,0.5) !important;',
+            'box-shadow:0 0 12px rgba(245,158,11,0.2);}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+
+    // Create banner element once (hidden until data loads)
+    if (!document.getElementById('gameOfDayBanner')) {
+        var banner = document.createElement('div');
+        banner.id = 'gameOfDayBanner';
+        banner.style.display = 'none';
+
+        var gamesSection = document.getElementById('games-section')
+            || document.getElementById('gamesContainer')
+            || document.querySelector('.games-grid')
+            || document.querySelector('.game-grid');
+        if (gamesSection && gamesSection.parentNode) {
+            gamesSection.parentNode.insertBefore(banner, gamesSection);
+        } else {
+            var main = document.getElementById('main-content')
+                || document.getElementById('lobby')
+                || document.querySelector('.lobby-content');
+            if (main) main.appendChild(banner);
+        }
+    }
+
+    _fetchGameOfDayBanner();
+}
+
+function _fetchGameOfDayBanner() {
+    fetch('/api/game-of-day')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!data || !data.gameId) return;
+            _renderGameOfDayBanner(data);
+        })
+        .catch(function() { /* silently ignore */ });
+}
+
+function _renderGameOfDayBanner(data) {
+    var banner = document.getElementById('gameOfDayBanner');
+    if (!banner) return;
+
+    // Clear previous content
+    while (banner.firstChild) banner.removeChild(banner.firstChild);
+
+    // Icon
+    var iconDiv = document.createElement('div');
+    iconDiv.style.cssText = 'font-size:28px;flex-shrink:0;line-height:1;';
+    iconDiv.textContent = '\u2B50'; // ⭐
+
+    // Body
+    var bodyDiv = document.createElement('div');
+    bodyDiv.style.cssText = 'flex:1;min-width:0;';
+
+    var labelDiv = document.createElement('div');
+    labelDiv.style.cssText = 'font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#fbbf24;margin-bottom:3px;';
+    labelDiv.textContent = '\u2B50 GAME OF THE DAY';
+
+    var nameDiv = document.createElement('div');
+    nameDiv.style.cssText = 'font-size:17px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;';
+    nameDiv.textContent = data.gameName || data.gameId;
+
+    var countdownDiv = document.createElement('div');
+    countdownDiv.id = 'gotd-countdown';
+    countdownDiv.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.5);';
+    countdownDiv.textContent = 'Changes in --:--:--';
+
+    bodyDiv.appendChild(labelDiv);
+    bodyDiv.appendChild(nameDiv);
+    bodyDiv.appendChild(countdownDiv);
+
+    // Play button
+    var playBtn = document.createElement('button');
+    playBtn.style.cssText = 'flex-shrink:0;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:8px;color:#1a0a00;font-size:12px;font-weight:800;letter-spacing:.5px;padding:9px 16px;cursor:pointer;';
+    playBtn.textContent = 'PLAY NOW';
+    var _gotdGameId = data.gameId;
+    playBtn.addEventListener('click', function() {
+        if (typeof openSlot !== 'undefined') openSlot(_gotdGameId);
+    });
+
+    banner.appendChild(iconDiv);
+    banner.appendChild(bodyDiv);
+    banner.appendChild(playBtn);
+    banner.style.display = 'flex';
+
+    // Badge on the game card
+    var prevBadge = document.querySelector('.gotd-badge');
+    if (prevBadge) prevBadge.parentNode && prevBadge.parentNode.removeChild(prevBadge);
+
+    var card = document.querySelector('.game-card[data-game-id="' + data.gameId + '"]');
+    if (card) {
+        if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
+        var badge = document.createElement('span');
+        badge.className = 'gotd-badge';
+        badge.textContent = '\u2B50 GAME OF THE DAY';
+        card.appendChild(badge);
+    }
+
+    // Live countdown (HH:MM:SS) — clear any previous interval
+    if (window._gameOfDayInterval) clearInterval(window._gameOfDayInterval);
+    var remaining = Math.max(0, Number(data.secondsUntilNext) || 0);
+    var deadline = Date.now() + remaining * 1000;
+
+    function _updateCountdown() {
+        var el = document.getElementById('gotd-countdown');
+        if (!el) { clearInterval(window._gameOfDayInterval); return; }
+        var diff = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+        var hh = Math.floor(diff / 3600);
+        var mm = Math.floor((diff % 3600) / 60);
+        var ss = diff % 60;
+        el.textContent = 'Changes in '
+            + (hh < 10 ? '0' : '') + hh + ':'
+            + (mm < 10 ? '0' : '') + mm + ':'
+            + (ss < 10 ? '0' : '') + ss;
+        if (diff === 0) clearInterval(window._gameOfDayInterval);
+    }
+
+    _updateCountdown();
+    window._gameOfDayInterval = setInterval(_updateCountdown, 1000);
+}
+
+
+// ── Featured Game Highlights ─────────────────────────────────────────────────
+// Fetches /api/game-of-day/featured and applies a subtle gold border+glow to
+// the top-6 most profitable game cards.
+function applyFeaturedGameHighlights() {
+    if (window._featuredHighlightsApplied) return; window._featuredHighlightsApplied = true;
+
+    fetch('/api/game-of-day/featured')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!Array.isArray(data)) return;
+            // Remove stale highlights first
+            var prev = document.querySelectorAll('.gotd-featured');
+            for (var i = 0; i < prev.length; i++) {
+                prev[i].classList.remove('gotd-featured');
+            }
+            // Apply to returned game IDs
+            for (var j = 0; j < data.length; j++) {
+                var gid = data[j];
+                if (!gid) continue;
+                var card = document.querySelector('.game-card[data-game-id="' + gid + '"]');
+                if (card) card.classList.add('gotd-featured');
+            }
+        })
+        .catch(function() { /* silently ignore */ });
+}
