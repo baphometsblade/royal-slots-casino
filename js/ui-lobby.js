@@ -5249,3 +5249,294 @@ function _showPromoMsg(text, type) {
     }, 3000);
 }
 
+
+
+// ── Rental System ─────────────────────────────────────────────────────────────
+// Locked game cards with rent/unlock support.
+// API:
+//   GET  /api/rentals/locked-games  (public)  → { lockedGames: [...], tiers: [...] }
+//   GET  /api/rentals/status/:gameId (auth)   → { gameId, locked, unlocked, rental }
+//   POST /api/rentals/rent           (auth)   → { gameId, tierId, payWith } → { success, rental, newBalance }
+
+(function() {
+    // Inject CSS once
+    if (!document.getElementById('rentalCss')) {
+        var s = document.createElement('style');
+        s.id = 'rentalCss';
+        s.textContent = '.game-card--locked { position: relative; } .game-card--locked .rental-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; z-index: 2; border-radius: 8px; cursor: pointer; } .rental-lock-icon { font-size: 2rem; } .rental-label { font-size: 0.7rem; color: #ffd700; font-weight: bold; margin: 4px 0; } .rental-btn { background: #ffd700; color: #000; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; margin-top: 4px; } #rental-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9000; display: flex; align-items: center; justify-content: center; } #rental-modal { background: #1a1f2e; border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; padding: 24px; max-width: 380px; width: 90%; color: #fff; } #rental-modal h2 { margin: 0 0 16px; font-size: 1.1rem; color: #ffd700; } .rental-tier-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); } .rental-tier-row:last-of-type { border-bottom: none; } .rental-tier-info { font-size: 0.82rem; color: rgba(255,255,255,0.75); } .rental-tier-price { font-size: 0.78rem; color: #ffd700; margin-top: 2px; } .rental-tier-btn { background: #ffd700; color: #000; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.75rem; } .rental-tier-btn:disabled { background: rgba(255,215,0,0.35); cursor: default; } .rental-modal-close { float: right; background: none; border: none; color: rgba(255,255,255,0.5); font-size: 1.2rem; cursor: pointer; margin-top: -4px; } .rental-auth-msg { text-align: center; color: rgba(255,255,255,0.55); font-size: 0.85rem; padding: 12px 0; }';
+        document.head.appendChild(s);
+    }
+})();
+
+function initRentalSystem() {
+    fetch('/api/rentals/locked-games')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!data) return;
+            window._lockedGameIds = new Set((data.lockedGames || []).map(function(id) { return String(id).toLowerCase(); }));
+            window._rentalTiers = data.tiers || [];
+            applyRentalOverlays();
+        })
+        .catch(function() { /* server may not have rentals endpoint yet — silently skip */ });
+}
+
+function applyRentalOverlays() {
+    var locked = window._lockedGameIds;
+    if (!locked || locked.size === 0) return;
+
+    document.querySelectorAll('.game-card').forEach(function(card) {
+        var gameId = (card.getAttribute('data-game-id') || '').toLowerCase();
+        if (!gameId) return;
+
+        // Already processed
+        if (card.classList.contains('game-card--locked') || card.classList.contains('game-card--rental-checked')) return;
+        card.classList.add('game-card--rental-checked');
+
+        if (!locked.has(gameId)) return;
+
+        // Mark as locked
+        card.classList.add('game-card--locked');
+
+        // Build overlay via createElement (no innerHTML with dynamic values)
+        var overlay = document.createElement('div');
+        overlay.className = 'rental-overlay';
+
+        var lockIcon = document.createElement('div');
+        lockIcon.className = 'rental-lock-icon';
+        lockIcon.textContent = '\uD83D\uDD12'; // 🔒
+
+        var label = document.createElement('div');
+        label.className = 'rental-label';
+        label.textContent = 'PREMIUM';
+
+        var rentBtn = document.createElement('button');
+        rentBtn.className = 'rental-btn';
+        rentBtn.textContent = 'Rent to Play';
+
+        overlay.appendChild(lockIcon);
+        overlay.appendChild(label);
+        overlay.appendChild(rentBtn);
+        card.appendChild(overlay);
+
+        // Intercept card clicks — show rent modal instead of openSlot
+        card.addEventListener('click', function(e) {
+            if (window._lockedGameIds && window._lockedGameIds.has(gameId)) {
+                e.stopImmediatePropagation();
+                showRentModal(gameId);
+            }
+        }, true); // capture phase so we run before the onclick
+    });
+}
+
+function showRentModal(gameId) {
+    // Remove any existing modal
+    var existing = document.getElementById('rental-modal-backdrop');
+    if (existing) existing.parentNode.removeChild(existing);
+
+    // Look up game name from global GAMES array
+    var gameName = gameId;
+    if (typeof GAMES !== 'undefined') {
+        for (var i = 0; i < GAMES.length; i++) {
+            if ((GAMES[i].id || '').toLowerCase() === gameId.toLowerCase()) {
+                gameName = GAMES[i].name || gameId;
+                break;
+            }
+        }
+    } else if (typeof games !== 'undefined') {
+        for (var j = 0; j < games.length; j++) {
+            if ((games[j].id || '').toLowerCase() === gameId.toLowerCase()) {
+                gameName = games[j].name || gameId;
+                break;
+            }
+        }
+    }
+
+    var tiers = window._rentalTiers || [];
+
+    // Determine auth state
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    var isAuthed = !!(token && (typeof isServerAuthToken !== 'function' || isServerAuthToken()));
+
+    // Build backdrop
+    var backdrop = document.createElement('div');
+    backdrop.id = 'rental-modal-backdrop';
+    backdrop.addEventListener('click', function(e) {
+        if (e.target === backdrop) {
+            backdrop.parentNode.removeChild(backdrop);
+        }
+    });
+
+    // Build modal box
+    var modal = document.createElement('div');
+    modal.id = 'rental-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    // Close button
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'rental-modal-close';
+    closeBtn.textContent = '\u00D7'; // ×
+    closeBtn.title = 'Close';
+    closeBtn.addEventListener('click', function() {
+        backdrop.parentNode.removeChild(backdrop);
+    });
+
+    // Title
+    var title = document.createElement('h2');
+    var titleText = document.createTextNode('Unlock ');
+    title.appendChild(closeBtn);
+    title.appendChild(titleText);
+    var nameSpan = document.createElement('span');
+    nameSpan.textContent = gameName;
+    title.appendChild(nameSpan);
+
+    modal.appendChild(title);
+
+    if (!isAuthed) {
+        // Not logged in
+        var authMsg = document.createElement('div');
+        authMsg.className = 'rental-auth-msg';
+        authMsg.textContent = 'Please log in to rent this game.';
+        modal.appendChild(authMsg);
+    } else if (tiers.length === 0) {
+        var noTiers = document.createElement('div');
+        noTiers.className = 'rental-auth-msg';
+        noTiers.textContent = 'No rental options available right now.';
+        modal.appendChild(noTiers);
+    } else {
+        // Render tier rows
+        tiers.forEach(function(tier) {
+            var row = document.createElement('div');
+            row.className = 'rental-tier-row';
+
+            var info = document.createElement('div');
+
+            var tierName = document.createElement('div');
+            tierName.className = 'rental-tier-info';
+            var hours = typeof tier.durationHours === 'number' ? tier.durationHours : parseInt(tier.durationHours, 10) || 0;
+            tierName.textContent = (tier.name || 'Tier') + ' — ' + hours + (hours === 1 ? ' hour' : ' hours');
+
+            var price = document.createElement('div');
+            price.className = 'rental-tier-price';
+            var priceCredits = tier.priceCredits != null ? tier.priceCredits : null;
+            var priceGems = tier.priceGems != null ? tier.priceGems : null;
+            var priceParts = [];
+            if (priceCredits != null) priceParts.push('$' + parseFloat(priceCredits).toFixed(2) + ' credits');
+            if (priceGems != null) priceParts.push(parseFloat(priceGems).toFixed(0) + ' gems');
+            price.textContent = priceParts.join(' or ');
+
+            info.appendChild(tierName);
+            info.appendChild(price);
+
+            var actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;flex-direction:column;gap:4px;align-items:flex-end;';
+
+            function makeRentBtn(payWith, label) {
+                var btn = document.createElement('button');
+                btn.className = 'rental-tier-btn';
+                btn.textContent = label;
+                btn.addEventListener('click', function() {
+                    btn.disabled = true;
+                    btn.textContent = '...';
+                    _doRent(gameId, tier.id, payWith, backdrop, btn);
+                });
+                return btn;
+            }
+
+            if (priceCredits != null) {
+                actions.appendChild(makeRentBtn('credits', 'Rent ($' + parseFloat(priceCredits).toFixed(2) + ')'));
+            }
+            if (priceGems != null) {
+                actions.appendChild(makeRentBtn('gems', 'Rent (' + parseFloat(priceGems).toFixed(0) + ' gems)'));
+            }
+
+            row.appendChild(info);
+            row.appendChild(actions);
+            modal.appendChild(row);
+        });
+    }
+
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+}
+
+function _doRent(gameId, tierId, payWith, backdrop, btn) {
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Rent Now'; }
+        return;
+    }
+
+    fetch('/api/rentals/rent', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ gameId: gameId, tierId: tierId, payWith: payWith })
+    })
+    .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+    .then(function(result) {
+        if (result.ok && result.data.success) {
+            // Unlock the game in memory
+            if (window._lockedGameIds) window._lockedGameIds.delete(gameId.toLowerCase());
+
+            // Remove lock overlay from the card
+            var card = document.querySelector('[data-game-id="' + gameId.toLowerCase() + '"]');
+            if (card) {
+                card.classList.remove('game-card--locked', 'game-card--rental-checked');
+                var overlay = card.querySelector('.rental-overlay');
+                if (overlay) card.removeChild(overlay);
+            }
+
+            // Update balance if returned
+            if (result.data.newBalance !== undefined && typeof updateBalance === 'function') {
+                balance = parseFloat(result.data.newBalance);
+                updateBalance();
+            }
+
+            // Close modal and open the game
+            if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+            if (typeof openSlot === 'function') openSlot(gameId);
+        } else {
+            var errText = (result.data && result.data.error) ? result.data.error : 'Rental failed. Please try again.';
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Retry';
+            }
+            // Show error inline below the button
+            var errEl = document.getElementById('rental-err-' + tierId);
+            if (!errEl) {
+                errEl = document.createElement('div');
+                errEl.id = 'rental-err-' + tierId;
+                errEl.style.cssText = 'font-size:0.72rem;color:#f87171;margin-top:4px;text-align:right;';
+                if (btn && btn.parentNode) btn.parentNode.appendChild(errEl);
+            }
+            errEl.textContent = errText;
+        }
+    })
+    .catch(function() {
+        if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+    });
+}
+
+// Hook initRentalSystem into the renderGames chain (idempotent)
+(function() {
+    var _prevRGRental = typeof renderGames === 'function' ? renderGames : null;
+    if (!_prevRGRental) return;
+    renderGames = function() {
+        _prevRGRental.apply(this, arguments);
+        if (!window._rentalSystemInit) {
+            window._rentalSystemInit = true;
+            initRentalSystem();
+        } else {
+            // Re-apply overlays after each render (new cards may have been injected)
+            applyRentalOverlays();
+        }
+    };
+})();
+
+// Expose for external callers
+window.initRentalSystem = initRentalSystem;
+window.applyRentalOverlays = applyRentalOverlays;
+window.showRentModal = showRentModal;

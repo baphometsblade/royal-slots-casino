@@ -970,6 +970,49 @@
             if (uiSoundsCheck) uiSoundsCheck.checked = appSettings.uiSounds !== false;
             const soundThemeSelect = document.getElementById('settingSoundTheme');
             if (soundThemeSelect) soundThemeSelect.value = appSettings.soundTheme || 'auto';
+
+            // Responsible Gambling — load current session limit and wire timer init
+            (function() {
+                var token = (function() {
+                    try {
+                        return localStorage.getItem(
+                            typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken'
+                        );
+                    } catch (e) { return null; }
+                })();
+                var limitSel = document.getElementById('settingSessionLimit');
+                var statusEl = document.getElementById('settingSessionStatus');
+                if (limitSel && token && typeof isServerAuthToken === 'function' && isServerAuthToken()) {
+                    fetch('/api/session/limits', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                        if (!data) return;
+                        var lim = data.session_time_limit;
+                        limitSel.value = (lim && lim > 0) ? String(lim) : '0';
+                        if (statusEl) {
+                            if (lim && lim > 0) {
+                                statusEl.textContent = 'Limit active: session ends after ' + lim + ' minutes.';
+                            } else {
+                                statusEl.textContent = 'No session time limit set.';
+                            }
+                        }
+                    })
+                    .catch(function() { /* silent */ });
+                } else if (limitSel) {
+                    limitSel.value = '0';
+                }
+            })();
+
+            // Wire session timer on first settings open (deferred init)
+            if (!window._sessionTimerInit) {
+                window._sessionTimerInit = true;
+                if (typeof initSessionTimer === 'function') {
+                    initSessionTimer();
+                }
+            }
+
             modal.classList.add('active');
             playSound('click');
         }
@@ -3000,4 +3043,159 @@ function _toggleHotkeySheet() {
     } else {
         openShortcutsModal();
     }
+}
+
+// ===== Responsible Gambling — Session Timer =====
+
+function updateSessionTimerDisplay(elapsed, limit, remaining) {
+    var el = document.getElementById('sessionTimerDisplay');
+    if (!el) return;
+
+    // Build text content safely — no innerHTML with variables
+    var timeText;
+    if (limit && limit > 0) {
+        timeText = '\u23f1 ' + elapsed + 'm / ' + limit + 'm';
+    } else {
+        timeText = '\u23f1 ' + elapsed + 'm played';
+    }
+    el.textContent = timeText;
+
+    // Warning state
+    el.classList.remove('session-timer-warning', 'session-timer-danger');
+    if (remaining !== null && remaining !== undefined) {
+        if (remaining <= 0) {
+            el.classList.add('session-timer-danger');
+            // Session limit reached — notify and end session
+            if (typeof showToast === 'function') {
+                showToast('Session time limit reached. Please take a break.', 'info');
+            }
+            // End session server-side
+            (function() {
+                try {
+                    var token = localStorage.getItem(
+                        typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken'
+                    );
+                    if (!token) return;
+                    fetch('/api/session/end', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        }
+                    }).catch(function() { /* silent */ });
+                } catch (e) { /* silent */ }
+            })();
+            if (window._sessionTimerInterval) {
+                clearInterval(window._sessionTimerInterval);
+                window._sessionTimerInterval = null;
+            }
+        } else if (remaining < 10) {
+            el.classList.add('session-timer-warning');
+        }
+    }
+
+    // Show the element
+    el.style.display = '';
+}
+
+function initSessionTimer() {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(
+        typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken'
+    );
+    if (!token) return;
+
+    // Clear any previous interval
+    if (window._sessionTimerInterval) {
+        clearInterval(window._sessionTimerInterval);
+        window._sessionTimerInterval = null;
+    }
+
+    function _doTick() {
+        var tkn = localStorage.getItem(
+            typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken'
+        );
+        if (!tkn) return;
+        fetch('/api/session/status', {
+            headers: { 'Authorization': 'Bearer ' + tkn }
+        })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (!data) return;
+            var elapsed = data.elapsed || 0;
+            var limit = data.limit || null;
+            var remaining = data.remaining !== undefined ? data.remaining : null;
+            updateSessionTimerDisplay(elapsed, limit, remaining);
+        })
+        .catch(function() { /* silent — network errors don't break the game */ });
+    }
+
+    // Fetch status first; start session if none active
+    fetch('/api/session/status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+        if (!data || !data.active) {
+            // Start a new session
+            return fetch('/api/session/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function() {
+                // Initial display — 0 minutes, no limit yet
+                updateSessionTimerDisplay(0, null, null);
+            })
+            .catch(function() { /* silent */ });
+        } else {
+            // Session already active — render immediately
+            var elapsed = data.elapsed || 0;
+            var limit = data.limit || null;
+            var remaining = data.remaining !== undefined ? data.remaining : null;
+            updateSessionTimerDisplay(elapsed, limit, remaining);
+        }
+    })
+    .catch(function() { /* silent */ })
+    .finally(function() {
+        // Tick every 60 seconds
+        window._sessionTimerInterval = setInterval(_doTick, 60000);
+    });
+}
+
+function settingsSetSessionLimit(val) {
+    var minutes = parseInt(val, 10);
+    var isNone = isNaN(minutes) || minutes <= 0;
+    var token = localStorage.getItem(
+        typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken'
+    );
+    if (!token) return;
+    fetch('/api/session/set-limit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ minutes: isNone ? null : minutes })
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+        if (!data) return;
+        if (typeof showToast === 'function') {
+            if (isNone) {
+                showToast('Session time limit removed', 'info');
+            } else {
+                showToast('Session limit set to ' + minutes + ' minutes', 'success');
+            }
+        }
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') {
+            showToast('Could not save session limit', 'error');
+        }
+    });
 }

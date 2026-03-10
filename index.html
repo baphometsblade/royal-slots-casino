@@ -145,6 +145,8 @@
                         </div>
                     </div>
                 </div>
+                <!-- Session Timer Display (Responsible Gambling) -->
+                <div id="sessionTimerDisplay" class="session-timer-display" style="display:none" title="Session time played"></div>
                 <button class="btn btn-deposit" onclick="currentUser ? showWalletModal() : showAuthModal()">
                     <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
                     WALLET</button>
@@ -1246,6 +1248,27 @@
                             <input type="range" class="settings-slider" id="settingAutoSpeed" min="500" max="3000" step="250" value="1500" oninput="settingsSetAutoSpeed(this.value)">
                             <span class="settings-slider-value" id="settingAutoSpeedLabel">1.5s</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Responsible Gambling -->
+                <div class="settings-section">
+                    <div class="settings-section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                        Responsible Gambling
+                    </div>
+                    <div class="settings-row">
+                        <label class="settings-label" for="settingSessionLimit">Session Time Limit</label>
+                        <select class="settings-select" id="settingSessionLimit" onchange="settingsSetSessionLimit(this.value)">
+                            <option value="0">None</option>
+                            <option value="30">30 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="120">2 hours</option>
+                            <option value="240">4 hours</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label" id="settingSessionStatus" style="font-size:0.78em;color:#94a3b8"></span>
                     </div>
                 </div>
 

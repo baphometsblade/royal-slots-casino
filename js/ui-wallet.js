@@ -779,6 +779,70 @@ function renderDepositForm() {
         banner.appendChild(desc);
         container.insertBefore(banner, container.firstChild);
     }
+
+    // Free spins display — fetched asynchronously and injected into the balance section
+    walletFetchAndShowFreeSpins(container);
+}
+
+
+/**
+ * Fetch free spins balance from GET /api/freespins/status and inject a
+ * display row after the main balance in the deposit form container.
+ * Requires auth; silently no-ops if not logged in or no spins.
+ */
+async function walletFetchAndShowFreeSpins(container) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var tokenKey = (typeof STORAGE_KEY_TOKEN !== 'undefined') ? STORAGE_KEY_TOKEN : 'casinoToken';
+    var token = localStorage.getItem(tokenKey);
+    if (!token) return;
+
+    var data;
+    try {
+        var resp = await fetch('/api/freespins/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!resp.ok) return;
+        data = await resp.json();
+    } catch (e) {
+        return;
+    }
+
+    var count = (data && data.count) ? Number(data.count) : 0;
+    if (count <= 0) return; // No free spins — nothing to show
+
+    // Find the balance display element and insert a row after it
+    var balanceSection = container.querySelector('.wallet-balance-display');
+    if (!balanceSection || !balanceSection.parentNode) return;
+
+    var row = document.createElement('div');
+    row.id = 'walletFreeSpinsRow';
+    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:8px 12px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:8px;font-size:0.82rem;';
+
+    var label = document.createElement('span');
+    label.style.color = '#c4b5fd';
+    label.textContent = 'Free Spins Available';
+    row.appendChild(label);
+
+    var badge = document.createElement('span');
+    badge.style.cssText = 'font-weight:700;color:#a855f7;background:rgba(168,85,247,0.18);padding:2px 10px;border-radius:12px;';
+    badge.textContent = String(count);
+    row.appendChild(badge);
+
+    if (data.expiresAt) {
+        var expiry = document.createElement('div');
+        expiry.style.cssText = 'font-size:0.72rem;color:#94a3b8;margin-top:4px;';
+        try {
+            var expDate = new Date(data.expiresAt);
+            expiry.textContent = 'Expires: ' + expDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            expiry.textContent = 'Expires: ' + data.expiresAt;
+        }
+        row.appendChild(expiry);
+    }
+
+    // Insert the row after the balance display div (inside the same wallet-section)
+    var parentSection = balanceSection.parentNode;
+    parentSection.insertBefore(row, balanceSection.nextSibling);
 }
 
 
@@ -1326,6 +1390,7 @@ function walletSubmitNewMethod(type) {
 
 /**
  * Show/hide MetaMask deposit section based on selected payment type.
+ * For ETH: shows MetaMask UI + backend-wired manual tx-hash deposit fallback.
  */
 function walletUpdateCryptoSection(payType) {
     const section = document.getElementById('cryptoDepositSection');
@@ -1336,11 +1401,13 @@ function walletUpdateCryptoSection(payType) {
 
     if (isCrypto && payType === 'eth') {
         walletRenderMetaMaskSection(section);
+        // Also append the backend-wired manual deposit section
+        walletRenderCryptoApiSection(section);
     } else if (isCrypto) {
         section.innerHTML = `
             <div style="padding:16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.03);margin-bottom:12px;text-align:center;">
                 <div style="font-size:0.9rem;color:#94a3b8;">
-                    ${payType === 'btc' ? '₿ Bitcoin' : '₮ Tether'} deposits — use the standard deposit button below.
+                    ${payType === 'btc' ? '&#x20BF; Bitcoin' : '&#x20AE; Tether'} deposits &#8212; use the standard deposit button below.
                     <br><span style="color:#627eea;font-weight:600;">For instant MetaMask deposits, select Ethereum.</span>
                 </div>
             </div>`;
@@ -1527,6 +1594,257 @@ async function walletCryptoDeposit() {
     }
 }
 
+
+// ═══════════════════════════════════════════════════════
+// BACKEND-WIRED CRYPTO DEPOSIT (manual tx hash submission)
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Render a backend-wired manual ETH deposit section below the MetaMask UI.
+ * Uses GET /api/crypto/rate and GET /api/crypto/config (no auth required),
+ * then POST /api/crypto/verify-deposit (auth required) with just { txHash }.
+ */
+async function walletRenderCryptoApiSection(parentContainer) {
+    // Remove any previous manual section to avoid duplicates
+    var prev = document.getElementById('cryptoManualDepositWrap');
+    if (prev) prev.parentNode.removeChild(prev);
+
+    // Fetch config (wallet address) and rate in parallel
+    var configData, rateData;
+    try {
+        var responses = await Promise.all([
+            fetch('/api/crypto/config'),
+            fetch('/api/crypto/rate')
+        ]);
+        if (!responses[0].ok) return; // Crypto not configured — hide silently
+        configData = await responses[0].json();
+        rateData = responses[1].ok ? await responses[1].json() : null;
+    } catch (e) {
+        return; // Network error — hide silently
+    }
+
+    var walletAddr = (configData && configData.walletAddress) || '';
+    if (!walletAddr) return; // No wallet configured — hide section
+
+    var ethRate = (rateData && rateData.eth_aud) ? Number(rateData.eth_aud) : null;
+
+    // Build the section using createElement / textContent only
+    var wrap = document.createElement('div');
+    wrap.id = 'cryptoManualDepositWrap';
+    wrap.style.cssText = 'padding:16px;border:1px solid rgba(98,126,234,0.35);border-radius:12px;background:linear-gradient(135deg,rgba(98,126,234,0.08),rgba(98,126,234,0.02));margin-top:12px;';
+
+    var heading = document.createElement('div');
+    heading.style.cssText = 'font-size:0.82rem;font-weight:700;color:#c4b5fd;margin-bottom:10px;letter-spacing:0.04em;text-transform:uppercase;';
+    heading.textContent = 'Manual ETH Deposit';
+    wrap.appendChild(heading);
+
+    // Rate display
+    if (ethRate) {
+        var rateRow = document.createElement('div');
+        rateRow.style.cssText = 'font-size:0.78rem;color:#94a3b8;margin-bottom:10px;';
+        var rateLabel = document.createTextNode('Current rate: 1 ETH = $');
+        var rateVal = document.createElement('strong');
+        rateVal.style.color = '#a5b4fc';
+        rateVal.textContent = ethRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' AUD';
+        rateRow.appendChild(rateLabel);
+        rateRow.appendChild(rateVal);
+        wrap.appendChild(rateRow);
+    }
+
+    // Wallet address label
+    var addrLabel = document.createElement('div');
+    addrLabel.style.cssText = 'font-size:0.75rem;color:#94a3b8;margin-bottom:4px;';
+    addrLabel.textContent = 'Send ETH to this address:';
+    wrap.appendChild(addrLabel);
+
+    // Address display + copy button row
+    var addrRow = document.createElement('div');
+    addrRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px;';
+
+    var addrEl = document.createElement('span');
+    addrEl.style.cssText = 'font-family:monospace;font-size:0.75rem;color:#e2e8f0;background:rgba(0,0,0,0.25);padding:6px 10px;border-radius:6px;flex:1;word-break:break-all;';
+    addrEl.textContent = walletAddr;
+    addrRow.appendChild(addrEl);
+
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'wallet-btn';
+    copyBtn.style.cssText = 'font-size:0.72rem;padding:6px 10px;flex-shrink:0;white-space:nowrap;';
+    copyBtn.textContent = 'Copy';
+    copyBtn.addEventListener('click', function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(walletAddr).then(function () {
+                copyBtn.textContent = 'Copied!';
+                setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+            }).catch(function () {
+                copyBtn.textContent = 'Error';
+            });
+        } else {
+            // Fallback for older browsers
+            var tmp = document.createElement('textarea');
+            tmp.value = walletAddr;
+            tmp.style.position = 'fixed';
+            tmp.style.opacity = '0';
+            document.body.appendChild(tmp);
+            tmp.select();
+            document.execCommand('copy');
+            document.body.removeChild(tmp);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+        }
+    });
+    addrRow.appendChild(copyBtn);
+    wrap.appendChild(addrRow);
+
+    // Tx hash input
+    var txLabel = document.createElement('label');
+    txLabel.style.cssText = 'font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:4px;';
+    txLabel.textContent = 'Transaction hash (0x...):';
+    wrap.appendChild(txLabel);
+
+    var txInput = document.createElement('input');
+    txInput.type = 'text';
+    txInput.id = 'cryptoManualTxHash';
+    txInput.placeholder = '0x...';
+    txInput.className = 'wallet-input';
+    txInput.style.cssText = 'font-family:monospace;font-size:0.75rem;margin-bottom:10px;width:100%;box-sizing:border-box;';
+    wrap.appendChild(txInput);
+
+    // AUD amount input (display-only reference, server derives from on-chain value)
+    var audLabel = document.createElement('label');
+    audLabel.style.cssText = 'font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:4px;';
+    audLabel.textContent = 'Expected amount (AUD, for your reference):';
+    wrap.appendChild(audLabel);
+
+    var audInput = document.createElement('input');
+    audInput.type = 'number';
+    audInput.id = 'cryptoManualAudAmount';
+    audInput.placeholder = '50.00';
+    audInput.min = '0';
+    audInput.step = '0.01';
+    audInput.className = 'wallet-input';
+    audInput.style.cssText = 'margin-bottom:12px;width:100%;box-sizing:border-box;';
+    // Pre-fill from main deposit amount input
+    var mainAmtEl = document.getElementById('walletDepositAmount');
+    if (mainAmtEl && mainAmtEl.value) audInput.value = mainAmtEl.value;
+    wrap.appendChild(audInput);
+
+    // Submit button
+    var submitBtn = document.createElement('button');
+    submitBtn.className = 'wallet-btn wallet-btn--primary';
+    submitBtn.style.cssText = 'width:100%;font-size:0.85rem;';
+    submitBtn.textContent = 'Verify ETH Deposit';
+    wrap.appendChild(submitBtn);
+
+    // Result message element
+    var resultEl = document.createElement('div');
+    resultEl.id = 'cryptoManualResult';
+    resultEl.style.cssText = 'margin-top:10px;font-size:0.8rem;display:none;padding:8px 12px;border-radius:8px;';
+    wrap.appendChild(resultEl);
+
+    submitBtn.addEventListener('click', function () {
+        walletCryptoManualVerify(txInput, resultEl, submitBtn);
+    });
+
+    parentContainer.appendChild(wrap);
+}
+
+/**
+ * Submit a manual ETH tx hash to /api/crypto/verify-deposit and credit balance.
+ */
+async function walletCryptoManualVerify(txInput, resultEl, submitBtn) {
+    // Auth check
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        resultEl.style.display = 'block';
+        resultEl.style.background = 'rgba(239,68,68,0.15)';
+        resultEl.style.border = '1px solid rgba(239,68,68,0.35)';
+        resultEl.textContent = 'You must be logged in to verify a deposit.';
+        return;
+    }
+    var tokenKey = (typeof STORAGE_KEY_TOKEN !== 'undefined') ? STORAGE_KEY_TOKEN : 'casinoToken';
+    var token = localStorage.getItem(tokenKey);
+    if (!token) {
+        resultEl.style.display = 'block';
+        resultEl.style.background = 'rgba(239,68,68,0.15)';
+        resultEl.style.border = '1px solid rgba(239,68,68,0.35)';
+        resultEl.textContent = 'Session token missing. Please log in again.';
+        return;
+    }
+
+    var txHash = txInput.value.trim();
+    if (!txHash || !/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
+        resultEl.style.display = 'block';
+        resultEl.style.background = 'rgba(239,68,68,0.15)';
+        resultEl.style.border = '1px solid rgba(239,68,68,0.35)';
+        resultEl.textContent = 'Please enter a valid Ethereum transaction hash (0x followed by 64 hex characters).';
+        return;
+    }
+
+    // Disable button while processing
+    submitBtn.disabled = true;
+    var origText = submitBtn.textContent;
+    submitBtn.textContent = 'Verifying...';
+    resultEl.style.display = 'block';
+    resultEl.style.background = 'rgba(251,191,36,0.1)';
+    resultEl.style.border = '1px solid rgba(251,191,36,0.3)';
+    resultEl.textContent = 'Checking transaction on-chain. This may take a moment...';
+
+    try {
+        var resp = await fetch('/api/crypto/verify-deposit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ txHash: txHash })
+        });
+        var data = await resp.json();
+
+        if (resp.ok && data.balance !== undefined) {
+            // Success
+            resultEl.style.background = 'rgba(16,185,129,0.12)';
+            resultEl.style.border = '1px solid rgba(16,185,129,0.35)';
+            var msg = data.message || 'Deposit confirmed!';
+            if (data.gemsAwarded) msg += ' +' + data.gemsAwarded + ' gems awarded.';
+            resultEl.textContent = msg;
+
+            // Update balance
+            if (typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay(data.balance);
+            } else if (typeof updateBalance === 'function') {
+                balance = Number(data.balance);
+                updateBalance();
+            }
+
+            // Clear inputs
+            txInput.value = '';
+            submitBtn.textContent = 'Verified!';
+        } else if (resp.status === 202) {
+            // Pending / confirming
+            resultEl.style.background = 'rgba(251,191,36,0.1)';
+            resultEl.style.border = '1px solid rgba(251,191,36,0.3)';
+            var pendingMsg = data.message || 'Transaction is still confirming. Please wait and try again.';
+            if (data.confirmations !== undefined && data.required !== undefined) {
+                pendingMsg += ' (' + data.confirmations + '/' + data.required + ' confirmations)';
+            }
+            resultEl.textContent = pendingMsg;
+            submitBtn.disabled = false;
+            submitBtn.textContent = origText;
+        } else {
+            // Error
+            resultEl.style.background = 'rgba(239,68,68,0.15)';
+            resultEl.style.border = '1px solid rgba(239,68,68,0.35)';
+            resultEl.textContent = data.error || 'Verification failed. Please try again.';
+            submitBtn.disabled = false;
+            submitBtn.textContent = origText;
+        }
+    } catch (err) {
+        resultEl.style.background = 'rgba(239,68,68,0.15)';
+        resultEl.style.border = '1px solid rgba(239,68,68,0.35)';
+        resultEl.textContent = 'Network error. Please check your connection and try again.';
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText;
+    }
+}
 
 // ═══════════════════════════════════════════════════════
 // HELPERS

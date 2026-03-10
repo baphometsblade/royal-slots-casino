@@ -2206,6 +2206,7 @@ function initPromoEngine() {
             renderDailyCashbackCard(promosSidebar);
             renderWagerRaceCard(promosSidebar);
             renderComebackBonusCard(promosSidebar);
+            if (!window._fortuneWheelCardInit) { window._fortuneWheelCardInit = true; renderFortuneWheelCard(promosSidebar); }
         }
     }, 4000);
 
@@ -4054,6 +4055,212 @@ async function renderVipWheelCard(container) {
         if (!document.getElementById('vipWheelCard')) {
             clearInterval(window._vipWheelInterval);
             window._vipWheelInterval = null;
+            return;
+        }
+        _fetchAndRender();
+    }, 60000);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
+// FORTUNE WHEEL CARD
+// ─────────────────────────────────────────────────────────────────────
+async function renderFortuneWheelCard(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Segment type colour map (static lookup — no variable interpolation)
+    var segmentColors = { cash: '#f0b429', points: '#3b82f6', freespins: '#22c55e' };
+
+    // Build card shell
+    var card = document.createElement('div');
+    card.className = 'promo-card fortune-wheel-card';
+    card.id = 'fortuneWheelCard';
+
+    // Header
+    var header = document.createElement('div');
+    header.className = 'promo-card-header';
+
+    var title = document.createElement('h3');
+    title.className = 'promo-card-title';
+    title.textContent = '\uD83C\uDFA1 Daily Fortune Wheel';
+    header.appendChild(title);
+
+    var subtitle = document.createElement('p');
+    subtitle.className = 'promo-card-subtitle';
+    subtitle.textContent = 'Spin once a day for free rewards!';
+    header.appendChild(subtitle);
+
+    card.appendChild(header);
+
+    // Segment grid (placeholder — populated after fetch)
+    var segmentGrid = document.createElement('div');
+    segmentGrid.className = 'fw-segment-grid';
+    segmentGrid.id = 'fwSegmentGrid';
+    card.appendChild(segmentGrid);
+
+    // Result area
+    var resultDiv = document.createElement('div');
+    resultDiv.className = 'fw-result';
+    resultDiv.id = 'fwResult';
+    resultDiv.style.display = 'none';
+    card.appendChild(resultDiv);
+
+    // Countdown area
+    var countdownDiv = document.createElement('div');
+    countdownDiv.className = 'fw-countdown';
+    countdownDiv.id = 'fwCountdown';
+    countdownDiv.style.display = 'none';
+    card.appendChild(countdownDiv);
+
+    // Action button
+    var actionBtn = document.createElement('button');
+    actionBtn.className = 'promo-btn fw-spin-btn';
+    actionBtn.id = 'fwSpinBtn';
+    actionBtn.textContent = 'Loading\u2026';
+    actionBtn.disabled = true;
+    card.appendChild(actionBtn);
+
+    // Inject static CSS once
+    if (!document.getElementById('fw-card-css')) {
+        var style = document.createElement('style');
+        style.id = 'fw-card-css';
+        style.textContent = [
+            '.fortune-wheel-card { padding: 14px; border: 1px solid rgba(240,180,41,0.35); border-radius: 10px; background: rgba(240,180,41,0.06); margin-bottom: 12px; }',
+            '.fw-segment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 10px 0; }',
+            '.fw-segment-tile { border-radius: 6px; padding: 6px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #fff; min-height: 36px; display: flex; align-items: center; justify-content: center; }',
+            '.fw-result { margin: 8px 0; padding: 8px; border-radius: 6px; background: rgba(34,197,94,0.15); color: #22c55e; font-weight: 700; text-align: center; font-size: 13px; }',
+            '.fw-countdown { margin: 6px 0; text-align: center; font-size: 12px; color: #9ca3af; }',
+            '.fw-spin-btn { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #f0b429; color: #1a1a1a; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; }',
+            '.fw-spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    container.appendChild(card);
+
+    // ── helpers ──────────────────────────────────────────────────────
+
+    function _renderSegments(segments) {
+        while (segmentGrid.firstChild) segmentGrid.removeChild(segmentGrid.firstChild);
+        if (!Array.isArray(segments)) return;
+        segments.forEach(function(seg) {
+            var tile = document.createElement('div');
+            tile.className = 'fw-segment-tile';
+            var bg = segmentColors[seg.type] || '#6b7280';
+            tile.style.background = bg;
+            tile.textContent = seg.label || seg.type;
+            segmentGrid.appendChild(tile);
+        });
+    }
+
+    function _calcCountdown(lastSpinDate) {
+        // lastSpinDate is 'YYYY-MM-DD' (UTC date of last spin)
+        if (!lastSpinDate) return '';
+        var parts = lastSpinDate.split('-');
+        var spinDay = Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        var nextSpin = spinDay + 86400000; // +24h
+        var remaining = nextSpin - Date.now();
+        if (remaining <= 0) return '';
+        var h = Math.floor(remaining / 3600000);
+        var m = Math.floor((remaining % 3600000) / 60000);
+        return 'Next spin in ' + h + 'h ' + m + 'm';
+    }
+
+    function _setAvailable() {
+        actionBtn.textContent = 'SPIN NOW';
+        actionBtn.disabled = false;
+        countdownDiv.style.display = 'none';
+        countdownDiv.textContent = '';
+    }
+
+    function _setUnavailable(lastSpin) {
+        actionBtn.textContent = 'COME BACK TOMORROW';
+        actionBtn.disabled = true;
+        var msg = _calcCountdown(lastSpin);
+        if (msg) {
+            countdownDiv.textContent = msg;
+            countdownDiv.style.display = 'block';
+        } else {
+            countdownDiv.style.display = 'none';
+        }
+    }
+
+    // ── spin handler ─────────────────────────────────────────────────
+
+    actionBtn.addEventListener('click', function() {
+        if (actionBtn.disabled) return;
+        actionBtn.disabled = true;
+        actionBtn.textContent = 'Spinning\u2026';
+        resultDiv.style.display = 'none';
+
+        fetch('/api/fortunewheel/spin', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success && d.reward) {
+                var label = d.reward.label || d.reward.type;
+                resultDiv.textContent = '\uD83C\uDF89 You won: ' + label + '!';
+                resultDiv.style.display = 'block';
+                if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                    updateBalanceDisplay(d.newBalance);
+                }
+                if (typeof showToast === 'function') {
+                    showToast('\uD83C\uDFA1 Fortune Wheel: ' + label, 'win');
+                }
+                // Re-fetch status after 2s to update button state
+                setTimeout(_fetchAndRender, 2000);
+            } else if (d.error || d.status === 429) {
+                resultDiv.textContent = d.error || 'Already spun today. Come back tomorrow!';
+                resultDiv.style.display = 'block';
+                setTimeout(_fetchAndRender, 1500);
+            } else {
+                actionBtn.disabled = false;
+                actionBtn.textContent = 'SPIN NOW';
+            }
+        })
+        .catch(function() {
+            actionBtn.disabled = false;
+            actionBtn.textContent = 'SPIN NOW';
+        });
+    });
+
+    // ── fetch status and populate ────────────────────────────────────
+
+    async function _fetchAndRender() {
+        try {
+            var res = await fetch('/api/fortunewheel/status', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) return;
+            var data = await res.json();
+
+            _renderSegments(data.segments);
+
+            if (data.available) {
+                _setAvailable();
+            } else {
+                _setUnavailable(data.lastSpin || null);
+            }
+        } catch (e) {
+            // Silently ignore — card remains in loading state
+        }
+    }
+
+    await _fetchAndRender();
+
+    // Refresh every 60 seconds (countdown tick & availability change)
+    window._fortuneWheelInterval = setInterval(function() {
+        if (!document.getElementById('fortuneWheelCard')) {
+            clearInterval(window._fortuneWheelInterval);
+            window._fortuneWheelInterval = null;
             return;
         }
         _fetchAndRender();

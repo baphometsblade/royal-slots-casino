@@ -36849,3 +36849,39 @@ body.s47-gift-open {
   }
 }
 
+/* ─── Session Timer Display (Responsible Gambling) ─────────────────────── */
+#sessionTimerDisplay {
+    display: none;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 8px;
+    padding: 4px 9px;
+    white-space: nowrap;
+    transition: color 0.3s, border-color 0.3s, background 0.3s;
+    cursor: default;
+    user-select: none;
+}
+#sessionTimerDisplay.session-timer-warning {
+    color: #f59e0b;
+    border-color: rgba(245,158,11,0.4);
+    background: rgba(245,158,11,0.08);
+}
+#sessionTimerDisplay.session-timer-danger {
+    color: #ef4444;
+    border-color: rgba(239,68,68,0.5);
+    background: rgba(239,68,68,0.10);
+    animation: _sessionDangerPulse 1.2s ease-in-out infinite;
+}
+@keyframes _sessionDangerPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.65; }
+}
+@media (max-width: 650px) {
+    #sessionTimerDisplay { display: none !important; }
+}
+
