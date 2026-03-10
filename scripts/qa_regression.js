@@ -500,7 +500,8 @@ async function run() {
       ok: true,
     });
 
-    await page.screenshot({ path: path.join(OUTPUT_DIR, "shot-0.png"), fullPage: true });
+    // Screenshot is diagnostic only — don't let a font-load timeout fail the suite
+    await page.screenshot({ path: path.join(OUTPUT_DIR, "shot-0.png"), fullPage: false, timeout: 10000 }).catch(() => {});
     await fsp.writeFile(path.join(OUTPUT_DIR, "state-0.json"), JSON.stringify(afterReset, null, 2));
 
     summary.runtimeErrorCount = runtimeErrors.length;
