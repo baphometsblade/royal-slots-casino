@@ -56,6 +56,7 @@ async function ensureDailyMissionsSchema() {
         ')'
     );
     try { await db.run('ALTER TABLE users ADD COLUMN loyalty_points INTEGER DEFAULT 0'); } catch (_) {}
+    try { await db.run('ALTER TABLE users ADD COLUMN free_spin_state_json TEXT'); } catch (_) {}
     _dmSchemaReady = true;
 }
 
@@ -182,12 +183,22 @@ router.post('/', authenticate, async (req, res) => {
         }
 
         // ── Check balance (fresh from DB) ──
-        const currentUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+        const currentUser = await db.get('SELECT balance, free_spin_state_json FROM users WHERE id = ?', [userId]);
         if (!currentUser) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const existingFreeSpinState = freeSpinStateByUser.get(userId) || null;
+        // Restore free-spin state from DB if Map was cleared (e.g. server restart)
+        let existingFreeSpinState = freeSpinStateByUser.get(userId) || null;
+        if (!existingFreeSpinState && currentUser.free_spin_state_json) {
+            try {
+                const parsed = JSON.parse(currentUser.free_spin_state_json);
+                if (parsed && parsed.active && parsed.remaining > 0) {
+                    existingFreeSpinState = parsed;
+                    freeSpinStateByUser.set(userId, parsed);
+                }
+            } catch (_) {}
+        }
         const usedFreeSpin = Boolean(
             existingFreeSpinState
             && existingFreeSpinState.active
@@ -314,11 +325,14 @@ router.post('/', authenticate, async (req, res) => {
             }
         }
 
-        // Persist/clear active free-spin runtime state for this user
+        // Persist/clear active free-spin runtime state (Map + DB for restart-safety)
         if (spinResult.freeSpinState && spinResult.freeSpinState.active && spinResult.freeSpinState.remaining > 0) {
             freeSpinStateByUser.set(userId, spinResult.freeSpinState);
+            await db.run('UPDATE users SET free_spin_state_json = ? WHERE id = ?',
+                [JSON.stringify(spinResult.freeSpinState), userId]);
         } else {
             freeSpinStateByUser.delete(userId);
+            await db.run('UPDATE users SET free_spin_state_json = NULL WHERE id = ?', [userId]);
         }
 
         // ── Credit win (atomic — prevents race condition balance overwrites) ──

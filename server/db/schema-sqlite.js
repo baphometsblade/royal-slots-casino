@@ -389,6 +389,7 @@ const USER_MIGRATIONS = [
     // Fortune wheel
     ['fortune_wheel_last', 'TEXT'],
     ['free_spins_remaining', 'INTEGER DEFAULT 0'],
+    ['free_spin_state_json', 'TEXT'],
     // Loyalty
     ['loyalty_points', 'INTEGER DEFAULT 0'],
     ['loyalty_lifetime', 'INTEGER DEFAULT 0'],
