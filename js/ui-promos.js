@@ -1848,6 +1848,7 @@ function initPromoEngine() {
             renderCasinoPassCard(promosSidebar);
             renderBoostCard(promosSidebar);
             renderTournamentCard(promosSidebar);
+            renderDailyCashbackCard(promosSidebar);
         }
     }, 4000);
 
@@ -2978,4 +2979,161 @@ async function renderTournamentCard(container) {
             card.appendChild(countdownEl);
         }
     }
+}
+
+async function renderDailyCashbackCard(container) {
+    if (!container) return;
+    if (document.getElementById('dailyCashbackCard')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('dailyCashbackCardStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'dailyCashbackCardStyles';
+        styleEl.textContent = [
+            '.promo-cashback-card { background: linear-gradient(135deg,#0a1a12,#0d1a2a); border: 1px solid #16a34a; border-radius: 12px; padding: 14px; margin-bottom: 12px; }',
+            '.dcc-title { font-size: 1rem; font-weight: 700; color: #4ade80; margin-bottom: 6px; }',
+            '.dcc-tier { font-size: 0.8rem; color: #86efac; margin-bottom: 10px; }',
+            '.dcc-amount { font-size: 1.05rem; font-weight: 700; color: #a3e635; margin-bottom: 10px; }',
+            '.dcc-claim-btn { width: 100%; padding: 9px 0; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }',
+            '.dcc-claim-btn:hover { background: #15803d; }',
+            '.dcc-claim-btn:disabled { opacity: 0.5; cursor: default; }',
+            '.dcc-claimed { font-size: 0.85rem; color: #86efac; }',
+            '.dcc-no-losses { font-size: 0.85rem; color: #6b7280; }',
+            '.dcc-success { font-size: 0.88rem; color: #4ade80; margin-top: 8px; font-weight: 600; }',
+            '.dcc-error { font-size: 0.78rem; color: #f87171; margin-top: 6px; }',
+            '.dcc-loading { color: #8888aa; font-size: 0.85rem; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var card = document.createElement('div');
+    card.id = 'dailyCashbackCard';
+    card.className = 'promo-card promo-cashback-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'dcc-title';
+    titleEl.textContent = '\uD83D\uDCB0 Daily Cashback';
+    card.appendChild(titleEl);
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'dcc-loading';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    container.appendChild(card);
+
+    // Auth required
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        loadingEl.textContent = 'Sign in to view cashback.';
+        return;
+    }
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) {
+        loadingEl.textContent = 'Sign in to view cashback.';
+        return;
+    }
+
+    // Fetch cashback status
+    var status = null;
+    try {
+        var res = await fetch('/api/dailycashback/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+            loadingEl.textContent = 'Cashback unavailable.';
+            return;
+        }
+        status = await res.json();
+    } catch (e) {
+        loadingEl.textContent = 'Could not load cashback.';
+        return;
+    }
+
+    // Remove loading placeholder
+    card.removeChild(loadingEl);
+
+    // VIP tier label
+    var tierEl = document.createElement('div');
+    tierEl.className = 'dcc-tier';
+    var vipLabel = status.vipLabel || 'Standard';
+    var rateDisplay = String(Math.round((status.rate || 0) * 100));
+    tierEl.textContent = vipLabel + ' Tier \u2014 ' + rateDisplay + '% cashback';
+    card.appendChild(tierEl);
+
+    // State: already claimed
+    if (status.claimed && status.claimedAt) {
+        var claimedEl = document.createElement('div');
+        claimedEl.className = 'dcc-claimed';
+        var claimedAt = new Date(status.claimedAt);
+        var nextAvail = new Date(claimedAt.getTime() + 24 * 3600 * 1000);
+        var msLeft = nextAvail.getTime() - Date.now();
+        if (msLeft > 0) {
+            var hoursLeft = Math.floor(msLeft / 3600000);
+            var minsLeft = Math.floor((msLeft % 3600000) / 60000);
+            claimedEl.textContent = '\u2705 Next cashback available in ' + String(hoursLeft) + 'h ' + String(minsLeft) + 'm';
+        } else {
+            claimedEl.textContent = '\u2705 Claimed. Refresh to check eligibility.';
+        }
+        card.appendChild(claimedEl);
+        return;
+    }
+
+    // State: eligible — show amount and claim button
+    if (status.eligible && status.amount > 0) {
+        var amountEl = document.createElement('div');
+        amountEl.className = 'dcc-amount';
+        amountEl.textContent = 'You can claim $' + Number(status.amount).toFixed(2) + ' back!';
+        card.appendChild(amountEl);
+
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'dcc-claim-btn';
+        claimBtn.textContent = 'Claim Cashback';
+        card.appendChild(claimBtn);
+
+        var msgEl = document.createElement('div');
+        card.appendChild(msgEl);
+
+        claimBtn.addEventListener('click', async function() {
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'Claiming\u2026';
+            msgEl.textContent = '';
+            msgEl.className = '';
+            try {
+                var claimRes = await fetch('/api/dailycashback/claim', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                var claimData = await claimRes.json();
+                if (claimRes.ok && claimData.success) {
+                    claimBtn.style.display = 'none';
+                    amountEl.style.display = 'none';
+                    msgEl.className = 'dcc-success';
+                    msgEl.textContent = '\u2705 $' + Number(claimData.credited).toFixed(2) + ' credited! New balance: $' + Number(claimData.newBalance).toFixed(2);
+                    // Refresh displayed balance if the global update function exists
+                    if (typeof refreshBalance === 'function') refreshBalance();
+                    else if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+                } else {
+                    msgEl.className = 'dcc-error';
+                    msgEl.textContent = (claimData && claimData.error) ? claimData.error : 'Claim failed. Try again.';
+                    claimBtn.disabled = false;
+                    claimBtn.textContent = 'Claim Cashback';
+                }
+            } catch (err) {
+                msgEl.className = 'dcc-error';
+                msgEl.textContent = 'Network error. Please try again.';
+                claimBtn.disabled = false;
+                claimBtn.textContent = 'Claim Cashback';
+            }
+        });
+        return;
+    }
+
+    // State: not eligible (no losses)
+    var noLossEl = document.createElement('div');
+    noLossEl.className = 'dcc-no-losses';
+    noLossEl.textContent = 'No losses in last 24h to recover';
+    card.appendChild(noLossEl);
 }

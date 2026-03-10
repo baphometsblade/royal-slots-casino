@@ -86,6 +86,8 @@ function showWalletModal() {
     refreshCashbackBalance();
     // Render the full Loyalty Points card section (persistent slot above walletContent)
     _renderLoyaltySection(modal);
+    // Render the Rakeback card section below Loyalty
+    _renderRakebackSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -1906,3 +1908,251 @@ window.redeemLoyaltyPoints = function(points) {
         }
     });
 };
+
+// ── Rakeback Section ─────────────────────────────────────────────────────────
+/**
+ * Renders a Weekly Rakeback card below the Loyalty section in the wallet modal.
+ * Shows weekly stats, pending amount, claim button, history, and next payout countdown.
+ * All dynamic text uses .textContent (no innerHTML with variables).
+ * @param {HTMLElement} modal  The #walletModal element (or any ancestor containing .wallet-modal)
+ */
+async function _renderRakebackSection(modal) {
+    if (!modal) return;
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Find (or create) the persistent wrapper div that sits below the Loyalty card
+    var walletInner = modal.querySelector('.wallet-modal');
+    if (!walletInner) walletInner = modal;
+
+    var wrapper = walletInner.querySelector('#walletRakebackCardWrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = 'walletRakebackCardWrapper';
+        wrapper.style.cssText = 'padding:0 16px 0 16px;';
+        // Insert after the loyalty card wrapper if present, else before walletContent
+        var loyaltyWrapper = walletInner.querySelector('#walletLoyaltyCardWrapper');
+        var walletContentEl = walletInner.querySelector('#walletContent');
+        if (loyaltyWrapper && loyaltyWrapper.nextSibling) {
+            walletInner.insertBefore(wrapper, loyaltyWrapper.nextSibling);
+        } else if (walletContentEl) {
+            walletInner.insertBefore(wrapper, walletContentEl);
+        } else {
+            walletInner.appendChild(wrapper);
+        }
+    }
+
+    // Remove any existing card inside the wrapper (full re-render)
+    var existingCard = wrapper.querySelector('#walletRakebackCard');
+    if (existingCard) existingCard.remove();
+
+    // Build card shell
+    var card = document.createElement('div');
+    card.id = 'walletRakebackCard';
+    card.style.cssText = [
+        'background:linear-gradient(135deg,rgba(251,191,36,0.10),rgba(245,158,11,0.05))',
+        'border:1.5px solid rgba(251,191,36,0.28)',
+        'border-radius:14px',
+        'padding:16px 18px',
+        'margin:12px 0'
+    ].join(';');
+
+    // ── Header ──
+    var titleRow = document.createElement('div');
+    titleRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+
+    var title = document.createElement('span');
+    title.style.cssText = 'font-size:1rem;font-weight:800;color:#fbbf24;letter-spacing:0.3px;';
+    title.textContent = '\u267B\uFE0F Weekly Rakeback (1%)';
+
+    var rateNote = document.createElement('span');
+    rateNote.style.cssText = 'font-size:0.72rem;color:#fde68a;opacity:0.8;';
+    rateNote.textContent = '1% of net losses';
+
+    titleRow.appendChild(title);
+    titleRow.appendChild(rateNote);
+    card.appendChild(titleRow);
+
+    // ── Loading placeholder while fetching ──
+    var loadingEl = document.createElement('div');
+    loadingEl.style.cssText = 'color:#fde68a;font-size:0.82rem;opacity:0.7;margin-bottom:8px;';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    wrapper.appendChild(card);
+
+    // ── Fetch status from server ──
+    var data = null;
+    try {
+        var resp = await fetch('/api/rakeback/status', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) data = await resp.json();
+    } catch (_e) {}
+
+    // Remove loading placeholder
+    if (loadingEl.parentNode) loadingEl.remove();
+
+    if (!data) {
+        var errEl = document.createElement('div');
+        errEl.style.cssText = 'color:#f87171;font-size:0.82rem;';
+        errEl.textContent = 'Could not load rakeback data.';
+        card.appendChild(errEl);
+        return;
+    }
+
+    var pending = parseFloat(data.pendingRakeback) || 0;
+    var wagered = parseFloat(data.weeklyWagered) || 0;
+    var netLoss = parseFloat(data.weeklyNetLoss) || 0;
+
+    // ── Stats row ──
+    var statsRow = document.createElement('div');
+    statsRow.style.cssText = 'display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;';
+
+    var wageredStat = document.createElement('div');
+    wageredStat.style.cssText = 'font-size:0.8rem;color:#fde68a;';
+    var wageredLabel = document.createElement('span');
+    wageredLabel.style.cssText = 'opacity:0.7;';
+    wageredLabel.textContent = 'Wagered this week: ';
+    var wageredVal = document.createElement('span');
+    wageredVal.style.cssText = 'font-weight:700;color:#fbbf24;';
+    wageredVal.textContent = '$' + wagered.toFixed(2);
+    wageredStat.appendChild(wageredLabel);
+    wageredStat.appendChild(wageredVal);
+
+    var pendingStat = document.createElement('div');
+    pendingStat.style.cssText = 'font-size:0.8rem;color:#fde68a;';
+    var pendingLabel = document.createElement('span');
+    pendingLabel.style.cssText = 'opacity:0.7;';
+    pendingLabel.textContent = 'Pending rakeback: ';
+    var pendingVal = document.createElement('span');
+    pendingVal.style.cssText = 'font-weight:700;color:#fbbf24;';
+    pendingVal.textContent = '$' + pending.toFixed(2);
+    pendingStat.appendChild(pendingLabel);
+    pendingStat.appendChild(pendingVal);
+
+    statsRow.appendChild(wageredStat);
+    statsRow.appendChild(pendingStat);
+    card.appendChild(statsRow);
+
+    // ── Claim button or "keep playing" note ──
+    if (pending < 0.01) {
+        var keepPlayingEl = document.createElement('div');
+        keepPlayingEl.style.cssText = 'font-size:0.8rem;color:#fde68a;opacity:0.7;margin-bottom:12px;font-style:italic;';
+        keepPlayingEl.textContent = 'Keep playing to earn rakeback';
+        card.appendChild(keepPlayingEl);
+    } else {
+        var claimBtn = document.createElement('button');
+        claimBtn.id = 'rakebackCardClaimBtn';
+        claimBtn.style.cssText = [
+            'background:linear-gradient(135deg,#f59e0b,#d97706)',
+            'color:#1c1917',
+            'border:none',
+            'border-radius:8px',
+            'padding:8px 18px',
+            'font-size:0.85rem',
+            'font-weight:800',
+            'cursor:pointer',
+            'margin-bottom:12px',
+            'letter-spacing:0.3px'
+        ].join(';');
+        claimBtn.textContent = 'Claim Rakeback ($' + pending.toFixed(2) + ')';
+
+        claimBtn.addEventListener('click', function() {
+            var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!claimToken) return;
+            claimBtn.disabled = true;
+            claimBtn.style.opacity = '0.6';
+
+            fetch('/api/rakeback/claim', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + claimToken, 'Content-Type': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    var credited = parseFloat(result.credited) || 0;
+                    if (typeof balance !== 'undefined') balance = result.newBalance;
+                    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+                    if (typeof showToast === 'function') {
+                        showToast('\u267B\uFE0F Rakeback $' + credited.toFixed(2) + ' credited!', 'win', 4000);
+                    }
+                    // Re-render card with fresh data
+                    var walletModal = document.getElementById('walletModal');
+                    if (walletModal) _renderRakebackSection(walletModal);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(result.error || 'Nothing to claim yet', 'info', 3000);
+                    }
+                    claimBtn.disabled = false;
+                    claimBtn.style.opacity = '1';
+                }
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') {
+                    showToast('Claim failed \u2014 please try again.', 'error', 3000);
+                }
+                claimBtn.disabled = false;
+                claimBtn.style.opacity = '1';
+            });
+        });
+
+        card.appendChild(claimBtn);
+    }
+
+    // ── Next automatic payout countdown ──
+    if (data.nextPayoutAt) {
+        var nextPayout = new Date(data.nextPayoutAt);
+        var now = new Date();
+        var diffMs = nextPayout - now;
+        var countdownEl = document.createElement('div');
+        countdownEl.style.cssText = 'font-size:0.76rem;color:#fde68a;opacity:0.75;margin-bottom:10px;';
+        if (diffMs > 0) {
+            var diffH = Math.floor(diffMs / 3600000);
+            var diffM = Math.floor((diffMs % 3600000) / 60000);
+            var countdownLabel = document.createElement('span');
+            countdownLabel.textContent = 'Next automatic payout in ';
+            var countdownVal = document.createElement('span');
+            countdownVal.style.cssText = 'font-weight:700;color:#fbbf24;';
+            countdownVal.textContent = diffH + 'h ' + diffM + 'm';
+            countdownEl.appendChild(countdownLabel);
+            countdownEl.appendChild(countdownVal);
+        } else {
+            countdownEl.textContent = 'Automatic payout processing soon\u2026';
+        }
+        card.appendChild(countdownEl);
+    }
+
+    // ── Recent history (last 3 entries) ──
+    var history = Array.isArray(data.history) ? data.history.slice(0, 3) : [];
+    if (history.length > 0) {
+        var histTitle = document.createElement('div');
+        histTitle.style.cssText = 'font-size:0.76rem;font-weight:700;color:#fbbf24;margin-bottom:6px;letter-spacing:0.2px;';
+        histTitle.textContent = 'Recent Payouts';
+        card.appendChild(histTitle);
+
+        history.forEach(function(entry) {
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid rgba(251,191,36,0.12);';
+
+            var dateEl = document.createElement('span');
+            dateEl.style.cssText = 'font-size:0.72rem;color:#fde68a;opacity:0.7;';
+            var entryDate = entry.created_at ? new Date(entry.created_at) : null;
+            dateEl.textContent = entryDate ? entryDate.toLocaleDateString() : 'N/A';
+
+            var descEl = document.createElement('span');
+            descEl.style.cssText = 'font-size:0.72rem;color:#fde68a;flex:1;padding:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+            descEl.textContent = entry.description || 'Rakeback payout';
+
+            var amtEl = document.createElement('span');
+            amtEl.style.cssText = 'font-size:0.76rem;font-weight:700;color:#fbbf24;white-space:nowrap;';
+            amtEl.textContent = '+$' + (parseFloat(entry.amount) || 0).toFixed(2);
+
+            row.appendChild(dateEl);
+            row.appendChild(descEl);
+            row.appendChild(amtEl);
+            card.appendChild(row);
+        });
+    }
+}
