@@ -38,6 +38,15 @@ async function initDatabase() {
             if (attempt < 3) {
                 console.warn(`[DB] Init attempt ${attempt}/3 failed: ${err.message} — retrying in ${attempt * 5}s…`);
                 await new Promise(r => setTimeout(r, attempt * 5000));
+            } else if (config.DATABASE_URL) {
+                // PostgreSQL unavailable after 3 attempts — fall back to SQLite so the site
+                // stays alive (e.g. when the Render free-tier PG instance expires)
+                console.error(`[DB] PostgreSQL unreachable after 3 attempts: ${err.message}`);
+                console.warn('[DB] Falling back to SQLite — data will not persist across restarts');
+                const SqliteBackend = require('./db/sqlite-backend');
+                backend = new SqliteBackend(config.DB_PATH);
+                await backend.init();
+                return backend;
             } else {
                 throw err;
             }

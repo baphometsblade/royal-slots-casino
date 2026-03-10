@@ -15,7 +15,7 @@ services:
       - key: ADMIN_PASSWORD
         generateValue: true
       - key: ALLOWED_ORIGIN
-        value: https://www.msaart.online
+        value: https://msaart.online
       - key: CRYPTO_WALLET_ADDRESS
         value: "0x5cee55FF03c247c1C2b4b9b4e732B087758CD863"
       - key: BTC_WALLET_ADDRESS
