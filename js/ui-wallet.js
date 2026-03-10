@@ -97,6 +97,8 @@ function showWalletModal() {
     walletRenderLoyaltySection(modal);
     // Render the VIP Deposit Bonus card section below Loyalty Shop
     walletRenderVipDepositSection(modal);
+    // Render the Weekend Cashback card section below VIP Deposit Bonus
+    walletRenderWeekendCashbackSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -3596,4 +3598,126 @@ async function walletRenderVipDepositSection(parentContainer) {
     progressionEl.className = 'vip-deposit-progression';
     progressionEl.textContent = 'Bronze\u2192Silver at $1k wagered \u2022 Gold at $5k \u2022 Platinum at $20k \u2022 Diamond at $50k';
     card.appendChild(progressionEl);
+}
+
+/**
+ * Renders the Weekend VIP Cashback card section in the wallet modal.
+ * Shows cashback status (active/inactive) with relevant details.
+ *
+ * @param {HTMLElement} parentContainer  The #walletModal element.
+ */
+async function walletRenderWeekendCashbackSection(parentContainer) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // ID guard - only render once
+    if (document.getElementById('walletWeekendCashbackSection')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('weekendCashback-css')) {
+        var s = document.createElement('style');
+        s.id = 'weekendCashback-css';
+        s.textContent = '.wallet-weekend-cashback { background: linear-gradient(135deg, #1a2a1a, #1e3a1e); border: 1px solid #2d5a2d; border-radius: 12px; padding: 16px; margin-bottom: 16px; } .wallet-weekend-cashback.active { border-color: #4CAF50; } .wallet-weekend-cashback h4 { color: #66bb6a; margin: 0 0 8px 0; font-size: 14px; } .wallet-weekend-cashback p { color: #aaa; font-size: 12px; margin: 4px 0; } .wallet-weekend-cashback .cashback-active-badge { background: #4CAF50; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }';
+        document.head.appendChild(s);
+    }
+
+    // Create placeholder card immediately so UI isn't empty while loading
+    var section = document.createElement('div');
+    section.id = 'walletWeekendCashbackSection';
+    section.className = 'wallet-weekend-cashback';
+    parentContainer.appendChild(section);
+
+    var data = null;
+    try {
+        var resp = await fetch('/api/user/weekend-cashback', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) {
+            data = await resp.json();
+        }
+    } catch (e) {
+        console.error('[WeekendCashback]', e);
+    }
+
+    if (data && data.active === true) {
+        // Active cashback state
+        section.classList.add('active');
+
+        var activeHeader = document.createElement('h4');
+
+        var giftSpan = document.createTextNode('\uD83C\uDF81 Weekend Cashback ');
+        activeHeader.appendChild(giftSpan);
+
+        var badge = document.createElement('span');
+        badge.className = 'cashback-active-badge';
+        badge.textContent = 'ACTIVE';
+        activeHeader.appendChild(badge);
+        section.appendChild(activeHeader);
+
+        var rateP = document.createElement('p');
+        var rateText = document.createElement('strong');
+        rateText.style.color = '#81c784';
+        rateText.textContent = (data.cashbackPercent || 15) + '% cashback on losses this weekend';
+        rateP.appendChild(rateText);
+        section.appendChild(rateP);
+
+        if (data.minLoss) {
+            var minP = document.createElement('p');
+            minP.textContent = 'Minimum loss to qualify: $' + parseFloat(data.minLoss).toFixed(2);
+            section.appendChild(minP);
+        }
+
+        if (data.maxCashback) {
+            var maxP = document.createElement('p');
+            maxP.textContent = 'Maximum cashback: $' + parseFloat(data.maxCashback).toFixed(2);
+            section.appendChild(maxP);
+        }
+
+        if (data.periodEnd) {
+            var endP = document.createElement('p');
+            endP.textContent = 'Period ends: ' + new Date(data.periodEnd).toLocaleString();
+            section.appendChild(endP);
+        }
+
+        if (data.eligibleTier) {
+            var tierP = document.createElement('p');
+            tierP.textContent = 'Your tier: ' + data.eligibleTier;
+            section.appendChild(tierP);
+        }
+
+    } else if (data && data.active === false) {
+        // Inactive / not yet weekend state
+        var inactiveHeader = document.createElement('h4');
+        inactiveHeader.textContent = '\uD83C\uDF81 Weekend VIP Cashback';
+        section.appendChild(inactiveHeader);
+
+        var descP = document.createElement('p');
+        descP.textContent = '15% cashback on losses every weekend for eligible VIP players';
+        section.appendChild(descP);
+
+        var scheduleP = document.createElement('p');
+        if (data.periodEnd) {
+            scheduleP.textContent = 'Next cashback window: ' + new Date(data.periodEnd).toLocaleString();
+        } else {
+            scheduleP.textContent = 'Available on weekends';
+        }
+        section.appendChild(scheduleP);
+
+        if (data.eligibleTier) {
+            var tierNoteP = document.createElement('p');
+            tierNoteP.textContent = 'Your tier: ' + data.eligibleTier;
+            section.appendChild(tierNoteP);
+        }
+
+    } else {
+        // Error or no data — show eligibility info card
+        var infoHeader = document.createElement('h4');
+        infoHeader.textContent = '\uD83C\uDF81 Weekend VIP Cashback';
+        section.appendChild(infoHeader);
+
+        var infoP = document.createElement('p');
+        infoP.textContent = 'VIP players receive cashback on weekend losses. Reach Silver tier or above to unlock this benefit.';
+        section.appendChild(infoP);
+    }
 }

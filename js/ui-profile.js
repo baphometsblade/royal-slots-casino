@@ -1362,6 +1362,120 @@ function _referralShowMsg(el, text, type) {
 // OVERVIEW TAB
 // ═══════════════════════════════════════════════════════
 
+// ── Birthday Section ─────────────────────────────────────
+function _renderBirthdaySection(container) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    if (!document.getElementById('profile-birthday-css')) {
+        var s = document.createElement('style');
+        s.id = 'profile-birthday-css';
+        s.textContent = '.profile-birthday-section { background: #1a1a2e; border: 1px solid #4a3060; border-radius: 10px; padding: 14px; margin-top: 16px; } .profile-birthday-section h4 { color: #e040fb; margin: 0 0 8px 0; font-size: 14px; } .profile-birthday-section p { color: #aaa; font-size: 12px; margin: 4px 0; } .birthday-bonus-preview { color: #ce93d8 !important; } .birthday-form { display: flex; gap: 8px; align-items: center; margin: 10px 0; flex-wrap: wrap; } .birthday-form select { background: #2a1a3a; border: 1px solid #6a3090; color: #eee; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; } .birthday-save-btn { background: linear-gradient(135deg, #7b1fa2, #9c27b0); color: #fff; border: none; padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; } .birthday-msg { min-height: 16px; color: #ce93d8 !important; }';
+        document.head.appendChild(s);
+    }
+
+    fetch('/api/birthday/status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var section = document.createElement('div');
+        section.className = 'profile-birthday-section';
+
+        var title = document.createElement('h4');
+        title.textContent = '\uD83C\uDF82 Birthday Bonus';
+        section.appendChild(title);
+
+        if (!data.hasBirthday) {
+            var desc = document.createElement('p');
+            desc.textContent = 'Set your birthday to receive annual bonus rewards!';
+            section.appendChild(desc);
+
+            var bonusInfo = document.createElement('p');
+            bonusInfo.className = 'birthday-bonus-preview';
+            bonusInfo.textContent = 'Birthday reward: $10 credits + 500 gems + 10 free spins';
+            section.appendChild(bonusInfo);
+
+            var form = document.createElement('div');
+            form.className = 'birthday-form';
+
+            var monthSel = document.createElement('select');
+            monthSel.className = 'birthday-month-select';
+            var monthOpt0 = document.createElement('option');
+            monthOpt0.value = '';
+            monthOpt0.textContent = 'Month';
+            monthSel.appendChild(monthOpt0);
+            var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            MONTHS.forEach(function(m, i) {
+                var opt = document.createElement('option');
+                opt.value = String(i + 1);
+                opt.textContent = m;
+                monthSel.appendChild(opt);
+            });
+
+            var daySel = document.createElement('select');
+            daySel.className = 'birthday-day-select';
+            var dayOpt0 = document.createElement('option');
+            dayOpt0.value = '';
+            dayOpt0.textContent = 'Day';
+            daySel.appendChild(dayOpt0);
+            for (var d = 1; d <= 31; d++) {
+                var dopt = document.createElement('option');
+                dopt.value = String(d);
+                dopt.textContent = String(d);
+                daySel.appendChild(dopt);
+            }
+
+            var saveBtn = document.createElement('button');
+            saveBtn.className = 'birthday-save-btn';
+            saveBtn.textContent = 'Save Birthday';
+
+            var msgEl = document.createElement('p');
+            msgEl.className = 'birthday-msg';
+
+            saveBtn.addEventListener('click', function() {
+                var m = parseInt(monthSel.value, 10);
+                var dv = parseInt(daySel.value, 10);
+                if (!m || !dv) { msgEl.textContent = 'Please select month and day.'; return; }
+                var tok = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                fetch('/api/birthday/set', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ month: m, day: dv })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        msgEl.textContent = '\uD83C\uDF82 Birthday saved! You\'ll receive your bonus each year on your birthday.';
+                        form.style.display = 'none';
+                    } else {
+                        msgEl.textContent = result.error || 'Failed to save birthday.';
+                    }
+                })
+                .catch(function() { msgEl.textContent = 'Connection error. Try again.'; });
+            });
+
+            form.appendChild(monthSel);
+            form.appendChild(daySel);
+            form.appendChild(saveBtn);
+            section.appendChild(form);
+            section.appendChild(msgEl);
+        } else if (data.isBirthday) {
+            var happyMsg = document.createElement('p');
+            happyMsg.textContent = data.alreadyClaimed ? '\uD83C\uDF89 Happy Birthday! Bonus already claimed today.' : '\uD83C\uDF89 Happy Birthday! Your bonus is waiting!';
+            section.appendChild(happyMsg);
+        } else {
+            var setBdMsg = document.createElement('p');
+            setBdMsg.textContent = '\u2705 Birthday set! Your annual bonus is ready for your special day.';
+            section.appendChild(setBdMsg);
+        }
+
+        container.appendChild(section);
+    })
+    .catch(function(e) { console.error('[Birthday]', e); });
+}
+
 function renderProfileOverview() {
     const el = document.getElementById('profileContent');
     const d = profileData || {};
@@ -1538,6 +1652,9 @@ function renderProfileOverview() {
         const fill = el.querySelector('.profile-xp-bar-fill');
         if (fill) fill.style.width = xpPct + '%';
     }));
+
+    // Birthday section (async, appends after the rest of the overview)
+    _renderBirthdaySection(el);
 }
 
 

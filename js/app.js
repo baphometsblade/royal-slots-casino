@@ -205,6 +205,7 @@
             _checkLevelUpBonus();
             _checkMilestones();
             _checkDailyStreak();
+            setTimeout(function() { _checkWeekendCashback(); }, 2000);
             _checkStreakBonuses();
             _checkSubscriptionDailyGems();
             _checkGiftsInbox();
@@ -753,6 +754,47 @@
                     })
                     .catch(function() {});
             }, 3000);
+        }
+
+        // ── Weekend cashback notification ─────────────────────────────────────
+        function _checkWeekendCashback() {
+            // Session guard - only show once per session
+            if (sessionStorage.getItem('_weekendCashbackChecked')) return;
+            sessionStorage.setItem('_weekendCashbackChecked', '1');
+
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+
+            fetch('/api/user/weekend-cashback', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.active) return;
+                _showWeekendCashbackToast(data);
+            })
+            .catch(function(e) { console.error('[WeekendCashback]', e); });
+        }
+
+        function _showWeekendCashbackToast(data) {
+            var pct = data.cashbackPercent || 0;
+            var msg = '\uD83C\uDF81 Weekend Cashback ACTIVE \u2014 ' + pct + '% cashback on losses this weekend!';
+            if (typeof showWinToast === 'function') {
+                showWinToast(msg);
+            } else {
+                var existing = document.getElementById('weekend-cashback-toast');
+                if (existing) { existing.remove(); }
+                var toast = document.createElement('div');
+                toast.id = 'weekend-cashback-toast';
+                toast.className = 'weekend-cashback-toast';
+                toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#6a0dad,#ffd700);color:#fff;font-weight:700;padding:12px 24px;border-radius:30px;z-index:99999;font-size:1rem;pointer-events:none;box-shadow:0 4px 20px rgba(106,13,173,0.5);';
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                setTimeout(function() {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 6000);
+            }
         }
 
         // ── Subscription daily gem auto-claim ─────────────────────────────────

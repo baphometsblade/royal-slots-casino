@@ -2209,6 +2209,7 @@ function initPromoEngine() {
             if (!window._fortuneWheelCardInit) { window._fortuneWheelCardInit = true; renderFortuneWheelCard(promosSidebar); }
             if (!window._firstDepositCardInit) { window._firstDepositCardInit = true; renderFirstDepositCard(promosSidebar); }
             if (!window._reloadBonusCardInit) { window._reloadBonusCardInit = true; renderReloadBonusCard(promosSidebar); }
+            if (!window._birthdaySetCardInit) { window._birthdaySetCardInit = true; renderBirthdaySetCard(promosSidebar); }
         }
     }, 4000);
 
@@ -4571,6 +4572,277 @@ async function renderReloadBonusCard(container) {
     terms.className = 'rb-terms';
     terms.textContent = 'Min $5 deposit \u2022 7-day cooldown \u2022 25% match';
     card.appendChild(terms);
+
+    container.appendChild(card);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Birthday Set Card
+// ─────────────────────────────────────────────────────────────────────────────
+async function renderBirthdaySetCard(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Inject CSS once (static string, no variables)
+    if (!document.getElementById('birthday-set-css')) {
+        var s = document.createElement('style');
+        s.id = 'birthday-set-css';
+        s.textContent = '.birthday-set-card { background: linear-gradient(135deg, #2a1040 0%, #1a0830 100%); border: 1px solid #c084fc; border-radius: 12px; padding: 16px; margin-bottom: 12px; color: #f3e8ff; } .birthday-set-card h3 { margin: 0 0 8px 0; font-size: 1.1rem; color: #e879f9; } .birthday-set-card .bsc-desc { font-size: 0.85rem; color: #d8b4fe; margin: 0 0 10px 0; } .birthday-set-card .bsc-preview { font-size: 0.8rem; color: #a78bfa; background: rgba(167,139,250,0.1); border-radius: 6px; padding: 6px 10px; margin-bottom: 12px; } .birthday-set-card .bsc-selects { display: flex; gap: 8px; margin-bottom: 10px; } .birthday-set-card select { flex: 1; background: #1e0a3c; color: #f3e8ff; border: 1px solid #7c3aed; border-radius: 6px; padding: 6px 8px; font-size: 0.85rem; cursor: pointer; } .birthday-set-card .bsc-btn { width: 100%; padding: 10px; background: linear-gradient(135deg, #7c3aed, #a21caf); color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; } .birthday-set-card .bsc-btn:disabled { opacity: 0.5; cursor: not-allowed; } .birthday-set-card .bsc-success { color: #86efac; font-size: 0.9rem; margin-top: 8px; } .birthday-set-card .bsc-error { color: #f87171; font-size: 0.85rem; margin-top: 6px; } .birthday-set-card .bsc-bonus-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; } .birthday-set-card .bsc-bonus-chip { background: rgba(167,139,250,0.15); border: 1px solid #7c3aed; border-radius: 20px; padding: 4px 10px; font-size: 0.8rem; color: #d8b4fe; } .birthday-set-card .bsc-claimed { color: #86efac; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }';
+        document.head.appendChild(s);
+    }
+
+    // Fetch status
+    var statusData = null;
+    try {
+        var statusRes = await fetch('/api/birthday/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!statusRes.ok) return;
+        statusData = await statusRes.json();
+    } catch (e) {
+        console.error('[Birthday]', e);
+        return;
+    }
+    if (!statusData) return;
+
+    // Remove pre-existing card
+    var existing = document.getElementById('birthdaySetCard');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    // Build card shell
+    var card = document.createElement('div');
+    card.className = 'birthday-set-card';
+    card.id = 'birthdaySetCard';
+
+    var title = document.createElement('h3');
+
+    if (statusData.hasBirthday === false) {
+        // ── SETUP STATE ───────────────────────────────────────────────
+        title.textContent = '\uD83C\uDF82 Set Your Birthday';
+        card.appendChild(title);
+
+        var desc = document.createElement('p');
+        desc.className = 'bsc-desc';
+        desc.textContent = 'Set your birthday once to unlock annual birthday bonuses!';
+        card.appendChild(desc);
+
+        var preview = document.createElement('div');
+        preview.className = 'bsc-preview';
+        preview.textContent = '+$10 Credits, +500 Gems, +10 Free Spins on your birthday';
+        card.appendChild(preview);
+
+        var selectWrap = document.createElement('div');
+        selectWrap.className = 'bsc-selects';
+
+        var monthSel = document.createElement('select');
+        monthSel.setAttribute('aria-label', 'Birth month');
+        var monthPlaceholder = document.createElement('option');
+        monthPlaceholder.value = '';
+        monthPlaceholder.textContent = 'Month';
+        monthSel.appendChild(monthPlaceholder);
+        var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        for (var m = 0; m < 12; m++) {
+            var mo = document.createElement('option');
+            mo.value = String(m + 1);
+            mo.textContent = monthNames[m];
+            monthSel.appendChild(mo);
+        }
+
+        var daySel = document.createElement('select');
+        daySel.setAttribute('aria-label', 'Birth day');
+        var dayPlaceholder = document.createElement('option');
+        dayPlaceholder.value = '';
+        dayPlaceholder.textContent = 'Day';
+        daySel.appendChild(dayPlaceholder);
+        for (var d = 1; d <= 31; d++) {
+            var dy = document.createElement('option');
+            dy.value = String(d);
+            dy.textContent = String(d);
+            daySel.appendChild(dy);
+        }
+
+        selectWrap.appendChild(monthSel);
+        selectWrap.appendChild(daySel);
+        card.appendChild(selectWrap);
+
+        var submitBtn = document.createElement('button');
+        submitBtn.className = 'bsc-btn';
+        submitBtn.textContent = 'Save Birthday';
+
+        var msgEl = document.createElement('div');
+
+        submitBtn.addEventListener('click', function() {
+            var month = monthSel.value;
+            var day = daySel.value;
+            if (!month || !day) {
+                msgEl.className = 'bsc-error';
+                msgEl.textContent = 'Please select both a month and a day.';
+                return;
+            }
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving\u2026';
+            fetch('/api/birthday/set', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ month: parseInt(month, 10), day: parseInt(day, 10) })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data && data.success) {
+                    selectWrap.style.display = 'none';
+                    submitBtn.style.display = 'none';
+                    msgEl.className = 'bsc-success';
+                    msgEl.textContent = '\uD83C\uDF82 Birthday saved! Come back on your birthday for your bonus!';
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Save Birthday';
+                    msgEl.className = 'bsc-error';
+                    msgEl.textContent = (data && data.error) ? data.error : 'Could not save birthday. Please try again.';
+                }
+            })
+            .catch(function(e) {
+                console.error('[Birthday]', e);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Birthday';
+                msgEl.className = 'bsc-error';
+                msgEl.textContent = 'Network error. Please try again.';
+            });
+        });
+
+        card.appendChild(submitBtn);
+        card.appendChild(msgEl);
+
+    } else if (statusData.hasBirthday === true && !statusData.isBirthday) {
+        // ── BIRTHDAY SET, NOT TODAY ───────────────────────────────────
+        title.textContent = '\uD83C\uDF82 Birthday Set';
+        card.appendChild(title);
+
+        var waitDesc = document.createElement('p');
+        waitDesc.className = 'bsc-desc';
+        waitDesc.textContent = 'Your birthday bonus is ready and waiting!';
+        card.appendChild(waitDesc);
+
+        var bonusRow = document.createElement('div');
+        bonusRow.className = 'bsc-bonus-row';
+
+        var chip1 = document.createElement('span');
+        chip1.className = 'bsc-bonus-chip';
+        chip1.textContent = '+$10 Credits';
+        var chip2 = document.createElement('span');
+        chip2.className = 'bsc-bonus-chip';
+        chip2.textContent = '+500 Gems';
+        var chip3 = document.createElement('span');
+        chip3.className = 'bsc-bonus-chip';
+        chip3.textContent = '+10 Free Spins';
+        bonusRow.appendChild(chip1);
+        bonusRow.appendChild(chip2);
+        bonusRow.appendChild(chip3);
+        card.appendChild(bonusRow);
+
+    } else if (statusData.isBirthday === true && !statusData.alreadyClaimed) {
+        // ── HAPPY BIRTHDAY — CLAIM ────────────────────────────────────
+        title.textContent = '\uD83C\uDF82 Happy Birthday!';
+        card.appendChild(title);
+
+        var bdayDesc = document.createElement('p');
+        bdayDesc.className = 'bsc-desc';
+        bdayDesc.textContent = 'Today is your birthday! Claim your special bonus now.';
+        card.appendChild(bdayDesc);
+
+        var claimBonusRow = document.createElement('div');
+        claimBonusRow.className = 'bsc-bonus-row';
+
+        var cb1 = document.createElement('span');
+        cb1.className = 'bsc-bonus-chip';
+        var credits = (statusData.bonusCredits !== undefined) ? statusData.bonusCredits : 10;
+        cb1.textContent = '+$' + credits + ' Credits';
+
+        var cb2 = document.createElement('span');
+        cb2.className = 'bsc-bonus-chip';
+        var gems = (statusData.bonusGems !== undefined) ? statusData.bonusGems : 500;
+        cb2.textContent = '+' + gems + ' Gems';
+
+        var cb3 = document.createElement('span');
+        cb3.className = 'bsc-bonus-chip';
+        var freeSpins = (statusData.bonusFreeSpins !== undefined) ? statusData.bonusFreeSpins : 10;
+        cb3.textContent = '+' + freeSpins + ' Free Spins';
+
+        claimBonusRow.appendChild(cb1);
+        claimBonusRow.appendChild(cb2);
+        claimBonusRow.appendChild(cb3);
+        card.appendChild(claimBonusRow);
+
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'bsc-btn';
+        claimBtn.textContent = '\uD83C\uDF81 Claim Birthday Bonus';
+
+        var claimMsg = document.createElement('div');
+
+        claimBtn.addEventListener('click', function() {
+            if (claimBtn.disabled) return;
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'Claiming\u2026';
+            fetch('/api/birthday/claim', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data && data.success) {
+                    if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                        updateBalanceDisplay(data.newBalance);
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast('\uD83C\uDF82 Happy Birthday! Bonus claimed!', 'win');
+                    }
+                    claimBtn.style.display = 'none';
+                    claimMsg.className = 'bsc-success';
+                    claimMsg.textContent = '\u2705 Birthday bonus credited to your account!';
+                } else {
+                    claimBtn.disabled = false;
+                    claimBtn.textContent = '\uD83C\uDF81 Claim Birthday Bonus';
+                    claimMsg.className = 'bsc-error';
+                    claimMsg.textContent = (data && data.error) ? data.error : 'Could not claim bonus. Please try again.';
+                }
+            })
+            .catch(function(e) {
+                console.error('[Birthday]', e);
+                claimBtn.disabled = false;
+                claimBtn.textContent = '\uD83C\uDF81 Claim Birthday Bonus';
+                claimMsg.className = 'bsc-error';
+                claimMsg.textContent = 'Network error. Please try again.';
+            });
+        });
+
+        card.appendChild(claimBtn);
+        card.appendChild(claimMsg);
+
+    } else if (statusData.isBirthday === true && statusData.alreadyClaimed) {
+        // ── ALREADY CLAIMED ───────────────────────────────────────────
+        title.textContent = '\uD83C\uDF82 Happy Birthday!';
+        card.appendChild(title);
+
+        var claimedRow = document.createElement('div');
+        claimedRow.className = 'bsc-claimed';
+
+        var check = document.createElement('span');
+        check.textContent = '\u2705';
+
+        var claimedText = document.createElement('span');
+        claimedText.textContent = 'Birthday bonus already claimed today';
+
+        claimedRow.appendChild(check);
+        claimedRow.appendChild(claimedText);
+        card.appendChild(claimedRow);
+    }
 
     container.appendChild(card);
 }
