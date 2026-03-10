@@ -1135,7 +1135,7 @@ function checkPromoTriggers(event, data) {
                     balance += charmBonus;
                     if (typeof updateBalance === 'function') updateBalance();
                     if (typeof saveBalance === 'function') saveBalance();
-                    showToast('Lucky Charm 2x! +$' + formatMoney(charmBonus) + ' bonus!', 'success', 3000);
+                    if (typeof showToast === 'function') showToast('🍀 Lucky Charm Active! +$' + charmBonus.toFixed(2) + ' bonus!', 'win', 3000);
                     window._luckCharmSpins--;
                     if (window._luckCharmSpins <= 0) {
                         showToast('Lucky Charm expired', 'info', 2000);
@@ -1355,10 +1355,10 @@ function renderDepositStreakCard(container) {
     fetch('/api/deposit-streak/status', {
         headers: { 'Authorization': 'Bearer ' + token }
     }).then(function(res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) { _insertCard(null); return; }
         return res.json();
     }).then(function(data) {
-        _insertCard(data);
+        if (data !== undefined) _insertCard(data);
     }).catch(function() {
         _insertCard(null);
     });

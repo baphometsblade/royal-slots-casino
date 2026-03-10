@@ -309,7 +309,7 @@ router.post('/spin-wheel', authenticate, async (req, res) => {
             );
             await db.run(
                 'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                [user.id, 'bonus', seg.value, user.balance, newBalance, 'Bonus wheel prize']
+                [user.id, 'bonus', seg.value, user.balance, newBalance, 'Bonus wheel prize: ' + seg.label]
             );
         } else {
             // Free spins — just record the spin time, no balance change
