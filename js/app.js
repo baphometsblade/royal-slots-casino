@@ -196,6 +196,9 @@
             if (!dailyBonusState.claimedToday && !suppressBonus) {
                 setTimeout(() => showDailyBonusModal(), 1500);
             }
+            if (!suppressBonus) {
+                _checkReturnStatus();
+            }
             startSessionDurationWatch();
         }
 
@@ -216,6 +219,128 @@
                     }
                 }
             }, 60000);
+        }
+
+        // ── Return-status: welcome-back overlay for lapsed players ─────────
+        function _checkReturnStatus() {
+            if (sessionStorage.getItem('_returnStatusChecked')) return; // once per session
+            sessionStorage.setItem('_returnStatusChecked', '1');
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            const token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/user/return-status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (data && data.isReturn) {
+                        setTimeout(function() { _showWelcomeBackOverlay(data); }, 3500);
+                    }
+                })
+                .catch(function() {});
+        }
+
+        function _showWelcomeBackOverlay(data) {
+            if (document.getElementById('welcomeBackOverlay')) return;
+            var TIER_STYLES = {
+                platinum: '#94a3b8',
+                gold:     '#f59e0b',
+                silver:   '#64748b',
+                bronze:   '#c2733a'
+            };
+            var accent = TIER_STYLES[data.offerTier] || TIER_STYLES.bronze;
+            var tierLabel = (data.offerTier || 'bronze').toUpperCase();
+
+            var overlay = document.createElement('div');
+            overlay.id = 'welcomeBackOverlay';
+            overlay.style.cssText = [
+                'position:fixed', 'top:0', 'left:0', 'right:0', 'bottom:0',
+                'background:rgba(0,0,0,0.78)', 'display:flex', 'align-items:center',
+                'justify-content:center', 'z-index:9998', 'padding:20px'
+            ].join(';');
+
+            var card = document.createElement('div');
+            card.style.cssText = [
+                'background:linear-gradient(135deg,#1a1040,#0f0920)',
+                'border:2px solid ' + accent,
+                'border-radius:16px',
+                'padding:32px',
+                'max-width:440px',
+                'width:100%',
+                'text-align:center',
+                'position:relative',
+                'box-shadow:0 20px 60px rgba(0,0,0,0.6)'
+            ].join(';');
+
+            var closeBtn = document.createElement('button');
+            closeBtn.textContent = '\u00D7';
+            closeBtn.style.cssText = 'position:absolute;top:12px;right:16px;background:none;border:none;color:#6b7280;font-size:1.4rem;cursor:pointer;line-height:1;';
+            closeBtn.addEventListener('click', function() { overlay.remove(); });
+
+            var tierBadge = document.createElement('div');
+            tierBadge.style.cssText = 'font-size:0.72rem;font-weight:800;letter-spacing:2px;color:' + accent + ';margin-bottom:10px;text-transform:uppercase;';
+            tierBadge.textContent = tierLabel + ' RETURN OFFER';
+
+            var title = document.createElement('h2');
+            title.style.cssText = 'font-size:1.75rem;font-weight:900;color:#fff;margin:0 0 6px;';
+            title.textContent = '\uD83D\uDC4B Welcome Back!';
+
+            var daysEl = document.createElement('p');
+            daysEl.style.cssText = 'font-size:0.9rem;color:#9ca3af;margin:0 0 14px;';
+            daysEl.textContent = "You've been away " + (data.daysAway || 0) + " day" + (data.daysAway !== 1 ? 's' : '') + " \u2014 we missed you!";
+
+            var msgEl = document.createElement('p');
+            msgEl.style.cssText = 'font-size:0.88rem;color:#d1d5db;margin:0 0 18px;line-height:1.5;';
+            msgEl.textContent = data.message || 'We have a special offer waiting for you!';
+
+            var offerBox = document.createElement('div');
+            offerBox.style.cssText = [
+                'background:rgba(255,255,255,0.05)',
+                'border:1px solid rgba(255,255,255,0.1)',
+                'border-radius:10px',
+                'padding:14px 16px',
+                'margin-bottom:18px'
+            ].join(';');
+
+            var line1 = document.createElement('div');
+            line1.style.cssText = 'font-size:1.3rem;font-weight:900;color:' + accent + ';margin-bottom:' + (data.freeSpins > 0 ? '4px' : '0') + ';';
+            line1.textContent = '+' + (data.bonusPercent || 25) + '% BONUS ON NEXT DEPOSIT';
+            offerBox.appendChild(line1);
+
+            if (data.freeSpins > 0) {
+                var line2 = document.createElement('div');
+                line2.style.cssText = 'font-size:0.9rem;color:#a78bfa;font-weight:700;';
+                line2.textContent = '+ ' + data.freeSpins + ' FREE SPINS';
+                offerBox.appendChild(line2);
+            }
+
+            var depositBtn = document.createElement('button');
+            depositBtn.style.cssText = [
+                'background:linear-gradient(135deg,' + accent + ',#7c3aed)',
+                'color:#fff', 'border:none', 'border-radius:8px',
+                'padding:13px 40px', 'font-size:0.95rem', 'font-weight:800',
+                'cursor:pointer', 'width:100%', 'margin-bottom:10px',
+                'letter-spacing:0.4px'
+            ].join(';');
+            depositBtn.textContent = '\uD83D\uDCB0 Claim Offer & Deposit';
+            depositBtn.addEventListener('click', function() {
+                overlay.remove();
+                if (typeof showWalletModal === 'function') showWalletModal();
+            });
+
+            var skipBtn = document.createElement('button');
+            skipBtn.style.cssText = 'background:none;border:none;color:#6b7280;font-size:0.78rem;cursor:pointer;padding:4px;';
+            skipBtn.textContent = 'Maybe later';
+            skipBtn.addEventListener('click', function() { overlay.remove(); });
+
+            card.appendChild(closeBtn);
+            card.appendChild(tierBadge);
+            card.appendChild(title);
+            card.appendChild(daysEl);
+            card.appendChild(msgEl);
+            card.appendChild(offerBox);
+            card.appendChild(depositBtn);
+            card.appendChild(skipBtn);
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
         }
 
         window.addEventListener('beforeunload', function () {

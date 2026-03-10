@@ -82,6 +82,8 @@ function showWalletModal() {
     // Refresh gem and loyalty balances from server
     if (typeof refreshGemBalance === 'function') refreshGemBalance();
     refreshLoyaltyBalance();
+    refreshRakebackBalance();
+    refreshCashbackBalance();
 }
 
 function _injectWalletGemBar(modal) {
@@ -165,6 +167,60 @@ function _injectWalletGemBar(modal) {
     loyaltyBar.appendChild(loyaltyBadge);
     loyaltyBar.appendChild(redeemBtn);
     header.appendChild(loyaltyBar);
+
+    // ── Rakeback bar (weekly 1% on net losses, paid weekly) ──
+    var rakeBar = document.createElement('div');
+    rakeBar.id = 'walletRakebackBar';
+    rakeBar.style.cssText = [
+        'display:flex', 'align-items:center', 'justify-content:space-between',
+        'padding:7px 20px',
+        'background:rgba(251,191,36,0.06)',
+        'border-top:1px solid rgba(251,191,36,0.12)'
+    ].join(';');
+    var rakeBadge = document.createElement('span');
+    rakeBadge.style.cssText = 'font-size:0.82rem;color:#fcd34d;font-weight:600;display:flex;align-items:center;gap:5px;';
+    rakeBadge.innerHTML = '\uD83D\uDCB0 Rakeback: <span id="walletRakebackAmt" style="color:#fef08a;">...</span>';
+    var rakeBtn = document.createElement('button');
+    rakeBtn.id = 'walletRakebackClaimBtn';
+    rakeBtn.textContent = 'Claim';
+    rakeBtn.title = 'Weekly 1% rakeback on net losses (paid weekly, up to $50)';
+    rakeBtn.style.cssText = [
+        'background:linear-gradient(135deg,#f59e0b,#d97706)',
+        'color:#fff', 'border:none', 'border-radius:6px',
+        'padding:4px 12px', 'font-size:0.75rem', 'font-weight:700',
+        'cursor:pointer', 'letter-spacing:0.3px'
+    ].join(';');
+    rakeBtn.addEventListener('click', function() { _claimRakeback(); });
+    rakeBar.appendChild(rakeBadge);
+    rakeBar.appendChild(rakeBtn);
+    header.appendChild(rakeBar);
+
+    // ── Daily cashback bar (tiered: 2-10% of net losses past 24h) ──
+    var cbBar = document.createElement('div');
+    cbBar.id = 'walletCashbackBar';
+    cbBar.style.cssText = [
+        'display:flex', 'align-items:center', 'justify-content:space-between',
+        'padding:7px 20px',
+        'background:rgba(249,115,22,0.06)',
+        'border-top:1px solid rgba(249,115,22,0.12)'
+    ].join(';');
+    var cbBadge = document.createElement('span');
+    cbBadge.style.cssText = 'font-size:0.82rem;color:#fdba74;font-weight:600;display:flex;align-items:center;gap:5px;';
+    cbBadge.innerHTML = '\uD83D\uDD04 Cashback: <span id="walletCashbackAmt" style="color:#fed7aa;">...</span>';
+    var cbBtn = document.createElement('button');
+    cbBtn.id = 'walletCashbackClaimBtn';
+    cbBtn.textContent = 'Claim';
+    cbBtn.title = 'Daily cashback on net losses (2-10% by VIP tier)';
+    cbBtn.style.cssText = [
+        'background:linear-gradient(135deg,#f97316,#ea580c)',
+        'color:#fff', 'border:none', 'border-radius:6px',
+        'padding:4px 12px', 'font-size:0.75rem', 'font-weight:700',
+        'cursor:pointer', 'letter-spacing:0.3px'
+    ].join(';');
+    cbBtn.addEventListener('click', function() { _claimDailyCashback(); });
+    cbBar.appendChild(cbBadge);
+    cbBar.appendChild(cbBtn);
+    header.appendChild(cbBar);
 }
 
 function refreshGemBalance() {
@@ -230,6 +286,102 @@ function _redeemLoyaltyPoints() {
     })
     .catch(function() {
         if (typeof showToast === 'function') showToast('Redemption failed — try again', 'error', 3000);
+    });
+}
+
+function refreshRakebackBalance() {
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token || typeof isServerAuthToken === 'function' && !isServerAuthToken(token)) return;
+    fetch('/api/rakeback/status', { headers: { Authorization: 'Bearer ' + token } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (!data) return;
+            var el = document.getElementById('walletRakebackAmt');
+            var btn = document.getElementById('walletRakebackClaimBtn');
+            var pending = parseFloat(data.pendingRakeback) || 0;
+            if (el) el.textContent = '$' + pending.toFixed(2) + ' pending';
+            if (btn) btn.disabled = pending < 0.01;
+        })
+        .catch(function() {});
+}
+
+function refreshCashbackBalance() {
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token || typeof isServerAuthToken === 'function' && !isServerAuthToken(token)) return;
+    fetch('/api/dailycashback/status', { headers: { Authorization: 'Bearer ' + token } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (!data) return;
+            var el = document.getElementById('walletCashbackAmt');
+            var btn = document.getElementById('walletCashbackClaimBtn');
+            if (el) {
+                if (data.claimed) {
+                    el.textContent = '\u2713 Claimed today';
+                    el.style.color = '#86efac';
+                } else if (data.eligible) {
+                    el.textContent = '$' + (parseFloat(data.amount) || 0).toFixed(2) + ' available (' + (data.vipLabel || '') + ' ' + Math.round((data.cashbackRate || 0) * 100) + '%)';
+                    el.style.color = '#fed7aa';
+                } else {
+                    el.textContent = 'None yet';
+                    el.style.color = '#9ca3af';
+                }
+            }
+            if (btn) btn.disabled = !data.eligible;
+        })
+        .catch(function() {});
+}
+
+function _claimRakeback() {
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    var btn = document.getElementById('walletRakebackClaimBtn');
+    if (btn) btn.disabled = true;
+    fetch('/api/rakeback/claim', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            if (typeof showToast === 'function') showToast('\uD83D\uDCB0 Rakeback $' + (parseFloat(data.credited) || 0).toFixed(2) + ' credited!', 'win', 4000);
+            if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(data.newBalance);
+            else if (typeof balance !== 'undefined') balance = data.newBalance;
+            refreshRakebackBalance();
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Nothing to claim yet', 'info', 3000);
+            if (btn) btn.disabled = false;
+        }
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') showToast('Claim failed \u2014 try again', 'error', 3000);
+        if (btn) btn.disabled = false;
+    });
+}
+
+function _claimDailyCashback() {
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    var btn = document.getElementById('walletCashbackClaimBtn');
+    if (btn) btn.disabled = true;
+    fetch('/api/dailycashback/claim', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            if (typeof showToast === 'function') showToast('\uD83D\uDD04 Daily Cashback $' + (parseFloat(data.credited) || 0).toFixed(2) + ' credited!', 'win', 4000);
+            if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(data.newBalance);
+            else if (typeof balance !== 'undefined') balance = data.newBalance;
+            refreshCashbackBalance();
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Cashback not available', 'info', 3000);
+            if (btn) btn.disabled = false;
+        }
+    })
+    .catch(function() {
+        if (typeof showToast === 'function') showToast('Claim failed \u2014 try again', 'error', 3000);
+        if (btn) btn.disabled = false;
     });
 }
 
