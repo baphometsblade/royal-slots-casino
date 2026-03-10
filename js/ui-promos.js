@@ -1844,6 +1844,7 @@ function initPromoEngine() {
             renderDailyMissionsCard(promosSidebar);
             renderDailyChallengesCard(promosSidebar);
             renderBattlePassCard(promosSidebar);
+            renderScratchCardCard(promosSidebar);
         }
     }, 4000);
 
@@ -1900,6 +1901,251 @@ function initPromoEngine() {
 //   claimChallenge(id)               — POST /api/challenges/:id/claim
 //   claimBattlePassReward(level)     — POST /api/battlepass/claim/:level
 // ─────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────
+// 7b. DAILY SCRATCH CARD WIDGET
+// ─────────────────────────────────────────────────────────────────────
+
+(function _injectScratchStyles() {
+    if (document.getElementById('scratchCardStyles')) return;
+    var s = document.createElement('style');
+    s.id = 'scratchCardStyles';
+    s.textContent = [
+        '.scratch-card-widget {',
+        '  background: linear-gradient(135deg,#1a0533,#2d0a4e);',
+        '  border: 1.5px solid rgba(251,191,36,0.45);',
+        '  border-radius: 14px;',
+        '  padding: 16px;',
+        '  margin-bottom: 14px;',
+        '  box-shadow: 0 4px 20px rgba(0,0,0,0.4);',
+        '}',
+        '.scratch-card-widget .sc-title {',
+        '  font-size: 15px;',
+        '  font-weight: 800;',
+        '  background: linear-gradient(135deg,#fbbf24,#fcd34d);',
+        '  -webkit-background-clip: text;',
+        '  -webkit-text-fill-color: transparent;',
+        '  background-clip: text;',
+        '  margin-bottom: 12px;',
+        '  text-align: center;',
+        '}',
+        '.scratch-card-widget .sc-loading {',
+        '  text-align: center;',
+        '  font-size: 12px;',
+        '  color: rgba(255,255,255,0.4);',
+        '  padding: 12px 0;',
+        '}',
+        '.scratch-card-widget .sc-grid {',
+        '  display: grid;',
+        '  grid-template-columns: repeat(3, 48px);',
+        '  gap: 6px;',
+        '  justify-content: center;',
+        '  margin-bottom: 10px;',
+        '}',
+        '.scratch-card-widget .sc-tile {',
+        '  width: 48px;',
+        '  height: 48px;',
+        '  border-radius: 8px;',
+        '  border: 1.5px solid rgba(251,191,36,0.5);',
+        '  display: flex;',
+        '  align-items: center;',
+        '  justify-content: center;',
+        '  font-size: 22px;',
+        '  line-height: 1;',
+        '  user-select: none;',
+        '}',
+        '.scratch-card-widget .sc-tile.unrevealed {',
+        '  background: rgba(255,255,255,0.05);',
+        '  color: rgba(255,255,255,0.35);',
+        '  font-size: 18px;',
+        '  cursor: pointer;',
+        '  transition: background 0.15s;',
+        '}',
+        '.scratch-card-widget .sc-tile.unrevealed:hover {',
+        '  background: rgba(255,255,255,0.1);',
+        '}',
+        '.scratch-card-widget .sc-tile.revealed {',
+        '  background: rgba(255,200,0,0.15);',
+        '  cursor: default;',
+        '}',
+        '.scratch-card-widget .sc-prize {',
+        '  text-align: center;',
+        '  font-size: 13px;',
+        '  color: #fbbf24;',
+        '  font-weight: 700;',
+        '  min-height: 18px;',
+        '}',
+        '.scratch-card-widget .sc-already {',
+        '  text-align: center;',
+        '  font-size: 11px;',
+        '  color: rgba(255,255,255,0.4);',
+        '  margin-top: 4px;',
+        '}'
+    ].join('\n');
+    document.head.appendChild(s);
+})();
+
+var _scratchRevealPending = false;
+
+function _scratchReveal(container, token) {
+    if (_scratchRevealPending) return;
+    _scratchRevealPending = true;
+
+    fetch('/api/scratchcard/scratch', {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    }).then(function(res) {
+        return res.json();
+    }).then(function(res) {
+        _scratchRevealPending = false;
+        if (!res.success) return;
+
+        var grid = container.querySelector('.sc-grid');
+        if (grid) {
+            var tiles = grid.querySelectorAll('.sc-tile');
+            var tileArr = res.tiles || [];
+            tiles.forEach(function(tile, i) {
+                tile.className = 'sc-tile revealed';
+                tile.removeAttribute('data-scratch');
+                var sym = (tileArr[i] && tileArr[i].symbol) ? tileArr[i].symbol : '?';
+                tile.textContent = sym;
+            });
+        }
+
+        var prizeEl = container.querySelector('.sc-prize');
+        if (prizeEl && res.prize && res.prize.label) {
+            prizeEl.textContent = 'Prize: ' + res.prize.label;
+        }
+
+        var alreadyEl = container.querySelector('.sc-already');
+        if (alreadyEl) {
+            alreadyEl.textContent = 'Come back tomorrow for another card!';
+        }
+
+        if (typeof res.newBalance === 'number') {
+            if (typeof balance !== 'undefined') {
+                balance = res.newBalance;
+            }
+            if (typeof updateBalance === 'function') updateBalance();
+            if (typeof saveBalance === 'function') saveBalance();
+        }
+
+        if (res.prize && res.prize.label) {
+            if (typeof showWinToast === 'function') {
+                showWinToast('\uD83C\uDF9F\uFE0F Scratch Card: ' + res.prize.label);
+            } else if (typeof showToast === 'function') {
+                showToast('\uD83C\uDF9F\uFE0F Scratch Card: ' + res.prize.label, 'win');
+            }
+        }
+    }).catch(function() {
+        _scratchRevealPending = false;
+    });
+}
+
+async function renderScratchCardCard(container) {
+    if (!container) return;
+    if (document.getElementById('scratchCardCard')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var card = document.createElement('div');
+    card.id = 'scratchCardCard';
+    card.className = 'promo-card scratch-card-widget';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'sc-title';
+    titleEl.textContent = '\uD83C\uDF9F\uFE0F Daily Scratch Card';
+    card.appendChild(titleEl);
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'sc-loading';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    container.appendChild(card);
+
+    try {
+        var res = await fetch('/api/scratchcard/today', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) {
+            loadingEl.textContent = 'Not available today.';
+            return;
+        }
+        var data = await res.json();
+
+        card.removeChild(loadingEl);
+
+        var grid = document.createElement('div');
+        grid.className = 'sc-grid';
+
+        if (data.alreadyScratched && data.result) {
+            var existingTiles = data.result.tiles || [];
+            for (var i = 0; i < 9; i++) {
+                var tile = document.createElement('div');
+                tile.className = 'sc-tile revealed';
+                var sym = (existingTiles[i] && existingTiles[i].symbol) ? existingTiles[i].symbol : '?';
+                tile.textContent = sym;
+                grid.appendChild(tile);
+            }
+            card.appendChild(grid);
+
+            var prizeEl = document.createElement('div');
+            prizeEl.className = 'sc-prize';
+            if (data.result.prize && data.result.prize.label) {
+                prizeEl.textContent = 'Prize: ' + data.result.prize.label;
+            }
+            card.appendChild(prizeEl);
+
+            var alreadyEl = document.createElement('div');
+            alreadyEl.className = 'sc-already';
+            alreadyEl.textContent = 'Come back tomorrow for another card!';
+            card.appendChild(alreadyEl);
+
+        } else if (data.available) {
+            var scratchPending = false;
+
+            for (var j = 0; j < 9; j++) {
+                var uTile = document.createElement('div');
+                uTile.className = 'sc-tile unrevealed';
+                uTile.setAttribute('data-scratch', '1');
+                uTile.textContent = '?';
+                (function(tileEl) {
+                    tileEl.addEventListener('click', function() {
+                        if (scratchPending) return;
+                        scratchPending = true;
+                        _scratchReveal(card, token);
+                    });
+                }(uTile));
+                grid.appendChild(uTile);
+            }
+            card.appendChild(grid);
+
+            var prizeHolder = document.createElement('div');
+            prizeHolder.className = 'sc-prize';
+            card.appendChild(prizeHolder);
+
+            var alreadyHolder = document.createElement('div');
+            alreadyHolder.className = 'sc-already';
+            card.appendChild(alreadyHolder);
+
+        } else {
+            var naEl = document.createElement('div');
+            naEl.className = 'sc-loading';
+            naEl.textContent = 'No scratch card available today.';
+            card.appendChild(naEl);
+        }
+    } catch (e) {
+        loadingEl.textContent = 'Could not load scratch card.';
+    }
+}
+
 
 async function claimChallenge(id) {
     var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');

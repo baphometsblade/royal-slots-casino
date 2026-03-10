@@ -501,6 +501,8 @@ function renderGames() {
             initWagerRaceBanner();
             initJackpotTicker();
             initLuckyHourBanner();
+            initHotGameHighlight();
+            if (!window._loyaltyHookInit) { window._loyaltyHookInit = true; initLoyaltyEarnHook(); }
 
             // Show resume banner if returning from a slot
             if (typeof _lastPlayedGameForResume !== 'undefined' && _lastPlayedGameForResume) {
@@ -4138,5 +4140,79 @@ function updateLossLimitDisplay(lossStatus) {
 }
 
 
+// ── Hot Game Highlight ──────────────────────────────────────────────────────
+function _applyHotGameBadge(gameId) {
+    if (!gameId) return;
 
+    // Inject CSS once
+    if (!document.getElementById('hot-game-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'hot-game-css';
+        styleEl.textContent = '.hot-game-badge { position:absolute; top:8px; right:8px; padding:3px 7px; border-radius:10px; background:linear-gradient(135deg,#ff5500,#ff9500); color:#fff; font-size:11px; font-weight:700; letter-spacing:.5px; z-index:10; pointer-events:none; } .game-card-hot-highlight { box-shadow:0 0 16px 4px rgba(255,80,0,0.6) !important; }';
+        document.head.appendChild(styleEl);
+    }
+
+    // Remove any previous hot badge and glow from other cards
+    var prevBadges = document.querySelectorAll('.hot-game-badge');
+    for (var i = 0; i < prevBadges.length; i++) { prevBadges[i].parentNode && prevBadges[i].parentNode.removeChild(prevBadges[i]); }
+    var prevGlow = document.querySelectorAll('.game-card-hot-highlight');
+    for (var j = 0; j < prevGlow.length; j++) { prevGlow[j].classList.remove('game-card-hot-highlight'); }
+
+    // Find the matching card
+    var card = document.querySelector('[data-game-id="' + gameId.toLowerCase() + '"]');
+    if (!card) return;
+
+    // Add glow border
+    card.classList.add('game-card-hot-highlight');
+
+    // Add badge
+    var badge = document.createElement('span');
+    badge.className = 'hot-game-badge';
+    badge.textContent = '\uD83D\uDD25 HOT';
+    card.appendChild(badge);
+}
+
+function initHotGameHighlight() {
+    // If we already have cached data, just re-apply the badge (cards may have re-rendered)
+    if (window._hotGameData && window._hotGameData.gameId) {
+        _applyHotGameBadge(window._hotGameData.gameId);
+        return;
+    }
+
+    // Fetch hot game from server (public, no auth)
+    fetch('/api/hotgame/current')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+            if (!data || !data.gameId) return;
+            window._hotGameData = data;
+            _applyHotGameBadge(data.gameId);
+
+            // Re-fetch when the hot game expires
+            if (data.expiresAt) {
+                var msUntilExpiry = new Date(data.expiresAt).getTime() - Date.now();
+                var refetchDelay = msUntilExpiry > 0 ? msUntilExpiry + 1000 : 3600000;
+                setTimeout(function() {
+                    window._hotGameData = null;
+                    initHotGameHighlight();
+                }, refetchDelay);
+            }
+        })
+        .catch(function() { /* silently ignore — endpoint may not exist */ });
+}
+
+
+// ── Loyalty Points Earn-per-spin Hook ──────────────────────────────────────
+function initLoyaltyEarnHook() {
+    window.addEventListener('spin:complete', function() {
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return;
+        if (typeof isServerAuthToken === 'function' && !isServerAuthToken()) return;
+
+        fetch('/api/loyaltyshop/earn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ spinsCount: 1 })
+        }).catch(function() { /* fire and forget */ });
+    });
+}
 

@@ -205,6 +205,8 @@
             _checkLevelUpBonus();
             _checkMilestones();
             _checkStreakBonuses();
+            _checkSubscriptionDailyGems();
+            _checkGiftsInbox();
             _initNotificationBell();
             startSessionDurationWatch();
             // Periodic loss-streak check — fires every 3 minutes during active play
@@ -701,6 +703,62 @@
                 .then(function(r) { return r.ok ? r.json() : null; })
                 .then(function(data) {
                     window._winStreakStatus = data || null;
+                })
+                .catch(function() {});
+        }
+
+        // ── Subscription daily gem auto-claim ─────────────────────────────────
+        function _checkSubscriptionDailyGems() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            fetch('/api/subscription/status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.active || data.dailyClaimedToday) return;
+                    return fetch('/api/subscription/claim-daily', {
+                        method: 'POST',
+                        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+                    })
+                        .then(function(r) { return r.ok ? r.json() : null; })
+                        .then(function(claim) {
+                            if (!claim || !claim.success) return;
+                            var msg = '\uD83C\uDF81 Casino Pass: +' + claim.gemsAwarded + ' gems collected!';
+                            if (typeof showWinToast === 'function') {
+                                showWinToast(msg);
+                            } else {
+                                var toast = document.createElement('div');
+                                toast.textContent = msg;
+                                toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:12px 20px;border-radius:10px;z-index:99999;font-size:1rem;pointer-events:none;';
+                                document.body.appendChild(toast);
+                                setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3500);
+                            }
+                        });
+                })
+                .catch(function() {});
+        }
+
+        // ── Gifts inbox auto-check ─────────────────────────────────────────────
+        function _checkGiftsInbox() {
+            if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+            var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            if (!token) return;
+            if (sessionStorage.getItem('_giftsInboxChecked')) return;
+            fetch('/api/gifts/inbox', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.gifts || !data.gifts.length) return;
+                    sessionStorage.setItem('_giftsInboxChecked', '1');
+                    var msg = '\uD83C\uDF81 You have ' + data.gifts.length + ' pending gift(s)! Check your notifications.';
+                    if (typeof showWinToast === 'function') {
+                        showWinToast(msg);
+                    } else {
+                        var toast = document.createElement('div');
+                        toast.textContent = msg;
+                        toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:12px 20px;border-radius:10px;z-index:99999;font-size:1rem;pointer-events:none;';
+                        document.body.appendChild(toast);
+                        setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3500);
+                    }
                 })
                 .catch(function() {});
         }
