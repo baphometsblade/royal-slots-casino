@@ -1845,6 +1845,7 @@ function initPromoEngine() {
             renderDailyChallengesCard(promosSidebar);
             renderBattlePassCard(promosSidebar);
             renderScratchCardCard(promosSidebar);
+            renderCasinoPassCard(promosSidebar);
         }
     }, 4000);
 
@@ -2146,6 +2147,396 @@ async function renderScratchCardCard(container) {
     }
 }
 
+
+// ─────────────────────────────────────────────────────────────────────
+// 7c. CASINO PASS SUBSCRIPTION CARD
+// ─────────────────────────────────────────────────────────────────────
+
+(function _injectCasinoPassStyles() {
+    if (document.getElementById('casinoPassStyles')) return;
+    var s = document.createElement('style');
+    s.id = 'casinoPassStyles';
+    s.textContent = [
+        '.casino-pass-card {',
+        '  background: linear-gradient(135deg,#0d1b2a,#1a2d3e);',
+        '  border: 1.5px solid rgba(0,200,200,0.45);',
+        '  border-radius: 14px;',
+        '  padding: 16px;',
+        '  margin-bottom: 14px;',
+        '  box-shadow: 0 4px 20px rgba(0,0,0,0.4);',
+        '}',
+        '.casino-pass-card .cp-title {',
+        '  font-size: 15px;',
+        '  font-weight: 800;',
+        '  background: linear-gradient(135deg,#00d4ff,#00ffcc);',
+        '  -webkit-background-clip: text;',
+        '  -webkit-text-fill-color: transparent;',
+        '  background-clip: text;',
+        '  margin-bottom: 12px;',
+        '  text-align: center;',
+        '}',
+        '.casino-pass-card .cp-loading {',
+        '  text-align: center;',
+        '  font-size: 12px;',
+        '  color: rgba(255,255,255,0.4);',
+        '  padding: 12px 0;',
+        '}',
+        '.casino-pass-card .cp-badge-active {',
+        '  display: inline-block;',
+        '  background: #166534;',
+        '  color: #86efac;',
+        '  font-size: 10px;',
+        '  font-weight: 800;',
+        '  letter-spacing: 1px;',
+        '  padding: 2px 10px;',
+        '  border-radius: 20px;',
+        '  border: 1px solid #22c55e;',
+        '  margin-bottom: 8px;',
+        '}',
+        '.casino-pass-card .cp-tier-name {',
+        '  font-size: 14px;',
+        '  font-weight: 700;',
+        '  color: #e2e8f0;',
+        '  margin-bottom: 4px;',
+        '}',
+        '.casino-pass-card .cp-expiry {',
+        '  font-size: 11px;',
+        '  color: rgba(255,255,255,0.45);',
+        '  margin-bottom: 12px;',
+        '}',
+        '.casino-pass-card .cp-separator {',
+        '  border: none;',
+        '  border-top: 1px solid rgba(0,200,200,0.2);',
+        '  margin: 10px 0;',
+        '}',
+        '.casino-pass-card .cp-claim-btn {',
+        '  width: 100%;',
+        '  padding: 9px 0;',
+        '  border-radius: 8px;',
+        '  border: none;',
+        '  background: linear-gradient(135deg,#0d9488,#0891b2);',
+        '  color: #fff;',
+        '  font-size: 13px;',
+        '  font-weight: 700;',
+        '  cursor: pointer;',
+        '  transition: opacity 0.15s;',
+        '}',
+        '.casino-pass-card .cp-claim-btn:hover {',
+        '  opacity: 0.85;',
+        '}',
+        '.casino-pass-card .cp-claimed-note {',
+        '  text-align: center;',
+        '  font-size: 12px;',
+        '  color: rgba(255,255,255,0.45);',
+        '  padding: 6px 0;',
+        '}',
+        '.casino-pass-card .cp-plans {',
+        '  display: flex;',
+        '  gap: 8px;',
+        '}',
+        '.casino-pass-card .cp-plan {',
+        '  flex: 1;',
+        '  background: rgba(255,255,255,0.04);',
+        '  border: 1.5px solid rgba(0,200,200,0.3);',
+        '  border-radius: 10px;',
+        '  padding: 10px 8px;',
+        '  display: flex;',
+        '  flex-direction: column;',
+        '  gap: 4px;',
+        '}',
+        '.casino-pass-card .cp-plan.cp-plan-premium {',
+        '  border-color: rgba(251,191,36,0.55);',
+        '}',
+        '.casino-pass-card .cp-plan-name {',
+        '  font-size: 12px;',
+        '  font-weight: 800;',
+        '  color: #e2e8f0;',
+        '}',
+        '.casino-pass-card .cp-plan-desc {',
+        '  font-size: 10px;',
+        '  color: rgba(255,255,255,0.5);',
+        '  line-height: 1.4;',
+        '  flex: 1;',
+        '}',
+        '.casino-pass-card .cp-sub-btn {',
+        '  margin-top: 6px;',
+        '  padding: 6px 0;',
+        '  border-radius: 7px;',
+        '  border: none;',
+        '  font-size: 11px;',
+        '  font-weight: 700;',
+        '  cursor: pointer;',
+        '  transition: opacity 0.15s;',
+        '}',
+        '.casino-pass-card .cp-sub-btn:hover {',
+        '  opacity: 0.82;',
+        '}',
+        '.casino-pass-card .cp-sub-btn-basic {',
+        '  background: linear-gradient(135deg,#0d9488,#0891b2);',
+        '  color: #fff;',
+        '}',
+        '.casino-pass-card .cp-sub-btn-premium {',
+        '  background: linear-gradient(135deg,#b45309,#d97706,#fbbf24);',
+        '  color: #0f172a;',
+        '}'
+    ].join('\n');
+    document.head.appendChild(s);
+})();
+
+async function _casinoPassClaimDaily(card, token) {
+    try {
+        var res = await fetch('/api/subscription/claim-daily', {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+        var data = await res.json();
+        if (data.success) {
+            if (typeof gems !== 'undefined') {
+                gems = (gems || 0) + (data.gemsAwarded || 0);
+            }
+            if (typeof showToast === 'function') {
+                showToast('\u2705 +' + String(data.gemsAwarded || 0) + ' gems claimed!', 'win');
+            }
+            renderCasinoPassCard._rerender(card, token);
+        } else {
+            if (typeof showToast === 'function') {
+                showToast('Could not claim gems. Try again later.', 'error');
+            }
+        }
+    } catch (e) {
+        if (typeof showToast === 'function') {
+            showToast('Could not claim gems. Try again later.', 'error');
+        }
+    }
+}
+
+async function _casinoPassActivate(card, token, tier) {
+    var price = tier === 'premium' ? 24.99 : 9.99;
+    var currentBalance = (typeof balance !== 'undefined') ? balance : 0;
+    if (currentBalance < price) {
+        if (typeof showToast === 'function') {
+            showToast('Insufficient balance', 'error');
+        }
+        return;
+    }
+    try {
+        var res = await fetch('/api/subscription/activate', {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tier: tier })
+        });
+        var data = await res.json();
+        if (data.success) {
+            if (typeof balance !== 'undefined' && typeof data.newBalance === 'number') {
+                balance = data.newBalance;
+            }
+            if (typeof updateBalance === 'function') updateBalance();
+            if (typeof showToast === 'function') {
+                showToast('\uD83C\uDF89 Casino Pass activated!', 'win');
+            }
+            renderCasinoPassCard._rerender(card, token);
+        } else {
+            if (typeof showToast === 'function') {
+                showToast('Could not activate pass. Try again later.', 'error');
+            }
+        }
+    } catch (e) {
+        if (typeof showToast === 'function') {
+            showToast('Could not activate pass. Try again later.', 'error');
+        }
+    }
+}
+
+function _buildCasinoPassActive(card, data, token) {
+    var cfg = data.config || {};
+
+    var badgeEl = document.createElement('div');
+    badgeEl.className = 'cp-badge-active';
+    badgeEl.textContent = 'ACTIVE';
+    card.appendChild(badgeEl);
+
+    var tierEl = document.createElement('div');
+    tierEl.className = 'cp-tier-name';
+    tierEl.textContent = cfg.name || ('Casino Pass ' + (data.tier ? (data.tier.charAt(0).toUpperCase() + data.tier.slice(1)) : ''));
+    card.appendChild(tierEl);
+
+    if (data.expiresAt) {
+        var expiryEl = document.createElement('div');
+        expiryEl.className = 'cp-expiry';
+        var expiryDate = new Date(data.expiresAt);
+        expiryEl.textContent = 'Expires: ' + expiryDate.toLocaleDateString();
+        card.appendChild(expiryEl);
+    }
+
+    var sep = document.createElement('hr');
+    sep.className = 'cp-separator';
+    card.appendChild(sep);
+
+    if (!data.dailyClaimedToday) {
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'cp-claim-btn';
+        var gemsPerDay = cfg.gemsPerDay || 0;
+        claimBtn.textContent = 'Claim ' + String(gemsPerDay) + ' Daily Gems';
+        claimBtn.addEventListener('click', function() {
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'Claiming\u2026';
+            _casinoPassClaimDaily(card, token);
+        });
+        card.appendChild(claimBtn);
+    } else {
+        var claimedNote = document.createElement('div');
+        claimedNote.className = 'cp-claimed-note';
+        claimedNote.textContent = '\u2705 Daily gems collected today';
+        card.appendChild(claimedNote);
+    }
+}
+
+function _buildCasinoPassInactive(card, token) {
+    var plansRow = document.createElement('div');
+    plansRow.className = 'cp-plans';
+
+    // Basic plan
+    var basicCard = document.createElement('div');
+    basicCard.className = 'cp-plan';
+
+    var basicName = document.createElement('div');
+    basicName.className = 'cp-plan-name';
+    basicName.textContent = 'Basic';
+    basicCard.appendChild(basicName);
+
+    var basicPrice = document.createElement('div');
+    basicPrice.className = 'cp-plan-name';
+    basicPrice.style.color = '#94a3b8';
+    basicPrice.style.fontSize = '11px';
+    basicPrice.textContent = '$9.99/mo';
+    basicCard.appendChild(basicPrice);
+
+    var basicDesc = document.createElement('div');
+    basicDesc.className = 'cp-plan-desc';
+    basicDesc.textContent = '100 gems/day + 5% deposit bonus';
+    basicCard.appendChild(basicDesc);
+
+    var basicBtn = document.createElement('button');
+    basicBtn.className = 'cp-sub-btn cp-sub-btn-basic';
+    basicBtn.textContent = 'Subscribe $9.99';
+    basicBtn.addEventListener('click', function() {
+        basicBtn.disabled = true;
+        basicBtn.textContent = 'Activating\u2026';
+        _casinoPassActivate(card, token, 'basic');
+    });
+    basicCard.appendChild(basicBtn);
+    plansRow.appendChild(basicCard);
+
+    // Premium plan
+    var premCard = document.createElement('div');
+    premCard.className = 'cp-plan cp-plan-premium';
+
+    var premName = document.createElement('div');
+    premName.className = 'cp-plan-name';
+    premName.textContent = 'Premium';
+    premCard.appendChild(premName);
+
+    var premPrice = document.createElement('div');
+    premPrice.className = 'cp-plan-name';
+    premPrice.style.color = '#fbbf24';
+    premPrice.style.fontSize = '11px';
+    premPrice.textContent = '$24.99/mo';
+    premCard.appendChild(premPrice);
+
+    var premDesc = document.createElement('div');
+    premDesc.className = 'cp-plan-desc';
+    premDesc.textContent = '300 gems/day + 10% deposit bonus';
+    premCard.appendChild(premDesc);
+
+    var premBtn = document.createElement('button');
+    premBtn.className = 'cp-sub-btn cp-sub-btn-premium';
+    premBtn.textContent = 'Subscribe $24.99';
+    premBtn.addEventListener('click', function() {
+        premBtn.disabled = true;
+        premBtn.textContent = 'Activating\u2026';
+        _casinoPassActivate(card, token, 'premium');
+    });
+    premCard.appendChild(premBtn);
+    plansRow.appendChild(premCard);
+
+    card.appendChild(plansRow);
+}
+
+async function renderCasinoPassCard(container) {
+    if (!container) return;
+    if (document.getElementById('casinoPassCard')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var card = document.createElement('div');
+    card.id = 'casinoPassCard';
+    card.className = 'promo-card casino-pass-card';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'cp-title';
+    titleEl.textContent = '\uD83C\uDF9F\uFE0F Casino Pass';
+    card.appendChild(titleEl);
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'cp-loading';
+    loadingEl.textContent = 'Loading\u2026';
+    card.appendChild(loadingEl);
+
+    container.appendChild(card);
+
+    renderCasinoPassCard._rerender = function(existingCard, tok) {
+        while (existingCard.childNodes.length > 1) {
+            existingCard.removeChild(existingCard.lastChild);
+        }
+        var ld = document.createElement('div');
+        ld.className = 'cp-loading';
+        ld.textContent = 'Loading\u2026';
+        existingCard.appendChild(ld);
+
+        fetch('/api/subscription/status', {
+            headers: { Authorization: 'Bearer ' + tok }
+        }).then(function(r) { return r.json(); }).then(function(d) {
+            existingCard.removeChild(ld);
+            if (d.active) {
+                _buildCasinoPassActive(existingCard, d, tok);
+            } else {
+                _buildCasinoPassInactive(existingCard, tok);
+            }
+        }).catch(function() {
+            ld.textContent = 'Could not load Casino Pass.';
+        });
+    };
+
+    try {
+        var res = await fetch('/api/subscription/status', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) {
+            loadingEl.textContent = 'Not available.';
+            return;
+        }
+        var data = await res.json();
+
+        card.removeChild(loadingEl);
+
+        if (data.active) {
+            _buildCasinoPassActive(card, data, token);
+        } else {
+            _buildCasinoPassInactive(card, token);
+        }
+    } catch (e) {
+        loadingEl.textContent = 'Could not load Casino Pass.';
+    }
+}
 
 async function claimChallenge(id) {
     var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');

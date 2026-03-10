@@ -1020,6 +1020,9 @@ function _renderVipModalContent() {
 
     // Load VIP Wheel section asynchronously
     _refreshVipWheelSection();
+
+    // Mega Wheel section (DOM-built, appended after innerHTML paint)
+    _renderMegaWheelSection(container);
 }
 
 // ─── VIP Wheel ────────────────────────────────────────────────────────────────
@@ -1716,6 +1719,195 @@ function _showVipAcceleratorOverlay(nextTier, needed, progress) {
 
 // Expose on window so ui-slot.js can call it after each wager increment
 window.checkVipAcceleratorNudge = checkVipAcceleratorNudge;
+
+// ═══════════════════════════════════════════════════════════════
+// MEGA WHEEL SECTION
+// ═══════════════════════════════════════════════════════════════
+
+function _renderMegaWheelSection(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Inject CSS once
+    if (!document.getElementById('mega-wheel-css')) {
+        var style = document.createElement('style');
+        style.id = 'mega-wheel-css';
+        style.textContent = [
+            '.mega-wheel-section { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); }',
+            '.mega-wheel-section h4 { color: #e2b96a; font-size: 14px; margin: 0 0 12px; }',
+            '.mega-wheel-tiers { display: flex; gap: 8px; margin-bottom: 14px; }',
+            '.mega-wheel-tier-btn { flex: 1; padding: 6px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.05); color: #ccc; font-size: 11px; cursor: pointer; }',
+            '.mega-wheel-tier-btn.active { border-color: #e2b96a; background: rgba(226,185,106,0.15); color: #e2b96a; }',
+            '.mega-wheel-visual { width: 160px; height: 160px; border-radius: 50%; margin: 0 auto 12px; background: conic-gradient(#7c3aed 0deg 40deg,#e2b96a 40deg 80deg,#0d9488 80deg 120deg,#7c3aed 120deg 160deg,#e2b96a 160deg 200deg,#0d9488 200deg 240deg,#7c3aed 240deg 280deg,#e2b96a 280deg 320deg,#0d9488 320deg 360deg); border: 3px solid #e2b96a; position: relative; }',
+            '.mega-wheel-spinning { animation: megaWheelSpin 3s cubic-bezier(0.17,0.67,0.12,0.99) forwards; }',
+            '@keyframes megaWheelSpin { from { transform: rotate(0deg); } to { transform: rotate(2880deg); } }',
+            '.mega-wheel-spin-btn { display: block; width: 100%; padding: 10px; background: linear-gradient(135deg,#7c3aed,#9333ea); border: none; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }',
+            '.mega-wheel-spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
+            '.mega-wheel-result { text-align: center; font-size: 14px; color: #4ade80; padding: 8px; border-radius: 6px; background: rgba(34,197,94,0.1); }',
+            '.mega-wheel-result.error { color: #f87171; background: rgba(248,113,113,0.1); }'
+        ].join(' ');
+        document.head.appendChild(style);
+    }
+
+    // Build section wrapper
+    var section = document.createElement('div');
+    section.className = 'mega-wheel-section';
+
+    // Header
+    var heading = document.createElement('h4');
+    heading.textContent = '\uD83C\uDF61 Mega Wheel';
+    section.appendChild(heading);
+
+    // Gems balance display
+    var gemsRow = document.createElement('div');
+    gemsRow.style.cssText = 'font-size:12px;color:#a78bfa;margin-bottom:10px;text-align:center;';
+    var gemsVal = (typeof window._gemsBalance === 'number') ? window._gemsBalance : '...';
+    gemsRow.textContent = '\uD83D\uDC8E Gems: ' + gemsVal;
+    section.appendChild(gemsRow);
+
+    // Fetch gems balance to update display
+    (function() {
+        fetch('/api/gems/balance', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(d) {
+                if (d && typeof d.balance === 'number') {
+                    if (typeof window._gemsBalance === 'undefined' || window._gemsBalance !== d.balance) {
+                        window._gemsBalance = d.balance;
+                    }
+                    gemsRow.textContent = '\uD83D\uDC8E Gems: ' + d.balance;
+                }
+            })
+            .catch(function() {});
+    })();
+
+    // Tier buttons
+    var tierConfig = [
+        { id: 'basic', label: 'Basic (50\uD83D\uDC8E)',   cost: 50  },
+        { id: 'super', label: 'Super (200\uD83D\uDC8E)',  cost: 200 },
+        { id: 'mega',  label: 'Mega (500\uD83D\uDC8E)',   cost: 500 }
+    ];
+    var activeTier = 'basic';
+
+    var tierRow = document.createElement('div');
+    tierRow.className = 'mega-wheel-tiers';
+
+    var tierBtns = [];
+    tierConfig.forEach(function(tc) {
+        var btn = document.createElement('button');
+        btn.className = 'mega-wheel-tier-btn' + (tc.id === activeTier ? ' active' : '');
+        btn.textContent = tc.label;
+        btn.onclick = function() {
+            activeTier = tc.id;
+            tierBtns.forEach(function(b, i) {
+                if (tierConfig[i].id === activeTier) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            var active = tierConfig.filter(function(t) { return t.id === activeTier; })[0];
+            costSpan.textContent = 'Cost: ' + active.cost + ' \uD83D\uDC8E';
+        };
+        tierRow.appendChild(btn);
+        tierBtns.push(btn);
+    });
+    section.appendChild(tierRow);
+
+    // Wheel visual
+    var wheelDiv = document.createElement('div');
+    wheelDiv.className = 'mega-wheel-visual';
+    section.appendChild(wheelDiv);
+
+    // Spin button
+    var spinBtn = document.createElement('button');
+    spinBtn.className = 'mega-wheel-spin-btn';
+    spinBtn.textContent = 'SPIN';
+    section.appendChild(spinBtn);
+
+    // Cost display (created before onclick, referenced above)
+    var costSpan = document.createElement('div');
+    costSpan.style.cssText = 'text-align:center;font-size:11px;color:#9ca3af;margin-bottom:8px;';
+    costSpan.textContent = 'Cost: 50 \uD83D\uDC8E';
+    section.insertBefore(costSpan, spinBtn);
+
+    // Result display
+    var resultDiv = document.createElement('div');
+    section.appendChild(resultDiv);
+
+    // Spin handler
+    spinBtn.onclick = function() {
+        spinBtn.disabled = true;
+        spinBtn.textContent = 'Spinning\u2026';
+        resultDiv.className = '';
+        resultDiv.textContent = '';
+
+        wheelDiv.classList.add('mega-wheel-spinning');
+
+        var tier = activeTier;
+        fetch('/api/megawheel/spin', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tier: tier })
+        })
+        .then(function(res) {
+            return res.json().then(function(data) {
+                return { ok: res.ok, data: data };
+            });
+        })
+        .then(function(result) {
+            setTimeout(function() {
+                wheelDiv.classList.remove('mega-wheel-spinning');
+                spinBtn.disabled = false;
+                spinBtn.textContent = 'SPIN';
+
+                if (!result.ok) {
+                    resultDiv.className = 'mega-wheel-result error';
+                    if (result.data && result.data.error === 'Insufficient gems') {
+                        resultDiv.textContent = '\u274C Not enough gems! Earn more by spinning slots.';
+                    } else {
+                        resultDiv.textContent = '\u274C Spin failed. Please try again.';
+                    }
+                    return;
+                }
+
+                var prize = result.data.prize;
+                resultDiv.className = 'mega-wheel-result';
+                resultDiv.textContent = '\uD83C\uDF89 You won: ' + prize.label + '!';
+
+                // Update gems balance display
+                var gemCost = result.data.gemCost;
+                if (typeof window._gemsBalance === 'number' && typeof gemCost === 'number') {
+                    window._gemsBalance = Math.max(0, window._gemsBalance - gemCost);
+                    gemsRow.textContent = '\uD83D\uDC8E Gems: ' + window._gemsBalance;
+                }
+
+                // Update cash balance if cash prize
+                if (prize.type === 'credits') {
+                    if (typeof updateBalance === 'function') updateBalance();
+                    if (typeof saveBalance === 'function' && typeof balance !== 'undefined') {
+                        saveBalance(balance + prize.amount);
+                    }
+                }
+            }, 3000);
+        })
+        .catch(function() {
+            setTimeout(function() {
+                wheelDiv.classList.remove('mega-wheel-spinning');
+                spinBtn.disabled = false;
+                spinBtn.textContent = 'SPIN';
+                resultDiv.className = 'mega-wheel-result error';
+                resultDiv.textContent = '\u274C Network error. Please try again.';
+            }, 3000);
+        });
+    };
+
+    container.appendChild(section);
+}
 
 // Periodic check every 30 s — catches cases where stats update outside of spins
 setInterval(function() {
