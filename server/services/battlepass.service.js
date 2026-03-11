@@ -19,9 +19,9 @@ function getRewardTiers() {
         const premium = {};
 
         if (i % 5 === 0) {
-            // Every 5 levels: significant reward
-            free.type = 'credits'; free.amount = i * 10;
-            premium.type = 'credits'; premium.amount = i * 30;
+            // Every 5 levels: significant reward (reduced — was i*10 / i*30)
+            free.type = 'credits'; free.amount = Math.round(i * 0.20 * 100) / 100;
+            premium.type = 'credits'; premium.amount = Math.round(i * 0.50 * 100) / 100;
         } else if (i % 3 === 0) {
             // Every 3 levels: free spins
             free.type = 'free_spins'; free.amount = Math.ceil(i / 5);
@@ -31,20 +31,20 @@ function getRewardTiers() {
             free.type = 'wheel_spins'; free.amount = 1;
             premium.type = 'wheel_spins'; premium.amount = 2;
         } else if (i % 2 === 0) {
-            // Even levels: small credits
-            free.type = 'credits'; free.amount = i * 3;
-            premium.type = 'credits'; premium.amount = i * 8;
+            // Even levels: small credits (reduced — was i*3 / i*8)
+            free.type = 'credits'; free.amount = Math.round(i * 0.05 * 100) / 100;
+            premium.type = 'credits'; premium.amount = Math.round(i * 0.15 * 100) / 100;
         } else {
-            // Odd levels: XP boost or small credits
+            // Odd levels: XP boost or small credits (reduced — was i*5)
             free.type = null; free.amount = 0; // free track skips odd non-milestone levels
-            premium.type = 'credits'; premium.amount = i * 5;
+            premium.type = 'credits'; premium.amount = Math.round(i * 0.10 * 100) / 100;
         }
 
         tiers.push({ level: i, free, premium });
     }
-    // Level 50 grand finale
-    tiers[49].free = { type: 'credits', amount: 1000 };
-    tiers[49].premium = { type: 'credits', amount: 5000 };
+    // Level 50 grand finale (reduced — was $1000 / $5000)
+    tiers[49].free = { type: 'credits', amount: 10 };
+    tiers[49].premium = { type: 'credits', amount: 50 };
     return tiers;
 }
 
@@ -256,13 +256,17 @@ async function claimReward(userId, level, track) {
     const reward = track === 'free' ? tier.free : tier.premium;
     if (!reward || !reward.type || reward.amount <= 0) throw new Error('No reward at this level');
 
-    // Grant reward
+    // Grant reward — credits go to bonus_balance with 20x wagering requirement
     let grantedAmount = reward.amount;
     if (reward.type === 'credits') {
-        await db.run("UPDATE users SET balance = balance + ? WHERE id = ?", [reward.amount, userId]);
+        const wageringMult = 20;
         await db.run(
-            "INSERT INTO transactions (user_id, type, amount, balance_after, reference, created_at) VALUES (?, 'battle_pass_reward', ?, (SELECT balance FROM users WHERE id = ?), ?, datetime('now'))",
-            [userId, reward.amount, userId, 'BP Level ' + level + ' ' + track]
+            "UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?",
+            [reward.amount, reward.amount * wageringMult, userId]
+        );
+        await db.run(
+            "INSERT INTO transactions (user_id, type, amount, reference, created_at) VALUES (?, 'battle_pass_reward', ?, ?, datetime('now'))",
+            [userId, reward.amount, 'BP Level ' + level + ' ' + track + ' (bonus, 20x wagering)']
         );
     }
     // For free_spins, wheel_spins: client handles via response data

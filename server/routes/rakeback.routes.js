@@ -53,6 +53,16 @@ router.get('/status', authenticate, async (req, res) => {
 
 router.post('/claim', authenticate, async (req, res) => {
     try {
+        // Enforce once-per-week claim (check if already claimed this week)
+        const mondayStr = getCurrentWeekMondayStr();
+        const existingClaim = await db.get(
+            "SELECT id FROM transactions WHERE user_id = ? AND type = 'rakeback' AND created_at >= ?",
+            [req.user.id, mondayStr]
+        );
+        if (existingClaim) {
+            return res.status(400).json({ error: 'Rakeback already claimed this week' });
+        }
+
         const { weeklyWagered, pendingRakeback } = await computePending(req.user.id);
         if (pendingRakeback < 0.01) {
             return res.status(400).json({ error: 'Nothing to claim - minimum is $0.01' });

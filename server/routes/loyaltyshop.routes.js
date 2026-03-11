@@ -43,13 +43,19 @@ router.get('/status', authenticate, async function(req, res) {
 router.post('/earn', authenticate, async function(req, res) {
   try {
     var userId     = req.user.id;
-    var spinsCount = parseInt(req.body.spinsCount, 10) || 1;
 
-    // Clamp to a sane range to prevent abuse
-    if (spinsCount < 1) spinsCount = 1;
-    if (spinsCount > 10) spinsCount = 10;
+    // Server-side verification: only award points if the user has recent spins.
+    // Check that there's a spin in the last 30 seconds to prevent fabricated earn requests.
+    var recentSpin = await db.get(
+      "SELECT id FROM spins WHERE user_id = ? AND created_at >= datetime('now', '-30 seconds') ORDER BY created_at DESC LIMIT 1",
+      [userId]
+    );
+    if (!recentSpin) {
+      return res.status(400).json({ error: 'No recent spin detected' });
+    }
 
-    var earned = spinsCount * POINTS_PER_SPIN;
+    // Always award exactly 1 point per verified call (ignore client spinsCount)
+    var earned = POINTS_PER_SPIN;
 
     await db.run(
       'UPDATE users SET loyalty_points = COALESCE(loyalty_points, 0) + ?, loyalty_lifetime = COALESCE(loyalty_lifetime, 0) + ? WHERE id = ?',
@@ -95,14 +101,16 @@ router.post('/redeem', authenticate, async function(req, res) {
     var creditAmount = redeemPts / POINTS_PER_DOLLAR; // e.g. 200 pts → $2.00
     creditAmount = Math.round(creditAmount * 100) / 100;
 
+    // Credit to bonus_balance with 15x wagering requirement (not withdrawable balance)
+    var wageringMult = 15;
     await db.run(
-      'UPDATE users SET loyalty_points = loyalty_points - ?, balance = balance + ? WHERE id = ?',
-      [redeemPts, creditAmount, userId]
+      'UPDATE users SET loyalty_points = loyalty_points - ?, bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+      [redeemPts, creditAmount, creditAmount * wageringMult, userId]
     );
 
     await db.run(
       "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-      [userId, creditAmount, 'Loyalty Points Redemption — ' + redeemPts + ' pts → $' + creditAmount.toFixed(2)]
+      [userId, creditAmount, 'Loyalty Points Redemption — ' + redeemPts + ' pts → $' + creditAmount.toFixed(2) + ' (15x wagering)']
     );
 
     var updated   = await db.get('SELECT balance, loyalty_points FROM users WHERE id = ?', [userId]);

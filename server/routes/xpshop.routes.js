@@ -145,14 +145,17 @@ router.post('/sync-xp', authenticate, async function (req, res) {
         const user = await db.get('SELECT xp FROM users WHERE id = ?', [userId]);
         const serverXp = parseInt((user && user.xp) || 0, 10);
 
-        // Only update if the client reports more XP than the server has on record
-        // (prevents clients from rolling back another session's earned XP).
+        // Rate-limit XP sync: max 50 XP gain per sync call to prevent client-side manipulation.
+        // Legitimate play earns ~5-15 XP per spin, so 50 per call is generous.
+        const MAX_XP_GAIN_PER_SYNC = 50;
         if (clientXp > serverXp) {
+            const gain = clientXp - serverXp;
+            const cappedXp = serverXp + Math.min(gain, MAX_XP_GAIN_PER_SYNC);
             await db.run(
                 'UPDATE users SET xp = ? WHERE id = ?',
-                [clientXp, userId]
+                [cappedXp, userId]
             );
-            return res.json({ xp: clientXp });
+            return res.json({ xp: cappedXp });
         }
 
         return res.json({ xp: serverXp });

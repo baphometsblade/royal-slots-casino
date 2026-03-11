@@ -94,10 +94,12 @@ router.post('/claim', authenticate, async function(req, res) {
 
     if (matchAmount <= 0) return res.status(400).json({ error: 'No match available' });
 
-    await db.run('UPDATE users SET balance = balance + ?, deposit_match_credits = COALESCE(deposit_match_credits, 0) + ?, deposit_match_last = ? WHERE id = ?',
-      [matchAmount, matchAmount, lastDeposit.created_at, userId]);
+    // Credit to bonus_balance with wagering requirement (not withdrawable balance)
+    var wageringMult = 30; // 30x playthrough on deposit match bonus
+    await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, deposit_match_credits = COALESCE(deposit_match_credits, 0) + ?, deposit_match_last = ? WHERE id = ?',
+      [matchAmount, matchAmount * wageringMult, matchAmount, lastDeposit.created_at, userId]);
     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-      [userId, matchAmount, 'Deposit Match ' + Math.round(cfg.rate * 100) + '% (' + cfg.label + ') — $' + matchAmount.toFixed(2)]);
+      [userId, matchAmount, 'Deposit Match ' + Math.round(cfg.rate * 100) + '% (' + cfg.label + ') — $' + matchAmount.toFixed(2) + ' (30x wagering)']);
 
     var updated = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({
