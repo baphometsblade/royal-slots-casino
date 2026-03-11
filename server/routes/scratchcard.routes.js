@@ -87,9 +87,9 @@ router.post('/scratch', authenticate, async function(req, res) {
     var result = generateResult();
     var prize = result.prize;
 
-    // Award credits
+    // Award credits (bonus_balance with 15x wagering)
     if (prize.credits > 0) {
-      await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [prize.credits, userId]);
+      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [prize.credits, prize.credits * 15, userId]);
     }
 
     // Award gems (safe — use transactions table if gems column missing)

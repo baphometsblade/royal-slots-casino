@@ -46,8 +46,8 @@ router.post('/claim', authenticate, async function(req, res) {
     var BONUS_GEMS = 500;
     var BONUS_CREDITS = 2.00;
 
-    await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ?, balance = balance + ?, first_deposit_bonus_claimed = 1 WHERE id = ?',
-      [BONUS_GEMS, BONUS_CREDITS, userId]);
+    await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ?, bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, first_deposit_bonus_claimed = 1 WHERE id = ?',
+      [BONUS_GEMS, BONUS_CREDITS, BONUS_CREDITS * 15, userId]);
     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
       [userId, BONUS_CREDITS, 'First Deposit Welcome Bonus']);
     // Grant first_deposit achievement (idempotent)

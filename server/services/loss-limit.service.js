@@ -69,8 +69,8 @@ async function checkDailyLossLimit(userId, proposedBet) {
                     // Read balance before crediting
                     const balBefore = user.balance;
 
-                    // Credit cashback to balance
-                    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [cashbackAmount, userId]);
+                    // Credit cashback to bonus_balance with 10x wagering (loss compensation)
+                    await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [cashbackAmount, cashbackAmount * 10, userId]);
 
                     // Log transaction with balance_before and balance_after
                     const balanceAfter = balBefore + cashbackAmount;

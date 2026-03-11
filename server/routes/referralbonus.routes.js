@@ -174,19 +174,19 @@ router.post('/apply', verifyInternal, async function(req, res) {
       // UNIQUE constraint violation -- user has already been referred
       return res.status(409).json({ success: false, message: 'This user has already been referred' });
     }
-    // Credit referrer: balance + running totals
+    // Credit referrer: bonus_balance + running totals (15x wagering)
     await db.run(
-      'UPDATE users SET balance = balance + ?, referral_count = COALESCE(referral_count, 0) + 1, referral_bonus_earned = COALESCE(referral_bonus_earned, 0) + ? WHERE id = ?',
-      [REFERRAL_BONUS_AMOUNT, REFERRAL_BONUS_AMOUNT, referrer.id]
+      'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, referral_count = COALESCE(referral_count, 0) + 1, referral_bonus_earned = COALESCE(referral_bonus_earned, 0) + ? WHERE id = ?',
+      [REFERRAL_BONUS_AMOUNT, REFERRAL_BONUS_AMOUNT * 15, REFERRAL_BONUS_AMOUNT, referrer.id]
     );
     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-      [referrer.id, REFERRAL_BONUS_AMOUNT, 'Referral bonus -- new user joined with your code']);
+      [referrer.id, REFERRAL_BONUS_AMOUNT, 'Referral bonus -- new user joined with your code (bonus, 15x wagering)']);
     // Grant referral_made achievement to the referrer (idempotent)
     require('../services/achievement.service').grant(referrer.id, 'referral_made').catch(function() {});
-    // Credit new user: balance only
-    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [REFERRAL_BONUS_AMOUNT, newUserId]);
+    // Credit new user: bonus_balance with 15x wagering
+    await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [REFERRAL_BONUS_AMOUNT, REFERRAL_BONUS_AMOUNT * 15, newUserId]);
     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-      [newUserId, REFERRAL_BONUS_AMOUNT, 'Welcome bonus -- joined via referral code']);
+      [newUserId, REFERRAL_BONUS_AMOUNT, 'Welcome bonus -- joined via referral code (bonus, 15x wagering)']);
     return res.json({
       success: true,
       message: '$' + REFERRAL_BONUS_AMOUNT.toFixed(2) + ' credited to both the referrer and the new user',

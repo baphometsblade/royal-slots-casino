@@ -126,10 +126,10 @@ router.post('/claim', authenticate, async (req, res) => {
 
         const credited = parseFloat(cashbackAmount.toFixed(2));
 
-        // Credit balance
+        // Credit to bonus_balance with 10x wagering (reduced since it's loss compensation)
         await db.run(
-            'UPDATE users SET balance = balance + ?, cashback_last = datetime(\'now\') WHERE id = ?',
-            [credited, req.user.id]
+            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, cashback_last = datetime(\'now\') WHERE id = ?',
+            [credited, credited * 10, req.user.id]
         );
 
         // Record transaction

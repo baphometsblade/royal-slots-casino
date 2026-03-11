@@ -84,9 +84,9 @@ router.post('/redeem', authenticate, async function(req, res) {
       await db.run('UPDATE users SET gems = COALESCE(gems, 0) + ? WHERE id = ?', [row.reward_gems, userId]);
     }
     if (row.reward_credits > 0) {
-      await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [row.reward_credits, userId]);
+      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [row.reward_credits, row.reward_credits * 15, userId]);
       await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'promo', ?, ?)",
-        [userId, row.reward_credits, 'Promo code: ' + row.code]);
+        [userId, row.reward_credits, 'Promo code: ' + row.code + ' (bonus, 15x wagering)']);
     }
 
     var user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);

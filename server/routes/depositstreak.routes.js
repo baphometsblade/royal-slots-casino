@@ -106,14 +106,13 @@ router.post('/record', authenticate, async (req, res) => {
                 [reward.gems, req.user.id]).catch(function() {});
         }
 
-        // Award credits
+        // Award credits (bonus_balance with 15x wagering)
         var newBalance = user.balance;
         if (reward.credits > 0) {
-            newBalance = (user.balance || 0) + reward.credits;
-            await db.run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, req.user.id]);
+            await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [reward.credits, reward.credits * 15, req.user.id]);
             await db.run(
                 "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'deposit_streak', ?, ?)",
-                [req.user.id, reward.credits, 'Deposit Streak Day ' + newStreak + ' — ' + reward.label]
+                [req.user.id, reward.credits, 'Deposit Streak Day ' + newStreak + ' — ' + reward.label + ' (bonus, 15x wagering)']
             ).catch(function() {});
         }
 
@@ -159,10 +158,10 @@ async function recordForUser(userId) {
             [reward.gems, userId]).catch(function() {});
     }
     if (reward.credits > 0) {
-        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [reward.credits, userId]);
+        await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [reward.credits, reward.credits * 15, userId]);
         await db.run(
             "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'deposit_streak', ?, ?)",
-            [userId, reward.credits, 'Deposit Streak Day ' + newStreak + ' — ' + reward.label]
+            [userId, reward.credits, 'Deposit Streak Day ' + newStreak + ' — ' + reward.label + ' (bonus, 15x wagering)']
         ).catch(function() {});
     }
     await db.run(

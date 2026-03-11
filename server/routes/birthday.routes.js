@@ -79,8 +79,8 @@ router.post('/claim', authenticate, async (req, res) => {
         // but only one can succeed the UPDATE (birthday_claimed != year)
         var yearStr = String(today.year);
         var result = await db.run(
-            'UPDATE users SET balance = balance + ?, birthday_claimed = ? WHERE id = ? AND (birthday_claimed IS NULL OR birthday_claimed != ?)',
-            [BIRTHDAY_CREDITS, yearStr, req.user.id, yearStr]
+            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, birthday_claimed = ? WHERE id = ? AND (birthday_claimed IS NULL OR birthday_claimed != ?)',
+            [BIRTHDAY_CREDITS, BIRTHDAY_CREDITS * 15, yearStr, req.user.id, yearStr]
         );
         if (result.changes === 0) {
             return res.status(400).json({ error: 'Birthday bonus already claimed this year' });

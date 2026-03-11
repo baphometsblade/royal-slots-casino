@@ -80,10 +80,10 @@ router.post('/spin', authenticate, async function(req, res) {
     // Credit reward
     let newBalance = parseFloat(user.balance) || 0;
     if (seg.type === 'cash') {
-      await db.run('UPDATE users SET balance = balance + ?, fortune_wheel_last = ? WHERE id = ?', [seg.amount, today, userId]);
+      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, fortune_wheel_last = ? WHERE id = ?', [seg.amount, seg.amount * 15, today, userId]);
       await db.run(
         "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-        [userId, seg.amount, 'Fortune Wheel reward: ' + seg.label]
+        [userId, seg.amount, 'Fortune Wheel reward: ' + seg.label + ' (bonus, 15x wagering)']
       );
       const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
       newBalance = u ? parseFloat(u.balance) : newBalance + seg.amount;

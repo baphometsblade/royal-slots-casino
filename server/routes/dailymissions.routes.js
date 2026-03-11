@@ -143,10 +143,10 @@ router.post('/claim/:slot', authenticate, async function(req, res) {
     // Credit reward
     let newBalance = null;
     if (mission.reward_type === 'cash') {
-      await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [mission.reward_amount, userId]);
+      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [mission.reward_amount, mission.reward_amount * 15, userId]);
       await db.run(
         "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-        [userId, mission.reward_amount, 'Daily mission reward: ' + mission.label]
+        [userId, mission.reward_amount, 'Daily mission reward: ' + mission.label + ' (bonus, 15x wagering)']
       );
       const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
       newBalance = u ? parseFloat(u.balance) : null;
