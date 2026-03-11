@@ -109,6 +109,7 @@ function showWalletModal() {
     if (typeof walletRenderLoyaltyShopSection === 'function') walletRenderLoyaltyShopSection(modal);
     if (typeof renderLimboCard === 'function') renderLimboCard(modal);
     if (typeof renderBlackjackWidget === 'function') renderBlackjackWidget(modal);
+    if (typeof renderSicBoWidget === 'function') renderSicBoWidget(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -5080,6 +5081,268 @@ function renderBlackjackWidget(parentContainer) {
             console.error('Blackjack double error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             bjSetActionButtons(true, bjFirstAction);
+        }
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SIC BO WIDGET
+// ═══════════════════════════════════════════════════════
+
+function renderSicBoWidget(parentContainer) {
+    if (document.getElementById('sicBoWidget')) return;
+
+    /* ── CSS (inject once) ───────────────────────────────── */
+    if (!document.getElementById('sicBoWidgetCSS')) {
+        var style = document.createElement('style');
+        style.id = 'sicBoWidgetCSS';
+        style.textContent = [
+            '#sicBoWidget{background:linear-gradient(135deg,rgba(20,10,40,0.96),rgba(40,15,60,0.98));border-radius:16px;padding:20px 24px;margin:18px 20px;border:1px solid rgba(239,68,68,0.3);position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3)}',
+            '#sicBoWidget::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ef4444,#f97316,transparent)}',
+            '.sb-title{font-size:1.25rem;font-weight:700;color:#f97316;margin-bottom:14px;text-align:center}',
+            '.sb-bet-row{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:14px;flex-wrap:wrap}',
+            '.sb-bet-input{width:90px;padding:8px 10px;border-radius:8px;border:1px solid rgba(249,115,22,0.4);background:rgba(0,0,0,0.45);color:#fff;font-size:0.95rem;text-align:center;outline:none}',
+            '.sb-bet-input:focus{border-color:rgba(249,115,22,0.7);box-shadow:0 0 8px rgba(249,115,22,0.2)}',
+            '.sb-bet-btns{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}',
+            '.sb-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:0.9rem;text-transform:uppercase;transition:all 0.2s}',
+            '.sb-btn:disabled{opacity:0.45;cursor:not-allowed}',
+            '.sb-btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}',
+            '.sb-btn-big{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}',
+            '.sb-btn-small{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}',
+            '.sb-btn-triple{background:linear-gradient(135deg,#f59e0b,#d97706);color:#1a1a2e}',
+            '.sb-roll-btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;letter-spacing:0.5px;transition:all 0.2s;margin-top:10px}',
+            '.sb-roll-btn:hover:not(:disabled){background:linear-gradient(135deg,#fb923c,#f97316);transform:translateY(-1px);box-shadow:0 4px 16px rgba(249,115,22,0.3)}',
+            '.sb-roll-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}',
+            '.sb-dice-area{display:flex;gap:12px;justify-content:center;align-items:center;margin:16px 0;min-height:60px}',
+            '.sb-die{font-size:2.8rem;transition:transform 0.4s;display:inline-block}',
+            '.sb-die.rolling{animation:sbRoll 0.3s ease-in-out 3}',
+            '@keyframes sbRoll{0%{transform:rotateX(0) scale(1)}50%{transform:rotateX(180deg) scale(1.2)}100%{transform:rotateX(360deg) scale(1)}}',
+            '.sb-total{text-align:center;font-size:1.1rem;color:#e0e0e0;font-weight:600;margin-bottom:8px}',
+            '.sb-total span{color:#f97316;font-weight:800}',
+            '.sb-result{text-align:center;font-size:1.05rem;font-weight:700;min-height:26px;margin-top:8px;padding:10px;border-radius:10px;display:none}',
+            '.sb-result.win{display:block;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80}',
+            '.sb-result.loss{display:block;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171}',
+            '.sb-selected{box-shadow:0 0 0 2px #fff,0 0 12px rgba(255,255,255,0.4);transform:scale(1.08)}'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    var DICE_EMOJI = ['\u2680', '\u2681', '\u2682', '\u2683', '\u2684', '\u2685'];
+
+    /* ── DOM structure ────────────────────────────────────── */
+    var widget = document.createElement('div');
+    widget.id = 'sicBoWidget';
+
+    var title = document.createElement('div');
+    title.className = 'sb-title';
+    title.textContent = '\uD83C\uDFB2 Sic Bo';
+    widget.appendChild(title);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'sb-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.textContent = 'Bet: $';
+    betLabel.style.cssText = 'color:#ccc;font-weight:600;';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'sb-bet-input';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betRow.appendChild(betInput);
+
+    widget.appendChild(betRow);
+
+    // Bet type buttons
+    var betBtns = document.createElement('div');
+    betBtns.className = 'sb-bet-btns';
+
+    var selectedBetType = 'big';
+    var betTypeButtons = {};
+
+    function createBetBtn(label, type, cls) {
+        var btn = document.createElement('button');
+        btn.className = 'sb-btn ' + cls;
+        btn.textContent = label;
+        btn.addEventListener('click', function() {
+            selectedBetType = type;
+            Object.keys(betTypeButtons).forEach(function(k) {
+                betTypeButtons[k].classList.remove('sb-selected');
+            });
+            btn.classList.add('sb-selected');
+        });
+        betTypeButtons[type] = btn;
+        return btn;
+    }
+
+    var bigBtn = createBetBtn('BIG (11-17)', 'big', 'sb-btn-big');
+    bigBtn.classList.add('sb-selected');
+    betBtns.appendChild(bigBtn);
+
+    betBtns.appendChild(createBetBtn('SMALL (4-10)', 'small', 'sb-btn-small'));
+    betBtns.appendChild(createBetBtn('ANY TRIPLE (30:1)', 'anytriple', 'sb-btn-triple'));
+
+    widget.appendChild(betBtns);
+
+    // Dice display area
+    var diceArea = document.createElement('div');
+    diceArea.className = 'sb-dice-area';
+
+    var die1 = document.createElement('span');
+    die1.className = 'sb-die';
+    die1.textContent = DICE_EMOJI[0];
+
+    var die2 = document.createElement('span');
+    die2.className = 'sb-die';
+    die2.textContent = DICE_EMOJI[1];
+
+    var die3 = document.createElement('span');
+    die3.className = 'sb-die';
+    die3.textContent = DICE_EMOJI[2];
+
+    diceArea.appendChild(die1);
+    diceArea.appendChild(die2);
+    diceArea.appendChild(die3);
+    widget.appendChild(diceArea);
+
+    // Total display
+    var totalDisplay = document.createElement('div');
+    totalDisplay.className = 'sb-total';
+    totalDisplay.textContent = 'Place your bet and roll!';
+    widget.appendChild(totalDisplay);
+
+    // Result display
+    var resultDisplay = document.createElement('div');
+    resultDisplay.className = 'sb-result';
+    widget.appendChild(resultDisplay);
+
+    // Roll button
+    var rollBtn = document.createElement('button');
+    rollBtn.className = 'sb-roll-btn';
+    rollBtn.textContent = 'ROLL';
+    widget.appendChild(rollBtn);
+
+    parentContainer.appendChild(widget);
+
+    /* ── Auth helper ──────────────────────────────────────── */
+    function sbGetAuthHeaders() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return null;
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return null;
+        return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+    }
+
+    /* ── Dice rolling animation ──────────────────────────── */
+    function animateDice(finalDice, callback) {
+        var dies = [die1, die2, die3];
+        dies.forEach(function(d) { d.classList.add('rolling'); });
+
+        var frames = 0;
+        var maxFrames = 12;
+        var interval = setInterval(function() {
+            dies.forEach(function(d) {
+                d.textContent = DICE_EMOJI[Math.floor(Math.random() * 6)];
+            });
+            frames++;
+            if (frames >= maxFrames) {
+                clearInterval(interval);
+                dies.forEach(function(d, i) {
+                    d.classList.remove('rolling');
+                    d.textContent = DICE_EMOJI[finalDice[i] - 1];
+                });
+                if (callback) callback();
+            }
+        }, 80);
+    }
+
+    /* ── Roll handler ─────────────────────────────────────── */
+    rollBtn.addEventListener('click', async function() {
+        var headers = sbGetAuthHeaders();
+        if (!headers) {
+            if (typeof showToast === 'function') showToast('Please log in to play.', 'error');
+            return;
+        }
+
+        var betVal = parseFloat(betInput.value);
+        if (isNaN(betVal) || betVal < 0.25) {
+            if (typeof showToast === 'function') showToast('Minimum bet is $0.25', 'error');
+            return;
+        }
+
+        rollBtn.disabled = true;
+        rollBtn.textContent = 'ROLLING...';
+        resultDisplay.className = 'sb-result';
+        resultDisplay.style.display = 'none';
+        resultDisplay.textContent = '';
+
+        var body = { bet: betVal, betType: selectedBetType };
+
+        try {
+            var resp = await fetch('/api/sicbo/play', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body)
+            });
+            var data = await resp.json();
+
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Sic Bo failed', 'error');
+                rollBtn.disabled = false;
+                rollBtn.textContent = 'ROLL';
+                return;
+            }
+
+            animateDice(data.dice, function() {
+                // Update total
+                totalDisplay.textContent = '';
+                var totalLabel = document.createTextNode('Total: ');
+                var totalVal = document.createElement('span');
+                totalVal.textContent = String(data.total);
+                totalDisplay.appendChild(totalLabel);
+                totalDisplay.appendChild(totalVal);
+
+                // Show result
+                if (data.win) {
+                    resultDisplay.className = 'sb-result win';
+                    resultDisplay.style.display = 'block';
+                    var resultLine = '';
+                    if (selectedBetType === 'big') resultLine = 'Big wins!';
+                    else if (selectedBetType === 'small') resultLine = 'Small wins!';
+                    else if (selectedBetType === 'anytriple') resultLine = 'TRIPLE! Jackpot!';
+                    resultDisplay.textContent = resultLine + ' +$' + data.profit.toFixed(2);
+                } else {
+                    resultDisplay.className = 'sb-result loss';
+                    resultDisplay.style.display = 'block';
+                    var lossLine = '';
+                    if (data.dice[0] === data.dice[1] && data.dice[1] === data.dice[2]) {
+                        lossLine = 'Triple ' + data.dice[0] + '!';
+                    } else if (data.total >= 11) {
+                        lossLine = 'Big (' + data.total + ')';
+                    } else {
+                        lossLine = 'Small (' + data.total + ')';
+                    }
+                    resultDisplay.textContent = lossLine + ' \u2014 -$' + betVal.toFixed(2);
+                }
+
+                // Update balance
+                if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                    updateBalanceDisplay(data.newBalance);
+                }
+
+                rollBtn.disabled = false;
+                rollBtn.textContent = 'ROLL';
+            });
+
+        } catch (e) {
+            console.error('Sic Bo roll error:', e);
+            if (typeof showToast === 'function') showToast('Network error.', 'error');
+            rollBtn.disabled = false;
+            rollBtn.textContent = 'ROLL';
         }
     });
 }

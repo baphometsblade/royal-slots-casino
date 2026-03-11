@@ -627,6 +627,8 @@ function renderGames() {
                     if (typeof renderHiLoGameWidget === 'function') renderHiLoGameWidget();
                     // Roulette quick-bet widget
                     if (typeof renderRouletteWidget === 'function') renderRouletteWidget();
+                    // Keno mini-game widget
+                    if (typeof renderKenoWidget === 'function') renderKenoWidget();
                 }, 200);
             });
         }
@@ -7509,4 +7511,243 @@ function _rouletteNumberColor(n) {
     if (n === 0) return 'green';
     var reds = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
     return reds.indexOf(n) !== -1 ? 'red' : 'black';
+}
+
+// ═══════════════════════════════════════════════════════
+// KENO MINI-GAME WIDGET
+// ═══════════════════════════════════════════════════════
+
+var _kenoInFlight = false;
+
+function renderKenoWidget() {
+    if (document.getElementById('kenoWidget')) return;
+
+    // ── CSS injection ──
+    if (!document.getElementById('keno-widget-css')) {
+        var style = document.createElement('style');
+        style.id = 'keno-widget-css';
+        style.textContent = [
+            '.keno-widget { background: linear-gradient(135deg, #0a0a2e 0%, #1a1a3e 50%, #0d1b2a 100%); border-radius: 16px; padding: 20px; margin: 18px 0; border: 1px solid rgba(255,215,0,0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); max-width: 480px; }',
+            '.keno-title { font-size: 1.4em; font-weight: 700; color: #ffd700; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }',
+            '.keno-bet-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }',
+            '.keno-bet-row input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.4); color: #fff; font-size: 1em; outline: none; }',
+            '.keno-bet-row input:focus { border-color: #ffd700; }',
+            '.keno-picks-counter { text-align: center; margin-bottom: 8px; font-size: 0.95em; color: rgba(255,255,255,0.7); font-weight: 600; }',
+            '.keno-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; margin-bottom: 14px; }',
+            '.keno-cell { width: 100%; aspect-ratio: 1; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #ccc; font-size: 0.75em; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; user-select: none; }',
+            '.keno-cell:hover { background: rgba(255,215,0,0.15); border-color: rgba(255,215,0,0.4); }',
+            '.keno-cell.picked { background: linear-gradient(135deg, #ffd700, #ffab00); color: #1a1a2e; border-color: #ffd700; box-shadow: 0 0 8px rgba(255,215,0,0.5); }',
+            '.keno-cell.drawn { background: rgba(33,150,243,0.5); border-color: #2196f3; color: #fff; }',
+            '.keno-cell.matched { background: linear-gradient(135deg, #00e676, #00c853); color: #1a1a2e; border-color: #00e676; box-shadow: 0 0 10px rgba(0,230,118,0.6); animation: kenoMatchFlash 0.5s ease-in-out 3; }',
+            '@keyframes kenoMatchFlash { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }',
+            '.keno-btn-row { display: flex; gap: 10px; margin-bottom: 12px; }',
+            '.keno-play-btn { flex: 2; padding: 12px; border-radius: 10px; border: none; background: linear-gradient(135deg, #ffd700, #ffab00); color: #1a1a2e; font-weight: 800; font-size: 1.1em; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }',
+            '.keno-play-btn:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 0 20px rgba(255,215,0,0.5); }',
+            '.keno-play-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.keno-clear-btn { flex: 1; padding: 12px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: #fff; font-weight: 700; font-size: 0.95em; cursor: pointer; transition: all 0.2s; }',
+            '.keno-clear-btn:hover { border-color: #ff5252; color: #ff5252; }',
+            '.keno-result-text { text-align: center; font-size: 1.15em; font-weight: 700; min-height: 1.5em; margin-top: 6px; }',
+            '.keno-result-text.win { color: #00e676; text-shadow: 0 0 10px rgba(0,230,118,0.5); }',
+            '.keno-result-text.lose { color: #ff5252; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // ── Build widget DOM ──
+    var gamesGrid = document.querySelector('.games-grid');
+    if (!gamesGrid) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'kenoWidget';
+    widget.className = 'keno-widget';
+
+    // Title
+    var title = document.createElement('div');
+    title.className = 'keno-title';
+    title.textContent = '\uD83C\uDFB1 Keno';
+    widget.appendChild(title);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'keno-bet-row';
+    var betLabel = document.createElement('span');
+    betLabel.textContent = 'Bet $';
+    betLabel.style.color = '#ffd700';
+    betLabel.style.fontWeight = '700';
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betRow.appendChild(betLabel);
+    betRow.appendChild(betInput);
+    widget.appendChild(betRow);
+
+    // Picks counter
+    var picksCounter = document.createElement('div');
+    picksCounter.className = 'keno-picks-counter';
+    picksCounter.textContent = 'Selected: 0/10';
+    widget.appendChild(picksCounter);
+
+    // Number grid 8x10 = 80
+    var grid = document.createElement('div');
+    grid.className = 'keno-grid';
+    var kenoPicks = [];
+    var kenoCells = [];
+
+    for (var n = 1; n <= 80; n++) {
+        (function(num) {
+            var cell = document.createElement('div');
+            cell.className = 'keno-cell';
+            cell.textContent = String(num);
+            cell.addEventListener('click', function() {
+                if (_kenoInFlight) return;
+                var idx = kenoPicks.indexOf(num);
+                if (idx !== -1) {
+                    kenoPicks.splice(idx, 1);
+                    cell.classList.remove('picked');
+                } else {
+                    if (kenoPicks.length >= 10) return;
+                    kenoPicks.push(num);
+                    cell.classList.add('picked');
+                }
+                picksCounter.textContent = 'Selected: ' + kenoPicks.length + '/10';
+                playBtn.disabled = kenoPicks.length === 0;
+            });
+            kenoCells.push(cell);
+            grid.appendChild(cell);
+        })(n);
+    }
+    widget.appendChild(grid);
+
+    // Button row
+    var btnRow = document.createElement('div');
+    btnRow.className = 'keno-btn-row';
+    var playBtn = document.createElement('button');
+    playBtn.className = 'keno-play-btn';
+    playBtn.textContent = 'PLAY';
+    playBtn.disabled = true;
+    var clearBtn = document.createElement('button');
+    clearBtn.className = 'keno-clear-btn';
+    clearBtn.textContent = 'Clear';
+    btnRow.appendChild(playBtn);
+    btnRow.appendChild(clearBtn);
+    widget.appendChild(btnRow);
+
+    // Result text
+    var resultText = document.createElement('div');
+    resultText.className = 'keno-result-text';
+    widget.appendChild(resultText);
+
+    // ── Clear handler ──
+    clearBtn.addEventListener('click', function() {
+        if (_kenoInFlight) return;
+        kenoPicks.length = 0;
+        for (var i = 0; i < kenoCells.length; i++) {
+            kenoCells[i].className = 'keno-cell';
+        }
+        picksCounter.textContent = 'Selected: 0/10';
+        resultText.textContent = '';
+        resultText.className = 'keno-result-text';
+        playBtn.disabled = true;
+    });
+
+    // ── Play handler ──
+    playBtn.addEventListener('click', function() {
+        if (_kenoInFlight) return;
+        if (kenoPicks.length === 0) return;
+
+        // Auth check
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return;
+
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.25) {
+            resultText.textContent = 'Min bet $0.25';
+            resultText.className = 'keno-result-text lose';
+            return;
+        }
+
+        _kenoInFlight = true;
+        playBtn.disabled = true;
+        clearBtn.disabled = true;
+        resultText.textContent = 'Drawing...';
+        resultText.className = 'keno-result-text';
+
+        // Reset cell highlights (keep picked state)
+        for (var i = 0; i < kenoCells.length; i++) {
+            kenoCells[i].classList.remove('drawn', 'matched');
+        }
+
+        fetch('/api/keno/play', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ bet: bet, picks: kenoPicks.slice() })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            _kenoInFlight = false;
+            clearBtn.disabled = false;
+
+            if (!data.success) {
+                resultText.textContent = data.error || 'Play failed';
+                resultText.className = 'keno-result-text lose';
+                playBtn.disabled = kenoPicks.length === 0;
+                return;
+            }
+
+            var drawn = data.drawn || [];
+            var matches = data.matches || [];
+            var payout = data.payout || 0;
+
+            // Highlight drawn numbers (blue) then matches (green) with delay
+            var drawDelay = 0;
+            for (var d = 0; d < drawn.length; d++) {
+                (function(num, delay) {
+                    setTimeout(function() {
+                        var cellIdx = num - 1;
+                        if (cellIdx >= 0 && cellIdx < kenoCells.length) {
+                            if (matches.indexOf(num) !== -1) {
+                                kenoCells[cellIdx].classList.add('matched');
+                            } else {
+                                kenoCells[cellIdx].classList.add('drawn');
+                            }
+                        }
+                    }, delay);
+                })(drawn[d], drawDelay);
+                drawDelay += 60;
+            }
+
+            // Show result after all drawn
+            setTimeout(function() {
+                if (matches.length > 0 && payout > 0) {
+                    resultText.textContent = matches.length + ' match' + (matches.length !== 1 ? 'es' : '') + '! Won $' + payout.toFixed(2);
+                    resultText.className = 'keno-result-text win';
+                    if (typeof showToast === 'function') {
+                        showToast('\uD83C\uDFB1 Keno: ' + matches.length + ' match' + (matches.length !== 1 ? 'es' : '') + ' \u2014 won $' + payout.toFixed(2) + '!');
+                    }
+                } else {
+                    resultText.textContent = 'No matches';
+                    resultText.className = 'keno-result-text lose';
+                }
+
+                if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                    updateBalanceDisplay(data.newBalance);
+                }
+
+                playBtn.disabled = kenoPicks.length === 0;
+            }, drawDelay + 100);
+        })
+        .catch(function() {
+            _kenoInFlight = false;
+            clearBtn.disabled = false;
+            resultText.textContent = 'Network error';
+            resultText.className = 'keno-result-text lose';
+            playBtn.disabled = kenoPicks.length === 0;
+        });
+    });
+
+    // Insert into lobby
+    gamesGrid.parentNode.insertBefore(widget, gamesGrid);
 }

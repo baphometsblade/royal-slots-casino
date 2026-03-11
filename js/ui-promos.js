@@ -2217,6 +2217,7 @@ function initPromoEngine() {
             if (!window._crashGameCardInit) { window._crashGameCardInit = true; renderCrashGameCard(promosSidebar); }
             if (!window._plinkoCardInit) { window._plinkoCardInit = true; renderPlinkoCard(promosSidebar); }
             if (!window._scratchCardGameInit) { window._scratchCardGameInit = true; renderScratchCardGame(promosSidebar); }
+            if (!window._baccaratCardInit) { window._baccaratCardInit = true; renderBaccaratCard(promosSidebar); }
         }
     }, 4000);
 
@@ -6661,5 +6662,314 @@ function renderScratchCardGame(container) {
     // --- BUY ANOTHER handler ---
     againBtn.addEventListener('click', function() {
         resetGrid();
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// BACCARAT CARD WIDGET
+// ─────────────────────────────────────────────────────────────────────
+
+function renderBaccaratCard(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    if (document.getElementById('baccaratCard')) return;
+
+    var ranks = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    var suitMap = {H:'\u2665',D:'\u2666',C:'\u2663',S:'\u2660'};
+
+    var selectedBet = 'player';
+
+    // Helper: clear all children from an element
+    function clearChildren(el) {
+        while (el.firstChild) { el.removeChild(el.firstChild); }
+    }
+
+    // Inject CSS once
+    if (!document.getElementById('baccarat-card-css')) {
+        var style = document.createElement('style');
+        style.id = 'baccarat-card-css';
+        style.textContent = [
+            '#baccaratCard { background: linear-gradient(135deg, #0a1628, #162040); border: 1px solid #2a5a3a; border-radius: 12px; padding: 16px; margin-bottom: 14px; color: #fff; }',
+            '#baccaratCard .bc-title { color: #fbbf24; margin: 0 0 6px 0; font-size: 15px; font-weight: 800; }',
+            '#baccaratCard .bc-desc { color: #aaa; font-size: 12px; margin: 0 0 12px 0; }',
+            '.bc-bet-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; color: #ccc; }',
+            '.bc-bet-input { background: #1a1f2e; border: 1px solid #4a4a7a; color: #fff; padding: 6px 10px; border-radius: 6px; width: 80px; font-size: 13px; }',
+            '.bc-beton-row { display: flex; gap: 6px; margin-bottom: 10px; }',
+            '.bc-beton-btn { flex: 1; padding: 8px 0; border: 1.5px solid #4a4a7a; border-radius: 6px; background: transparent; color: #aaa; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; }',
+            '.bc-beton-btn.bc-active-player { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.12); }',
+            '.bc-beton-btn.bc-active-banker { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.12); }',
+            '.bc-beton-btn.bc-active-tie { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.12); }',
+            '.bc-deal-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background: linear-gradient(135deg, #065f46, #10b981); color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; margin-bottom: 10px; }',
+            '.bc-deal-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
+            '.bc-hands { display: flex; gap: 10px; margin-bottom: 10px; }',
+            '.bc-hand { flex: 1; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 6px; text-align: center; }',
+            '.bc-hand-label { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }',
+            '.bc-cards-area { display: flex; gap: 4px; justify-content: center; margin-bottom: 6px; min-height: 54px; align-items: center; }',
+            '.bc-card { width: 36px; height: 50px; background: #fff; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }',
+            '.bc-card-rank { font-size: 13px; line-height: 1; }',
+            '.bc-card-suit { font-size: 14px; line-height: 1; }',
+            '.bc-card.bc-red { color: #dc2626; }',
+            '.bc-card.bc-black { color: #1a1a1a; }',
+            '.bc-total { font-size: 18px; font-weight: 800; color: #e2e8f0; }',
+            '.bc-result { text-align: center; font-size: 13px; font-weight: 600; min-height: 20px; margin-top: 4px; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // Card root
+    var card = document.createElement('div');
+    card.id = 'baccaratCard';
+
+    var title = document.createElement('p');
+    title.className = 'bc-title';
+    title.textContent = '\uD83C\uDCB4 Baccarat';
+    card.appendChild(title);
+
+    var desc = document.createElement('p');
+    desc.className = 'bc-desc';
+    desc.textContent = 'Player 1:1 \u2022 Banker 0.95:1 \u2022 Tie 8:1';
+    card.appendChild(desc);
+
+    // Bet input row
+    var betRow = document.createElement('div');
+    betRow.className = 'bc-bet-row';
+    var betLabel = document.createElement('span');
+    betLabel.textContent = 'Bet $';
+    betRow.appendChild(betLabel);
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'bc-bet-input';
+    betInput.min = '0.50';
+    betInput.step = '0.50';
+    betInput.value = '1.00';
+    betRow.appendChild(betInput);
+    card.appendChild(betRow);
+
+    // Bet-on buttons
+    var betonRow = document.createElement('div');
+    betonRow.className = 'bc-beton-row';
+
+    var btnPlayer = document.createElement('button');
+    btnPlayer.className = 'bc-beton-btn bc-active-player';
+    btnPlayer.textContent = 'Player';
+    btnPlayer.setAttribute('data-bet', 'player');
+
+    var btnBanker = document.createElement('button');
+    btnBanker.className = 'bc-beton-btn';
+    btnBanker.textContent = 'Banker';
+    btnBanker.setAttribute('data-bet', 'banker');
+
+    var btnTie = document.createElement('button');
+    btnTie.className = 'bc-beton-btn';
+    btnTie.textContent = 'Tie';
+    btnTie.setAttribute('data-bet', 'tie');
+
+    betonRow.appendChild(btnPlayer);
+    betonRow.appendChild(btnBanker);
+    betonRow.appendChild(btnTie);
+    card.appendChild(betonRow);
+
+    var allBetonBtns = [btnPlayer, btnBanker, btnTie];
+    var activeClasses = { player: 'bc-active-player', banker: 'bc-active-banker', tie: 'bc-active-tie' };
+
+    function updateBetonHighlight() {
+        for (var i = 0; i < allBetonBtns.length; i++) {
+            var btn = allBetonBtns[i];
+            var betVal = btn.getAttribute('data-bet');
+            btn.className = 'bc-beton-btn';
+            if (betVal === selectedBet) {
+                btn.className += ' ' + activeClasses[betVal];
+            }
+        }
+    }
+
+    allBetonBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            selectedBet = btn.getAttribute('data-bet');
+            updateBetonHighlight();
+        });
+    });
+
+    // Deal button
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'bc-deal-btn';
+    dealBtn.textContent = 'DEAL';
+    card.appendChild(dealBtn);
+
+    // Hands area
+    var handsDiv = document.createElement('div');
+    handsDiv.className = 'bc-hands';
+
+    // Player hand
+    var playerHand = document.createElement('div');
+    playerHand.className = 'bc-hand';
+    var playerLabel = document.createElement('div');
+    playerLabel.className = 'bc-hand-label';
+    playerLabel.textContent = 'Player';
+    playerHand.appendChild(playerLabel);
+    var playerCardsArea = document.createElement('div');
+    playerCardsArea.className = 'bc-cards-area';
+    playerHand.appendChild(playerCardsArea);
+    var playerTotalEl = document.createElement('div');
+    playerTotalEl.className = 'bc-total';
+    playerTotalEl.textContent = '-';
+    playerHand.appendChild(playerTotalEl);
+
+    // Banker hand
+    var bankerHand = document.createElement('div');
+    bankerHand.className = 'bc-hand';
+    var bankerLabelEl = document.createElement('div');
+    bankerLabelEl.className = 'bc-hand-label';
+    bankerLabelEl.textContent = 'Banker';
+    bankerHand.appendChild(bankerLabelEl);
+    var bankerCardsArea = document.createElement('div');
+    bankerCardsArea.className = 'bc-cards-area';
+    bankerHand.appendChild(bankerCardsArea);
+    var bankerTotalEl = document.createElement('div');
+    bankerTotalEl.className = 'bc-total';
+    bankerTotalEl.textContent = '-';
+    bankerHand.appendChild(bankerTotalEl);
+
+    handsDiv.appendChild(playerHand);
+    handsDiv.appendChild(bankerHand);
+    card.appendChild(handsDiv);
+
+    // Result
+    var resultEl = document.createElement('div');
+    resultEl.className = 'bc-result';
+    card.appendChild(resultEl);
+
+    container.appendChild(card);
+
+    // Helper: create a card DOM element
+    function makeCardEl(c) {
+        var el = document.createElement('div');
+        var isRed = (c.s === 'H' || c.s === 'D');
+        el.className = 'bc-card ' + (isRed ? 'bc-red' : 'bc-black');
+        var rankSpan = document.createElement('div');
+        rankSpan.className = 'bc-card-rank';
+        rankSpan.textContent = ranks[c.v] || String(c.v);
+        el.appendChild(rankSpan);
+        var suitSpan = document.createElement('div');
+        suitSpan.className = 'bc-card-suit';
+        suitSpan.textContent = suitMap[c.s] || c.s;
+        el.appendChild(suitSpan);
+        return el;
+    }
+
+    // Helper: render cards into an area with staggered animation
+    function renderCards(area, cards, cb) {
+        clearChildren(area);
+        var idx = 0;
+        var interval = setInterval(function() {
+            if (idx >= cards.length) {
+                clearInterval(interval);
+                if (cb) cb();
+                return;
+            }
+            area.appendChild(makeCardEl(cards[idx]));
+            idx++;
+        }, 200);
+    }
+
+    var busy = false;
+
+    // DEAL handler
+    dealBtn.addEventListener('click', function() {
+        if (busy) return;
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.50) {
+            resultEl.textContent = 'Min bet is $0.50';
+            resultEl.style.color = '#f87171';
+            return;
+        }
+
+        busy = true;
+        dealBtn.disabled = true;
+        dealBtn.textContent = 'DEALING...';
+        resultEl.textContent = '';
+        resultEl.style.color = '';
+        clearChildren(playerCardsArea);
+        clearChildren(bankerCardsArea);
+        playerTotalEl.textContent = '-';
+        bankerTotalEl.textContent = '-';
+
+        var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!currentToken) {
+            resultEl.textContent = 'Not authenticated.';
+            resultEl.style.color = '#f87171';
+            busy = false;
+            dealBtn.disabled = false;
+            dealBtn.textContent = 'DEAL';
+            return;
+        }
+
+        fetch('/api/baccarat/play', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + currentToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ bet: bet, betOn: selectedBet })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                resultEl.textContent = data.error || 'Deal failed.';
+                resultEl.style.color = '#f87171';
+                busy = false;
+                dealBtn.disabled = false;
+                dealBtn.textContent = 'DEAL';
+                return;
+            }
+
+            // Render player cards, then banker cards, then show result
+            renderCards(playerCardsArea, data.playerCards || [], function() {
+                playerTotalEl.textContent = String(data.playerTotal);
+
+                renderCards(bankerCardsArea, data.bankerCards || [], function() {
+                    bankerTotalEl.textContent = String(data.bankerTotal);
+
+                    // Show result
+                    var winnerText = '';
+                    if (data.winner === 'player') {
+                        winnerText = 'Player Wins!';
+                    } else if (data.winner === 'banker') {
+                        winnerText = 'Banker Wins!';
+                    } else {
+                        winnerText = 'Tie!';
+                    }
+
+                    var payout = data.payout || 0;
+                    if (payout > 0) {
+                        resultEl.textContent = winnerText + ' +$' + payout.toFixed(2);
+                        resultEl.style.color = '#4ade80';
+                    } else {
+                        resultEl.textContent = winnerText + ' -$' + bet.toFixed(2);
+                        resultEl.style.color = '#f87171';
+                    }
+
+                    // Update balance
+                    if (typeof data.newBalance === 'number') {
+                        if (typeof updateBalanceDisplay === 'function') {
+                            updateBalanceDisplay(data.newBalance);
+                        }
+                    }
+
+                    busy = false;
+                    dealBtn.disabled = false;
+                    dealBtn.textContent = 'DEAL';
+                });
+            });
+        })
+        .catch(function() {
+            resultEl.textContent = 'Connection error. Try again.';
+            resultEl.style.color = '#f87171';
+            busy = false;
+            dealBtn.disabled = false;
+            dealBtn.textContent = 'DEAL';
+        });
     });
 }

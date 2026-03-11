@@ -895,7 +895,8 @@ const PROFILE_TABS = [
     { id: 'referral',     icon: '\u{1F465}', label: 'Referral' },
     { id: 'cosmetics',    icon: '\u{1F3A8}', label: 'Cosmetics' },
     { id: 'tower',        icon: '\u{1F5FC}', label: 'Tower' },
-    { id: 'videopoker',   icon: '\u{1F0CF}', label: 'Video Poker' }
+    { id: 'videopoker',   icon: '\u{1F0CF}', label: 'Video Poker' },
+    { id: 'casinowar',    icon: '\u2694\uFE0F', label: 'Casino War' }
 ];
 
 function renderProfileSidebar() {
@@ -997,6 +998,7 @@ function renderProfileContent() {
         case 'cosmetics':     renderCosmeticsTab(); break;
         case 'tower':         renderTowerTab(); break;
         case 'videopoker':    renderVideoPokerTab(); break;
+        case 'casinowar':     renderCasinoWarTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -5157,5 +5159,446 @@ function renderVideoPokerWidget() {
             setStatus('Network error. Try again.', 'lose');
             drawBtn.disabled = false;
         });
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// CASINO WAR TAB + WIDGET
+// ═══════════════════════════════════════════════════════
+
+function renderCasinoWarTab() {
+    if (typeof renderCasinoWarCard === 'function') renderCasinoWarCard();
+}
+
+function renderCasinoWarCard() {
+    // Idempotency guard
+    if (document.getElementById('casinoWarCard')) return;
+
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // CSS injection with ID guard
+    if (!document.getElementById('casino-war-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'casino-war-css';
+        styleEl.textContent = [
+            '.cw-widget { padding: 20px; max-width: 480px; margin: 0 auto; }',
+            '.cw-title { font-size: 1.4em; font-weight: bold; color: #fff; margin-bottom: 16px; text-align: center; }',
+            '.cw-controls { display: flex; gap: 8px; align-items: center; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }',
+            '.cw-bet-label { color: #aaa; font-size: 0.9em; }',
+            '.cw-bet-input { width: 80px; padding: 6px 8px; border-radius: 6px; border: 1px solid #555; background: #1a1a2e; color: #fff; font-size: 1em; text-align: center; }',
+            '.cw-play-btn { padding: 8px 28px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; transition: opacity 0.15s; color: #fff; background: linear-gradient(135deg, #dc2626, #ef4444); }',
+            '.cw-play-btn:hover { opacity: 0.85; }',
+            '.cw-play-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.cw-battlefield { display: flex; gap: 40px; justify-content: center; align-items: center; margin-bottom: 20px; min-height: 160px; }',
+            '.cw-side { display: flex; flex-direction: column; align-items: center; gap: 8px; }',
+            '.cw-side-label { color: #94a3b8; font-size: 0.85em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }',
+            '.cw-card { width: 80px; height: 112px; border-radius: 10px; background: #1e1e3a; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; transition: all 0.3s; }',
+            '.cw-card.empty { border-style: dashed; border-color: #333; }',
+            '.cw-card.win-glow { border-color: #4ade80; box-shadow: 0 0 16px rgba(74,222,128,0.5); }',
+            '.cw-card.lose-dim { opacity: 0.5; }',
+            '.cw-card-rank { font-size: 1.8em; font-weight: bold; line-height: 1; }',
+            '.cw-card-suit { font-size: 1.5em; line-height: 1; margin-top: 4px; }',
+            '.cw-card.red .cw-card-rank, .cw-card.red .cw-card-suit { color: #ef4444; }',
+            '.cw-card.black .cw-card-rank, .cw-card.black .cw-card-suit { color: #e2e8f0; }',
+            '.cw-vs { font-size: 1.6em; font-weight: bold; color: #555; }',
+            '.cw-status { text-align: center; padding: 10px; font-size: 1.1em; font-weight: bold; min-height: 36px; }',
+            '.cw-status.win { color: #4ade80; }',
+            '.cw-status.lose { color: #f87171; }',
+            '.cw-status.info { color: #88f; }',
+            '.cw-status.war { color: #fbbf24; text-shadow: 0 0 8px rgba(251,191,36,0.4); }',
+            '.cw-war-actions { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }',
+            '.cw-war-btn { padding: 8px 22px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; transition: opacity 0.15s; color: #fff; }',
+            '.cw-war-btn:hover { opacity: 0.85; }',
+            '.cw-war-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.cw-war-btn.go { background: linear-gradient(135deg, #d97706, #f59e0b); }',
+            '.cw-war-btn.surrender { background: linear-gradient(135deg, #64748b, #94a3b8); }',
+            '.cw-war-cards { display: flex; gap: 40px; justify-content: center; align-items: center; margin-bottom: 16px; min-height: 0; overflow: hidden; transition: min-height 0.3s; }',
+            '.cw-war-cards.visible { min-height: 140px; }',
+            '.cw-war-side { display: flex; flex-direction: column; align-items: center; gap: 6px; }',
+            '.cw-war-side-label { color: #fbbf24; font-size: 0.75em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    // ── Game state ──
+    var cwState = {
+        phase: 'idle',  // 'idle' | 'playing' | 'tie' | 'war' | 'done'
+        bet: 1.00,
+        playerCard: null,
+        dealerCard: null,
+        playerWarCard: null,
+        dealerWarCard: null
+    };
+
+    // ── Helpers ──
+    function isRedSuit(suit) {
+        return suit === '\u2665' || suit === '\u2666';
+    }
+
+    function buildCardEl(card, extraClass) {
+        var cardEl = document.createElement('div');
+        var classes = 'cw-card';
+        if (!card) {
+            classes += ' empty';
+            cardEl.className = classes;
+            return cardEl;
+        }
+        if (isRedSuit(card.suit)) {
+            classes += ' red';
+        } else {
+            classes += ' black';
+        }
+        if (extraClass) classes += ' ' + extraClass;
+        cardEl.className = classes;
+
+        var rankEl = document.createElement('div');
+        rankEl.className = 'cw-card-rank';
+        rankEl.textContent = card.rank;
+        cardEl.appendChild(rankEl);
+
+        var suitEl = document.createElement('div');
+        suitEl.className = 'cw-card-suit';
+        suitEl.textContent = card.suit;
+        cardEl.appendChild(suitEl);
+
+        return cardEl;
+    }
+
+    // ── Container ──
+    var widget = document.createElement('div');
+    widget.id = 'casinoWarCard';
+    widget.className = 'cw-widget';
+
+    // ── Title ──
+    var title = document.createElement('div');
+    title.className = 'cw-title';
+    title.textContent = '\u2694\uFE0F Casino War';
+    widget.appendChild(title);
+
+    // ── Controls ──
+    var controlsRow = document.createElement('div');
+    controlsRow.className = 'cw-controls';
+
+    var betLabel = document.createElement('span');
+    betLabel.className = 'cw-bet-label';
+    betLabel.textContent = 'Bet $';
+    controlsRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'cw-bet-input';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    controlsRow.appendChild(betInput);
+
+    var playBtn = document.createElement('button');
+    playBtn.className = 'cw-play-btn';
+    playBtn.textContent = 'PLAY';
+    playBtn.addEventListener('click', doPlay);
+    controlsRow.appendChild(playBtn);
+
+    widget.appendChild(controlsRow);
+
+    // ── Battlefield (player card vs dealer card) ──
+    var battlefield = document.createElement('div');
+    battlefield.className = 'cw-battlefield';
+
+    var playerSide = document.createElement('div');
+    playerSide.className = 'cw-side';
+    var playerLabel = document.createElement('div');
+    playerLabel.className = 'cw-side-label';
+    playerLabel.textContent = 'You';
+    playerSide.appendChild(playerLabel);
+    var playerCardSlot = document.createElement('div');
+    playerCardSlot.className = 'cw-card empty';
+    playerSide.appendChild(playerCardSlot);
+    battlefield.appendChild(playerSide);
+
+    var vsEl = document.createElement('div');
+    vsEl.className = 'cw-vs';
+    vsEl.textContent = 'VS';
+    battlefield.appendChild(vsEl);
+
+    var dealerSide = document.createElement('div');
+    dealerSide.className = 'cw-side';
+    var dealerLabel = document.createElement('div');
+    dealerLabel.className = 'cw-side-label';
+    dealerLabel.textContent = 'Dealer';
+    dealerSide.appendChild(dealerLabel);
+    var dealerCardSlot = document.createElement('div');
+    dealerCardSlot.className = 'cw-card empty';
+    dealerSide.appendChild(dealerCardSlot);
+    battlefield.appendChild(dealerSide);
+
+    widget.appendChild(battlefield);
+
+    // ── War action buttons (hidden initially) ──
+    var warActions = document.createElement('div');
+    warActions.className = 'cw-war-actions';
+    warActions.style.display = 'none';
+
+    var goWarBtn = document.createElement('button');
+    goWarBtn.className = 'cw-war-btn go';
+    goWarBtn.textContent = 'Go to War';
+    goWarBtn.addEventListener('click', doWar);
+    warActions.appendChild(goWarBtn);
+
+    var surrenderBtn = document.createElement('button');
+    surrenderBtn.className = 'cw-war-btn surrender';
+    surrenderBtn.textContent = 'Surrender';
+    surrenderBtn.addEventListener('click', doSurrender);
+    warActions.appendChild(surrenderBtn);
+
+    widget.appendChild(warActions);
+
+    // ── War cards area (hidden initially) ──
+    var warCardsArea = document.createElement('div');
+    warCardsArea.className = 'cw-war-cards';
+
+    var warPlayerSide = document.createElement('div');
+    warPlayerSide.className = 'cw-war-side';
+    var warPlayerLabel = document.createElement('div');
+    warPlayerLabel.className = 'cw-war-side-label';
+    warPlayerLabel.textContent = 'Your War Card';
+    warPlayerSide.appendChild(warPlayerLabel);
+    var warPlayerCardSlot = document.createElement('div');
+    warPlayerCardSlot.className = 'cw-card empty';
+    warPlayerSide.appendChild(warPlayerCardSlot);
+    warCardsArea.appendChild(warPlayerSide);
+
+    var warVsEl = document.createElement('div');
+    warVsEl.className = 'cw-vs';
+    warVsEl.textContent = 'VS';
+    warCardsArea.appendChild(warVsEl);
+
+    var warDealerSide = document.createElement('div');
+    warDealerSide.className = 'cw-war-side';
+    var warDealerLabel = document.createElement('div');
+    warDealerLabel.className = 'cw-war-side-label';
+    warDealerLabel.textContent = 'Dealer War Card';
+    warDealerSide.appendChild(warDealerLabel);
+    var warDealerCardSlot = document.createElement('div');
+    warDealerCardSlot.className = 'cw-card empty';
+    warDealerSide.appendChild(warDealerCardSlot);
+    warCardsArea.appendChild(warDealerSide);
+
+    widget.appendChild(warCardsArea);
+
+    // ── Status ──
+    var statusEl = document.createElement('div');
+    statusEl.className = 'cw-status info';
+    statusEl.textContent = 'Place your bet and press PLAY to start.';
+    widget.appendChild(statusEl);
+
+    el.appendChild(widget);
+
+    // ── UI update helpers ──
+    function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = 'cw-status ' + (type || 'info');
+    }
+
+    function renderMainCards(pCard, dCard, result) {
+        // Replace player card slot
+        var pClass = '';
+        var dClass = '';
+        if (result === 'win') { pClass = 'win-glow'; dClass = 'lose-dim'; }
+        else if (result === 'lose') { pClass = 'lose-dim'; dClass = 'win-glow'; }
+
+        var newPlayerCard = buildCardEl(pCard, pClass);
+        playerSide.replaceChild(newPlayerCard, playerSide.lastChild);
+
+        var newDealerCard = buildCardEl(dCard, dClass);
+        dealerSide.replaceChild(newDealerCard, dealerSide.lastChild);
+    }
+
+    function renderWarCards(pwCard, dwCard, result) {
+        warCardsArea.className = 'cw-war-cards visible';
+
+        var pClass = '';
+        var dClass = '';
+        if (result === 'win') { pClass = 'win-glow'; dClass = 'lose-dim'; }
+        else if (result === 'lose') { pClass = 'lose-dim'; dClass = 'win-glow'; }
+
+        var newWPCard = buildCardEl(pwCard, pClass);
+        warPlayerSide.replaceChild(newWPCard, warPlayerSide.lastChild);
+
+        var newWDCard = buildCardEl(dwCard, dClass);
+        warDealerSide.replaceChild(newWDCard, warDealerSide.lastChild);
+    }
+
+    function resetUI() {
+        cwState.phase = 'idle';
+        cwState.playerCard = null;
+        cwState.dealerCard = null;
+        cwState.playerWarCard = null;
+        cwState.dealerWarCard = null;
+
+        // Reset main cards to empty
+        var emptyP = buildCardEl(null);
+        playerSide.replaceChild(emptyP, playerSide.lastChild);
+        var emptyD = buildCardEl(null);
+        dealerSide.replaceChild(emptyD, dealerSide.lastChild);
+
+        // Hide war area
+        warCardsArea.className = 'cw-war-cards';
+        var emptyWP = buildCardEl(null);
+        warPlayerSide.replaceChild(emptyWP, warPlayerSide.lastChild);
+        var emptyWD = buildCardEl(null);
+        warDealerSide.replaceChild(emptyWD, warDealerSide.lastChild);
+
+        warActions.style.display = 'none';
+        playBtn.textContent = 'PLAY';
+        playBtn.disabled = false;
+        setStatus('Place your bet and press PLAY to start.', 'info');
+    }
+
+    function lockPlay(locked) {
+        playBtn.disabled = locked;
+        betInput.disabled = locked;
+    }
+
+    // ── PLAY ──
+    function doPlay() {
+        if (cwState.phase === 'done') {
+            resetUI();
+            return;
+        }
+        if (cwState.phase !== 'idle') return;
+
+        var betVal = parseFloat(betInput.value);
+        if (isNaN(betVal) || betVal < 0.25) {
+            setStatus('Minimum bet is $0.25', 'lose');
+            return;
+        }
+        cwState.bet = betVal;
+
+        lockPlay(true);
+        setStatus('Dealing...', 'info');
+
+        fetch('/api/casinowar/play', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ bet: betVal })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Failed to play', 'lose');
+                lockPlay(false);
+                return;
+            }
+            var d = result.data;
+            cwState.playerCard = d.playerCard;
+            cwState.dealerCard = d.dealerCard;
+
+            if (d.result === 'win') {
+                cwState.phase = 'done';
+                renderMainCards(d.playerCard, d.dealerCard, 'win');
+                var payoutStr = typeof formatMoney === 'function' ? formatMoney(d.payout) : d.payout.toFixed(2);
+                setStatus('You win! Higher card! +$' + payoutStr, 'win');
+                if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                    updateBalanceDisplay(d.newBalance);
+                }
+                playBtn.textContent = 'PLAY AGAIN';
+                playBtn.disabled = false;
+            } else if (d.result === 'lose') {
+                cwState.phase = 'done';
+                renderMainCards(d.playerCard, d.dealerCard, 'lose');
+                setStatus('Dealer wins!', 'lose');
+                if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                    updateBalanceDisplay(d.newBalance);
+                }
+                playBtn.textContent = 'PLAY AGAIN';
+                playBtn.disabled = false;
+            } else if (d.result === 'tie') {
+                cwState.phase = 'tie';
+                renderMainCards(d.playerCard, d.dealerCard, null);
+                setStatus('WAR! Cards are tied! Go to War or Surrender?', 'war');
+                warActions.style.display = 'flex';
+                if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                    updateBalanceDisplay(d.newBalance);
+                }
+            }
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            lockPlay(false);
+        });
+    }
+
+    // ── GO TO WAR ──
+    function doWar() {
+        if (cwState.phase !== 'tie') return;
+
+        warActions.style.display = 'none';
+        setStatus('Going to war...', 'info');
+        goWarBtn.disabled = true;
+        surrenderBtn.disabled = true;
+
+        fetch('/api/casinowar/war', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ bet: cwState.bet, warBet: cwState.bet })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'War failed', 'lose');
+                goWarBtn.disabled = false;
+                surrenderBtn.disabled = false;
+                warActions.style.display = 'flex';
+                return;
+            }
+            var d = result.data;
+            cwState.phase = 'done';
+            cwState.playerWarCard = d.playerWarCard;
+            cwState.dealerWarCard = d.dealerWarCard;
+
+            renderWarCards(d.playerWarCard, d.dealerWarCard, d.result);
+
+            if (d.result === 'win') {
+                var payoutStr = typeof formatMoney === 'function' ? formatMoney(d.payout) : d.payout.toFixed(2);
+                setStatus('You won the war! +$' + payoutStr, 'win');
+            } else {
+                setStatus('Dealer wins the war!', 'lose');
+            }
+
+            if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                updateBalanceDisplay(d.newBalance);
+            }
+
+            playBtn.textContent = 'PLAY AGAIN';
+            playBtn.disabled = false;
+            goWarBtn.disabled = false;
+            surrenderBtn.disabled = false;
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            goWarBtn.disabled = false;
+            surrenderBtn.disabled = false;
+            warActions.style.display = 'flex';
+        });
+    }
+
+    // ── SURRENDER ──
+    function doSurrender() {
+        if (cwState.phase !== 'tie') return;
+
+        cwState.phase = 'done';
+        warActions.style.display = 'none';
+
+        // Surrender loses half the bet
+        var lostHalf = cwState.bet / 2;
+        var lostStr = typeof formatMoney === 'function' ? formatMoney(lostHalf) : lostHalf.toFixed(2);
+        setStatus('Surrendered. You lose $' + lostStr + '.', 'lose');
+
+        playBtn.textContent = 'PLAY AGAIN';
+        playBtn.disabled = false;
     }
 }
