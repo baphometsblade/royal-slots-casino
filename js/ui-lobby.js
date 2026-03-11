@@ -635,6 +635,8 @@ function renderGames() {
                     if (typeof renderBigSixWheelWidget === 'function') renderBigSixWheelWidget();
                     // Keno Turbo quick-play widget
                     if (typeof renderKenoTurboWidget === 'function') renderKenoTurboWidget();
+                    // Game stats hot/cold indicator widget
+                    if (typeof renderGameStatsWidget === 'function') renderGameStatsWidget();
                 }, 200);
             });
         }
@@ -8997,4 +8999,412 @@ function renderKenoTurboWidget() {
     var gamesGrid = document.querySelector('.games-grid');
     if (!gamesGrid || !gamesGrid.parentNode) return;
     gamesGrid.parentNode.insertBefore(widget, gamesGrid);
+}
+
+/**
+ * renderGameStatsWidget — Hot & Cold Games widget
+ * Fetches server-side game stats (RTP, spin counts) and displays
+ * the top 5 hottest (highest RTP) and top 5 coldest (lowest RTP) games
+ * in a compact lobby widget with play buttons.
+ */
+function renderGameStatsWidget() {
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Idempotency
+    if (document.getElementById('gameStatsWidget')) return;
+
+    // Inject styles (once)
+    if (!document.getElementById('gameStatsWidgetStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'gameStatsWidgetStyles';
+        styleEl.textContent = [
+            '.gsw-container {',
+            '  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);',
+            '  border: 1px solid rgba(255, 255, 255, 0.08);',
+            '  border-radius: 16px;',
+            '  padding: 20px;',
+            '  margin-bottom: 20px;',
+            '  box-shadow: 0 8px 32px rgba(0,0,0,0.4);',
+            '  position: relative;',
+            '  overflow: hidden;',
+            '}',
+            '.gsw-container::before {',
+            '  content: "";',
+            '  position: absolute;',
+            '  top: 0; left: 0; right: 0;',
+            '  height: 3px;',
+            '  background: linear-gradient(90deg, #ff4500, #ff8c00, #00bfff, #1e90ff);',
+            '}',
+            '.gsw-title {',
+            '  font-size: 20px;',
+            '  font-weight: 700;',
+            '  color: #fff;',
+            '  margin: 0 0 16px 0;',
+            '  text-align: center;',
+            '  letter-spacing: 0.5px;',
+            '}',
+            '.gsw-sections {',
+            '  display: flex;',
+            '  gap: 16px;',
+            '}',
+            '@media (max-width: 700px) {',
+            '  .gsw-sections { flex-direction: column; }',
+            '}',
+            '.gsw-section {',
+            '  flex: 1;',
+            '  border-radius: 12px;',
+            '  padding: 14px;',
+            '  min-width: 0;',
+            '}',
+            '.gsw-section--hot {',
+            '  background: linear-gradient(180deg, rgba(255,69,0,0.12) 0%, rgba(255,140,0,0.06) 100%);',
+            '  border: 1px solid rgba(255,69,0,0.25);',
+            '}',
+            '.gsw-section--cold {',
+            '  background: linear-gradient(180deg, rgba(0,191,255,0.12) 0%, rgba(30,144,255,0.06) 100%);',
+            '  border: 1px solid rgba(0,191,255,0.25);',
+            '}',
+            '.gsw-section-title {',
+            '  font-size: 15px;',
+            '  font-weight: 700;',
+            '  margin: 0 0 10px 0;',
+            '  padding-bottom: 8px;',
+            '  border-bottom: 1px solid rgba(255,255,255,0.08);',
+            '}',
+            '.gsw-section--hot .gsw-section-title { color: #ff8c00; }',
+            '.gsw-section--cold .gsw-section-title { color: #00bfff; }',
+            '.gsw-entry {',
+            '  display: flex;',
+            '  align-items: center;',
+            '  gap: 8px;',
+            '  padding: 6px 0;',
+            '  border-bottom: 1px solid rgba(255,255,255,0.04);',
+            '}',
+            '.gsw-entry:last-child { border-bottom: none; }',
+            '.gsw-rank {',
+            '  font-size: 12px;',
+            '  font-weight: 700;',
+            '  color: rgba(255,255,255,0.35);',
+            '  width: 18px;',
+            '  text-align: center;',
+            '  flex-shrink: 0;',
+            '}',
+            '.gsw-name {',
+            '  flex: 1;',
+            '  min-width: 0;',
+            '  overflow: hidden;',
+            '  text-overflow: ellipsis;',
+            '  white-space: nowrap;',
+            '  font-size: 13px;',
+            '  font-weight: 500;',
+            '  color: #e0e0e0;',
+            '  cursor: pointer;',
+            '  transition: color 0.2s;',
+            '}',
+            '.gsw-name:hover { color: #fff; text-decoration: underline; }',
+            '.gsw-rtp-bar-wrap {',
+            '  width: 60px;',
+            '  height: 8px;',
+            '  background: rgba(255,255,255,0.08);',
+            '  border-radius: 4px;',
+            '  overflow: hidden;',
+            '  flex-shrink: 0;',
+            '}',
+            '.gsw-rtp-bar {',
+            '  height: 100%;',
+            '  border-radius: 4px;',
+            '  transition: width 0.6s ease;',
+            '}',
+            '.gsw-rtp-bar--green { background: linear-gradient(90deg, #4caf50, #66bb6a); }',
+            '.gsw-rtp-bar--yellow { background: linear-gradient(90deg, #ff9800, #ffc107); }',
+            '.gsw-rtp-bar--red { background: linear-gradient(90deg, #f44336, #e57373); }',
+            '.gsw-rtp-pct {',
+            '  font-size: 12px;',
+            '  font-weight: 700;',
+            '  width: 48px;',
+            '  text-align: right;',
+            '  flex-shrink: 0;',
+            '}',
+            '.gsw-rtp-pct--green { color: #66bb6a; }',
+            '.gsw-rtp-pct--yellow { color: #ffc107; }',
+            '.gsw-rtp-pct--red { color: #e57373; }',
+            '.gsw-spins {',
+            '  font-size: 11px;',
+            '  color: rgba(255,255,255,0.4);',
+            '  width: 52px;',
+            '  text-align: right;',
+            '  flex-shrink: 0;',
+            '}',
+            '.gsw-play-btn {',
+            '  padding: 3px 10px;',
+            '  font-size: 11px;',
+            '  font-weight: 700;',
+            '  border: none;',
+            '  border-radius: 6px;',
+            '  cursor: pointer;',
+            '  transition: transform 0.15s, box-shadow 0.15s;',
+            '  flex-shrink: 0;',
+            '  letter-spacing: 0.5px;',
+            '}',
+            '.gsw-play-btn:hover {',
+            '  transform: scale(1.08);',
+            '  box-shadow: 0 2px 8px rgba(0,0,0,0.3);',
+            '}',
+            '.gsw-play-btn:active { transform: scale(0.96); }',
+            '.gsw-section--hot .gsw-play-btn {',
+            '  background: linear-gradient(135deg, #ff4500, #ff8c00);',
+            '  color: #fff;',
+            '}',
+            '.gsw-section--cold .gsw-play-btn {',
+            '  background: linear-gradient(135deg, #0077b6, #00bfff);',
+            '  color: #fff;',
+            '}',
+            '.gsw-loading {',
+            '  text-align: center;',
+            '  color: rgba(255,255,255,0.4);',
+            '  font-size: 13px;',
+            '  padding: 30px 0;',
+            '}',
+            '.gsw-error {',
+            '  text-align: center;',
+            '  color: #ff8a80;',
+            '  font-size: 13px;',
+            '  padding: 20px 0;',
+            '}',
+            '.gsw-empty {',
+            '  text-align: center;',
+            '  color: rgba(255,255,255,0.35);',
+            '  font-size: 13px;',
+            '  padding: 20px 0;',
+            '}',
+            '.gsw-footer {',
+            '  text-align: center;',
+            '  margin-top: 12px;',
+            '  font-size: 11px;',
+            '  color: rgba(255,255,255,0.25);',
+            '  font-style: italic;',
+            '}',
+            '.gsw-pulse {',
+            '  animation: gswPulse 2s infinite;',
+            '}',
+            '@keyframes gswPulse {',
+            '  0%, 100% { opacity: 1; }',
+            '  50% { opacity: 0.5; }',
+            '}'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    // Build container
+    var widget = document.createElement('div');
+    widget.id = 'gameStatsWidget';
+    widget.className = 'gsw-container';
+
+    // Title
+    var title = document.createElement('h3');
+    title.className = 'gsw-title';
+    title.textContent = '\uD83D\uDD25 Hot & Cold Games';
+    widget.appendChild(title);
+
+    // Loading indicator
+    var loadingDiv = document.createElement('div');
+    loadingDiv.className = 'gsw-loading gsw-pulse';
+    loadingDiv.textContent = 'Loading game stats\u2026';
+    widget.appendChild(loadingDiv);
+
+    // Insert before gamesGrid
+    var gamesGrid = document.querySelector('.games-grid');
+    if (!gamesGrid || !gamesGrid.parentNode) return;
+    gamesGrid.parentNode.insertBefore(widget, gamesGrid);
+
+    // Fetch stats
+    fetch('/api/game-stats', {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+    })
+    .then(function(data) {
+        // Remove loading
+        if (loadingDiv.parentNode) loadingDiv.parentNode.removeChild(loadingDiv);
+
+        var allStats = data && data.stats ? data.stats : [];
+
+        if (allStats.length === 0) {
+            var emptyDiv = document.createElement('div');
+            emptyDiv.className = 'gsw-empty';
+            emptyDiv.textContent = 'Not enough spin data yet. Play some games to see stats!';
+            widget.appendChild(emptyDiv);
+            return;
+        }
+
+        // Sort by RTP descending (should already be, but ensure)
+        allStats.sort(function(a, b) { return (b.actualRtp || 0) - (a.actualRtp || 0); });
+
+        // Hot = top 5 highest RTP, Cold = bottom 5 lowest RTP
+        var hotGames = allStats.slice(0, 5);
+        var coldGames = allStats.length > 5
+            ? allStats.slice(allStats.length - 5).reverse()
+            : [];
+
+        // If we have fewer than 10 total, cold section gets whatever is left
+        if (allStats.length <= 10 && allStats.length > 5) {
+            coldGames = allStats.slice(5).reverse();
+        }
+
+        // Sections wrapper
+        var sectionsDiv = document.createElement('div');
+        sectionsDiv.className = 'gsw-sections';
+        widget.appendChild(sectionsDiv);
+
+        // Helper: get RTP color class
+        function getRtpColorClass(rtp) {
+            var pct = (rtp || 0) * 100;
+            if (pct >= 90) return 'green';
+            if (pct >= 85) return 'yellow';
+            return 'red';
+        }
+
+        // Helper: format spin count compactly
+        function formatSpins(count) {
+            if (count >= 10000) return (count / 1000).toFixed(1) + 'k';
+            if (count >= 1000) return (count / 1000).toFixed(1) + 'k';
+            return String(count);
+        }
+
+        // Helper: build a single game entry row
+        function buildEntry(stat, rank, sectionType) {
+            var game = typeof GAMES !== 'undefined' ? GAMES.find(function(g) { return g.id === stat.gameId; }) : null;
+            var name = game ? game.name : stat.gameId;
+
+            var entryDiv = document.createElement('div');
+            entryDiv.className = 'gsw-entry';
+
+            // Rank number
+            var rankSpan = document.createElement('span');
+            rankSpan.className = 'gsw-rank';
+            rankSpan.textContent = '#' + rank;
+            entryDiv.appendChild(rankSpan);
+
+            // Game name (clickable)
+            var nameSpan = document.createElement('span');
+            nameSpan.className = 'gsw-name';
+            nameSpan.textContent = name;
+            nameSpan.title = name + ' \u2014 Click to play';
+            nameSpan.setAttribute('role', 'button');
+            nameSpan.setAttribute('tabindex', '0');
+            var gameId = stat.gameId;
+            nameSpan.addEventListener('click', function() {
+                if (typeof openSlot === 'function') openSlot(gameId);
+            });
+            nameSpan.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (typeof openSlot === 'function') openSlot(gameId);
+                }
+            });
+            entryDiv.appendChild(nameSpan);
+
+            // RTP bar
+            var barWrap = document.createElement('div');
+            barWrap.className = 'gsw-rtp-bar-wrap';
+            barWrap.title = 'RTP: ' + ((stat.actualRtp || 0) * 100).toFixed(1) + '%';
+
+            var bar = document.createElement('div');
+            bar.className = 'gsw-rtp-bar gsw-rtp-bar--' + getRtpColorClass(stat.actualRtp);
+            // Scale bar width: 70% maps to 0 width, 100%+ maps to full width
+            var rtpPct = (stat.actualRtp || 0) * 100;
+            var barWidth = Math.max(0, Math.min(100, ((rtpPct - 70) / 30) * 100));
+            bar.style.width = barWidth + '%';
+            barWrap.appendChild(bar);
+            entryDiv.appendChild(barWrap);
+
+            // RTP percentage text
+            var rtpSpan = document.createElement('span');
+            var colorClass = getRtpColorClass(stat.actualRtp);
+            rtpSpan.className = 'gsw-rtp-pct gsw-rtp-pct--' + colorClass;
+            rtpSpan.textContent = rtpPct.toFixed(1) + '%';
+            entryDiv.appendChild(rtpSpan);
+
+            // Spin count
+            var spinsSpan = document.createElement('span');
+            spinsSpan.className = 'gsw-spins';
+            spinsSpan.textContent = formatSpins(stat.totalSpins || 0) + ' spins';
+            spinsSpan.title = (stat.totalSpins || 0) + ' total spins';
+            entryDiv.appendChild(spinsSpan);
+
+            // Play button
+            var playBtn = document.createElement('button');
+            playBtn.className = 'gsw-play-btn';
+            playBtn.textContent = 'PLAY';
+            playBtn.title = 'Play ' + name;
+            playBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (typeof openSlot === 'function') openSlot(gameId);
+            });
+            entryDiv.appendChild(playBtn);
+
+            return entryDiv;
+        }
+
+        // Helper: build a section (hot or cold)
+        function buildSection(titleText, games, sectionClass) {
+            var section = document.createElement('div');
+            section.className = 'gsw-section ' + sectionClass;
+
+            var sTitle = document.createElement('div');
+            sTitle.className = 'gsw-section-title';
+            sTitle.textContent = titleText;
+            section.appendChild(sTitle);
+
+            if (games.length === 0) {
+                var emptyMsg = document.createElement('div');
+                emptyMsg.className = 'gsw-empty';
+                emptyMsg.textContent = 'Not enough data yet';
+                section.appendChild(emptyMsg);
+            } else {
+                for (var i = 0; i < games.length; i++) {
+                    var entry = buildEntry(games[i], i + 1, sectionClass);
+                    section.appendChild(entry);
+                }
+            }
+
+            return section;
+        }
+
+        // Build hot section
+        var hotSection = buildSection('\uD83D\uDD25 HOT', hotGames, 'gsw-section--hot');
+        sectionsDiv.appendChild(hotSection);
+
+        // Build cold section
+        var coldSection = buildSection('\u2744\uFE0F COLD', coldGames, 'gsw-section--cold');
+        sectionsDiv.appendChild(coldSection);
+
+        // Footer disclaimer
+        var footer = document.createElement('div');
+        footer.className = 'gsw-footer';
+        footer.textContent = 'Based on recent play data \u2022 RTP updates in real-time';
+        widget.appendChild(footer);
+    })
+    .catch(function(err) {
+        // Remove loading
+        if (loadingDiv.parentNode) loadingDiv.parentNode.removeChild(loadingDiv);
+
+        var errDiv = document.createElement('div');
+        errDiv.className = 'gsw-error';
+        errDiv.textContent = 'Could not load game stats';
+        widget.appendChild(errDiv);
+
+        if (typeof console !== 'undefined' && console.error) {
+            console.error('[GameStatsWidget] Fetch failed:', err.message || err);
+        }
+    });
 }

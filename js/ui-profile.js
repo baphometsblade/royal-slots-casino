@@ -899,7 +899,8 @@ const PROFILE_TABS = [
     { id: 'casinowar',    icon: '\u2694\uFE0F', label: 'Casino War' },
     { id: 'threecardpoker', icon: '\u{1F0CF}', label: 'Three Card Poker' },
     { id: 'letitride', icon: '\u{1F0CF}', label: 'Let It Ride' },
-    { id: 'comeback', icon: '🔄', label: 'Comeback' }
+    { id: 'comeback', icon: '🔄', label: 'Comeback' },
+    { id: 'lossstreak', icon: '💪', label: 'Loss Streak' }
 ];
 
 function renderProfileSidebar() {
@@ -1005,6 +1006,7 @@ function renderProfileContent() {
         case 'threecardpoker': renderThreeCardPokerTab(); break;
         case 'letitride': renderLetItRideTab(); break;
         case 'comeback': renderComebackBonusTab(); break;
+        case 'lossstreak': renderLossStreakTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -7537,6 +7539,412 @@ function renderComebackBonusWidget() {
         var errEl = document.createElement('div');
         errEl.className = 'comeback-widget-error';
         errEl.textContent = 'Could not load comeback bonus.';
+        widgetBody.appendChild(errEl);
+    });
+
+    return widget;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// LOSS STREAK SAFETY NET TAB & WIDGET
+// ═══════════════════════════════════════════════════════
+
+function renderLossStreakTab() {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var profileContent = document.querySelector('.profile-tab-content') || document.querySelector('.profile-content');
+    if (!profileContent) return;
+    profileContent.innerHTML = '';
+
+    // --- inject CSS once ---
+    if (!document.getElementById('lossStreakTabCSS')) {
+        var style = document.createElement('style');
+        style.id = 'lossStreakTabCSS';
+        style.textContent = [
+            '.ls-tab-wrap { max-width: 620px; margin: 0 auto; padding: 20px 10px; font-family: inherit; }',
+            '.ls-tab-title { font-size: 1.6rem; font-weight: 700; color: #e0f0ff; margin-bottom: 6px; }',
+            '.ls-tab-subtitle { font-size: 0.92rem; color: #8ab4d8; margin-bottom: 22px; }',
+            '.ls-offer-card { background: linear-gradient(135deg, #1a2e44 0%, #15304a 100%); border: 1px solid #2a5a7e; border-radius: 14px; padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden; }',
+            '.ls-offer-card::before { content: ""; position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(60,180,130,0.15) 0%, transparent 70%); pointer-events: none; }',
+            '.ls-offer-badge { display: inline-block; background: linear-gradient(135deg, #2d8a6e, #3cb88a); color: #fff; font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }',
+            '.ls-offer-headline { font-size: 1.25rem; font-weight: 700; color: #7dd8b0; margin-bottom: 8px; }',
+            '.ls-offer-desc { font-size: 0.9rem; color: #a0c4d8; line-height: 1.55; margin-bottom: 18px; }',
+            '.ls-deposit-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+            '.ls-deposit-label { font-size: 0.88rem; color: #8ab4d8; white-space: nowrap; }',
+            '.ls-deposit-input { width: 110px; padding: 10px 12px; border-radius: 8px; border: 1px solid #2a5a7e; background: #0e1e30; color: #e0f0ff; font-size: 1rem; outline: none; transition: border-color 0.2s; }',
+            '.ls-deposit-input:focus { border-color: #3cb88a; }',
+            '.ls-preview { font-size: 0.92rem; color: #7dd8b0; background: rgba(60,180,130,0.1); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; border: 1px solid rgba(60,180,130,0.2); min-height: 20px; }',
+            '.ls-claim-btn { display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #2d8a6e, #3cb88a); color: #fff; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s; letter-spacing: 0.3px; }',
+            '.ls-claim-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(60,180,130,0.35); }',
+            '.ls-claim-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }',
+            '.ls-success-card { background: linear-gradient(135deg, #142e1e 0%, #1a3a28 100%); border: 1px solid #2d8a5e; border-radius: 14px; padding: 24px; margin-bottom: 20px; text-align: center; }',
+            '.ls-success-icon { font-size: 2.4rem; margin-bottom: 8px; }',
+            '.ls-success-title { font-size: 1.15rem; font-weight: 700; color: #7dd8b0; margin-bottom: 6px; }',
+            '.ls-success-detail { font-size: 0.9rem; color: #a0d4b8; line-height: 1.5; margin-bottom: 4px; }',
+            '.ls-wager-note { font-size: 0.82rem; color: #8ab4a0; background: rgba(45,138,110,0.12); border-radius: 8px; padding: 8px 12px; margin-top: 12px; display: inline-block; }',
+            '.ls-not-eligible { background: linear-gradient(135deg, #1a2636 0%, #1e2e42 100%); border: 1px solid #2a4060; border-radius: 14px; padding: 24px; margin-bottom: 20px; text-align: center; }',
+            '.ls-not-icon { font-size: 2rem; margin-bottom: 8px; }',
+            '.ls-not-title { font-size: 1.05rem; font-weight: 600; color: #8ab4d8; margin-bottom: 6px; }',
+            '.ls-not-desc { font-size: 0.88rem; color: #6a94b4; line-height: 1.5; }',
+            '.ls-explainer { background: rgba(20,40,60,0.6); border: 1px solid #1e3a54; border-radius: 12px; padding: 20px; margin-top: 10px; }',
+            '.ls-explainer-title { font-size: 1rem; font-weight: 700; color: #8ab4d8; margin-bottom: 12px; }',
+            '.ls-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }',
+            '.ls-step-num { flex-shrink: 0; width: 28px; height: 28px; background: linear-gradient(135deg, #2a5a7e, #3a7aa0); color: #fff; font-size: 0.82rem; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; }',
+            '.ls-step-text { font-size: 0.88rem; color: #a0c4d8; line-height: 1.45; padding-top: 3px; }',
+            '.ls-loading { text-align: center; padding: 40px 0; color: #6a94b4; font-size: 0.95rem; }',
+            '.ls-error { text-align: center; padding: 20px; color: #d88a8a; font-size: 0.9rem; background: rgba(180,60,60,0.1); border-radius: 10px; border: 1px solid rgba(180,60,60,0.2); margin-bottom: 16px; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // --- build wrapper ---
+    var wrap = document.createElement('div');
+    wrap.className = 'ls-tab-wrap';
+
+    var title = document.createElement('div');
+    title.className = 'ls-tab-title';
+    title.textContent = '\uD83D\uDCAA Loss Streak Safety Net';
+    wrap.appendChild(title);
+
+    var subtitle = document.createElement('div');
+    subtitle.className = 'ls-tab-subtitle';
+    subtitle.textContent = 'We\'ve got your back when luck isn\'t on your side.';
+    wrap.appendChild(subtitle);
+
+    // --- content area (populated by fetch) ---
+    var contentArea = document.createElement('div');
+    contentArea.id = 'lsTabContent';
+    wrap.appendChild(contentArea);
+
+    // --- explainer section (always visible) ---
+    var explainer = document.createElement('div');
+    explainer.className = 'ls-explainer';
+
+    var explainerTitle = document.createElement('div');
+    explainerTitle.className = 'ls-explainer-title';
+    explainerTitle.textContent = 'How the Safety Net Works';
+    explainer.appendChild(explainerTitle);
+
+    var steps = [
+        { num: '1', text: 'Play normally. We track your recent spin outcomes.' },
+        { num: '2', text: 'If 8 or more of your last 10 spins are losses, you qualify.' },
+        { num: '3', text: 'Make a deposit of $10 or more and we\'ll match 50% (up to $25).' },
+        { num: '4', text: 'Bonus goes to your bonus balance with a 15x wagering requirement.' },
+        { num: '5', text: 'Cooldown: you can use the safety net once every 4 hours.' }
+    ];
+
+    for (var si = 0; si < steps.length; si++) {
+        var stepRow = document.createElement('div');
+        stepRow.className = 'ls-step';
+
+        var stepNum = document.createElement('div');
+        stepNum.className = 'ls-step-num';
+        stepNum.textContent = steps[si].num;
+        stepRow.appendChild(stepNum);
+
+        var stepText = document.createElement('div');
+        stepText.className = 'ls-step-text';
+        stepText.textContent = steps[si].text;
+        stepRow.appendChild(stepText);
+
+        explainer.appendChild(stepRow);
+    }
+
+    wrap.appendChild(explainer);
+    profileContent.appendChild(wrap);
+
+    // --- loading state ---
+    var loading = document.createElement('div');
+    loading.className = 'ls-loading';
+    loading.textContent = 'Checking eligibility...';
+    contentArea.appendChild(loading);
+
+    // --- fetch eligibility ---
+    fetch('/api/user/loss-streak-offer', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        contentArea.innerHTML = '';
+
+        if (data.eligible && data.offer) {
+            // ---- ELIGIBLE: show offer card ----
+            var card = document.createElement('div');
+            card.className = 'ls-offer-card';
+
+            var badge = document.createElement('span');
+            badge.className = 'ls-offer-badge';
+            badge.textContent = 'Safety Net Active';
+            card.appendChild(badge);
+
+            var headline = document.createElement('div');
+            headline.className = 'ls-offer-headline';
+            headline.textContent = (data.offer.matchPct || 50) + '% Deposit Match (up to $' + (data.offer.maxMatch || 25) + ')';
+            card.appendChild(headline);
+
+            var desc = document.createElement('div');
+            desc.className = 'ls-offer-desc';
+            desc.textContent = 'Tough run? Make a deposit and we\'ll boost your balance. Minimum deposit: $' + (data.offer.minDeposit || 10) + '.';
+            card.appendChild(desc);
+
+            // deposit input row
+            var depositRow = document.createElement('div');
+            depositRow.className = 'ls-deposit-row';
+
+            var depositLabel = document.createElement('span');
+            depositLabel.className = 'ls-deposit-label';
+            depositLabel.textContent = 'Deposit amount:';
+            depositRow.appendChild(depositLabel);
+
+            var depositInput = document.createElement('input');
+            depositInput.className = 'ls-deposit-input';
+            depositInput.type = 'number';
+            depositInput.min = String(data.offer.minDeposit || 10);
+            depositInput.step = '1';
+            depositInput.value = String(data.offer.minDeposit || 10);
+            depositInput.placeholder = '$' + (data.offer.minDeposit || 10);
+            depositRow.appendChild(depositInput);
+
+            card.appendChild(depositRow);
+
+            // preview
+            var preview = document.createElement('div');
+            preview.className = 'ls-preview';
+            card.appendChild(preview);
+
+            var matchPct = data.offer.matchPct || 50;
+            var maxMatch = data.offer.maxMatch || 25;
+            var minDep = data.offer.minDeposit || 10;
+
+            function updatePreview() {
+                var val = parseFloat(depositInput.value);
+                if (isNaN(val) || val < minDep) {
+                    preview.textContent = 'Enter at least $' + minDep + ' to see your bonus.';
+                    return;
+                }
+                var bonus = Math.min(val * (matchPct / 100), maxMatch);
+                bonus = Math.floor(bonus * 100) / 100;
+                preview.textContent = 'Deposit $' + val.toFixed(0) + ' \u2192 Get $' + bonus.toFixed(2) + ' bonus';
+            }
+            updatePreview();
+            depositInput.addEventListener('input', updatePreview);
+
+            // claim button
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'ls-claim-btn';
+            claimBtn.textContent = 'CLAIM SAFETY NET BONUS';
+            card.appendChild(claimBtn);
+
+            claimBtn.addEventListener('click', function() {
+                var amt = parseFloat(depositInput.value);
+                if (isNaN(amt) || amt < minDep) {
+                    preview.textContent = 'Minimum deposit is $' + minDep + '.';
+                    return;
+                }
+                claimBtn.disabled = true;
+                claimBtn.textContent = 'Claiming...';
+
+                fetch('/api/user/claim-loss-offer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ depositAmount: amt })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        contentArea.innerHTML = '';
+
+                        var successCard = document.createElement('div');
+                        successCard.className = 'ls-success-card';
+
+                        var successIcon = document.createElement('div');
+                        successIcon.className = 'ls-success-icon';
+                        successIcon.textContent = '\u2705';
+                        successCard.appendChild(successIcon);
+
+                        var successTitle = document.createElement('div');
+                        successTitle.className = 'ls-success-title';
+                        successTitle.textContent = 'Safety Net Bonus Claimed!';
+                        successCard.appendChild(successTitle);
+
+                        var bonusDetail = document.createElement('div');
+                        bonusDetail.className = 'ls-success-detail';
+                        bonusDetail.textContent = 'Bonus added: $' + (result.bonusAmount || 0).toFixed(2);
+                        successCard.appendChild(bonusDetail);
+
+                        if (typeof result.balance !== 'undefined') {
+                            var balDetail = document.createElement('div');
+                            balDetail.className = 'ls-success-detail';
+                            balDetail.textContent = 'Cash balance: $' + parseFloat(result.balance).toFixed(2);
+                            successCard.appendChild(balDetail);
+                        }
+
+                        if (typeof result.bonusBalance !== 'undefined') {
+                            var bonBalDetail = document.createElement('div');
+                            bonBalDetail.className = 'ls-success-detail';
+                            bonBalDetail.textContent = 'Bonus balance: $' + parseFloat(result.bonusBalance).toFixed(2);
+                            successCard.appendChild(bonBalDetail);
+                        }
+
+                        var wagerNote = document.createElement('div');
+                        wagerNote.className = 'ls-wager-note';
+                        var wagerMult = result.wageringRequired || 15;
+                        var wagerTotal = ((result.bonusAmount || 0) * wagerMult).toFixed(2);
+                        wagerNote.textContent = wagerMult + 'x playthrough required \u2014 wager $' + wagerTotal + ' to unlock bonus funds.';
+                        successCard.appendChild(wagerNote);
+
+                        contentArea.appendChild(successCard);
+                    } else {
+                        claimBtn.disabled = false;
+                        claimBtn.textContent = 'CLAIM SAFETY NET BONUS';
+                        preview.textContent = result.error || 'Could not claim. Please try again.';
+                    }
+                })
+                .catch(function() {
+                    claimBtn.disabled = false;
+                    claimBtn.textContent = 'CLAIM SAFETY NET BONUS';
+                    preview.textContent = 'Network error. Please try again.';
+                });
+            });
+
+            contentArea.appendChild(card);
+
+        } else {
+            // ---- NOT ELIGIBLE ----
+            var notCard = document.createElement('div');
+            notCard.className = 'ls-not-eligible';
+
+            var notIcon = document.createElement('div');
+            notIcon.className = 'ls-not-icon';
+            notIcon.textContent = '\uD83D\uDEE1\uFE0F';
+            notCard.appendChild(notIcon);
+
+            var notTitle = document.createElement('div');
+            notTitle.className = 'ls-not-title';
+            notTitle.textContent = 'Safety Net Standing By';
+            notCard.appendChild(notTitle);
+
+            var notDesc = document.createElement('div');
+            notDesc.className = 'ls-not-desc';
+            notDesc.textContent = data.message || 'Keep playing \u2014 safety net activates after 8 losses in 10 spins. We\'ll be here if you need us.';
+            notCard.appendChild(notDesc);
+
+            contentArea.appendChild(notCard);
+        }
+    })
+    .catch(function() {
+        contentArea.innerHTML = '';
+        var errDiv = document.createElement('div');
+        errDiv.className = 'ls-error';
+        errDiv.textContent = 'Could not check loss streak eligibility. Please try again later.';
+        contentArea.appendChild(errDiv);
+    });
+}
+
+
+function renderLossStreakWidget() {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return null;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return null;
+
+    if (document.getElementById('lossStreakWidget')) return null;
+
+    // --- inject widget CSS once ---
+    if (!document.getElementById('lossStreakWidgetCSS')) {
+        var wStyle = document.createElement('style');
+        wStyle.id = 'lossStreakWidgetCSS';
+        wStyle.textContent = [
+            '.ls-widget { background: linear-gradient(135deg, #142838 0%, #183048 100%); border: 1px solid #2a5a7e; border-radius: 12px; padding: 16px; margin-bottom: 16px; position: relative; overflow: hidden; }',
+            '.ls-widget::after { content: ""; position: absolute; bottom: -20px; left: -20px; width: 80px; height: 80px; background: radial-gradient(circle, rgba(60,180,130,0.1) 0%, transparent 70%); pointer-events: none; }',
+            '.ls-widget-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }',
+            '.ls-widget-icon { font-size: 1.3rem; }',
+            '.ls-widget-title { font-size: 0.95rem; font-weight: 700; color: #7dd8b0; }',
+            '.ls-widget-body { min-height: 30px; }',
+            '.ls-widget-eligible { font-size: 0.88rem; color: #3cb88a; font-weight: 600; margin-bottom: 6px; }',
+            '.ls-widget-detail { font-size: 0.82rem; color: #8ab4d8; line-height: 1.4; margin-bottom: 10px; }',
+            '.ls-widget-btn { display: inline-block; padding: 8px 18px; background: linear-gradient(135deg, #2d8a6e, #3cb88a); color: #fff; font-size: 0.85rem; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: transform 0.15s; }',
+            '.ls-widget-btn:hover { transform: translateY(-1px); }',
+            '.ls-widget-standby { font-size: 0.85rem; color: #6a94b4; }',
+            '.ls-widget-loading { font-size: 0.84rem; color: #6a94b4; }',
+            '.ls-widget-error { font-size: 0.84rem; color: #d88a8a; }'
+        ].join('\n');
+        document.head.appendChild(wStyle);
+    }
+
+    var widget = document.createElement('div');
+    widget.className = 'ls-widget';
+    widget.id = 'lossStreakWidget';
+
+    var header = document.createElement('div');
+    header.className = 'ls-widget-header';
+
+    var icon = document.createElement('span');
+    icon.className = 'ls-widget-icon';
+    icon.textContent = '\uD83D\uDCAA';
+    header.appendChild(icon);
+
+    var wTitle = document.createElement('span');
+    wTitle.className = 'ls-widget-title';
+    wTitle.textContent = 'Loss Streak Safety Net';
+    header.appendChild(wTitle);
+
+    widget.appendChild(header);
+
+    var widgetBody = document.createElement('div');
+    widgetBody.className = 'ls-widget-body';
+    widget.appendChild(widgetBody);
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'ls-widget-loading';
+    loadingEl.textContent = 'Checking...';
+    widgetBody.appendChild(loadingEl);
+
+    // --- fetch status ---
+    fetch('/api/user/loss-streak-offer', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        widgetBody.innerHTML = '';
+
+        if (data.eligible && data.offer) {
+            var eligLine = document.createElement('div');
+            eligLine.className = 'ls-widget-eligible';
+            eligLine.textContent = 'Safety net available!';
+            widgetBody.appendChild(eligLine);
+
+            var detailLine = document.createElement('div');
+            detailLine.className = 'ls-widget-detail';
+            detailLine.textContent = (data.offer.matchPct || 50) + '% match up to $' + (data.offer.maxMatch || 25) + ' on your next deposit (min $' + (data.offer.minDeposit || 10) + ').';
+            widgetBody.appendChild(detailLine);
+
+            var viewBtn = document.createElement('button');
+            viewBtn.className = 'ls-widget-btn';
+            viewBtn.textContent = 'View Offer';
+            viewBtn.addEventListener('click', function() {
+                if (typeof switchProfileTab === 'function') {
+                    switchProfileTab('lossstreak');
+                }
+            });
+            widgetBody.appendChild(viewBtn);
+        } else {
+            var standby = document.createElement('div');
+            standby.className = 'ls-widget-standby';
+            standby.textContent = data.message || 'Standing by \u2014 activates after 8 losses in 10 spins.';
+            widgetBody.appendChild(standby);
+        }
+    })
+    .catch(function() {
+        widgetBody.innerHTML = '';
+        var errEl = document.createElement('div');
+        errEl.className = 'ls-widget-error';
+        errEl.textContent = 'Could not load loss streak status.';
         widgetBody.appendChild(errEl);
     });
 

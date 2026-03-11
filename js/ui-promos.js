@@ -2221,6 +2221,7 @@ function initPromoEngine() {
             if (!window._dragonTigerInit) { window._dragonTigerInit = true; renderDragonTigerCard(promosSidebar); }
             if (!window._horseRacingInit) { window._horseRacingInit = true; renderHorseRacingCard(promosSidebar); }
             if (!window._caribbeanStudInit) { window._caribbeanStudInit = true; renderCaribbeanStudCard(promosSidebar); }
+            if (!window._gameOfDayInit) { window._gameOfDayInit = true; renderGameOfDayCard(promosSidebar); }
         }
     }, 4000);
 
@@ -8371,4 +8372,393 @@ function renderCaribbeanStudCard(container) {
     });
 
     container.appendChild(card);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// GAME OF THE DAY CARD
+// ─────────────────────────────────────────────────────────────────────
+
+function renderGameOfDayCard(container) {
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Idempotency
+    if (document.getElementById('gameOfDayCard')) return;
+
+    // CSS injection with ID guard
+    if (!document.getElementById('gameOfDayStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'gameOfDayStyles';
+        styleEl.textContent = [
+            '.gotd-card {',
+            '  background: linear-gradient(135deg, #1a0a00, #2d1500, #1a0a00);',
+            '  border: 1.5px solid rgba(251, 191, 36, 0.6);',
+            '  border-radius: 14px;',
+            '  padding: 16px;',
+            '  margin-bottom: 14px;',
+            '  box-shadow: 0 4px 24px rgba(251, 191, 36, 0.15), inset 0 1px 0 rgba(255, 215, 0, 0.1);',
+            '  position: relative;',
+            '  overflow: hidden;',
+            '}',
+            '.gotd-card::before {',
+            '  content: "";',
+            '  position: absolute;',
+            '  top: -50%;',
+            '  left: -50%;',
+            '  width: 200%;',
+            '  height: 200%;',
+            '  background: radial-gradient(ellipse at center, rgba(255,215,0,0.05) 0%, transparent 70%);',
+            '  pointer-events: none;',
+            '}',
+            '.gotd-title {',
+            '  font-size: 16px;',
+            '  font-weight: 800;',
+            '  text-align: center;',
+            '  margin-bottom: 12px;',
+            '  background: linear-gradient(135deg, #fbbf24, #fcd34d, #f59e0b);',
+            '  -webkit-background-clip: text;',
+            '  -webkit-text-fill-color: transparent;',
+            '  background-clip: text;',
+            '  letter-spacing: 0.5px;',
+            '}',
+            '.gotd-game-name {',
+            '  font-size: 18px;',
+            '  font-weight: 700;',
+            '  color: #fff;',
+            '  text-align: center;',
+            '  margin-bottom: 8px;',
+            '  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);',
+            '}',
+            '.gotd-countdown-wrap {',
+            '  text-align: center;',
+            '  margin-bottom: 12px;',
+            '}',
+            '.gotd-countdown-label {',
+            '  font-size: 10px;',
+            '  color: rgba(255,255,255,0.45);',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 1px;',
+            '  margin-bottom: 4px;',
+            '}',
+            '.gotd-countdown {',
+            '  font-size: 22px;',
+            '  font-weight: 700;',
+            '  font-family: "Courier New", monospace;',
+            '  color: #fbbf24;',
+            '  letter-spacing: 2px;',
+            '  text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);',
+            '}',
+            '.gotd-play-btn {',
+            '  display: block;',
+            '  width: 100%;',
+            '  padding: 10px 0;',
+            '  border: none;',
+            '  border-radius: 8px;',
+            '  background: linear-gradient(135deg, #f59e0b, #d97706);',
+            '  color: #000;',
+            '  font-size: 14px;',
+            '  font-weight: 800;',
+            '  letter-spacing: 1px;',
+            '  cursor: pointer;',
+            '  text-transform: uppercase;',
+            '  transition: transform 0.15s, box-shadow 0.15s;',
+            '  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);',
+            '  margin-bottom: 14px;',
+            '}',
+            '.gotd-play-btn:hover {',
+            '  transform: translateY(-1px);',
+            '  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);',
+            '}',
+            '.gotd-play-btn:active {',
+            '  transform: translateY(0);',
+            '}',
+            '.gotd-featured-label {',
+            '  font-size: 10px;',
+            '  color: rgba(255,255,255,0.4);',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 1px;',
+            '  margin-bottom: 8px;',
+            '  text-align: center;',
+            '}',
+            '.gotd-featured-row {',
+            '  display: grid;',
+            '  grid-template-columns: repeat(3, 1fr);',
+            '  gap: 6px;',
+            '}',
+            '.gotd-mini-card {',
+            '  background: rgba(255,255,255,0.05);',
+            '  border: 1px solid rgba(251, 191, 36, 0.25);',
+            '  border-radius: 8px;',
+            '  padding: 8px 4px;',
+            '  text-align: center;',
+            '  cursor: pointer;',
+            '  transition: background 0.15s, border-color 0.15s, transform 0.15s;',
+            '}',
+            '.gotd-mini-card:hover {',
+            '  background: rgba(251, 191, 36, 0.1);',
+            '  border-color: rgba(251, 191, 36, 0.5);',
+            '  transform: translateY(-1px);',
+            '}',
+            '.gotd-mini-name {',
+            '  font-size: 9px;',
+            '  color: rgba(255,255,255,0.7);',
+            '  font-weight: 600;',
+            '  line-height: 1.2;',
+            '  overflow: hidden;',
+            '  text-overflow: ellipsis;',
+            '  white-space: nowrap;',
+            '}',
+            '.gotd-mini-icon {',
+            '  font-size: 16px;',
+            '  margin-bottom: 4px;',
+            '}',
+            '.gotd-loading {',
+            '  text-align: center;',
+            '  font-size: 11px;',
+            '  color: rgba(255,255,255,0.35);',
+            '  padding: 16px 0;',
+            '}',
+            '.gotd-error {',
+            '  text-align: center;',
+            '  font-size: 11px;',
+            '  color: rgba(255,100,100,0.6);',
+            '  padding: 8px 0;',
+            '}',
+            '.gotd-divider {',
+            '  height: 1px;',
+            '  background: linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent);',
+            '  margin: 12px 0;',
+            '}',
+            '.gotd-star-badge {',
+            '  display: inline-block;',
+            '  font-size: 20px;',
+            '  margin-bottom: 4px;',
+            '}'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    // Build card container
+    var card = document.createElement('div');
+    card.className = 'gotd-card';
+    card.id = 'gameOfDayCard';
+
+    // Title row
+    var titleEl = document.createElement('div');
+    titleEl.className = 'gotd-title';
+    titleEl.textContent = '\u2B50 Game of the Day';
+    card.appendChild(titleEl);
+
+    // Loading state
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'gotd-loading';
+    loadingEl.textContent = 'Loading today\'s pick...';
+    card.appendChild(loadingEl);
+
+    container.appendChild(card);
+
+    // State for countdown interval
+    var countdownInterval = null;
+    var secondsRemaining = 0;
+
+    function formatCountdown(secs) {
+        if (secs <= 0) return '00:00:00';
+        var h = Math.floor(secs / 3600);
+        var m = Math.floor((secs % 3600) / 60);
+        var s = secs % 60;
+        return (h < 10 ? '0' : '') + h + ':' +
+               (m < 10 ? '0' : '') + m + ':' +
+               (s < 10 ? '0' : '') + s;
+    }
+
+    function buildMainContent(data) {
+        // Clear loading
+        loadingEl.remove();
+
+        // Star badge
+        var badgeEl = document.createElement('div');
+        badgeEl.className = 'gotd-star-badge';
+        badgeEl.style.textAlign = 'center';
+        badgeEl.textContent = '\u2728';
+        card.appendChild(badgeEl);
+
+        // Game name
+        var nameEl = document.createElement('div');
+        nameEl.className = 'gotd-game-name';
+        nameEl.textContent = data.gameName || 'Featured Game';
+        card.appendChild(nameEl);
+
+        // Countdown wrapper
+        var countdownWrap = document.createElement('div');
+        countdownWrap.className = 'gotd-countdown-wrap';
+
+        var countdownLabel = document.createElement('div');
+        countdownLabel.className = 'gotd-countdown-label';
+        countdownLabel.textContent = 'Next rotation in';
+        countdownWrap.appendChild(countdownLabel);
+
+        var countdownEl = document.createElement('div');
+        countdownEl.className = 'gotd-countdown';
+        secondsRemaining = Math.max(0, Math.floor(data.secondsUntilNext || 0));
+        countdownEl.textContent = formatCountdown(secondsRemaining);
+        countdownWrap.appendChild(countdownEl);
+
+        card.appendChild(countdownWrap);
+
+        // Start countdown timer
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = setInterval(function() {
+            secondsRemaining--;
+            if (secondsRemaining <= 0) {
+                secondsRemaining = 0;
+                clearInterval(countdownInterval);
+                countdownEl.textContent = '00:00:00';
+                // Auto-refresh after expiry
+                setTimeout(function() {
+                    var existingCard = document.getElementById('gameOfDayCard');
+                    if (existingCard) existingCard.remove();
+                    window._gameOfDayInit = false;
+                    var sidebar = document.querySelector('#csbDdPromos .csb-dd-body');
+                    if (sidebar) renderGameOfDayCard(sidebar);
+                }, 2000);
+                return;
+            }
+            countdownEl.textContent = formatCountdown(secondsRemaining);
+        }, 1000);
+
+        // Play button
+        var playBtn = document.createElement('button');
+        playBtn.className = 'gotd-play-btn';
+        playBtn.textContent = 'PLAY NOW';
+        playBtn.addEventListener('click', function() {
+            if (typeof openSlot === 'function' && data.gameId) {
+                openSlot(data.gameId);
+            }
+        });
+        card.appendChild(playBtn);
+
+        // Divider
+        var divider = document.createElement('div');
+        divider.className = 'gotd-divider';
+        card.appendChild(divider);
+
+        // Featured games section
+        var featuredLabel = document.createElement('div');
+        featuredLabel.className = 'gotd-featured-label';
+        featuredLabel.textContent = 'Top Picks';
+        card.appendChild(featuredLabel);
+
+        // Featured games loading placeholder
+        var featuredLoading = document.createElement('div');
+        featuredLoading.className = 'gotd-loading';
+        featuredLoading.textContent = 'Loading featured...';
+        card.appendChild(featuredLoading);
+
+        // Session guard for auto-fetch (only gates the first automatic fetch this session)
+        var skipAutoFetchLog = false;
+        if (sessionStorage.getItem('_gameOfDayChecked')) {
+            skipAutoFetchLog = true;
+        } else {
+            sessionStorage.setItem('_gameOfDayChecked', '1');
+        }
+
+        // Fetch featured games (always fetch for card rendering, session guard is informational)
+        fetch('/api/game-of-day/featured', {
+            headers: { Authorization: 'Bearer ' + token }
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('Featured fetch failed');
+            return res.json();
+        })
+        .then(function(featuredIds) {
+            featuredLoading.remove();
+            buildFeaturedRow(featuredIds);
+        })
+        .catch(function() {
+            featuredLoading.remove();
+            // Silently degrade — no error shown for featured section
+            buildFeaturedRow([]);
+        });
+    }
+
+    function buildFeaturedRow(gameIds) {
+        if (!Array.isArray(gameIds) || gameIds.length === 0) return;
+
+        var gameIcons = ['\uD83C\uDFB0', '\uD83D\uDC8E', '\uD83C\uDF1F', '\uD83D\uDD25', '\u2604\uFE0F', '\uD83C\uDFC6'];
+
+        var featuredRow = document.createElement('div');
+        featuredRow.className = 'gotd-featured-row';
+
+        var maxCards = Math.min(gameIds.length, 6);
+        for (var i = 0; i < maxCards; i++) {
+            (function(idx) {
+                var gId = gameIds[idx];
+                var gameDef = null;
+
+                // Look up game name from GAMES array if available
+                if (typeof GAMES !== 'undefined' && Array.isArray(GAMES)) {
+                    for (var g = 0; g < GAMES.length; g++) {
+                        if (GAMES[g].id === gId) {
+                            gameDef = GAMES[g];
+                            break;
+                        }
+                    }
+                }
+
+                var miniCard = document.createElement('div');
+                miniCard.className = 'gotd-mini-card';
+
+                var iconEl = document.createElement('div');
+                iconEl.className = 'gotd-mini-icon';
+                iconEl.textContent = gameIcons[idx % gameIcons.length];
+                miniCard.appendChild(iconEl);
+
+                var miniName = document.createElement('div');
+                miniName.className = 'gotd-mini-name';
+                miniName.textContent = gameDef ? gameDef.name : gId;
+                miniName.title = gameDef ? gameDef.name : gId;
+                miniCard.appendChild(miniName);
+
+                miniCard.addEventListener('click', function() {
+                    if (typeof openSlot === 'function') {
+                        openSlot(gId);
+                    }
+                });
+
+                featuredRow.appendChild(miniCard);
+            })(i);
+        }
+
+        card.appendChild(featuredRow);
+    }
+
+    function showError(msg) {
+        loadingEl.remove();
+        var errorEl = document.createElement('div');
+        errorEl.className = 'gotd-error';
+        errorEl.textContent = msg || 'Could not load game of the day';
+        card.appendChild(errorEl);
+    }
+
+    // Fetch main game of the day
+    fetch('/api/game-of-day', {
+        headers: { Authorization: 'Bearer ' + token }
+    })
+    .then(function(res) {
+        if (!res.ok) throw new Error('Game of day fetch failed');
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data || !data.gameId) {
+            showError('No featured game today');
+            return;
+        }
+        buildMainContent(data);
+    })
+    .catch(function(err) {
+        console.error('[GameOfDay] fetch error:', err);
+        showError('Could not load game of the day');
+    });
 }

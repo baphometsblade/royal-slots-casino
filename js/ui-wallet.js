@@ -113,6 +113,7 @@ function showWalletModal() {
     if (typeof renderRedDogCard === 'function') renderRedDogCard(modal);
     if (typeof renderMoneyWheelCard === 'function') renderMoneyWheelCard(modal);
     if (typeof renderWheelOfFortuneCard === 'function') renderWheelOfFortuneCard(modal);
+    if (typeof renderDepositStreakCard === 'function') renderDepositStreakCard(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -6665,4 +6666,311 @@ function renderWheelOfFortuneCard(parentContainer) {
     });
 
     parentContainer.appendChild(card);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Deposit Streak Card — 7-day progressive deposit reward tracker
+   ═══════════════════════════════════════════════════════════════════════════ */
+function renderDepositStreakCard(parentContainer) {
+    if (document.getElementById('depositStreakCard')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    /* ── Fallback reward table (used if API unavailable) ── */
+    var STREAK_REWARDS = {
+        1: { gems: 100, credits: 0, label: '100 Gems' },
+        2: { gems: 150, credits: 0, label: '150 Gems' },
+        3: { gems: 300, credits: 2.00, label: '300 Gems + $2' },
+        4: { gems: 300, credits: 0, label: '300 Gems' },
+        5: { gems: 500, credits: 5.00, label: '500 Gems + $5' },
+        6: { gems: 500, credits: 0, label: '500 Gems' },
+        7: { gems: 1000, credits: 10.00, label: 'MEGA: 1000 Gems + $10' }
+    };
+    var STREAK_MAX = 7;
+
+    function fmtMoney(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    }
+
+    /* ── CSS injection ── */
+    if (!document.getElementById('deposit-streak-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'deposit-streak-css';
+        styleEl.textContent = [
+            '#depositStreakCard{background:linear-gradient(135deg,#1a0a00 0%,#2d1100 40%,#4a1a00 100%);border:2px solid #ff6b00;border-radius:16px;padding:24px;margin-top:18px;position:relative;overflow:hidden}',
+            '#depositStreakCard::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,107,0,0.06) 0%,transparent 70%);animation:dsFireGlow 4s ease-in-out infinite}',
+            '@keyframes dsFireGlow{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}',
+            '.ds-title{font-size:22px;font-weight:800;color:#ff8c00;text-align:center;margin-bottom:6px;position:relative;text-shadow:0 0 20px rgba(255,140,0,0.5)}',
+            '.ds-subtitle{font-size:13px;color:#cc8844;text-align:center;margin-bottom:20px;position:relative}',
+            '.ds-tracker{display:flex;justify-content:space-between;gap:6px;margin-bottom:18px;position:relative}',
+            '.ds-day{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px;border-radius:12px;background:rgba(0,0,0,0.4);border:2px solid rgba(255,107,0,0.15);transition:all 0.3s ease;position:relative;min-width:0}',
+            '.ds-day.ds-completed{background:linear-gradient(135deg,rgba(34,120,15,0.35) 0%,rgba(60,160,30,0.2) 100%);border-color:#4caf50;box-shadow:0 0 10px rgba(76,175,80,0.3)}',
+            '.ds-day.ds-completed .ds-day-num{color:#66bb6a}',
+            '.ds-day.ds-current{background:linear-gradient(135deg,rgba(255,107,0,0.25) 0%,rgba(255,60,0,0.15) 100%);border-color:#ff8c00;box-shadow:0 0 20px rgba(255,140,0,0.4);animation:dsPulseDay 2s ease-in-out infinite}',
+            '@keyframes dsPulseDay{0%,100%{box-shadow:0 0 15px rgba(255,140,0,0.3);transform:scale(1)}50%{box-shadow:0 0 30px rgba(255,140,0,0.6);transform:scale(1.04)}}',
+            '.ds-day.ds-future{opacity:0.45}',
+            '.ds-day.ds-mega{border-color:#ffd700 !important}',
+            '.ds-day.ds-mega.ds-current{box-shadow:0 0 25px rgba(255,215,0,0.5);animation:dsMegaPulse 2s ease-in-out infinite}',
+            '@keyframes dsMegaPulse{0%,100%{box-shadow:0 0 20px rgba(255,215,0,0.4);transform:scale(1)}50%{box-shadow:0 0 40px rgba(255,215,0,0.8);transform:scale(1.06)}}',
+            '.ds-day-num{font-size:11px;font-weight:700;color:#aa6633;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}',
+            '.ds-day-gem{font-size:16px;margin-bottom:2px}',
+            '.ds-day-gem-count{font-size:12px;font-weight:700;color:#ff8c00;white-space:nowrap}',
+            '.ds-day-credit{font-size:10px;font-weight:600;color:#4caf50;margin-top:2px;white-space:nowrap}',
+            '.ds-day-check{font-size:18px;color:#4caf50;margin-bottom:2px}',
+            '.ds-mega-label{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#ffd700,#ff8c00);color:#1a0a00;font-size:8px;font-weight:900;padding:2px 6px;border-radius:4px;white-space:nowrap;letter-spacing:1px;z-index:1}',
+            '.ds-status-bar{text-align:center;padding:12px 16px;border-radius:10px;position:relative;margin-bottom:14px}',
+            '.ds-status-bar.ds-deposited{background:linear-gradient(135deg,rgba(76,175,80,0.2),rgba(76,175,80,0.1));border:1px solid rgba(76,175,80,0.4)}',
+            '.ds-status-bar.ds-pending{background:linear-gradient(135deg,rgba(255,107,0,0.2),rgba(255,60,0,0.1));border:1px solid rgba(255,107,0,0.4)}',
+            '.ds-status-text{font-size:14px;font-weight:700}',
+            '.ds-status-bar.ds-deposited .ds-status-text{color:#66bb6a}',
+            '.ds-status-bar.ds-pending .ds-status-text{color:#ff8c00}',
+            '.ds-progress-wrap{position:relative;height:8px;background:rgba(0,0,0,0.5);border-radius:4px;margin-bottom:14px;overflow:hidden}',
+            '.ds-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#ff4500,#ff8c00,#ffd700);transition:width 1s ease;position:relative}',
+            '.ds-progress-fill::after{content:"";position:absolute;top:0;right:0;width:20px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3));animation:dsShimmer 1.5s infinite}',
+            '@keyframes dsShimmer{0%{opacity:0}50%{opacity:1}100%{opacity:0}}',
+            '.ds-best-streak{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:10px;position:relative}',
+            '.ds-best-icon{font-size:20px}',
+            '.ds-best-text{font-size:13px;color:#ccaa66}',
+            '.ds-best-num{font-size:18px;font-weight:800;color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,0.5)}',
+            '.ds-fire-trail{position:absolute;bottom:0;left:0;width:100%;height:40px;background:linear-gradient(to top,rgba(255,69,0,0.1),transparent);pointer-events:none}',
+            '.ds-loading{text-align:center;padding:30px;color:#aa6633;font-size:14px;position:relative}',
+            '.ds-loading::after{content:"";display:inline-block;width:16px;height:16px;border:2px solid #ff6b00;border-top-color:transparent;border-radius:50%;animation:dsSpin 0.8s linear infinite;margin-left:8px;vertical-align:middle}',
+            '@keyframes dsSpin{to{transform:rotate(360deg)}}',
+            '.ds-error{text-align:center;padding:20px;color:#ff6b6b;font-size:13px;position:relative}',
+            '.ds-streak-count{font-size:36px;font-weight:900;text-align:center;margin-bottom:4px;position:relative;background:linear-gradient(180deg,#ffd700 0%,#ff8c00 50%,#ff4500 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none;filter:drop-shadow(0 0 8px rgba(255,140,0,0.4))}',
+            '.ds-streak-label{font-size:12px;color:#aa6633;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;position:relative}'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    /* ── Card container ── */
+    var card = document.createElement('div');
+    card.id = 'depositStreakCard';
+
+    /* Loading state */
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'ds-loading';
+    loadingEl.textContent = 'Loading streak data';
+    card.appendChild(loadingEl);
+
+    parentContainer.appendChild(card);
+
+    /* ── Fetch streak status ── */
+    fetch('/api/deposit-streak/status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
+        if (!res.ok) throw new Error('Streak data unavailable');
+        return res.json();
+    })
+    .then(function(data) {
+        var streak = data.streak || 0;
+        var nextDay = data.nextDay || (streak + 1);
+        var streakMax = data.streakMax || STREAK_MAX;
+        var depositedToday = !!data.depositedToday;
+        var rewards = data.rewards || STREAK_REWARDS;
+        var bestStreak = data.bestStreak || streak;
+
+        /* Clear loading */
+        card.innerHTML = '';
+
+        /* ── Fire trail decoration ── */
+        var fireTrail = document.createElement('div');
+        fireTrail.className = 'ds-fire-trail';
+        card.appendChild(fireTrail);
+
+        /* ── Title ── */
+        var titleEl = document.createElement('div');
+        titleEl.className = 'ds-title';
+        titleEl.textContent = '\uD83D\uDD25 Deposit Streak';
+        card.appendChild(titleEl);
+
+        /* ── Subtitle ── */
+        var subtitleEl = document.createElement('div');
+        subtitleEl.className = 'ds-subtitle';
+        subtitleEl.textContent = 'Deposit daily to unlock bigger rewards!';
+        card.appendChild(subtitleEl);
+
+        /* ── Large streak count ── */
+        var countEl = document.createElement('div');
+        countEl.className = 'ds-streak-count';
+        countEl.textContent = streak + ' / ' + streakMax;
+        card.appendChild(countEl);
+
+        var countLabel = document.createElement('div');
+        countLabel.className = 'ds-streak-label';
+        countLabel.textContent = streak === 0 ? 'No Active Streak' : 'Day Streak';
+        card.appendChild(countLabel);
+
+        /* ── Progress bar ── */
+        var progressWrap = document.createElement('div');
+        progressWrap.className = 'ds-progress-wrap';
+        var progressFill = document.createElement('div');
+        progressFill.className = 'ds-progress-fill';
+        var pct = streakMax > 0 ? Math.min((streak / streakMax) * 100, 100) : 0;
+        progressFill.style.width = '0%';
+        progressWrap.appendChild(progressFill);
+        card.appendChild(progressWrap);
+
+        /* Animate progress bar after render */
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                progressFill.style.width = pct + '%';
+            });
+        });
+
+        /* ── 7-day tracker ── */
+        var tracker = document.createElement('div');
+        tracker.className = 'ds-tracker';
+
+        for (var d = 1; d <= streakMax; d++) {
+            (function(day) {
+                var dayReward = rewards[day] || STREAK_REWARDS[day] || { gems: 0, credits: 0, label: '' };
+                var dayEl = document.createElement('div');
+                dayEl.className = 'ds-day';
+
+                var isCompleted = day <= streak;
+                var isCurrent = day === nextDay;
+                var isMega = day === streakMax;
+
+                if (isCompleted) {
+                    dayEl.classList.add('ds-completed');
+                } else if (isCurrent) {
+                    dayEl.classList.add('ds-current');
+                } else {
+                    dayEl.classList.add('ds-future');
+                }
+
+                if (isMega) {
+                    dayEl.classList.add('ds-mega');
+                    var megaLabel = document.createElement('div');
+                    megaLabel.className = 'ds-mega-label';
+                    megaLabel.textContent = 'MEGA';
+                    dayEl.appendChild(megaLabel);
+                }
+
+                /* Day number */
+                var dayNum = document.createElement('div');
+                dayNum.className = 'ds-day-num';
+                dayNum.textContent = 'Day ' + day;
+                dayEl.appendChild(dayNum);
+
+                if (isCompleted) {
+                    /* Show checkmark for completed days */
+                    var checkEl = document.createElement('div');
+                    checkEl.className = 'ds-day-check';
+                    checkEl.textContent = '\u2714';
+                    dayEl.appendChild(checkEl);
+                } else {
+                    /* Gem icon */
+                    var gemIcon = document.createElement('div');
+                    gemIcon.className = 'ds-day-gem';
+                    gemIcon.textContent = '\uD83D\uDC8E';
+                    dayEl.appendChild(gemIcon);
+                }
+
+                /* Gem count */
+                var gemCount = document.createElement('div');
+                gemCount.className = 'ds-day-gem-count';
+                var gemVal = dayReward.gems || 0;
+                gemCount.textContent = gemVal > 0 ? gemVal.toLocaleString() : '';
+                dayEl.appendChild(gemCount);
+
+                /* Credit bonus (if applicable) */
+                var creditVal = dayReward.credits || 0;
+                if (creditVal > 0) {
+                    var creditEl = document.createElement('div');
+                    creditEl.className = 'ds-day-credit';
+                    creditEl.textContent = '+' + fmtMoney(creditVal);
+                    dayEl.appendChild(creditEl);
+                }
+
+                tracker.appendChild(dayEl);
+            })(d);
+        }
+
+        card.appendChild(tracker);
+
+        /* ── Status bar ── */
+        var statusBar = document.createElement('div');
+        statusBar.className = 'ds-status-bar';
+
+        var statusText = document.createElement('div');
+        statusText.className = 'ds-status-text';
+
+        if (depositedToday) {
+            statusBar.classList.add('ds-deposited');
+            statusText.textContent = '\u2714 Deposited Today \u2014 Streak Secured!';
+        } else if (streak === 0) {
+            statusBar.classList.add('ds-pending');
+            statusText.textContent = '\uD83D\uDD25 Make a deposit to start your streak!';
+        } else {
+            statusBar.classList.add('ds-pending');
+            statusText.textContent = '\u26A0 Deposit today to continue your streak!';
+        }
+
+        statusBar.appendChild(statusText);
+
+        /* Show next reward preview when not deposited */
+        if (!depositedToday && nextDay <= streakMax) {
+            var nextReward = rewards[nextDay] || STREAK_REWARDS[nextDay];
+            if (nextReward) {
+                var previewEl = document.createElement('div');
+                previewEl.style.cssText = 'font-size:12px;color:#cc8844;margin-top:6px;';
+                var previewLabel = nextReward.label || (nextReward.gems + ' Gems');
+                previewEl.textContent = 'Next reward: ' + previewLabel;
+                statusBar.appendChild(previewEl);
+            }
+        }
+
+        /* Show completion message for full streak */
+        if (streak >= streakMax && depositedToday) {
+            statusText.textContent = '\uD83C\uDF1F Streak Complete! All rewards claimed!';
+            statusBar.className = 'ds-status-bar ds-deposited';
+        }
+
+        card.appendChild(statusBar);
+
+        /* ── Best streak badge ── */
+        var bestVal = Math.max(bestStreak, streak);
+        if (bestVal > 0) {
+            var bestRow = document.createElement('div');
+            bestRow.className = 'ds-best-streak';
+
+            var bestIcon = document.createElement('span');
+            bestIcon.className = 'ds-best-icon';
+            bestIcon.textContent = '\uD83C\uDFC6';
+            bestRow.appendChild(bestIcon);
+
+            var bestText = document.createElement('span');
+            bestText.className = 'ds-best-text';
+            bestText.textContent = 'Personal Best:';
+            bestRow.appendChild(bestText);
+
+            var bestNum = document.createElement('span');
+            bestNum.className = 'ds-best-num';
+            bestNum.textContent = bestVal + ' Day' + (bestVal !== 1 ? 's' : '');
+            bestRow.appendChild(bestNum);
+
+            if (bestVal >= streakMax) {
+                var crownEl = document.createElement('span');
+                crownEl.style.cssText = 'font-size:18px;';
+                crownEl.textContent = '\uD83D\uDC51';
+                bestRow.appendChild(crownEl);
+            }
+
+            card.appendChild(bestRow);
+        }
+    })
+    .catch(function(err) {
+        console.error('Deposit streak load error:', err);
+        card.innerHTML = '';
+
+        var errorEl = document.createElement('div');
+        errorEl.className = 'ds-error';
+        errorEl.textContent = 'Could not load streak data. Try again later.';
+        card.appendChild(errorEl);
+    });
 }
