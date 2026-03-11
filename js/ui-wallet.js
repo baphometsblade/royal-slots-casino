@@ -108,6 +108,7 @@ function showWalletModal() {
     // Render the Loyalty Shop redeem-points section
     if (typeof walletRenderLoyaltyShopSection === 'function') walletRenderLoyaltyShopSection(modal);
     if (typeof renderLimboCard === 'function') renderLimboCard(modal);
+    if (typeof renderBlackjackWidget === 'function') renderBlackjackWidget(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -4662,5 +4663,423 @@ function renderLimboCard(parentContainer) {
 
         playBtn.disabled = false;
         playBtn.textContent = 'PLAY';
+    });
+}
+
+/* ============================================================
+ *  renderBlackjackWidget(parentContainer)
+ *  Playable Blackjack mini-game embedded in the wallet modal.
+ * ============================================================ */
+function renderBlackjackWidget(parentContainer) {
+    if (document.getElementById('blackjackWidget')) return;
+
+    /* ── CSS (inject once) ───────────────────────────────── */
+    if (!document.getElementById('blackjackWidgetCSS')) {
+        var style = document.createElement('style');
+        style.id = 'blackjackWidgetCSS';
+        style.textContent = [
+            '#blackjackWidget{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:20px;margin:18px 20px;border:1px solid rgba(255,215,0,.25);position:relative;overflow:hidden}',
+            '#blackjackWidget::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ffd700,transparent)}',
+            '.bj-title{font-size:1.25rem;font-weight:700;color:#ffd700;margin-bottom:14px;text-align:center}',
+            '.bj-bet-row{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:14px}',
+            '.bj-bet-input{width:90px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,215,0,.4);background:rgba(0,0,0,.45);color:#fff;font-size:.95rem;text-align:center;outline:none}',
+            '.bj-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:.9rem;text-transform:uppercase;transition:all .2s}',
+            '.bj-btn:disabled{opacity:.45;cursor:not-allowed}',
+            '.bj-deal-btn{background:linear-gradient(135deg,#ffd700,#ffaa00);color:#1a1a2e}',
+            '.bj-deal-btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}',
+            '.bj-hit-btn{background:linear-gradient(135deg,#00c853,#009624);color:#fff}',
+            '.bj-hit-btn:hover:not(:disabled){filter:brightness(1.15)}',
+            '.bj-stand-btn{background:linear-gradient(135deg,#ff5252,#d32f2f);color:#fff}',
+            '.bj-stand-btn:hover:not(:disabled){filter:brightness(1.15)}',
+            '.bj-double-btn{background:linear-gradient(135deg,#7c4dff,#6200ea);color:#fff}',
+            '.bj-double-btn:hover:not(:disabled){filter:brightness(1.15)}',
+            '.bj-hand-area{min-height:64px;margin:10px 0;text-align:center}',
+            '.bj-hand-label{font-size:.8rem;color:#aaa;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}',
+            '.bj-cards{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:54px}',
+            '.bj-card{display:inline-flex;align-items:center;justify-content:center;width:44px;height:62px;border-radius:6px;background:#fff;color:#222;font-size:1rem;font-weight:700;border:2px solid #ccc;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .25s}',
+            '.bj-card.red{color:#d32f2f}',
+            '.bj-card.facedown{background:linear-gradient(135deg,#1a237e,#283593);color:transparent;border-color:#3949ab}',
+            '.bj-card.facedown::after{content:"?";color:#5c6bc0;font-size:1.3rem}',
+            '.bj-total{font-size:.95rem;color:#e0e0e0;margin-top:4px}',
+            '.bj-actions{display:flex;gap:8px;justify-content:center;margin-top:12px}',
+            '.bj-result{text-align:center;font-size:1.1rem;font-weight:700;margin-top:12px;min-height:26px}',
+            '.bj-result.win{color:#00e676}',
+            '.bj-result.loss{color:#ff5252}',
+            '.bj-result.push{color:#ffd740}',
+            '.bj-result.blackjack{color:#ffd700;font-size:1.25rem;text-shadow:0 0 12px rgba(255,215,0,.6)}'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    /* ── DOM structure ────────────────────────────────────── */
+    var widget = document.createElement('div');
+    widget.id = 'blackjackWidget';
+
+    var title = document.createElement('div');
+    title.className = 'bj-title';
+    title.textContent = '\uD83C\uDCCF Blackjack';
+    widget.appendChild(title);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'bj-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.textContent = 'Bet: $';
+    betLabel.style.color = '#ccc';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'bj-bet-input';
+    betInput.min = '0.50';
+    betInput.step = '0.50';
+    betInput.value = '1.00';
+    betRow.appendChild(betInput);
+
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'bj-btn bj-deal-btn';
+    dealBtn.textContent = 'DEAL';
+    betRow.appendChild(dealBtn);
+
+    widget.appendChild(betRow);
+
+    // Dealer hand
+    var dealerArea = document.createElement('div');
+    dealerArea.className = 'bj-hand-area';
+    var dealerLabel = document.createElement('div');
+    dealerLabel.className = 'bj-hand-label';
+    dealerLabel.textContent = 'Dealer';
+    dealerArea.appendChild(dealerLabel);
+    var dealerCards = document.createElement('div');
+    dealerCards.className = 'bj-cards';
+    dealerArea.appendChild(dealerCards);
+    var dealerTotal = document.createElement('div');
+    dealerTotal.className = 'bj-total';
+    dealerArea.appendChild(dealerTotal);
+    widget.appendChild(dealerArea);
+
+    // Player hand
+    var playerArea = document.createElement('div');
+    playerArea.className = 'bj-hand-area';
+    var playerLabel = document.createElement('div');
+    playerLabel.className = 'bj-hand-label';
+    playerLabel.textContent = 'Player';
+    playerArea.appendChild(playerLabel);
+    var playerCardsEl = document.createElement('div');
+    playerCardsEl.className = 'bj-cards';
+    playerArea.appendChild(playerCardsEl);
+    var playerTotal = document.createElement('div');
+    playerTotal.className = 'bj-total';
+    playerArea.appendChild(playerTotal);
+    widget.appendChild(playerArea);
+
+    // Action buttons
+    var actions = document.createElement('div');
+    actions.className = 'bj-actions';
+
+    var hitBtn = document.createElement('button');
+    hitBtn.className = 'bj-btn bj-hit-btn';
+    hitBtn.textContent = 'HIT';
+    hitBtn.disabled = true;
+    actions.appendChild(hitBtn);
+
+    var standBtn = document.createElement('button');
+    standBtn.className = 'bj-btn bj-stand-btn';
+    standBtn.textContent = 'STAND';
+    standBtn.disabled = true;
+    actions.appendChild(standBtn);
+
+    var doubleBtn = document.createElement('button');
+    doubleBtn.className = 'bj-btn bj-double-btn';
+    doubleBtn.textContent = 'DOUBLE';
+    doubleBtn.disabled = true;
+    actions.appendChild(doubleBtn);
+
+    widget.appendChild(actions);
+
+    // Result text
+    var resultDiv = document.createElement('div');
+    resultDiv.className = 'bj-result';
+    widget.appendChild(resultDiv);
+
+    parentContainer.appendChild(widget);
+
+    /* ── Helpers ──────────────────────────────────────────── */
+    function bjCardToText(card) {
+        var ranks = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        var suitMap = { H: '\u2665', D: '\u2666', C: '\u2663', S: '\u2660' };
+        return ranks[card.v] + (suitMap[card.s] || '');
+    }
+
+    function bjIsRed(s) { return s === 'H' || s === 'D'; }
+
+    function bjRenderCards(container, cards, hiddenIndex) {
+        container.innerHTML = '';
+        for (var i = 0; i < cards.length; i++) {
+            var cardEl = document.createElement('div');
+            cardEl.className = 'bj-card';
+            if (hiddenIndex !== undefined && i === hiddenIndex) {
+                cardEl.classList.add('facedown');
+            } else {
+                if (bjIsRed(cards[i].s)) cardEl.classList.add('red');
+                cardEl.textContent = bjCardToText(cards[i]);
+            }
+            container.appendChild(cardEl);
+        }
+    }
+
+    function bjSetActionButtons(enabled, allowDouble) {
+        hitBtn.disabled = !enabled;
+        standBtn.disabled = !enabled;
+        doubleBtn.disabled = !enabled || !allowDouble;
+    }
+
+    function bjGetAuthHeaders() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return null;
+        var tokenKey = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
+        var token = localStorage.getItem(tokenKey);
+        if (!token) return null;
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        };
+    }
+
+    function bjShowResult(text, cls) {
+        resultDiv.textContent = text;
+        resultDiv.className = 'bj-result';
+        if (cls) resultDiv.classList.add(cls);
+    }
+
+    /* ── Game state ───────────────────────────────────────── */
+    var bjGameActive = false;
+    var bjFirstAction = true;
+
+    function bjResetUI() {
+        dealerCards.innerHTML = '';
+        playerCardsEl.innerHTML = '';
+        dealerTotal.textContent = '';
+        playerTotal.textContent = '';
+        resultDiv.textContent = '';
+        resultDiv.className = 'bj-result';
+        bjSetActionButtons(false, false);
+        dealBtn.disabled = false;
+        dealBtn.textContent = 'DEAL';
+        betInput.disabled = false;
+        bjGameActive = false;
+        bjFirstAction = true;
+    }
+
+    function bjHandleEnd(data, betAmount) {
+        bjGameActive = false;
+        bjSetActionButtons(false, false);
+
+        // Reveal dealer cards
+        if (data.dealerCards) {
+            bjRenderCards(dealerCards, data.dealerCards);
+        }
+        if (data.dealerTotal !== undefined) {
+            dealerTotal.textContent = 'Dealer: ' + data.dealerTotal;
+        }
+        if (data.playerTotal !== undefined) {
+            playerTotal.textContent = 'Player: ' + data.playerTotal;
+        }
+        // Render updated player cards if provided (for hit/double)
+        if (data.playerCards) {
+            bjRenderCards(playerCardsEl, data.playerCards);
+        }
+
+        // Determine result display
+        var status = data.status;
+        var payout = data.payout || 0;
+        if (status === 'blackjack') {
+            bjShowResult('Blackjack! Won $' + Number(payout).toFixed(2) + '!', 'blackjack');
+        } else if (status === 'bust') {
+            bjShowResult('Bust!', 'loss');
+        } else if (status === 'player_wins' || status === 'win') {
+            bjShowResult('You win! +$' + Number(payout).toFixed(2), 'win');
+        } else if (status === 'dealer_wins' || status === 'lose' || status === 'dealer_busts') {
+            if (status === 'dealer_busts') {
+                bjShowResult('Dealer busts! You win +$' + Number(payout).toFixed(2), 'win');
+            } else {
+                bjShowResult('Dealer wins!', 'loss');
+            }
+        } else if (status === 'push') {
+            bjShowResult('Push! Bet returned.', 'push');
+        }
+
+        // Update balance
+        if (data.newBalance !== undefined && typeof updateBalanceDisplay === 'function') {
+            updateBalanceDisplay(data.newBalance);
+        }
+
+        // Show deal again
+        dealBtn.textContent = 'DEAL AGAIN';
+        dealBtn.disabled = false;
+        betInput.disabled = false;
+    }
+
+    /* ── DEAL ─────────────────────────────────────────────── */
+    dealBtn.addEventListener('click', async function() {
+        var headers = bjGetAuthHeaders();
+        if (!headers) {
+            if (typeof showToast === 'function') showToast('Please log in to play Blackjack.', 'error');
+            return;
+        }
+
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.50) {
+            if (typeof showToast === 'function') showToast('Minimum bet is $0.50', 'error');
+            return;
+        }
+
+        dealBtn.disabled = true;
+        betInput.disabled = true;
+        resultDiv.textContent = '';
+        resultDiv.className = 'bj-result';
+        bjFirstAction = true;
+
+        try {
+            var resp = await fetch('/api/blackjack/start', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ bet: bet })
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Failed to start game', 'error');
+                bjResetUI();
+                return;
+            }
+
+            bjGameActive = true;
+
+            // Render player cards
+            bjRenderCards(playerCardsEl, data.playerCards);
+            playerTotal.textContent = 'Player: ' + data.playerTotal;
+
+            // Render dealer cards (second card face-down)
+            bjRenderCards(dealerCards, data.dealerCards, 1);
+            dealerTotal.textContent = 'Dealer: ?';
+
+            // Check for immediate blackjack
+            if (data.status === 'blackjack') {
+                bjHandleEnd(data, bet);
+                return;
+            }
+
+            // Enable action buttons
+            bjSetActionButtons(true, true);
+            dealBtn.textContent = 'DEAL';
+
+        } catch (e) {
+            console.error('Blackjack start error:', e);
+            if (typeof showToast === 'function') showToast('Network error. Please try again.', 'error');
+            bjResetUI();
+        }
+    });
+
+    /* ── HIT ──────────────────────────────────────────────── */
+    hitBtn.addEventListener('click', async function() {
+        if (!bjGameActive) return;
+        var headers = bjGetAuthHeaders();
+        if (!headers) return;
+
+        bjSetActionButtons(false, false);
+        bjFirstAction = false;
+
+        try {
+            var resp = await fetch('/api/blackjack/hit', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({})
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Hit failed', 'error');
+                bjSetActionButtons(true, false);
+                return;
+            }
+
+            // Update player cards
+            if (data.playerCards) {
+                bjRenderCards(playerCardsEl, data.playerCards);
+            }
+            playerTotal.textContent = 'Player: ' + data.playerTotal;
+
+            if (data.status === 'bust' || data.status === 'player_wins' || data.status === 'win' ||
+                data.status === 'dealer_wins' || data.status === 'lose' || data.status === 'push') {
+                bjHandleEnd(data, parseFloat(betInput.value));
+            } else {
+                // Still playing
+                bjSetActionButtons(true, false);
+            }
+
+        } catch (e) {
+            console.error('Blackjack hit error:', e);
+            if (typeof showToast === 'function') showToast('Network error.', 'error');
+            bjSetActionButtons(true, false);
+        }
+    });
+
+    /* ── STAND ────────────────────────────────────────────── */
+    standBtn.addEventListener('click', async function() {
+        if (!bjGameActive) return;
+        var headers = bjGetAuthHeaders();
+        if (!headers) return;
+
+        bjSetActionButtons(false, false);
+
+        try {
+            var resp = await fetch('/api/blackjack/stand', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({})
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Stand failed', 'error');
+                bjSetActionButtons(true, false);
+                return;
+            }
+
+            bjHandleEnd(data, parseFloat(betInput.value));
+
+        } catch (e) {
+            console.error('Blackjack stand error:', e);
+            if (typeof showToast === 'function') showToast('Network error.', 'error');
+            bjSetActionButtons(true, false);
+        }
+    });
+
+    /* ── DOUBLE ───────────────────────────────────────────── */
+    doubleBtn.addEventListener('click', async function() {
+        if (!bjGameActive || !bjFirstAction) return;
+        var headers = bjGetAuthHeaders();
+        if (!headers) return;
+
+        bjSetActionButtons(false, false);
+
+        try {
+            var resp = await fetch('/api/blackjack/double', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({})
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Double failed', 'error');
+                bjSetActionButtons(true, true);
+                return;
+            }
+
+            bjHandleEnd(data, parseFloat(betInput.value) * 2);
+
+        } catch (e) {
+            console.error('Blackjack double error:', e);
+            if (typeof showToast === 'function') showToast('Network error.', 'error');
+            bjSetActionButtons(true, bjFirstAction);
+        }
     });
 }

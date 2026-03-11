@@ -894,7 +894,8 @@ const PROFILE_TABS = [
     { id: 'achievements', icon: '\u{1F396}\uFE0F', label: 'Achievements' },
     { id: 'referral',     icon: '\u{1F465}', label: 'Referral' },
     { id: 'cosmetics',    icon: '\u{1F3A8}', label: 'Cosmetics' },
-    { id: 'tower',        icon: '\u{1F5FC}', label: 'Tower' }
+    { id: 'tower',        icon: '\u{1F5FC}', label: 'Tower' },
+    { id: 'videopoker',   icon: '\u{1F0CF}', label: 'Video Poker' }
 ];
 
 function renderProfileSidebar() {
@@ -995,6 +996,7 @@ function renderProfileContent() {
         case 'referral':      renderReferralTab(); break;
         case 'cosmetics':     renderCosmeticsTab(); break;
         case 'tower':         renderTowerTab(); break;
+        case 'videopoker':    renderVideoPokerTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -3551,6 +3553,10 @@ function renderTowerTab() {
     if (typeof renderTowerGameWidget === 'function') renderTowerGameWidget();
 }
 
+function renderVideoPokerTab() {
+    if (typeof renderVideoPokerWidget === 'function') renderVideoPokerWidget();
+}
+
 
 // ═══════════════════════════════════════════════════════
 // REFERRAL TAB
@@ -4789,5 +4795,367 @@ function renderTowerGameWidget() {
 
             gridContainer.appendChild(rowDiv);
         }
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// VIDEO POKER — JACKS OR BETTER
+// ═══════════════════════════════════════════════════════
+
+function renderVideoPokerWidget() {
+    // Idempotency guard
+    if (document.getElementById('videoPokerWidget')) return;
+
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // CSS injection with ID guard
+    if (!document.getElementById('video-poker-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'video-poker-css';
+        styleEl.textContent = [
+            '.vp-widget { padding: 20px; max-width: 520px; margin: 0 auto; }',
+            '.vp-title { font-size: 1.4em; font-weight: bold; color: #fff; margin-bottom: 12px; text-align: center; }',
+            '.vp-paytable { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; margin-bottom: 16px; padding: 10px 14px; background: rgba(30,30,60,0.7); border-radius: 8px; border: 1px solid rgba(251,191,36,0.15); }',
+            '.vp-pt-hand { color: #ccc; font-size: 0.82em; padding: 2px 0; }',
+            '.vp-pt-mult { color: #ffd700; font-size: 0.82em; font-weight: bold; text-align: right; padding: 2px 0; }',
+            '.vp-pt-row-active .vp-pt-hand, .vp-pt-row-active .vp-pt-mult { color: #4ade80; text-shadow: 0 0 6px rgba(74,222,128,0.5); }',
+            '.vp-controls { display: flex; gap: 8px; align-items: center; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }',
+            '.vp-bet-label { color: #aaa; font-size: 0.9em; }',
+            '.vp-bet-input { width: 80px; padding: 6px 8px; border-radius: 6px; border: 1px solid #555; background: #1a1a2e; color: #fff; font-size: 1em; text-align: center; }',
+            '.vp-deal-btn, .vp-draw-btn { padding: 8px 22px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; transition: opacity 0.15s; color: #fff; }',
+            '.vp-deal-btn { background: linear-gradient(135deg, #4a4aff, #6a6aff); }',
+            '.vp-draw-btn { background: linear-gradient(135deg, #d97706, #f59e0b); }',
+            '.vp-deal-btn:hover, .vp-draw-btn:hover { opacity: 0.85; }',
+            '.vp-deal-btn:disabled, .vp-draw-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.vp-cards { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; min-height: 120px; align-items: center; }',
+            '.vp-card { width: 72px; height: 104px; border-radius: 8px; background: #1e1e3a; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: all 0.2s; position: relative; }',
+            '.vp-card.empty { cursor: default; border-style: dashed; border-color: #333; }',
+            '.vp-card.held { border-color: #4ade80; box-shadow: 0 0 10px rgba(74,222,128,0.4); }',
+            '.vp-card-rank { font-size: 1.6em; font-weight: bold; line-height: 1; }',
+            '.vp-card-suit { font-size: 1.3em; line-height: 1; margin-top: 2px; }',
+            '.vp-card.red .vp-card-rank, .vp-card.red .vp-card-suit { color: #ef4444; }',
+            '.vp-card.black .vp-card-rank, .vp-card.black .vp-card-suit { color: #e2e8f0; }',
+            '.vp-held-label { position: absolute; bottom: 4px; font-size: 0.6em; font-weight: bold; color: #4ade80; letter-spacing: 1px; text-transform: uppercase; }',
+            '.vp-status { text-align: center; padding: 10px; font-size: 1.1em; font-weight: bold; min-height: 36px; }',
+            '.vp-status.win { color: #4ade80; }',
+            '.vp-status.lose { color: #f87171; }',
+            '.vp-status.info { color: #88f; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    // ── Pay table data ──
+    var PAY_TABLE = [
+        { key: 'royal_flush',       label: 'Royal Flush',       mult: 800 },
+        { key: 'straight_flush',    label: 'Straight Flush',    mult: 50 },
+        { key: 'four_of_a_kind',    label: 'Four of a Kind',    mult: 25 },
+        { key: 'full_house',        label: 'Full House',        mult: 9 },
+        { key: 'flush',             label: 'Flush',             mult: 6 },
+        { key: 'straight',          label: 'Straight',          mult: 4 },
+        { key: 'three_of_a_kind',   label: 'Three of a Kind',   mult: 3 },
+        { key: 'two_pair',          label: 'Two Pair',          mult: 2 },
+        { key: 'jacks_or_better',   label: 'Jacks or Better',   mult: 1 }
+    ];
+
+    // ── Game state ──
+    var vpState = {
+        phase: 'idle',   // 'idle' | 'dealt' | 'done'
+        cards: [],       // 5 card objects {s, v}
+        holds: [false, false, false, false, false],
+        gameId: null,
+        bet: 1.00
+    };
+
+    // ── Helpers ──
+    function vpCardText(card) {
+        var ranks = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        var suitMap = { H: '\u2665', D: '\u2666', C: '\u2663', S: '\u2660' };
+        return { rank: ranks[card.v] || '?', suit: suitMap[card.s] || '?' };
+    }
+
+    function isRedSuit(s) {
+        return s === 'H' || s === 'D';
+    }
+
+    // ── Container ──
+    var widget = document.createElement('div');
+    widget.id = 'videoPokerWidget';
+    widget.className = 'vp-widget';
+
+    // ── Title ──
+    var title = document.createElement('div');
+    title.className = 'vp-title';
+    title.textContent = '\uD83C\uDCCF Video Poker \u2014 Jacks or Better';
+    widget.appendChild(title);
+
+    // ── Pay table ──
+    var payTableEl = document.createElement('div');
+    payTableEl.className = 'vp-paytable';
+    var ptHandEls = {};
+    var ptMultEls = {};
+    PAY_TABLE.forEach(function(row) {
+        var handEl = document.createElement('div');
+        handEl.className = 'vp-pt-hand';
+        handEl.textContent = row.label;
+        payTableEl.appendChild(handEl);
+
+        var multEl = document.createElement('div');
+        multEl.className = 'vp-pt-mult';
+        multEl.textContent = row.mult + 'x';
+        payTableEl.appendChild(multEl);
+
+        ptHandEls[row.key] = handEl;
+        ptMultEls[row.key] = multEl;
+    });
+    widget.appendChild(payTableEl);
+
+    // ── Controls row ──
+    var controlsRow = document.createElement('div');
+    controlsRow.className = 'vp-controls';
+
+    var betLabel = document.createElement('span');
+    betLabel.className = 'vp-bet-label';
+    betLabel.textContent = 'Bet $';
+    controlsRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'vp-bet-input';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.addEventListener('change', function() {
+        var v = parseFloat(betInput.value);
+        if (isNaN(v) || v < 0.25) v = 0.25;
+        betInput.value = v.toFixed(2);
+        vpState.bet = v;
+    });
+    controlsRow.appendChild(betInput);
+
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'vp-deal-btn';
+    dealBtn.textContent = 'DEAL';
+    dealBtn.addEventListener('click', function() { doDeal(); });
+    controlsRow.appendChild(dealBtn);
+
+    var drawBtn = document.createElement('button');
+    drawBtn.className = 'vp-draw-btn';
+    drawBtn.textContent = 'DRAW';
+    drawBtn.disabled = true;
+    drawBtn.addEventListener('click', function() { doDraw(); });
+    controlsRow.appendChild(drawBtn);
+
+    widget.appendChild(controlsRow);
+
+    // ── Card slots ──
+    var cardsRow = document.createElement('div');
+    cardsRow.className = 'vp-cards';
+
+    var cardEls = [];
+    for (var ci = 0; ci < 5; ci++) {
+        var cardDiv = document.createElement('div');
+        cardDiv.className = 'vp-card empty';
+        cardDiv.setAttribute('data-idx', ci.toString());
+
+        var rankSpan = document.createElement('span');
+        rankSpan.className = 'vp-card-rank';
+        rankSpan.textContent = '';
+        cardDiv.appendChild(rankSpan);
+
+        var suitSpan = document.createElement('span');
+        suitSpan.className = 'vp-card-suit';
+        suitSpan.textContent = '';
+        cardDiv.appendChild(suitSpan);
+
+        var heldLabel = document.createElement('span');
+        heldLabel.className = 'vp-held-label';
+        heldLabel.textContent = '';
+        cardDiv.appendChild(heldLabel);
+
+        (function(idx, div) {
+            div.addEventListener('click', function() {
+                if (vpState.phase !== 'dealt') return;
+                vpState.holds[idx] = !vpState.holds[idx];
+                renderCards();
+            });
+        })(ci, cardDiv);
+
+        cardsRow.appendChild(cardDiv);
+        cardEls.push({ el: cardDiv, rankEl: rankSpan, suitEl: suitSpan, heldEl: heldLabel });
+    }
+    widget.appendChild(cardsRow);
+
+    // ── Status ──
+    var statusEl = document.createElement('div');
+    statusEl.className = 'vp-status info';
+    statusEl.textContent = 'Place your bet and press DEAL to start.';
+    widget.appendChild(statusEl);
+
+    el.appendChild(widget);
+
+    // ── Rendering helpers ──
+    function setStatus(msg, type) {
+        statusEl.className = 'vp-status ' + (type || 'info');
+        statusEl.textContent = msg;
+    }
+
+    function highlightPayRow(handName) {
+        // Clear all highlights
+        PAY_TABLE.forEach(function(row) {
+            if (ptHandEls[row.key]) {
+                ptHandEls[row.key].parentElement.classList.remove('vp-pt-row-active');
+                ptHandEls[row.key].classList.remove('vp-pt-row-active');
+                ptMultEls[row.key].classList.remove('vp-pt-row-active');
+            }
+        });
+        // Set active row
+        if (handName && ptHandEls[handName]) {
+            ptHandEls[handName].classList.add('vp-pt-row-active');
+            ptMultEls[handName].classList.add('vp-pt-row-active');
+        }
+    }
+
+    function renderCards() {
+        for (var i = 0; i < 5; i++) {
+            var ce = cardEls[i];
+            if (!vpState.cards || !vpState.cards[i]) {
+                ce.el.className = 'vp-card empty';
+                ce.rankEl.textContent = '';
+                ce.suitEl.textContent = '';
+                ce.heldEl.textContent = '';
+                continue;
+            }
+            var card = vpState.cards[i];
+            var display = vpCardText(card);
+            var colorClass = isRedSuit(card.s) ? 'red' : 'black';
+            var heldClass = vpState.holds[i] ? ' held' : '';
+            ce.el.className = 'vp-card ' + colorClass + heldClass;
+            ce.rankEl.textContent = display.rank;
+            ce.suitEl.textContent = display.suit;
+            ce.heldEl.textContent = vpState.holds[i] ? 'HELD' : '';
+        }
+    }
+
+    function lockControls(locked) {
+        betInput.disabled = locked;
+        dealBtn.disabled = locked;
+    }
+
+    function resetForNewDeal() {
+        vpState.phase = 'idle';
+        vpState.cards = [];
+        vpState.holds = [false, false, false, false, false];
+        vpState.gameId = null;
+        drawBtn.disabled = true;
+        lockControls(false);
+        dealBtn.textContent = 'DEAL';
+        renderCards();
+        highlightPayRow(null);
+        setStatus('Place your bet and press DEAL to start.', 'info');
+    }
+
+    // ── DEAL ──
+    function doDeal() {
+        if (vpState.phase === 'done') {
+            resetForNewDeal();
+            return;
+        }
+        if (vpState.phase !== 'idle') return;
+
+        var betVal = parseFloat(betInput.value);
+        if (isNaN(betVal) || betVal < 0.25) {
+            setStatus('Minimum bet is $0.25', 'lose');
+            return;
+        }
+
+        lockControls(true);
+        setStatus('Dealing...', 'info');
+
+        fetch('/api/videopoker/deal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ bet: betVal })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Failed to deal', 'lose');
+                lockControls(false);
+                return;
+            }
+            var d = result.data;
+            vpState.phase = 'dealt';
+            vpState.gameId = d.gameId;
+            vpState.cards = d.cards;
+            vpState.holds = [false, false, false, false, false];
+
+            renderCards();
+            drawBtn.disabled = false;
+            highlightPayRow(d.handName && d.handName !== 'nothing' ? d.handName : null);
+
+            if (d.handName && d.handName !== 'nothing') {
+                var matchedRow = PAY_TABLE.filter(function(r) { return r.key === d.handName; })[0];
+                var handLabel = matchedRow ? matchedRow.label : d.handName;
+                setStatus('You have: ' + handLabel + ' \u2014 Click cards to hold, then DRAW.', 'info');
+            } else {
+                setStatus('Click cards to hold, then press DRAW.', 'info');
+            }
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            lockControls(false);
+        });
+    }
+
+    // ── DRAW ──
+    function doDraw() {
+        if (vpState.phase !== 'dealt') return;
+
+        drawBtn.disabled = true;
+        setStatus('Drawing...', 'info');
+
+        fetch('/api/videopoker/draw', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ holds: vpState.holds })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Draw failed', 'lose');
+                drawBtn.disabled = false;
+                return;
+            }
+            var d = result.data;
+            vpState.phase = 'done';
+            vpState.cards = d.cards;
+            vpState.holds = [false, false, false, false, false];
+
+            renderCards();
+            highlightPayRow(d.handName && d.handName !== 'nothing' ? d.handName : null);
+
+            if (d.payout && d.payout > 0) {
+                var matchedRow = PAY_TABLE.filter(function(r) { return r.key === d.handName; })[0];
+                var handLabel = matchedRow ? matchedRow.label : d.handName;
+                setStatus(handLabel + '! You won $' + (typeof formatMoney === 'function' ? formatMoney(d.payout) : d.payout.toFixed(2)) + '!', 'win');
+                if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                    updateBalanceDisplay(d.newBalance);
+                }
+            } else {
+                setStatus('No win. Better luck next time!', 'lose');
+            }
+
+            // Switch deal button to "Deal Again"
+            dealBtn.textContent = 'DEAL AGAIN';
+            lockControls(false);
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            drawBtn.disabled = false;
+        });
     }
 }

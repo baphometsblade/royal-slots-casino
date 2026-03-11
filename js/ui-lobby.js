@@ -625,6 +625,8 @@ function renderGames() {
                     if (typeof renderMinesGameWidget === 'function') renderMinesGameWidget();
                     // Hi-Lo card game widget
                     if (typeof renderHiLoGameWidget === 'function') renderHiLoGameWidget();
+                    // Roulette quick-bet widget
+                    if (typeof renderRouletteWidget === 'function') renderRouletteWidget();
                 }, 200);
             });
         }
@@ -7246,4 +7248,265 @@ function renderHiLoGameWidget() {
     playAgainBtn.addEventListener('click', function() {
         _hiloReset();
     });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ROULETTE QUICK-BET WIDGET
+// ══════════════════════════════════════════════════════════════════════════════
+
+function renderRouletteWidget() {
+    if (document.getElementById('rouletteWidget')) return;
+
+    // ── CSS injection ──
+    if (!document.getElementById('roulette-widget-css')) {
+        var style = document.createElement('style');
+        style.id = 'roulette-widget-css';
+        style.textContent = [
+            '.roulette-widget { background: linear-gradient(135deg, #1a0a0a 0%, #2d1f1f 50%, #1a2e1a 100%); border-radius: 16px; padding: 20px; margin: 18px 0; border: 1px solid rgba(0,200,83,0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); max-width: 480px; }',
+            '.roulette-title { font-size: 1.4em; font-weight: 700; color: #00e676; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(0,230,118,0.4); }',
+            '.roulette-bet-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }',
+            '.roulette-bet-row input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.4); color: #fff; font-size: 1em; outline: none; }',
+            '.roulette-bet-row input:focus { border-color: #00e676; }',
+            '.roulette-options { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; }',
+            '.roulette-opt-btn { padding: 10px 16px; border-radius: 8px; border: 2px solid transparent; font-weight: 700; font-size: 0.9em; cursor: pointer; transition: all 0.2s; min-width: 70px; text-align: center; }',
+            '.roulette-opt-btn:hover { transform: scale(1.05); }',
+            '.roulette-opt-btn.selected { border-color: #ffd700; box-shadow: 0 0 12px rgba(255,215,0,0.5); }',
+            '.roulette-opt-btn.opt-red { background: #c62828; color: #fff; }',
+            '.roulette-opt-btn.opt-black { background: #212121; color: #fff; }',
+            '.roulette-opt-btn.opt-odd { background: #4a148c; color: #fff; }',
+            '.roulette-opt-btn.opt-even { background: #1a237e; color: #fff; }',
+            '.roulette-opt-btn.opt-low { background: #004d40; color: #fff; }',
+            '.roulette-opt-btn.opt-high { background: #bf360c; color: #fff; }',
+            '.roulette-spin-btn { display: block; width: 100%; padding: 12px; border-radius: 10px; border: none; background: linear-gradient(135deg, #00e676, #00c853); color: #1a1a2e; font-weight: 800; font-size: 1.15em; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }',
+            '.roulette-spin-btn:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 0 20px rgba(0,230,118,0.5); }',
+            '.roulette-spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.roulette-result-area { text-align: center; margin: 16px 0; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; }',
+            '.roulette-number-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2em; font-weight: 800; color: #fff; margin: 0 auto 10px; border: 3px solid rgba(255,255,255,0.3); transition: transform 0.3s; }',
+            '.roulette-number-circle.color-red { background: radial-gradient(circle, #e53935, #b71c1c); }',
+            '.roulette-number-circle.color-black { background: radial-gradient(circle, #424242, #212121); }',
+            '.roulette-number-circle.color-green { background: radial-gradient(circle, #43a047, #1b5e20); }',
+            '.roulette-number-circle.spin-anim { animation: rouletteReveal 0.5s ease; }',
+            '@keyframes rouletteReveal { 0% { transform: rotateY(90deg) scale(0.5); opacity: 0; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }',
+            '.roulette-result-text { font-size: 1.1em; font-weight: 700; min-height: 24px; }',
+            '.roulette-result-text.win { color: #00e676; }',
+            '.roulette-result-text.lose { color: #ff5252; }',
+            '.roulette-status { text-align: center; font-size: 0.9em; color: #999; min-height: 20px; margin-top: 6px; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // ── find insertion point ──
+    var container = document.querySelector('.games-grid') || document.querySelector('.lobby-content') || document.querySelector('#lobby');
+    if (!container) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'rouletteWidget';
+    widget.className = 'roulette-widget';
+
+    // ── TITLE ──
+    var title = document.createElement('div');
+    title.className = 'roulette-title';
+    title.textContent = '\uD83C\uDFB0 Roulette';
+    widget.appendChild(title);
+
+    // ── BET AMOUNT ROW ──
+    var betRow = document.createElement('div');
+    betRow.className = 'roulette-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.style.color = '#ccc';
+    betLabel.style.fontSize = '0.9em';
+    betLabel.textContent = 'Bet $';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.placeholder = '0.25';
+    betRow.appendChild(betInput);
+
+    widget.appendChild(betRow);
+
+    // ── BETTING OPTIONS ──
+    var optionsRow = document.createElement('div');
+    optionsRow.className = 'roulette-options';
+
+    var betOptions = [
+        { type: 'red',  label: 'Red',   cls: 'opt-red' },
+        { type: 'black', label: 'Black', cls: 'opt-black' },
+        { type: 'odd',  label: 'Odd',   cls: 'opt-odd' },
+        { type: 'even', label: 'Even',  cls: 'opt-even' },
+        { type: 'low',  label: '1-18',  cls: 'opt-low' },
+        { type: 'high', label: '19-36', cls: 'opt-high' }
+    ];
+
+    var selectedBets = {};
+
+    betOptions.forEach(function(opt) {
+        var btn = document.createElement('button');
+        btn.className = 'roulette-opt-btn ' + opt.cls;
+        btn.textContent = opt.label;
+        btn.dataset.betType = opt.type;
+        btn.addEventListener('click', function() {
+            if (selectedBets[opt.type]) {
+                delete selectedBets[opt.type];
+                btn.classList.remove('selected');
+            } else {
+                selectedBets[opt.type] = true;
+                btn.classList.add('selected');
+            }
+            spinBtn.disabled = Object.keys(selectedBets).length === 0;
+        });
+        optionsRow.appendChild(btn);
+    });
+
+    widget.appendChild(optionsRow);
+
+    // ── SPIN BUTTON ──
+    var spinBtn = document.createElement('button');
+    spinBtn.className = 'roulette-spin-btn';
+    spinBtn.textContent = 'SPIN';
+    spinBtn.disabled = true;
+    widget.appendChild(spinBtn);
+
+    // ── RESULT AREA ──
+    var resultArea = document.createElement('div');
+    resultArea.className = 'roulette-result-area';
+
+    var numberCircle = document.createElement('div');
+    numberCircle.className = 'roulette-number-circle';
+    numberCircle.style.display = 'none';
+    resultArea.appendChild(numberCircle);
+
+    var resultText = document.createElement('div');
+    resultText.className = 'roulette-result-text';
+    resultArea.appendChild(resultText);
+
+    var statusLine = document.createElement('div');
+    statusLine.className = 'roulette-status';
+    resultArea.appendChild(statusLine);
+
+    widget.appendChild(resultArea);
+
+    container.insertBefore(widget, container.firstChild);
+
+    // ── SPIN LOGIC ──
+    var _rouletteInFlight = false;
+
+    spinBtn.addEventListener('click', function() {
+        if (_rouletteInFlight) return;
+
+        // Auth guard
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+            statusLine.textContent = 'Please log in to play';
+            return;
+        }
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) {
+            statusLine.textContent = 'Please log in to play';
+            return;
+        }
+
+        var amount = parseFloat(betInput.value);
+        if (isNaN(amount) || amount < 0.25) {
+            statusLine.textContent = 'Minimum bet is $0.25';
+            return;
+        }
+
+        var betKeys = Object.keys(selectedBets);
+        if (betKeys.length === 0) {
+            statusLine.textContent = 'Select at least one bet';
+            return;
+        }
+
+        // Build bets array
+        var bets = betKeys.map(function(type) {
+            return { type: type, value: null, amount: amount };
+        });
+
+        _rouletteInFlight = true;
+        spinBtn.disabled = true;
+        resultText.textContent = '';
+        resultText.className = 'roulette-result-text';
+        statusLine.textContent = 'Spinning...';
+
+        // Flash animation — show random numbers briefly
+        numberCircle.style.display = 'flex';
+        numberCircle.classList.remove('spin-anim');
+        var flashInterval = setInterval(function() {
+            var rn = Math.floor(Math.random() * 37);
+            numberCircle.textContent = rn;
+            var rc = _rouletteNumberColor(rn);
+            numberCircle.className = 'roulette-number-circle color-' + rc;
+        }, 80);
+
+        var headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+        fetch('/api/roulette/spin', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ bets: bets })
+        })
+        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            clearInterval(flashInterval);
+            _rouletteInFlight = false;
+
+            if (!result.ok) {
+                numberCircle.style.display = 'none';
+                statusLine.textContent = result.data.error || 'Spin failed';
+                spinBtn.disabled = Object.keys(selectedBets).length === 0;
+                return;
+            }
+
+            var data = result.data;
+            var num = data.number;
+            var color = data.color || _rouletteNumberColor(num);
+
+            // Show result with animation
+            numberCircle.textContent = num;
+            numberCircle.className = 'roulette-number-circle color-' + color + ' spin-anim';
+
+            var totalPayout = data.totalPayout || 0;
+            var totalBet = data.totalBet || 0;
+
+            if (totalPayout > 0) {
+                resultText.textContent = 'Won $' + totalPayout.toFixed(2) + '!';
+                resultText.className = 'roulette-result-text win';
+                if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
+                    try { SoundManager.playSoundEvent('win'); } catch(e) {}
+                }
+                if (typeof showToast === 'function') {
+                    showToast('\uD83C\uDFB0 Roulette: won $' + totalPayout.toFixed(2) + '!');
+                }
+            } else {
+                resultText.textContent = 'Lost $' + totalBet.toFixed(2);
+                resultText.className = 'roulette-result-text lose';
+            }
+
+            statusLine.textContent = num + ' ' + color.charAt(0).toUpperCase() + color.slice(1);
+
+            if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                updateBalanceDisplay(data.newBalance);
+            }
+
+            spinBtn.disabled = Object.keys(selectedBets).length === 0;
+        })
+        .catch(function() {
+            clearInterval(flashInterval);
+            _rouletteInFlight = false;
+            numberCircle.style.display = 'none';
+            statusLine.textContent = 'Network error';
+            spinBtn.disabled = Object.keys(selectedBets).length === 0;
+        });
+    });
+}
+
+// Helper: map roulette number to color
+function _rouletteNumberColor(n) {
+    if (n === 0) return 'green';
+    var reds = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+    return reds.indexOf(n) !== -1 ? 'red' : 'black';
 }

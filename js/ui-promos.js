@@ -2216,6 +2216,7 @@ function initPromoEngine() {
             if (!window._referralCardInit) { window._referralCardInit = true; renderReferralCard(promosSidebar); }
             if (!window._crashGameCardInit) { window._crashGameCardInit = true; renderCrashGameCard(promosSidebar); }
             if (!window._plinkoCardInit) { window._plinkoCardInit = true; renderPlinkoCard(promosSidebar); }
+            if (!window._scratchCardGameInit) { window._scratchCardGameInit = true; renderScratchCardGame(promosSidebar); }
         }
     }, 4000);
 
@@ -6305,5 +6306,360 @@ function renderPlinkoCard(container) {
             dropBtn.disabled = false;
             dropBtn.textContent = 'DROP';
         });
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// SCRATCH CARD GAME (Tiered Buy/Reveal)
+// ─────────────────────────────────────────────────────────────────────
+
+(function _injectScratchGameStyles() {
+    if (document.getElementById('scratchGameStyles')) return;
+    var s = document.createElement('style');
+    s.id = 'scratchGameStyles';
+    s.textContent = [
+        '.scratch-game-widget {',
+        '  background: linear-gradient(135deg,#1a0a2e,#2a1040);',
+        '  border: 1.5px solid rgba(168,85,247,0.5);',
+        '  border-radius: 14px;',
+        '  padding: 16px;',
+        '  margin-bottom: 14px;',
+        '  box-shadow: 0 4px 20px rgba(0,0,0,0.45);',
+        '}',
+        '.scratch-game-widget .sg-title {',
+        '  font-size: 15px;',
+        '  font-weight: 800;',
+        '  background: linear-gradient(135deg,#c084fc,#e879f9);',
+        '  -webkit-background-clip: text;',
+        '  -webkit-text-fill-color: transparent;',
+        '  background-clip: text;',
+        '  margin-bottom: 12px;',
+        '  text-align: center;',
+        '}',
+        '.scratch-game-widget .sg-tier-row {',
+        '  display: flex;',
+        '  gap: 6px;',
+        '  justify-content: center;',
+        '  margin-bottom: 10px;',
+        '}',
+        '.scratch-game-widget .sg-tier-btn {',
+        '  flex: 1;',
+        '  padding: 6px 0;',
+        '  border-radius: 8px;',
+        '  border: 1.5px solid rgba(168,85,247,0.4);',
+        '  background: rgba(255,255,255,0.05);',
+        '  color: #e2e8f0;',
+        '  font-size: 12px;',
+        '  font-weight: 700;',
+        '  cursor: pointer;',
+        '  transition: background 0.15s, border-color 0.15s;',
+        '  text-align: center;',
+        '}',
+        '.scratch-game-widget .sg-tier-btn:hover {',
+        '  background: rgba(168,85,247,0.15);',
+        '}',
+        '.scratch-game-widget .sg-tier-btn.selected {',
+        '  background: rgba(168,85,247,0.3);',
+        '  border-color: #a855f7;',
+        '  color: #e9d5ff;',
+        '}',
+        '.scratch-game-widget .sg-buy-btn,',
+        '.scratch-game-widget .sg-reveal-btn,',
+        '.scratch-game-widget .sg-again-btn {',
+        '  display: block;',
+        '  width: 100%;',
+        '  padding: 8px 0;',
+        '  border-radius: 8px;',
+        '  border: none;',
+        '  font-size: 13px;',
+        '  font-weight: 800;',
+        '  letter-spacing: 1px;',
+        '  cursor: pointer;',
+        '  margin-bottom: 10px;',
+        '  transition: opacity 0.15s;',
+        '}',
+        '.scratch-game-widget .sg-buy-btn {',
+        '  background: linear-gradient(135deg,#7c3aed,#a855f7);',
+        '  color: #fff;',
+        '}',
+        '.scratch-game-widget .sg-reveal-btn {',
+        '  background: linear-gradient(135deg,#d946ef,#f472b6);',
+        '  color: #fff;',
+        '}',
+        '.scratch-game-widget .sg-again-btn {',
+        '  background: linear-gradient(135deg,#6d28d9,#7c3aed);',
+        '  color: #e9d5ff;',
+        '}',
+        '.scratch-game-widget .sg-buy-btn:disabled,',
+        '.scratch-game-widget .sg-reveal-btn:disabled,',
+        '.scratch-game-widget .sg-again-btn:disabled {',
+        '  opacity: 0.45;',
+        '  cursor: not-allowed;',
+        '}',
+        '.scratch-game-widget .sg-grid {',
+        '  display: grid;',
+        '  grid-template-columns: repeat(3, 52px);',
+        '  gap: 6px;',
+        '  justify-content: center;',
+        '  margin-bottom: 10px;',
+        '}',
+        '.scratch-game-widget .sg-cell {',
+        '  width: 52px;',
+        '  height: 52px;',
+        '  border-radius: 8px;',
+        '  display: flex;',
+        '  align-items: center;',
+        '  justify-content: center;',
+        '  font-size: 13px;',
+        '  font-weight: 700;',
+        '  line-height: 1;',
+        '  user-select: none;',
+        '  transition: transform 0.25s, background 0.25s;',
+        '}',
+        '.scratch-game-widget .sg-cell.covered {',
+        '  background: rgba(168,85,247,0.2);',
+        '  border: 1.5px solid rgba(168,85,247,0.5);',
+        '  color: rgba(255,255,255,0.4);',
+        '  font-size: 20px;',
+        '}',
+        '.scratch-game-widget .sg-cell.revealed {',
+        '  background: rgba(168,85,247,0.12);',
+        '  border: 1.5px solid rgba(168,85,247,0.35);',
+        '  color: #e9d5ff;',
+        '  transform: scale(1.08);',
+        '}',
+        '.scratch-game-widget .sg-result {',
+        '  text-align: center;',
+        '  font-size: 13px;',
+        '  font-weight: 700;',
+        '  min-height: 20px;',
+        '  margin-top: 4px;',
+        '}'
+    ].join('\n');
+    document.head.appendChild(s);
+})();
+
+function renderScratchCardGame(container) {
+    if (!container) return;
+    if (document.getElementById('scratchCardGame')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var selectedTier = 1;
+    var currentGameId = null;
+    var busy = false;
+
+    // --- Build card shell ---
+    var card = document.createElement('div');
+    card.id = 'scratchCardGame';
+    card.className = 'promo-card scratch-game-widget';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'sg-title';
+    titleEl.textContent = '\uD83C\uDFAB Scratch Cards';
+    card.appendChild(titleEl);
+
+    // --- Tier selector row ---
+    var tierRow = document.createElement('div');
+    tierRow.className = 'sg-tier-row';
+    var tiers = [
+        { tier: 1, label: '$1' },
+        { tier: 2, label: '$5' },
+        { tier: 3, label: '$20' }
+    ];
+    var tierBtns = [];
+    tiers.forEach(function(t) {
+        var btn = document.createElement('button');
+        btn.className = 'sg-tier-btn' + (t.tier === selectedTier ? ' selected' : '');
+        btn.textContent = t.label;
+        btn.addEventListener('click', function() {
+            if (busy || currentGameId) return;
+            selectedTier = t.tier;
+            tierBtns.forEach(function(b) { b.className = 'sg-tier-btn'; });
+            btn.className = 'sg-tier-btn selected';
+        });
+        tierRow.appendChild(btn);
+        tierBtns.push(btn);
+    });
+    card.appendChild(tierRow);
+
+    // --- Buy button ---
+    var buyBtn = document.createElement('button');
+    buyBtn.className = 'sg-buy-btn';
+    buyBtn.textContent = 'BUY CARD';
+    card.appendChild(buyBtn);
+
+    // --- 3x3 grid ---
+    var grid = document.createElement('div');
+    grid.className = 'sg-grid';
+    var cells = [];
+    for (var i = 0; i < 9; i++) {
+        var cell = document.createElement('div');
+        cell.className = 'sg-cell covered';
+        cell.textContent = '?';
+        grid.appendChild(cell);
+        cells.push(cell);
+    }
+    card.appendChild(grid);
+
+    // --- Reveal button (hidden initially) ---
+    var revealBtn = document.createElement('button');
+    revealBtn.className = 'sg-reveal-btn';
+    revealBtn.textContent = 'REVEAL ALL';
+    revealBtn.style.display = 'none';
+    card.appendChild(revealBtn);
+
+    // --- Again button (hidden initially) ---
+    var againBtn = document.createElement('button');
+    againBtn.className = 'sg-again-btn';
+    againBtn.textContent = 'Buy Another';
+    againBtn.style.display = 'none';
+    card.appendChild(againBtn);
+
+    // --- Result text ---
+    var resultEl = document.createElement('div');
+    resultEl.className = 'sg-result';
+    card.appendChild(resultEl);
+
+    container.appendChild(card);
+
+    // --- Reset grid to covered state ---
+    function resetGrid() {
+        for (var c = 0; c < 9; c++) {
+            cells[c].className = 'sg-cell covered';
+            cells[c].textContent = '?';
+        }
+        resultEl.textContent = '';
+        resultEl.style.color = '';
+        revealBtn.style.display = 'none';
+        againBtn.style.display = 'none';
+        buyBtn.style.display = 'block';
+        buyBtn.disabled = false;
+        buyBtn.textContent = 'BUY CARD';
+        currentGameId = null;
+        busy = false;
+        // Re-enable tier buttons
+        tierBtns.forEach(function(b) { b.style.opacity = '1'; b.style.pointerEvents = ''; });
+    }
+
+    // --- BUY handler ---
+    buyBtn.addEventListener('click', function() {
+        if (busy || currentGameId) return;
+        busy = true;
+        buyBtn.disabled = true;
+        buyBtn.textContent = 'BUYING\u2026';
+        // Disable tier changes during purchase
+        tierBtns.forEach(function(b) { b.style.opacity = '0.5'; b.style.pointerEvents = 'none'; });
+
+        fetch('/api/scratch/buy', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tier: selectedTier })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                resultEl.textContent = data.error || 'Purchase failed.';
+                resultEl.style.color = '#f87171';
+                busy = false;
+                buyBtn.disabled = false;
+                buyBtn.textContent = 'BUY CARD';
+                tierBtns.forEach(function(b) { b.style.opacity = '1'; b.style.pointerEvents = ''; });
+                return;
+            }
+            currentGameId = data.gameId;
+            buyBtn.style.display = 'none';
+            revealBtn.style.display = 'block';
+            resultEl.textContent = '';
+            resultEl.style.color = '';
+            busy = false;
+        })
+        .catch(function() {
+            resultEl.textContent = 'Connection error. Try again.';
+            resultEl.style.color = '#f87171';
+            busy = false;
+            buyBtn.disabled = false;
+            buyBtn.textContent = 'BUY CARD';
+            tierBtns.forEach(function(b) { b.style.opacity = '1'; b.style.pointerEvents = ''; });
+        });
+    });
+
+    // --- REVEAL handler ---
+    revealBtn.addEventListener('click', function() {
+        if (busy || !currentGameId) return;
+        busy = true;
+        revealBtn.disabled = true;
+        revealBtn.textContent = 'REVEALING\u2026';
+
+        fetch('/api/scratch/reveal', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ gameId: currentGameId })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                resultEl.textContent = data.error || 'Reveal failed.';
+                resultEl.style.color = '#f87171';
+                busy = false;
+                revealBtn.disabled = false;
+                revealBtn.textContent = 'REVEAL ALL';
+                return;
+            }
+
+            var cellSymbols = data.cells || [];
+            var prize = data.prize || 0;
+
+            // Staggered reveal animation
+            revealBtn.style.display = 'none';
+            var revealIndex = 0;
+            var revealInterval = setInterval(function() {
+                if (revealIndex >= 9) {
+                    clearInterval(revealInterval);
+                    // Show result
+                    if (prize > 0) {
+                        resultEl.textContent = '\uD83C\uDF89 Won $' + prize.toFixed(2) + '!';
+                        resultEl.style.color = '#a78bfa';
+                    } else {
+                        resultEl.textContent = 'No luck this time';
+                        resultEl.style.color = 'rgba(255,255,255,0.45)';
+                    }
+                    // Update balance
+                    if (typeof data.newBalance === 'number') {
+                        if (typeof updateBalanceDisplay === 'function') {
+                            updateBalanceDisplay(data.newBalance);
+                        }
+                    }
+                    // Show "Buy Another"
+                    againBtn.style.display = 'block';
+                    busy = false;
+                    return;
+                }
+                var sym = cellSymbols[revealIndex] || '?';
+                cells[revealIndex].className = 'sg-cell revealed';
+                cells[revealIndex].textContent = sym;
+                revealIndex++;
+            }, 100);
+        })
+        .catch(function() {
+            resultEl.textContent = 'Connection error. Try again.';
+            resultEl.style.color = '#f87171';
+            busy = false;
+            revealBtn.disabled = false;
+            revealBtn.textContent = 'REVEAL ALL';
+        });
+    });
+
+    // --- BUY ANOTHER handler ---
+    againBtn.addEventListener('click', function() {
+        resetGrid();
     });
 }
