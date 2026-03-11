@@ -2051,10 +2051,10 @@
 
 // ── XP Shop ─────────────────────────────────────────────────────────────────
 var XP_SHOP_ITEMS = [
-    { id: 'freespins5',   label: '5 Free Spins',        icon: '🎰', cost: 100,  desc: 'Get 5 free spins on any open game' },
-    { id: 'balance500',   label: '$500 Balance Boost',  icon: '💵', cost: 250,  desc: 'Instantly add $500 to your balance' },
-    { id: 'xpboost50',    label: '2× XP Boost (50)',    icon: '⚡', cost: 500,  desc: 'Double XP on your next 50 spins' },
-    { id: 'balance2000',  label: '$2,000 Balance Boost', icon: '💰', cost: 1000, desc: 'Instantly add $2,000 to your balance' },
+    { id: 'freespins5',  label: '5 Free Spins',       icon: '🎰', cost: 100,  desc: 'Get 5 free spins on any open game' },
+    { id: 'balance5',    label: '$5 Balance Boost',   icon: '💵', cost: 250,  desc: 'Add $5 to your balance' },
+    { id: 'xpboost50',   label: '2× XP Boost (50)',   icon: '⚡', cost: 500,  desc: 'Double XP on your next 50 spins' },
+    { id: 'balance20',   label: '$20 Balance Boost',  icon: '💰', cost: 1000, desc: 'Add $20 to your balance' },
 ];
 
 function openXpShop() {
@@ -2163,7 +2163,7 @@ function _buyXpShopItem(item) {
 
         // Server is unreachable — only allow non-balance items client-side.
         // Balance grants MUST go through the server to prevent exploitation.
-        if (item.type === 'balance' || item.id === 'balance500' || item.id === 'balance2000') {
+        if (item.type === 'balance' || item.id === 'balance5' || item.id === 'balance20') {
             if (typeof showToast === 'function') {
                 showToast('Server unavailable — balance rewards require a server connection.', 'error', 5000);
             }
@@ -2527,10 +2527,10 @@ function communityJackpotSpin(bet) {
 // ═══════════════════════════════════════════════════════
 
 var PROMO_CODES = {
-    WELCOME500: { type: 'one-time', reward: { cash: 500 },              desc: '+$500 Balance!' },
+    WELCOME10:  { type: 'one-time', reward: { cash: 10 },               desc: '+$10 Balance!' },
     MATRIX100:  { type: 'one-time', reward: { xp: 100 },                desc: '+100 XP!' },
     FREESPIN10: { type: 'one-time', reward: { spins: 10 },              desc: '10 Free Spins!' },
-    DAILY200:   { type: 'daily',    reward: { cash: 200 },              desc: '+$200 Balance!' },
+    DAILY2:     { type: 'daily',    reward: { cash: 2 },                desc: '+$2 Balance!' },
     XPBOOST:    { type: 'daily',    reward: { xpboost: 20 },            desc: '2× XP Boost (20 spins)!' },
 };
 var PROMO_STORAGE_KEY = 'matrixPromoCodes';

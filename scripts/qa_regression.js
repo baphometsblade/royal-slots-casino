@@ -484,7 +484,7 @@ async function run() {
     const afterReset = await readState(page);
     const resetStatus = (await page.textContent("#qaStatusLine")) || "";
     const resetLine = (await page.textContent("#qaStateLine")) || "";
-    assert(afterReset.balance === 5000, "Reset did not restore default balance");
+    assert(afterReset.balance === 50, "Reset did not restore default balance");
     assert(afterReset.stats.totalSpins === 0, "Reset did not clear spins");
     assert(afterReset.stats.totalWagered === 0, "Reset did not clear total wagered");
     assert(afterReset.stats.totalWon === 0, "Reset did not clear total won");

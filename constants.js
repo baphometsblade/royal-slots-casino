@@ -15,7 +15,7 @@
 // ─────────────────────────────────────────────────────────────
 
 /** @type {number} Starting balance for new players (in dollars) */
-const DEFAULT_BALANCE = 5000;
+const DEFAULT_BALANCE = 50;
 
 /** @type {number} Default bet amount */
 const DEFAULT_BET = 1.00;
@@ -694,14 +694,14 @@ const ACHIEVEMENT_THRESHOLD_JACKPOT_HUNTER_WIN = 25000;
  *   xp: XP bonus awarded alongside the prize
  */
 const WHEEL_SEGMENTS = [
-    { label: '$25',  value: 25,  color: '#3b82f6', xp: 20  },
-    { label: '5 FS',  value: 5,   type: 'freespins', color: '#7c3aed', xp: 15 },
-    { label: '$50',  value: 50,  color: '#10b981', xp: 30  },
-    { label: '$75', value: 75, color: '#f59e0b', xp: 50  },
-    { label: '$100', value: 100, color: '#8b5cf6', xp: 75  },
-    { label: '5 FS', value: 5,  type: 'freespins', color: '#0ea5e9', xp: 25 },
-    { label: '$25',  value: 25,  color: '#ec4899', xp: 20  },
-    { label: '$100', value: 100, color: '#ffd700', xp: 150 }
+    { label: '$0.50', value: 0.50, color: '#3b82f6', xp: 20  },
+    { label: '5 FS',  value: 5,    type: 'freespins', color: '#7c3aed', xp: 15 },
+    { label: '$1',    value: 1.00, color: '#10b981', xp: 30  },
+    { label: '$2',    value: 2.00, color: '#f59e0b', xp: 50  },
+    { label: '$5',    value: 5.00, color: '#8b5cf6', xp: 75  },
+    { label: '5 FS',  value: 5,    type: 'freespins', color: '#0ea5e9', xp: 25 },
+    { label: '$0.50', value: 0.50, color: '#ec4899', xp: 20  },
+    { label: '$3',    value: 3.00, color: '#ffd700', xp: 150 }
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -749,13 +749,13 @@ const XP_TIERS = [
  * Day 7 loops back to the last entry.
  */
 const DAILY_REWARDS = [
-    { amount: 300,  xp: 25  },
-    { amount: 450,  xp: 35  },
-    { amount: 600,  xp: 50  },
-    { amount: 900,  xp: 75  },
-    { amount: 1200, xp: 100 },
-    { amount: 1800, xp: 150 },
-    { amount: 3000, xp: 250 }
+    { amount: 0.50,  xp: 25  },
+    { amount: 0.75,  xp: 35  },
+    { amount: 1.00,  xp: 50  },
+    { amount: 1.50,  xp: 75  },
+    { amount: 2.00,  xp: 100 },
+    { amount: 3.00,  xp: 150 },
+    { amount: 5.00,  xp: 250 }
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -869,9 +869,9 @@ const STORAGE_KEY_REFERRAL = 'casinoReferral';
 // REFERRAL SYSTEM
 // ─────────────────────────────────────────────────────────────
 /** Bonus awarded to the referring player when their referral makes first deposit */
-const REFERRAL_BONUS_REFERRER = 500;
+const REFERRAL_BONUS_REFERRER = 25;
 /** Bonus awarded to the referred player on their first deposit */
-const REFERRAL_BONUS_REFEREE = 250;
+const REFERRAL_BONUS_REFEREE = 10;
 /** Minimum first-deposit amount to trigger referral bonuses */
 const REFERRAL_MIN_DEPOSIT = 10;
 const WAGERING_MULTIPLIER_DEFAULT = 30;

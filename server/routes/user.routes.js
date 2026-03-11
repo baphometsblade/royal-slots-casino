@@ -194,13 +194,13 @@ router.put('/stats', authenticate, async (req, res) => {
 
 // Must match DAILY_REWARDS in constants.js — server is the source of truth for payouts
 const DAILY_REWARDS_SERVER = [
-    { amount: 300,  xp: 25  },
-    { amount: 450,  xp: 35  },
-    { amount: 600,  xp: 50  },
-    { amount: 900,  xp: 75  },
-    { amount: 1200, xp: 100 },
-    { amount: 1800, xp: 150 },
-    { amount: 3000, xp: 250 },
+    { amount: 0.50,  xp: 25  },
+    { amount: 0.75,  xp: 35  },
+    { amount: 1.00,  xp: 50  },
+    { amount: 1.50,  xp: 75  },
+    { amount: 2.00,  xp: 100 },
+    { amount: 3.00,  xp: 150 },
+    { amount: 5.00,  xp: 250 },
 ];
 
 function getTodayStr() {
@@ -265,14 +265,14 @@ router.post('/claim-daily-bonus', authenticate, async (req, res) => {
 
 // Must match WHEEL_SEGMENTS in constants.js — server is the source of truth for payouts
 const WHEEL_SEGMENTS_SERVER = [
-    { label: '$25',  value: 25,  xp: 20  },
-    { label: '5 FS',  value: 5, type: 'freespins', xp: 15 },
-    { label: '$50',  value: 50,  xp: 30  },
-    { label: '$75', value: 75, xp: 50  },
-    { label: '$100', value: 100, xp: 75  },
-    { label: '5 FS', value: 5, type: 'freespins', xp: 25 },
-    { label: '$25',  value: 25,  xp: 20  },
-    { label: '$100', value: 100, xp: 150 },
+    { label: '$0.50', value: 0.50, xp: 20  },
+    { label: '5 FS',  value: 5,    type: 'freespins', xp: 15 },
+    { label: '$1',    value: 1.00, xp: 30  },
+    { label: '$2',    value: 2.00, xp: 50  },
+    { label: '$5',    value: 5.00, xp: 75  },
+    { label: '5 FS',  value: 5,    type: 'freespins', xp: 25 },
+    { label: '$0.50', value: 0.50, xp: 20  },
+    { label: '$3',    value: 3.00, xp: 150 },
 ];
 const WHEEL_COOLDOWN_HOURS = 4;
 
@@ -336,10 +336,10 @@ router.post('/spin-wheel', authenticate, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 
 const PROMO_CODES_SERVER = {
-    WELCOME500: { type: 'one-time', cash: 500,  xp: 50,  spins: 0,  desc: '+$500 Balance!' },
+    WELCOME10:  { type: 'one-time', cash: 10,   xp: 50,  spins: 0,  desc: '+$10 Balance!' },
     MATRIX100:  { type: 'one-time', cash: 0,    xp: 100, spins: 0,  desc: '+100 XP!' },
     FREESPIN10: { type: 'one-time', cash: 0,    xp: 0,   spins: 10, desc: '10 Free Spins!' },
-    DAILY200:   { type: 'daily',    cash: 200,  xp: 25,  spins: 0,  desc: '+$200 Balance!' },
+    DAILY2:     { type: 'daily',    cash: 2,    xp: 25,  spins: 0,  desc: '+$2 Balance!' },
     XPBOOST:    { type: 'daily',    cash: 0,    xp: 0,   spins: 0,  desc: '2× XP Boost (20 spins)!' },
 };
 
@@ -411,8 +411,8 @@ router.post('/redeem-promo', authenticate, async (req, res) => {
 //  REFERRAL SYSTEM
 // ═══════════════════════════════════════════════════════════
 
-const REFERRAL_BONUS_REFERRER = 500;
-const REFERRAL_BONUS_REFEREE = 250;
+const REFERRAL_BONUS_REFERRER = 25;
+const REFERRAL_BONUS_REFEREE = 10;
 const REFERRAL_MIN_DEPOSIT = 10;
 
 // GET /api/user/referral — get referral code & stats

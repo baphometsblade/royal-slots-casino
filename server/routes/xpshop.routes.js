@@ -24,9 +24,9 @@ db.run('ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0').catch(function () {}
 //       to fall back to client-side logic when the server is unreachable.
 const XP_SHOP_ITEMS = {
     freespins5:  { cost: 100,  type: 'freespins', amount: 5 },
-    balance500:  { cost: 250,  type: 'balance',   amount: 500 },
+    balance5:    { cost: 250,  type: 'balance',   amount: 5 },
     xpboost50:   { cost: 500,  type: 'xpboost',   amount: 50 },
-    balance2000: { cost: 1000, type: 'balance',   amount: 2000 },
+    balance20:   { cost: 1000, type: 'balance',   amount: 20 },
 };
 
 // POST /api/xpshop/purchase
