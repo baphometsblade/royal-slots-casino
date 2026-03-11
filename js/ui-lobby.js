@@ -633,6 +633,8 @@ function renderGames() {
                     if (typeof renderChuckALuckWidget === 'function') renderChuckALuckWidget();
                     // Big Six Wheel game widget
                     if (typeof renderBigSixWheelWidget === 'function') renderBigSixWheelWidget();
+                    // Keno Turbo quick-play widget
+                    if (typeof renderKenoTurboWidget === 'function') renderKenoTurboWidget();
                 }, 200);
             });
         }
@@ -8448,6 +8450,546 @@ function renderBigSixWheelWidget() {
             resultLabel.textContent = err.message || 'Network error';
             resultLabel.className = 'bsw-result-label bsw-lose';
             updateTotalBet();
+        });
+    });
+
+    // Insert into lobby
+    var gamesGrid = document.querySelector('.games-grid');
+    if (!gamesGrid || !gamesGrid.parentNode) return;
+    gamesGrid.parentNode.insertBefore(widget, gamesGrid);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// KENO TURBO QUICK-PLAY WIDGET
+// ═══════════════════════════════════════════════════════
+function renderKenoTurboWidget() {
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Idempotency
+    if (document.getElementById('kenoTurboWidget')) return;
+
+    // CSS injection
+    if (!document.getElementById('keno-turbo-css')) {
+        var style = document.createElement('style');
+        style.id = 'keno-turbo-css';
+        style.textContent = [
+            '.kt-widget { background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 16px; padding: 20px; margin-bottom: 24px; border: 1px solid rgba(138, 43, 226, 0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }',
+            '.kt-title { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }',
+            '.kt-title-text { font-size: 20px; font-weight: 700; color: #e0d0ff; letter-spacing: 1px; }',
+            '.kt-title-bolt { font-size: 22px; }',
+            '.kt-grid-wrap { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-bottom: 14px; }',
+            '.kt-num-btn { width: 100%; aspect-ratio: 1; border: none; border-radius: 6px; background: rgba(255,255,255,0.07); color: #b0b0c8; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; justify-content: center; }',
+            '.kt-num-btn:hover { background: rgba(138, 43, 226, 0.25); color: #fff; transform: scale(1.08); }',
+            '.kt-num-btn.kt-selected { background: linear-gradient(135deg, #8a2be2, #6a1b9a); color: #fff; box-shadow: 0 0 8px rgba(138, 43, 226, 0.5); transform: scale(1.05); }',
+            '.kt-num-btn.kt-drawn { background: rgba(30, 100, 200, 0.5); color: #90caf9; }',
+            '.kt-num-btn.kt-hit { background: linear-gradient(135deg, #ffd700, #ff8f00) !important; color: #1a0a2e !important; box-shadow: 0 0 12px rgba(255, 215, 0, 0.6); font-weight: 800; transform: scale(1.1); }',
+            '.kt-num-btn.kt-miss { opacity: 0.35; }',
+            '.kt-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }',
+            '.kt-picks-label { color: #b0b0c8; font-size: 13px; font-weight: 600; min-width: 90px; }',
+            '.kt-picks-count { color: #ce93d8; font-weight: 700; }',
+            '.kt-btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px; }',
+            '.kt-btn-quick { background: rgba(138, 43, 226, 0.3); color: #ce93d8; border: 1px solid rgba(138, 43, 226, 0.4); }',
+            '.kt-btn-quick:hover { background: rgba(138, 43, 226, 0.5); }',
+            '.kt-btn-clear { background: rgba(255, 82, 82, 0.2); color: #ff8a80; border: 1px solid rgba(255, 82, 82, 0.3); }',
+            '.kt-btn-clear:hover { background: rgba(255, 82, 82, 0.4); }',
+            '.kt-bet-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }',
+            '.kt-bet-label { color: #b0b0c8; font-size: 13px; font-weight: 600; }',
+            '.kt-bet-input { width: 90px; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(138, 43, 226, 0.4); background: rgba(0,0,0,0.3); color: #e0d0ff; font-size: 14px; font-weight: 600; text-align: center; }',
+            '.kt-bet-input:focus { outline: none; border-color: #8a2be2; box-shadow: 0 0 8px rgba(138, 43, 226, 0.3); }',
+            '.kt-bet-preset { padding: 6px 12px; border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 6px; background: rgba(138, 43, 226, 0.15); color: #ce93d8; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }',
+            '.kt-bet-preset:hover { background: rgba(138, 43, 226, 0.35); }',
+            '.kt-play-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #8a2be2, #6a1b9a); color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s ease; letter-spacing: 1px; text-transform: uppercase; }',
+            '.kt-play-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5); }',
+            '.kt-play-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }',
+            '.kt-play-btn.kt-playing { background: linear-gradient(135deg, #444, #666); }',
+            '.kt-result-area { margin-top: 14px; padding: 14px; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(138, 43, 226, 0.2); display: none; }',
+            '.kt-result-area.kt-visible { display: block; }',
+            '.kt-result-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }',
+            '.kt-result-label { color: #b0b0c8; font-size: 13px; }',
+            '.kt-result-value { color: #e0d0ff; font-size: 14px; font-weight: 700; }',
+            '.kt-result-value.kt-win { color: #ffd700; }',
+            '.kt-result-value.kt-loss { color: #ff8a80; }',
+            '.kt-result-divider { border: none; border-top: 1px solid rgba(138, 43, 226, 0.2); margin: 8px 0; }',
+            '.kt-drawn-label { color: #90caf9; font-size: 12px; margin-top: 10px; margin-bottom: 6px; font-weight: 600; }',
+            '.kt-drawn-nums { display: flex; flex-wrap: wrap; gap: 4px; }',
+            '.kt-drawn-chip { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 11px; font-weight: 700; }',
+            '.kt-drawn-chip.kt-chip-hit { background: linear-gradient(135deg, #ffd700, #ff8f00); color: #1a0a2e; }',
+            '.kt-drawn-chip.kt-chip-miss { background: rgba(30, 100, 200, 0.3); color: #90caf9; }',
+            '.kt-paytable-toggle { color: #ce93d8; font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 10px; display: inline-block; }',
+            '.kt-paytable-toggle:hover { color: #e0d0ff; }',
+            '.kt-paytable-area { display: none; margin-top: 10px; }',
+            '.kt-paytable-area.kt-visible { display: block; }',
+            '.kt-paytable-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; font-size: 11px; }',
+            '.kt-pt-header { color: #ce93d8; font-weight: 700; padding: 4px; text-align: center; }',
+            '.kt-pt-cell { color: #b0b0c8; padding: 3px; text-align: center; background: rgba(0,0,0,0.2); border-radius: 4px; }',
+            '@media (max-width: 600px) { .kt-grid-wrap { grid-template-columns: repeat(8, 1fr); gap: 2px; } .kt-num-btn { font-size: 10px; } }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    var _ktPicks = [];
+    var _ktBet = 1.00;
+    var _ktPlaying = false;
+    var _ktLastDrawn = [];
+    var _ktMaxPicks = 10;
+
+    var fmtMoney = function(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    };
+
+    // --- Build widget DOM ---
+    var widget = document.createElement('div');
+    widget.className = 'kt-widget';
+    widget.id = 'kenoTurboWidget';
+
+    // Title
+    var titleRow = document.createElement('div');
+    titleRow.className = 'kt-title';
+    var boltIcon = document.createElement('span');
+    boltIcon.className = 'kt-title-bolt';
+    boltIcon.textContent = '\u26A1';
+    titleRow.appendChild(boltIcon);
+    var titleText = document.createElement('span');
+    titleText.className = 'kt-title-text';
+    titleText.textContent = 'Keno Turbo';
+    titleRow.appendChild(titleText);
+    widget.appendChild(titleRow);
+
+    // Controls row
+    var controlsRow = document.createElement('div');
+    controlsRow.className = 'kt-controls';
+
+    var picksLabel = document.createElement('span');
+    picksLabel.className = 'kt-picks-label';
+    var picksCountSpan = document.createElement('span');
+    picksCountSpan.className = 'kt-picks-count';
+    picksCountSpan.textContent = '0';
+    picksLabel.appendChild(picksCountSpan);
+    var picksSlash = document.createTextNode('/10 selected');
+    picksLabel.appendChild(picksSlash);
+    controlsRow.appendChild(picksLabel);
+
+    var quickPickBtn = document.createElement('button');
+    quickPickBtn.className = 'kt-btn kt-btn-quick';
+    quickPickBtn.textContent = 'Quick Pick';
+    controlsRow.appendChild(quickPickBtn);
+
+    var clearBtn = document.createElement('button');
+    clearBtn.className = 'kt-btn kt-btn-clear';
+    clearBtn.textContent = 'Clear';
+    controlsRow.appendChild(clearBtn);
+
+    widget.appendChild(controlsRow);
+
+    // Number grid (8 rows x 10 cols = 80 numbers)
+    var gridWrap = document.createElement('div');
+    gridWrap.className = 'kt-grid-wrap';
+    var numButtons = [];
+    for (var n = 1; n <= 80; n++) {
+        var btn = document.createElement('button');
+        btn.className = 'kt-num-btn';
+        btn.textContent = String(n);
+        btn.setAttribute('data-num', String(n));
+        (function(num, btnEl) {
+            btnEl.addEventListener('click', function() {
+                if (_ktPlaying) return;
+                var idx = _ktPicks.indexOf(num);
+                if (idx !== -1) {
+                    _ktPicks.splice(idx, 1);
+                    btnEl.classList.remove('kt-selected');
+                } else {
+                    if (_ktPicks.length >= _ktMaxPicks) return;
+                    _ktPicks.push(num);
+                    btnEl.classList.add('kt-selected');
+                }
+                picksCountSpan.textContent = String(_ktPicks.length);
+                updatePlayBtnState();
+            });
+        })(n, btn);
+        numButtons.push(btn);
+        gridWrap.appendChild(btn);
+    }
+    widget.appendChild(gridWrap);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'kt-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.className = 'kt-bet-label';
+    betLabel.textContent = 'Bet:';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.className = 'kt-bet-input';
+    betInput.type = 'number';
+    betInput.min = '0.25';
+    betInput.max = '100';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.addEventListener('change', function() {
+        var v = parseFloat(betInput.value);
+        if (isNaN(v) || v < 0.25) v = 0.25;
+        if (v > 100) v = 100;
+        _ktBet = v;
+        betInput.value = v.toFixed(2);
+    });
+    betRow.appendChild(betInput);
+
+    var presets = [0.25, 1, 5, 25];
+    for (var pi = 0; pi < presets.length; pi++) {
+        (function(pv) {
+            var preBtn = document.createElement('button');
+            preBtn.className = 'kt-bet-preset';
+            preBtn.textContent = '$' + (pv < 1 ? pv.toFixed(2) : String(pv));
+            preBtn.addEventListener('click', function() {
+                if (_ktPlaying) return;
+                _ktBet = pv;
+                betInput.value = pv.toFixed(2);
+            });
+            betRow.appendChild(preBtn);
+        })(presets[pi]);
+    }
+    widget.appendChild(betRow);
+
+    // Play button
+    var playBtn = document.createElement('button');
+    playBtn.className = 'kt-play-btn';
+    playBtn.textContent = 'PLAY';
+    playBtn.disabled = true;
+    widget.appendChild(playBtn);
+
+    // Result area
+    var resultArea = document.createElement('div');
+    resultArea.className = 'kt-result-area';
+    widget.appendChild(resultArea);
+
+    // Paytable toggle
+    var ptToggle = document.createElement('span');
+    ptToggle.className = 'kt-paytable-toggle';
+    ptToggle.textContent = 'View Paytable';
+    widget.appendChild(ptToggle);
+
+    var ptArea = document.createElement('div');
+    ptArea.className = 'kt-paytable-area';
+    widget.appendChild(ptArea);
+
+    var _ptLoaded = false;
+    ptToggle.addEventListener('click', function() {
+        if (ptArea.classList.contains('kt-visible')) {
+            ptArea.classList.remove('kt-visible');
+            ptToggle.textContent = 'View Paytable';
+            return;
+        }
+        ptArea.classList.add('kt-visible');
+        ptToggle.textContent = 'Hide Paytable';
+        if (_ptLoaded) return;
+        _ptLoaded = true;
+        // Fetch paytable from server
+        fetch('/api/kenoturbo/paytable', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data || !data.paytable) {
+                var errMsg = document.createElement('div');
+                errMsg.style.color = '#ff8a80';
+                errMsg.style.fontSize = '12px';
+                errMsg.textContent = 'Could not load paytable';
+                ptArea.appendChild(errMsg);
+                return;
+            }
+            var ptGrid = document.createElement('div');
+            ptGrid.className = 'kt-paytable-grid';
+            // Headers
+            var h1 = document.createElement('div');
+            h1.className = 'kt-pt-header';
+            h1.textContent = 'Picks';
+            ptGrid.appendChild(h1);
+            var h2 = document.createElement('div');
+            h2.className = 'kt-pt-header';
+            h2.textContent = 'Hits';
+            ptGrid.appendChild(h2);
+            var h3 = document.createElement('div');
+            h3.className = 'kt-pt-header';
+            h3.textContent = 'Payout';
+            ptGrid.appendChild(h3);
+            var pt = data.paytable;
+            var pickKeys = Object.keys(pt).sort(function(a, b) { return parseInt(a) - parseInt(b); });
+            for (var pk = 0; pk < pickKeys.length; pk++) {
+                var pickNum = pickKeys[pk];
+                var hitMap = pt[pickNum];
+                var hitKeys = Object.keys(hitMap).sort(function(a, b) { return parseInt(a) - parseInt(b); });
+                for (var hk = 0; hk < hitKeys.length; hk++) {
+                    var hitNum = hitKeys[hk];
+                    var mult = hitMap[hitNum];
+                    if (mult <= 0) continue;
+                    var c1 = document.createElement('div');
+                    c1.className = 'kt-pt-cell';
+                    c1.textContent = pickNum;
+                    ptGrid.appendChild(c1);
+                    var c2 = document.createElement('div');
+                    c2.className = 'kt-pt-cell';
+                    c2.textContent = hitNum;
+                    ptGrid.appendChild(c2);
+                    var c3 = document.createElement('div');
+                    c3.className = 'kt-pt-cell';
+                    c3.textContent = mult + 'x';
+                    ptGrid.appendChild(c3);
+                }
+            }
+            ptArea.appendChild(ptGrid);
+        })
+        .catch(function() {
+            var errMsg = document.createElement('div');
+            errMsg.style.color = '#ff8a80';
+            errMsg.style.fontSize = '12px';
+            errMsg.textContent = 'Failed to load paytable';
+            ptArea.appendChild(errMsg);
+        });
+    });
+
+    // --- Helpers ---
+    function updatePlayBtnState() {
+        playBtn.disabled = _ktPicks.length === 0 || _ktPlaying;
+    }
+
+    function resetGridVisuals() {
+        for (var i = 0; i < numButtons.length; i++) {
+            numButtons[i].classList.remove('kt-drawn', 'kt-hit', 'kt-miss');
+        }
+    }
+
+    function clearAllPicks() {
+        _ktPicks = [];
+        for (var i = 0; i < numButtons.length; i++) {
+            numButtons[i].classList.remove('kt-selected', 'kt-drawn', 'kt-hit', 'kt-miss');
+        }
+        picksCountSpan.textContent = '0';
+        updatePlayBtnState();
+    }
+
+    function doQuickPick() {
+        clearAllPicks();
+        var count = Math.floor(Math.random() * 6) + 3; // 3-8 picks
+        var available = [];
+        for (var i = 1; i <= 80; i++) available.push(i);
+        for (var j = available.length - 1; j > 0; j--) {
+            var r = Math.floor(Math.random() * (j + 1));
+            var tmp = available[j];
+            available[j] = available[r];
+            available[r] = tmp;
+        }
+        for (var k = 0; k < count; k++) {
+            var num = available[k];
+            _ktPicks.push(num);
+            numButtons[num - 1].classList.add('kt-selected');
+        }
+        picksCountSpan.textContent = String(_ktPicks.length);
+        updatePlayBtnState();
+    }
+
+    function showResults(data) {
+        resultArea.innerHTML = '';
+        resultArea.classList.add('kt-visible');
+
+        // Hits row
+        var hitsRow = document.createElement('div');
+        hitsRow.className = 'kt-result-row';
+        var hitsLbl = document.createElement('span');
+        hitsLbl.className = 'kt-result-label';
+        hitsLbl.textContent = 'Hits';
+        hitsRow.appendChild(hitsLbl);
+        var hitsVal = document.createElement('span');
+        hitsVal.className = 'kt-result-value';
+        hitsVal.textContent = data.hits + ' / ' + data.picks.length;
+        hitsRow.appendChild(hitsVal);
+        resultArea.appendChild(hitsRow);
+
+        // Multiplier row
+        var multRow = document.createElement('div');
+        multRow.className = 'kt-result-row';
+        var multLbl = document.createElement('span');
+        multLbl.className = 'kt-result-label';
+        multLbl.textContent = 'Multiplier';
+        multRow.appendChild(multLbl);
+        var multVal = document.createElement('span');
+        multVal.className = 'kt-result-value';
+        multVal.textContent = data.mult + 'x';
+        multRow.appendChild(multVal);
+        resultArea.appendChild(multRow);
+
+        // Divider
+        var divider = document.createElement('hr');
+        divider.className = 'kt-result-divider';
+        resultArea.appendChild(divider);
+
+        // Payout row
+        var payRow = document.createElement('div');
+        payRow.className = 'kt-result-row';
+        var payLbl = document.createElement('span');
+        payLbl.className = 'kt-result-label';
+        payLbl.textContent = 'Payout';
+        payRow.appendChild(payLbl);
+        var payVal = document.createElement('span');
+        var isWin = data.payout > 0;
+        payVal.className = 'kt-result-value ' + (isWin ? 'kt-win' : 'kt-loss');
+        payVal.textContent = isWin ? '+' + fmtMoney(data.payout) : fmtMoney(0);
+        payRow.appendChild(payVal);
+        resultArea.appendChild(payRow);
+
+        // Profit row
+        var profRow = document.createElement('div');
+        profRow.className = 'kt-result-row';
+        var profLbl = document.createElement('span');
+        profLbl.className = 'kt-result-label';
+        profLbl.textContent = 'Profit';
+        profRow.appendChild(profLbl);
+        var profVal = document.createElement('span');
+        var profAmt = typeof data.profit === 'number' ? data.profit : (data.payout - data.bet);
+        profVal.className = 'kt-result-value ' + (profAmt >= 0 ? 'kt-win' : 'kt-loss');
+        profVal.textContent = (profAmt >= 0 ? '+' : '') + fmtMoney(profAmt);
+        profRow.appendChild(profVal);
+        resultArea.appendChild(profRow);
+
+        // Drawn numbers section
+        var drawnLabel = document.createElement('div');
+        drawnLabel.className = 'kt-drawn-label';
+        drawnLabel.textContent = 'Drawn Numbers (' + data.drawn.length + ')';
+        resultArea.appendChild(drawnLabel);
+
+        var drawnNums = document.createElement('div');
+        drawnNums.className = 'kt-drawn-nums';
+        var picksSet = {};
+        for (var p = 0; p < data.picks.length; p++) picksSet[data.picks[p]] = true;
+        for (var d = 0; d < data.drawn.length; d++) {
+            var chip = document.createElement('span');
+            var isHit = !!picksSet[data.drawn[d]];
+            chip.className = 'kt-drawn-chip ' + (isHit ? 'kt-chip-hit' : 'kt-chip-miss');
+            chip.textContent = String(data.drawn[d]);
+            drawnNums.appendChild(chip);
+        }
+        resultArea.appendChild(drawnNums);
+    }
+
+    function highlightGrid(drawn, picks) {
+        resetGridVisuals();
+        var drawnSet = {};
+        for (var i = 0; i < drawn.length; i++) drawnSet[drawn[i]] = true;
+        var picksSet = {};
+        for (var j = 0; j < picks.length; j++) picksSet[picks[j]] = true;
+        for (var k = 0; k < numButtons.length; k++) {
+            var num = k + 1;
+            var isDrawn = !!drawnSet[num];
+            var isPicked = !!picksSet[num];
+            if (isPicked && isDrawn) {
+                numButtons[k].classList.add('kt-hit');
+            } else if (isDrawn) {
+                numButtons[k].classList.add('kt-drawn');
+            } else if (isPicked) {
+                numButtons[k].classList.add('kt-miss');
+            }
+        }
+    }
+
+    function animateDrawSequence(drawn, picks, callback) {
+        var drawnSet = {};
+        for (var i = 0; i < drawn.length; i++) drawnSet[drawn[i]] = true;
+        var picksSet = {};
+        for (var j = 0; j < picks.length; j++) picksSet[picks[j]] = true;
+        resetGridVisuals();
+        var idx = 0;
+        var interval = setInterval(function() {
+            if (idx >= drawn.length) {
+                clearInterval(interval);
+                if (callback) callback();
+                return;
+            }
+            var num = drawn[idx];
+            var btnEl = numButtons[num - 1];
+            if (picksSet[num]) {
+                btnEl.classList.add('kt-hit');
+            } else {
+                btnEl.classList.add('kt-drawn');
+            }
+            idx++;
+        }, 60);
+    }
+
+    // --- Event handlers ---
+    quickPickBtn.addEventListener('click', function() {
+        if (_ktPlaying) return;
+        resetGridVisuals();
+        resultArea.classList.remove('kt-visible');
+        doQuickPick();
+    });
+
+    clearBtn.addEventListener('click', function() {
+        if (_ktPlaying) return;
+        resetGridVisuals();
+        resultArea.classList.remove('kt-visible');
+        clearAllPicks();
+    });
+
+    playBtn.addEventListener('click', function() {
+        if (_ktPlaying || _ktPicks.length === 0) return;
+        _ktPlaying = true;
+        playBtn.disabled = true;
+        playBtn.classList.add('kt-playing');
+        playBtn.textContent = 'DRAWING...';
+        resultArea.classList.remove('kt-visible');
+        resetGridVisuals();
+
+        var sortedPicks = _ktPicks.slice().sort(function(a, b) { return a - b; });
+
+        fetch('/api/kenoturbo/play', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ bet: _ktBet, picks: sortedPicks })
+        })
+        .then(function(r) {
+            if (!r.ok) {
+                return r.json().then(function(err) {
+                    throw new Error(err.error || 'Play failed');
+                });
+            }
+            return r.json();
+        })
+        .then(function(data) {
+            _ktLastDrawn = data.drawn || [];
+            animateDrawSequence(data.drawn, data.picks, function() {
+                showResults(data);
+                if (typeof updateBalanceDisplay === 'function' && typeof data.newBalance === 'number') {
+                    updateBalanceDisplay(data.newBalance);
+                }
+                _ktPlaying = false;
+                playBtn.disabled = false;
+                playBtn.classList.remove('kt-playing');
+                playBtn.textContent = 'PLAY';
+                updatePlayBtnState();
+            });
+        })
+        .catch(function(err) {
+            _ktPlaying = false;
+            playBtn.disabled = false;
+            playBtn.classList.remove('kt-playing');
+            playBtn.textContent = 'PLAY';
+            updatePlayBtnState();
+            resultArea.innerHTML = '';
+            resultArea.classList.add('kt-visible');
+            var errDiv = document.createElement('div');
+            errDiv.style.color = '#ff8a80';
+            errDiv.style.textAlign = 'center';
+            errDiv.style.padding = '10px';
+            errDiv.textContent = err.message || 'Network error';
+            resultArea.appendChild(errDiv);
         });
     });
 

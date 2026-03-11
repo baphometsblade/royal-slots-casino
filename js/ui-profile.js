@@ -898,7 +898,8 @@ const PROFILE_TABS = [
     { id: 'videopoker',   icon: '\u{1F0CF}', label: 'Video Poker' },
     { id: 'casinowar',    icon: '\u2694\uFE0F', label: 'Casino War' },
     { id: 'threecardpoker', icon: '\u{1F0CF}', label: 'Three Card Poker' },
-    { id: 'letitride', icon: '\u{1F0CF}', label: 'Let It Ride' }
+    { id: 'letitride', icon: '\u{1F0CF}', label: 'Let It Ride' },
+    { id: 'comeback', icon: '🔄', label: 'Comeback' }
 ];
 
 function renderProfileSidebar() {
@@ -1003,6 +1004,7 @@ function renderProfileContent() {
         case 'casinowar':     renderCasinoWarTab(); break;
         case 'threecardpoker': renderThreeCardPokerTab(); break;
         case 'letitride': renderLetItRideTab(); break;
+        case 'comeback': renderComebackBonusTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -7038,4 +7040,505 @@ function renderLetItRideWidget() {
             doDecision2(false);
         }
     });
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  COMEBACK BONUS TAB & WIDGET
+// ═══════════════════════════════════════════════════════
+
+function renderComebackBonusTab() {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var profileContent = document.querySelector('.profile-tab-content') || document.querySelector('.profile-content');
+    if (!profileContent) return;
+
+    // Inject CSS once
+    if (!document.getElementById('comebackBonusTabCSS')) {
+        var style = document.createElement('style');
+        style.id = 'comebackBonusTabCSS';
+        style.textContent = [
+            '.comeback-tab-wrap { max-width: 620px; margin: 0 auto; padding: 20px; font-family: inherit; }',
+            '.comeback-header { text-align: center; margin-bottom: 24px; }',
+            '.comeback-header h2 { font-size: 1.6em; margin: 0 0 6px 0; color: #f5c842; }',
+            '.comeback-header p { color: #bbb; margin: 0; font-size: 0.95em; }',
+            '.comeback-status-card { background: linear-gradient(135deg, #2a1f00 0%, #1a1200 100%); border: 1px solid #f5c84233; border-radius: 14px; padding: 28px; margin-bottom: 22px; text-align: center; position: relative; overflow: hidden; }',
+            '.comeback-status-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(245,200,66,0.04) 0%, transparent 70%); pointer-events: none; }',
+            '.comeback-tier-badge { display: inline-block; font-size: 2.2em; margin-bottom: 10px; }',
+            '.comeback-tier-label { font-size: 1.15em; font-weight: 700; margin-bottom: 6px; }',
+            '.comeback-tier-gold .comeback-tier-label { color: #ffd700; }',
+            '.comeback-tier-silver .comeback-tier-label { color: #c0c0c0; }',
+            '.comeback-tier-bronze .comeback-tier-label { color: #cd7f32; }',
+            '.comeback-status-card.comeback-tier-gold { border-color: #ffd70066; }',
+            '.comeback-status-card.comeback-tier-silver { border-color: #c0c0c066; }',
+            '.comeback-status-card.comeback-tier-bronze { border-color: #cd7f3266; }',
+            '.comeback-amount { font-size: 2em; font-weight: 800; color: #f5c842; margin: 10px 0; }',
+            '.comeback-amount-label { font-size: 0.85em; color: #999; margin-bottom: 14px; }',
+            '.comeback-claim-btn { background: linear-gradient(135deg, #f5c842, #d4a017); color: #1a1200; border: none; padding: 14px 44px; border-radius: 10px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }',
+            '.comeback-claim-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,200,66,0.4); }',
+            '.comeback-claim-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }',
+            '.comeback-claim-btn.claimed { background: linear-gradient(135deg, #2d8c3e, #1a6b2a); color: #fff; }',
+            '.comeback-not-eligible { background: #1a1a2e; border: 1px solid #333; border-radius: 14px; padding: 30px; text-align: center; }',
+            '.comeback-not-eligible-icon { font-size: 2.5em; margin-bottom: 12px; }',
+            '.comeback-not-eligible h3 { color: #ddd; margin: 0 0 8px 0; font-size: 1.15em; }',
+            '.comeback-not-eligible p { color: #888; margin: 0; font-size: 0.9em; }',
+            '.comeback-wagering-info { background: #111827; border: 1px solid #374151; border-radius: 10px; padding: 16px; margin-top: 18px; text-align: center; }',
+            '.comeback-wagering-info span { color: #f59e0b; font-weight: 600; }',
+            '.comeback-wagering-info p { color: #9ca3af; margin: 4px 0 0 0; font-size: 0.85em; }',
+            '.comeback-tier-table { width: 100%; border-collapse: collapse; margin-top: 22px; border-radius: 10px; overflow: hidden; }',
+            '.comeback-tier-table th { background: #1f2937; color: #d1d5db; padding: 10px 14px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }',
+            '.comeback-tier-table td { padding: 10px 14px; border-bottom: 1px solid #1f2937; color: #ccc; font-size: 0.9em; }',
+            '.comeback-tier-table tr:last-child td { border-bottom: none; }',
+            '.comeback-tier-table tr:nth-child(even) { background: #0d111b; }',
+            '.comeback-tier-table tr:nth-child(odd) { background: #111827; }',
+            '.comeback-tier-icon { margin-right: 6px; }',
+            '.comeback-loading { text-align: center; padding: 40px; color: #888; }',
+            '.comeback-loading-spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid #333; border-top-color: #f5c842; border-radius: 50%; animation: comebackSpin 0.8s linear infinite; margin-bottom: 10px; }',
+            '@keyframes comebackSpin { to { transform: rotate(360deg); } }',
+            '.comeback-error { background: #2d1111; border: 1px solid #7f1d1d; border-radius: 10px; padding: 16px; text-align: center; color: #fca5a5; margin-top: 12px; }',
+            '.comeback-cooldown { color: #f59e0b; font-size: 0.9em; margin-top: 8px; }',
+            '.comeback-section-title { color: #d1d5db; font-size: 1em; font-weight: 600; margin: 24px 0 10px 0; }',
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // Clear content
+    profileContent.innerHTML = '';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'comeback-tab-wrap';
+
+    // Header
+    var header = document.createElement('div');
+    header.className = 'comeback-header';
+    var h2 = document.createElement('h2');
+    h2.textContent = '\uD83D\uDD04 Comeback Bonus';
+    header.appendChild(h2);
+    var subtitle = document.createElement('p');
+    subtitle.textContent = 'Had a tough session? We\'ve got your back with a comeback bonus.';
+    header.appendChild(subtitle);
+    wrap.appendChild(header);
+
+    // Loading state
+    var loadingDiv = document.createElement('div');
+    loadingDiv.className = 'comeback-loading';
+    var spinner = document.createElement('div');
+    spinner.className = 'comeback-loading-spinner';
+    loadingDiv.appendChild(spinner);
+    var loadText = document.createElement('div');
+    loadText.textContent = 'Checking eligibility...';
+    loadingDiv.appendChild(loadText);
+    wrap.appendChild(loadingDiv);
+
+    // Container for dynamic content
+    var dynamicContainer = document.createElement('div');
+    dynamicContainer.id = 'comebackDynamicContent';
+    wrap.appendChild(dynamicContainer);
+
+    // Tier breakdown table (always shown)
+    var tableTitle = document.createElement('div');
+    tableTitle.className = 'comeback-section-title';
+    tableTitle.textContent = 'Tier Breakdown';
+    wrap.appendChild(tableTitle);
+
+    var table = document.createElement('table');
+    table.className = 'comeback-tier-table';
+
+    var thead = document.createElement('thead');
+    var headerRow = document.createElement('tr');
+    var thTier = document.createElement('th');
+    thTier.textContent = 'Tier';
+    headerRow.appendChild(thTier);
+    var thLoss = document.createElement('th');
+    thLoss.textContent = 'Min Session Loss';
+    headerRow.appendChild(thLoss);
+    var thPct = document.createElement('th');
+    thPct.textContent = 'Bonus %';
+    headerRow.appendChild(thPct);
+    var thRange = document.createElement('th');
+    thRange.textContent = 'Bonus Range';
+    headerRow.appendChild(thRange);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    var tiers = [
+        { icon: '\uD83E\uDD47', name: 'Gold', loss: '$500+', pct: '10%', range: '$25 \u2013 $100' },
+        { icon: '\uD83E\uDD48', name: 'Silver', loss: '$200+', pct: '8%', range: '$10 \u2013 $50' },
+        { icon: '\uD83E\uDD49', name: 'Bronze', loss: '$50+', pct: '5%', range: '$2.50 \u2013 $25' }
+    ];
+    for (var t = 0; t < tiers.length; t++) {
+        var tr = document.createElement('tr');
+        var tdTier = document.createElement('td');
+        var tierIconSpan = document.createElement('span');
+        tierIconSpan.className = 'comeback-tier-icon';
+        tierIconSpan.textContent = tiers[t].icon;
+        tdTier.appendChild(tierIconSpan);
+        var tierNameSpan = document.createElement('span');
+        tierNameSpan.textContent = tiers[t].name;
+        tdTier.appendChild(tierNameSpan);
+        tr.appendChild(tdTier);
+
+        var tdLoss = document.createElement('td');
+        tdLoss.textContent = tiers[t].loss;
+        tr.appendChild(tdLoss);
+
+        var tdPct = document.createElement('td');
+        tdPct.textContent = tiers[t].pct;
+        tr.appendChild(tdPct);
+
+        var tdRange = document.createElement('td');
+        tdRange.textContent = tiers[t].range;
+        tr.appendChild(tdRange);
+
+        tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+
+    profileContent.appendChild(wrap);
+
+    // Fetch eligibility
+    fetch('/api/user/comeback-bonus', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        loadingDiv.style.display = 'none';
+        _renderComebackResult(dynamicContainer, data, token);
+    })
+    .catch(function(err) {
+        loadingDiv.style.display = 'none';
+        var errDiv = document.createElement('div');
+        errDiv.className = 'comeback-error';
+        errDiv.textContent = 'Could not check eligibility. Please try again later.';
+        dynamicContainer.appendChild(errDiv);
+        console.error('Comeback bonus eligibility check failed:', err);
+    });
+}
+
+function _renderComebackResult(container, data, token) {
+    container.innerHTML = '';
+
+    var fmtMoney = function(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    };
+
+    if (data.eligible) {
+        var tierMap = {
+            gold:   { icon: '\uD83E\uDD47', cls: 'comeback-tier-gold',   label: 'Gold Tier' },
+            silver: { icon: '\uD83E\uDD48', cls: 'comeback-tier-silver', label: 'Silver Tier' },
+            bronze: { icon: '\uD83E\uDD49', cls: 'comeback-tier-bronze', label: 'Bronze Tier' }
+        };
+        var tierInfo = tierMap[data.tier] || tierMap.bronze;
+
+        var card = document.createElement('div');
+        card.className = 'comeback-status-card ' + tierInfo.cls;
+
+        var badgeDiv = document.createElement('div');
+        badgeDiv.className = 'comeback-tier-badge';
+        badgeDiv.textContent = tierInfo.icon;
+        card.appendChild(badgeDiv);
+
+        var tierLabel = document.createElement('div');
+        tierLabel.className = 'comeback-tier-label';
+        tierLabel.textContent = tierInfo.label;
+        card.appendChild(tierLabel);
+
+        var amountLabel = document.createElement('div');
+        amountLabel.className = 'comeback-amount-label';
+        amountLabel.textContent = 'Comeback Bonus Available';
+        card.appendChild(amountLabel);
+
+        var amountDiv = document.createElement('div');
+        amountDiv.className = 'comeback-amount';
+        amountDiv.textContent = fmtMoney(data.amount);
+        card.appendChild(amountDiv);
+
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'comeback-claim-btn';
+        claimBtn.textContent = 'CLAIM BONUS';
+        claimBtn.id = 'comebackClaimBtn';
+
+        var claimFeedback = document.createElement('div');
+        claimFeedback.id = 'comebackClaimFeedback';
+
+        claimBtn.addEventListener('click', function() {
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'CLAIMING...';
+            _claimComebackBonus(token, claimBtn, claimFeedback, card, fmtMoney);
+        });
+
+        card.appendChild(claimBtn);
+        card.appendChild(claimFeedback);
+
+        if (data.message) {
+            var msgDiv = document.createElement('div');
+            msgDiv.className = 'comeback-cooldown';
+            msgDiv.textContent = data.message;
+            card.appendChild(msgDiv);
+        }
+
+        container.appendChild(card);
+    } else {
+        var notEligible = document.createElement('div');
+        notEligible.className = 'comeback-not-eligible';
+
+        var neIcon = document.createElement('div');
+        neIcon.className = 'comeback-not-eligible-icon';
+        neIcon.textContent = '\uD83D\uDCAA';
+        notEligible.appendChild(neIcon);
+
+        var neTitle = document.createElement('h3');
+        neTitle.textContent = 'No Comeback Bonus Available';
+        notEligible.appendChild(neTitle);
+
+        var neMsg = document.createElement('p');
+        neMsg.textContent = data.message || 'Keep playing \u2014 you may qualify soon!';
+        notEligible.appendChild(neMsg);
+
+        container.appendChild(notEligible);
+    }
+}
+
+function _claimComebackBonus(token, btn, feedbackEl, card, fmtMoney) {
+    fetch('/api/user/claim-comeback-bonus', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            btn.textContent = '\u2714 CLAIMED';
+            btn.className = 'comeback-claim-btn claimed';
+            btn.disabled = true;
+
+            if (typeof updateBalanceDisplay === 'function' && data.balance != null) {
+                updateBalanceDisplay(data.balance);
+            }
+
+            feedbackEl.innerHTML = '';
+            var wagerInfo = document.createElement('div');
+            wagerInfo.className = 'comeback-wagering-info';
+
+            var wagerTitle = document.createElement('div');
+            var wagerSpan = document.createElement('span');
+            wagerSpan.textContent = fmtMoney(data.bonusAmount) + ' added to bonus balance!';
+            wagerTitle.appendChild(wagerSpan);
+            wagerInfo.appendChild(wagerTitle);
+
+            var wagerDetail = document.createElement('p');
+            var wagerReq = data.wageringRequired || 10;
+            wagerDetail.textContent = 'Wagering requirement: ' + wagerReq + 'x playthrough (' + fmtMoney(data.bonusAmount * wagerReq) + ' total wager needed)';
+            wagerInfo.appendChild(wagerDetail);
+
+            if (data.tier) {
+                var tierNote = document.createElement('p');
+                var tierNames = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' };
+                tierNote.textContent = 'Tier: ' + (tierNames[data.tier] || data.tier);
+                tierNote.style.marginTop = '6px';
+                tierNote.style.color = '#d1d5db';
+                wagerInfo.appendChild(tierNote);
+            }
+
+            feedbackEl.appendChild(wagerInfo);
+        } else {
+            btn.textContent = 'CLAIM BONUS';
+            btn.disabled = false;
+            var errDiv = document.createElement('div');
+            errDiv.className = 'comeback-error';
+            errDiv.textContent = data.error || data.message || 'Could not claim bonus. Please try again.';
+            feedbackEl.innerHTML = '';
+            feedbackEl.appendChild(errDiv);
+        }
+    })
+    .catch(function(err) {
+        btn.textContent = 'CLAIM BONUS';
+        btn.disabled = false;
+        var errDiv = document.createElement('div');
+        errDiv.className = 'comeback-error';
+        errDiv.textContent = 'Network error. Please try again later.';
+        feedbackEl.innerHTML = '';
+        feedbackEl.appendChild(errDiv);
+        console.error('Comeback bonus claim failed:', err);
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  COMEBACK BONUS WIDGET (embeddable elsewhere)
+// ═══════════════════════════════════════════════════════
+
+function renderComebackBonusWidget() {
+    if (document.getElementById('comebackBonusWidget')) return;
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Inject widget CSS once
+    if (!document.getElementById('comebackWidgetCSS')) {
+        var style = document.createElement('style');
+        style.id = 'comebackWidgetCSS';
+        style.textContent = [
+            '.comeback-widget { background: linear-gradient(135deg, #2a1f00 0%, #1a1200 100%); border: 1px solid #f5c84233; border-radius: 12px; padding: 18px; margin: 12px 0; position: relative; overflow: hidden; }',
+            '.comeback-widget::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at top right, rgba(245,200,66,0.06) 0%, transparent 70%); pointer-events: none; }',
+            '.comeback-widget-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; position: relative; }',
+            '.comeback-widget-icon { font-size: 1.5em; }',
+            '.comeback-widget-title { font-size: 1.05em; font-weight: 700; color: #f5c842; }',
+            '.comeback-widget-body { position: relative; }',
+            '.comeback-widget-amount { font-size: 1.6em; font-weight: 800; color: #f5c842; text-align: center; margin: 8px 0; }',
+            '.comeback-widget-tier { text-align: center; margin-bottom: 10px; font-size: 0.9em; color: #bbb; }',
+            '.comeback-widget-claim { display: block; width: 100%; background: linear-gradient(135deg, #f5c842, #d4a017); color: #1a1200; border: none; padding: 11px 0; border-radius: 8px; font-size: 1em; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }',
+            '.comeback-widget-claim:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,200,66,0.35); }',
+            '.comeback-widget-claim:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.comeback-widget-claim.claimed { background: linear-gradient(135deg, #2d8c3e, #1a6b2a); color: #fff; }',
+            '.comeback-widget-msg { text-align: center; color: #888; font-size: 0.85em; margin-top: 6px; }',
+            '.comeback-widget-wager { background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 10px; margin-top: 10px; text-align: center; font-size: 0.82em; color: #9ca3af; }',
+            '.comeback-widget-wager strong { color: #f59e0b; }',
+            '.comeback-widget-loading { text-align: center; padding: 16px; color: #888; font-size: 0.9em; }',
+            '.comeback-widget-error { color: #fca5a5; text-align: center; font-size: 0.85em; padding: 8px; }',
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    var widget = document.createElement('div');
+    widget.className = 'comeback-widget';
+    widget.id = 'comebackBonusWidget';
+
+    var widgetHeader = document.createElement('div');
+    widgetHeader.className = 'comeback-widget-header';
+    var wIcon = document.createElement('span');
+    wIcon.className = 'comeback-widget-icon';
+    wIcon.textContent = '\uD83D\uDD04';
+    widgetHeader.appendChild(wIcon);
+    var wTitle = document.createElement('span');
+    wTitle.className = 'comeback-widget-title';
+    wTitle.textContent = 'Comeback Bonus';
+    widgetHeader.appendChild(wTitle);
+    widget.appendChild(widgetHeader);
+
+    var widgetBody = document.createElement('div');
+    widgetBody.className = 'comeback-widget-body';
+
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'comeback-widget-loading';
+    loadingEl.textContent = 'Checking...';
+    widgetBody.appendChild(loadingEl);
+
+    widget.appendChild(widgetBody);
+
+    var fmtMoney = function(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    };
+
+    fetch('/api/user/comeback-bonus', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        widgetBody.innerHTML = '';
+
+        if (data.eligible) {
+            var tierIcons = { gold: '\uD83E\uDD47', silver: '\uD83E\uDD48', bronze: '\uD83E\uDD49' };
+            var tierNames = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' };
+
+            var tierDiv = document.createElement('div');
+            tierDiv.className = 'comeback-widget-tier';
+            tierDiv.textContent = (tierIcons[data.tier] || '') + ' ' + (tierNames[data.tier] || 'Bonus') + ' Tier';
+            widgetBody.appendChild(tierDiv);
+
+            var amountDiv = document.createElement('div');
+            amountDiv.className = 'comeback-widget-amount';
+            amountDiv.textContent = fmtMoney(data.amount);
+            widgetBody.appendChild(amountDiv);
+
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'comeback-widget-claim';
+            claimBtn.textContent = 'CLAIM';
+
+            var feedbackDiv = document.createElement('div');
+            feedbackDiv.id = 'comebackWidgetFeedback';
+
+            claimBtn.addEventListener('click', function() {
+                claimBtn.disabled = true;
+                claimBtn.textContent = 'CLAIMING...';
+
+                fetch('/api/user/claim-comeback-bonus', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(claimData) {
+                    if (claimData.success) {
+                        claimBtn.textContent = '\u2714 CLAIMED';
+                        claimBtn.className = 'comeback-widget-claim claimed';
+                        claimBtn.disabled = true;
+
+                        if (typeof updateBalanceDisplay === 'function' && claimData.balance != null) {
+                            updateBalanceDisplay(claimData.balance);
+                        }
+
+                        feedbackDiv.innerHTML = '';
+                        var wagerBox = document.createElement('div');
+                        wagerBox.className = 'comeback-widget-wager';
+                        var strongEl = document.createElement('strong');
+                        strongEl.textContent = fmtMoney(claimData.bonusAmount);
+                        wagerBox.appendChild(strongEl);
+                        var wagerText = document.createTextNode(' added! ' + (claimData.wageringRequired || 10) + 'x playthrough required.');
+                        wagerBox.appendChild(wagerText);
+                        feedbackDiv.appendChild(wagerBox);
+                    } else {
+                        claimBtn.textContent = 'CLAIM';
+                        claimBtn.disabled = false;
+                        feedbackDiv.innerHTML = '';
+                        var errEl = document.createElement('div');
+                        errEl.className = 'comeback-widget-error';
+                        errEl.textContent = claimData.error || claimData.message || 'Could not claim.';
+                        feedbackDiv.appendChild(errEl);
+                    }
+                })
+                .catch(function() {
+                    claimBtn.textContent = 'CLAIM';
+                    claimBtn.disabled = false;
+                    feedbackDiv.innerHTML = '';
+                    var errEl = document.createElement('div');
+                    errEl.className = 'comeback-widget-error';
+                    errEl.textContent = 'Network error.';
+                    feedbackDiv.appendChild(errEl);
+                });
+            });
+
+            widgetBody.appendChild(claimBtn);
+            widgetBody.appendChild(feedbackDiv);
+
+            if (data.message) {
+                var msgEl = document.createElement('div');
+                msgEl.className = 'comeback-widget-msg';
+                msgEl.textContent = data.message;
+                widgetBody.appendChild(msgEl);
+            }
+        } else {
+            var noEligible = document.createElement('div');
+            noEligible.className = 'comeback-widget-msg';
+            noEligible.textContent = data.message || 'Keep playing \u2014 you may qualify soon!';
+            widgetBody.appendChild(noEligible);
+        }
+    })
+    .catch(function() {
+        widgetBody.innerHTML = '';
+        var errEl = document.createElement('div');
+        errEl.className = 'comeback-widget-error';
+        errEl.textContent = 'Could not load comeback bonus.';
+        widgetBody.appendChild(errEl);
+    });
+
+    return widget;
 }

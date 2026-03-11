@@ -112,6 +112,7 @@ function showWalletModal() {
     if (typeof renderSicBoWidget === 'function') renderSicBoWidget(modal);
     if (typeof renderRedDogCard === 'function') renderRedDogCard(modal);
     if (typeof renderMoneyWheelCard === 'function') renderMoneyWheelCard(modal);
+    if (typeof renderWheelOfFortuneCard === 'function') renderWheelOfFortuneCard(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -6209,6 +6210,458 @@ function renderMoneyWheelCard(parentContainer) {
             spinBtn.textContent = 'SPIN THE WHEEL';
             betInput.disabled = false;
         }
+    });
+
+    parentContainer.appendChild(card);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// WHEEL OF FORTUNE CARD
+// ═══════════════════════════════════════════════════════
+
+function renderWheelOfFortuneCard(parentContainer) {
+    if (document.getElementById('wheelOfFortuneCard')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var WOF_SEGMENTS = [
+        { mult: 0,    count: 24, color: '#3d3d3d', label: 'LOSE',  accent: '#555' },
+        { mult: 1.5,  count: 12, color: '#2196f3', label: '1.5x',  accent: '#42a5f5' },
+        { mult: 2,    count: 8,  color: '#4caf50', label: '2x',    accent: '#66bb6a' },
+        { mult: 3,    count: 5,  color: '#ff9800', label: '3x',    accent: '#ffa726' },
+        { mult: 5,    count: 3,  color: '#e91e63', label: '5x',    accent: '#ec407a' },
+        { mult: 10,   count: 1,  color: '#9c27b0', label: '10x',   accent: '#ab47bc' },
+        { mult: 20,   count: 1,  color: '#ffd700', label: '20x',   accent: '#ffe44d' }
+    ];
+    var WOF_TOTAL = 54;
+    var WOF_MIN_BET = 0.25;
+    var WOF_MAX_BET = 500;
+
+    function fmtMoney(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    }
+
+    /* ── CSS injection ── */
+    if (!document.getElementById('wheel-of-fortune-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'wheel-of-fortune-css';
+        styleEl.textContent = [
+            '#wheelOfFortuneCard{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);border:2px solid #e94560;border-radius:16px;padding:24px;margin-top:18px;position:relative;overflow:hidden}',
+            '#wheelOfFortuneCard::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(233,69,96,0.04),transparent,rgba(233,69,96,0.04),transparent);animation:wofShimmer 15s linear infinite;pointer-events:none}',
+            '@keyframes wofShimmer{to{transform:rotate(360deg)}}',
+            '.wof-title{font-size:22px;font-weight:700;color:#e94560;text-align:center;margin-bottom:16px;text-shadow:0 0 14px rgba(233,69,96,0.35)}',
+            '.wof-subtitle{font-size:12px;color:#8899aa;text-align:center;margin-bottom:16px}',
+            /* Wheel visual */
+            '.wof-wheel-wrap{position:relative;width:220px;height:220px;margin:0 auto 18px;border-radius:50%;overflow:hidden;border:3px solid #e94560;box-shadow:0 0 30px rgba(233,69,96,0.25)}',
+            '.wof-wheel-inner{width:100%;height:100%;border-radius:50%;position:relative;transition:transform 3.5s cubic-bezier(0.17,0.67,0.12,0.99)}',
+            '.wof-wheel-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,#ffd700 40%,#e94560 100%);border:2px solid #fff;z-index:5;box-shadow:0 0 12px rgba(255,215,0,0.5)}',
+            '.wof-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid #ffd700;z-index:6;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}',
+            /* Distribution bars */
+            '.wof-dist-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}',
+            '.wof-dist-bar-bg{flex:1;height:14px;border-radius:7px;background:rgba(255,255,255,0.06);overflow:hidden;position:relative}',
+            '.wof-dist-bar{height:100%;border-radius:7px;transition:width 0.6s ease}',
+            '.wof-dist-label{font-size:12px;font-weight:700;color:#fff;min-width:42px;text-align:right}',
+            '.wof-dist-count{font-size:10px;color:rgba(255,255,255,0.5);min-width:38px}',
+            '.wof-dist-pct{font-size:10px;color:rgba(255,255,255,0.45);min-width:32px;text-align:right}',
+            /* Bet controls */
+            '.wof-bet-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;justify-content:center}',
+            '.wof-bet-label{color:#8899aa;font-size:12px;white-space:nowrap}',
+            '.wof-bet-input{width:100px;padding:8px 10px;border-radius:8px;border:2px solid #e94560;background:#16213e;color:#ffd700;font-size:16px;font-weight:700;text-align:center;outline:none;transition:border-color 0.2s}',
+            '.wof-bet-input:focus{border-color:#ffd700}',
+            '.wof-presets{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}',
+            '.wof-preset{padding:4px 10px;border-radius:6px;border:1px solid rgba(233,69,96,0.3);background:rgba(233,69,96,0.1);color:#e94560;font-size:12px;cursor:pointer;transition:all 0.2s}',
+            '.wof-preset:hover{background:rgba(233,69,96,0.3);color:#ffd700;border-color:#ffd700}',
+            '.wof-preset.wof-active{background:rgba(233,69,96,0.4);color:#ffd700;border-color:#ffd700}',
+            /* Spin button */
+            '.wof-spin-btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-size:18px;font-weight:800;cursor:pointer;transition:all 0.3s;background:linear-gradient(135deg,#e94560,#c62840);color:#fff;text-transform:uppercase;letter-spacing:2px;box-shadow:0 4px 15px rgba(233,69,96,0.4)}',
+            '.wof-spin-btn:hover:not(:disabled){background:linear-gradient(135deg,#ec407a,#e94560);box-shadow:0 6px 20px rgba(233,69,96,0.6);transform:translateY(-1px)}',
+            '.wof-spin-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}',
+            '.wof-spin-btn.wof-spinning{animation:wofPulse 0.8s ease infinite}',
+            '@keyframes wofPulse{0%,100%{opacity:0.5}50%{opacity:0.7}}',
+            /* Result area */
+            '.wof-result-area{margin-top:16px;text-align:center;min-height:80px}',
+            '.wof-result-mult{font-size:56px;font-weight:900;text-shadow:0 0 24px rgba(255,215,0,0.5);opacity:0;transition:opacity 0.4s,transform 0.4s;transform:scale(0.5)}',
+            '.wof-result-mult.wof-show{opacity:1;transform:scale(1)}',
+            '.wof-result-label{font-size:13px;color:#aaa;margin-top:4px;opacity:0;transition:opacity 0.3s}',
+            '.wof-result-label.wof-show{opacity:1}',
+            '.wof-result-payout{font-size:22px;font-weight:700;margin-top:6px;opacity:0;transition:opacity 0.3s}',
+            '.wof-result-payout.wof-show{opacity:1}',
+            '.wof-result-payout.wof-win{color:#4caf50}',
+            '.wof-result-payout.wof-loss{color:#f44336}',
+            /* History chips */
+            '.wof-history{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;min-height:28px}',
+            '.wof-hist-chip{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;animation:wofChipIn 0.3s ease forwards}',
+            '@keyframes wofChipIn{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}',
+            '.wof-divider{height:1px;background:linear-gradient(90deg,transparent,#e94560,transparent);margin:14px 0}',
+            /* Legend */
+            '.wof-legend{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:16px}',
+            '.wof-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#ccc}',
+            '.wof-legend-swatch{width:14px;height:14px;border-radius:3px;flex-shrink:0}'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    /* ── Card container ── */
+    var card = document.createElement('div');
+    card.id = 'wheelOfFortuneCard';
+
+    /* ── Title ── */
+    var titleEl = document.createElement('div');
+    titleEl.className = 'wof-title';
+    titleEl.textContent = '\uD83C\uDFA1 Wheel of Fortune';
+    card.appendChild(titleEl);
+
+    var subtitleEl = document.createElement('div');
+    subtitleEl.className = 'wof-subtitle';
+    subtitleEl.textContent = '54 segments \u2022 Multipliers up to 20x \u2022 Bet ' + fmtMoney(WOF_MIN_BET) + ' \u2013 ' + fmtMoney(WOF_MAX_BET);
+    card.appendChild(subtitleEl);
+
+    /* ── Wheel visual (conic-gradient pie) ── */
+    var wheelWrap = document.createElement('div');
+    wheelWrap.className = 'wof-wheel-wrap';
+
+    var wheelInner = document.createElement('div');
+    wheelInner.className = 'wof-wheel-inner';
+
+    /* Build conic gradient from segments */
+    var conicStops = [];
+    var degAccum = 0;
+    /* Flatten segments into individual slices for accurate visual */
+    var allSlices = [];
+    for (var si = 0; si < WOF_SEGMENTS.length; si++) {
+        var seg = WOF_SEGMENTS[si];
+        for (var sc = 0; sc < seg.count; sc++) {
+            allSlices.push(seg);
+        }
+    }
+    /* Interleave for visual variety (simple deterministic shuffle) */
+    var shuffled = [];
+    var buckets = WOF_SEGMENTS.map(function(s) { return { seg: s, remaining: s.count }; });
+    while (shuffled.length < WOF_TOTAL) {
+        for (var bi = 0; bi < buckets.length; bi++) {
+            if (buckets[bi].remaining > 0) {
+                shuffled.push(buckets[bi].seg);
+                buckets[bi].remaining--;
+            }
+        }
+    }
+
+    var sliceDeg = 360 / WOF_TOTAL;
+    for (var sli = 0; sli < shuffled.length; sli++) {
+        var slStart = sli * sliceDeg;
+        var slEnd = (sli + 1) * sliceDeg;
+        var slColor = (sli % 2 === 0) ? shuffled[sli].color : shuffled[sli].accent;
+        conicStops.push(slColor + ' ' + slStart.toFixed(2) + 'deg ' + slEnd.toFixed(2) + 'deg');
+    }
+    wheelInner.style.background = 'conic-gradient(' + conicStops.join(',') + ')';
+
+    var wheelCenter = document.createElement('div');
+    wheelCenter.className = 'wof-wheel-center';
+
+    var pointer = document.createElement('div');
+    pointer.className = 'wof-pointer';
+
+    wheelWrap.appendChild(wheelInner);
+    wheelWrap.appendChild(wheelCenter);
+    wheelWrap.appendChild(pointer);
+    card.appendChild(wheelWrap);
+
+    /* ── Distribution bars ── */
+    var distSection = document.createElement('div');
+    distSection.style.cssText = 'margin-bottom:16px;';
+
+    for (var di = 0; di < WOF_SEGMENTS.length; di++) {
+        var ds = WOF_SEGMENTS[di];
+        var pct = ((ds.count / WOF_TOTAL) * 100);
+
+        var row = document.createElement('div');
+        row.className = 'wof-dist-row';
+
+        var lbl = document.createElement('div');
+        lbl.className = 'wof-dist-label';
+        lbl.style.color = ds.color === '#3d3d3d' ? '#999' : ds.color;
+        lbl.textContent = ds.label;
+
+        var barBg = document.createElement('div');
+        barBg.className = 'wof-dist-bar-bg';
+
+        var bar = document.createElement('div');
+        bar.className = 'wof-dist-bar';
+        bar.style.width = pct.toFixed(1) + '%';
+        bar.style.background = 'linear-gradient(90deg,' + ds.color + ',' + ds.accent + ')';
+        barBg.appendChild(bar);
+
+        var countEl = document.createElement('div');
+        countEl.className = 'wof-dist-count';
+        countEl.textContent = ds.count + '/' + WOF_TOTAL;
+
+        var pctEl = document.createElement('div');
+        pctEl.className = 'wof-dist-pct';
+        pctEl.textContent = pct.toFixed(1) + '%';
+
+        row.appendChild(lbl);
+        row.appendChild(barBg);
+        row.appendChild(countEl);
+        row.appendChild(pctEl);
+        distSection.appendChild(row);
+    }
+    card.appendChild(distSection);
+
+    /* ── Divider ── */
+    var div1 = document.createElement('div');
+    div1.className = 'wof-divider';
+    card.appendChild(div1);
+
+    /* ── Legend (grid) ── */
+    var legend = document.createElement('div');
+    legend.className = 'wof-legend';
+    for (var li = 0; li < WOF_SEGMENTS.length; li++) {
+        var ls = WOF_SEGMENTS[li];
+        var legendItem = document.createElement('div');
+        legendItem.className = 'wof-legend-item';
+
+        var swatch = document.createElement('div');
+        swatch.className = 'wof-legend-swatch';
+        swatch.style.background = ls.color;
+
+        var legendText = document.createElement('span');
+        legendText.textContent = ls.label + ' (' + ls.count + ' slots, ' + ((ls.count / WOF_TOTAL) * 100).toFixed(1) + '%)';
+
+        legendItem.appendChild(swatch);
+        legendItem.appendChild(legendText);
+        legend.appendChild(legendItem);
+    }
+    card.appendChild(legend);
+
+    /* ── Divider ── */
+    var div2 = document.createElement('div');
+    div2.className = 'wof-divider';
+    card.appendChild(div2);
+
+    /* ── Bet row ── */
+    var betRow = document.createElement('div');
+    betRow.className = 'wof-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.className = 'wof-bet-label';
+    betLabel.textContent = 'BET:';
+
+    var betInput = document.createElement('input');
+    betInput.className = 'wof-bet-input';
+    betInput.type = 'number';
+    betInput.min = String(WOF_MIN_BET);
+    betInput.max = String(WOF_MAX_BET);
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+
+    betRow.appendChild(betLabel);
+    betRow.appendChild(betInput);
+    card.appendChild(betRow);
+
+    /* ── Preset bet buttons ── */
+    var presets = document.createElement('div');
+    presets.className = 'wof-presets';
+    var presetAmounts = [0.25, 1, 5, 10, 25, 50, 100, 500];
+    for (var pi = 0; pi < presetAmounts.length; pi++) {
+        (function(amt) {
+            var btn = document.createElement('button');
+            btn.className = 'wof-preset';
+            btn.textContent = fmtMoney(amt);
+            btn.addEventListener('click', function() {
+                betInput.value = amt.toFixed(2);
+                /* highlight active */
+                var allP = presets.querySelectorAll('.wof-preset');
+                for (var ap = 0; ap < allP.length; ap++) allP[ap].classList.remove('wof-active');
+                btn.classList.add('wof-active');
+            });
+            presets.appendChild(btn);
+        })(presetAmounts[pi]);
+    }
+    card.appendChild(presets);
+
+    /* ── Spin button ── */
+    var spinBtn = document.createElement('button');
+    spinBtn.className = 'wof-spin-btn';
+    spinBtn.textContent = 'SPIN THE WHEEL';
+    card.appendChild(spinBtn);
+
+    /* ── Result area ── */
+    var resultArea = document.createElement('div');
+    resultArea.className = 'wof-result-area';
+
+    var resultMult = document.createElement('div');
+    resultMult.className = 'wof-result-mult';
+    resultArea.appendChild(resultMult);
+
+    var resultLabel = document.createElement('div');
+    resultLabel.className = 'wof-result-label';
+    resultArea.appendChild(resultLabel);
+
+    var resultPayout = document.createElement('div');
+    resultPayout.className = 'wof-result-payout';
+    resultArea.appendChild(resultPayout);
+
+    card.appendChild(resultArea);
+
+    /* ── History chips ── */
+    var historyRow = document.createElement('div');
+    historyRow.className = 'wof-history';
+    card.appendChild(historyRow);
+
+    /* ── State ── */
+    var wofSpinning = false;
+    var wofHistory = [];
+    var currentRotation = 0;
+
+    /* ── Clear result display ── */
+    function clearResult() {
+        resultMult.classList.remove('wof-show');
+        resultLabel.classList.remove('wof-show');
+        resultPayout.classList.remove('wof-show');
+        resultPayout.classList.remove('wof-win', 'wof-loss');
+    }
+
+    /* ── Add history chip ── */
+    function addHistoryChip(segment) {
+        var chip = document.createElement('span');
+        chip.className = 'wof-hist-chip';
+        chip.style.background = segment.color || '#555';
+        chip.textContent = segment.label || (segment.mult === 0 ? 'LOSE' : segment.mult + 'x');
+        historyRow.insertBefore(chip, historyRow.firstChild);
+        /* Cap at 20 chips */
+        while (historyRow.children.length > 20) {
+            historyRow.removeChild(historyRow.lastChild);
+        }
+    }
+
+    /* ── Spin handler ── */
+    spinBtn.addEventListener('click', function() {
+        if (wofSpinning) return;
+
+        var betVal = parseFloat(betInput.value);
+        if (isNaN(betVal) || betVal < WOF_MIN_BET) {
+            if (typeof showToast === 'function') showToast('Minimum bet is ' + fmtMoney(WOF_MIN_BET), 'error');
+            return;
+        }
+        if (betVal > WOF_MAX_BET) {
+            if (typeof showToast === 'function') showToast('Maximum bet is ' + fmtMoney(WOF_MAX_BET), 'error');
+            return;
+        }
+
+        wofSpinning = true;
+        spinBtn.disabled = true;
+        spinBtn.classList.add('wof-spinning');
+        spinBtn.textContent = 'SPINNING...';
+        betInput.disabled = true;
+        clearResult();
+
+        var authToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+
+        fetch('/api/wheel/play', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken
+            },
+            body: JSON.stringify({ bet: betVal })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(err) { throw new Error(err.error || 'Spin failed'); });
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            /* data: { segmentIndex, segment: { mult, color, label }, multiplier, payout, profit, newBalance, totalSegments } */
+
+            /* ── Animate the wheel ── */
+            var totalSegs = data.totalSegments || 54;
+            var segDeg = 360 / totalSegs;
+            var targetSliceMid = (data.segmentIndex * segDeg) + (segDeg / 2);
+            /* Wheel spins clockwise, pointer is at top (0deg).
+               We rotate wheel so the target slice ends up at the top.
+               Add extra full rotations for dramatic effect. */
+            var extraSpins = 5 + Math.floor(Math.random() * 3); // 5-7 full rotations
+            var targetRotation = (360 * extraSpins) + (360 - targetSliceMid);
+            currentRotation = targetRotation;
+
+            wheelInner.style.transition = 'transform 3.5s cubic-bezier(0.17,0.67,0.12,0.99)';
+            wheelInner.style.transform = 'rotate(' + targetRotation + 'deg)';
+
+            /* Show result after animation */
+            setTimeout(function() {
+                var seg = data.segment || {};
+                var mult = data.multiplier || seg.mult || 0;
+                var isWin = mult > 0;
+
+                /* Result multiplier text */
+                if (isWin) {
+                    resultMult.textContent = mult + 'x!';
+                    resultMult.style.color = seg.color || '#ffd700';
+                } else {
+                    resultMult.textContent = 'LOSE!';
+                    resultMult.style.color = '#f44336';
+                }
+                resultMult.classList.add('wof-show');
+
+                /* Segment label */
+                setTimeout(function() {
+                    resultLabel.textContent = 'Landed on: ' + (seg.label || (mult === 0 ? 'LOSE' : mult + 'x'));
+                    resultLabel.classList.add('wof-show');
+                }, 200);
+
+                /* Payout */
+                setTimeout(function() {
+                    var payout = data.payout || 0;
+                    var profit = data.profit != null ? data.profit : (payout - betVal);
+                    if (isWin) {
+                        resultPayout.textContent = 'Won ' + fmtMoney(payout) + ' (profit: +' + fmtMoney(profit) + ')';
+                        resultPayout.classList.add('wof-win');
+                    } else {
+                        resultPayout.textContent = 'Lost ' + fmtMoney(betVal);
+                        resultPayout.classList.add('wof-loss');
+                    }
+                    resultPayout.classList.add('wof-show');
+                }, 400);
+
+                /* Update balance */
+                if (data.newBalance != null) {
+                    if (typeof balance !== 'undefined') balance = data.newBalance;
+                    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(data.newBalance);
+                    var walletBal = document.getElementById('walletBalance');
+                    if (walletBal) walletBal.textContent = fmtMoney(data.newBalance);
+                }
+
+                /* History chip */
+                addHistoryChip(seg);
+
+                /* Toast for big wins */
+                if (mult >= 10 && typeof showToast === 'function') {
+                    showToast('Wheel of Fortune ' + mult + 'x! Won ' + fmtMoney(data.payout) + '!', 'success');
+                }
+
+                wofSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.classList.remove('wof-spinning');
+                spinBtn.textContent = 'SPIN THE WHEEL';
+                betInput.disabled = false;
+            }, 3600);
+
+        })
+        .catch(function(e) {
+            console.error('Wheel of Fortune spin error:', e);
+            if (typeof showToast === 'function') showToast(e.message || 'Network error. Please try again.', 'error');
+            wofSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.classList.remove('wof-spinning');
+            spinBtn.textContent = 'SPIN THE WHEEL';
+            betInput.disabled = false;
+            /* Reset wheel on error */
+            wheelInner.style.transition = 'none';
+        });
     });
 
     parentContainer.appendChild(card);

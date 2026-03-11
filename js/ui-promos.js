@@ -2220,6 +2220,7 @@ function initPromoEngine() {
             if (!window._baccaratCardInit) { window._baccaratCardInit = true; renderBaccaratCard(promosSidebar); }
             if (!window._dragonTigerInit) { window._dragonTigerInit = true; renderDragonTigerCard(promosSidebar); }
             if (!window._horseRacingInit) { window._horseRacingInit = true; renderHorseRacingCard(promosSidebar); }
+            if (!window._caribbeanStudInit) { window._caribbeanStudInit = true; renderCaribbeanStudCard(promosSidebar); }
         }
     }, 4000);
 
@@ -7734,6 +7735,638 @@ function renderHorseRacingCard(container) {
             racing = false;
             raceBtn.disabled = false;
             raceBtn.textContent = '\uD83C\uDFC1 RACE!';
+        });
+    });
+
+    container.appendChild(card);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// CARIBBEAN STUD POKER CARD
+// ─────────────────────────────────────────────────────────────────────
+
+function renderCaribbeanStudCard(container) {
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Idempotency
+    if (document.getElementById('caribbeanStudCard')) return;
+
+    var fmtMoney = typeof formatMoney === 'function' ? formatMoney : function(x) { return '$' + x.toFixed(2); };
+
+    // ── CSS injection ──
+    if (!document.getElementById('caribbeanStudStyles')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'caribbeanStudStyles';
+        styleEl.textContent = [
+            '.cs-card-widget {',
+            '  background: linear-gradient(135deg, #0a2e3d, #0d4a5c, #0a3345);',
+            '  border: 1.5px solid rgba(0, 210, 211, 0.45);',
+            '  border-radius: 14px;',
+            '  padding: 16px;',
+            '  margin-bottom: 14px;',
+            '  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);',
+            '  font-family: inherit;',
+            '}',
+            '.cs-card-widget .cs-title {',
+            '  font-size: 16px;',
+            '  font-weight: 800;',
+            '  background: linear-gradient(135deg, #00d2d3, #54e0c1);',
+            '  -webkit-background-clip: text;',
+            '  -webkit-text-fill-color: transparent;',
+            '  background-clip: text;',
+            '  margin-bottom: 10px;',
+            '  text-align: center;',
+            '}',
+            '.cs-bet-row {',
+            '  display: flex;',
+            '  align-items: center;',
+            '  gap: 8px;',
+            '  margin-bottom: 10px;',
+            '}',
+            '.cs-bet-row label {',
+            '  color: #7dd3d6;',
+            '  font-size: 12px;',
+            '  font-weight: 600;',
+            '  min-width: 40px;',
+            '}',
+            '.cs-bet-input {',
+            '  flex: 1;',
+            '  background: rgba(0, 0, 0, 0.35);',
+            '  border: 1px solid rgba(0, 210, 211, 0.3);',
+            '  border-radius: 8px;',
+            '  color: #e0f7fa;',
+            '  padding: 7px 10px;',
+            '  font-size: 14px;',
+            '  font-weight: 700;',
+            '  text-align: center;',
+            '  outline: none;',
+            '}',
+            '.cs-bet-input:focus {',
+            '  border-color: #00d2d3;',
+            '  box-shadow: 0 0 8px rgba(0, 210, 211, 0.3);',
+            '}',
+            '.cs-deal-btn {',
+            '  width: 100%;',
+            '  padding: 10px;',
+            '  border: none;',
+            '  border-radius: 10px;',
+            '  font-size: 14px;',
+            '  font-weight: 800;',
+            '  cursor: pointer;',
+            '  background: linear-gradient(135deg, #00b4d8, #0096c7);',
+            '  color: #fff;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 1px;',
+            '  transition: all 0.2s;',
+            '  box-shadow: 0 3px 12px rgba(0, 180, 216, 0.35);',
+            '}',
+            '.cs-deal-btn:hover:not(:disabled) {',
+            '  background: linear-gradient(135deg, #00c9e8, #00acd7);',
+            '  transform: translateY(-1px);',
+            '  box-shadow: 0 5px 18px rgba(0, 180, 216, 0.5);',
+            '}',
+            '.cs-deal-btn:disabled {',
+            '  opacity: 0.5;',
+            '  cursor: not-allowed;',
+            '}',
+            '.cs-action-row {',
+            '  display: flex;',
+            '  gap: 8px;',
+            '  margin-top: 10px;',
+            '}',
+            '.cs-call-btn {',
+            '  flex: 1;',
+            '  padding: 10px;',
+            '  border: none;',
+            '  border-radius: 10px;',
+            '  font-size: 13px;',
+            '  font-weight: 800;',
+            '  cursor: pointer;',
+            '  background: linear-gradient(135deg, #10b981, #059669);',
+            '  color: #fff;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 0.5px;',
+            '  transition: all 0.2s;',
+            '}',
+            '.cs-call-btn:hover:not(:disabled) {',
+            '  background: linear-gradient(135deg, #34d399, #10b981);',
+            '  transform: translateY(-1px);',
+            '}',
+            '.cs-fold-btn {',
+            '  flex: 1;',
+            '  padding: 10px;',
+            '  border: none;',
+            '  border-radius: 10px;',
+            '  font-size: 13px;',
+            '  font-weight: 800;',
+            '  cursor: pointer;',
+            '  background: linear-gradient(135deg, #ef4444, #dc2626);',
+            '  color: #fff;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 0.5px;',
+            '  transition: all 0.2s;',
+            '}',
+            '.cs-fold-btn:hover:not(:disabled) {',
+            '  background: linear-gradient(135deg, #f87171, #ef4444);',
+            '  transform: translateY(-1px);',
+            '}',
+            '.cs-cards-area {',
+            '  margin-top: 10px;',
+            '  min-height: 40px;',
+            '}',
+            '.cs-hand-label {',
+            '  font-size: 11px;',
+            '  font-weight: 700;',
+            '  color: #7dd3d6;',
+            '  margin-bottom: 4px;',
+            '  text-transform: uppercase;',
+            '  letter-spacing: 0.5px;',
+            '}',
+            '.cs-cards-row {',
+            '  display: flex;',
+            '  gap: 4px;',
+            '  flex-wrap: wrap;',
+            '  margin-bottom: 8px;',
+            '  justify-content: center;',
+            '}',
+            '.cs-card-item {',
+            '  background: linear-gradient(145deg, #fff, #f0f0f0);',
+            '  border: 1.5px solid #ccc;',
+            '  border-radius: 6px;',
+            '  min-width: 38px;',
+            '  height: 52px;',
+            '  display: flex;',
+            '  flex-direction: column;',
+            '  align-items: center;',
+            '  justify-content: center;',
+            '  font-weight: 800;',
+            '  font-size: 13px;',
+            '  line-height: 1.1;',
+            '  box-shadow: 0 2px 6px rgba(0,0,0,0.15);',
+            '}',
+            '.cs-card-item.red { color: #dc2626; }',
+            '.cs-card-item.black { color: #1a1a1a; }',
+            '.cs-card-item.facedown {',
+            '  background: linear-gradient(135deg, #1e40af, #3b82f6);',
+            '  border-color: #1e40af;',
+            '  color: #fff;',
+            '  font-size: 18px;',
+            '}',
+            '.cs-hand-name {',
+            '  text-align: center;',
+            '  font-size: 13px;',
+            '  font-weight: 700;',
+            '  color: #00d2d3;',
+            '  margin-top: 2px;',
+            '  margin-bottom: 6px;',
+            '}',
+            '.cs-result-msg {',
+            '  text-align: center;',
+            '  font-size: 14px;',
+            '  font-weight: 800;',
+            '  padding: 8px;',
+            '  border-radius: 8px;',
+            '  margin-top: 8px;',
+            '}',
+            '.cs-result-msg.win {',
+            '  background: rgba(16, 185, 129, 0.15);',
+            '  color: #34d399;',
+            '  border: 1px solid rgba(16, 185, 129, 0.3);',
+            '}',
+            '.cs-result-msg.lose {',
+            '  background: rgba(239, 68, 68, 0.15);',
+            '  color: #f87171;',
+            '  border: 1px solid rgba(239, 68, 68, 0.3);',
+            '}',
+            '.cs-result-msg.push {',
+            '  background: rgba(234, 179, 8, 0.15);',
+            '  color: #fbbf24;',
+            '  border: 1px solid rgba(234, 179, 8, 0.3);',
+            '}',
+            '.cs-error {',
+            '  color: #f87171;',
+            '  font-size: 12px;',
+            '  text-align: center;',
+            '  margin-top: 6px;',
+            '  min-height: 16px;',
+            '}',
+            '.cs-paytable {',
+            '  margin-top: 10px;',
+            '  border-top: 1px solid rgba(0, 210, 211, 0.15);',
+            '  padding-top: 8px;',
+            '}',
+            '.cs-paytable-toggle {',
+            '  background: none;',
+            '  border: none;',
+            '  color: #7dd3d6;',
+            '  font-size: 11px;',
+            '  cursor: pointer;',
+            '  padding: 2px 0;',
+            '  text-decoration: underline;',
+            '  font-weight: 600;',
+            '}',
+            '.cs-paytable-body {',
+            '  display: none;',
+            '  margin-top: 6px;',
+            '}',
+            '.cs-paytable-body.open { display: block; }',
+            '.cs-pt-row {',
+            '  display: flex;',
+            '  justify-content: space-between;',
+            '  font-size: 11px;',
+            '  color: #a0d2d4;',
+            '  padding: 2px 0;',
+            '  border-bottom: 1px solid rgba(0, 210, 211, 0.07);',
+            '}',
+            '.cs-pt-row span:last-child {',
+            '  color: #00d2d3;',
+            '  font-weight: 700;',
+            '}',
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    // ── Build card ──
+    var card = document.createElement('div');
+    card.className = 'cs-card-widget';
+    card.id = 'caribbeanStudCard';
+
+    var title = document.createElement('div');
+    title.className = 'cs-title';
+    title.textContent = '\uD83C\uDFDD\uFE0F Caribbean Stud';
+    card.appendChild(title);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'cs-bet-row';
+    var betLabel = document.createElement('label');
+    betLabel.textContent = 'Ante:';
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'cs-bet-input';
+    betInput.min = '0.50';
+    betInput.max = '250';
+    betInput.step = '0.50';
+    betInput.value = '5.00';
+    betRow.appendChild(betLabel);
+    betRow.appendChild(betInput);
+    card.appendChild(betRow);
+
+    // Deal button
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'cs-deal-btn';
+    dealBtn.textContent = '\uD83C\uDCCF DEAL';
+    card.appendChild(dealBtn);
+
+    // Cards area
+    var cardsArea = document.createElement('div');
+    cardsArea.className = 'cs-cards-area';
+    card.appendChild(cardsArea);
+
+    // Action row (call/fold) — hidden until dealt
+    var actionRow = document.createElement('div');
+    actionRow.className = 'cs-action-row';
+    actionRow.style.display = 'none';
+    var callBtn = document.createElement('button');
+    callBtn.className = 'cs-call-btn';
+    callBtn.textContent = '\u2714 CALL (2x)';
+    var foldBtn = document.createElement('button');
+    foldBtn.className = 'cs-fold-btn';
+    foldBtn.textContent = '\u2716 FOLD';
+    actionRow.appendChild(callBtn);
+    actionRow.appendChild(foldBtn);
+    card.appendChild(actionRow);
+
+    // Result message
+    var resultMsg = document.createElement('div');
+    resultMsg.className = 'cs-result-msg';
+    resultMsg.style.display = 'none';
+    card.appendChild(resultMsg);
+
+    // Error
+    var errorEl = document.createElement('div');
+    errorEl.className = 'cs-error';
+    card.appendChild(errorEl);
+
+    // Paytable
+    var paytable = document.createElement('div');
+    paytable.className = 'cs-paytable';
+    var ptToggle = document.createElement('button');
+    ptToggle.className = 'cs-paytable-toggle';
+    ptToggle.textContent = '\u25B6 Paytable';
+    var ptBody = document.createElement('div');
+    ptBody.className = 'cs-paytable-body';
+
+    var payouts = [
+        ['Royal Flush', '100:1'],
+        ['Straight Flush', '50:1'],
+        ['Four of a Kind', '20:1'],
+        ['Full House', '7:1'],
+        ['Flush', '5:1'],
+        ['Straight', '4:1'],
+        ['Three of a Kind', '3:1'],
+        ['Two Pair', '2:1'],
+        ['One Pair', '1:1'],
+    ];
+    for (var pi = 0; pi < payouts.length; pi++) {
+        var ptRow = document.createElement('div');
+        ptRow.className = 'cs-pt-row';
+        var ptName = document.createElement('span');
+        ptName.textContent = payouts[pi][0];
+        var ptOdds = document.createElement('span');
+        ptOdds.textContent = payouts[pi][1];
+        ptRow.appendChild(ptName);
+        ptRow.appendChild(ptOdds);
+        ptBody.appendChild(ptRow);
+    }
+
+    ptToggle.addEventListener('click', function() {
+        var isOpen = ptBody.classList.contains('open');
+        if (isOpen) {
+            ptBody.classList.remove('open');
+            ptToggle.textContent = '\u25B6 Paytable';
+        } else {
+            ptBody.classList.add('open');
+            ptToggle.textContent = '\u25BC Paytable';
+        }
+    });
+    paytable.appendChild(ptToggle);
+    paytable.appendChild(ptBody);
+    card.appendChild(paytable);
+
+    // ── State ──
+    var currentGameId = null;
+    var currentBet = 0;
+    var busy = false;
+
+    // ── Helpers ──
+    function buildCardEl(cardData, facedown) {
+        var el = document.createElement('div');
+        if (facedown) {
+            el.className = 'cs-card-item facedown';
+            el.textContent = '?';
+            return el;
+        }
+        var suit = cardData.suit || '';
+        var rank = cardData.rank || '';
+        var isRed = suit === '\u2665' || suit === '\u2666' ||
+                    suit === 'hearts' || suit === 'diamonds' ||
+                    suit === 'Hearts' || suit === 'Diamonds' ||
+                    suit === '\u2665\uFE0F' || suit === '\u2666\uFE0F';
+        el.className = 'cs-card-item ' + (isRed ? 'red' : 'black');
+
+        var suitSymbol = suit;
+        if (suit === 'hearts' || suit === 'Hearts') suitSymbol = '\u2665';
+        else if (suit === 'diamonds' || suit === 'Diamonds') suitSymbol = '\u2666';
+        else if (suit === 'spades' || suit === 'Spades') suitSymbol = '\u2660';
+        else if (suit === 'clubs' || suit === 'Clubs') suitSymbol = '\u2663';
+
+        var rankSpan = document.createElement('span');
+        rankSpan.textContent = rank;
+        var suitSpan = document.createElement('span');
+        suitSpan.textContent = suitSymbol;
+        suitSpan.style.fontSize = '14px';
+        el.appendChild(rankSpan);
+        el.appendChild(suitSpan);
+        return el;
+    }
+
+    function renderHand(parentEl, labelText, cards, facedownIndices) {
+        var label = document.createElement('div');
+        label.className = 'cs-hand-label';
+        label.textContent = labelText;
+        parentEl.appendChild(label);
+
+        var row = document.createElement('div');
+        row.className = 'cs-cards-row';
+        for (var ci = 0; ci < cards.length; ci++) {
+            var isFacedown = facedownIndices && facedownIndices.indexOf(ci) !== -1;
+            row.appendChild(buildCardEl(cards[ci], isFacedown));
+        }
+        parentEl.appendChild(row);
+    }
+
+    function setActionState(state) {
+        // state: 'deal' | 'action' | 'busy'
+        if (state === 'deal') {
+            dealBtn.style.display = '';
+            dealBtn.disabled = false;
+            dealBtn.textContent = '\uD83C\uDCCF DEAL';
+            actionRow.style.display = 'none';
+            betInput.disabled = false;
+        } else if (state === 'action') {
+            dealBtn.style.display = 'none';
+            actionRow.style.display = 'flex';
+            callBtn.disabled = false;
+            foldBtn.disabled = false;
+            betInput.disabled = true;
+        } else if (state === 'busy') {
+            dealBtn.disabled = true;
+            callBtn.disabled = true;
+            foldBtn.disabled = true;
+            betInput.disabled = true;
+        }
+    }
+
+    function clearResults() {
+        cardsArea.innerHTML = '';
+        resultMsg.style.display = 'none';
+        resultMsg.className = 'cs-result-msg';
+        errorEl.textContent = '';
+    }
+
+    function showResult(data) {
+        cardsArea.innerHTML = '';
+
+        // Player hand
+        if (data.playerHand && data.playerHand.cards) {
+            renderHand(cardsArea, 'Your Hand', data.playerHand.cards, null);
+            if (data.playerHand.name) {
+                var pName = document.createElement('div');
+                pName.className = 'cs-hand-name';
+                pName.textContent = data.playerHand.name;
+                cardsArea.appendChild(pName);
+            }
+        }
+
+        // Dealer hand
+        if (data.dealerHand && data.dealerHand.cards) {
+            renderHand(cardsArea, 'Dealer\'s Hand', data.dealerHand.cards, null);
+            if (data.dealerHand.name) {
+                var dName = document.createElement('div');
+                dName.className = 'cs-hand-name';
+                dName.textContent = data.dealerHand.name;
+                cardsArea.appendChild(dName);
+            }
+        } else if (data.dealerCards) {
+            renderHand(cardsArea, 'Dealer\'s Hand', data.dealerCards, null);
+        }
+
+        // Result message
+        var profit = typeof data.profit === 'number' ? data.profit : 0;
+        var payout = typeof data.payout === 'number' ? data.payout : 0;
+        resultMsg.style.display = '';
+
+        if (data.result === 'win') {
+            resultMsg.className = 'cs-result-msg win';
+            resultMsg.textContent = '\uD83C\uDF89 You Win! +' + fmtMoney(profit);
+        } else if (data.result === 'lose') {
+            resultMsg.className = 'cs-result-msg lose';
+            resultMsg.textContent = '\u274C You Lose ' + fmtMoney(Math.abs(profit));
+        } else if (data.result === 'tie' || data.result === 'push') {
+            resultMsg.className = 'cs-result-msg push';
+            resultMsg.textContent = '\uD83E\uDD1D Push \u2014 Bet Returned';
+        } else if (data.result === 'no-qualify') {
+            resultMsg.className = 'cs-result-msg win';
+            var nqText = 'Dealer Doesn\'t Qualify \u2014 Ante Wins';
+            if (profit > 0) nqText += ' +' + fmtMoney(profit);
+            resultMsg.textContent = nqText;
+        } else if (data.result === 'fold') {
+            resultMsg.className = 'cs-result-msg lose';
+            resultMsg.textContent = '\uD83D\uDCA8 Folded \u2014 ' + fmtMoney(Math.abs(profit));
+        }
+
+        // Update balance
+        if (typeof data.newBalance === 'number' && typeof updateBalanceDisplay === 'function') {
+            updateBalanceDisplay(data.newBalance);
+        }
+    }
+
+    // ── DEAL ──
+    dealBtn.addEventListener('click', function() {
+        if (busy) return;
+
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.50) {
+            errorEl.textContent = 'Minimum ante is $0.50';
+            return;
+        }
+        if (bet > 250) {
+            errorEl.textContent = 'Maximum ante is $250';
+            return;
+        }
+
+        busy = true;
+        clearResults();
+        setActionState('busy');
+        dealBtn.textContent = 'Dealing...';
+
+        fetch('/api/caribbeanstud/deal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ bet: bet })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(d) {
+                    throw new Error(d.error || d.message || 'Deal failed');
+                });
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            currentGameId = data.gameId;
+            currentBet = bet;
+            busy = false;
+
+            // Show player cards
+            cardsArea.innerHTML = '';
+            if (data.playerCards && data.playerCards.length > 0) {
+                renderHand(cardsArea, 'Your Hand (5 Cards)', data.playerCards, null);
+            }
+
+            // Show dealer up card + 4 facedown
+            if (data.dealerUp) {
+                var dealerPartial = [data.dealerUp, {}, {}, {}, {}];
+                renderHand(cardsArea, 'Dealer (1 Showing)', dealerPartial, [1, 2, 3, 4]);
+            }
+
+            // Show call cost
+            callBtn.textContent = '\u2714 CALL (' + fmtMoney(bet * 2) + ')';
+            setActionState('action');
+        })
+        .catch(function(err) {
+            errorEl.textContent = err.message || 'Connection error';
+            busy = false;
+            setActionState('deal');
+        });
+    });
+
+    // ── CALL ──
+    callBtn.addEventListener('click', function() {
+        if (busy || !currentGameId) return;
+        busy = true;
+        setActionState('busy');
+        callBtn.textContent = 'Revealing...';
+
+        fetch('/api/caribbeanstud/call', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ gameId: currentGameId })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(d) {
+                    throw new Error(d.error || d.message || 'Call failed');
+                });
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            busy = false;
+            currentGameId = null;
+            showResult(data);
+            setActionState('deal');
+        })
+        .catch(function(err) {
+            errorEl.textContent = err.message || 'Connection error';
+            busy = false;
+            setActionState('deal');
+        });
+    });
+
+    // ── FOLD ──
+    foldBtn.addEventListener('click', function() {
+        if (busy || !currentGameId) return;
+        busy = true;
+        setActionState('busy');
+        foldBtn.textContent = 'Folding...';
+
+        fetch('/api/caribbeanstud/fold', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ gameId: currentGameId })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(d) {
+                    throw new Error(d.error || d.message || 'Fold failed');
+                });
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            busy = false;
+            currentGameId = null;
+            showResult(data);
+            setActionState('deal');
+        })
+        .catch(function(err) {
+            errorEl.textContent = err.message || 'Connection error';
+            busy = false;
+            setActionState('deal');
         });
     });
 
