@@ -126,9 +126,18 @@ router.post('/claim', authenticate, async (req, res) => {
 
         const credited = parseFloat(cashbackAmount.toFixed(2));
 
+        // Atomic guard: set cashback_last only if 24h have passed (prevents race condition double-claim)
+        const claimGuard = await db.run(
+            "UPDATE users SET cashback_last = datetime('now') WHERE id = ? AND (cashback_last IS NULL OR cashback_last <= datetime('now', '-24 hours'))",
+            [req.user.id]
+        );
+        if (!claimGuard || claimGuard.changes === 0) {
+            return res.status(400).json({ error: 'Cashback already claimed in the past 24 hours' });
+        }
+
         // Credit to bonus_balance with 10x wagering (reduced since it's loss compensation)
         await db.run(
-            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, cashback_last = datetime(\'now\') WHERE id = ?',
+            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
             [credited, credited * 10, req.user.id]
         );
 

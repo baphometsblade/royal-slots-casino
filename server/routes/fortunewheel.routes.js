@@ -74,13 +74,23 @@ router.post('/spin', authenticate, async function(req, res) {
       return res.status(429).json({ error: 'Already spun today', available: false });
     }
 
+    // Atomic guard: claim today's spin only if not already claimed (prevents race condition)
+    const claimGuard = await db.run(
+      "UPDATE users SET fortune_wheel_last = ? WHERE id = ? AND (fortune_wheel_last IS NULL OR fortune_wheel_last != ?)",
+      [today, userId, today]
+    );
+    if (!claimGuard || claimGuard.changes === 0) {
+      return res.status(429).json({ error: 'Already spun today', available: false });
+    }
+
     const segIdx = pickSegment();
     const seg = SEGMENTS[segIdx];
 
     // Credit reward
     let newBalance = parseFloat(user.balance) || 0;
     if (seg.type === 'cash') {
-      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, fortune_wheel_last = ? WHERE id = ?', [seg.amount, seg.amount * 15, today, userId]);
+      // fortune_wheel_last already set by atomic guard above
+      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [seg.amount, seg.amount * 15, userId]);
       await db.run(
         "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
         [userId, seg.amount, 'Fortune Wheel reward: ' + seg.label + ' (bonus, 15x wagering)']
@@ -88,20 +98,20 @@ router.post('/spin', authenticate, async function(req, res) {
       const u = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
       newBalance = u ? parseFloat(u.balance) : newBalance + seg.amount;
     } else if (seg.type === 'points') {
+      // fortune_wheel_last already set by atomic guard above
       await db.run(
-        'UPDATE users SET loyalty_points = COALESCE(loyalty_points, 0) + ?, fortune_wheel_last = ? WHERE id = ?',
-        [seg.amount, today, userId]
+        'UPDATE users SET loyalty_points = COALESCE(loyalty_points, 0) + ? WHERE id = ?',
+        [seg.amount, userId]
       );
-      await db.run('UPDATE users SET fortune_wheel_last = ? WHERE id = ?', [today, userId]);
     } else if (seg.type === 'freespins') {
+      // fortune_wheel_last already set by atomic guard above
       await db.run(
-        'UPDATE users SET free_spins_remaining = COALESCE(free_spins_remaining, 0) + ?, fortune_wheel_last = ? WHERE id = ?',
-        [seg.amount, today, userId]
+        'UPDATE users SET free_spins_remaining = COALESCE(free_spins_remaining, 0) + ? WHERE id = ?',
+        [seg.amount, userId]
       );
     }
 
-    // Always mark today's spin (in case it wasn't set above due to type)
-    await db.run('UPDATE users SET fortune_wheel_last = ? WHERE id = ?', [today, userId]);
+    // fortune_wheel_last already set by atomic guard at the top
 
     return res.json({
       success: true,

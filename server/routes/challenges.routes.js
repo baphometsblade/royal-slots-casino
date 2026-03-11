@@ -36,10 +36,14 @@ router.post('/:id/claim', authenticate, async (req, res) => {
         if (!ch.completed)    return res.status(400).json({ error: 'Challenge not yet completed' });
         if (ch.claimed)       return res.status(400).json({ error: 'Already claimed' });
 
-        await db.run(
-            "UPDATE daily_challenges SET claimed = 1 WHERE id = ?",
+        // Atomic update with WHERE guard to prevent race condition double-claims
+        var claimResult = await db.run(
+            "UPDATE daily_challenges SET claimed = 1 WHERE id = ? AND claimed = 0 AND completed = 1",
             [id]
         );
+        if (!claimResult || claimResult.changes === 0) {
+            return res.status(400).json({ error: 'Already claimed' });
+        }
 
         // Rewards were already credited by updateProgress; return amounts for the toast
         return res.json({

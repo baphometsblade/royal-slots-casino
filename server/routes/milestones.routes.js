@@ -80,6 +80,15 @@ router.post('/claim', authenticate, async function(req, res) {
       return res.status(400).json({ error: 'No milestone to claim' });
     }
 
+    // Atomic guard: only claim if milestone_last_claimed hasn't changed (prevents race condition)
+    var claimGuard = await db.run(
+      'UPDATE users SET milestone_last_claimed = ? WHERE id = ? AND (milestone_last_claimed IS NULL OR milestone_last_claimed < ?)',
+      [milestone.spins, userId, milestone.spins]
+    );
+    if (!claimGuard || claimGuard.changes === 0) {
+      return res.status(400).json({ error: 'Milestone already claimed' });
+    }
+
     // Award credits to bonus_balance with 15x wagering
     if (milestone.credits > 0) {
       await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [milestone.credits, milestone.credits * 15, userId]);
@@ -91,9 +100,6 @@ router.post('/claim', authenticate, async function(req, res) {
       "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'milestone', ?, ?)",
       [userId, milestone.credits, description]
     );
-
-    // Update milestone_last_claimed
-    await db.run('UPDATE users SET milestone_last_claimed = ? WHERE id = ?', [milestone.spins, userId]);
 
     // Get updated balance
     var updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);

@@ -35,6 +35,14 @@ router.post('/', authenticate, async function(req, res) {
         if (row.streak_last_date === today) {
             return res.json({ isNewDay: false, streakCount: row.streak_count || 0 });
         }
+        // Atomic guard: claim today's streak only if not already claimed (prevents race condition)
+        var claimGuard = await db.run(
+            "UPDATE users SET streak_last_date = ? WHERE id = ? AND (streak_last_date IS NULL OR streak_last_date != ?)",
+            [today, userId, today]
+        );
+        if (!claimGuard || claimGuard.changes === 0) {
+            return res.json({ isNewDay: false, streakCount: row.streak_count || 0 });
+        }
         var yesterday = new Date();
         yesterday.setUTCDate(yesterday.getUTCDate() - 1);
         var yesterdayStr = yesterday.toISOString().slice(0, 10);
@@ -72,7 +80,8 @@ router.post('/', authenticate, async function(req, res) {
                 }
             }
         }
-        await db.run('UPDATE users SET streak_count = ?, streak_last_date = ? WHERE id = ?', [newCount, today, userId]);
+        // streak_last_date already set by atomic guard above; only update streak_count
+        await db.run('UPDATE users SET streak_count = ? WHERE id = ?', [newCount, userId]);
         // Grant streak_7 achievement when user first hits a 7-day streak
         if (newCount >= 7) {
             require('../services/achievement.service').grant(userId, 'streak_7').catch(function() {});

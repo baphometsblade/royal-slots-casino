@@ -84,6 +84,15 @@ router.post('/scratch', authenticate, async function(req, res) {
     if (!row) return res.status(404).json({ error: 'User not found' });
     if (row.scratch_last_date === today) return res.status(400).json({ error: 'Already scratched today' });
 
+    // Atomic guard: claim today's scratch only if not already claimed (prevents race condition)
+    var claimGuard = await db.run(
+      "UPDATE users SET scratch_last_date = ? WHERE id = ? AND (scratch_last_date IS NULL OR scratch_last_date != ?)",
+      [today, userId, today]
+    );
+    if (!claimGuard || claimGuard.changes === 0) {
+      return res.status(400).json({ error: 'Already scratched today' });
+    }
+
     var result = generateResult();
     var prize = result.prize;
 
@@ -104,10 +113,10 @@ router.post('/scratch', authenticate, async function(req, res) {
       [userId, prize.credits, 'Daily scratch card: ' + prize.label]
     ).catch(function() {});
 
-    // Save result and mark scratched
+    // Save result (scratch_last_date already set by atomic guard above)
     await db.run(
-      'UPDATE users SET scratch_last_date = ?, scratch_result = ? WHERE id = ?',
-      [today, JSON.stringify(result), userId]
+      'UPDATE users SET scratch_result = ? WHERE id = ?',
+      [JSON.stringify(result), userId]
     );
 
     var updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);

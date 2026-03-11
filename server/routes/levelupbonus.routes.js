@@ -62,10 +62,14 @@ router.post('/claim', authenticate, async function(req, res) {
       return res.json({ success: false, message: 'No new levels to claim' });
     }
     const bonus = parseFloat((levelsGained * BONUS_PER_LEVEL).toFixed(2));
-    await db.run(
-      'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, last_bonus_level = ? WHERE id = ?',
-      [bonus, bonus * 15, currentLevel, userId]
+    // Atomic guard: only claim if last_bonus_level hasn't been updated by a concurrent request
+    const claimGuard = await db.run(
+      'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, last_bonus_level = ? WHERE id = ? AND (last_bonus_level IS NULL OR last_bonus_level < ?)',
+      [bonus, bonus * 15, currentLevel, userId, currentLevel]
     );
+    if (!claimGuard || claimGuard.changes === 0) {
+      return res.json({ success: false, message: 'No new levels to claim' });
+    }
     await db.run(
       "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
       [userId, bonus, 'Level-up bonus: reached level ' + currentLevel + ' (bonus, 15x wagering)']
