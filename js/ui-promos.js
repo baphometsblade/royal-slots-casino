@@ -2214,6 +2214,7 @@ function initPromoEngine() {
             if (!window._diceCardInit) { window._diceCardInit = true; renderDiceCard(promosSidebar); }
             if (!window._lossStreakCardInit) { window._lossStreakCardInit = true; renderLossStreakCard(promosSidebar); }
             if (!window._referralCardInit) { window._referralCardInit = true; renderReferralCard(promosSidebar); }
+            if (!window._crashGameCardInit) { window._crashGameCardInit = true; renderCrashGameCard(promosSidebar); }
         }
     }, 4000);
 
@@ -5774,4 +5775,261 @@ function renderReferralCard(container) {
         errEl.textContent = 'Failed to load referral info.';
         card.appendChild(errEl);
     });
+}
+
+/* ───────────────────────────────────────────────────
+ *  Crash Mini-Game Card
+ * ─────────────────────────────────────────────────── */
+function renderCrashGameCard(container) {
+    if (document.getElementById('crashGameCard')) return;
+
+    // --- inject CSS (once) ---
+    if (!document.getElementById('crash-game-css')) {
+        var s = document.createElement('style');
+        s.id = 'crash-game-css';
+        s.textContent = [
+            '.crash-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #0f3460;border-radius:12px;padding:16px;margin-bottom:12px;font-family:inherit;color:#e0e0e0;}',
+            '.crash-title{font-size:16px;font-weight:700;margin-bottom:10px;color:#ffd700;}',
+            '.crash-bet-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}',
+            '.crash-bet-input{flex:1;padding:6px 10px;border-radius:6px;border:1px solid #334;background:#0d1117;color:#e0e0e0;font-size:14px;outline:none;}',
+            '.crash-bet-input:focus{border-color:#ffd700;}',
+            '.crash-btn{padding:8px 16px;border:none;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;transition:opacity 0.15s;}',
+            '.crash-btn:disabled{opacity:0.4;cursor:not-allowed;}',
+            '.crash-btn-start{background:#22c55e;color:#000;}',
+            '.crash-btn-cashout{background:#ef4444;color:#fff;}',
+            '.crash-mult-display{text-align:center;font-size:32px;font-weight:900;margin:14px 0;color:#4ade80;min-height:44px;line-height:44px;letter-spacing:1px;text-shadow:0 0 12px rgba(74,222,128,0.5);}',
+            '.crash-mult-display.crashed{color:#ef4444;text-shadow:0 0 12px rgba(239,68,68,0.5);}',
+            '.crash-mult-display.cashed{color:#fbbf24;text-shadow:0 0 12px rgba(251,191,36,0.5);}',
+            '.crash-result{text-align:center;font-size:13px;margin-top:8px;min-height:18px;}'
+        ].join('\n');
+        document.head.appendChild(s);
+    }
+
+    // --- build card DOM ---
+    var card = document.createElement('div');
+    card.id = 'crashGameCard';
+    card.className = 'crash-card';
+
+    var title = document.createElement('div');
+    title.className = 'crash-title';
+    title.textContent = '\uD83D\uDE80 Crash';
+    card.appendChild(title);
+
+    // bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'crash-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.textContent = 'Bet $';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'crash-bet-input';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betRow.appendChild(betInput);
+
+    var startBtn = document.createElement('button');
+    startBtn.className = 'crash-btn crash-btn-start';
+    startBtn.textContent = 'START';
+    betRow.appendChild(startBtn);
+
+    card.appendChild(betRow);
+
+    // multiplier display
+    var multDisplay = document.createElement('div');
+    multDisplay.className = 'crash-mult-display';
+    multDisplay.textContent = '1.00x';
+    card.appendChild(multDisplay);
+
+    // cashout button row
+    var cashoutRow = document.createElement('div');
+    cashoutRow.style.textAlign = 'center';
+    cashoutRow.style.display = 'none';
+
+    var cashoutBtn = document.createElement('button');
+    cashoutBtn.className = 'crash-btn crash-btn-cashout';
+    cashoutBtn.textContent = 'CASH OUT';
+    cashoutRow.appendChild(cashoutBtn);
+
+    card.appendChild(cashoutRow);
+
+    // result area
+    var resultArea = document.createElement('div');
+    resultArea.className = 'crash-result';
+    card.appendChild(resultArea);
+
+    container.appendChild(card);
+
+    // --- game state ---
+    var gameId = null;
+    var currentMult = 1.00;
+    var animInterval = null;
+    var gameActive = false;
+    var startTime = 0;
+    var cashedOut = false;
+
+    function resetUI() {
+        gameId = null;
+        currentMult = 1.00;
+        gameActive = false;
+        cashedOut = false;
+        startTime = 0;
+        if (animInterval) { clearInterval(animInterval); animInterval = null; }
+        multDisplay.textContent = '1.00x';
+        multDisplay.className = 'crash-mult-display';
+        cashoutRow.style.display = 'none';
+        startBtn.disabled = false;
+        betInput.disabled = false;
+    }
+
+    function setResult(text, color) {
+        resultArea.textContent = '';
+        var sp = document.createElement('span');
+        sp.style.color = color || '#e0e0e0';
+        sp.textContent = text;
+        resultArea.appendChild(sp);
+    }
+
+    // --- START ---
+    startBtn.addEventListener('click', function() {
+        if (gameActive) return;
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+            setResult('Login required to play.', '#f87171');
+            return;
+        }
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) { setResult('Login required.', '#f87171'); return; }
+
+        var betVal = parseFloat(betInput.value);
+        if (!betVal || betVal < 0.25) { setResult('Min bet $0.25', '#f87171'); return; }
+
+        startBtn.disabled = true;
+        betInput.disabled = true;
+        setResult('', '');
+
+        fetch('/api/crash/bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ bet: betVal })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                setResult(data.error, '#f87171');
+                startBtn.disabled = false;
+                betInput.disabled = false;
+                return;
+            }
+            gameId = data.gameId;
+            gameActive = true;
+            cashedOut = false;
+            currentMult = 1.00;
+            startTime = Date.now();
+            cashoutRow.style.display = 'block';
+            multDisplay.className = 'crash-mult-display';
+
+            // animate multiplier climbing
+            animInterval = setInterval(function() {
+                if (!gameActive) return;
+                var elapsed = (Date.now() - startTime) / 1000; // seconds
+                // acceleration: start slow, speed up
+                var increment = 0.01 + (elapsed * 0.002);
+                currentMult += increment;
+                multDisplay.textContent = currentMult.toFixed(2) + 'x';
+
+                // auto-reveal after 30 seconds or mult >= 10x
+                if (elapsed >= 30 || currentMult >= 10) {
+                    revealCrash();
+                }
+            }, 100);
+        })
+        .catch(function(err) {
+            console.error('[CrashCard] bet error', err);
+            setResult('Network error.', '#f87171');
+            startBtn.disabled = false;
+            betInput.disabled = false;
+        });
+    });
+
+    // --- CASH OUT ---
+    cashoutBtn.addEventListener('click', function() {
+        if (!gameActive || cashedOut || !gameId) return;
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return;
+
+        cashedOut = true;
+        cashoutBtn.disabled = true;
+        var cashMult = currentMult;
+
+        fetch('/api/crash/cashout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ gameId: gameId, mult: cashMult })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            gameActive = false;
+            if (animInterval) { clearInterval(animInterval); animInterval = null; }
+            cashoutRow.style.display = 'none';
+
+            if (data.error) {
+                // already crashed
+                multDisplay.className = 'crash-mult-display crashed';
+                multDisplay.textContent = '\uD83D\uDCA5 CRASHED!';
+                setResult('Too late! The game already crashed.', '#ef4444');
+            } else {
+                multDisplay.className = 'crash-mult-display cashed';
+                multDisplay.textContent = cashMult.toFixed(2) + 'x';
+                var profitText = '+$' + (data.profit != null ? parseFloat(data.profit).toFixed(2) : parseFloat(data.payout).toFixed(2));
+                setResult('Cashed out! ' + profitText, '#4ade80');
+                if (typeof updateBalanceDisplay === 'function' && data.newBalance != null) {
+                    updateBalanceDisplay(data.newBalance);
+                }
+            }
+            setTimeout(resetUI, 3000);
+        })
+        .catch(function(err) {
+            console.error('[CrashCard] cashout error', err);
+            setResult('Network error on cashout.', '#f87171');
+            gameActive = false;
+            if (animInterval) { clearInterval(animInterval); animInterval = null; }
+            setTimeout(resetUI, 3000);
+        });
+    });
+
+    // --- REVEAL CRASH (auto, when time/mult limit hit) ---
+    function revealCrash() {
+        if (!gameActive || cashedOut || !gameId) return;
+        gameActive = false;
+        if (animInterval) { clearInterval(animInterval); animInterval = null; }
+
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) { resetUI(); return; }
+
+        fetch('/api/crash/result', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ gameId: gameId })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            cashoutRow.style.display = 'none';
+            var crashAt = data.crashAt || currentMult;
+            multDisplay.className = 'crash-mult-display crashed';
+            multDisplay.textContent = '\uD83D\uDCA5 ' + parseFloat(crashAt).toFixed(2) + 'x';
+            setResult('Crashed at ' + parseFloat(crashAt).toFixed(2) + 'x! You didn\'t cash out.', '#ef4444');
+            setTimeout(resetUI, 3000);
+        })
+        .catch(function(err) {
+            console.error('[CrashCard] result error', err);
+            cashoutRow.style.display = 'none';
+            multDisplay.className = 'crash-mult-display crashed';
+            multDisplay.textContent = '\uD83D\uDCA5 CRASHED!';
+            setResult('Game ended.', '#ef4444');
+            setTimeout(resetUI, 3000);
+        });
+    }
 }

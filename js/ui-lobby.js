@@ -621,6 +621,8 @@ function renderGames() {
                     if (typeof renderWeeklyLeaderboard === 'function') renderWeeklyLeaderboard();
                     // Boosts Shop widget
                     if (typeof renderBoostsWidget === 'function') renderBoostsWidget();
+                    // Mines mini-game widget
+                    if (typeof renderMinesGameWidget === 'function') renderMinesGameWidget();
                 }, 200);
             });
         }
@@ -6383,5 +6385,351 @@ function renderBoostsWidget() {
     .catch(function() {
         // Silently fail — remove widget if fetch errors
         if (widget.parentNode) widget.parentNode.removeChild(widget);
+    });
+}
+
+// ── Mines Mini-Game Widget ──────────────────────────────────────────────────
+function renderMinesGameWidget() {
+    if (document.getElementById('minesGameWidget')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('mines-game-css')) {
+        var s = document.createElement('style');
+        s.id = 'mines-game-css';
+        s.textContent = '#minesGameWidget { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 12px; padding: 20px; margin: 18px auto; max-width: 420px; border: 1px solid #333; }' +
+            '#minesGameWidget .mines-title { font-size: 1.3em; font-weight: 700; color: #fff; margin-bottom: 14px; text-align: center; }' +
+            '#minesSetupRow { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }' +
+            '#minesSetupRow label { color: #aaa; font-size: 0.85em; }' +
+            '#minesSetupRow input, #minesSetupRow select { background: #2a2a4a; color: #fff; border: 1px solid #555; border-radius: 6px; padding: 6px 10px; font-size: 0.95em; width: 80px; }' +
+            '#minesSetupRow select { width: 65px; }' +
+            '#minesStartBtn, #minesCashoutBtn, #minesPlayAgainBtn { padding: 8px 18px; border: none; border-radius: 6px; font-weight: 700; font-size: 0.95em; cursor: pointer; transition: all 0.2s; }' +
+            '#minesStartBtn { background: linear-gradient(135deg, #4CAF50, #2d8); color: #000; }' +
+            '#minesStartBtn:hover:not(:disabled) { transform: scale(1.05); }' +
+            '#minesStartBtn:disabled { opacity: 0.5; cursor: not-allowed; }' +
+            '#minesCashoutBtn { background: linear-gradient(135deg, #ff9800, #f57c00); color: #000; display: none; }' +
+            '#minesCashoutBtn:hover:not(:disabled) { transform: scale(1.05); }' +
+            '#minesCashoutBtn:disabled { opacity: 0.5; cursor: not-allowed; }' +
+            '#minesPlayAgainBtn { background: linear-gradient(135deg, #2196F3, #1976D2); color: #fff; display: none; }' +
+            '#minesPlayAgainBtn:hover { transform: scale(1.05); }' +
+            '#minesGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; max-width: 300px; margin: 0 auto; }' +
+            '.mines-tile { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #2a2a4a; border: 1px solid #444; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3em; transition: all 0.2s; user-select: none; }' +
+            '.mines-tile:hover:not(.revealed) { background: #3a3a5a; transform: scale(1.05); }' +
+            '.mines-tile.revealed.safe { background: #1a4a2a; border-color: #2d8; }' +
+            '.mines-tile.revealed.mine { background: #4a1a1a; border-color: #d44; }' +
+            '.mines-tile.locked { cursor: default; pointer-events: none; }' +
+            '#minesMultiplier { text-align: center; color: #2d8; font-size: 1.1em; font-weight: 700; margin: 10px 0; }' +
+            '#minesStatus { text-align: center; color: #ff9800; font-size: 1em; font-weight: 600; min-height: 1.4em; margin: 6px 0; }' +
+            '#minesControls { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }';
+        document.head.appendChild(s);
+    }
+
+    // Find lobby container
+    var lobby = document.getElementById('gameLobby') || document.getElementById('lobby');
+    if (!lobby) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'minesGameWidget';
+
+    // Title
+    var title = document.createElement('div');
+    title.className = 'mines-title';
+    title.textContent = '\uD83D\uDCA3 Mines';
+    widget.appendChild(title);
+
+    // Setup row
+    var setupRow = document.createElement('div');
+    setupRow.id = 'minesSetupRow';
+
+    var betLabel = document.createElement('label');
+    betLabel.textContent = 'Bet: $';
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.id = 'minesBetInput';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+
+    var minesLabel = document.createElement('label');
+    minesLabel.textContent = 'Mines:';
+    var minesSelect = document.createElement('select');
+    minesSelect.id = 'minesMinesSelect';
+    for (var mc = 1; mc <= 24; mc++) {
+        var opt = document.createElement('option');
+        opt.value = String(mc);
+        opt.textContent = String(mc);
+        if (mc === 3) opt.selected = true;
+        minesSelect.appendChild(opt);
+    }
+
+    var startBtn = document.createElement('button');
+    startBtn.id = 'minesStartBtn';
+    startBtn.textContent = 'START';
+
+    setupRow.appendChild(betLabel);
+    setupRow.appendChild(betInput);
+    setupRow.appendChild(minesLabel);
+    setupRow.appendChild(minesSelect);
+    setupRow.appendChild(startBtn);
+    widget.appendChild(setupRow);
+
+    // Multiplier display
+    var multDisplay = document.createElement('div');
+    multDisplay.id = 'minesMultiplier';
+    multDisplay.textContent = 'Current: 1.00x';
+    widget.appendChild(multDisplay);
+
+    // Grid
+    var grid = document.createElement('div');
+    grid.id = 'minesGrid';
+    for (var ti = 0; ti < 25; ti++) {
+        var tile = document.createElement('div');
+        tile.className = 'mines-tile locked';
+        tile.dataset.index = String(ti);
+        tile.dataset.revealed = 'false';
+        grid.appendChild(tile);
+    }
+    widget.appendChild(grid);
+
+    // Status line
+    var statusLine = document.createElement('div');
+    statusLine.id = 'minesStatus';
+    statusLine.textContent = '';
+    widget.appendChild(statusLine);
+
+    // Controls row (cashout + play again)
+    var controls = document.createElement('div');
+    controls.id = 'minesControls';
+
+    var cashoutBtn = document.createElement('button');
+    cashoutBtn.id = 'minesCashoutBtn';
+    cashoutBtn.textContent = 'Cash Out';
+    cashoutBtn.disabled = true;
+
+    var playAgainBtn = document.createElement('button');
+    playAgainBtn.id = 'minesPlayAgainBtn';
+    playAgainBtn.textContent = 'Play Again';
+
+    controls.appendChild(cashoutBtn);
+    controls.appendChild(playAgainBtn);
+    widget.appendChild(controls);
+
+    lobby.appendChild(widget);
+
+    // ── Game state ──
+    var minesGameId = null;
+    var minesActive = false;
+    var minesCurrentMult = 1.0;
+
+    function _minesResetGrid() {
+        var tiles = grid.querySelectorAll('.mines-tile');
+        for (var i = 0; i < tiles.length; i++) {
+            tiles[i].className = 'mines-tile locked';
+            tiles[i].dataset.revealed = 'false';
+            tiles[i].textContent = '';
+        }
+        multDisplay.textContent = 'Current: 1.00x';
+        statusLine.textContent = '';
+        cashoutBtn.style.display = 'none';
+        cashoutBtn.disabled = true;
+        playAgainBtn.style.display = 'none';
+        minesGameId = null;
+        minesActive = false;
+        minesCurrentMult = 1.0;
+    }
+
+    function _minesRevealAll(minePositions) {
+        var tiles = grid.querySelectorAll('.mines-tile');
+        for (var i = 0; i < tiles.length; i++) {
+            if (tiles[i].dataset.revealed === 'true') continue;
+            tiles[i].classList.add('locked');
+            if (minePositions && minePositions.indexOf(parseInt(tiles[i].dataset.index, 10)) !== -1) {
+                tiles[i].classList.add('revealed', 'mine');
+                tiles[i].textContent = '\uD83D\uDCA3';
+            }
+        }
+    }
+
+    function _minesLockAll() {
+        var tiles = grid.querySelectorAll('.mines-tile');
+        for (var i = 0; i < tiles.length; i++) {
+            tiles[i].classList.add('locked');
+        }
+    }
+
+    function _minesGetHeaders() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return null;
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return null;
+        return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+    }
+
+    // ── START ──
+    startBtn.addEventListener('click', function() {
+        var headers = _minesGetHeaders();
+        if (!headers) {
+            statusLine.textContent = 'Please log in to play';
+            return;
+        }
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.25) {
+            statusLine.textContent = 'Minimum bet is $0.25';
+            return;
+        }
+        var mineCount = parseInt(minesSelect.value, 10);
+        startBtn.disabled = true;
+        statusLine.textContent = 'Starting...';
+
+        fetch('/api/mines/start', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ bet: bet, mines: mineCount })
+        })
+        .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                statusLine.textContent = result.data.error || 'Could not start game';
+                startBtn.disabled = false;
+                return;
+            }
+            minesGameId = result.data.gameId;
+            minesActive = true;
+            minesCurrentMult = 1.0;
+            // Unlock tiles
+            var tiles = grid.querySelectorAll('.mines-tile');
+            for (var i = 0; i < tiles.length; i++) {
+                tiles[i].className = 'mines-tile';
+                tiles[i].dataset.revealed = 'false';
+                tiles[i].textContent = '';
+            }
+            multDisplay.textContent = 'Current: 1.00x';
+            statusLine.textContent = 'Click tiles to reveal!';
+            cashoutBtn.style.display = 'inline-block';
+            cashoutBtn.disabled = true;
+            playAgainBtn.style.display = 'none';
+            startBtn.disabled = false;
+            // Update balance display if server returned it
+            if (result.data.newBalance !== undefined && typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay(result.data.newBalance);
+            }
+        })
+        .catch(function() {
+            statusLine.textContent = 'Network error';
+            startBtn.disabled = false;
+        });
+    });
+
+    // ── TILE CLICK ──
+    grid.addEventListener('click', function(e) {
+        var tile = e.target.closest('.mines-tile');
+        if (!tile) return;
+        if (!minesActive || !minesGameId) return;
+        if (tile.dataset.revealed === 'true') return;
+        if (tile.classList.contains('locked')) return;
+
+        var headers = _minesGetHeaders();
+        if (!headers) return;
+
+        var tileIndex = parseInt(tile.dataset.index, 10);
+        tile.classList.add('locked');
+        tile.textContent = '\u2026';
+
+        fetch('/api/mines/reveal', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ gameId: minesGameId, tile: tileIndex })
+        })
+        .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                tile.classList.remove('locked');
+                tile.textContent = '';
+                statusLine.textContent = result.data.error || 'Reveal error';
+                return;
+            }
+            var data = result.data;
+            tile.dataset.revealed = 'true';
+
+            if (data.safe) {
+                tile.className = 'mines-tile revealed safe';
+                tile.textContent = '\uD83D\uDC8E';
+                minesCurrentMult = data.multiplier || minesCurrentMult;
+                multDisplay.textContent = 'Current: ' + minesCurrentMult.toFixed(2) + 'x';
+                if (data.canCashout) {
+                    cashoutBtn.disabled = false;
+                }
+                statusLine.textContent = 'Safe! Keep going or cash out';
+            } else {
+                // Hit a mine
+                tile.className = 'mines-tile revealed mine';
+                tile.textContent = '\uD83D\uDCA3';
+                minesActive = false;
+                statusLine.textContent = '\uD83D\uDCA5 GAME OVER!';
+                cashoutBtn.style.display = 'none';
+                playAgainBtn.style.display = 'inline-block';
+                if (data.minePositions) {
+                    _minesRevealAll(data.minePositions);
+                }
+                _minesLockAll();
+            }
+        })
+        .catch(function() {
+            tile.classList.remove('locked');
+            tile.textContent = '';
+            statusLine.textContent = 'Network error';
+        });
+    });
+
+    // ── CASH OUT ──
+    cashoutBtn.addEventListener('click', function() {
+        if (!minesActive || !minesGameId) return;
+        var headers = _minesGetHeaders();
+        if (!headers) return;
+
+        cashoutBtn.disabled = true;
+        statusLine.textContent = 'Cashing out...';
+
+        fetch('/api/mines/cashout', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ gameId: minesGameId })
+        })
+        .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                statusLine.textContent = result.data.error || 'Cashout error';
+                cashoutBtn.disabled = false;
+                return;
+            }
+            var data = result.data;
+            minesActive = false;
+            _minesLockAll();
+            cashoutBtn.style.display = 'none';
+            playAgainBtn.style.display = 'inline-block';
+
+            var profit = data.profit || 0;
+            var payout = data.payout || 0;
+            statusLine.textContent = '\u2705 Cashed out $' + payout.toFixed(2) + ' (profit: $' + profit.toFixed(2) + ')';
+
+            if (data.newBalance !== undefined && typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay(data.newBalance);
+            }
+            if (data.minePositions) {
+                _minesRevealAll(data.minePositions);
+            }
+
+            if (typeof showToast === 'function') {
+                showToast('\uD83D\uDCA3 Mines: won $' + payout.toFixed(2) + '!');
+            }
+        })
+        .catch(function() {
+            statusLine.textContent = 'Network error';
+            cashoutBtn.disabled = false;
+        });
+    });
+
+    // ── PLAY AGAIN ──
+    playAgainBtn.addEventListener('click', function() {
+        _minesResetGrid();
+        startBtn.disabled = false;
     });
 }

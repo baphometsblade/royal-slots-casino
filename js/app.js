@@ -202,7 +202,7 @@
                 _checkLossStreakOffer();
             }
             _checkAchievements();
-            _checkLevelUpBonus();
+            setTimeout(function() { if (typeof _checkLevelUpBonus === 'function') _checkLevelUpBonus(); }, 6000);
             _checkMilestones();
             _checkDailyStreak();
             setTimeout(function() { _checkWeekendCashback(); }, 2000);
@@ -613,29 +613,121 @@
         }
 
         // ── Level-Up Bonus ─────────────────────────────────────────────────────
-        async function _checkLevelUpBonus() {
-            if (sessionStorage.getItem('_lvlBonusChecked')) return;
-            sessionStorage.setItem('_lvlBonusChecked', '1');
+        function _checkLevelUpBonus() {
+            if (sessionStorage.getItem('_levelUpBonusChecked')) return;
+            sessionStorage.setItem('_levelUpBonusChecked', '1');
             if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
             var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
             if (!token) return;
-            try {
-                var statusResp = await fetch('/api/levelupbonus/status', { headers: { Authorization: 'Bearer ' + token } });
-                if (!statusResp.ok) return;
-                var data = await statusResp.json();
-                if (!data || !data.claimable) return;
-                var claimResp = await fetch('/api/levelupbonus/claim', {
+            fetch('/api/levelupbonus/status', { headers: { Authorization: 'Bearer ' + token } })
+                .then(function(resp) { if (!resp.ok) throw new Error('not ok'); return resp.json(); })
+                .then(function(data) {
+                    if (data && data.claimable === true) {
+                        _showLevelUpBonusModal(data);
+                    }
+                })
+                .catch(function() { /* network / parse errors are non-fatal */ });
+        }
+
+        function _showLevelUpBonusModal(data) {
+            // CSS injection with ID guard
+            if (!document.getElementById('levelup-bonus-css')) {
+                var s = document.createElement('style');
+                s.id = 'levelup-bonus-css';
+                s.textContent = [
+                    '.levelup-bonus-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:9000;display:flex;align-items:center;justify-content:center;animation:levelupFadeIn 0.3s ease}',
+                    '@keyframes levelupFadeIn{from{opacity:0}to{opacity:1}}',
+                    '@keyframes levelupSlideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}',
+                    '@keyframes levelupPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}',
+                    '.levelup-bonus-card{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:16px;padding:32px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 60px rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);animation:levelupSlideUp 0.4s ease}',
+                    '.levelup-bonus-title{font-size:1.6rem;font-weight:800;color:#ffd700;margin-bottom:8px}',
+                    '.levelup-bonus-level{font-size:1.15rem;color:#e0e0ff;margin-bottom:6px;font-weight:600}',
+                    '.levelup-bonus-gained{font-size:0.95rem;color:#9ca3af;margin-bottom:16px}',
+                    '.levelup-bonus-amount{font-size:2rem;font-weight:800;color:#22c55e;margin-bottom:24px;animation:levelupPulse 1.5s ease infinite}',
+                    '.levelup-bonus-claim{background:linear-gradient(135deg,#f59e0b,#f97316);color:#1a0a00;border:none;border-radius:10px;padding:12px 40px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity 0.2s}',
+                    '.levelup-bonus-claim:hover{opacity:0.9}',
+                    '.levelup-bonus-claim:disabled{opacity:0.5;cursor:not-allowed}',
+                    '.levelup-bonus-dismiss{background:#2a2a40;color:#9ca3af;border:1px solid #3a3a55;border-radius:10px;padding:10px 40px;font-size:0.88rem;font-weight:600;cursor:pointer;width:100%}',
+                    '.levelup-bonus-dismiss:hover{background:#353550}',
+                    '.levelup-bonus-success{color:#22c55e;font-size:1rem;font-weight:700;margin-top:12px}'
+                ].join('\n');
+                document.head.appendChild(s);
+            }
+
+            // Build overlay
+            var overlay = document.createElement('div');
+            overlay.className = 'levelup-bonus-overlay';
+
+            var card = document.createElement('div');
+            card.className = 'levelup-bonus-card';
+
+            var title = document.createElement('div');
+            title.className = 'levelup-bonus-title';
+            title.textContent = '\uD83C\uDF89 Level Up!';
+
+            var levelLine = document.createElement('div');
+            levelLine.className = 'levelup-bonus-level';
+            levelLine.textContent = "You've reached Level " + data.currentLevel + '!';
+
+            var gainedLine = document.createElement('div');
+            gainedLine.className = 'levelup-bonus-gained';
+            gainedLine.textContent = "You've gained " + data.levelsGained + ' level' + (data.levelsGained !== 1 ? 's' : '') + '!';
+
+            var amountDisplay = document.createElement('div');
+            amountDisplay.className = 'levelup-bonus-amount';
+            amountDisplay.textContent = '$' + Number(data.bonusAmount).toFixed(2);
+
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'levelup-bonus-claim';
+            claimBtn.textContent = 'Claim Bonus';
+            claimBtn.addEventListener('click', function() {
+                claimBtn.disabled = true;
+                claimBtn.textContent = 'Claiming...';
+                var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+                fetch('/api/levelupbonus/claim', {
                     method: 'POST',
                     headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+                })
+                .then(function(resp) { return resp.json(); })
+                .then(function(result) {
+                    if (result && result.success) {
+                        if (typeof updateBalanceDisplay === 'function') {
+                            updateBalanceDisplay(result.newBalance);
+                        } else if (typeof updateBalance === 'function') {
+                            updateBalance();
+                        }
+                        claimBtn.textContent = 'Claimed!';
+                        var successMsg = document.createElement('div');
+                        successMsg.className = 'levelup-bonus-success';
+                        successMsg.textContent = result.message || 'Bonus credited to your balance!';
+                        card.appendChild(successMsg);
+                        setTimeout(function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 2000);
+                    } else {
+                        claimBtn.textContent = result && result.message ? result.message : 'Error';
+                        claimBtn.disabled = false;
+                    }
+                })
+                .catch(function() {
+                    claimBtn.textContent = 'Error — try again';
+                    claimBtn.disabled = false;
                 });
-                if (!claimResp.ok) return;
-                var result = await claimResp.json();
-                if (!result || !result.success) return;
-                if (typeof updateBalance === 'function') updateBalance();
-                if (typeof showToast === 'function') {
-                    showToast('\uD83C\uDF89 Level ' + result.newLevel + ' reached! +' + result.bonus);
-                }
-            } catch (e) { /* network / parse errors are non-fatal */ }
+            });
+
+            var noThanksBtn = document.createElement('button');
+            noThanksBtn.className = 'levelup-bonus-dismiss';
+            noThanksBtn.textContent = 'No Thanks';
+            noThanksBtn.addEventListener('click', function() {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            });
+
+            card.appendChild(title);
+            card.appendChild(levelLine);
+            card.appendChild(gainedLine);
+            card.appendChild(amountDisplay);
+            card.appendChild(claimBtn);
+            card.appendChild(noThanksBtn);
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
         }
 
         // ── Milestone auto-claim ───────────────────────────────────────────────

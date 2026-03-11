@@ -105,6 +105,8 @@ function showWalletModal() {
     walletRenderVipDepositBonusSection(modal);
     // Render the Subscription status card
     if (typeof walletRenderSubscriptionSection === 'function') walletRenderSubscriptionSection(modal);
+    // Render the Loyalty Shop redeem-points section
+    if (typeof walletRenderLoyaltyShopSection === 'function') walletRenderLoyaltyShopSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -4216,4 +4218,213 @@ async function walletRenderSubscriptionSection(parentContainer) {
 
     section.appendChild(claimBtn);
     section.appendChild(feedbackEl);
+}
+
+// ---------------------------------------------------------------------------
+// Loyalty Shop — redeem loyalty points for cash
+// ---------------------------------------------------------------------------
+async function walletRenderLoyaltyShopSection(parentContainer) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Idempotency guard
+    if (document.getElementById('loyaltyShopSection')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('loyalty-shop-css')) {
+        var s = document.createElement('style');
+        s.id = 'loyalty-shop-css';
+        s.textContent = [
+            '#loyaltyShopSection {',
+            '  background:#1a1a2e;',
+            '  border-radius:12px;',
+            '  padding:14px;',
+            '  margin-bottom:14px;',
+            '  border:1px solid #2d2d44;',
+            '}',
+            '.wls-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }',
+            '.wls-headline { color:#a78bfa; font-size:14px; font-weight:800; }',
+            '.wls-points { color:#fbbf24; font-size:22px; font-weight:800; margin:6px 0; }',
+            '.wls-lifetime { color:#999; font-size:11px; margin-bottom:8px; }',
+            '.wls-rate { color:#ccc; font-size:12px; margin-bottom:12px; padding:6px 10px; background:#12121e; border-radius:8px; display:inline-block; }',
+            '.wls-redeem-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }',
+            '.wls-input { flex:1; padding:8px 10px; border:1px solid #3d3d5c; border-radius:8px; background:#12121e; color:#fff; font-size:14px; font-weight:600; outline:none; }',
+            '.wls-input:focus { border-color:#7c3aed; }',
+            '.wls-estimate { color:#4ade80; font-size:13px; font-weight:600; min-height:1.2em; margin-bottom:8px; }',
+            '.wls-redeem-btn { width:100%; padding:10px 0; border:none; border-radius:8px; cursor:pointer; font-weight:700; font-size:13px; background:linear-gradient(135deg,#7c3aed,#a78bfa); color:#fff; transition:opacity 0.2s; }',
+            '.wls-redeem-btn:disabled { opacity:0.55; cursor:not-allowed; }',
+            '.wls-feedback { font-size:12px; margin-top:6px; min-height:1em; }',
+            '.wls-skeleton { background:#2d2d44; border-radius:6px; height:14px; margin:6px 0; animation:wls-pulse 1.4s ease-in-out infinite; }',
+            '.wls-skeleton.wide { width:70%; }',
+            '.wls-skeleton.narrow { width:40%; }',
+            '.wls-error-msg { color:#f87171; font-size:12px; margin-top:8px; }',
+            '@keyframes wls-pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }'
+        ].join('\n');
+        document.head.appendChild(s);
+    }
+
+    // Build container
+    var section = document.createElement('div');
+    section.id = 'loyaltyShopSection';
+
+    // Header
+    var header = document.createElement('div');
+    header.className = 'wls-header';
+    var headline = document.createElement('span');
+    headline.className = 'wls-headline';
+    headline.textContent = '\uD83C\uDFEA Loyalty Shop';
+    header.appendChild(headline);
+    section.appendChild(header);
+
+    // Loading skeleton
+    var skelWide = document.createElement('div');
+    skelWide.className = 'wls-skeleton wide';
+    section.appendChild(skelWide);
+    var skelNarrow = document.createElement('div');
+    skelNarrow.className = 'wls-skeleton narrow';
+    section.appendChild(skelNarrow);
+
+    parentContainer.appendChild(section);
+
+    // Fetch status
+    var statusData = null;
+    try {
+        var resp = await fetch('/api/loyaltyshop/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        statusData = await resp.json();
+    } catch (err) {
+        // Remove skeletons and show error
+        skelWide.remove();
+        skelNarrow.remove();
+        var errMsg = document.createElement('div');
+        errMsg.className = 'wls-error-msg';
+        errMsg.textContent = 'Could not load loyalty points. Try again later.';
+        section.appendChild(errMsg);
+        return;
+    }
+
+    // Remove skeletons
+    skelWide.remove();
+    skelNarrow.remove();
+
+    // Points display
+    var pointsEl = document.createElement('div');
+    pointsEl.className = 'wls-points';
+    pointsEl.textContent = '\uD83D\uDC8E ' + (statusData.points || 0).toLocaleString() + ' points';
+    section.appendChild(pointsEl);
+
+    // Lifetime points
+    var lifetimeEl = document.createElement('div');
+    lifetimeEl.className = 'wls-lifetime';
+    lifetimeEl.textContent = 'Lifetime earned: ' + (statusData.lifetimePoints || 0).toLocaleString() + ' points';
+    section.appendChild(lifetimeEl);
+
+    // Conversion rate info
+    var rateEl = document.createElement('div');
+    rateEl.className = 'wls-rate';
+    rateEl.textContent = '100 points = $1.00';
+    section.appendChild(rateEl);
+
+    // Redeem row: input + estimate
+    var redeemRow = document.createElement('div');
+    redeemRow.className = 'wls-redeem-row';
+    var input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'wls-input';
+    input.placeholder = 'Points to redeem';
+    input.min = '100';
+    input.step = '100';
+    input.max = String(statusData.points || 0);
+    redeemRow.appendChild(input);
+    section.appendChild(redeemRow);
+
+    // Estimate display
+    var estimateEl = document.createElement('div');
+    estimateEl.className = 'wls-estimate';
+    section.appendChild(estimateEl);
+
+    // Update estimate on input
+    input.addEventListener('input', function () {
+        var val = parseInt(input.value, 10);
+        if (!val || val < 100 || isNaN(val)) {
+            estimateEl.textContent = '';
+            return;
+        }
+        var dollars = (val / 100).toFixed(2);
+        estimateEl.textContent = '= $' + dollars;
+    });
+
+    // Redeem button
+    var redeemBtn = document.createElement('button');
+    redeemBtn.className = 'wls-redeem-btn';
+    redeemBtn.textContent = 'Redeem';
+    section.appendChild(redeemBtn);
+
+    // Feedback area
+    var feedbackEl = document.createElement('div');
+    feedbackEl.className = 'wls-feedback';
+    section.appendChild(feedbackEl);
+
+    // Redeem handler
+    redeemBtn.addEventListener('click', async function () {
+        var pts = parseInt(input.value, 10);
+        if (!pts || pts < 100 || pts % 100 !== 0) {
+            feedbackEl.style.color = '#f87171';
+            feedbackEl.textContent = 'Enter a multiple of 100 (minimum 100).';
+            return;
+        }
+        if (pts > (statusData.points || 0)) {
+            feedbackEl.style.color = '#f87171';
+            feedbackEl.textContent = 'Not enough points.';
+            return;
+        }
+        redeemBtn.disabled = true;
+        redeemBtn.textContent = 'Redeeming\u2026';
+        feedbackEl.textContent = '';
+        try {
+            var rToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            var rResp = await fetch('/api/loyaltyshop/redeem', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + rToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ points: pts })
+            });
+            var data = await rResp.json();
+            if (rResp.ok && data.success) {
+                // Update balance
+                if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                    updateBalanceDisplay(data.newBalance);
+                }
+                // Update points display
+                statusData.points = data.remainingPoints !== undefined ? data.remainingPoints : (statusData.points - pts);
+                pointsEl.textContent = '\uD83D\uDC8E ' + statusData.points.toLocaleString() + ' points';
+                input.max = String(statusData.points);
+                input.value = '';
+                estimateEl.textContent = '';
+                feedbackEl.style.color = '#4ade80';
+                var dollarStr = data.dollarValue !== undefined ? '$' + Number(data.dollarValue).toFixed(2) : '$' + (pts / 100).toFixed(2);
+                feedbackEl.textContent = 'Redeemed ' + dollarStr + ' successfully!';
+                redeemBtn.textContent = 'Redeem';
+                redeemBtn.disabled = false;
+                if (typeof showToast === 'function') {
+                    showToast('Redeemed ' + dollarStr + ' from loyalty points!', 'success');
+                }
+            } else {
+                feedbackEl.style.color = '#f87171';
+                feedbackEl.textContent = (data && data.error) ? data.error : 'Redemption failed. Try again.';
+                redeemBtn.textContent = 'Redeem';
+                redeemBtn.disabled = false;
+            }
+        } catch (e) {
+            feedbackEl.style.color = '#f87171';
+            feedbackEl.textContent = 'Network error. Please try again.';
+            redeemBtn.textContent = 'Redeem';
+            redeemBtn.disabled = false;
+        }
+    });
 }
