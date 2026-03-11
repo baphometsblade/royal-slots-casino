@@ -111,6 +111,7 @@ function showWalletModal() {
     if (typeof renderBlackjackWidget === 'function') renderBlackjackWidget(modal);
     if (typeof renderSicBoWidget === 'function') renderSicBoWidget(modal);
     if (typeof renderRedDogCard === 'function') renderRedDogCard(modal);
+    if (typeof renderMoneyWheelCard === 'function') renderMoneyWheelCard(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -5806,4 +5807,409 @@ function renderRedDogCard(parentContainer) {
             standBtn.disabled = false;
         }
     });
+}
+
+/* ── Money Wheel ─────────────────────────────────────────────── */
+function renderMoneyWheelCard(parentContainer) {
+    if (document.getElementById('moneyWheelCard')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    var MW_SEGMENTS = [
+        { mult: 1,   count: 26, color: '#4a6741', accent: '#6b8f60' },
+        { mult: 2,   count: 14, color: '#2e7d32', accent: '#43a047' },
+        { mult: 5,   count: 8,  color: '#1b5e20', accent: '#2e7d32' },
+        { mult: 10,  count: 4,  color: '#b8860b', accent: '#d4a017' },
+        { mult: 20,  count: 3,  color: '#d4a017', accent: '#ffd700' },
+        { mult: 50,  count: 2,  color: '#ff8f00', accent: '#ffa726' },
+        { mult: 100, count: 1,  color: '#e65100', accent: '#ff6d00' },
+        { mult: 200, count: 1,  color: '#c62828', accent: '#ef5350' },
+        { mult: 500, count: 1,  color: '#6a1b9a', accent: '#ab47bc' }
+    ];
+    var MW_TOTAL_SLOTS = 60;
+    var MW_MIN_BET = 0.25;
+    var MW_MAX_BET = 250;
+
+    function fmtMoney(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    }
+
+    /* ── CSS ── */
+    if (!document.getElementById('money-wheel-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'money-wheel-css';
+        styleEl.textContent = [
+            '#moneyWheelCard{background:linear-gradient(135deg,#1a2f1a 0%,#0d1f0d 60%,#1a1a0d 100%);border:2px solid #4a6741;border-radius:16px;padding:24px;margin-top:18px;position:relative;overflow:hidden}',
+            '#moneyWheelCard::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(212,160,23,0.03),transparent,rgba(212,160,23,0.03),transparent);animation:mwShimmer 12s linear infinite;pointer-events:none}',
+            '@keyframes mwShimmer{to{transform:rotate(360deg)}}',
+            '.mw-title{font-size:22px;font-weight:700;color:#ffd700;text-align:center;margin-bottom:16px;text-shadow:0 0 12px rgba(255,215,0,0.3)}',
+            '.mw-segments-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}',
+            '.mw-seg{border-radius:10px;padding:10px 8px;text-align:center;transition:transform 0.3s,box-shadow 0.3s;cursor:default;position:relative;overflow:hidden}',
+            '.mw-seg:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.4)}',
+            '.mw-seg-mult{font-size:20px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.5)}',
+            '.mw-seg-info{font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px}',
+            '.mw-seg-odds{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px}',
+            '.mw-seg.mw-hit{animation:mwHit 0.6s ease;box-shadow:0 0 20px rgba(255,215,0,0.6)!important;transform:scale(1.08)!important;z-index:2}',
+            '@keyframes mwHit{0%{transform:scale(1)}30%{transform:scale(1.15)}100%{transform:scale(1.08)}}',
+            '.mw-bet-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;justify-content:center}',
+            '.mw-bet-label{color:#aaa;font-size:12px;white-space:nowrap}',
+            '.mw-bet-input{width:100px;padding:8px 10px;border-radius:8px;border:2px solid #4a6741;background:#0d1f0d;color:#ffd700;font-size:16px;font-weight:700;text-align:center;outline:none;transition:border-color 0.2s}',
+            '.mw-bet-input:focus{border-color:#ffd700}',
+            '.mw-quick-bets{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}',
+            '.mw-quick-bet{padding:4px 10px;border-radius:6px;border:1px solid #4a6741;background:rgba(74,103,65,0.2);color:#8fbc8f;font-size:12px;cursor:pointer;transition:all 0.2s}',
+            '.mw-quick-bet:hover{background:rgba(74,103,65,0.4);color:#ffd700;border-color:#ffd700}',
+            '.mw-spin-btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-size:18px;font-weight:800;cursor:pointer;transition:all 0.3s;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#ffd700;text-transform:uppercase;letter-spacing:2px;box-shadow:0 4px 15px rgba(46,125,50,0.4)}',
+            '.mw-spin-btn:hover:not(:disabled){background:linear-gradient(135deg,#43a047,#2e7d32);box-shadow:0 6px 20px rgba(46,125,50,0.6);transform:translateY(-1px)}',
+            '.mw-spin-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}',
+            '.mw-spin-btn.mw-spinning{animation:mwPulse 0.8s ease infinite}',
+            '@keyframes mwPulse{0%,100%{opacity:0.5}50%{opacity:0.7}}',
+            '.mw-result-area{margin-top:16px;text-align:center;min-height:60px}',
+            '.mw-result-mult{font-size:48px;font-weight:900;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.5);opacity:0;transition:opacity 0.4s,transform 0.4s;transform:scale(0.5)}',
+            '.mw-result-mult.mw-show{opacity:1;transform:scale(1)}',
+            '.mw-result-detail{font-size:14px;color:#ccc;margin-top:8px;opacity:0;transition:opacity 0.3s}',
+            '.mw-result-detail.mw-show{opacity:1}',
+            '.mw-result-payout{font-size:20px;font-weight:700;margin-top:6px;opacity:0;transition:opacity 0.3s}',
+            '.mw-result-payout.mw-show{opacity:1}',
+            '.mw-result-payout.mw-win{color:#4caf50}',
+            '.mw-result-payout.mw-loss{color:#f44336}',
+            '.mw-history{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;min-height:28px}',
+            '.mw-hist-chip{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;opacity:0;transition:opacity 0.3s;animation:mwChipIn 0.3s ease forwards}',
+            '@keyframes mwChipIn{from{opacity:0;transform:scale(0.6)}to{opacity:1;transform:scale(1)}}',
+            '.mw-divider{height:1px;background:linear-gradient(90deg,transparent,#4a6741,transparent);margin:14px 0}'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    /* ── Card container ── */
+    var card = document.createElement('div');
+    card.id = 'moneyWheelCard';
+
+    /* ── Title ── */
+    var title = document.createElement('div');
+    title.className = 'mw-title';
+    title.textContent = '\uD83D\uDCB0 Money Wheel';
+    card.appendChild(title);
+
+    /* ── Segment grid ── */
+    var segGrid = document.createElement('div');
+    segGrid.className = 'mw-segments-grid';
+
+    var segEls = [];
+    for (var si = 0; si < MW_SEGMENTS.length; si++) {
+        var seg = MW_SEGMENTS[si];
+        var segEl = document.createElement('div');
+        segEl.className = 'mw-seg';
+        segEl.style.background = 'linear-gradient(135deg, ' + seg.color + ', ' + seg.accent + ')';
+        segEl.setAttribute('data-mult', String(seg.mult));
+
+        var multLabel = document.createElement('div');
+        multLabel.className = 'mw-seg-mult';
+        multLabel.textContent = seg.mult + 'x';
+        segEl.appendChild(multLabel);
+
+        var infoLabel = document.createElement('div');
+        infoLabel.className = 'mw-seg-info';
+        infoLabel.textContent = seg.count + (seg.count === 1 ? ' slot' : ' slots');
+        segEl.appendChild(infoLabel);
+
+        var oddsLabel = document.createElement('div');
+        oddsLabel.className = 'mw-seg-odds';
+        var pct = ((seg.count / MW_TOTAL_SLOTS) * 100).toFixed(1);
+        oddsLabel.textContent = pct + '% chance';
+        segEl.appendChild(oddsLabel);
+
+        segGrid.appendChild(segEl);
+        segEls.push(segEl);
+    }
+    card.appendChild(segGrid);
+
+    /* ── Divider ── */
+    var div1 = document.createElement('div');
+    div1.className = 'mw-divider';
+    card.appendChild(div1);
+
+    /* ── Bet row ── */
+    var betRow = document.createElement('div');
+    betRow.className = 'mw-bet-row';
+
+    var minLabel = document.createElement('span');
+    minLabel.className = 'mw-bet-label';
+    minLabel.textContent = 'Min ' + fmtMoney(MW_MIN_BET);
+    betRow.appendChild(minLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'mw-bet-input';
+    betInput.min = String(MW_MIN_BET);
+    betInput.max = String(MW_MAX_BET);
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betRow.appendChild(betInput);
+
+    var maxLabel = document.createElement('span');
+    maxLabel.className = 'mw-bet-label';
+    maxLabel.textContent = 'Max ' + fmtMoney(MW_MAX_BET);
+    betRow.appendChild(maxLabel);
+
+    card.appendChild(betRow);
+
+    /* ── Quick bet buttons ── */
+    var quickBets = document.createElement('div');
+    quickBets.className = 'mw-quick-bets';
+    var quickAmounts = [0.25, 0.50, 1, 5, 10, 25, 50, 100];
+
+    for (var qi = 0; qi < quickAmounts.length; qi++) {
+        (function(amt) {
+            var qb = document.createElement('button');
+            qb.className = 'mw-quick-bet';
+            qb.textContent = fmtMoney(amt);
+            qb.addEventListener('click', function() {
+                betInput.value = amt.toFixed(2);
+            });
+            quickBets.appendChild(qb);
+        })(quickAmounts[qi]);
+    }
+    card.appendChild(quickBets);
+
+    /* ── Spin button ── */
+    var spinBtn = document.createElement('button');
+    spinBtn.className = 'mw-spin-btn';
+    spinBtn.textContent = 'SPIN THE WHEEL';
+    card.appendChild(spinBtn);
+
+    /* ── Result area ── */
+    var resultArea = document.createElement('div');
+    resultArea.className = 'mw-result-area';
+
+    var resultMult = document.createElement('div');
+    resultMult.className = 'mw-result-mult';
+    resultArea.appendChild(resultMult);
+
+    var resultDetail = document.createElement('div');
+    resultDetail.className = 'mw-result-detail';
+    resultArea.appendChild(resultDetail);
+
+    var resultPayout = document.createElement('div');
+    resultPayout.className = 'mw-result-payout';
+    resultArea.appendChild(resultPayout);
+
+    card.appendChild(resultArea);
+
+    /* ── Divider ── */
+    var div2 = document.createElement('div');
+    div2.className = 'mw-divider';
+    card.appendChild(div2);
+
+    /* ── History row ── */
+    var historyTitle = document.createElement('div');
+    historyTitle.style.cssText = 'font-size:12px;color:#777;text-align:center;margin-bottom:6px';
+    historyTitle.textContent = 'Recent Results';
+    card.appendChild(historyTitle);
+
+    var historyRow = document.createElement('div');
+    historyRow.className = 'mw-history';
+    card.appendChild(historyRow);
+
+    /* ── State ── */
+    var mwSpinning = false;
+    var mwHistory = [];
+    var MAX_HISTORY = 15;
+
+    /* ── Clear previous highlights ── */
+    function mwClearHighlights() {
+        for (var h = 0; h < segEls.length; h++) {
+            segEls[h].classList.remove('mw-hit');
+        }
+    }
+
+    /* ── Flash through segments (anticipation animation) ── */
+    function mwAnimateAnticipation(finalMult, callback) {
+        var steps = 12 + Math.floor(Math.random() * 6);
+        var stepIdx = 0;
+        var interval = 80;
+
+        function tick() {
+            mwClearHighlights();
+            var idx = stepIdx % segEls.length;
+            segEls[idx].classList.add('mw-hit');
+
+            stepIdx++;
+            if (stepIdx < steps) {
+                interval = Math.min(interval + 15, 250);
+                setTimeout(tick, interval);
+            } else {
+                mwClearHighlights();
+                /* Highlight final segment */
+                for (var f = 0; f < segEls.length; f++) {
+                    if (parseInt(segEls[f].getAttribute('data-mult'), 10) === finalMult) {
+                        segEls[f].classList.add('mw-hit');
+                        break;
+                    }
+                }
+                if (callback) callback();
+            }
+        }
+        tick();
+    }
+
+    /* ── Lookup segment color by mult ── */
+    function mwGetSegColor(mult) {
+        for (var c = 0; c < MW_SEGMENTS.length; c++) {
+            if (MW_SEGMENTS[c].mult === mult) return MW_SEGMENTS[c].accent;
+        }
+        return '#ffd700';
+    }
+
+    /* ── Add to history ── */
+    function mwAddHistory(mult) {
+        mwHistory.unshift(mult);
+        if (mwHistory.length > MAX_HISTORY) mwHistory.pop();
+
+        /* rebuild chips */
+        historyRow.innerHTML = '';
+        for (var hc = 0; hc < mwHistory.length; hc++) {
+            var chip = document.createElement('span');
+            chip.className = 'mw-hist-chip';
+            chip.textContent = mwHistory[hc] + 'x';
+            chip.style.background = mwGetSegColor(mwHistory[hc]);
+            chip.style.animationDelay = (hc * 40) + 'ms';
+            historyRow.appendChild(chip);
+        }
+    }
+
+    /* ── Show result ── */
+    function mwShowResult(data) {
+        /* multiplier display */
+        resultMult.textContent = data.mult + 'x';
+        resultMult.style.color = mwGetSegColor(data.mult);
+        resultMult.classList.add('mw-show');
+
+        /* detail line */
+        resultDetail.textContent = fmtMoney(data.bet) + ' \u00D7 ' + data.mult + 'x = ' + fmtMoney(data.payout);
+        resultDetail.classList.add('mw-show');
+
+        /* payout line */
+        var profit = data.profit;
+        resultPayout.className = 'mw-result-payout mw-show';
+        if (profit > 0) {
+            resultPayout.classList.add('mw-win');
+            resultPayout.textContent = '+' + fmtMoney(profit) + ' profit!';
+        } else if (profit === 0) {
+            resultPayout.textContent = 'Push \u2014 bet returned';
+            resultPayout.style.color = '#ffd700';
+        } else {
+            resultPayout.classList.add('mw-loss');
+            resultPayout.textContent = fmtMoney(profit) + ' loss';
+        }
+
+        /* history */
+        mwAddHistory(data.mult);
+
+        /* sound */
+        if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
+            if (data.mult >= 50) {
+                SoundManager.playSoundEvent('jackpot');
+            } else if (data.mult >= 10) {
+                SoundManager.playSoundEvent('bigWin');
+            } else if (data.mult >= 2) {
+                SoundManager.playSoundEvent('win');
+            }
+        }
+    }
+
+    /* ── Reset result display ── */
+    function mwResetResult() {
+        resultMult.classList.remove('mw-show');
+        resultDetail.classList.remove('mw-show');
+        resultPayout.classList.remove('mw-show');
+        resultPayout.className = 'mw-result-payout';
+    }
+
+    /* ── Spin handler ── */
+    spinBtn.addEventListener('click', async function() {
+        if (mwSpinning) return;
+
+        var betVal = parseFloat(betInput.value);
+        if (isNaN(betVal) || betVal < MW_MIN_BET) {
+            if (typeof showToast === 'function') showToast('Minimum bet is ' + fmtMoney(MW_MIN_BET), 'error');
+            betInput.value = MW_MIN_BET.toFixed(2);
+            return;
+        }
+        if (betVal > MW_MAX_BET) {
+            if (typeof showToast === 'function') showToast('Maximum bet is ' + fmtMoney(MW_MAX_BET), 'error');
+            betInput.value = MW_MAX_BET.toFixed(2);
+            return;
+        }
+
+        mwSpinning = true;
+        spinBtn.disabled = true;
+        spinBtn.classList.add('mw-spinning');
+        spinBtn.textContent = 'SPINNING...';
+        betInput.disabled = true;
+        mwResetResult();
+        mwClearHighlights();
+
+        try {
+            var resp = await fetch('/api/moneywheel/spin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ bet: betVal })
+            });
+
+            if (!resp.ok) {
+                var errData = null;
+                try { errData = await resp.json(); } catch(e) { /* ignore */ }
+                var errMsg = (errData && errData.error) ? errData.error : 'Spin failed (HTTP ' + resp.status + ')';
+                if (typeof showToast === 'function') showToast(errMsg, 'error');
+                mwSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.classList.remove('mw-spinning');
+                spinBtn.textContent = 'SPIN THE WHEEL';
+                betInput.disabled = false;
+                return;
+            }
+
+            var data = await resp.json();
+
+            /* Animate anticipation then show result */
+            mwAnimateAnticipation(data.mult, function() {
+                mwShowResult(data);
+
+                /* Update global balance */
+                if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                    updateBalanceDisplay(data.newBalance);
+                }
+                if (typeof balance !== 'undefined') {
+                    balance = data.newBalance;
+                }
+
+                /* Toast for big wins */
+                if (data.mult >= 20 && typeof showToast === 'function') {
+                    showToast('Money Wheel ' + data.mult + 'x! Won ' + fmtMoney(data.payout) + '!', 'success');
+                }
+
+                mwSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.classList.remove('mw-spinning');
+                spinBtn.textContent = 'SPIN THE WHEEL';
+                betInput.disabled = false;
+            });
+
+        } catch (e) {
+            console.error('Money Wheel spin error:', e);
+            if (typeof showToast === 'function') showToast('Network error. Please try again.', 'error');
+            mwSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.classList.remove('mw-spinning');
+            spinBtn.textContent = 'SPIN THE WHEEL';
+            betInput.disabled = false;
+        }
+    });
+
+    parentContainer.appendChild(card);
 }

@@ -2219,6 +2219,7 @@ function initPromoEngine() {
             if (!window._scratchCardGameInit) { window._scratchCardGameInit = true; renderScratchCardGame(promosSidebar); }
             if (!window._baccaratCardInit) { window._baccaratCardInit = true; renderBaccaratCard(promosSidebar); }
             if (!window._dragonTigerInit) { window._dragonTigerInit = true; renderDragonTigerCard(promosSidebar); }
+            if (!window._horseRacingInit) { window._horseRacingInit = true; renderHorseRacingCard(promosSidebar); }
         }
     }, 4000);
 
@@ -7270,4 +7271,471 @@ function renderDragonTigerCard(container) {
             playBtn.textContent = 'PLAY';
         });
     });
+}
+
+function renderHorseRacingCard(container) {
+    if (document.getElementById('horseRacingCard')) return;
+
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    if (!document.getElementById('horse-racing-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'horse-racing-css';
+        styleEl.textContent = [
+            '#horseRacingCard { background: linear-gradient(135deg, #1a3a1a 0%, #2d4a2d 40%, #3b2a1a 100%); border-radius: 16px; padding: 20px; margin-bottom: 18px; border: 2px solid #4a7a3a; position: relative; overflow: hidden; }',
+            '#horseRacingCard::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(255,255,255,0.02) 18px, rgba(255,255,255,0.02) 20px); pointer-events: none; }',
+            '.hr-title-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }',
+            '.hr-title { font-size: 20px; font-weight: 700; color: #d4e8c4; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }',
+            '.hr-subtitle { font-size: 12px; color: #8ab878; margin-bottom: 14px; }',
+            '.hr-section-label { font-size: 12px; font-weight: 600; color: #a0c090; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; margin-top: 14px; }',
+            '.hr-horses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }',
+            '.hr-horse-btn { background: rgba(74,122,58,0.3); border: 2px solid #4a6a3a; border-radius: 10px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all 0.2s; color: #c8e0b8; font-size: 13px; font-weight: 600; }',
+            '.hr-horse-btn:hover { background: rgba(74,122,58,0.6); border-color: #7ab868; transform: translateY(-1px); }',
+            '.hr-horse-btn.selected { background: rgba(120,200,90,0.35); border-color: #7cd860; box-shadow: 0 0 12px rgba(120,200,90,0.3); color: #e0ffd0; }',
+            '.hr-horse-btn.selected-second { background: rgba(200,160,60,0.35); border-color: #d0b040; box-shadow: 0 0 12px rgba(200,160,60,0.3); color: #fff0c0; }',
+            '.hr-horse-id { font-size: 10px; color: #6a9a5a; display: block; margin-top: 2px; }',
+            '.hr-bet-types { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }',
+            '.hr-bet-type-btn { background: rgba(90,70,40,0.5); border: 2px solid #6a5530; border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: all 0.2s; color: #d4c8a0; font-size: 12px; font-weight: 600; flex: 1; min-width: 70px; text-align: center; }',
+            '.hr-bet-type-btn:hover { background: rgba(140,110,60,0.5); border-color: #a08840; }',
+            '.hr-bet-type-btn.active { background: rgba(180,140,50,0.4); border-color: #d4b040; color: #fff8d0; box-shadow: 0 0 10px rgba(180,140,50,0.3); }',
+            '.hr-bet-payout { font-size: 10px; color: #a09070; display: block; margin-top: 2px; }',
+            '.hr-amount-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }',
+            '.hr-amount-input { flex: 1; background: rgba(0,0,0,0.3); border: 2px solid #4a6a3a; border-radius: 8px; padding: 10px 12px; color: #d4e8c4; font-size: 16px; font-weight: 700; text-align: center; outline: none; }',
+            '.hr-amount-input:focus { border-color: #7ab868; box-shadow: 0 0 8px rgba(120,200,90,0.3); }',
+            '.hr-quick-btn { background: rgba(74,122,58,0.3); border: 1px solid #4a6a3a; border-radius: 6px; padding: 6px 10px; color: #a0c090; font-size: 11px; cursor: pointer; transition: all 0.15s; }',
+            '.hr-quick-btn:hover { background: rgba(74,122,58,0.6); color: #d4e8c4; }',
+            '.hr-race-btn { width: 100%; background: linear-gradient(135deg, #2a7a1a, #4a9a30); border: 2px solid #5ab840; border-radius: 12px; padding: 14px; color: #fff; font-size: 18px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: all 0.2s; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }',
+            '.hr-race-btn:hover { background: linear-gradient(135deg, #3a9a2a, #5ab840); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(90,184,64,0.4); }',
+            '.hr-race-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }',
+            '.hr-race-track { margin-top: 16px; background: rgba(0,0,0,0.25); border-radius: 12px; padding: 14px; border: 1px solid rgba(74,122,58,0.3); display: none; }',
+            '.hr-track-title { font-size: 14px; font-weight: 700; color: #d4b040; margin-bottom: 10px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }',
+            '.hr-finish-lane { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; transition: all 0.4s; opacity: 0; transform: translateX(-30px); }',
+            '.hr-finish-lane.visible { opacity: 1; transform: translateX(0); }',
+            '.hr-finish-pos { font-size: 18px; font-weight: 800; min-width: 28px; text-align: center; }',
+            '.hr-finish-pos.gold { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.5); }',
+            '.hr-finish-pos.silver { color: #c0c0c0; text-shadow: 0 0 6px rgba(192,192,192,0.4); }',
+            '.hr-finish-pos.bronze { color: #cd7f32; text-shadow: 0 0 6px rgba(205,127,50,0.4); }',
+            '.hr-finish-name { flex: 1; font-size: 14px; font-weight: 600; color: #c8e0b8; }',
+            '.hr-finish-icon { font-size: 20px; }',
+            '.hr-bet-results { margin-top: 12px; }',
+            '.hr-bet-result { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; font-size: 13px; }',
+            '.hr-bet-result.won { background: rgba(80,200,60,0.15); border: 1px solid rgba(80,200,60,0.3); color: #80e850; }',
+            '.hr-bet-result.lost { background: rgba(200,60,60,0.1); border: 1px solid rgba(200,60,60,0.2); color: #e07070; }',
+            '.hr-summary { margin-top: 12px; text-align: center; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: 700; }',
+            '.hr-summary.profit { background: rgba(80,200,60,0.15); border: 1px solid rgba(80,200,60,0.3); color: #70e850; }',
+            '.hr-summary.loss { background: rgba(200,60,60,0.12); border: 1px solid rgba(200,60,60,0.25); color: #e07070; }',
+            '.hr-summary.even { background: rgba(200,200,200,0.1); border: 1px solid rgba(200,200,200,0.2); color: #c0c0c0; }',
+            '.hr-error { color: #f87171; font-size: 13px; margin-top: 8px; text-align: center; }',
+            '.hr-selection-info { font-size: 12px; color: #8ab878; text-align: center; margin-bottom: 6px; font-style: italic; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var HORSES = [
+        { id: 0, name: 'Thunder', emoji: '\uD83C\uDFC7' },
+        { id: 1, name: 'Lightning', emoji: '\u26A1' },
+        { id: 2, name: 'Storm', emoji: '\uD83C\uDF29' },
+        { id: 3, name: 'Blaze', emoji: '\uD83D\uDD25' },
+        { id: 4, name: 'Shadow', emoji: '\uD83C\uDF11' },
+        { id: 5, name: 'Comet', emoji: '\u2604\uFE0F' }
+    ];
+
+    var BET_TYPES = [
+        { type: 'win', label: 'Win', payout: '6x', desc: '1st place' },
+        { type: 'place', label: 'Place', payout: '2.5x', desc: 'Top 2' },
+        { type: 'show', label: 'Show', payout: '1.5x', desc: 'Top 3' },
+        { type: 'exacta', label: 'Exacta', payout: '25x', desc: '1st+2nd exact' },
+        { type: 'quinella', label: 'Quinella', payout: '10x', desc: '1st+2nd any' }
+    ];
+
+    var selectedHorse = -1;
+    var selectedHorse2 = -1;
+    var selectedBetType = 'win';
+    var racing = false;
+
+    function fmtMoney(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    }
+
+    function needsTwoHorses(bt) {
+        return bt === 'exacta' || bt === 'quinella';
+    }
+
+    var card = document.createElement('div');
+    card.id = 'horseRacingCard';
+    card.style.position = 'relative';
+
+    // Title bar
+    var titleBar = document.createElement('div');
+    titleBar.className = 'hr-title-bar';
+    var titleIcon = document.createElement('span');
+    titleIcon.textContent = '\uD83C\uDFC7';
+    titleIcon.style.fontSize = '28px';
+    titleBar.appendChild(titleIcon);
+    var titleText = document.createElement('span');
+    titleText.className = 'hr-title';
+    titleText.textContent = 'Horse Racing';
+    titleBar.appendChild(titleText);
+    card.appendChild(titleBar);
+
+    var subtitle = document.createElement('div');
+    subtitle.className = 'hr-subtitle';
+    subtitle.textContent = 'Pick your horse, place your bet, and watch them race!';
+    card.appendChild(subtitle);
+
+    // Horse selection section
+    var horseSectionLabel = document.createElement('div');
+    horseSectionLabel.className = 'hr-section-label';
+    horseSectionLabel.textContent = 'Select Horse';
+    card.appendChild(horseSectionLabel);
+
+    var selectionInfo = document.createElement('div');
+    selectionInfo.className = 'hr-selection-info';
+    selectionInfo.textContent = 'Tap a horse to select';
+    card.appendChild(selectionInfo);
+
+    var horsesGrid = document.createElement('div');
+    horsesGrid.className = 'hr-horses';
+    var horseButtons = [];
+
+    HORSES.forEach(function(h) {
+        var btn = document.createElement('div');
+        btn.className = 'hr-horse-btn';
+        btn.setAttribute('data-horse-id', h.id);
+
+        var nameSpan = document.createElement('span');
+        nameSpan.textContent = h.emoji + ' ' + h.name;
+        btn.appendChild(nameSpan);
+
+        var idSpan = document.createElement('span');
+        idSpan.className = 'hr-horse-id';
+        idSpan.textContent = '#' + (h.id + 1);
+        btn.appendChild(idSpan);
+
+        btn.addEventListener('click', function() {
+            if (racing) return;
+            var twoMode = needsTwoHorses(selectedBetType);
+
+            if (twoMode) {
+                if (selectedHorse === h.id) {
+                    selectedHorse = -1;
+                } else if (selectedHorse2 === h.id) {
+                    selectedHorse2 = -1;
+                } else if (selectedHorse === -1) {
+                    selectedHorse = h.id;
+                } else if (selectedHorse2 === -1 && h.id !== selectedHorse) {
+                    selectedHorse2 = h.id;
+                } else {
+                    selectedHorse2 = h.id;
+                    if (selectedHorse2 === selectedHorse) selectedHorse = -1;
+                }
+            } else {
+                selectedHorse = (selectedHorse === h.id) ? -1 : h.id;
+                selectedHorse2 = -1;
+            }
+            updateHorseButtons();
+        });
+
+        horseButtons.push(btn);
+        horsesGrid.appendChild(btn);
+    });
+    card.appendChild(horsesGrid);
+
+    function updateHorseButtons() {
+        horseButtons.forEach(function(btn, i) {
+            btn.classList.remove('selected', 'selected-second');
+            if (i === selectedHorse) btn.classList.add('selected');
+            if (i === selectedHorse2) btn.classList.add('selected-second');
+        });
+        var twoMode = needsTwoHorses(selectedBetType);
+        if (twoMode) {
+            if (selectedHorse === -1 && selectedHorse2 === -1) {
+                selectionInfo.textContent = 'Select 1st and 2nd horse';
+            } else if (selectedHorse >= 0 && selectedHorse2 === -1) {
+                selectionInfo.textContent = '1st: ' + HORSES[selectedHorse].name + ' \u2014 now pick 2nd horse';
+            } else if (selectedHorse >= 0 && selectedHorse2 >= 0) {
+                selectionInfo.textContent = '1st: ' + HORSES[selectedHorse].name + ', 2nd: ' + HORSES[selectedHorse2].name;
+            }
+        } else {
+            if (selectedHorse === -1) {
+                selectionInfo.textContent = 'Tap a horse to select';
+            } else {
+                selectionInfo.textContent = 'Selected: ' + HORSES[selectedHorse].emoji + ' ' + HORSES[selectedHorse].name;
+            }
+        }
+    }
+
+    // Bet type selector
+    var betSectionLabel = document.createElement('div');
+    betSectionLabel.className = 'hr-section-label';
+    betSectionLabel.textContent = 'Bet Type';
+    card.appendChild(betSectionLabel);
+
+    var betTypesRow = document.createElement('div');
+    betTypesRow.className = 'hr-bet-types';
+    var betTypeButtons = [];
+
+    BET_TYPES.forEach(function(bt) {
+        var btn = document.createElement('div');
+        btn.className = 'hr-bet-type-btn';
+        if (bt.type === selectedBetType) btn.classList.add('active');
+
+        var labelSpan = document.createElement('span');
+        labelSpan.textContent = bt.label;
+        btn.appendChild(labelSpan);
+
+        var payoutSpan = document.createElement('span');
+        payoutSpan.className = 'hr-bet-payout';
+        payoutSpan.textContent = bt.payout + ' \u2014 ' + bt.desc;
+        btn.appendChild(payoutSpan);
+
+        btn.addEventListener('click', function() {
+            if (racing) return;
+            selectedBetType = bt.type;
+            betTypeButtons.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+
+            if (!needsTwoHorses(bt.type)) {
+                selectedHorse2 = -1;
+            }
+            updateHorseButtons();
+        });
+
+        betTypeButtons.push(btn);
+        betTypesRow.appendChild(btn);
+    });
+    card.appendChild(betTypesRow);
+
+    // Bet amount
+    var amountLabel = document.createElement('div');
+    amountLabel.className = 'hr-section-label';
+    amountLabel.textContent = 'Bet Amount';
+    card.appendChild(amountLabel);
+
+    var amountRow = document.createElement('div');
+    amountRow.className = 'hr-amount-row';
+
+    var amountInput = document.createElement('input');
+    amountInput.type = 'number';
+    amountInput.className = 'hr-amount-input';
+    amountInput.min = '0.25';
+    amountInput.max = '500';
+    amountInput.step = '0.25';
+    amountInput.value = '5.00';
+    amountInput.setAttribute('placeholder', '$0.25 - $500');
+    amountRow.appendChild(amountInput);
+
+    var quickAmounts = [1, 5, 25, 100];
+    quickAmounts.forEach(function(amt) {
+        var qBtn = document.createElement('button');
+        qBtn.className = 'hr-quick-btn';
+        qBtn.textContent = '$' + amt;
+        qBtn.addEventListener('click', function() {
+            if (racing) return;
+            amountInput.value = amt.toFixed(2);
+        });
+        amountRow.appendChild(qBtn);
+    });
+    card.appendChild(amountRow);
+
+    // Race button
+    var raceBtn = document.createElement('button');
+    raceBtn.className = 'hr-race-btn';
+    raceBtn.textContent = '\uD83C\uDFC1 RACE!';
+    card.appendChild(raceBtn);
+
+    // Error display
+    var errorEl = document.createElement('div');
+    errorEl.className = 'hr-error';
+    card.appendChild(errorEl);
+
+    // Race track (results area)
+    var raceTrack = document.createElement('div');
+    raceTrack.className = 'hr-race-track';
+
+    var trackTitle = document.createElement('div');
+    trackTitle.className = 'hr-track-title';
+    trackTitle.textContent = 'Race Results';
+    raceTrack.appendChild(trackTitle);
+
+    var finishArea = document.createElement('div');
+    finishArea.id = 'hrFinishArea';
+    raceTrack.appendChild(finishArea);
+
+    var betResultsArea = document.createElement('div');
+    betResultsArea.className = 'hr-bet-results';
+    raceTrack.appendChild(betResultsArea);
+
+    var summaryEl = document.createElement('div');
+    summaryEl.className = 'hr-summary';
+    summaryEl.style.display = 'none';
+    raceTrack.appendChild(summaryEl);
+
+    card.appendChild(raceTrack);
+
+    // Race handler
+    raceBtn.addEventListener('click', function() {
+        if (racing) return;
+        errorEl.textContent = '';
+
+        var amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount < 0.25 || amount > 500) {
+            errorEl.textContent = 'Bet must be between $0.25 and $500';
+            return;
+        }
+
+        if (selectedHorse < 0) {
+            errorEl.textContent = 'Please select a horse';
+            return;
+        }
+
+        if (needsTwoHorses(selectedBetType) && selectedHorse2 < 0) {
+            errorEl.textContent = 'Select a 2nd horse for ' + selectedBetType + ' bet';
+            return;
+        }
+
+        racing = true;
+        raceBtn.disabled = true;
+        raceBtn.textContent = '\uD83C\uDFC7 Racing...';
+
+        // Clear previous results
+        while (finishArea.firstChild) finishArea.removeChild(finishArea.firstChild);
+        while (betResultsArea.firstChild) betResultsArea.removeChild(betResultsArea.firstChild);
+        summaryEl.style.display = 'none';
+        raceTrack.style.display = 'block';
+        trackTitle.textContent = '\uD83C\uDFC7 Horses on the track...';
+
+        var betPayload = {
+            type: selectedBetType,
+            horse: selectedHorse,
+            amount: amount
+        };
+        if (needsTwoHorses(selectedBetType)) {
+            betPayload.horse2 = selectedHorse2;
+        }
+
+        var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+
+        fetch('/api/horseracing/race', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + currentToken
+            },
+            body: JSON.stringify({ bets: [betPayload] })
+        })
+        .then(function(resp) {
+            if (!resp.ok) {
+                return resp.json().then(function(errData) {
+                    throw new Error(errData.error || 'Race failed');
+                });
+            }
+            return resp.json();
+        })
+        .then(function(data) {
+            trackTitle.textContent = '\uD83C\uDFC1 Race Finished!';
+
+            var race = data.race;
+            var finishOrder = race.finishOrder || [];
+            var posLabels = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
+            var posClasses = ['gold', 'silver', 'bronze', '', '', ''];
+            var trophies = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49', '', '', ''];
+
+            finishOrder.forEach(function(horseId, idx) {
+                var lane = document.createElement('div');
+                lane.className = 'hr-finish-lane';
+                lane.style.transitionDelay = (idx * 200) + 'ms';
+
+                var posEl = document.createElement('span');
+                posEl.className = 'hr-finish-pos';
+                if (posClasses[idx]) posEl.classList.add(posClasses[idx]);
+                posEl.textContent = posLabels[idx];
+                lane.appendChild(posEl);
+
+                var iconEl = document.createElement('span');
+                iconEl.className = 'hr-finish-icon';
+                var horse = HORSES[horseId] || { emoji: '\uD83D\uDC0E', name: 'Horse ' + horseId };
+                iconEl.textContent = horse.emoji;
+                lane.appendChild(iconEl);
+
+                var nameEl = document.createElement('span');
+                nameEl.className = 'hr-finish-name';
+                nameEl.textContent = horse.name;
+                if (trophies[idx]) {
+                    nameEl.textContent = horse.name + ' ' + trophies[idx];
+                }
+                lane.appendChild(nameEl);
+
+                finishArea.appendChild(lane);
+
+                // Stagger the reveal animation
+                setTimeout(function() {
+                    lane.classList.add('visible');
+                }, 100 + idx * 250);
+            });
+
+            // Show bet results after finish reveal
+            var revealDelay = 100 + finishOrder.length * 250 + 300;
+
+            setTimeout(function() {
+                var betResults = data.betResults || [];
+                betResults.forEach(function(br) {
+                    var row = document.createElement('div');
+                    row.className = 'hr-bet-result ' + (br.won ? 'won' : 'lost');
+
+                    var descEl = document.createElement('span');
+                    descEl.textContent = br.description || (br.type + ' on ' + (br.horseName || 'Horse'));
+                    row.appendChild(descEl);
+
+                    var payEl = document.createElement('span');
+                    if (br.won) {
+                        payEl.textContent = '+' + fmtMoney(br.payout);
+                        payEl.style.fontWeight = '700';
+                    } else {
+                        payEl.textContent = '-' + fmtMoney(amount);
+                    }
+                    row.appendChild(payEl);
+
+                    betResultsArea.appendChild(row);
+                });
+
+                // Show summary
+                var summary = data.summary || {};
+                var net = summary.netResult || 0;
+                summaryEl.style.display = 'block';
+                summaryEl.className = 'hr-summary';
+                if (net > 0) {
+                    summaryEl.classList.add('profit');
+                    summaryEl.textContent = '\uD83C\uDF89 Won ' + fmtMoney(net) + '!';
+                } else if (net < 0) {
+                    summaryEl.classList.add('loss');
+                    summaryEl.textContent = 'Lost ' + fmtMoney(Math.abs(net));
+                } else {
+                    summaryEl.classList.add('even');
+                    summaryEl.textContent = 'Break even';
+                }
+
+                // Update balance
+                if (typeof data.balance === 'number' && typeof updateBalanceDisplay === 'function') {
+                    updateBalanceDisplay(data.balance);
+                }
+
+                racing = false;
+                raceBtn.disabled = false;
+                raceBtn.textContent = '\uD83C\uDFC1 RACE!';
+            }, revealDelay);
+        })
+        .catch(function(err) {
+            errorEl.textContent = err.message || 'Connection error. Try again.';
+            trackTitle.textContent = 'Race Results';
+            raceTrack.style.display = 'none';
+            racing = false;
+            raceBtn.disabled = false;
+            raceBtn.textContent = '\uD83C\uDFC1 RACE!';
+        });
+    });
+
+    container.appendChild(card);
 }

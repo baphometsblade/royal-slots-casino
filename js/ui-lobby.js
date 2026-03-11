@@ -631,6 +631,8 @@ function renderGames() {
                     if (typeof renderKenoWidget === 'function') renderKenoWidget();
                     // Chuck-a-Luck dice game widget
                     if (typeof renderChuckALuckWidget === 'function') renderChuckALuckWidget();
+                    // Big Six Wheel game widget
+                    if (typeof renderBigSixWheelWidget === 'function') renderBigSixWheelWidget();
                 }, 200);
             });
         }
@@ -8028,5 +8030,429 @@ function renderChuckALuckWidget() {
     });
 
     // Insert into lobby
+    gamesGrid.parentNode.insertBefore(widget, gamesGrid);
+}
+
+// ═══════════════════════════════════════════════════════
+// BIG SIX WHEEL WIDGET
+// ═══════════════════════════════════════════════════════
+
+function renderBigSixWheelWidget() {
+    // Idempotency guard
+    if (document.getElementById('bigSixWheelWidget')) return;
+
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // CSS injection with ID guard
+    if (!document.getElementById('big-six-wheel-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'big-six-wheel-css';
+        styleEl.textContent = [
+            '.bsw-widget { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 40%, #1a0a2e 100%); border: 2px solid #d4a017; border-radius: 16px; padding: 20px; margin-bottom: 24px; position: relative; overflow: hidden; }',
+            '.bsw-widget::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 50% 0%, rgba(212,160,23,0.15) 0%, transparent 60%); pointer-events: none; }',
+            '.bsw-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; position: relative; z-index: 1; }',
+            '.bsw-title { font-size: 22px; font-weight: 800; color: #f5d76e; text-shadow: 0 2px 8px rgba(212,160,23,0.5); letter-spacing: 1px; }',
+            '.bsw-subtitle { text-align: center; color: #c9a0dc; font-size: 13px; margin-bottom: 14px; position: relative; z-index: 1; }',
+            '.bsw-segments { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 16px; position: relative; z-index: 1; }',
+            '.bsw-seg { background: rgba(255,255,255,0.06); border: 1px solid rgba(212,160,23,0.3); border-radius: 10px; padding: 10px 8px; text-align: center; transition: all 0.3s ease; cursor: default; }',
+            '.bsw-seg:hover { border-color: #d4a017; background: rgba(212,160,23,0.12); transform: translateY(-2px); }',
+            '.bsw-seg.bsw-winner { border-color: #4caf50; background: rgba(76,175,80,0.2); box-shadow: 0 0 16px rgba(76,175,80,0.4); }',
+            '.bsw-seg.bsw-loser { opacity: 0.5; }',
+            '.bsw-seg-label { font-size: 18px; font-weight: 700; margin-bottom: 2px; }',
+            '.bsw-seg-payout { font-size: 11px; color: #aaa; margin-bottom: 6px; }',
+            '.bsw-seg-input { width: 70px; background: rgba(0,0,0,0.4); border: 1px solid rgba(212,160,23,0.4); border-radius: 6px; color: #f5d76e; font-size: 13px; padding: 5px 6px; text-align: center; outline: none; }',
+            '.bsw-seg-input:focus { border-color: #f5d76e; box-shadow: 0 0 6px rgba(245,215,110,0.3); }',
+            '.bsw-seg-input::placeholder { color: rgba(245,215,110,0.3); }',
+            '.bsw-controls { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; position: relative; z-index: 1; }',
+            '.bsw-total { color: #c9a0dc; font-size: 13px; }',
+            '.bsw-total-val { color: #f5d76e; font-weight: 700; }',
+            '.bsw-spin-btn { background: linear-gradient(180deg, #d4a017 0%, #b8860b 100%); color: #1a0a2e; font-weight: 800; font-size: 16px; padding: 10px 36px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(212,160,23,0.4); }',
+            '.bsw-spin-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(212,160,23,0.6); background: linear-gradient(180deg, #e6b422 0%, #d4a017 100%); }',
+            '.bsw-spin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }',
+            '.bsw-spin-btn.bsw-spinning { animation: bsw-pulse 0.6s ease-in-out infinite; }',
+            '@keyframes bsw-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
+            '.bsw-clear-btn { background: rgba(255,255,255,0.08); color: #aaa; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 16px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; }',
+            '.bsw-clear-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }',
+            '.bsw-result { text-align: center; min-height: 80px; position: relative; z-index: 1; }',
+            '.bsw-result-wheel { font-size: 48px; margin-bottom: 6px; transition: transform 0.6s ease; }',
+            '.bsw-result-wheel.bsw-anim { animation: bsw-wheel-spin 1.2s cubic-bezier(0.2,0.8,0.3,1); }',
+            '@keyframes bsw-wheel-spin { 0% { transform: rotate(0deg) scale(0.8); opacity: 0.3; } 60% { transform: rotate(720deg) scale(1.2); } 100% { transform: rotate(1080deg) scale(1); opacity: 1; } }',
+            '.bsw-result-label { font-size: 20px; font-weight: 700; margin-bottom: 4px; }',
+            '.bsw-result-label.bsw-win { color: #4caf50; text-shadow: 0 0 10px rgba(76,175,80,0.5); }',
+            '.bsw-result-label.bsw-lose { color: #e57373; }',
+            '.bsw-result-detail { font-size: 13px; color: #aaa; }',
+            '.bsw-result-profit { font-size: 15px; font-weight: 700; margin-top: 4px; }',
+            '.bsw-result-profit.bsw-pos { color: #4caf50; }',
+            '.bsw-result-profit.bsw-neg { color: #e57373; }',
+            '.bsw-history { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 10px; position: relative; z-index: 1; }',
+            '.bsw-history-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; border: 1px solid rgba(255,255,255,0.2); }',
+            '.bsw-quick-chips { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; position: relative; z-index: 1; }',
+            '.bsw-chip { background: rgba(212,160,23,0.15); border: 1px solid rgba(212,160,23,0.4); border-radius: 20px; padding: 4px 12px; color: #f5d76e; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }',
+            '.bsw-chip:hover { background: rgba(212,160,23,0.3); transform: scale(1.05); }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    // Segment configuration
+    var segments = [
+        { id: '1', label: '$1', payout: '1:1', color: '#e74c3c', count: 24 },
+        { id: '2', label: '$2', payout: '2:1', color: '#3498db', count: 15 },
+        { id: '5', label: '$5', payout: '5:1', color: '#2ecc71', count: 7 },
+        { id: '10', label: '$10', payout: '10:1', color: '#9b59b6', count: 4 },
+        { id: '20', label: '$20', payout: '20:1', color: '#f39c12', count: 2 },
+        { id: 'joker', label: 'JOKER', payout: '45:1', color: '#e91e63', count: 1 },
+        { id: 'logo', label: 'LOGO', payout: '45:1', color: '#00bcd4', count: 1 }
+    ];
+
+    var _bswSpinning = false;
+    var _bswHistory = [];
+
+    // Build widget container
+    var widget = document.createElement('div');
+    widget.className = 'bsw-widget';
+    widget.id = 'bigSixWheelWidget';
+
+    // Header
+    var header = document.createElement('div');
+    header.className = 'bsw-header';
+    var titleEl = document.createElement('span');
+    titleEl.className = 'bsw-title';
+    titleEl.textContent = '\uD83C\uDFA1 Big Six Wheel';
+    header.appendChild(titleEl);
+    widget.appendChild(header);
+
+    // Subtitle
+    var subtitle = document.createElement('div');
+    subtitle.className = 'bsw-subtitle';
+    subtitle.textContent = 'Place bets on segments \u2022 54 slots \u2022 Min $0.25 \u2022 Max $500';
+    widget.appendChild(subtitle);
+
+    // Quick chip buttons
+    var quickChips = document.createElement('div');
+    quickChips.className = 'bsw-quick-chips';
+    var chipValues = [0.25, 1, 5, 10, 25];
+    var inputEls = {};
+
+    chipValues.forEach(function(val) {
+        var chip = document.createElement('button');
+        chip.className = 'bsw-chip';
+        chip.textContent = typeof formatMoney === 'function' ? formatMoney(val) : '$' + val.toFixed(2);
+        chip.addEventListener('click', function() {
+            segments.forEach(function(seg) {
+                var inp = inputEls[seg.id];
+                if (inp) {
+                    var cur = parseFloat(inp.value) || 0;
+                    var next = Math.min(500, cur + val);
+                    inp.value = next > 0 ? next.toFixed(2) : '';
+                }
+            });
+            updateTotalBet();
+        });
+        quickChips.appendChild(chip);
+    });
+    widget.appendChild(quickChips);
+
+    // Segments grid
+    var segGrid = document.createElement('div');
+    segGrid.className = 'bsw-segments';
+
+    segments.forEach(function(seg) {
+        var segEl = document.createElement('div');
+        segEl.className = 'bsw-seg';
+        segEl.setAttribute('data-seg', seg.id);
+
+        var lbl = document.createElement('div');
+        lbl.className = 'bsw-seg-label';
+        lbl.style.color = seg.color;
+        lbl.textContent = seg.label;
+        segEl.appendChild(lbl);
+
+        var payoutInfo = document.createElement('div');
+        payoutInfo.className = 'bsw-seg-payout';
+        payoutInfo.textContent = seg.payout + ' (' + seg.count + ' slots)';
+        segEl.appendChild(payoutInfo);
+
+        var inp = document.createElement('input');
+        inp.type = 'number';
+        inp.className = 'bsw-seg-input';
+        inp.placeholder = '$0.00';
+        inp.min = '0';
+        inp.max = '500';
+        inp.step = '0.25';
+        inp.addEventListener('input', function() { updateTotalBet(); });
+        segEl.appendChild(inp);
+        inputEls[seg.id] = inp;
+
+        segGrid.appendChild(segEl);
+    });
+    widget.appendChild(segGrid);
+
+    // Controls row
+    var controls = document.createElement('div');
+    controls.className = 'bsw-controls';
+
+    var totalDisplay = document.createElement('span');
+    totalDisplay.className = 'bsw-total';
+    totalDisplay.textContent = 'Total Bet: ';
+    var totalVal = document.createElement('span');
+    totalVal.className = 'bsw-total-val';
+    totalVal.textContent = '$0.00';
+    totalDisplay.appendChild(totalVal);
+    controls.appendChild(totalDisplay);
+
+    var spinBtn = document.createElement('button');
+    spinBtn.className = 'bsw-spin-btn';
+    spinBtn.textContent = 'SPIN';
+    spinBtn.disabled = true;
+    controls.appendChild(spinBtn);
+
+    var clearBtn = document.createElement('button');
+    clearBtn.className = 'bsw-clear-btn';
+    clearBtn.textContent = 'Clear Bets';
+    controls.appendChild(clearBtn);
+
+    widget.appendChild(controls);
+
+    // Result area
+    var resultArea = document.createElement('div');
+    resultArea.className = 'bsw-result';
+
+    var resultWheel = document.createElement('div');
+    resultWheel.className = 'bsw-result-wheel';
+    resultWheel.textContent = '\uD83C\uDFA1';
+    resultArea.appendChild(resultWheel);
+
+    var resultLabel = document.createElement('div');
+    resultLabel.className = 'bsw-result-label';
+    resultArea.appendChild(resultLabel);
+
+    var resultDetail = document.createElement('div');
+    resultDetail.className = 'bsw-result-detail';
+    resultArea.appendChild(resultDetail);
+
+    var resultProfit = document.createElement('div');
+    resultProfit.className = 'bsw-result-profit';
+    resultArea.appendChild(resultProfit);
+
+    widget.appendChild(resultArea);
+
+    // History row
+    var historyRow = document.createElement('div');
+    historyRow.className = 'bsw-history';
+    widget.appendChild(historyRow);
+
+    // --- Helper functions ---
+
+    function updateTotalBet() {
+        var total = 0;
+        segments.forEach(function(seg) {
+            var val = parseFloat(inputEls[seg.id].value) || 0;
+            total += val;
+        });
+        totalVal.textContent = typeof formatMoney === 'function' ? formatMoney(total) : '$' + total.toFixed(2);
+        spinBtn.disabled = total <= 0 || _bswSpinning;
+    }
+
+    function getBets() {
+        var bets = {};
+        var hasBet = false;
+        segments.forEach(function(seg) {
+            var val = parseFloat(inputEls[seg.id].value) || 0;
+            if (val > 0) {
+                bets[seg.id] = val;
+                hasBet = true;
+            }
+        });
+        return hasBet ? bets : null;
+    }
+
+    function highlightResult(winnerId) {
+        var segEls = segGrid.querySelectorAll('.bsw-seg');
+        for (var i = 0; i < segEls.length; i++) {
+            var sid = segEls[i].getAttribute('data-seg');
+            if (sid === winnerId) {
+                segEls[i].classList.add('bsw-winner');
+                segEls[i].classList.remove('bsw-loser');
+            } else {
+                segEls[i].classList.remove('bsw-winner');
+                segEls[i].classList.add('bsw-loser');
+            }
+        }
+    }
+
+    function clearHighlights() {
+        var segEls = segGrid.querySelectorAll('.bsw-seg');
+        for (var i = 0; i < segEls.length; i++) {
+            segEls[i].classList.remove('bsw-winner', 'bsw-loser');
+        }
+    }
+
+    function getSegmentConfig(id) {
+        for (var i = 0; i < segments.length; i++) {
+            if (segments[i].id === id) return segments[i];
+        }
+        return null;
+    }
+
+    function addToHistory(segId) {
+        _bswHistory.push(segId);
+        if (_bswHistory.length > 20) _bswHistory.shift();
+        renderHistory();
+    }
+
+    function renderHistory() {
+        while (historyRow.firstChild) historyRow.removeChild(historyRow.firstChild);
+        _bswHistory.forEach(function(sid) {
+            var cfg = getSegmentConfig(sid);
+            if (!cfg) return;
+            var dot = document.createElement('div');
+            dot.className = 'bsw-history-dot';
+            dot.style.background = cfg.color;
+            dot.textContent = cfg.label.replace('$', '');
+            dot.title = cfg.label + ' (' + cfg.payout + ')';
+            historyRow.appendChild(dot);
+        });
+    }
+
+    function fmtMoney(x) {
+        return typeof formatMoney === 'function' ? formatMoney(x) : '$' + x.toFixed(2);
+    }
+
+    // --- Event handlers ---
+
+    clearBtn.addEventListener('click', function() {
+        segments.forEach(function(seg) {
+            inputEls[seg.id].value = '';
+        });
+        updateTotalBet();
+        clearHighlights();
+        resultLabel.textContent = '';
+        resultDetail.textContent = '';
+        resultProfit.textContent = '';
+        resultLabel.className = 'bsw-result-label';
+        resultProfit.className = 'bsw-result-profit';
+    });
+
+    spinBtn.addEventListener('click', function() {
+        if (_bswSpinning) return;
+        var bets = getBets();
+        if (!bets) return;
+
+        // Validate individual bets
+        var invalid = false;
+        Object.keys(bets).forEach(function(key) {
+            if (bets[key] < 0.25) { invalid = true; }
+            if (bets[key] > 500) { invalid = true; }
+        });
+        if (invalid) {
+            resultLabel.textContent = 'Bet must be $0.25 \u2013 $500 per segment';
+            resultLabel.className = 'bsw-result-label bsw-lose';
+            return;
+        }
+
+        _bswSpinning = true;
+        spinBtn.disabled = true;
+        spinBtn.classList.add('bsw-spinning');
+        spinBtn.textContent = 'SPINNING...';
+        clearHighlights();
+
+        // Animate wheel icon
+        resultWheel.classList.remove('bsw-anim');
+        void resultWheel.offsetWidth; // reflow
+        resultWheel.classList.add('bsw-anim');
+        resultLabel.textContent = '';
+        resultDetail.textContent = '';
+        resultProfit.textContent = '';
+        resultLabel.className = 'bsw-result-label';
+        resultProfit.className = 'bsw-result-profit';
+
+        var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+
+        fetch('/api/bigsixwheel/spin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + currentToken
+            },
+            body: JSON.stringify({ bets: bets })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(errData) {
+                    throw new Error(errData.error || 'Spin failed');
+                });
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            _bswSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.classList.remove('bsw-spinning');
+            spinBtn.textContent = 'SPIN';
+
+            // Delay result display for animation
+            setTimeout(function() {
+                var segCfg = getSegmentConfig(data.result);
+                var segLabel = segCfg ? segCfg.label : data.label || data.result;
+                var segColor = segCfg ? segCfg.color : '#f5d76e';
+
+                // Highlight winning segment
+                highlightResult(data.result);
+
+                // Add to history
+                addToHistory(data.result);
+
+                // Show result
+                var isWin = data.winAmount > 0;
+                resultLabel.textContent = 'Landed on: ' + segLabel;
+                resultLabel.className = 'bsw-result-label ' + (isWin ? 'bsw-win' : 'bsw-lose');
+                resultLabel.style.color = segColor;
+
+                var totalBet = data.totalBet || 0;
+                resultDetail.textContent = 'Bet: ' + fmtMoney(totalBet) + ' \u2022 Win: ' + fmtMoney(data.winAmount || 0);
+
+                var profit = (data.profit !== undefined) ? data.profit : ((data.winAmount || 0) - totalBet);
+                if (profit > 0) {
+                    resultProfit.textContent = '+' + fmtMoney(profit);
+                    resultProfit.className = 'bsw-result-profit bsw-pos';
+                } else if (profit < 0) {
+                    resultProfit.textContent = '-' + fmtMoney(Math.abs(profit));
+                    resultProfit.className = 'bsw-result-profit bsw-neg';
+                } else {
+                    resultProfit.textContent = 'Push';
+                    resultProfit.className = 'bsw-result-profit';
+                }
+
+                // Update balance
+                if (data.newBalance !== undefined && typeof updateBalanceDisplay === 'function') {
+                    updateBalanceDisplay(data.newBalance);
+                }
+
+                // Sound feedback
+                if (isWin && typeof SoundManager !== 'undefined' && typeof SoundManager.playSoundEvent === 'function') {
+                    SoundManager.playSoundEvent('win');
+                }
+
+                // Re-enable spin based on current bets
+                updateTotalBet();
+            }, 1300);
+        })
+        .catch(function(err) {
+            _bswSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.classList.remove('bsw-spinning');
+            spinBtn.textContent = 'SPIN';
+            resultLabel.textContent = err.message || 'Network error';
+            resultLabel.className = 'bsw-result-label bsw-lose';
+            updateTotalBet();
+        });
+    });
+
+    // Insert into lobby
+    var gamesGrid = document.querySelector('.games-grid');
+    if (!gamesGrid || !gamesGrid.parentNode) return;
     gamesGrid.parentNode.insertBefore(widget, gamesGrid);
 }

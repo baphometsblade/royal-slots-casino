@@ -897,7 +897,8 @@ const PROFILE_TABS = [
     { id: 'tower',        icon: '\u{1F5FC}', label: 'Tower' },
     { id: 'videopoker',   icon: '\u{1F0CF}', label: 'Video Poker' },
     { id: 'casinowar',    icon: '\u2694\uFE0F', label: 'Casino War' },
-    { id: 'threecardpoker', icon: '\u{1F0CF}', label: 'Three Card Poker' }
+    { id: 'threecardpoker', icon: '\u{1F0CF}', label: 'Three Card Poker' },
+    { id: 'letitride', icon: '\u{1F0CF}', label: 'Let It Ride' }
 ];
 
 function renderProfileSidebar() {
@@ -1001,6 +1002,7 @@ function renderProfileContent() {
         case 'videopoker':    renderVideoPokerTab(); break;
         case 'casinowar':     renderCasinoWarTab(); break;
         case 'threecardpoker': renderThreeCardPokerTab(); break;
+        case 'letitride': renderLetItRideTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -6455,4 +6457,585 @@ function renderThreeCardPokerWidget() {
     dealBtn.addEventListener('click', doDeal);
     playBtn.addEventListener('click', doPlay);
     foldBtn.addEventListener('click', doFold);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// LET IT RIDE TAB
+// ═══════════════════════════════════════════════════════
+
+function renderLetItRideTab() {
+    if (typeof renderLetItRideWidget === 'function') renderLetItRideWidget();
+}
+
+function renderLetItRideWidget() {
+    // Idempotency guard
+    if (document.getElementById('letItRideWidget')) return;
+
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // ── CSS injection with ID guard ──────────────────
+    if (!document.getElementById('let-it-ride-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'let-it-ride-css';
+        styleEl.textContent = [
+            '.lir-widget { background: linear-gradient(145deg, #1a3d1a, #0d260d); border-radius: 16px; padding: 24px; max-width: 600px; margin: 0 auto; border: 2px solid #2a5a2a; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }',
+            '.lir-title { font-size: 1.5rem; font-weight: 700; color: #fbbf24; text-align: center; margin-bottom: 16px; text-shadow: 0 2px 8px rgba(251,191,36,0.3); }',
+            '.lir-bet-row { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }',
+            '.lir-bet-label { color: #a3d9a3; font-size: 0.9rem; font-weight: 600; }',
+            '.lir-bet-input { width: 100px; padding: 8px 12px; border-radius: 8px; border: 1px solid #3a7a3a; background: #0a1f0a; color: #e2e8f0; font-size: 1rem; text-align: center; }',
+            '.lir-bet-input:focus { outline: none; border-color: #fbbf24; box-shadow: 0 0 8px rgba(251,191,36,0.3); }',
+            '.lir-deal-btn { padding: 10px 32px; border-radius: 10px; border: none; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; text-transform: uppercase; letter-spacing: 1px; }',
+            '.lir-deal-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.4); }',
+            '.lir-deal-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }',
+            '.lir-spots-row { display: flex; justify-content: center; gap: 16px; margin-bottom: 16px; }',
+            '.lir-spot { padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; min-width: 80px; transition: all 0.3s; }',
+            '.lir-spot-active { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: 2px solid #4ade80; box-shadow: 0 0 12px rgba(34,197,94,0.4); }',
+            '.lir-spot-pulled { background: #1a1a2e; color: #6b7280; border: 2px dashed #374151; text-decoration: line-through; }',
+            '.lir-cards-area { display: flex; justify-content: center; gap: 10px; margin: 16px 0; min-height: 110px; align-items: center; flex-wrap: wrap; }',
+            '.lir-card { width: 70px; height: 100px; border-radius: 10px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid #e5e7eb; transition: transform 0.3s, box-shadow 0.3s; }',
+            '.lir-card.red { color: #dc2626; }',
+            '.lir-card.black { color: #1a1a2e; }',
+            '.lir-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }',
+            '.lir-card-rank { font-size: 1.3rem; line-height: 1; }',
+            '.lir-card-suit { font-size: 1.5rem; line-height: 1; }',
+            '.lir-card-facedown { width: 70px; height: 100px; border-radius: 10px; background: linear-gradient(135deg, #1e40af, #3b82f6); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 2px solid #60a5fa; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }',
+            '.lir-community-label { color: #94a3b8; font-size: 0.8rem; text-align: center; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }',
+            '.lir-divider { border: none; border-top: 1px solid #2a5a2a; margin: 14px 0; }',
+            '.lir-actions { display: flex; justify-content: center; gap: 12px; margin: 16px 0; flex-wrap: wrap; }',
+            '.lir-pullback-btn { padding: 10px 24px; border-radius: 10px; border: 2px solid #ef4444; background: transparent; color: #ef4444; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }',
+            '.lir-pullback-btn:hover { background: #ef4444; color: #fff; }',
+            '.lir-letride-btn { padding: 10px 24px; border-radius: 10px; border: 2px solid #22c55e; background: transparent; color: #22c55e; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }',
+            '.lir-letride-btn:hover { background: #22c55e; color: #fff; }',
+            '.lir-result { text-align: center; padding: 14px; border-radius: 12px; margin: 12px 0; font-size: 1.1rem; font-weight: 700; }',
+            '.lir-result-win { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(16,185,129,0.1)); border: 2px solid #22c55e; color: #4ade80; }',
+            '.lir-result-lose { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.1)); border: 2px solid #ef4444; color: #f87171; }',
+            '.lir-result-push { background: linear-gradient(135deg, rgba(148,163,184,0.2), rgba(100,116,139,0.1)); border: 2px solid #64748b; color: #94a3b8; }',
+            '.lir-status { text-align: center; color: #94a3b8; font-size: 0.9rem; margin: 8px 0; min-height: 24px; }',
+            '.lir-paytable { margin-top: 16px; border-radius: 10px; overflow: hidden; border: 1px solid #2a5a2a; }',
+            '.lir-paytable-title { background: #0d260d; color: #fbbf24; padding: 8px; text-align: center; font-weight: 700; font-size: 0.9rem; }',
+            '.lir-paytable-grid { display: grid; grid-template-columns: 1fr auto; }',
+            '.lir-paytable-hand { padding: 5px 12px; background: #132613; color: #d1d5db; font-size: 0.8rem; border-bottom: 1px solid #1a3d1a; }',
+            '.lir-paytable-pay { padding: 5px 12px; background: #132613; color: #fbbf24; font-size: 0.8rem; font-weight: 600; text-align: right; border-bottom: 1px solid #1a3d1a; }',
+            '.lir-total-bet { color: #fbbf24; font-size: 0.85rem; text-align: center; margin-bottom: 8px; font-weight: 600; }',
+            '@media (max-width: 480px) { .lir-card, .lir-card-facedown { width: 56px; height: 82px; } .lir-card-rank { font-size: 1rem; } .lir-card-suit { font-size: 1.2rem; } }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var profileContent = document.querySelector('.profile-tab-content') || document.querySelector('.profile-content');
+    if (!profileContent) return;
+
+    // ── State ────────────────────────────────────────
+    var lirState = {
+        gameId: null,
+        bet: 1,
+        phase: 'idle',  // idle | dealt | decision1 | decision2 | result
+        playerCards: [],
+        community: [null, null],
+        spots: [true, true, true], // [bet1, bet2, base] — base always stays
+        busy: false
+    };
+
+    // ── Build widget ─────────────────────────────────
+    var widget = document.createElement('div');
+    widget.id = 'letItRideWidget';
+    widget.className = 'lir-widget';
+
+    // Title
+    var title = document.createElement('div');
+    title.className = 'lir-title';
+    title.textContent = '\u{1F0CF} Let It Ride';
+    widget.appendChild(title);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'lir-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.className = 'lir-bet-label';
+    betLabel.textContent = 'Bet per spot: $';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'lir-bet-input';
+    betInput.min = '0.50';
+    betInput.max = '100';
+    betInput.step = '0.50';
+    betInput.value = '1.00';
+    betRow.appendChild(betInput);
+
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'lir-deal-btn';
+    dealBtn.textContent = 'DEAL';
+    betRow.appendChild(dealBtn);
+
+    widget.appendChild(betRow);
+
+    // Total bet display
+    var totalBetEl = document.createElement('div');
+    totalBetEl.className = 'lir-total-bet';
+    totalBetEl.textContent = 'Total wager: $3.00 (3 spots)';
+    widget.appendChild(totalBetEl);
+
+    // Bet spots indicator
+    var spotsRow = document.createElement('div');
+    spotsRow.className = 'lir-spots-row';
+    var spotEls = [];
+    var spotLabels = ['Bet 1', 'Bet 2', 'Base'];
+    for (var si = 0; si < 3; si++) {
+        var spot = document.createElement('div');
+        spot.className = 'lir-spot lir-spot-active';
+        spot.textContent = spotLabels[si] + ': $1.00';
+        spotsRow.appendChild(spot);
+        spotEls.push(spot);
+    }
+    widget.appendChild(spotsRow);
+
+    // Status
+    var statusEl = document.createElement('div');
+    statusEl.className = 'lir-status';
+    statusEl.textContent = 'Place your bet and deal to begin';
+    widget.appendChild(statusEl);
+
+    // Player cards label
+    var playerLabel = document.createElement('div');
+    playerLabel.className = 'lir-community-label';
+    playerLabel.textContent = 'Your Cards';
+    playerLabel.style.display = 'none';
+    widget.appendChild(playerLabel);
+
+    // Player cards area
+    var playerArea = document.createElement('div');
+    playerArea.className = 'lir-cards-area';
+    widget.appendChild(playerArea);
+
+    // Divider
+    var divider = document.createElement('hr');
+    divider.className = 'lir-divider';
+    divider.style.display = 'none';
+    widget.appendChild(divider);
+
+    // Community cards label
+    var commLabel = document.createElement('div');
+    commLabel.className = 'lir-community-label';
+    commLabel.textContent = 'Community Cards';
+    commLabel.style.display = 'none';
+    widget.appendChild(commLabel);
+
+    // Community cards area
+    var communityArea = document.createElement('div');
+    communityArea.className = 'lir-cards-area';
+    widget.appendChild(communityArea);
+
+    // Actions area
+    var actionsRow = document.createElement('div');
+    actionsRow.className = 'lir-actions';
+    actionsRow.style.display = 'none';
+
+    var pullBackBtn = document.createElement('button');
+    pullBackBtn.className = 'lir-pullback-btn';
+    pullBackBtn.textContent = 'PULL BACK BET';
+    actionsRow.appendChild(pullBackBtn);
+
+    var letRideBtn = document.createElement('button');
+    letRideBtn.className = 'lir-letride-btn';
+    letRideBtn.textContent = 'LET IT RIDE';
+    actionsRow.appendChild(letRideBtn);
+
+    widget.appendChild(actionsRow);
+
+    // Result area
+    var resultEl = document.createElement('div');
+    resultEl.className = 'lir-result';
+    resultEl.style.display = 'none';
+    widget.appendChild(resultEl);
+
+    // Paytable
+    var paytable = document.createElement('div');
+    paytable.className = 'lir-paytable';
+
+    var ptTitle = document.createElement('div');
+    ptTitle.className = 'lir-paytable-title';
+    ptTitle.textContent = 'PAYTABLE';
+    paytable.appendChild(ptTitle);
+
+    var ptGrid = document.createElement('div');
+    ptGrid.className = 'lir-paytable-grid';
+
+    var payouts = [
+        ['Royal Flush', '1000:1'],
+        ['Straight Flush', '200:1'],
+        ['Four of a Kind', '50:1'],
+        ['Full House', '11:1'],
+        ['Flush', '8:1'],
+        ['Straight', '5:1'],
+        ['Three of a Kind', '3:1'],
+        ['Two Pair', '2:1'],
+        ['Pair (10s or better)', '1:1']
+    ];
+    for (var pi = 0; pi < payouts.length; pi++) {
+        var handCell = document.createElement('div');
+        handCell.className = 'lir-paytable-hand';
+        handCell.textContent = payouts[pi][0];
+        ptGrid.appendChild(handCell);
+
+        var payCell = document.createElement('div');
+        payCell.className = 'lir-paytable-pay';
+        payCell.textContent = payouts[pi][1];
+        ptGrid.appendChild(payCell);
+    }
+    paytable.appendChild(ptGrid);
+    widget.appendChild(paytable);
+
+    profileContent.appendChild(widget);
+
+    // ── Helpers ──────────────────────────────────────
+
+    function fmtMoney(v) {
+        return typeof formatMoney === 'function' ? formatMoney(v) : '$' + v.toFixed(2);
+    }
+
+    function renderCard(card, parentEl) {
+        var cardEl = document.createElement('div');
+        var isRed = (card.suit === '\u2665' || card.suit === '\u2666');
+        cardEl.className = 'lir-card ' + (isRed ? 'red' : 'black');
+        var rankSpan = document.createElement('span');
+        rankSpan.className = 'lir-card-rank';
+        rankSpan.textContent = card.rank;
+        cardEl.appendChild(rankSpan);
+        var suitSpan = document.createElement('span');
+        suitSpan.className = 'lir-card-suit';
+        suitSpan.textContent = card.suit;
+        cardEl.appendChild(suitSpan);
+        parentEl.appendChild(cardEl);
+        return cardEl;
+    }
+
+    function renderFacedown(parentEl) {
+        var fd = document.createElement('div');
+        fd.className = 'lir-card-facedown';
+        fd.textContent = '\u{1F0A0}';
+        parentEl.appendChild(fd);
+        return fd;
+    }
+
+    function setStatus(msg) {
+        statusEl.textContent = msg;
+    }
+
+    function updateSpots() {
+        for (var i = 0; i < 3; i++) {
+            if (lirState.spots[i]) {
+                spotEls[i].className = 'lir-spot lir-spot-active';
+                spotEls[i].textContent = spotLabels[i] + ': ' + fmtMoney(lirState.bet);
+            } else {
+                spotEls[i].className = 'lir-spot lir-spot-pulled';
+                spotEls[i].textContent = spotLabels[i] + ': pulled';
+            }
+        }
+    }
+
+    function updateTotalBet() {
+        var total = lirState.bet * 3;
+        totalBetEl.textContent = 'Total wager: ' + fmtMoney(total) + ' (3 spots)';
+    }
+
+    function showPlayerCards() {
+        playerArea.innerHTML = '';
+        playerLabel.style.display = 'block';
+        for (var i = 0; i < lirState.playerCards.length; i++) {
+            renderCard(lirState.playerCards[i], playerArea);
+        }
+    }
+
+    function showCommunityCards() {
+        communityArea.innerHTML = '';
+        commLabel.style.display = 'block';
+        divider.style.display = 'block';
+        for (var i = 0; i < 2; i++) {
+            if (lirState.community[i]) {
+                renderCard(lirState.community[i], communityArea);
+            } else {
+                renderFacedown(communityArea);
+            }
+        }
+    }
+
+    function resetUI() {
+        lirState.phase = 'idle';
+        lirState.gameId = null;
+        lirState.playerCards = [];
+        lirState.community = [null, null];
+        lirState.spots = [true, true, true];
+        lirState.busy = false;
+        playerArea.innerHTML = '';
+        communityArea.innerHTML = '';
+        playerLabel.style.display = 'none';
+        commLabel.style.display = 'none';
+        divider.style.display = 'none';
+        actionsRow.style.display = 'none';
+        resultEl.style.display = 'none';
+        dealBtn.disabled = false;
+        dealBtn.textContent = 'DEAL';
+        betInput.disabled = false;
+        updateSpots();
+        setStatus('Place your bet and deal to begin');
+    }
+
+    // ── Bet input change ────────────────────────────
+    betInput.addEventListener('input', function() {
+        var val = parseFloat(betInput.value);
+        if (isNaN(val) || val < 0.50) val = 0.50;
+        if (val > 100) val = 100;
+        lirState.bet = val;
+        updateTotalBet();
+        updateSpots();
+    });
+
+    // ── DEAL ─────────────────────────────────────────
+    function doDeal() {
+        if (lirState.busy) return;
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.50 || bet > 100) {
+            setStatus('Bet must be between $0.50 and $100.00 per spot');
+            return;
+        }
+        lirState.bet = bet;
+        lirState.busy = true;
+        dealBtn.disabled = true;
+        betInput.disabled = true;
+        setStatus('Dealing...');
+        resultEl.style.display = 'none';
+
+        fetch('/api/letitride/deal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ bet: lirState.bet })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                setStatus(data.error);
+                lirState.busy = false;
+                dealBtn.disabled = false;
+                betInput.disabled = false;
+                return;
+            }
+            lirState.gameId = data.gameId;
+            lirState.playerCards = data.playerCards;
+            lirState.phase = 'decision1';
+            lirState.spots = [true, true, true];
+            lirState.community = [null, null];
+
+            updateTotalBet();
+            updateSpots();
+            showPlayerCards();
+            showCommunityCards();
+
+            // Show decision buttons
+            pullBackBtn.textContent = 'PULL BACK BET 1';
+            actionsRow.style.display = 'flex';
+            setStatus('Decision 1: Pull back Bet 1 or Let It Ride?');
+            lirState.busy = false;
+        })
+        .catch(function(err) {
+            console.error('[LIR] Deal error:', err);
+            setStatus('Network error — try again');
+            lirState.busy = false;
+            dealBtn.disabled = false;
+            betInput.disabled = false;
+        });
+    }
+
+    // ── DECISION 1 ───────────────────────────────────
+    function doDecision1(pullBack) {
+        if (lirState.busy || lirState.phase !== 'decision1') return;
+        lirState.busy = true;
+        actionsRow.style.display = 'none';
+        setStatus(pullBack ? 'Pulling back Bet 1...' : 'Letting it ride...');
+
+        fetch('/api/letitride/decide1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ gameId: lirState.gameId, pullBack: pullBack })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                setStatus(data.error);
+                lirState.busy = false;
+                actionsRow.style.display = 'flex';
+                return;
+            }
+
+            if (data.pulledBack) {
+                lirState.spots[0] = false;
+            }
+            lirState.community[0] = data.community1;
+            lirState.phase = 'decision2';
+
+            updateSpots();
+            showCommunityCards();
+
+            // Show decision 2 buttons
+            pullBackBtn.textContent = 'PULL BACK BET 2';
+            actionsRow.style.display = 'flex';
+            setStatus('Decision 2: Pull back Bet 2 or Let It Ride?');
+            lirState.busy = false;
+        })
+        .catch(function(err) {
+            console.error('[LIR] Decision 1 error:', err);
+            setStatus('Network error — try again');
+            lirState.busy = false;
+            actionsRow.style.display = 'flex';
+        });
+    }
+
+    // ── DECISION 2 ───────────────────────────────────
+    function doDecision2(pullBack) {
+        if (lirState.busy || lirState.phase !== 'decision2') return;
+        lirState.busy = true;
+        actionsRow.style.display = 'none';
+        setStatus(pullBack ? 'Pulling back Bet 2...' : 'Letting it ride...');
+
+        fetch('/api/letitride/decide2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ gameId: lirState.gameId, pullBack: pullBack })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                setStatus(data.error);
+                lirState.busy = false;
+                actionsRow.style.display = 'flex';
+                return;
+            }
+
+            if (pullBack) {
+                lirState.spots[1] = false;
+            }
+            lirState.community[1] = data.community2;
+            lirState.phase = 'result';
+
+            updateSpots();
+
+            // Show all 5 cards in player area
+            playerArea.innerHTML = '';
+            if (data.allCards && data.allCards.length) {
+                for (var ci = 0; ci < data.allCards.length; ci++) {
+                    renderCard(data.allCards[ci], playerArea);
+                }
+            } else {
+                showPlayerCards();
+            }
+
+            // Show revealed community
+            showCommunityCards();
+
+            // Show result
+            var handName = data.hand ? data.hand.name : 'No qualifying hand';
+            var payout = data.payout || 0;
+            var profit = data.profit || 0;
+            var activeBets = data.activeBets || 0;
+
+            resultEl.innerHTML = '';
+            resultEl.style.display = 'block';
+
+            var handLine = document.createElement('div');
+            handLine.style.fontSize = '1.3rem';
+            handLine.style.marginBottom = '6px';
+            handLine.textContent = handName;
+            resultEl.appendChild(handLine);
+
+            if (payout > 0) {
+                resultEl.className = 'lir-result lir-result-win';
+                var payLine = document.createElement('div');
+                payLine.textContent = 'Payout: ' + fmtMoney(payout) + ' on ' + activeBets + ' active bet' + (activeBets !== 1 ? 's' : '');
+                resultEl.appendChild(payLine);
+
+                var profitLine = document.createElement('div');
+                profitLine.style.fontSize = '0.9rem';
+                profitLine.style.marginTop = '4px';
+                profitLine.textContent = 'Profit: ' + fmtMoney(profit);
+                resultEl.appendChild(profitLine);
+
+                if (data.multiplier) {
+                    var multLine = document.createElement('div');
+                    multLine.style.fontSize = '0.85rem';
+                    multLine.style.color = '#fbbf24';
+                    multLine.style.marginTop = '2px';
+                    multLine.textContent = 'Multiplier: ' + data.multiplier + ':1';
+                    resultEl.appendChild(multLine);
+                }
+            } else if (payout === 0 && profit === 0) {
+                resultEl.className = 'lir-result lir-result-push';
+                var pushLine = document.createElement('div');
+                pushLine.textContent = 'Push — bets returned';
+                resultEl.appendChild(pushLine);
+            } else {
+                resultEl.className = 'lir-result lir-result-lose';
+                var loseLine = document.createElement('div');
+                loseLine.textContent = 'No payout — lost ' + fmtMoney(Math.abs(profit));
+                resultEl.appendChild(loseLine);
+            }
+
+            // Update balance
+            if (typeof data.newBalance === 'number') {
+                if (typeof updateBalanceDisplay === 'function') {
+                    updateBalanceDisplay(data.newBalance);
+                }
+            }
+
+            setStatus('Hand complete. Deal again to play.');
+            dealBtn.disabled = false;
+            dealBtn.textContent = 'DEAL AGAIN';
+            lirState.busy = false;
+        })
+        .catch(function(err) {
+            console.error('[LIR] Decision 2 error:', err);
+            setStatus('Network error — try again');
+            lirState.busy = false;
+            actionsRow.style.display = 'flex';
+        });
+    }
+
+    // ── Wire events ──────────────────────────────────
+    dealBtn.addEventListener('click', function() {
+        if (lirState.phase === 'idle' || lirState.phase === 'result') {
+            resetUI();
+            lirState.bet = parseFloat(betInput.value) || 1;
+            doDeal();
+        }
+    });
+
+    pullBackBtn.addEventListener('click', function() {
+        if (lirState.phase === 'decision1') {
+            doDecision1(true);
+        } else if (lirState.phase === 'decision2') {
+            doDecision2(true);
+        }
+    });
+
+    letRideBtn.addEventListener('click', function() {
+        if (lirState.phase === 'decision1') {
+            doDecision1(false);
+        } else if (lirState.phase === 'decision2') {
+            doDecision2(false);
+        }
+    });
 }
