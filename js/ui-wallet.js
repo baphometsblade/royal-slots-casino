@@ -107,6 +107,7 @@ function showWalletModal() {
     if (typeof walletRenderSubscriptionSection === 'function') walletRenderSubscriptionSection(modal);
     // Render the Loyalty Shop redeem-points section
     if (typeof walletRenderLoyaltyShopSection === 'function') walletRenderLoyaltyShopSection(modal);
+    if (typeof renderLimboCard === 'function') renderLimboCard(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -4426,5 +4427,240 @@ async function walletRenderLoyaltyShopSection(parentContainer) {
             redeemBtn.textContent = 'Redeem';
             redeemBtn.disabled = false;
         }
+    });
+}
+
+// ── Limbo Quick-Game Card ──────────────────────────────────────────────
+function renderLimboCard(parentContainer) {
+    if (document.getElementById('limboCard')) return;
+
+    // ── inject CSS once ──
+    if (!document.getElementById('limbo-card-css')) {
+        var style = document.createElement('style');
+        style.id = 'limbo-card-css';
+        style.textContent = [
+            '#limboCard { background:linear-gradient(135deg,rgba(30,20,50,0.95),rgba(15,10,35,0.98)); border:1px solid rgba(167,139,250,0.3); border-radius:16px; padding:20px 24px; margin:18px 20px; box-shadow:0 4px 24px rgba(0,0,0,0.3); }',
+            '#limboCard .limbo-title { font-size:18px; font-weight:700; color:#e0d4ff; margin-bottom:14px; display:flex; align-items:center; gap:8px; }',
+            '#limboCard .limbo-row { display:flex; gap:12px; margin-bottom:10px; align-items:center; flex-wrap:wrap; }',
+            '#limboCard .limbo-field { display:flex; flex-direction:column; gap:4px; flex:1; min-width:100px; }',
+            '#limboCard .limbo-field label { font-size:12px; color:#a5b4fc; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }',
+            '#limboCard .limbo-field input { background:rgba(255,255,255,0.06); border:1px solid rgba(167,139,250,0.25); border-radius:8px; padding:8px 12px; color:#fff; font-size:15px; font-weight:600; outline:none; width:100%; box-sizing:border-box; }',
+            '#limboCard .limbo-field input:focus { border-color:rgba(167,139,250,0.6); box-shadow:0 0 8px rgba(167,139,250,0.15); }',
+            '#limboCard .limbo-info { display:flex; gap:18px; margin-bottom:14px; flex-wrap:wrap; }',
+            '#limboCard .limbo-stat { font-size:13px; color:#c4b5fd; }',
+            '#limboCard .limbo-stat span { font-weight:700; color:#e0d4ff; }',
+            '#limboCard .limbo-play-btn { width:100%; padding:12px; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; background:linear-gradient(135deg,#7c3aed,#6d28d9); color:#fff; letter-spacing:0.5px; transition:all 0.2s; }',
+            '#limboCard .limbo-play-btn:hover:not(:disabled) { background:linear-gradient(135deg,#8b5cf6,#7c3aed); transform:translateY(-1px); box-shadow:0 4px 16px rgba(124,58,237,0.3); }',
+            '#limboCard .limbo-play-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }',
+            '#limboCard .limbo-result { margin-top:14px; padding:12px 16px; border-radius:10px; text-align:center; font-size:14px; font-weight:600; display:none; }',
+            '#limboCard .limbo-result.win { background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3); color:#4ade80; }',
+            '#limboCard .limbo-result.loss { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#f87171; }',
+            '#limboCard .limbo-result-multiplier { font-size:28px; font-weight:800; margin-bottom:4px; }',
+            '#limboCard .limbo-result-text { font-size:13px; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // ── build card ──
+    var card = document.createElement('div');
+    card.id = 'limboCard';
+
+    var title = document.createElement('div');
+    title.className = 'limbo-title';
+    title.textContent = '\u26A1 Limbo \u2014 Quick Bet';
+    card.appendChild(title);
+
+    // Row: bet + target
+    var row = document.createElement('div');
+    row.className = 'limbo-row';
+
+    var betField = document.createElement('div');
+    betField.className = 'limbo-field';
+    var betLabel = document.createElement('label');
+    betLabel.textContent = 'Bet Amount ($)';
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.id = 'limboBetInput';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betField.appendChild(betLabel);
+    betField.appendChild(betInput);
+    row.appendChild(betField);
+
+    var targetField = document.createElement('div');
+    targetField.className = 'limbo-field';
+    var targetLabel = document.createElement('label');
+    targetLabel.textContent = 'Target Multiplier';
+    var targetInput = document.createElement('input');
+    targetInput.type = 'number';
+    targetInput.id = 'limboTargetInput';
+    targetInput.min = '1.01';
+    targetInput.step = '0.01';
+    targetInput.value = '2.00';
+    targetField.appendChild(targetLabel);
+    targetField.appendChild(targetInput);
+    row.appendChild(targetField);
+
+    card.appendChild(row);
+
+    // Info: win chance + potential payout
+    var info = document.createElement('div');
+    info.className = 'limbo-info';
+
+    var chanceStat = document.createElement('div');
+    chanceStat.className = 'limbo-stat';
+    chanceStat.textContent = 'Win chance: ';
+    var chanceVal = document.createElement('span');
+    chanceVal.id = 'limboChanceVal';
+    chanceVal.textContent = '48.5%';
+    chanceStat.appendChild(chanceVal);
+    info.appendChild(chanceStat);
+
+    var payoutStat = document.createElement('div');
+    payoutStat.className = 'limbo-stat';
+    payoutStat.textContent = 'Potential payout: ';
+    var payoutVal = document.createElement('span');
+    payoutVal.id = 'limboPayoutVal';
+    payoutVal.textContent = '$2.00';
+    payoutStat.appendChild(payoutVal);
+    info.appendChild(payoutStat);
+
+    card.appendChild(info);
+
+    // Play button
+    var playBtn = document.createElement('button');
+    playBtn.className = 'limbo-play-btn';
+    playBtn.id = 'limboPlayBtn';
+    playBtn.textContent = 'PLAY';
+    card.appendChild(playBtn);
+
+    // Result area
+    var resultDiv = document.createElement('div');
+    resultDiv.className = 'limbo-result';
+    resultDiv.id = 'limboResultArea';
+    var resultMult = document.createElement('div');
+    resultMult.className = 'limbo-result-multiplier';
+    resultMult.id = 'limboResultMult';
+    resultDiv.appendChild(resultMult);
+    var resultText = document.createElement('div');
+    resultText.className = 'limbo-result-text';
+    resultText.id = 'limboResultText';
+    resultDiv.appendChild(resultText);
+    card.appendChild(resultDiv);
+
+    parentContainer.appendChild(card);
+
+    // ── helpers ──
+    function updateLimboInfo() {
+        var t = parseFloat(targetInput.value) || 1.01;
+        if (t < 1.01) t = 1.01;
+        var b = parseFloat(betInput.value) || 0.25;
+        if (b < 0.25) b = 0.25;
+        var chance = Math.min(97, (0.97 / t) * 100).toFixed(1);
+        chanceVal.textContent = chance + '%';
+        payoutVal.textContent = '$' + (b * t).toFixed(2);
+    }
+
+    betInput.addEventListener('input', updateLimboInfo);
+    targetInput.addEventListener('input', updateLimboInfo);
+
+    // ── animated counter ──
+    function animateLimboCounter(from, to, duration, callback) {
+        var start = performance.now();
+        var el = document.getElementById('limboResultMult');
+        if (!el) { callback(); return; }
+        function tick(now) {
+            var elapsed = now - start;
+            var progress = Math.min(elapsed / duration, 1);
+            // ease-out cubic
+            var ease = 1 - Math.pow(1 - progress, 3);
+            var current = from + (to - from) * ease;
+            el.textContent = current.toFixed(2) + 'x';
+            if (progress < 1) {
+                requestAnimationFrame(tick);
+            } else {
+                el.textContent = to.toFixed(2) + 'x';
+                callback();
+            }
+        }
+        requestAnimationFrame(tick);
+    }
+
+    // ── play handler ──
+    playBtn.addEventListener('click', async function() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+            if (typeof showToast === 'function') showToast('Please log in to play Limbo.', 'error');
+            return;
+        }
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) {
+            if (typeof showToast === 'function') showToast('Please log in to play Limbo.', 'error');
+            return;
+        }
+
+        var bet = parseFloat(betInput.value);
+        var target = parseFloat(targetInput.value);
+        if (!bet || bet < 0.25) {
+            if (typeof showToast === 'function') showToast('Minimum bet is $0.25', 'error');
+            return;
+        }
+        if (!target || target < 1.01) {
+            if (typeof showToast === 'function') showToast('Minimum target is 1.01x', 'error');
+            return;
+        }
+
+        playBtn.disabled = true;
+        playBtn.textContent = 'PLAYING...';
+        resultDiv.style.display = 'none';
+        resultDiv.classList.remove('win', 'loss');
+
+        try {
+            var resp = await fetch('/api/limbo/play', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ bet: bet, target: target })
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast((data && data.error) || 'Limbo play failed', 'error');
+                playBtn.disabled = false;
+                playBtn.textContent = 'PLAY';
+                return;
+            }
+
+            // Show result with animated counter
+            resultDiv.style.display = 'block';
+            var resultVal = parseFloat(data.result) || 1.0;
+            var isWin = !!data.win;
+
+            resultDiv.classList.remove('win', 'loss');
+            resultMult.textContent = '1.00x';
+            resultText.textContent = '';
+
+            animateLimboCounter(1.0, resultVal, 800, function() {
+                resultDiv.classList.add(isWin ? 'win' : 'loss');
+                if (isWin) {
+                    resultText.textContent = 'You won $' + Number(data.payout).toFixed(2) + '!';
+                } else {
+                    resultText.textContent = 'You lost $' + Number(bet).toFixed(2);
+                }
+            });
+
+            if (isWin && data.newBalance !== undefined) {
+                if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(data.newBalance);
+            } else if (data.newBalance !== undefined) {
+                if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(data.newBalance);
+            }
+        } catch (e) {
+            console.error('Limbo play error:', e);
+            if (typeof showToast === 'function') showToast('Network error. Please try again.', 'error');
+        }
+
+        playBtn.disabled = false;
+        playBtn.textContent = 'PLAY';
     });
 }

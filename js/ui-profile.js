@@ -893,7 +893,8 @@ const PROFILE_TABS = [
     { id: 'milestones',   icon: '\u{1F3C6}', label: 'Milestones' },
     { id: 'achievements', icon: '\u{1F396}\uFE0F', label: 'Achievements' },
     { id: 'referral',     icon: '\u{1F465}', label: 'Referral' },
-    { id: 'cosmetics',    icon: '\u{1F3A8}', label: 'Cosmetics' }
+    { id: 'cosmetics',    icon: '\u{1F3A8}', label: 'Cosmetics' },
+    { id: 'tower',        icon: '\u{1F5FC}', label: 'Tower' }
 ];
 
 function renderProfileSidebar() {
@@ -993,6 +994,7 @@ function renderProfileContent() {
         case 'achievements':  renderAchievementsTab(); break;
         case 'referral':      renderReferralTab(); break;
         case 'cosmetics':     renderCosmeticsTab(); break;
+        case 'tower':         renderTowerTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -3545,6 +3547,10 @@ function renderAchievementsTab() {
     }
 }
 
+function renderTowerTab() {
+    if (typeof renderTowerGameWidget === 'function') renderTowerGameWidget();
+}
+
 
 // ═══════════════════════════════════════════════════════
 // REFERRAL TAB
@@ -4354,4 +4360,434 @@ function _renderAchievementsSection() {
         errDiv.textContent = 'Failed to load achievements. Please try again later.';
         section.appendChild(errDiv);
     });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// TOWER CLIMB MINI-GAME
+// ═══════════════════════════════════════════════════════
+
+function renderTowerGameWidget() {
+    // Idempotency guard
+    if (document.getElementById('towerGameWidget')) return;
+
+    // CSS injection with ID guard
+    if (!document.getElementById('tower-game-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'tower-game-css';
+        styleEl.textContent = [
+            '.tower-widget { padding: 20px; max-width: 420px; margin: 0 auto; }',
+            '.tower-widget-title { font-size: 1.4em; font-weight: bold; color: #fff; margin-bottom: 16px; text-align: center; }',
+            '.tower-setup { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; justify-content: center; }',
+            '.tower-bet-label { color: #aaa; font-size: 0.9em; }',
+            '.tower-bet-input { width: 80px; padding: 6px 8px; border-radius: 6px; border: 1px solid #555; background: #1a1a2e; color: #fff; font-size: 1em; text-align: center; }',
+            '.tower-risk-btns { display: flex; gap: 4px; }',
+            '.tower-risk-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid #555; background: #2a2a4a; color: #ccc; cursor: pointer; font-size: 0.85em; transition: all 0.15s; }',
+            '.tower-risk-btn:hover { border-color: #88f; color: #fff; }',
+            '.tower-risk-btn.selected { background: #3a3a8a; border-color: #88f; color: #fff; }',
+            '.tower-start-btn { padding: 8px 20px; border-radius: 6px; border: none; background: linear-gradient(135deg, #4a4aff, #6a6aff); color: #fff; font-weight: bold; cursor: pointer; font-size: 1em; transition: opacity 0.15s; }',
+            '.tower-start-btn:hover { opacity: 0.85; }',
+            '.tower-start-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.tower-grid { display: flex; flex-direction: column-reverse; gap: 3px; margin: 16px 0; }',
+            '.tower-row { display: flex; gap: 3px; justify-content: center; align-items: center; }',
+            '.tower-row-label { width: 28px; text-align: right; color: #666; font-size: 0.75em; margin-right: 4px; }',
+            '.tower-tile { width: 50px; height: 35px; border-radius: 4px; background: #2a2a4a; border: 1px solid #555; cursor: default; display: flex; align-items: center; justify-content: center; font-size: 1.1em; transition: all 0.2s; }',
+            '.tower-tile.active { background: #3a3a6a; border-color: #88f; cursor: pointer; }',
+            '.tower-tile.active:hover { background: #4a4a8a; border-color: #aaf; }',
+            '.tower-tile.safe { background: #1a5a2a; border-color: #2d8; }',
+            '.tower-tile.mine { background: #5a1a1a; border-color: #d44; }',
+            '.tower-info-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }',
+            '.tower-multiplier { color: #ffd700; font-size: 1.2em; font-weight: bold; }',
+            '.tower-cashout-btn { padding: 8px 18px; border-radius: 6px; border: none; background: linear-gradient(135deg, #2d8a4e, #3ab06a); color: #fff; font-weight: bold; cursor: pointer; font-size: 0.95em; transition: opacity 0.15s; }',
+            '.tower-cashout-btn:hover { opacity: 0.85; }',
+            '.tower-cashout-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.tower-status { text-align: center; padding: 10px; font-size: 1.1em; font-weight: bold; min-height: 36px; }',
+            '.tower-status.win { color: #2d8; }',
+            '.tower-status.lose { color: #d44; }',
+            '.tower-status.info { color: #88f; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    // State
+    var towerState = {
+        gameId: null,
+        active: false,
+        risk: 'easy',
+        bet: 1.00,
+        currentRow: 0,
+        multiplier: 1.00,
+        totalRows: 10,
+        tilesPerRow: 4,
+        minesPerRow: 1,
+        minePositions: null
+    };
+
+    var RISK_CONFIG = {
+        easy:   { tiles: 4, mines: 1 },
+        medium: { tiles: 3, mines: 1 },
+        hard:   { tiles: 2, mines: 1 },
+        expert: { tiles: 3, mines: 2 }
+    };
+
+    // Container
+    var widget = document.createElement('div');
+    widget.id = 'towerGameWidget';
+    widget.className = 'tower-widget';
+
+    // Title
+    var title = document.createElement('div');
+    title.className = 'tower-widget-title';
+    title.textContent = '\u{1F5FC} Tower Climb';
+    widget.appendChild(title);
+
+    // Setup row
+    var setupRow = document.createElement('div');
+    setupRow.className = 'tower-setup';
+
+    var betLabel = document.createElement('span');
+    betLabel.className = 'tower-bet-label';
+    betLabel.textContent = 'Bet $';
+    setupRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'tower-bet-input';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.addEventListener('change', function() {
+        var v = parseFloat(betInput.value);
+        if (isNaN(v) || v < 0.25) v = 0.25;
+        betInput.value = v.toFixed(2);
+        towerState.bet = v;
+    });
+    setupRow.appendChild(betInput);
+
+    // Risk buttons
+    var riskContainer = document.createElement('div');
+    riskContainer.className = 'tower-risk-btns';
+    var riskLevels = ['easy', 'medium', 'hard', 'expert'];
+    var riskLabels = ['Easy', 'Medium', 'Hard', 'Expert'];
+    var riskBtns = [];
+
+    riskLevels.forEach(function(r, i) {
+        var btn = document.createElement('button');
+        btn.className = 'tower-risk-btn' + (r === towerState.risk ? ' selected' : '');
+        btn.textContent = riskLabels[i];
+        btn.addEventListener('click', function() {
+            if (towerState.active) return;
+            towerState.risk = r;
+            riskBtns.forEach(function(b, j) {
+                if (j === i) b.classList.add('selected');
+                else b.classList.remove('selected');
+            });
+        });
+        riskBtns.push(btn);
+        riskContainer.appendChild(btn);
+    });
+    setupRow.appendChild(riskContainer);
+
+    // Start button
+    var startBtn = document.createElement('button');
+    startBtn.className = 'tower-start-btn';
+    startBtn.textContent = 'START';
+    startBtn.addEventListener('click', function() {
+        startTowerGame();
+    });
+    setupRow.appendChild(startBtn);
+
+    widget.appendChild(setupRow);
+
+    // Info bar (multiplier + cashout)
+    var infoBar = document.createElement('div');
+    infoBar.className = 'tower-info-bar';
+
+    var multiplierDisplay = document.createElement('div');
+    multiplierDisplay.className = 'tower-multiplier';
+    multiplierDisplay.textContent = 'Current: 1.00x';
+    infoBar.appendChild(multiplierDisplay);
+
+    var cashoutBtn = document.createElement('button');
+    cashoutBtn.className = 'tower-cashout-btn';
+    cashoutBtn.textContent = 'Cash Out';
+    cashoutBtn.disabled = true;
+    cashoutBtn.addEventListener('click', function() {
+        cashoutTower();
+    });
+    infoBar.appendChild(cashoutBtn);
+
+    widget.appendChild(infoBar);
+
+    // Tower grid container
+    var gridContainer = document.createElement('div');
+    gridContainer.className = 'tower-grid';
+    gridContainer.id = 'towerGrid';
+    widget.appendChild(gridContainer);
+
+    // Status area
+    var statusDiv = document.createElement('div');
+    statusDiv.className = 'tower-status';
+    statusDiv.id = 'towerStatus';
+    widget.appendChild(statusDiv);
+
+    el.appendChild(widget);
+
+    // Render initial empty grid
+    renderTowerGrid();
+
+    // ── Internal functions ──
+
+    function setStatus(msg, cls) {
+        statusDiv.textContent = msg;
+        statusDiv.className = 'tower-status';
+        if (cls) statusDiv.classList.add(cls);
+    }
+
+    function lockSetup(locked) {
+        betInput.disabled = locked;
+        startBtn.disabled = locked;
+        riskBtns.forEach(function(b) { b.style.pointerEvents = locked ? 'none' : 'auto'; });
+    }
+
+    function startTowerGame() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+            setStatus('Login required to play Tower.', 'lose');
+            return;
+        }
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) {
+            setStatus('Login required to play Tower.', 'lose');
+            return;
+        }
+
+        var betVal = parseFloat(betInput.value);
+        if (isNaN(betVal) || betVal < 0.25) {
+            setStatus('Minimum bet is $0.25', 'lose');
+            return;
+        }
+
+        lockSetup(true);
+        setStatus('Starting...', 'info');
+        towerState.minePositions = null;
+        towerState.safeTiles = {};
+
+        fetch('/api/tower/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ bet: betVal, risk: towerState.risk })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Failed to start game', 'lose');
+                lockSetup(false);
+                return;
+            }
+            var d = result.data;
+            towerState.gameId = d.gameId;
+            towerState.active = true;
+            towerState.currentRow = 0;
+            towerState.multiplier = 1.00;
+            towerState.totalRows = d.rows || 10;
+            if (d.config) {
+                towerState.tilesPerRow = d.config.tiles || 4;
+                towerState.minesPerRow = d.config.mines || 1;
+            }
+            towerState.safeTiles = {};
+
+            multiplierDisplay.textContent = 'Current: 1.00x';
+            cashoutBtn.disabled = true;
+            setStatus('Click a tile on Row 1 to begin!', 'info');
+            renderTowerGrid();
+        }).catch(function(err) {
+            setStatus('Network error. Try again.', 'lose');
+            lockSetup(false);
+        });
+    }
+
+    function stepTower(tileIndex) {
+        if (!towerState.active || !towerState.gameId) return;
+
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return;
+
+        // Prevent double-clicks
+        towerState.active = false;
+        setStatus('Revealing...', 'info');
+
+        fetch('/api/tower/step', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ tileIndex: tileIndex })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Step failed', 'lose');
+                towerState.active = true;
+                renderTowerGrid();
+                return;
+            }
+            var d = result.data;
+
+            if (d.gameOver) {
+                // Hit a mine
+                towerState.active = false;
+                towerState.gameId = null;
+                cashoutBtn.disabled = true;
+
+                // Reveal all mine positions
+                if (d.minePositions) {
+                    towerState.minePositions = d.minePositions;
+                }
+                // Mark the chosen tile in current row as mine
+                if (!towerState.minePositions) towerState.minePositions = {};
+                if (!towerState.minePositions[towerState.currentRow]) {
+                    towerState.minePositions[towerState.currentRow] = [tileIndex];
+                }
+
+                setStatus('\u{1F4A5} Game Over! You hit a mine.', 'lose');
+                lockSetup(false);
+                renderTowerGrid();
+            } else {
+                // Safe step
+                if (!towerState.safeTiles) towerState.safeTiles = {};
+                towerState.safeTiles[towerState.currentRow] = tileIndex;
+
+                towerState.currentRow = d.currentRow !== undefined ? d.currentRow : (towerState.currentRow + 1);
+                towerState.multiplier = d.multiplier || towerState.multiplier;
+                towerState.active = true;
+
+                multiplierDisplay.textContent = 'Current: ' + towerState.multiplier.toFixed(2) + 'x';
+                cashoutBtn.disabled = false;
+
+                // Mark safe tiles in minePositions-like structure for display
+                if (!towerState.minePositions) towerState.minePositions = {};
+                var prevRow = towerState.currentRow - 1;
+                // Build a safe array: all tiles except mine (we don't know mine pos yet, just mark chosen one safe)
+                var cfg = RISK_CONFIG[towerState.risk];
+                var safeCols = [];
+                for (var c = 0; c < cfg.tiles; c++) {
+                    if (c === tileIndex) safeCols.push(c);
+                }
+                // For display: store empty mines array so all tiles show as safe for that row
+                // Actually we need to mark just the clicked tile as safe. Use a parallel structure.
+                // We'll mark mine positions as empty array (no mines revealed yet for safe rows)
+                towerState.minePositions[prevRow] = [];
+
+                if (towerState.currentRow >= towerState.totalRows) {
+                    // Reached the top!
+                    setStatus('\u{1F389} You reached the top! Cash out to collect!', 'win');
+                    towerState.active = false;
+                } else {
+                    setStatus('Safe! Row ' + (towerState.currentRow + 1) + ' - pick a tile.', 'info');
+                }
+
+                renderTowerGrid();
+            }
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            towerState.active = true;
+            renderTowerGrid();
+        });
+    }
+
+    function cashoutTower() {
+        if (!towerState.gameId) return;
+
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return;
+
+        cashoutBtn.disabled = true;
+        towerState.active = false;
+        setStatus('Cashing out...', 'info');
+
+        fetch('/api/tower/cashout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ gameId: towerState.gameId })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Cashout failed', 'lose');
+                return;
+            }
+            var d = result.data;
+            towerState.gameId = null;
+
+            if (d.minePositions) {
+                towerState.minePositions = d.minePositions;
+            }
+
+            var payoutStr = d.payout !== undefined ? '$' + parseFloat(d.payout).toFixed(2) : '';
+            var profitStr = d.profit !== undefined ? '$' + parseFloat(d.profit).toFixed(2) : '';
+            setStatus('\u{1F4B0} Cashed out! Payout: ' + payoutStr + ' (Profit: ' + profitStr + ')', 'win');
+
+            if (d.newBalance !== undefined && typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay(d.newBalance);
+            }
+
+            lockSetup(false);
+            renderTowerGrid();
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+        });
+    }
+
+    function renderTowerGrid() {
+        gridContainer.textContent = '';
+        var cfg = RISK_CONFIG[towerState.risk];
+        var tiles = cfg.tiles;
+
+        for (var row = 0; row < towerState.totalRows; row++) {
+            var rowDiv = document.createElement('div');
+            rowDiv.className = 'tower-row';
+
+            var rowLabel = document.createElement('span');
+            rowLabel.className = 'tower-row-label';
+            rowLabel.textContent = (row + 1).toString();
+            rowDiv.appendChild(rowLabel);
+
+            for (var col = 0; col < tiles; col++) {
+                var tile = document.createElement('div');
+                tile.className = 'tower-tile';
+                tile.setAttribute('data-row', row.toString());
+                tile.setAttribute('data-col', col.toString());
+
+                var isSafeRow = towerState.safeTiles && towerState.safeTiles[row] !== undefined;
+                var isSafeTile = isSafeRow && towerState.safeTiles[row] === col;
+                var hasMineData = towerState.minePositions && towerState.minePositions[row] !== undefined;
+                var isMine = hasMineData && Array.isArray(towerState.minePositions[row]) && towerState.minePositions[row].indexOf(col) !== -1;
+
+                if (isMine) {
+                    tile.classList.add('mine');
+                    tile.textContent = '\u{1F4A5}';
+                } else if (isSafeTile) {
+                    tile.classList.add('safe');
+                    tile.textContent = '\u2705';
+                } else if (towerState.active && row === towerState.currentRow) {
+                    tile.classList.add('active');
+                    (function(tileRef, colIdx) {
+                        tileRef.addEventListener('click', function() {
+                            if (!towerState.active) return;
+                            stepTower(colIdx);
+                        });
+                    })(tile, col);
+                } else if (!towerState.active && hasMineData && !isMine && row < towerState.currentRow) {
+                    // Game over reveal: non-mine tiles in completed rows
+                    tile.classList.add('safe');
+                    tile.textContent = '\u2705';
+                }
+
+                rowDiv.appendChild(tile);
+            }
+
+            gridContainer.appendChild(rowDiv);
+        }
+    }
 }

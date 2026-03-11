@@ -623,6 +623,8 @@ function renderGames() {
                     if (typeof renderBoostsWidget === 'function') renderBoostsWidget();
                     // Mines mini-game widget
                     if (typeof renderMinesGameWidget === 'function') renderMinesGameWidget();
+                    // Hi-Lo card game widget
+                    if (typeof renderHiLoGameWidget === 'function') renderHiLoGameWidget();
                 }, 200);
             });
         }
@@ -6731,5 +6733,517 @@ function renderMinesGameWidget() {
     playAgainBtn.addEventListener('click', function() {
         _minesResetGrid();
         startBtn.disabled = false;
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Hi-Lo Card Game Widget
+// ═══════════════════════════════════════════════════════════════
+function renderHiLoGameWidget() {
+    if (document.getElementById('hiloGameWidget')) return;
+
+    // ── CSS injection ──
+    if (!document.getElementById('hilo-game-css')) {
+        var style = document.createElement('style');
+        style.id = 'hilo-game-css';
+        style.textContent = [
+            '.hilo-widget { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 16px; padding: 20px; margin: 18px 0; border: 1px solid rgba(255,215,0,0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); max-width: 480px; }',
+            '.hilo-title { font-size: 1.4em; font-weight: 700; color: #ffd700; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }',
+            '.hilo-setup { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }',
+            '.hilo-setup input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.4); color: #fff; font-size: 1em; outline: none; }',
+            '.hilo-setup input:focus { border-color: #ffd700; }',
+            '.hilo-btn { padding: 8px 18px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.95em; cursor: pointer; transition: all 0.2s; }',
+            '.hilo-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.hilo-btn-deal { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #1a1a2e; }',
+            '.hilo-btn-deal:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 12px rgba(255,215,0,0.5); }',
+            '.hilo-btn-higher { background: linear-gradient(135deg, #00c853, #00e676); color: #fff; }',
+            '.hilo-btn-higher:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 12px rgba(0,200,83,0.5); }',
+            '.hilo-btn-lower { background: linear-gradient(135deg, #ff1744, #ff5252); color: #fff; }',
+            '.hilo-btn-lower:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 12px rgba(255,23,68,0.5); }',
+            '.hilo-btn-cashout { background: linear-gradient(135deg, #ffd700, #ff8f00); color: #1a1a2e; font-size: 1em; padding: 10px 22px; }',
+            '.hilo-btn-cashout:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 16px rgba(255,215,0,0.6); }',
+            '.hilo-btn-again { background: linear-gradient(135deg, #7c4dff, #b388ff); color: #fff; }',
+            '.hilo-btn-again:hover:not(:disabled) { transform: scale(1.05); }',
+            '.hilo-card-area { display: flex; justify-content: center; align-items: center; margin: 16px 0; min-height: 160px; }',
+            '.hilo-card { width: 110px; height: 155px; background: #fff; border-radius: 12px; border: 2.5px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2.8em; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.3); transition: transform 0.3s, box-shadow 0.3s; position: relative; }',
+            '.hilo-card.red { color: #d32f2f; }',
+            '.hilo-card.black { color: #212121; }',
+            '.hilo-card-rank { font-size: 1em; line-height: 1; }',
+            '.hilo-card-suit { font-size: 0.6em; line-height: 1; margin-top: 2px; }',
+            '.hilo-card-corner { position: absolute; font-size: 0.3em; line-height: 1.1; }',
+            '.hilo-card-corner-tl { top: 6px; left: 8px; text-align: left; }',
+            '.hilo-card-corner-br { bottom: 6px; right: 8px; text-align: right; transform: rotate(180deg); }',
+            '.hilo-card.reveal { animation: hiloReveal 0.4s ease; }',
+            '@keyframes hiloReveal { 0% { transform: rotateY(90deg) scale(0.8); } 100% { transform: rotateY(0deg) scale(1); } }',
+            '.hilo-controls { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }',
+            '.hilo-mult { text-align: center; font-size: 1.15em; color: #ffd700; font-weight: 700; margin: 8px 0; }',
+            '.hilo-cashout-row { display: flex; justify-content: center; margin: 10px 0; }',
+            '.hilo-status { text-align: center; font-size: 0.95em; color: #ccc; min-height: 22px; margin: 6px 0; }',
+            '.hilo-status.win { color: #00e676; font-weight: 700; }',
+            '.hilo-status.lose { color: #ff5252; font-weight: 700; }',
+            '.hilo-history { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 10px; min-height: 32px; }',
+            '.hilo-history-card { width: 30px; height: 42px; background: #fff; border-radius: 5px; border: 1px solid #666; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65em; font-weight: 700; }',
+            '.hilo-history-card.red { color: #d32f2f; }',
+            '.hilo-history-card.black { color: #212121; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // ── find insertion point ──
+    var container = document.querySelector('.games-grid') || document.querySelector('.lobby-content') || document.querySelector('#lobby');
+    if (!container) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'hiloGameWidget';
+    widget.className = 'hilo-widget';
+
+    // ── TITLE ──
+    var title = document.createElement('div');
+    title.className = 'hilo-title';
+    title.textContent = '\uD83C\uDCCF Hi-Lo';
+    widget.appendChild(title);
+
+    // ── SETUP ROW ──
+    var setupRow = document.createElement('div');
+    setupRow.className = 'hilo-setup';
+
+    var betLabel = document.createElement('span');
+    betLabel.style.color = '#ccc';
+    betLabel.style.fontSize = '0.9em';
+    betLabel.textContent = 'Bet $';
+    setupRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.placeholder = '0.25';
+    setupRow.appendChild(betInput);
+
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'hilo-btn hilo-btn-deal';
+    dealBtn.textContent = 'Deal';
+    setupRow.appendChild(dealBtn);
+
+    widget.appendChild(setupRow);
+
+    // ── CARD DISPLAY ──
+    var cardArea = document.createElement('div');
+    cardArea.className = 'hilo-card-area';
+
+    var cardPlaceholder = document.createElement('div');
+    cardPlaceholder.style.cssText = 'color: rgba(255,255,255,0.2); font-size: 3em;';
+    cardPlaceholder.textContent = '?';
+    cardArea.appendChild(cardPlaceholder);
+
+    widget.appendChild(cardArea);
+
+    // ── MULTIPLIER DISPLAY ──
+    var multDisplay = document.createElement('div');
+    multDisplay.className = 'hilo-mult';
+    multDisplay.textContent = 'Multiplier: 1.00x';
+    multDisplay.style.display = 'none';
+    widget.appendChild(multDisplay);
+
+    // ── CONTROLS ROW ──
+    var controlsRow = document.createElement('div');
+    controlsRow.className = 'hilo-controls';
+
+    var higherBtn = document.createElement('button');
+    higherBtn.className = 'hilo-btn hilo-btn-higher';
+    higherBtn.textContent = 'Higher \u2B06';
+    higherBtn.disabled = true;
+    controlsRow.appendChild(higherBtn);
+
+    var lowerBtn = document.createElement('button');
+    lowerBtn.className = 'hilo-btn hilo-btn-lower';
+    lowerBtn.textContent = 'Lower \u2B07';
+    lowerBtn.disabled = true;
+    controlsRow.appendChild(lowerBtn);
+
+    widget.appendChild(controlsRow);
+
+    // ── CASHOUT ROW ──
+    var cashoutRow = document.createElement('div');
+    cashoutRow.className = 'hilo-cashout-row';
+
+    var cashoutBtn = document.createElement('button');
+    cashoutBtn.className = 'hilo-btn hilo-btn-cashout';
+    cashoutBtn.textContent = 'Cash Out';
+    cashoutBtn.disabled = true;
+    cashoutBtn.style.display = 'none';
+    cashoutRow.appendChild(cashoutBtn);
+
+    widget.appendChild(cashoutRow);
+
+    // ── STATUS LINE ──
+    var statusLine = document.createElement('div');
+    statusLine.className = 'hilo-status';
+    widget.appendChild(statusLine);
+
+    // ── PLAY AGAIN ──
+    var playAgainRow = document.createElement('div');
+    playAgainRow.style.cssText = 'display: flex; justify-content: center; margin: 10px 0;';
+
+    var playAgainBtn = document.createElement('button');
+    playAgainBtn.className = 'hilo-btn hilo-btn-again';
+    playAgainBtn.textContent = 'Play Again';
+    playAgainBtn.style.display = 'none';
+    playAgainRow.appendChild(playAgainBtn);
+
+    widget.appendChild(playAgainRow);
+
+    // ── HISTORY ROW ──
+    var historyRow = document.createElement('div');
+    historyRow.className = 'hilo-history';
+    widget.appendChild(historyRow);
+
+    // ── Insert widget into lobby ──
+    container.parentNode.insertBefore(widget, container.nextSibling);
+
+    // ══════════════════════════════════
+    // State
+    // ══════════════════════════════════
+    var _hiloGameId = null;
+    var _hiloCurrentCard = null;
+    var _hiloMultiplier = 1.0;
+    var _hiloBet = 0;
+    var _hiloHistory = [];
+    var _hiloInFlight = false;
+
+    // ══════════════════════════════════
+    // Helpers
+    // ══════════════════════════════════
+    function _hiloIsRedSuit(suit) {
+        return suit === '\u2665' || suit === '\u2666';
+    }
+
+    function _hiloBuildCardEl(card, animate) {
+        var el = document.createElement('div');
+        var isRed = _hiloIsRedSuit(card.suit);
+        el.className = 'hilo-card ' + (isRed ? 'red' : 'black') + (animate ? ' reveal' : '');
+
+        // Corner top-left
+        var cornerTL = document.createElement('div');
+        cornerTL.className = 'hilo-card-corner hilo-card-corner-tl';
+        var cRank1 = document.createElement('div');
+        cRank1.textContent = card.rank;
+        cornerTL.appendChild(cRank1);
+        var cSuit1 = document.createElement('div');
+        cSuit1.textContent = card.suit;
+        cornerTL.appendChild(cSuit1);
+        el.appendChild(cornerTL);
+
+        // Center
+        var rankEl = document.createElement('div');
+        rankEl.className = 'hilo-card-rank';
+        rankEl.textContent = card.rank;
+        el.appendChild(rankEl);
+
+        var suitEl = document.createElement('div');
+        suitEl.className = 'hilo-card-suit';
+        suitEl.textContent = card.suit;
+        el.appendChild(suitEl);
+
+        // Corner bottom-right
+        var cornerBR = document.createElement('div');
+        cornerBR.className = 'hilo-card-corner hilo-card-corner-br';
+        var cRank2 = document.createElement('div');
+        cRank2.textContent = card.rank;
+        cornerBR.appendChild(cRank2);
+        var cSuit2 = document.createElement('div');
+        cSuit2.textContent = card.suit;
+        cornerBR.appendChild(cSuit2);
+        el.appendChild(cornerBR);
+
+        return el;
+    }
+
+    function _hiloShowCard(card, animate) {
+        cardArea.innerHTML = '';
+        var cardEl = _hiloBuildCardEl(card, animate);
+        cardArea.appendChild(cardEl);
+    }
+
+    function _hiloAddHistory(card) {
+        var mini = document.createElement('div');
+        var isRed = _hiloIsRedSuit(card.suit);
+        mini.className = 'hilo-history-card ' + (isRed ? 'red' : 'black');
+
+        var r = document.createElement('div');
+        r.textContent = card.rank;
+        mini.appendChild(r);
+
+        var s = document.createElement('div');
+        s.textContent = card.suit;
+        mini.appendChild(s);
+
+        historyRow.appendChild(mini);
+    }
+
+    function _hiloReset() {
+        _hiloGameId = null;
+        _hiloCurrentCard = null;
+        _hiloMultiplier = 1.0;
+        _hiloBet = 0;
+        _hiloHistory = [];
+        _hiloInFlight = false;
+
+        cardArea.innerHTML = '';
+        var ph = document.createElement('div');
+        ph.style.cssText = 'color: rgba(255,255,255,0.2); font-size: 3em;';
+        ph.textContent = '?';
+        cardArea.appendChild(ph);
+
+        multDisplay.style.display = 'none';
+        multDisplay.textContent = 'Multiplier: 1.00x';
+        higherBtn.disabled = true;
+        lowerBtn.disabled = true;
+        cashoutBtn.disabled = true;
+        cashoutBtn.style.display = 'none';
+        playAgainBtn.style.display = 'none';
+        dealBtn.disabled = false;
+        betInput.disabled = false;
+        statusLine.textContent = '';
+        statusLine.className = 'hilo-status';
+        historyRow.innerHTML = '';
+    }
+
+    function _hiloSetPlaying(canGuess, canCashout) {
+        dealBtn.disabled = true;
+        betInput.disabled = true;
+        higherBtn.disabled = !canGuess;
+        lowerBtn.disabled = !canGuess;
+        cashoutBtn.style.display = canCashout ? '' : 'none';
+        cashoutBtn.disabled = !canCashout;
+        playAgainBtn.style.display = 'none';
+        multDisplay.style.display = '';
+    }
+
+    function _hiloSetGameOver() {
+        higherBtn.disabled = true;
+        lowerBtn.disabled = true;
+        cashoutBtn.disabled = true;
+        cashoutBtn.style.display = 'none';
+        dealBtn.disabled = true;
+        betInput.disabled = true;
+        playAgainBtn.style.display = '';
+    }
+
+    function _hiloGetAuthHeaders() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return null;
+        var tokenKey = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
+        var token = localStorage.getItem(tokenKey);
+        if (!token) return null;
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        };
+    }
+
+    // ══════════════════════════════════
+    // DEAL
+    // ══════════════════════════════════
+    dealBtn.addEventListener('click', function() {
+        var headers = _hiloGetAuthHeaders();
+        if (!headers) {
+            statusLine.textContent = 'Please log in to play';
+            statusLine.className = 'hilo-status lose';
+            return;
+        }
+
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.25) {
+            statusLine.textContent = 'Minimum bet is $0.25';
+            statusLine.className = 'hilo-status lose';
+            return;
+        }
+
+        if (_hiloInFlight) return;
+        _hiloInFlight = true;
+        dealBtn.disabled = true;
+        statusLine.textContent = 'Dealing...';
+        statusLine.className = 'hilo-status';
+
+        _hiloBet = bet;
+        _hiloHistory = [];
+        historyRow.innerHTML = '';
+
+        fetch('/api/hilo/start', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ bet: bet })
+        })
+        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            _hiloInFlight = false;
+            if (!result.ok) {
+                statusLine.textContent = result.data.error || 'Failed to start game';
+                statusLine.className = 'hilo-status lose';
+                dealBtn.disabled = false;
+                return;
+            }
+
+            var data = result.data;
+            _hiloGameId = data.gameId;
+            _hiloCurrentCard = data.card;
+            _hiloMultiplier = 1.0;
+
+            _hiloShowCard(data.card, true);
+            multDisplay.textContent = 'Multiplier: 1.00x';
+            statusLine.textContent = 'Higher or Lower?';
+            statusLine.className = 'hilo-status';
+
+            _hiloSetPlaying(true, false);
+        })
+        .catch(function() {
+            _hiloInFlight = false;
+            statusLine.textContent = 'Network error';
+            statusLine.className = 'hilo-status lose';
+            dealBtn.disabled = false;
+        });
+    });
+
+    // ══════════════════════════════════
+    // GUESS (Higher / Lower)
+    // ══════════════════════════════════
+    function _hiloGuess(guess) {
+        var headers = _hiloGetAuthHeaders();
+        if (!headers || !_hiloGameId) return;
+        if (_hiloInFlight) return;
+        _hiloInFlight = true;
+
+        higherBtn.disabled = true;
+        lowerBtn.disabled = true;
+        cashoutBtn.disabled = true;
+        statusLine.textContent = 'Revealing...';
+        statusLine.className = 'hilo-status';
+
+        fetch('/api/hilo/guess', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ gameId: _hiloGameId, guess: guess })
+        })
+        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            _hiloInFlight = false;
+            if (!result.ok) {
+                statusLine.textContent = result.data.error || 'Error';
+                statusLine.className = 'hilo-status lose';
+                _hiloSetGameOver();
+                return;
+            }
+
+            var data = result.data;
+
+            // Move current card to history
+            if (_hiloCurrentCard) {
+                _hiloHistory.push(_hiloCurrentCard);
+                _hiloAddHistory(_hiloCurrentCard);
+            }
+
+            // Show new card
+            _hiloCurrentCard = data.newCard;
+            _hiloShowCard(data.newCard, true);
+
+            if (data.gameOver) {
+                // Wrong guess
+                var lossAmt = _hiloBet;
+                statusLine.textContent = '\uD83D\uDC80 Wrong! Lost $' + lossAmt.toFixed(2);
+                statusLine.className = 'hilo-status lose';
+                _hiloSetGameOver();
+
+                if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
+                    try { SoundManager.playSoundEvent('lose'); } catch(e) {}
+                }
+            } else {
+                // Correct guess
+                _hiloMultiplier = data.multiplier || _hiloMultiplier;
+                multDisplay.textContent = 'Multiplier: ' + _hiloMultiplier.toFixed(2) + 'x';
+
+                var potentialWin = _hiloBet * _hiloMultiplier;
+                statusLine.textContent = '\u2705 Correct! Potential win: $' + potentialWin.toFixed(2);
+                statusLine.className = 'hilo-status win';
+
+                _hiloSetPlaying(true, data.canCashout !== false);
+
+                if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
+                    try { SoundManager.playSoundEvent('win'); } catch(e) {}
+                }
+            }
+        })
+        .catch(function() {
+            _hiloInFlight = false;
+            statusLine.textContent = 'Network error';
+            statusLine.className = 'hilo-status lose';
+            higherBtn.disabled = false;
+            lowerBtn.disabled = false;
+        });
+    }
+
+    higherBtn.addEventListener('click', function() { _hiloGuess('higher'); });
+    lowerBtn.addEventListener('click', function() { _hiloGuess('lower'); });
+
+    // ══════════════════════════════════
+    // CASH OUT
+    // ══════════════════════════════════
+    cashoutBtn.addEventListener('click', function() {
+        var headers = _hiloGetAuthHeaders();
+        if (!headers || !_hiloGameId) return;
+        if (_hiloInFlight) return;
+        _hiloInFlight = true;
+
+        cashoutBtn.disabled = true;
+        higherBtn.disabled = true;
+        lowerBtn.disabled = true;
+        statusLine.textContent = 'Cashing out...';
+        statusLine.className = 'hilo-status';
+
+        fetch('/api/hilo/cashout', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ gameId: _hiloGameId })
+        })
+        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            _hiloInFlight = false;
+            if (!result.ok) {
+                statusLine.textContent = result.data.error || 'Cashout failed';
+                statusLine.className = 'hilo-status lose';
+                _hiloSetGameOver();
+                return;
+            }
+
+            var data = result.data;
+            var payout = data.payout || 0;
+            statusLine.textContent = '\uD83D\uDCB0 Cashed out $' + payout.toFixed(2) + '!';
+            statusLine.className = 'hilo-status win';
+            _hiloSetGameOver();
+
+            if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                updateBalanceDisplay(data.newBalance);
+            }
+
+            if (typeof SoundManager !== 'undefined' && SoundManager.playSoundEvent) {
+                try { SoundManager.playSoundEvent('win'); } catch(e) {}
+            }
+            if (typeof showToast === 'function') {
+                showToast('\uD83C\uDCCF Hi-Lo: won $' + payout.toFixed(2) + '!');
+            }
+        })
+        .catch(function() {
+            _hiloInFlight = false;
+            statusLine.textContent = 'Network error';
+            statusLine.className = 'hilo-status lose';
+            cashoutBtn.disabled = false;
+        });
+    });
+
+    // ══════════════════════════════════
+    // PLAY AGAIN
+    // ══════════════════════════════════
+    playAgainBtn.addEventListener('click', function() {
+        _hiloReset();
     });
 }

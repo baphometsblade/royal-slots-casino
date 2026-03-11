@@ -2215,6 +2215,7 @@ function initPromoEngine() {
             if (!window._lossStreakCardInit) { window._lossStreakCardInit = true; renderLossStreakCard(promosSidebar); }
             if (!window._referralCardInit) { window._referralCardInit = true; renderReferralCard(promosSidebar); }
             if (!window._crashGameCardInit) { window._crashGameCardInit = true; renderCrashGameCard(promosSidebar); }
+            if (!window._plinkoCardInit) { window._plinkoCardInit = true; renderPlinkoCard(promosSidebar); }
         }
     }, 4000);
 
@@ -6032,4 +6033,277 @@ function renderCrashGameCard(container) {
             setTimeout(resetUI, 3000);
         });
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// PLINKO CARD
+// ─────────────────────────────────────────────────────────────────────
+
+function renderPlinkoCard(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    if (document.getElementById('plinkoCard')) return;
+
+    var MULT_TABLES = {
+        low:    [5.6, 2.1, 1.1, 1.0, 0.5, 0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 1.0, 1.1, 2.1, 5.6],
+        medium: [110, 41, 10, 5, 3, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 3, 5, 10, 41, 110],
+        high:   [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000]
+    };
+
+    var selectedRisk = 'medium';
+
+    // Inject CSS once
+    if (!document.getElementById('plinko-card-css')) {
+        var style = document.createElement('style');
+        style.id = 'plinko-card-css';
+        style.textContent = [
+            '#plinkoCard { background: linear-gradient(135deg, #0c1a2e, #162040); border: 1px solid #3a4a7a; border-radius: 12px; padding: 16px; margin-bottom: 14px; color: #fff; }',
+            '#plinkoCard .pk-title { color: #fbbf24; margin: 0 0 6px 0; font-size: 15px; font-weight: 800; }',
+            '#plinkoCard .pk-desc { color: #aaa; font-size: 12px; margin: 0 0 12px 0; }',
+            '.pk-bet-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; color: #ccc; }',
+            '.pk-bet-input { background: #1a1f2e; border: 1px solid #4a4a7a; color: #fff; padding: 6px 10px; border-radius: 6px; width: 80px; font-size: 13px; }',
+            '.pk-risk-row { display: flex; gap: 6px; margin-bottom: 10px; }',
+            '.pk-risk-btn { flex: 1; padding: 7px 0; border: 1.5px solid #4a4a7a; border-radius: 6px; background: transparent; color: #aaa; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; }',
+            '.pk-risk-btn.active-low { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.12); }',
+            '.pk-risk-btn.active-medium { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.12); }',
+            '.pk-risk-btn.active-high { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.12); }',
+            '.pk-drop-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; margin-bottom: 10px; }',
+            '.pk-drop-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
+            '.pk-buckets { display: flex; gap: 2px; justify-content: center; margin-bottom: 10px; flex-wrap: nowrap; }',
+            '.pk-bucket { flex: 1; min-width: 0; text-align: center; padding: 4px 0; border-radius: 4px; font-size: 9px; font-weight: 700; transition: all 0.3s; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); line-height: 1.2; }',
+            '.pk-bucket.pk-gold { background: rgba(251,191,36,0.15); color: #fbbf24; }',
+            '.pk-bucket.pk-green { background: rgba(34,197,94,0.15); color: #4ade80; }',
+            '.pk-bucket.pk-neutral { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }',
+            '.pk-bucket.pk-dim { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.35); }',
+            '.pk-bucket.pk-hit { transform: scale(1.15); box-shadow: 0 0 12px rgba(251,191,36,0.6); z-index: 2; }',
+            '.pk-bucket.pk-hit-win { background: rgba(34,197,94,0.5) !important; color: #fff !important; }',
+            '.pk-bucket.pk-hit-loss { background: rgba(239,68,68,0.5) !important; color: #fff !important; }',
+            '.pk-result { text-align: center; font-size: 13px; font-weight: 600; min-height: 20px; margin-top: 4px; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // Card root
+    var card = document.createElement('div');
+    card.id = 'plinkoCard';
+
+    // Title
+    var titleEl = document.createElement('h4');
+    titleEl.className = 'pk-title';
+    titleEl.textContent = '\uD83D\uDCCD Plinko';
+    card.appendChild(titleEl);
+
+    // Description
+    var descEl = document.createElement('p');
+    descEl.className = 'pk-desc';
+    descEl.textContent = 'Drop the ball and hit a multiplier! Choose your risk level.';
+    card.appendChild(descEl);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'pk-bet-row';
+
+    var betLabel = document.createElement('label');
+    betLabel.textContent = 'Bet: $';
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.min = '0.25';
+    betInput.max = '1000';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.id = 'pkBetInput';
+    betInput.className = 'pk-bet-input';
+
+    betRow.appendChild(betLabel);
+    betRow.appendChild(betInput);
+    card.appendChild(betRow);
+
+    // Risk selector row
+    var riskRow = document.createElement('div');
+    riskRow.className = 'pk-risk-row';
+
+    var risks = ['low', 'medium', 'high'];
+    var riskLabels = { low: 'Low', medium: 'Medium', high: 'High' };
+    var riskBtns = {};
+
+    risks.forEach(function(r) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pk-risk-btn' + (r === selectedRisk ? ' active-' + r : '');
+        btn.textContent = riskLabels[r];
+        btn.setAttribute('data-risk', r);
+        btn.addEventListener('click', function() {
+            selectedRisk = r;
+            risks.forEach(function(r2) {
+                riskBtns[r2].className = 'pk-risk-btn' + (r2 === selectedRisk ? ' active-' + r2 : '');
+            });
+            renderBuckets();
+        });
+        riskBtns[r] = btn;
+        riskRow.appendChild(btn);
+    });
+    card.appendChild(riskRow);
+
+    // Drop button
+    var dropBtn = document.createElement('button');
+    dropBtn.type = 'button';
+    dropBtn.className = 'pk-drop-btn';
+    dropBtn.textContent = 'DROP';
+    card.appendChild(dropBtn);
+
+    // Buckets row
+    var bucketsRow = document.createElement('div');
+    bucketsRow.className = 'pk-buckets';
+    card.appendChild(bucketsRow);
+
+    // Result text
+    var resultEl = document.createElement('div');
+    resultEl.className = 'pk-result';
+    card.appendChild(resultEl);
+
+    container.appendChild(card);
+
+    // --- helpers ---
+
+    function getBucketClass(mult) {
+        if (mult >= 10) return 'pk-gold';
+        if (mult >= 2) return 'pk-green';
+        if (mult >= 1) return 'pk-neutral';
+        return 'pk-dim';
+    }
+
+    function renderBuckets(highlightIdx, isWin) {
+        // clear
+        while (bucketsRow.firstChild) bucketsRow.removeChild(bucketsRow.firstChild);
+
+        var mults = MULT_TABLES[selectedRisk];
+        mults.forEach(function(m, i) {
+            var b = document.createElement('div');
+            b.className = 'pk-bucket ' + getBucketClass(m);
+            if (i === highlightIdx) {
+                b.classList.add('pk-hit');
+                b.classList.add(isWin ? 'pk-hit-win' : 'pk-hit-loss');
+            }
+            // Format multiplier label
+            var label;
+            if (m >= 100) {
+                label = m + 'x';
+            } else if (m >= 10) {
+                label = m + 'x';
+            } else {
+                label = m + 'x';
+            }
+            b.textContent = label;
+            bucketsRow.appendChild(b);
+        });
+    }
+
+    // Initial render
+    renderBuckets();
+
+    // --- drop logic ---
+    var dropping = false;
+
+    dropBtn.addEventListener('click', function() {
+        if (dropping) return;
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.25) {
+            resultEl.textContent = 'Min bet is $0.25';
+            resultEl.style.color = '#f87171';
+            return;
+        }
+
+        dropping = true;
+        dropBtn.disabled = true;
+        dropBtn.textContent = 'DROPPING...';
+        resultEl.textContent = '';
+        resultEl.style.color = '';
+
+        // Re-fetch token in case session refreshed
+        var freshToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!freshToken) {
+            dropping = false;
+            dropBtn.disabled = false;
+            dropBtn.textContent = 'DROP';
+            resultEl.textContent = 'Not logged in.';
+            resultEl.style.color = '#f87171';
+            return;
+        }
+
+        fetch('/api/plinko/play', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + freshToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ bet: bet, risk: selectedRisk })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                resultEl.textContent = data.error;
+                resultEl.style.color = '#f87171';
+                dropping = false;
+                dropBtn.disabled = false;
+                dropBtn.textContent = 'DROP';
+                return;
+            }
+
+            var bucket = data.bucket;
+            var multiplier = data.multiplier;
+            var payout = data.payout;
+            var path = data.path || [];
+            var isWin = multiplier >= 1;
+
+            // Animate: flash through path positions, then show final bucket
+            var animStep = 0;
+            var animInterval = setInterval(function() {
+                if (animStep >= path.length) {
+                    clearInterval(animInterval);
+                    // Show final result
+                    renderBuckets(bucket, isWin);
+
+                    if (isWin) {
+                        resultEl.style.color = '#4ade80';
+                        resultEl.textContent = 'Ball landed on ' + multiplier + 'x! Won $' + parseFloat(payout).toFixed(2);
+                    } else {
+                        var lostAmt = bet - payout;
+                        resultEl.style.color = '#f87171';
+                        resultEl.textContent = 'Ball landed on ' + multiplier + 'x \u2014 lost $' + lostAmt.toFixed(2);
+                    }
+
+                    // Update balance
+                    if (data.newBalance !== undefined && typeof updateBalanceDisplay === 'function') {
+                        updateBalanceDisplay(data.newBalance);
+                    }
+
+                    dropping = false;
+                    dropBtn.disabled = false;
+                    dropBtn.textContent = 'DROP';
+                    return;
+                }
+
+                // Flash: calculate intermediate bucket position from path so far
+                var pos = 0;
+                for (var p = 0; p <= animStep; p++) {
+                    pos += (path[p] === 1) ? 1 : 0;
+                }
+                // Map partial path position to approximate bucket index (scale to 0-16)
+                var approxBucket = Math.round((pos / (animStep + 1)) * 16);
+                renderBuckets(approxBucket, true);
+                animStep++;
+            }, 50);
+        })
+        .catch(function(err) {
+            console.error('[PlinkoCard] error', err);
+            resultEl.textContent = 'Connection error. Try again.';
+            resultEl.style.color = '#f87171';
+            dropping = false;
+            dropBtn.disabled = false;
+            dropBtn.textContent = 'DROP';
+        });
+    });
 }
