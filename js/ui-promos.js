@@ -2213,6 +2213,7 @@ function initPromoEngine() {
             if (!window._coinflipCardInit) { window._coinflipCardInit = true; renderCoinflipCard(promosSidebar); }
             if (!window._diceCardInit) { window._diceCardInit = true; renderDiceCard(promosSidebar); }
             if (!window._lossStreakCardInit) { window._lossStreakCardInit = true; renderLossStreakCard(promosSidebar); }
+            if (!window._referralCardInit) { window._referralCardInit = true; renderReferralCard(promosSidebar); }
         }
     }, 4000);
 
@@ -5484,5 +5485,293 @@ function renderLossStreakCard(container) {
     })
     .catch(function(err) {
         console.error('[LossStreakOffer] eligibility check failed', err);
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// renderReferralCard — Referral Program card in the promos sidebar
+// ─────────────────────────────────────────────────────────────────────
+function renderReferralCard(container) {
+    // Idempotency guard
+    if (document.getElementById('referralCard')) return;
+
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // CSS injection
+    if (!document.getElementById('referral-card-css')) {
+        var s = document.createElement('style');
+        s.id = 'referral-card-css';
+        s.textContent = [
+            '.ref-card { background: linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);',
+            ' border: 1px solid #a855f7; border-radius: 12px; padding: 18px 16px; margin: 12px 0; color: #e2e8f0; }',
+            '.ref-card-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; }',
+            '.ref-card-icon { font-size:22px; }',
+            '.ref-card-title { font-size:15px; font-weight:700; color:#d8b4fe; letter-spacing:.5px; }',
+            '.ref-code-block { background:#0f0f1a; border:1px dashed #7c3aed; border-radius:8px;',
+            ' padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }',
+            '.ref-code-text { font-size:20px; font-weight:800; color:#f0abfc; letter-spacing:3px; font-family:monospace; }',
+            '.ref-copy-btn { background:#7c3aed; color:#fff; border:none; border-radius:6px;',
+            ' padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:background .2s; }',
+            '.ref-copy-btn:hover { background:#9333ea; }',
+            '.ref-link-btn { width:100%; background:linear-gradient(90deg,#7c3aed,#a855f7); color:#fff; border:none;',
+            ' border-radius:8px; padding:10px; font-size:13px; font-weight:700; cursor:pointer;',
+            ' margin-bottom:14px; transition:opacity .2s; }',
+            '.ref-link-btn:hover { opacity:.85; }',
+            '.ref-stats-row { display:flex; gap:8px; margin-bottom:14px; }',
+            '.ref-stat { flex:1; background:#0f0f1a; border-radius:8px; padding:8px 4px; text-align:center; }',
+            '.ref-stat-val { font-size:18px; font-weight:800; color:#f0abfc; }',
+            '.ref-stat-lbl { font-size:10px; color:#94a3b8; margin-top:2px; }',
+            '.ref-divider { border:none; border-top:1px solid #2d2d4e; margin:12px 0; }',
+            '.ref-apply-title { font-size:12px; color:#94a3b8; margin-bottom:8px; }',
+            '.ref-apply-row { display:flex; gap:8px; }',
+            '.ref-apply-input { flex:1; background:#0f0f1a; border:1px solid #4c1d95; border-radius:6px;',
+            ' color:#e2e8f0; padding:8px 10px; font-size:13px; outline:none; }',
+            '.ref-apply-btn { background:#4c1d95; color:#fff; border:none; border-radius:6px;',
+            ' padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:background .2s; white-space:nowrap; }',
+            '.ref-apply-btn:hover { background:#6d28d9; }',
+            '.ref-apply-msg { font-size:12px; margin-top:6px; min-height:16px; }',
+            '.ref-loading { color:#94a3b8; font-size:13px; text-align:center; padding:12px 0; }',
+            '.ref-error { color:#f87171; font-size:13px; text-align:center; padding:12px 0; }'
+        ].join('');
+        document.head.appendChild(s);
+    }
+
+    // Outer card skeleton (static HTML — no variables in innerHTML)
+    var card = document.createElement('div');
+    card.id = 'referralCard';
+    card.className = 'ref-card';
+
+    var header = document.createElement('div');
+    header.className = 'ref-card-header';
+    var icon = document.createElement('span');
+    icon.className = 'ref-card-icon';
+    icon.textContent = '\uD83D\uDC65';
+    var title = document.createElement('span');
+    title.className = 'ref-card-title';
+    title.textContent = 'REFERRAL PROGRAM';
+    header.appendChild(icon);
+    header.appendChild(title);
+    card.appendChild(header);
+
+    // Loading state
+    var loadingEl = document.createElement('div');
+    loadingEl.className = 'ref-loading';
+    loadingEl.textContent = 'Loading referral info\u2026';
+    card.appendChild(loadingEl);
+
+    container.appendChild(card);
+
+    // Fetch referral info
+    fetch('/api/referral/info', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        // Remove loading
+        card.removeChild(loadingEl);
+
+        if (data.error) {
+            var errEl = document.createElement('div');
+            errEl.className = 'ref-error';
+            errEl.textContent = data.error || 'Unable to load referral info.';
+            card.appendChild(errEl);
+            return;
+        }
+
+        // ── Referral code block ──
+        var codeBlock = document.createElement('div');
+        codeBlock.className = 'ref-code-block';
+
+        var codeText = document.createElement('span');
+        codeText.className = 'ref-code-text';
+        codeText.textContent = data.code || '------';
+
+        var copyCodeBtn = document.createElement('button');
+        copyCodeBtn.className = 'ref-copy-btn';
+        copyCodeBtn.textContent = 'Copy Code';
+
+        copyCodeBtn.addEventListener('click', function() {
+            var codeVal = codeText.textContent;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(codeVal).then(function() {
+                    copyCodeBtn.textContent = 'Copied!';
+                    setTimeout(function() { copyCodeBtn.textContent = 'Copy Code'; }, 2000);
+                });
+            } else {
+                var ta = document.createElement('textarea');
+                ta.value = codeVal;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+                document.body.removeChild(ta);
+                copyCodeBtn.textContent = 'Copied!';
+                setTimeout(function() { copyCodeBtn.textContent = 'Copy Code'; }, 2000);
+            }
+        });
+
+        codeBlock.appendChild(codeText);
+        codeBlock.appendChild(copyCodeBtn);
+        card.appendChild(codeBlock);
+
+        // ── Copy Link button ──
+        var linkBtn = document.createElement('button');
+        linkBtn.className = 'ref-link-btn';
+        linkBtn.textContent = '\uD83D\uDD17 Copy Referral Link';
+
+        linkBtn.addEventListener('click', function() {
+            var urlVal = data.referralUrl || window.location.origin;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(urlVal).then(function() {
+                    linkBtn.textContent = '\u2713 Link Copied!';
+                    setTimeout(function() { linkBtn.textContent = '\uD83D\uDD17 Copy Referral Link'; }, 2500);
+                });
+            } else {
+                var ta2 = document.createElement('textarea');
+                ta2.value = urlVal;
+                ta2.style.position = 'fixed';
+                ta2.style.opacity = '0';
+                document.body.appendChild(ta2);
+                ta2.select();
+                try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+                document.body.removeChild(ta2);
+                linkBtn.textContent = '\u2713 Link Copied!';
+                setTimeout(function() { linkBtn.textContent = '\uD83D\uDD17 Copy Referral Link'; }, 2500);
+            }
+        });
+
+        card.appendChild(linkBtn);
+
+        // ── Stats row ──
+        var statsRow = document.createElement('div');
+        statsRow.className = 'ref-stats-row';
+
+        var statTotal = document.createElement('div');
+        statTotal.className = 'ref-stat';
+        var statTotalVal = document.createElement('div');
+        statTotalVal.className = 'ref-stat-val';
+        statTotalVal.textContent = String(typeof data.totalReferrals === 'number' ? data.totalReferrals : 0);
+        var statTotalLbl = document.createElement('div');
+        statTotalLbl.className = 'ref-stat-lbl';
+        statTotalLbl.textContent = 'Total';
+        statTotal.appendChild(statTotalVal);
+        statTotal.appendChild(statTotalLbl);
+
+        var statPending = document.createElement('div');
+        statPending.className = 'ref-stat';
+        var statPendingVal = document.createElement('div');
+        statPendingVal.className = 'ref-stat-val';
+        statPendingVal.textContent = String(typeof data.pendingReferrals === 'number' ? data.pendingReferrals : 0);
+        var statPendingLbl = document.createElement('div');
+        statPendingLbl.className = 'ref-stat-lbl';
+        statPendingLbl.textContent = 'Pending';
+        statPending.appendChild(statPendingVal);
+        statPending.appendChild(statPendingLbl);
+
+        var statEarned = document.createElement('div');
+        statEarned.className = 'ref-stat';
+        var statEarnedVal = document.createElement('div');
+        statEarnedVal.className = 'ref-stat-val';
+        var earnedAmt = typeof data.totalEarned === 'number' ? data.totalEarned : 0;
+        statEarnedVal.textContent = '$' + earnedAmt.toFixed(2);
+        var statEarnedLbl = document.createElement('div');
+        statEarnedLbl.className = 'ref-stat-lbl';
+        statEarnedLbl.textContent = 'Earned';
+        statEarned.appendChild(statEarnedVal);
+        statEarned.appendChild(statEarnedLbl);
+
+        statsRow.appendChild(statTotal);
+        statsRow.appendChild(statPending);
+        statsRow.appendChild(statEarned);
+        card.appendChild(statsRow);
+
+        // ── Apply code section ──
+        var hr = document.createElement('hr');
+        hr.className = 'ref-divider';
+        card.appendChild(hr);
+
+        var applyTitle = document.createElement('div');
+        applyTitle.className = 'ref-apply-title';
+        applyTitle.textContent = 'Have a friend\'s referral code?';
+        card.appendChild(applyTitle);
+
+        var applyRow = document.createElement('div');
+        applyRow.className = 'ref-apply-row';
+
+        var applyInput = document.createElement('input');
+        applyInput.type = 'text';
+        applyInput.className = 'ref-apply-input';
+        applyInput.placeholder = 'Enter code';
+        applyInput.maxLength = 32;
+
+        var applyBtn = document.createElement('button');
+        applyBtn.className = 'ref-apply-btn';
+        applyBtn.textContent = 'Apply';
+
+        applyRow.appendChild(applyInput);
+        applyRow.appendChild(applyBtn);
+        card.appendChild(applyRow);
+
+        var applyMsg = document.createElement('div');
+        applyMsg.className = 'ref-apply-msg';
+        card.appendChild(applyMsg);
+
+        applyBtn.addEventListener('click', function() {
+            var codeInput = applyInput.value.trim();
+            if (!codeInput) return;
+
+            applyBtn.disabled = true;
+            applyMsg.style.color = '#94a3b8';
+            applyMsg.textContent = 'Applying\u2026';
+
+            fetch('/api/referral/apply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ code: codeInput })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(resp) {
+                if (resp.success) {
+                    applyMsg.style.color = '#4ade80';
+                    applyMsg.textContent = '';
+                    var okSpan = document.createElement('span');
+                    okSpan.textContent = resp.message || 'Referral code applied!';
+                    applyMsg.appendChild(okSpan);
+                    applyInput.value = '';
+                    applyBtn.disabled = true;
+                } else {
+                    applyMsg.style.color = '#f87171';
+                    applyMsg.textContent = '';
+                    var errSpan = document.createElement('span');
+                    errSpan.textContent = resp.message || 'Could not apply code.';
+                    applyMsg.appendChild(errSpan);
+                    applyBtn.disabled = false;
+                }
+            })
+            .catch(function(err) {
+                console.error('[ReferralCard] apply error', err);
+                applyMsg.style.color = '#f87171';
+                applyMsg.textContent = '';
+                var netSpan = document.createElement('span');
+                netSpan.textContent = 'Network error. Please try again.';
+                applyMsg.appendChild(netSpan);
+                applyBtn.disabled = false;
+            });
+        });
+    })
+    .catch(function(err) {
+        console.error('[ReferralCard] fetch error', err);
+        card.removeChild(loadingEl);
+        var errEl = document.createElement('div');
+        errEl.className = 'ref-error';
+        errEl.textContent = 'Failed to load referral info.';
+        card.appendChild(errEl);
     });
 }

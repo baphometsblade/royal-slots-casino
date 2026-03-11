@@ -619,6 +619,8 @@ function renderGames() {
                     if (typeof renderInstantGamesSection === 'function') renderInstantGamesSection();
                     // Weekly Leaderboard widget
                     if (typeof renderWeeklyLeaderboard === 'function') renderWeeklyLeaderboard();
+                    // Boosts Shop widget
+                    if (typeof renderBoostsWidget === 'function') renderBoostsWidget();
                 }, 200);
             });
         }
@@ -6236,4 +6238,150 @@ function renderWeeklyLeaderboard() {
         .catch(function() {
             // Silently fail — no widget shown on network error
         });
+}
+
+function renderBoostsWidget() {
+    // Idempotency guard
+    if (document.getElementById('boostsWidget')) return;
+
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Inject CSS once (static string only)
+    if (!document.getElementById('boosts-widget-css')) {
+        var s = document.createElement('style');
+        s.id = 'boosts-widget-css';
+        s.textContent = '#boostsWidget{margin:24px 0;padding:0 8px}.boosts-header{font-size:1.4rem;font-weight:700;color:#ffe066;margin-bottom:4px}.boosts-subheader{font-size:.85rem;color:#aaa;margin-bottom:16px}.boosts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}.boost-card{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border:1px solid #3a3a5c;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,transform .15s}.boost-card:hover{border-color:#7c6cf0;transform:translateY(-2px)}.boost-name{font-size:1rem;font-weight:700;color:#e0d7ff}.boost-desc{font-size:.78rem;color:#aaa;flex:1}.boost-duration{font-size:.75rem;color:#7c6cf0;font-weight:600}.boost-buy-btn{margin-top:6px;background:linear-gradient(90deg,#7c6cf0,#a855f7);border:none;border-radius:8px;color:#fff;font-size:.82rem;font-weight:700;padding:8px 10px;cursor:pointer;transition:opacity .15s}.boost-buy-btn:hover{opacity:.85}.boost-buy-btn:disabled{opacity:.4;cursor:not-allowed}.boosts-loading{color:#888;font-size:.9rem;padding:12px 0}';
+        document.head.appendChild(s);
+    }
+
+    // Build widget skeleton
+    var widget = document.createElement('div');
+    widget.id = 'boostsWidget';
+
+    var hdr = document.createElement('h2');
+    hdr.className = 'boosts-header';
+    hdr.textContent = '\u26A1 Boosts Shop';
+    widget.appendChild(hdr);
+
+    var sub = document.createElement('p');
+    sub.className = 'boosts-subheader';
+    sub.textContent = 'Activate temporary power-ups using your gems';
+    widget.appendChild(sub);
+
+    var grid = document.createElement('div');
+    grid.className = 'boosts-grid';
+
+    var loadingEl = document.createElement('p');
+    loadingEl.className = 'boosts-loading';
+    loadingEl.textContent = 'Loading boosts\u2026';
+    grid.appendChild(loadingEl);
+    widget.appendChild(grid);
+
+    // Insert after weeklyLeaderboardSection if present, else after instantGamesSection, else into lobby
+    var anchor = document.getElementById('weeklyLeaderboardSection') || document.getElementById('instantGamesSection');
+    if (anchor && anchor.parentNode) {
+        anchor.parentNode.insertBefore(widget, anchor.nextSibling);
+    } else {
+        var lobby = document.getElementById('lobby');
+        if (lobby) lobby.appendChild(widget);
+    }
+
+    // Fetch available boosts
+    fetch('/api/boosts/available', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        // Clear grid children without innerHTML
+        while (grid.firstChild) {
+            grid.removeChild(grid.firstChild);
+        }
+
+        var boosts = (data && Array.isArray(data.boosts)) ? data.boosts : [];
+
+        if (boosts.length === 0) {
+            var emptyEl = document.createElement('p');
+            emptyEl.className = 'boosts-loading';
+            emptyEl.textContent = 'No boosts available right now.';
+            grid.appendChild(emptyEl);
+            return;
+        }
+
+        boosts.forEach(function(boost) {
+            var card = document.createElement('div');
+            card.className = 'boost-card';
+
+            var nameEl = document.createElement('div');
+            nameEl.className = 'boost-name';
+            nameEl.textContent = boost.name || boost.type || '';
+            card.appendChild(nameEl);
+
+            var descEl = document.createElement('div');
+            descEl.className = 'boost-desc';
+            descEl.textContent = boost.desc || '';
+            card.appendChild(descEl);
+
+            var durEl = document.createElement('div');
+            durEl.className = 'boost-duration';
+            durEl.textContent = String(boost.duration || 0) + ' min';
+            card.appendChild(durEl);
+
+            var btn = document.createElement('button');
+            btn.className = 'boost-buy-btn';
+            btn.type = 'button';
+            // Cost label: gem emoji + cost
+            var gemSpan = document.createElement('span');
+            gemSpan.textContent = '\uD83D\uDC8E ';
+            btn.appendChild(gemSpan);
+            var costText = document.createTextNode(String(boost.gemCost || 0) + ' gems');
+            btn.appendChild(costText);
+
+            (function(b, button) {
+                button.addEventListener('click', function() {
+                    button.disabled = true;
+                    fetch('/api/boosts/purchase', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + token,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ boostType: b.type })
+                    })
+                    .then(function(res) { return res.json(); })
+                    .then(function(result) {
+                        if (result && result.success) {
+                            var boostName = (result.boost && result.boost.name) ? result.boost.name : (b.name || b.type || 'Boost');
+                            var dur = b.duration || 0;
+                            var msg = '\u2705 ' + boostName + ' activated for ' + String(dur) + 'min!';
+                            if (typeof showToast === 'function') {
+                                showToast(msg);
+                            }
+                        } else {
+                            var errMsg = (result && result.message) ? result.message : 'Purchase failed';
+                            if (typeof showToast === 'function') {
+                                showToast('\u274C ' + errMsg);
+                            }
+                        }
+                        button.disabled = false;
+                    })
+                    .catch(function() {
+                        if (typeof showToast === 'function') {
+                            showToast('\u274C Could not purchase boost');
+                        }
+                        button.disabled = false;
+                    });
+                });
+            }(boost, btn));
+
+            card.appendChild(btn);
+            grid.appendChild(card);
+        });
+    })
+    .catch(function() {
+        // Silently fail — remove widget if fetch errors
+        if (widget.parentNode) widget.parentNode.removeChild(widget);
+    });
 }

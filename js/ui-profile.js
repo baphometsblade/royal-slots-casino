@@ -3540,151 +3540,9 @@ function renderMilestonesTab() {
 // ═══════════════════════════════════════════════════════
 
 function renderAchievementsTab() {
-    var el = document.getElementById('profileContent');
-    if (!el) return;
-    el.textContent = '';
-
-    injectMilestonesAchievementsReferralCss();
-
-    var header = document.createElement('h2');
-    header.className = 'profile-section-title';
-    header.textContent = 'Achievements';
-    el.appendChild(header);
-
-    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
-        var authMsg = document.createElement('div');
-        authMsg.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
-        authMsg.textContent = 'Please log in to view achievements.';
-        el.appendChild(authMsg);
-        return;
+    if (typeof _renderAchievementsSection === 'function') {
+        _renderAchievementsSection();
     }
-    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
-    if (!token) return;
-
-    var loadingDiv = document.createElement('div');
-    loadingDiv.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
-    loadingDiv.textContent = 'Loading achievements\u2026';
-    el.appendChild(loadingDiv);
-
-    fetch('/api/achievements', {
-        headers: { 'Authorization': 'Bearer ' + token }
-    }).then(function(res) { return res.json(); }).then(function(data) {
-        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
-
-        var achievements = data.achievements || [];
-        var unlockedCount = achievements.filter(function(a) { return a.unlocked; }).length;
-
-        var countEl = document.createElement('div');
-        countEl.style.cssText = 'font-size:14px;color:#94a3b8;margin-bottom:16px;';
-        var countStrong = document.createElement('strong');
-        countStrong.style.color = '#e2e8f0';
-        countStrong.textContent = unlockedCount + ' / ' + achievements.length;
-        countEl.appendChild(countStrong);
-        countEl.appendChild(document.createTextNode(' achievements unlocked'));
-        el.appendChild(countEl);
-
-        if (achievements.length === 0) {
-            var emptyEl = document.createElement('div');
-            emptyEl.style.cssText = 'color:#94a3b8;text-align:center;padding:28px 0;font-size:13px;';
-            emptyEl.textContent = 'No achievements available yet.';
-            el.appendChild(emptyEl);
-            return;
-        }
-
-        var card = document.createElement('div');
-        card.className = 'profile-card';
-
-        achievements.forEach(function(ach) {
-            var item = document.createElement('div');
-            item.className = 'profile-achieve-item';
-            if (!ach.unlocked) {
-                item.style.opacity = '0.5';
-            }
-
-            var iconEl = document.createElement('div');
-            iconEl.className = 'profile-achieve-icon';
-            iconEl.textContent = ach.unlocked ? (ach.icon || '\uD83C\uDFC5') : '\uD83D\uDD12';
-            item.appendChild(iconEl);
-
-            var body = document.createElement('div');
-            body.className = 'profile-achieve-body';
-
-            var nameEl = document.createElement('div');
-            nameEl.className = 'profile-achieve-name';
-            nameEl.textContent = ach.name || '';
-            body.appendChild(nameEl);
-
-            var descEl = document.createElement('div');
-            descEl.className = 'profile-achieve-desc';
-            descEl.textContent = ach.description || '';
-            body.appendChild(descEl);
-
-            item.appendChild(body);
-
-            var actionEl = document.createElement('div');
-            actionEl.style.cssText = 'flex-shrink:0;display:flex;align-items:center;';
-
-            if (!ach.unlocked) {
-                var lockedEl = document.createElement('span');
-                lockedEl.className = 'profile-achieve-locked';
-                lockedEl.textContent = '\uD83D\uDD12 Locked';
-                actionEl.appendChild(lockedEl);
-            } else if (ach.claimed) {
-                var claimedEl = document.createElement('span');
-                claimedEl.className = 'profile-achieve-claimed';
-                claimedEl.textContent = '\u2705 Claimed';
-                actionEl.appendChild(claimedEl);
-            } else {
-                var claimBtn = document.createElement('button');
-                claimBtn.className = 'profile-achieve-claim-btn';
-                var rewardStr = ach.rewardAmount
-                    ? ('+' + ach.rewardAmount + (ach.rewardType === 'gems' ? '\uD83D\uDC8E' : ' credits'))
-                    : 'Claim';
-                claimBtn.textContent = rewardStr;
-
-                (function(btn, achId, achRewardType, achRewardAmount) {
-                    btn.addEventListener('click', function() {
-                        btn.disabled = true;
-                        btn.textContent = '\u2026';
-                        var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
-                        if (!claimToken) { btn.textContent = 'Error'; return; }
-                        fetch('/api/achievements/claim/' + achId, {
-                            method: 'POST',
-                            headers: { 'Authorization': 'Bearer ' + claimToken, 'Content-Type': 'application/json' }
-                        }).then(function(r) { return r.json(); }).then(function(res) {
-                            if (res.success) {
-                                if (typeof showToast === 'function') {
-                                    var amt = res.rewardAmount || achRewardAmount;
-                                    var suffix = res.rewardType === 'gems' ? '\uD83D\uDC8E' : ' credits';
-                                    showToast('\uD83C\uDF89 Achievement claimed! +' + amt + suffix);
-                                }
-                                renderAchievementsTab();
-                            } else {
-                                btn.disabled = false;
-                                btn.textContent = 'Retry';
-                            }
-                        }).catch(function() {
-                            btn.disabled = false;
-                            btn.textContent = 'Retry';
-                        });
-                    });
-                })(claimBtn, ach.id, ach.rewardType, ach.rewardAmount);
-
-                actionEl.appendChild(claimBtn);
-            }
-
-            item.appendChild(actionEl);
-            card.appendChild(item);
-        });
-
-        el.appendChild(card);
-    }).catch(function() {
-        if (el.contains(loadingDiv)) el.removeChild(loadingDiv);
-        var errDiv = document.createElement('div');
-        errDiv.style.cssText = 'color:#f87171;text-align:center;padding:20px;font-size:13px;';
-        errDiv.textContent = 'Failed to load achievements. Please try again later.';
-        el.appendChild(errDiv);
-    });
 }
 
 
@@ -4253,5 +4111,247 @@ function _cosmeticsLoadInventory(panel) {
         errDiv.style.cssText = 'color:#f87171;text-align:center;padding:24px;font-size:13px;';
         errDiv.textContent = 'Failed to load inventory. Please try again later.';
         panel.appendChild(errDiv);
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// ACHIEVEMENTS SECTION
+// ═══════════════════════════════════════════════════════
+
+function _renderAchievementsSection() {
+    // Idempotency guard — remove stale section if switching back to this tab
+    var existing = document.getElementById('achievementsSection');
+    if (existing) existing.parentNode.removeChild(existing);
+
+    // CSS injection (once per page load)
+    if (!document.getElementById('achievements-section-css')) {
+        var s = document.createElement('style');
+        s.id = 'achievements-section-css';
+        s.textContent = [
+            '.ach-section { max-width:700px; }',
+            '.ach-summary { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }',
+            '.ach-summary-chip { background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px 16px; font-size:13px; color:#94a3b8; display:flex; flex-direction:column; align-items:center; min-width:120px; }',
+            '.ach-summary-chip strong { font-size:18px; color:#e2e8f0; margin-bottom:2px; }',
+            '.ach-list { display:flex; flex-direction:column; gap:10px; }',
+            '.ach-card { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:14px 16px; display:flex; gap:14px; align-items:flex-start; transition:opacity .2s; }',
+            '.ach-card.locked { opacity:.55; }',
+            '.ach-card-icon { font-size:28px; flex-shrink:0; line-height:1; padding-top:2px; }',
+            '.ach-card-body { flex:1; min-width:0; }',
+            '.ach-card-name { font-size:14px; font-weight:600; color:#e2e8f0; margin-bottom:2px; }',
+            '.ach-card-desc { font-size:12px; color:#94a3b8; margin-bottom:8px; }',
+            '.ach-progress-wrap { background:#0f172a; border-radius:4px; height:6px; overflow:hidden; margin-bottom:6px; }',
+            '.ach-progress-fill { height:100%; background:linear-gradient(90deg,#6366f1,#a78bfa); border-radius:4px; transition:width .4s; }',
+            '.ach-progress-label { font-size:11px; color:#64748b; }',
+            '.ach-reward-label { font-size:12px; color:#94a3b8; margin-top:6px; }',
+            '.ach-card-meta { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:6px; font-size:12px; }',
+            '.ach-unlocked-badge { color:#4ade80; font-weight:600; }',
+            '.ach-unlock-date { color:#64748b; font-size:11px; }',
+            '.ach-locked-badge { color:#64748b; }',
+            '.ach-skeleton { background:#1e293b; border-radius:10px; height:76px; animation:achPulse 1.4s ease-in-out infinite; }',
+            '@keyframes achPulse { 0%,100%{opacity:.5} 50%{opacity:1} }',
+            '.ach-error { color:#f87171; text-align:center; padding:24px; font-size:13px; }',
+            '.ach-empty { color:#94a3b8; text-align:center; padding:28px 0; font-size:13px; }'
+        ].join('\n');
+        document.head.appendChild(s);
+    }
+
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    // Section root
+    var section = document.createElement('div');
+    section.id = 'achievementsSection';
+    section.className = 'ach-section';
+
+    // Page header
+    var pageHeader = document.createElement('h2');
+    pageHeader.className = 'profile-section-title';
+    pageHeader.textContent = 'Achievements';
+    section.appendChild(pageHeader);
+
+    el.appendChild(section);
+
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) {
+        var authMsg = document.createElement('div');
+        authMsg.className = 'ach-empty';
+        authMsg.textContent = 'Please log in to view achievements.';
+        section.appendChild(authMsg);
+        return;
+    }
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Loading skeleton (3 placeholder cards)
+    var skeletonWrap = document.createElement('div');
+    skeletonWrap.className = 'ach-list';
+    skeletonWrap.id = 'achSkeletonWrap';
+    for (var si = 0; si < 3; si++) {
+        var sk = document.createElement('div');
+        sk.className = 'ach-skeleton';
+        skeletonWrap.appendChild(sk);
+    }
+    section.appendChild(skeletonWrap);
+
+    fetch('/api/achievements/', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(res) { return res.json(); }).then(function(data) {
+        // Remove skeleton
+        var skEl = document.getElementById('achSkeletonWrap');
+        if (skEl && skEl.parentNode) skEl.parentNode.removeChild(skEl);
+
+        var achievements = data.achievements || [];
+        var unlockedCount = typeof data.unlockedCount === 'number'
+            ? data.unlockedCount
+            : achievements.filter(function(a) { return a.isUnlocked; }).length;
+        var gemsEarned    = typeof data.gemsEarned    === 'number' ? data.gemsEarned    : 0;
+        var creditsEarned = typeof data.creditsEarned === 'number' ? data.creditsEarned : 0;
+
+        // Summary chips
+        var summary = document.createElement('div');
+        summary.className = 'ach-summary';
+
+        var chipUnlocked = document.createElement('div');
+        chipUnlocked.className = 'ach-summary-chip';
+        var chipUnlockedStrong = document.createElement('strong');
+        chipUnlockedStrong.textContent = unlockedCount + ' / ' + achievements.length;
+        chipUnlocked.appendChild(chipUnlockedStrong);
+        chipUnlocked.appendChild(document.createTextNode('Unlocked'));
+        summary.appendChild(chipUnlocked);
+
+        if (gemsEarned > 0) {
+            var chipGems = document.createElement('div');
+            chipGems.className = 'ach-summary-chip';
+            var chipGemsStrong = document.createElement('strong');
+            chipGemsStrong.textContent = gemsEarned + ' \uD83D\uDC8E';
+            chipGems.appendChild(chipGemsStrong);
+            chipGems.appendChild(document.createTextNode('Gems Earned'));
+            summary.appendChild(chipGems);
+        }
+
+        if (creditsEarned > 0) {
+            var chipCredits = document.createElement('div');
+            chipCredits.className = 'ach-summary-chip';
+            var chipCreditsStrong = document.createElement('strong');
+            chipCreditsStrong.textContent = '$' + (creditsEarned / 100).toFixed(2);
+            chipCredits.appendChild(chipCreditsStrong);
+            chipCredits.appendChild(document.createTextNode('Credits Earned'));
+            summary.appendChild(chipCredits);
+        }
+
+        section.appendChild(summary);
+
+        if (achievements.length === 0) {
+            var emptyEl = document.createElement('div');
+            emptyEl.className = 'ach-empty';
+            emptyEl.textContent = 'No achievements available yet.';
+            section.appendChild(emptyEl);
+            return;
+        }
+
+        var list = document.createElement('div');
+        list.className = 'ach-list';
+
+        achievements.forEach(function(ach) {
+            var card = document.createElement('div');
+            card.className = ach.isUnlocked ? 'ach-card' : 'ach-card locked';
+
+            // Icon
+            var iconEl = document.createElement('div');
+            iconEl.className = 'ach-card-icon';
+            iconEl.textContent = ach.isUnlocked ? '\uD83C\uDFC5' : '\uD83D\uDD12';
+            card.appendChild(iconEl);
+
+            // Body: name, desc, progress, reward
+            var body = document.createElement('div');
+            body.className = 'ach-card-body';
+
+            var nameEl = document.createElement('div');
+            nameEl.className = 'ach-card-name';
+            nameEl.textContent = ach.name || '';
+            body.appendChild(nameEl);
+
+            var descEl = document.createElement('div');
+            descEl.className = 'ach-card-desc';
+            descEl.textContent = ach.desc || '';
+            body.appendChild(descEl);
+
+            // Progress bar (shown for all — full for unlocked)
+            var prog    = typeof ach.progress === 'number' ? ach.progress : 0;
+            var tgt     = typeof ach.target   === 'number' && ach.target > 0 ? ach.target : 1;
+            var pct     = Math.min(100, Math.round((prog / tgt) * 100));
+
+            var progressWrap = document.createElement('div');
+            progressWrap.className = 'ach-progress-wrap';
+            var barFill = document.createElement('div');
+            barFill.className = 'ach-progress-fill';
+            barFill.style.width = pct + '%';
+            progressWrap.appendChild(barFill);
+            body.appendChild(progressWrap);
+
+            var progLabel = document.createElement('div');
+            progLabel.className = 'ach-progress-label';
+            progLabel.textContent = prog + ' / ' + tgt;
+            body.appendChild(progLabel);
+
+            // Reward label
+            if (ach.rewardType && ach.rewardAmount) {
+                var rewardEl = document.createElement('div');
+                rewardEl.className = 'ach-reward-label';
+                var rewardIcon = ach.rewardType === 'gems' ? '\uD83D\uDC8E' : '\uD83D\uDCB0';
+                var rewardValue = ach.rewardType === 'credits'
+                    ? '$' + (Number(ach.rewardAmount) / 100).toFixed(2)
+                    : ach.rewardAmount + ' gems';
+                rewardEl.textContent = rewardIcon + ' ' + rewardValue;
+                body.appendChild(rewardEl);
+            }
+
+            card.appendChild(body);
+
+            // Right-side meta: unlock state
+            var meta = document.createElement('div');
+            meta.className = 'ach-card-meta';
+
+            if (ach.isUnlocked) {
+                var unlockedBadge = document.createElement('div');
+                unlockedBadge.className = 'ach-unlocked-badge';
+                unlockedBadge.textContent = '\u2705 Unlocked';
+                meta.appendChild(unlockedBadge);
+
+                if (ach.unlockedAt) {
+                    var dateEl = document.createElement('div');
+                    dateEl.className = 'ach-unlock-date';
+                    try {
+                        var d = new Date(ach.unlockedAt);
+                        dateEl.textContent = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                    } catch (e) {
+                        dateEl.textContent = String(ach.unlockedAt);
+                    }
+                    meta.appendChild(dateEl);
+                }
+            } else {
+                var lockedBadge = document.createElement('div');
+                lockedBadge.className = 'ach-locked-badge';
+                lockedBadge.textContent = '\uD83D\uDD12 Locked';
+                meta.appendChild(lockedBadge);
+            }
+
+            card.appendChild(meta);
+            list.appendChild(card);
+        });
+
+        section.appendChild(list);
+
+    }).catch(function() {
+        // Remove skeleton on error
+        var skElErr = document.getElementById('achSkeletonWrap');
+        if (skElErr && skElErr.parentNode) skElErr.parentNode.removeChild(skElErr);
+
+        var errDiv = document.createElement('div');
+        errDiv.className = 'ach-error';
+        errDiv.textContent = 'Failed to load achievements. Please try again later.';
+        section.appendChild(errDiv);
     });
 }

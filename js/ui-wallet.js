@@ -103,6 +103,8 @@ function showWalletModal() {
     walletRenderWinbackSection(modal);
     // Render the VIP Deposit Bonus section (new /api/vipdeposit/ endpoints)
     walletRenderVipDepositBonusSection(modal);
+    // Render the Subscription status card
+    if (typeof walletRenderSubscriptionSection === 'function') walletRenderSubscriptionSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -4034,4 +4036,184 @@ async function walletRenderVipDepositBonusSection(parentContainer) {
             section.appendChild(nextEl);
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Subscription status card
+// ---------------------------------------------------------------------------
+async function walletRenderSubscriptionSection(parentContainer) {
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Idempotency guard
+    if (document.getElementById('subscriptionSection')) return;
+
+    // Inject CSS once
+    if (!document.getElementById('subscription-section-css')) {
+        var s = document.createElement('style');
+        s.id = 'subscription-section-css';
+        s.textContent = [
+            '#subscriptionSection {',
+            '  background:#1a1a2e;',
+            '  border-radius:12px;',
+            '  padding:14px;',
+            '  margin-bottom:14px;',
+            '  border:1px solid #2d2d44;',
+            '}',
+            '#subscriptionSection.sub-bronze { border-color:#cd7f32; }',
+            '#subscriptionSection.sub-silver { border-color:#aaa; }',
+            '#subscriptionSection.sub-gold   { border-color:#f0a500; }',
+            '.wsub-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }',
+            '.wsub-headline { color:#a78bfa; font-size:14px; font-weight:800; }',
+            '.wsub-tier-badge { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; text-transform:capitalize; }',
+            '.wsub-tier-badge.bronze { background:#cd7f32; color:#fff; }',
+            '.wsub-tier-badge.silver { background:#aaa;    color:#000; }',
+            '.wsub-tier-badge.gold   { background:#f0a500; color:#000; }',
+            '.wsub-inactive { color:#999; font-size:12px; margin:6px 0 0; }',
+            '.wsub-expiry { color:#ccc; font-size:12px; margin:4px 0; }',
+            '.wsub-expiry span { color:#fff; font-weight:600; }',
+            '.wsub-claim-btn { margin-top:10px; width:100%; padding:9px 0; border:none; border-radius:8px; cursor:pointer; font-weight:700; font-size:13px; background:linear-gradient(135deg,#7c3aed,#a78bfa); color:#fff; }',
+            '.wsub-claim-btn:disabled { opacity:0.55; cursor:not-allowed; }',
+            '.wsub-feedback { font-size:12px; margin-top:6px; min-height:1em; }',
+            '.wsub-skeleton { background:#2d2d44; border-radius:6px; height:14px; margin:6px 0; animation:wsub-pulse 1.4s ease-in-out infinite; }',
+            '.wsub-skeleton.wide { width:70%; }',
+            '.wsub-skeleton.narrow { width:40%; }',
+            '@keyframes wsub-pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }'
+        ].join('\n');
+        document.head.appendChild(s);
+    }
+
+    // Build container
+    var section = document.createElement('div');
+    section.id = 'subscriptionSection';
+
+    var header = document.createElement('div');
+    header.className = 'wsub-header';
+
+    var headline = document.createElement('div');
+    headline.className = 'wsub-headline';
+    headline.textContent = 'Subscription';
+    header.appendChild(headline);
+    section.appendChild(header);
+
+    // Loading skeleton
+    var sk1 = document.createElement('div');
+    sk1.className = 'wsub-skeleton wide';
+    var sk2 = document.createElement('div');
+    sk2.className = 'wsub-skeleton narrow';
+    section.appendChild(sk1);
+    section.appendChild(sk2);
+
+    parentContainer.appendChild(section);
+
+    // Fetch status
+    var data = null;
+    try {
+        var resp = await fetch('/api/subscription/status', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resp.ok) data = await resp.json();
+    } catch (err) {
+        console.error('[SubscriptionSection]', err);
+    }
+
+    // Remove skeletons
+    if (sk1.parentNode) sk1.parentNode.removeChild(sk1);
+    if (sk2.parentNode) sk2.parentNode.removeChild(sk2);
+
+    if (!data) {
+        // Error state
+        var errEl = document.createElement('div');
+        errEl.className = 'wsub-inactive';
+        errEl.textContent = 'Unable to load subscription status.';
+        section.appendChild(errEl);
+        return;
+    }
+
+    if (!data.active) {
+        // No active subscription
+        var inactiveEl = document.createElement('div');
+        inactiveEl.className = 'wsub-inactive';
+        inactiveEl.textContent = 'No active subscription. Upgrade to Bronze, Silver, or Gold for daily rewards and exclusive perks.';
+        section.appendChild(inactiveEl);
+        return;
+    }
+
+    // Active subscription — add tier border
+    var tierClass = (data.tier === 'gold' || data.tier === 'silver' || data.tier === 'bronze') ? ('sub-' + data.tier) : '';
+    if (tierClass) section.classList.add(tierClass);
+
+    // Tier badge in header
+    var tierBadge = document.createElement('div');
+    tierBadge.className = 'wsub-tier-badge';
+    if (data.tier) tierBadge.classList.add(data.tier);
+    tierBadge.textContent = data.tier ? (data.tier.charAt(0).toUpperCase() + data.tier.slice(1)) : 'Active';
+    header.appendChild(tierBadge);
+
+    // Expiry date
+    if (data.expiresAt) {
+        var expiryEl = document.createElement('div');
+        expiryEl.className = 'wsub-expiry';
+        var expiryLabel = document.createTextNode('Expires: ');
+        var expirySpan = document.createElement('span');
+        var expDate = new Date(data.expiresAt);
+        expirySpan.textContent = expDate.toLocaleDateString();
+        expiryEl.appendChild(expiryLabel);
+        expiryEl.appendChild(expirySpan);
+        section.appendChild(expiryEl);
+    }
+
+    // Claim daily reward button
+    var claimBtn = document.createElement('button');
+    claimBtn.className = 'wsub-claim-btn';
+
+    var feedbackEl = document.createElement('div');
+    feedbackEl.className = 'wsub-feedback';
+
+    if (data.dailyClaimedToday) {
+        claimBtn.disabled = true;
+        claimBtn.textContent = 'Claimed Today \u2713';
+    } else {
+        claimBtn.textContent = 'Claim Daily Reward';
+        claimBtn.addEventListener('click', async function () {
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'Claiming\u2026';
+            var claimToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+            var result = null;
+            try {
+                var claimResp = await fetch('/api/subscription/claim-daily', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + claimToken
+                    }
+                });
+                result = await claimResp.json();
+            } catch (claimErr) {
+                console.error('[SubscriptionSection claim]', claimErr);
+            }
+
+            if (result && result.success) {
+                feedbackEl.style.color = '#6ee7b7';
+                feedbackEl.textContent = result.message || 'Daily reward claimed!';
+                claimBtn.textContent = 'Claimed Today \u2713';
+                claimBtn.disabled = true;
+                if (typeof updateBalanceDisplay === 'function') {
+                    updateBalanceDisplay(result.newBalance);
+                }
+                if (typeof showToast === 'function') {
+                    showToast(result.message || 'Subscription daily reward claimed!', 'success');
+                }
+            } else {
+                feedbackEl.style.color = '#f87171';
+                feedbackEl.textContent = (result && result.message) ? result.message : 'Claim failed. Please try again.';
+                claimBtn.disabled = false;
+                claimBtn.textContent = 'Claim Daily Reward';
+            }
+        });
+    }
+
+    section.appendChild(claimBtn);
+    section.appendChild(feedbackEl);
 }
