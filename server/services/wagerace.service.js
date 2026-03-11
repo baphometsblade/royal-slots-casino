@@ -179,8 +179,8 @@ async function completeRace(raceId) {
         // Credit balance
         try {
             await db.run(
-                "UPDATE users SET balance = balance + ? WHERE id = ?",
-                [prize.credits, entry.user_id]
+                "UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?",
+                [prize.credits, prize.credits * 15, entry.user_id]
             );
         } catch (e) {
             console.error('[WagerRace] Credit prize error for user', entry.user_id, ':', e.message);

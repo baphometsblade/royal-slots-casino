@@ -190,8 +190,8 @@ async function updateProgress(userId, challengeType, amount, extra) {
                 var _balRow = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
                 var _balBefore = _balRow ? _balRow.balance : 0;
                 await db.run(
-                    'UPDATE users SET balance = balance + ? WHERE id = ?',
-                    [ch.reward_credits, userId]
+                    'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+                    [ch.reward_credits, ch.reward_credits * 15, userId]
                 );
                 try {
                     await db.run(
@@ -297,8 +297,8 @@ async function _checkStreakBonuses(userId, currentStreak) {
                 var _sBalRow = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
                 var _sBalBefore = _sBalRow ? _sBalRow.balance : 0;
                 await db.run(
-                    'UPDATE users SET balance = balance + ? WHERE id = ?',
-                    [bonus.credits, userId]
+                    'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+                    [bonus.credits, bonus.credits * 15, userId]
                 );
                 try {
                     await db.run(
@@ -351,11 +351,11 @@ async function skipChallenge(userId, challengeId) {
         [challengeId]
     );
 
-    // Award credits
+    // Award credits (bonus_balance with 15x wagering)
     if (challenge.reward_credits > 0) {
         await db.run(
-            'UPDATE users SET balance = balance + ? WHERE id = ?',
-            [challenge.reward_credits, userId]
+            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+            [challenge.reward_credits, challenge.reward_credits * 15, userId]
         );
     }
 

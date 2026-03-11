@@ -63,12 +63,12 @@ router.post('/claim', authenticate, async function(req, res) {
     }
     const bonus = parseFloat((levelsGained * BONUS_PER_LEVEL).toFixed(2));
     await db.run(
-      'UPDATE users SET balance = balance + ?, last_bonus_level = ? WHERE id = ?',
-      [bonus, currentLevel, userId]
+      'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, last_bonus_level = ? WHERE id = ?',
+      [bonus, bonus * 15, currentLevel, userId]
     );
     await db.run(
       "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
-      [userId, bonus, 'Level-up bonus: reached level ' + currentLevel]
+      [userId, bonus, 'Level-up bonus: reached level ' + currentLevel + ' (bonus, 15x wagering)']
     );
     const updated = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
     return res.json({

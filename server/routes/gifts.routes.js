@@ -89,8 +89,14 @@ router.post('/send', authenticate, async (req, res) => {
         }
         toUsername = toUsername.trim();
 
-        if (isNaN(amount) || amount < 1 || amount > 500) {
-            return res.status(400).json({ error: 'Amount must be between $1 and $500' });
+        // Enforce server-side gifting limits (matching config.js GIFTING values)
+        var GIFT_MIN = 10;
+        var GIFT_MAX = 200;
+        var GIFT_DAILY_LIMIT = 3;
+        var GIFT_DAILY_MAX_TOTAL = 500;
+
+        if (isNaN(amount) || amount < GIFT_MIN || amount > GIFT_MAX) {
+            return res.status(400).json({ error: 'Amount must be between $' + GIFT_MIN + ' and $' + GIFT_MAX });
         }
 
         // --- Look up recipient ---
@@ -102,6 +108,18 @@ router.post('/send', authenticate, async (req, res) => {
         // --- Cannot gift yourself ---
         if (recipient.id === req.user.id) {
             return res.status(400).json({ error: 'Cannot gift yourself' });
+        }
+
+        // --- Enforce daily gifting limits ---
+        var dailyGifts = await db.get(
+            "SELECT COUNT(*) as cnt, COALESCE(SUM(amount), 0) as total FROM gifts WHERE from_user_id = ? AND created_at >= datetime('now', '-24 hours')",
+            [req.user.id]
+        );
+        if (dailyGifts && dailyGifts.cnt >= GIFT_DAILY_LIMIT) {
+            return res.status(400).json({ error: 'Daily gift limit reached (' + GIFT_DAILY_LIMIT + ' gifts per day)' });
+        }
+        if (dailyGifts && (parseFloat(dailyGifts.total) || 0) + amount > GIFT_DAILY_MAX_TOTAL) {
+            return res.status(400).json({ error: 'Daily gift total limit exceeded ($' + GIFT_DAILY_MAX_TOTAL + ' per day)' });
         }
 
         // --- Check sender balance ---

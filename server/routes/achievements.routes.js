@@ -275,13 +275,13 @@ router.post('/check', authenticate, async (req, res) => {
                     const balanceAfter  = balanceBefore + ach.rewardAmount;
 
                     await db.run(
-                        'UPDATE users SET balance = balance + ? WHERE id = ?',
-                        [ach.rewardAmount, userId]
+                        'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+                        [ach.rewardAmount, ach.rewardAmount * 15, userId]
                     );
 
                     await db.run(
                         'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                        [userId, 'achievement_reward', ach.rewardAmount, balanceBefore, balanceAfter, 'Achievement: ' + ach.name]
+                        [userId, 'achievement_reward', ach.rewardAmount, balanceBefore, balanceAfter, 'Achievement: ' + ach.name + ' (bonus, 15x wagering)']
                     );
                 }
             } catch (rewardErr) {

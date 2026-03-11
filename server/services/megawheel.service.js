@@ -145,7 +145,7 @@ async function spin(userId, tier) {
     if (prizeType === 'gems') {
         await gemsService.addGems(userId, prizeAmount, 'Mega Wheel win');
     } else if (prizeType === 'credits') {
-        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [prizeAmount, userId]);
+        await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [prizeAmount, prizeAmount * 15, userId]);
     }
 
     // Log the spin

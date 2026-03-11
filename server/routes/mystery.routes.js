@@ -73,10 +73,10 @@ router.post('/claim', authenticate, async (req, res) => {
         const reward = pickReward();
 
         if (reward.type === 'credits') {
-            await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [reward.amount, userId]);
+            await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [reward.amount, reward.amount * 15, userId]);
             await db.run(
                 'INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)',
-                [userId, 'mystery_drop', reward.amount, 'Mystery Drop: ' + reward.amount + ' credits']
+                [userId, 'mystery_drop', reward.amount, 'Mystery Drop: ' + reward.amount + ' bonus credits (15x wagering)']
             );
         } else if (reward.type === 'gems') {
             try {

@@ -80,9 +80,9 @@ router.post('/claim', authenticate, async function(req, res) {
       return res.status(400).json({ error: 'No milestone to claim' });
     }
 
-    // Award credits to balance
+    // Award credits to bonus_balance with 15x wagering
     if (milestone.credits > 0) {
-      await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [milestone.credits, userId]);
+      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [milestone.credits, milestone.credits * 15, userId]);
     }
 
     // Record transaction

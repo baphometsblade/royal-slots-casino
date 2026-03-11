@@ -51,18 +51,18 @@ router.post('/', authenticate, async function(req, res) {
                         [userId, reward.amount, 'Daily streak reward: ' + reward.amount + ' gems (day ' + newCount + ')']);
                 } catch (e) { console.error('[Streak] transaction record error:', e.message); }
             } else if (reward.type === 'credits') {
-                await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [reward.amount, userId]);
+                await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [reward.amount, reward.amount * 15, userId]);
                 try {
                     await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'streak_reward', ?, ?)",
-                        [userId, reward.amount, 'Daily streak reward: $' + reward.amount + ' credits (day ' + newCount + ')']);
+                        [userId, reward.amount, 'Daily streak reward: $' + reward.amount + ' bonus credits (day ' + newCount + ', 15x wagering)']);
                 } catch (e) { console.error('[Streak] transaction record error:', e.message); }
             } else if (reward.type === 'weekly' || reward.type === 'biweekly' || reward.type === 'monthly') {
                 var creditAmount = reward.credits || reward.amount || 0;
                 if (creditAmount > 0) {
-                    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [creditAmount, userId]);
+                    await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [creditAmount, creditAmount * 15, userId]);
                     try {
                         await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'streak_reward', ?, ?)",
-                            [userId, creditAmount, 'Daily streak reward: $' + creditAmount + ' credits (' + reward.type + ' bonus, day ' + newCount + ')']);
+                            [userId, creditAmount, 'Daily streak reward: $' + creditAmount + ' bonus credits (' + reward.type + ' bonus, day ' + newCount + ', 15x wagering)']);
                     } catch (e) { console.error('[Streak] transaction record error:', e.message); }
                 }
                 if (reward.wheelSpins && reward.wheelSpins > 0) {
