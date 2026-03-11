@@ -110,6 +110,7 @@ function showWalletModal() {
     if (typeof renderLimboCard === 'function') renderLimboCard(modal);
     if (typeof renderBlackjackWidget === 'function') renderBlackjackWidget(modal);
     if (typeof renderSicBoWidget === 'function') renderSicBoWidget(modal);
+    if (typeof renderRedDogCard === 'function') renderRedDogCard(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -5343,6 +5344,466 @@ function renderSicBoWidget(parentContainer) {
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             rollBtn.disabled = false;
             rollBtn.textContent = 'ROLL';
+        }
+    });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// RED DOG CARD GAME
+// ═══════════════════════════════════════════════════════
+
+function renderRedDogCard(parentContainer) {
+    if (document.getElementById('redDogCard')) return;
+
+    /* ── CSS (inject once) ───────────────────────────────── */
+    if (!document.getElementById('redDogCardCSS')) {
+        var style = document.createElement('style');
+        style.id = 'redDogCardCSS';
+        style.textContent = [
+            '#redDogCard{background:linear-gradient(135deg,rgba(40,10,10,0.96),rgba(60,15,15,0.98));border-radius:16px;padding:20px 24px;margin:18px 20px;border:1px solid rgba(220,38,38,0.35);position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3)}',
+            '#redDogCard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#dc2626,#ef4444,transparent)}',
+            '.rd-title{font-size:1.25rem;font-weight:700;color:#ef4444;margin-bottom:14px;text-align:center}',
+            '.rd-bet-row{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:14px}',
+            '.rd-bet-input{width:90px;padding:8px 10px;border-radius:8px;border:1px solid rgba(220,38,38,0.4);background:rgba(0,0,0,0.45);color:#fff;font-size:0.95rem;text-align:center;outline:none}',
+            '.rd-bet-input:focus{border-color:rgba(220,38,38,0.7);box-shadow:0 0 8px rgba(220,38,38,0.2)}',
+            '.rd-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:0.9rem;text-transform:uppercase;transition:all 0.2s}',
+            '.rd-btn:disabled{opacity:0.45;cursor:not-allowed}',
+            '.rd-btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}',
+            '.rd-deal-btn{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;width:100%;padding:12px;border-radius:10px;font-size:1rem;letter-spacing:0.5px;margin-top:8px}',
+            '.rd-deal-btn:hover:not(:disabled){background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 16px rgba(220,38,38,0.3)}',
+            '.rd-raise-btn{background:linear-gradient(135deg,#f59e0b,#d97706);color:#1a1a2e}',
+            '.rd-stand-btn{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}',
+            '.rd-cards-area{display:flex;gap:12px;justify-content:center;align-items:center;margin:18px 0;min-height:80px;flex-wrap:wrap}',
+            '.rd-card{display:inline-flex;align-items:center;justify-content:center;width:56px;height:78px;border-radius:8px;background:#fff;color:#222;font-size:1.15rem;font-weight:700;border:2px solid #ccc;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:transform 0.3s}',
+            '.rd-card.red{color:#d32f2f}',
+            '.rd-card.facedown{background:linear-gradient(135deg,#7f1d1d,#991b1b);color:transparent;border-color:#dc2626}',
+            '.rd-card.facedown::after{content:"?";color:rgba(255,255,255,0.3);font-size:1.4rem}',
+            '.rd-card.reveal{animation:rdReveal 0.4s ease-out}',
+            '@keyframes rdReveal{0%{transform:rotateY(90deg) scale(0.8)}100%{transform:rotateY(0) scale(1)}}',
+            '.rd-spread-indicator{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px}',
+            '.rd-spread-label{font-size:0.7rem;color:#999;text-transform:uppercase;letter-spacing:0.5px}',
+            '.rd-spread-value{font-size:1.4rem;font-weight:800;color:#fbbf24}',
+            '.rd-spread-payout{font-size:0.75rem;color:#a3a3a3}',
+            '.rd-actions{display:flex;gap:10px;justify-content:center;margin-top:14px}',
+            '.rd-result{text-align:center;font-size:1.05rem;font-weight:700;min-height:26px;margin-top:12px;padding:10px;border-radius:10px;display:none}',
+            '.rd-result.win{display:block;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80}',
+            '.rd-result.loss{display:block;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171}',
+            '.rd-result.push{display:block;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:#fbbf24}',
+            '.rd-rules{font-size:0.72rem;color:#737373;text-align:center;margin-top:10px;line-height:1.4}'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    /* ── DOM structure ────────────────────────────────────── */
+    var card = document.createElement('div');
+    card.id = 'redDogCard';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'rd-title';
+    titleEl.textContent = '\uD83D\uDC15 Red Dog';
+    card.appendChild(titleEl);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'rd-bet-row';
+
+    var betLabel = document.createElement('span');
+    betLabel.textContent = 'Bet: $';
+    betLabel.style.color = '#ccc';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'rd-bet-input';
+    betInput.min = '0.50';
+    betInput.step = '0.50';
+    betInput.value = '1.00';
+    betRow.appendChild(betInput);
+
+    card.appendChild(betRow);
+
+    // Deal button
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'rd-btn rd-deal-btn';
+    dealBtn.textContent = 'DEAL';
+    card.appendChild(dealBtn);
+
+    // Cards area
+    var cardsArea = document.createElement('div');
+    cardsArea.className = 'rd-cards-area';
+    card.appendChild(cardsArea);
+
+    // Actions row (raise/stand) — hidden initially
+    var actionsRow = document.createElement('div');
+    actionsRow.className = 'rd-actions';
+    actionsRow.style.display = 'none';
+
+    var raiseBtn = document.createElement('button');
+    raiseBtn.className = 'rd-btn rd-raise-btn';
+    raiseBtn.textContent = 'RAISE (2x)';
+    actionsRow.appendChild(raiseBtn);
+
+    var standBtn = document.createElement('button');
+    standBtn.className = 'rd-btn rd-stand-btn';
+    standBtn.textContent = 'STAND';
+    actionsRow.appendChild(standBtn);
+
+    card.appendChild(actionsRow);
+
+    // Result display
+    var resultDisplay = document.createElement('div');
+    resultDisplay.className = 'rd-result';
+    card.appendChild(resultDisplay);
+
+    // Rules text
+    var rulesEl = document.createElement('div');
+    rulesEl.className = 'rd-rules';
+    rulesEl.textContent = 'Spread 1\u21925:1 | Spread 2\u21924:1 | Spread 3\u21922:1 | Spread 4+\u21921:1 | Pair match\u219211:1';
+    card.appendChild(rulesEl);
+
+    parentContainer.appendChild(card);
+
+    /* ── Helpers ──────────────────────────────────────────── */
+    var SUIT_SYMBOLS = { hearts: '\u2665', diamonds: '\u2666', clubs: '\u2663', spades: '\u2660' };
+
+    function rdCardText(c) {
+        return (c.rank || '') + (SUIT_SYMBOLS[c.suit] || c.suit || '');
+    }
+
+    function rdIsRed(c) {
+        return c.suit === 'hearts' || c.suit === 'diamonds';
+    }
+
+    function rdMakeCardEl(c, facedown) {
+        var el = document.createElement('div');
+        el.className = 'rd-card';
+        if (facedown) {
+            el.classList.add('facedown');
+        } else {
+            if (rdIsRed(c)) el.classList.add('red');
+            el.textContent = rdCardText(c);
+        }
+        return el;
+    }
+
+    function rdGetAuthHeaders() {
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return null;
+        var tokenKey = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
+        var token = localStorage.getItem(tokenKey);
+        if (!token) return null;
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        };
+    }
+
+    function rdRenderSpread(spreadVal) {
+        var indicator = document.createElement('div');
+        indicator.className = 'rd-spread-indicator';
+
+        var spreadLabel = document.createElement('div');
+        spreadLabel.className = 'rd-spread-label';
+
+        var spreadValue = document.createElement('div');
+        spreadValue.className = 'rd-spread-value';
+
+        var payoutInfo = document.createElement('div');
+        payoutInfo.className = 'rd-spread-payout';
+
+        if (spreadVal === -1) {
+            spreadLabel.textContent = 'PAIR';
+            spreadValue.textContent = '=';
+            payoutInfo.textContent = 'Push or 11:1';
+        } else if (spreadVal === 0) {
+            spreadLabel.textContent = 'CONSECUTIVE';
+            spreadValue.textContent = '\u2194';
+            payoutInfo.textContent = 'Push';
+        } else {
+            spreadLabel.textContent = 'SPREAD';
+            spreadValue.textContent = String(spreadVal);
+            var payout = spreadVal === 1 ? '5:1' : spreadVal === 2 ? '4:1' : spreadVal === 3 ? '2:1' : '1:1';
+            payoutInfo.textContent = payout;
+        }
+
+        indicator.appendChild(spreadLabel);
+        indicator.appendChild(spreadValue);
+        indicator.appendChild(payoutInfo);
+        return indicator;
+    }
+
+    /* ── Game state ───────────────────────────────────────── */
+    var rdCurrentGameId = null;
+    var rdCard1 = null;
+    var rdCard2 = null;
+
+    function rdResetUI() {
+        cardsArea.textContent = '';
+        resultDisplay.textContent = '';
+        resultDisplay.className = 'rd-result';
+        resultDisplay.style.display = 'none';
+        actionsRow.style.display = 'none';
+        dealBtn.disabled = false;
+        dealBtn.textContent = 'DEAL';
+        rdCurrentGameId = null;
+        rdCard1 = null;
+        rdCard2 = null;
+    }
+
+    function rdShowResult(text, cls) {
+        resultDisplay.textContent = text;
+        resultDisplay.className = 'rd-result';
+        if (cls) resultDisplay.classList.add(cls);
+        resultDisplay.style.display = 'block';
+    }
+
+    function rdRevealThirdCard(card3Data, win, payout, profit, newBal, isPush) {
+        // Clear cards area and rebuild with all three
+        cardsArea.textContent = '';
+
+        var c1El = rdMakeCardEl(rdCard1, false);
+        cardsArea.appendChild(c1El);
+
+        // Spread indicator stays
+        var spread = Math.abs(rdCard1.value - rdCard2.value) - 1;
+        if (rdCard1.value === rdCard2.value) spread = -1;
+        cardsArea.appendChild(rdRenderSpread(spread < -1 ? 0 : spread));
+
+        var c2El = rdMakeCardEl(rdCard2, false);
+        cardsArea.appendChild(c2El);
+
+        // Arrow
+        var arrow = document.createElement('span');
+        arrow.style.cssText = 'font-size:1.5rem;color:#fbbf24;margin:0 6px;';
+        arrow.textContent = '\u2192';
+        cardsArea.appendChild(arrow);
+
+        // Third card with reveal animation
+        var c3El = rdMakeCardEl(card3Data, false);
+        c3El.classList.add('reveal');
+        cardsArea.appendChild(c3El);
+
+        // Show result
+        actionsRow.style.display = 'none';
+
+        if (isPush) {
+            rdShowResult('Consecutive \u2014 Push! Bet returned.', 'push');
+        } else if (win) {
+            rdShowResult('Between! Won +$' + profit.toFixed(2), 'win');
+        } else {
+            rdShowResult('Not between \u2014 Lost', 'loss');
+        }
+
+        // Update balance
+        if (typeof updateBalanceDisplay === 'function' && newBal !== undefined) {
+            updateBalanceDisplay(newBal);
+        }
+
+        // Show play again after a beat
+        setTimeout(function() {
+            dealBtn.disabled = false;
+            dealBtn.textContent = 'PLAY AGAIN';
+        }, 800);
+    }
+
+    /* ── DEAL ─────────────────────────────────────────────── */
+    dealBtn.addEventListener('click', async function() {
+        if (rdCurrentGameId) {
+            // Play Again mode — reset and allow new deal
+            rdResetUI();
+            return;
+        }
+
+        var headers = rdGetAuthHeaders();
+        if (!headers) {
+            if (typeof showToast === 'function') showToast('Please log in to play.', 'error');
+            return;
+        }
+
+        var betVal = parseFloat(betInput.value);
+        if (isNaN(betVal) || betVal < 0.50) {
+            if (typeof showToast === 'function') showToast('Minimum bet is $0.50', 'error');
+            return;
+        }
+
+        dealBtn.disabled = true;
+        dealBtn.textContent = 'DEALING...';
+        resultDisplay.style.display = 'none';
+        resultDisplay.textContent = '';
+        cardsArea.textContent = '';
+
+        try {
+            var resp = await fetch('/api/reddog/deal', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ bet: betVal })
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Deal failed.', 'error');
+                dealBtn.disabled = false;
+                dealBtn.textContent = 'DEAL';
+                return;
+            }
+
+            rdCurrentGameId = data.gameId;
+            rdCard1 = data.card1;
+            rdCard2 = data.card2;
+
+            // Render card1, spread indicator, card2
+            var c1El = rdMakeCardEl(data.card1, false);
+            c1El.classList.add('reveal');
+            cardsArea.appendChild(c1El);
+
+            cardsArea.appendChild(rdRenderSpread(data.spread));
+
+            var c2El = rdMakeCardEl(data.card2, false);
+            c2El.classList.add('reveal');
+            cardsArea.appendChild(c2El);
+
+            // Third card placeholder (facedown)
+            var arrow = document.createElement('span');
+            arrow.style.cssText = 'font-size:1.5rem;color:#fbbf24;margin:0 6px;';
+            arrow.textContent = '\u2192';
+            cardsArea.appendChild(arrow);
+
+            var c3Placeholder = document.createElement('div');
+            c3Placeholder.className = 'rd-card facedown';
+            cardsArea.appendChild(c3Placeholder);
+
+            // If consecutive (spread=0), auto-resolve as push
+            if (data.spread === 0) {
+                // Consecutive — auto-stand (server will push)
+                dealBtn.disabled = true;
+                actionsRow.style.display = 'none';
+                setTimeout(async function() {
+                    try {
+                        var standResp = await fetch('/api/reddog/stand', {
+                            method: 'POST',
+                            headers: rdGetAuthHeaders(),
+                            body: JSON.stringify({ gameId: rdCurrentGameId })
+                        });
+                        var standData = await standResp.json();
+                        if (standResp.ok) {
+                            rdRevealThirdCard(standData.card3, standData.win, standData.payout, standData.profit, standData.newBalance, true);
+                        } else {
+                            rdShowResult('Error: ' + (standData.error || 'Unknown'), 'loss');
+                            dealBtn.disabled = false;
+                            dealBtn.textContent = 'PLAY AGAIN';
+                        }
+                    } catch (e2) {
+                        console.error('Red Dog stand error:', e2);
+                        rdShowResult('Network error.', 'loss');
+                        dealBtn.disabled = false;
+                        dealBtn.textContent = 'PLAY AGAIN';
+                    }
+                }, 600);
+            } else if (data.spread === -1) {
+                // Pair — auto-draw third card for 11:1 chance
+                dealBtn.disabled = true;
+                actionsRow.style.display = 'none';
+                setTimeout(async function() {
+                    try {
+                        var pairResp = await fetch('/api/reddog/stand', {
+                            method: 'POST',
+                            headers: rdGetAuthHeaders(),
+                            body: JSON.stringify({ gameId: rdCurrentGameId })
+                        });
+                        var pairData = await pairResp.json();
+                        if (pairResp.ok) {
+                            rdRevealThirdCard(pairData.card3, pairData.win, pairData.payout, pairData.profit, pairData.newBalance, false);
+                        } else {
+                            rdShowResult('Error: ' + (pairData.error || 'Unknown'), 'loss');
+                            dealBtn.disabled = false;
+                            dealBtn.textContent = 'PLAY AGAIN';
+                        }
+                    } catch (e3) {
+                        console.error('Red Dog pair draw error:', e3);
+                        rdShowResult('Network error.', 'loss');
+                        dealBtn.disabled = false;
+                        dealBtn.textContent = 'PLAY AGAIN';
+                    }
+                }, 600);
+            } else {
+                // Normal spread — show raise/stand buttons
+                actionsRow.style.display = 'flex';
+                raiseBtn.disabled = false;
+                standBtn.disabled = false;
+            }
+
+        } catch (e) {
+            console.error('Red Dog deal error:', e);
+            if (typeof showToast === 'function') showToast('Network error.', 'error');
+            dealBtn.disabled = false;
+            dealBtn.textContent = 'DEAL';
+        }
+    });
+
+    /* ── RAISE ────────────────────────────────────────────── */
+    raiseBtn.addEventListener('click', async function() {
+        if (!rdCurrentGameId) return;
+
+        var headers = rdGetAuthHeaders();
+        if (!headers) return;
+
+        raiseBtn.disabled = true;
+        standBtn.disabled = true;
+
+        try {
+            var resp = await fetch('/api/reddog/raise', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ gameId: rdCurrentGameId })
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Raise failed.', 'error');
+                raiseBtn.disabled = false;
+                standBtn.disabled = false;
+                return;
+            }
+
+            rdRevealThirdCard(data.card3, data.win, data.payout, data.profit, data.newBalance, false);
+
+        } catch (e) {
+            console.error('Red Dog raise error:', e);
+            if (typeof showToast === 'function') showToast('Network error.', 'error');
+            raiseBtn.disabled = false;
+            standBtn.disabled = false;
+        }
+    });
+
+    /* ── STAND ────────────────────────────────────────────── */
+    standBtn.addEventListener('click', async function() {
+        if (!rdCurrentGameId) return;
+
+        var headers = rdGetAuthHeaders();
+        if (!headers) return;
+
+        raiseBtn.disabled = true;
+        standBtn.disabled = true;
+
+        try {
+            var resp = await fetch('/api/reddog/stand', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ gameId: rdCurrentGameId })
+            });
+            var data = await resp.json();
+            if (!resp.ok) {
+                if (typeof showToast === 'function') showToast(data.error || 'Stand failed.', 'error');
+                raiseBtn.disabled = false;
+                standBtn.disabled = false;
+                return;
+            }
+
+            rdRevealThirdCard(data.card3, data.win, data.payout, data.profit, data.newBalance, false);
+
+        } catch (e) {
+            console.error('Red Dog stand error:', e);
+            if (typeof showToast === 'function') showToast('Network error.', 'error');
+            raiseBtn.disabled = false;
+            standBtn.disabled = false;
         }
     });
 }

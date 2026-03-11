@@ -629,6 +629,8 @@ function renderGames() {
                     if (typeof renderRouletteWidget === 'function') renderRouletteWidget();
                     // Keno mini-game widget
                     if (typeof renderKenoWidget === 'function') renderKenoWidget();
+                    // Chuck-a-Luck dice game widget
+                    if (typeof renderChuckALuckWidget === 'function') renderChuckALuckWidget();
                 }, 200);
             });
         }
@@ -7745,6 +7747,283 @@ function renderKenoWidget() {
             resultText.textContent = 'Network error';
             resultText.className = 'keno-result-text lose';
             playBtn.disabled = kenoPicks.length === 0;
+        });
+    });
+
+    // Insert into lobby
+    gamesGrid.parentNode.insertBefore(widget, gamesGrid);
+}
+
+// ═══════════════════════════════════════════════════════
+// CHUCK-A-LUCK DICE GAME WIDGET
+// ═══════════════════════════════════════════════════════
+var _chuckInFlight = false;
+
+function renderChuckALuckWidget() {
+    if (document.getElementById('chuckALuckWidget')) return;
+
+    // ── CSS injection ──
+    if (!document.getElementById('chuckaluck-widget-css')) {
+        var style = document.createElement('style');
+        style.id = 'chuckaluck-widget-css';
+        style.textContent = [
+            '#chuckALuckWidget { background: linear-gradient(135deg, #1a0a2e 0%, #2e1a3e 50%, #1a0a2e 100%); border-radius: 16px; padding: 20px; margin: 18px 0; border: 1px solid rgba(255,100,255,0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); max-width: 480px; }',
+            '#chuckALuckWidget .cal-title { font-size: 1.4em; font-weight: 700; color: #ff6fff; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(255,100,255,0.4); }',
+            '#chuckALuckWidget .cal-bet-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }',
+            '#chuckALuckWidget .cal-bet-row label { color: #ccc; font-size: 0.9em; white-space: nowrap; }',
+            '#chuckALuckWidget .cal-bet-row input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.4); color: #fff; font-size: 1em; outline: none; }',
+            '#chuckALuckWidget .cal-bet-row input:focus { border-color: #ff6fff; }',
+            '#chuckALuckWidget .cal-tabs { display: flex; gap: 6px; margin-bottom: 12px; }',
+            '#chuckALuckWidget .cal-tab { flex: 1; padding: 10px 4px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #ccc; font-weight: 700; font-size: 0.9em; cursor: pointer; text-align: center; transition: all 0.2s; }',
+            '#chuckALuckWidget .cal-tab:hover { background: rgba(255,100,255,0.15); border-color: rgba(255,100,255,0.4); }',
+            '#chuckALuckWidget .cal-tab.active { background: linear-gradient(135deg, #ff6fff, #cc44cc); color: #1a1a2e; border-color: #ff6fff; box-shadow: 0 0 10px rgba(255,100,255,0.5); }',
+            '#chuckALuckWidget .cal-number-row { display: flex; gap: 6px; margin-bottom: 14px; justify-content: center; }',
+            '#chuckALuckWidget .cal-num-btn { width: 48px; height: 48px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #ccc; font-size: 1.3em; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }',
+            '#chuckALuckWidget .cal-num-btn:hover { background: rgba(255,100,255,0.15); border-color: rgba(255,100,255,0.4); }',
+            '#chuckALuckWidget .cal-num-btn.selected { background: linear-gradient(135deg, #ff6fff, #cc44cc); color: #1a1a2e; border-color: #ff6fff; box-shadow: 0 0 10px rgba(255,100,255,0.5); }',
+            '#chuckALuckWidget .cal-roll-btn { display: block; width: 100%; padding: 14px; border-radius: 10px; border: none; background: linear-gradient(135deg, #ff6fff, #cc44cc); color: #1a1a2e; font-weight: 800; font-size: 1.15em; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; margin-bottom: 14px; }',
+            '#chuckALuckWidget .cal-roll-btn:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 0 20px rgba(255,100,255,0.5); }',
+            '#chuckALuckWidget .cal-roll-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '#chuckALuckWidget .cal-dice-area { display: flex; gap: 14px; justify-content: center; align-items: center; margin: 16px 0; min-height: 70px; }',
+            '#chuckALuckWidget .cal-die { font-size: 3em; transition: transform 0.3s; display: inline-block; }',
+            '#chuckALuckWidget .cal-die.rolling { animation: calDiceRoll 0.4s ease-in-out; }',
+            '@keyframes calDiceRoll { 0% { transform: rotateZ(0deg) scale(0.5); opacity: 0.3; } 50% { transform: rotateZ(180deg) scale(1.2); } 100% { transform: rotateZ(360deg) scale(1); opacity: 1; } }',
+            '#chuckALuckWidget .cal-result-text { text-align: center; font-size: 1.15em; font-weight: 700; min-height: 1.5em; margin-top: 6px; }',
+            '#chuckALuckWidget .cal-result-text.win { color: #00e676; text-shadow: 0 0 10px rgba(0,230,118,0.5); }',
+            '#chuckALuckWidget .cal-result-text.lose { color: #ff5252; }',
+            '#chuckALuckWidget .cal-info { text-align: center; font-size: 0.8em; color: rgba(255,255,255,0.4); margin-top: 8px; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // ── find insertion point ──
+    var gamesGrid = document.querySelector('.games-grid');
+    if (!gamesGrid) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'chuckALuckWidget';
+
+    // Dice face emoji map
+    var DICE_FACES = [null, '\u2680', '\u2681', '\u2682', '\u2683', '\u2684', '\u2685'];
+
+    // State
+    var currentTab = 'number'; // 'number' | 'big' | 'small'
+    var selectedNumber = 1;
+
+    // ── TITLE ──
+    var title = document.createElement('div');
+    title.className = 'cal-title';
+    title.textContent = '\uD83C\uDFB2 Chuck-a-Luck';
+    widget.appendChild(title);
+
+    // ── BET ROW ──
+    var betRow = document.createElement('div');
+    betRow.className = 'cal-bet-row';
+
+    var betLabel = document.createElement('label');
+    betLabel.textContent = 'Bet $';
+    betRow.appendChild(betLabel);
+
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.min = '0.25';
+    betInput.step = '0.25';
+    betInput.value = '1.00';
+    betInput.placeholder = '0.25';
+    betRow.appendChild(betInput);
+
+    widget.appendChild(betRow);
+
+    // ── QUICK BET TABS ──
+    var tabsRow = document.createElement('div');
+    tabsRow.className = 'cal-tabs';
+
+    var tabDefs = [
+        { key: 'number', label: 'Number' },
+        { key: 'big',    label: 'Big (11-17)' },
+        { key: 'small',  label: 'Small (4-10)' }
+    ];
+
+    var tabBtns = {};
+
+    tabDefs.forEach(function(td) {
+        var btn = document.createElement('button');
+        btn.className = 'cal-tab' + (td.key === currentTab ? ' active' : '');
+        btn.textContent = td.label;
+        btn.addEventListener('click', function() {
+            if (_chuckInFlight) return;
+            currentTab = td.key;
+            // Update tab styling
+            Object.keys(tabBtns).forEach(function(k) {
+                tabBtns[k].classList.toggle('active', k === td.key);
+            });
+            // Show/hide number selector
+            numberRow.style.display = td.key === 'number' ? 'flex' : 'none';
+        });
+        tabBtns[td.key] = btn;
+        tabsRow.appendChild(btn);
+    });
+
+    widget.appendChild(tabsRow);
+
+    // ── NUMBER SELECTOR (1-6) ──
+    var numberRow = document.createElement('div');
+    numberRow.className = 'cal-number-row';
+
+    var numBtns = [];
+
+    for (var n = 1; n <= 6; n++) {
+        (function(num) {
+            var btn = document.createElement('button');
+            btn.className = 'cal-num-btn' + (num === selectedNumber ? ' selected' : '');
+            btn.textContent = String(num);
+            btn.addEventListener('click', function() {
+                if (_chuckInFlight) return;
+                selectedNumber = num;
+                numBtns.forEach(function(b) {
+                    b.classList.toggle('selected', parseInt(b.textContent) === num);
+                });
+            });
+            numBtns.push(btn);
+            numberRow.appendChild(btn);
+        })(n);
+    }
+
+    widget.appendChild(numberRow);
+
+    // ── ROLL BUTTON ──
+    var rollBtn = document.createElement('button');
+    rollBtn.className = 'cal-roll-btn';
+    rollBtn.textContent = 'ROLL';
+    widget.appendChild(rollBtn);
+
+    // ── DICE DISPLAY AREA ──
+    var diceArea = document.createElement('div');
+    diceArea.className = 'cal-dice-area';
+
+    var dieEls = [];
+    for (var d = 0; d < 3; d++) {
+        var die = document.createElement('span');
+        die.className = 'cal-die';
+        die.textContent = DICE_FACES[1];
+        dieEls.push(die);
+        diceArea.appendChild(die);
+    }
+
+    widget.appendChild(diceArea);
+
+    // ── RESULT TEXT ──
+    var resultText = document.createElement('div');
+    resultText.className = 'cal-result-text';
+    widget.appendChild(resultText);
+
+    // ── INFO LINE ──
+    var infoLine = document.createElement('div');
+    infoLine.className = 'cal-info';
+    infoLine.textContent = 'Number: 1-match 1:1, 2-match 2:1, 3-match 10:1 | Big/Small 1:1';
+    widget.appendChild(infoLine);
+
+    // ── ROLL HANDLER ──
+    rollBtn.addEventListener('click', function() {
+        if (_chuckInFlight) return;
+
+        // Auth check
+        if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) return;
+
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 0.25) {
+            resultText.textContent = 'Min bet $0.25';
+            resultText.className = 'cal-result-text lose';
+            return;
+        }
+
+        // Build request body
+        var betType = currentTab;
+        var betValue = currentTab === 'number' ? selectedNumber : null;
+
+        _chuckInFlight = true;
+        rollBtn.disabled = true;
+        resultText.textContent = '';
+        resultText.className = 'cal-result-text';
+
+        // Rolling animation
+        dieEls.forEach(function(el) {
+            el.classList.remove('rolling');
+            el.textContent = '\u2680';
+        });
+        var rollInterval = setInterval(function() {
+            dieEls.forEach(function(el) {
+                el.textContent = DICE_FACES[Math.floor(Math.random() * 6) + 1];
+            });
+        }, 80);
+
+        var body = { bet: bet, betType: betType };
+        if (betValue !== null) body.betValue = betValue;
+
+        fetch('/api/chuckaluck/play', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(body)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            clearInterval(rollInterval);
+            _chuckInFlight = false;
+            rollBtn.disabled = false;
+
+            if (!data.success && data.error) {
+                resultText.textContent = data.error;
+                resultText.className = 'cal-result-text lose';
+                return;
+            }
+
+            var dice = data.dice || [];
+
+            // Show final dice with animation
+            for (var i = 0; i < 3; i++) {
+                (function(idx, val) {
+                    setTimeout(function() {
+                        dieEls[idx].textContent = DICE_FACES[val] || DICE_FACES[1];
+                        dieEls[idx].classList.add('rolling');
+                        setTimeout(function() { dieEls[idx].classList.remove('rolling'); }, 400);
+                    }, idx * 150);
+                })(i, dice[i]);
+            }
+
+            // Show result after dice reveal
+            setTimeout(function() {
+                var payout = data.payout || 0;
+                var profit = data.profit;
+                var matches = data.matches || 0;
+
+                if (data.win) {
+                    var msg = 'Won $' + payout.toFixed(2);
+                    if (currentTab === 'number' && matches > 0) {
+                        msg = matches + ' match' + (matches !== 1 ? 'es' : '') + '! ' + msg;
+                    }
+                    resultText.textContent = msg;
+                    resultText.className = 'cal-result-text win';
+                    if (typeof showToast === 'function') {
+                        showToast('\uD83C\uDFB2 Chuck-a-Luck: ' + msg);
+                    }
+                } else {
+                    resultText.textContent = 'Lost \u2014 total ' + (data.total || '?');
+                    resultText.className = 'cal-result-text lose';
+                }
+
+                if (typeof updateBalanceDisplay === 'function' && data.newBalance !== undefined) {
+                    updateBalanceDisplay(data.newBalance);
+                }
+            }, 500);
+        })
+        .catch(function() {
+            clearInterval(rollInterval);
+            _chuckInFlight = false;
+            rollBtn.disabled = false;
+            resultText.textContent = 'Network error';
+            resultText.className = 'cal-result-text lose';
         });
     });
 

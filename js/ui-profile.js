@@ -896,7 +896,8 @@ const PROFILE_TABS = [
     { id: 'cosmetics',    icon: '\u{1F3A8}', label: 'Cosmetics' },
     { id: 'tower',        icon: '\u{1F5FC}', label: 'Tower' },
     { id: 'videopoker',   icon: '\u{1F0CF}', label: 'Video Poker' },
-    { id: 'casinowar',    icon: '\u2694\uFE0F', label: 'Casino War' }
+    { id: 'casinowar',    icon: '\u2694\uFE0F', label: 'Casino War' },
+    { id: 'threecardpoker', icon: '\u{1F0CF}', label: 'Three Card Poker' }
 ];
 
 function renderProfileSidebar() {
@@ -999,6 +1000,7 @@ function renderProfileContent() {
         case 'tower':         renderTowerTab(); break;
         case 'videopoker':    renderVideoPokerTab(); break;
         case 'casinowar':     renderCasinoWarTab(); break;
+        case 'threecardpoker': renderThreeCardPokerTab(); break;
         default:              renderProfileOverview();
     }
 }
@@ -5601,4 +5603,856 @@ function renderCasinoWarCard() {
         playBtn.textContent = 'PLAY AGAIN';
         playBtn.disabled = false;
     }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// THREE CARD POKER TAB + WIDGET
+// ═══════════════════════════════════════════════════════
+
+function renderThreeCardPokerTab() {
+    if (typeof renderThreeCardPokerWidget === 'function') renderThreeCardPokerWidget();
+}
+
+function renderThreeCardPokerWidget() {
+    // Idempotency guard
+    if (document.getElementById('threeCardPokerWidget')) return;
+
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Card helpers
+    var ranks = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    var suitMap = { H: '\u2665', D: '\u2666', C: '\u2663', S: '\u2660' };
+    var handNames = {
+        straight_flush: 'Straight Flush',
+        three_of_a_kind: 'Three of a Kind',
+        straight: 'Straight',
+        flush: 'Flush',
+        pair: 'Pair',
+        high_card: 'High Card'
+    };
+
+    // CSS injection with ID guard
+    if (!document.getElementById('tcp-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'tcp-css';
+        styleEl.textContent = [
+            '#threeCardPokerWidget { padding: 20px; max-width: 520px; margin: 0 auto; }',
+            '.tcp-title { font-size: 1.4em; font-weight: bold; color: #fff; margin-bottom: 16px; text-align: center; }',
+            '.tcp-controls { display: flex; gap: 8px; align-items: center; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }',
+            '.tcp-label { color: #aaa; font-size: 0.9em; }',
+            '.tcp-input { width: 80px; padding: 6px 8px; border-radius: 6px; border: 1px solid #555; background: #1a1a2e; color: #fff; font-size: 1em; text-align: center; }',
+            '.tcp-deal-btn { padding: 8px 28px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; transition: opacity 0.15s; color: #fff; background: linear-gradient(135deg, #7c3aed, #a855f7); }',
+            '.tcp-deal-btn:hover { opacity: 0.85; }',
+            '.tcp-deal-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.tcp-hand-area { display: flex; gap: 32px; justify-content: center; align-items: flex-start; margin-bottom: 16px; min-height: 160px; }',
+            '.tcp-side { display: flex; flex-direction: column; align-items: center; gap: 8px; }',
+            '.tcp-side-label { color: #94a3b8; font-size: 0.85em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }',
+            '.tcp-cards-row { display: flex; gap: 6px; }',
+            '.tcp-card { width: 60px; height: 88px; border-radius: 8px; background: #1e1e3a; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; transition: all 0.3s; }',
+            '.tcp-card.empty { border-style: dashed; border-color: #333; }',
+            '.tcp-card.facedown { background: linear-gradient(135deg, #1e3a5f, #1a1a3a); border-color: #3b82f6; }',
+            '.tcp-card.facedown::after { content: "?"; font-size: 1.6em; color: #3b82f6; font-weight: bold; }',
+            '.tcp-card.win-glow { border-color: #4ade80; box-shadow: 0 0 12px rgba(74,222,128,0.4); }',
+            '.tcp-card.lose-dim { opacity: 0.5; }',
+            '.tcp-card-rank { font-size: 1.4em; font-weight: bold; line-height: 1; }',
+            '.tcp-card-suit { font-size: 1.2em; line-height: 1; margin-top: 2px; }',
+            '.tcp-card.red .tcp-card-rank, .tcp-card.red .tcp-card-suit { color: #ef4444; }',
+            '.tcp-card.black .tcp-card-rank, .tcp-card.black .tcp-card-suit { color: #e2e8f0; }',
+            '.tcp-hand-name { font-size: 0.85em; color: #fbbf24; font-weight: bold; margin-top: 4px; min-height: 20px; }',
+            '.tcp-status { text-align: center; padding: 10px; font-size: 1.1em; font-weight: bold; min-height: 36px; }',
+            '.tcp-status.win { color: #4ade80; }',
+            '.tcp-status.lose { color: #f87171; }',
+            '.tcp-status.info { color: #88f; }',
+            '.tcp-status.push { color: #fbbf24; }',
+            '.tcp-actions { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }',
+            '.tcp-action-btn { padding: 8px 24px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; transition: opacity 0.15s; color: #fff; }',
+            '.tcp-action-btn:hover { opacity: 0.85; }',
+            '.tcp-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.tcp-action-btn.play { background: linear-gradient(135deg, #059669, #10b981); }',
+            '.tcp-action-btn.fold { background: linear-gradient(135deg, #64748b, #94a3b8); }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    var el = document.getElementById('profileContent');
+    if (!el) return;
+    el.textContent = '';
+
+    // ── Game state ──
+    var tcpState = {
+        phase: 'idle', // 'idle' | 'dealt' | 'done'
+        bet: 1.00,
+        pairPlus: 0,
+        gameId: null
+    };
+
+    // ── Helpers ──
+    function formatCard(c) {
+        return { rank: ranks[c.v] || String(c.v), suit: suitMap[c.s] || c.s };
+    }
+
+    function isRed(suit) {
+        return suit === '\u2665' || suit === '\u2666';
+    }
+
+    function buildCard(c, extraClass) {
+        var cardEl = document.createElement('div');
+        var cls = 'tcp-card';
+        if (!c) {
+            cls += ' empty';
+            cardEl.className = cls;
+            return cardEl;
+        }
+        if (c === 'facedown') {
+            cls += ' facedown';
+            cardEl.className = cls;
+            return cardEl;
+        }
+        var fc = formatCard(c);
+        if (isRed(fc.suit)) { cls += ' red'; } else { cls += ' black'; }
+        if (extraClass) cls += ' ' + extraClass;
+        cardEl.className = cls;
+
+        var rankEl = document.createElement('div');
+        rankEl.className = 'tcp-card-rank';
+        rankEl.textContent = fc.rank;
+        cardEl.appendChild(rankEl);
+
+        var suitEl = document.createElement('div');
+        suitEl.className = 'tcp-card-suit';
+        suitEl.textContent = fc.suit;
+        cardEl.appendChild(suitEl);
+
+        return cardEl;
+    }
+
+    // ── Container ──
+    var widget = document.createElement('div');
+    widget.id = 'threeCardPokerWidget';
+
+    // ── Title ──
+    var title = document.createElement('div');
+    title.className = 'tcp-title';
+    title.textContent = '\uD83C\uDCCF Three Card Poker';
+    widget.appendChild(title);
+
+    // ── Controls ──
+    var controlsRow = document.createElement('div');
+    controlsRow.className = 'tcp-controls';
+
+    var anteLbl = document.createElement('span');
+    anteLbl.className = 'tcp-label';
+    anteLbl.textContent = 'Ante $';
+    controlsRow.appendChild(anteLbl);
+
+    var anteInput = document.createElement('input');
+    anteInput.type = 'number';
+    anteInput.className = 'tcp-input';
+    anteInput.min = '0.20';
+    anteInput.step = '0.20';
+    anteInput.value = '1.00';
+    controlsRow.appendChild(anteInput);
+
+    var ppLbl = document.createElement('span');
+    ppLbl.className = 'tcp-label';
+    ppLbl.textContent = 'Pair+ $';
+    controlsRow.appendChild(ppLbl);
+
+    var ppInput = document.createElement('input');
+    ppInput.type = 'number';
+    ppInput.className = 'tcp-input';
+    ppInput.min = '0';
+    ppInput.step = '0.20';
+    ppInput.value = '0';
+    controlsRow.appendChild(ppInput);
+
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'tcp-deal-btn';
+    dealBtn.textContent = 'DEAL';
+    controlsRow.appendChild(dealBtn);
+    widget.appendChild(controlsRow);
+
+    // ── Hand display area ──
+    var handArea = document.createElement('div');
+    handArea.className = 'tcp-hand-area';
+
+    // Player side
+    var playerSide = document.createElement('div');
+    playerSide.className = 'tcp-side';
+    var playerLabel = document.createElement('div');
+    playerLabel.className = 'tcp-side-label';
+    playerLabel.textContent = 'YOUR HAND';
+    playerSide.appendChild(playerLabel);
+    var playerCardsRow = document.createElement('div');
+    playerCardsRow.className = 'tcp-cards-row';
+    for (var i = 0; i < 3; i++) {
+        playerCardsRow.appendChild(buildCard(null));
+    }
+    playerSide.appendChild(playerCardsRow);
+    var playerHandName = document.createElement('div');
+    playerHandName.className = 'tcp-hand-name';
+    playerSide.appendChild(playerHandName);
+
+    // Dealer side
+    var dealerSide = document.createElement('div');
+    dealerSide.className = 'tcp-side';
+    var dealerLabel = document.createElement('div');
+    dealerLabel.className = 'tcp-side-label';
+    dealerLabel.textContent = 'DEALER';
+    dealerSide.appendChild(dealerLabel);
+    var dealerCardsRow = document.createElement('div');
+    dealerCardsRow.className = 'tcp-cards-row';
+    for (var j = 0; j < 3; j++) {
+        dealerCardsRow.appendChild(buildCard(null));
+    }
+    dealerSide.appendChild(dealerCardsRow);
+    var dealerHandName = document.createElement('div');
+    dealerHandName.className = 'tcp-hand-name';
+    dealerSide.appendChild(dealerHandName);
+
+    handArea.appendChild(playerSide);
+    handArea.appendChild(dealerSide);
+    widget.appendChild(handArea);
+
+    // ── Status ──
+    var statusEl = document.createElement('div');
+    statusEl.className = 'tcp-status info';
+    statusEl.textContent = 'Place your ante and deal!';
+    widget.appendChild(statusEl);
+
+    // ── Play / Fold actions ──
+    var actionsRow = document.createElement('div');
+    actionsRow.className = 'tcp-actions';
+    actionsRow.style.display = 'none';
+
+    var playBtn = document.createElement('button');
+    playBtn.className = 'tcp-action-btn play';
+    playBtn.textContent = 'PLAY';
+    actionsRow.appendChild(playBtn);
+
+    var foldBtn = document.createElement('button');
+    foldBtn.className = 'tcp-action-btn fold';
+    foldBtn.textContent = 'FOLD';
+    actionsRow.appendChild(foldBtn);
+
+    widget.appendChild(actionsRow);
+    el.appendChild(widget);
+
+    // ── Status helper ──
+    function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = 'tcp-status ' + (type || 'info');
+    }
+
+    // ── Clear and re-render cards via DOM ──
+    function clearChildren(parent) {
+        while (parent.firstChild) parent.removeChild(parent.firstChild);
+    }
+
+    // ── Render player cards ──
+    function renderPlayerCards(cards) {
+        clearChildren(playerCardsRow);
+        for (var i = 0; i < 3; i++) {
+            playerCardsRow.appendChild(buildCard(cards ? cards[i] : null));
+        }
+    }
+
+    // ── Render dealer cards (facedown or revealed) ──
+    function renderDealerCards(cards, revealed, resultClass) {
+        clearChildren(dealerCardsRow);
+        if (!revealed) {
+            // Show one faceup (dealerUp) + 2 facedown
+            dealerCardsRow.appendChild(buildCard(cards ? cards[0] : null));
+            dealerCardsRow.appendChild(buildCard('facedown'));
+            dealerCardsRow.appendChild(buildCard('facedown'));
+        } else {
+            for (var i = 0; i < 3; i++) {
+                dealerCardsRow.appendChild(buildCard(cards ? cards[i] : null, resultClass));
+            }
+        }
+    }
+
+    function lockControls(locked) {
+        anteInput.disabled = locked;
+        ppInput.disabled = locked;
+        dealBtn.disabled = locked;
+    }
+
+    // ── DEAL ──
+    function doDeal() {
+        if (tcpState.phase === 'dealt') return;
+
+        var bet = parseFloat(anteInput.value);
+        if (isNaN(bet) || bet < 0.20) {
+            setStatus('Minimum ante is $0.20', 'lose');
+            return;
+        }
+        var pp = parseFloat(ppInput.value);
+        if (isNaN(pp) || pp < 0) pp = 0;
+
+        tcpState.bet = bet;
+        tcpState.pairPlus = pp;
+
+        lockControls(true);
+        actionsRow.style.display = 'none';
+        playerHandName.textContent = '';
+        dealerHandName.textContent = '';
+        setStatus('Dealing...', 'info');
+
+        var body = { bet: bet };
+        if (pp > 0) body.pairPlus = pp;
+
+        fetch('/api/threecardpoker/deal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(body)
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Deal failed', 'lose');
+                lockControls(false);
+                return;
+            }
+            var d = result.data;
+            tcpState.phase = 'dealt';
+            tcpState.gameId = d.gameId;
+
+            // Show player's 3 cards
+            renderPlayerCards(d.playerCards);
+
+            // Show dealer's up card + 2 facedown
+            renderDealerCards([d.dealerUp], false);
+
+            setStatus('Play (match ante) or Fold?', 'info');
+            actionsRow.style.display = 'flex';
+            playBtn.disabled = false;
+            foldBtn.disabled = false;
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            lockControls(false);
+        });
+    }
+
+    // ── PLAY (match ante) ──
+    function doPlay() {
+        if (tcpState.phase !== 'dealt') return;
+
+        actionsRow.style.display = 'none';
+        setStatus('Revealing dealer hand...', 'info');
+
+        fetch('/api/threecardpoker/play', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ gameId: tcpState.gameId })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Play failed', 'lose');
+                actionsRow.style.display = 'flex';
+                return;
+            }
+            var d = result.data;
+            tcpState.phase = 'done';
+
+            // Show player hand name
+            if (d.playerHand) {
+                playerHandName.textContent = handNames[d.playerHand] || d.playerHand;
+            }
+
+            // Reveal dealer cards
+            var dealerCards = d.dealerCards || [];
+            renderDealerCards(dealerCards, true, d.result === 'win' ? 'win-glow' : (d.result === 'lose' ? 'lose-dim' : ''));
+
+            if (d.dealerHand) {
+                dealerHandName.textContent = handNames[d.dealerHand] || d.dealerHand;
+            }
+
+            if (d.result === 'win') {
+                var payoutStr = typeof formatMoney === 'function' ? formatMoney(d.payout) : d.payout.toFixed(2);
+                setStatus('You win! +$' + payoutStr, 'win');
+            } else if (d.result === 'lose') {
+                setStatus('Dealer wins!', 'lose');
+            } else {
+                setStatus('Push! Bet returned.', 'push');
+            }
+
+            if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                updateBalanceDisplay(d.newBalance);
+            }
+
+            dealBtn.textContent = 'DEAL AGAIN';
+            lockControls(false);
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            actionsRow.style.display = 'flex';
+        });
+    }
+
+    // ── FOLD ──
+    function doFold() {
+        if (tcpState.phase !== 'dealt') return;
+
+        actionsRow.style.display = 'none';
+        setStatus('Folding...', 'info');
+
+        fetch('/api/threecardpoker/fold', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ gameId: tcpState.gameId })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+            if (!result.ok) {
+                setStatus(result.data.error || 'Fold failed', 'lose');
+                actionsRow.style.display = 'flex';
+                return;
+            }
+            var d = result.data;
+            tcpState.phase = 'done';
+
+            var lostStr = typeof formatMoney === 'function' ? formatMoney(Math.abs(d.profit || tcpState.bet)) : Math.abs(d.profit || tcpState.bet).toFixed(2);
+            setStatus('Folded. Ante lost: -$' + lostStr, 'lose');
+
+            if (typeof updateBalanceDisplay === 'function' && d.newBalance !== undefined) {
+                updateBalanceDisplay(d.newBalance);
+            }
+
+            dealBtn.textContent = 'DEAL AGAIN';
+            lockControls(false);
+        }).catch(function() {
+            setStatus('Network error. Try again.', 'lose');
+            actionsRow.style.display = 'flex';
+        });
+    }
+
+    // ── Event binding ──
+    dealBtn.addEventListener('click', function() {
+        if (tcpState.phase === 'done' || tcpState.phase === 'idle') {
+            tcpState.phase = 'idle';
+            tcpState.gameId = null;
+            dealBtn.textContent = 'DEAL';
+            renderPlayerCards(null);
+            renderDealerCards(null, false);
+            playerHandName.textContent = '';
+            dealerHandName.textContent = '';
+            doDeal();
+        } else {
+            doDeal();
+        }
+    });
+
+    playBtn.addEventListener('click', doPlay);
+    foldBtn.addEventListener('click', doFold);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Three Card Poker Tab — POST /api/threecardpoker/deal, /play, /fold
+// ══════════════════════════════════════════════════════════════════════════════
+
+function renderThreeCardPokerTab() {
+    if (typeof renderThreeCardPokerWidget === 'function') renderThreeCardPokerWidget();
+}
+
+function renderThreeCardPokerWidget() {
+    // Idempotency guard
+    if (document.getElementById('threeCardPokerWidget')) return;
+
+    // Auth gate
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // CSS injection with ID guard
+    if (!document.getElementById('three-card-poker-css')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'three-card-poker-css';
+        styleEl.textContent = [
+            '.tcp-widget { padding: 20px; max-width: 520px; margin: 0 auto; }',
+            '.tcp-title { font-size: 1.4em; font-weight: bold; color: #fff; margin-bottom: 16px; text-align: center; }',
+            '.tcp-controls { display: flex; gap: 8px; align-items: center; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }',
+            '.tcp-bet-label { color: #aaa; font-size: 0.9em; }',
+            '.tcp-bet-input { width: 80px; padding: 6px 8px; border-radius: 6px; border: 1px solid #555; background: #1a1a2e; color: #fff; font-size: 1em; text-align: center; }',
+            '.tcp-deal-btn { padding: 8px 28px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; transition: opacity 0.15s; color: #fff; background: linear-gradient(135deg, #7c3aed, #a855f7); }',
+            '.tcp-deal-btn:hover { opacity: 0.85; }',
+            '.tcp-deal-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.tcp-table { display: flex; gap: 32px; justify-content: center; align-items: flex-start; margin-bottom: 16px; min-height: 160px; }',
+            '.tcp-hand { display: flex; flex-direction: column; align-items: center; gap: 8px; }',
+            '.tcp-hand-label { color: #94a3b8; font-size: 0.85em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }',
+            '.tcp-cards { display: flex; gap: 6px; }',
+            '.tcp-card { width: 60px; height: 84px; border-radius: 8px; background: #1e1e3a; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; transition: all 0.3s; }',
+            '.tcp-card.face-down { background: linear-gradient(135deg, #1a237e, #283593); }',
+            '.tcp-card-rank { font-size: 1.3em; font-weight: bold; }',
+            '.tcp-card-suit { font-size: 1.1em; line-height: 1; }',
+            '.tcp-card.red .tcp-card-rank, .tcp-card.red .tcp-card-suit { color: #ef4444; }',
+            '.tcp-card.black .tcp-card-rank, .tcp-card.black .tcp-card-suit { color: #e2e8f0; }',
+            '.tcp-actions { display: flex; gap: 12px; justify-content: center; margin-bottom: 16px; }',
+            '.tcp-play-btn { padding: 10px 32px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; color: #fff; background: linear-gradient(135deg, #16a34a, #22c55e); transition: opacity 0.15s; }',
+            '.tcp-fold-btn { padding: 10px 32px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 1em; color: #fff; background: linear-gradient(135deg, #dc2626, #ef4444); transition: opacity 0.15s; }',
+            '.tcp-play-btn:hover, .tcp-fold-btn:hover { opacity: 0.85; }',
+            '.tcp-play-btn:disabled, .tcp-fold-btn:disabled { opacity: 0.4; cursor: not-allowed; }',
+            '.tcp-status { text-align: center; min-height: 48px; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 1em; margin-bottom: 12px; }',
+            '.tcp-status.win { color: #22c55e; background: rgba(34,197,94,0.12); }',
+            '.tcp-status.lose { color: #ef4444; background: rgba(239,68,68,0.12); }',
+            '.tcp-status.push { color: #f59e0b; background: rgba(245,158,11,0.12); }',
+            '.tcp-status.info { color: #94a3b8; background: rgba(148,163,184,0.08); }',
+            '.tcp-hand-name { font-size: 0.85em; color: #c084fc; font-weight: bold; margin-top: 4px; }',
+            '.tcp-paytable { font-size: 0.75em; color: #64748b; text-align: center; margin-top: 8px; line-height: 1.6; }'
+        ].join('\n');
+        document.head.appendChild(styleEl);
+    }
+
+    // Find profile content area
+    var profileContent = document.querySelector('.profile-tab-content') || document.querySelector('.profile-content');
+    if (!profileContent) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'threeCardPokerWidget';
+    widget.className = 'tcp-widget';
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'tcp-title';
+    titleEl.textContent = '\uD83C\uDCA1 Three Card Poker';
+    widget.appendChild(titleEl);
+
+    // Controls row: Ante + Pair Plus + Deal button
+    var controlsRow = document.createElement('div');
+    controlsRow.className = 'tcp-controls';
+
+    var anteLabel = document.createElement('span');
+    anteLabel.className = 'tcp-bet-label';
+    anteLabel.textContent = 'Ante $';
+    controlsRow.appendChild(anteLabel);
+
+    var anteInput = document.createElement('input');
+    anteInput.type = 'number';
+    anteInput.className = 'tcp-bet-input';
+    anteInput.min = '0.50';
+    anteInput.max = '250';
+    anteInput.step = '0.50';
+    anteInput.value = '5';
+    controlsRow.appendChild(anteInput);
+
+    var ppLabel = document.createElement('span');
+    ppLabel.className = 'tcp-bet-label';
+    ppLabel.textContent = 'Pair Plus $';
+    controlsRow.appendChild(ppLabel);
+
+    var ppInput = document.createElement('input');
+    ppInput.type = 'number';
+    ppInput.className = 'tcp-bet-input';
+    ppInput.min = '0';
+    ppInput.max = '250';
+    ppInput.step = '0.50';
+    ppInput.value = '0';
+    controlsRow.appendChild(ppInput);
+
+    var dealBtn = document.createElement('button');
+    dealBtn.className = 'tcp-deal-btn';
+    dealBtn.textContent = 'DEAL';
+    controlsRow.appendChild(dealBtn);
+
+    widget.appendChild(controlsRow);
+
+    // Table area: Player hand + Dealer hand
+    var tableArea = document.createElement('div');
+    tableArea.className = 'tcp-table';
+
+    var playerSide = document.createElement('div');
+    playerSide.className = 'tcp-hand';
+    var playerLabel = document.createElement('div');
+    playerLabel.className = 'tcp-hand-label';
+    playerLabel.textContent = 'Your Hand';
+    playerSide.appendChild(playerLabel);
+    var playerCards = document.createElement('div');
+    playerCards.className = 'tcp-cards';
+    playerSide.appendChild(playerCards);
+    var playerHandName = document.createElement('div');
+    playerHandName.className = 'tcp-hand-name';
+    playerSide.appendChild(playerHandName);
+    tableArea.appendChild(playerSide);
+
+    var dealerSide = document.createElement('div');
+    dealerSide.className = 'tcp-hand';
+    var dealerLabel = document.createElement('div');
+    dealerLabel.className = 'tcp-hand-label';
+    dealerLabel.textContent = 'Dealer';
+    dealerSide.appendChild(dealerLabel);
+    var dealerCards = document.createElement('div');
+    dealerCards.className = 'tcp-cards';
+    dealerSide.appendChild(dealerCards);
+    var dealerHandName = document.createElement('div');
+    dealerHandName.className = 'tcp-hand-name';
+    dealerSide.appendChild(dealerHandName);
+    tableArea.appendChild(dealerSide);
+
+    widget.appendChild(tableArea);
+
+    // Action buttons (Play / Fold)
+    var actionsRow = document.createElement('div');
+    actionsRow.className = 'tcp-actions';
+    actionsRow.style.display = 'none';
+
+    var playBtn = document.createElement('button');
+    playBtn.className = 'tcp-play-btn';
+    playBtn.textContent = 'PLAY';
+    actionsRow.appendChild(playBtn);
+
+    var foldBtn = document.createElement('button');
+    foldBtn.className = 'tcp-fold-btn';
+    foldBtn.textContent = 'FOLD';
+    actionsRow.appendChild(foldBtn);
+
+    widget.appendChild(actionsRow);
+
+    // Status message
+    var statusEl = document.createElement('div');
+    statusEl.className = 'tcp-status info';
+    statusEl.textContent = 'Place your ante and deal to start!';
+    widget.appendChild(statusEl);
+
+    // Paytable info
+    var paytable = document.createElement('div');
+    paytable.className = 'tcp-paytable';
+    paytable.textContent = 'Pair Plus: SF 40:1 | 3oK 30:1 | Str 6:1 | Flush 4:1 | Pair 1:1';
+    widget.appendChild(paytable);
+
+    profileContent.appendChild(widget);
+
+    // ── State ─────────────────────────────────────────
+    var tcpState = { gameId: null, busy: false };
+
+    // ── Helpers ───────────────────────────────────────
+    function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className = 'tcp-status ' + (type || 'info');
+    }
+
+    function renderCard(card, parentEl) {
+        var cardEl = document.createElement('div');
+        var isRed = (card.suit === '\u2665' || card.suit === '\u2666');
+        cardEl.className = 'tcp-card ' + (isRed ? 'red' : 'black');
+        var rankSpan = document.createElement('span');
+        rankSpan.className = 'tcp-card-rank';
+        rankSpan.textContent = card.rank;
+        cardEl.appendChild(rankSpan);
+        var suitSpan = document.createElement('span');
+        suitSpan.className = 'tcp-card-suit';
+        suitSpan.textContent = card.suit;
+        cardEl.appendChild(suitSpan);
+        parentEl.appendChild(cardEl);
+    }
+
+    function renderFaceDown(parentEl) {
+        var cardEl = document.createElement('div');
+        cardEl.className = 'tcp-card face-down';
+        var q = document.createElement('span');
+        q.className = 'tcp-card-rank';
+        q.textContent = '?';
+        q.style.color = '#64748b';
+        cardEl.appendChild(q);
+        parentEl.appendChild(cardEl);
+    }
+
+    function clearCards() {
+        playerCards.innerHTML = '';
+        dealerCards.innerHTML = '';
+        playerHandName.textContent = '';
+        dealerHandName.textContent = '';
+    }
+
+    function resetTable() {
+        clearCards();
+        for (var i = 0; i < 3; i++) {
+            renderFaceDown(playerCards);
+            renderFaceDown(dealerCards);
+        }
+    }
+
+    resetTable();
+
+    // ── Deal ──────────────────────────────────────────
+    function doDeal() {
+        if (tcpState.busy) return;
+        var ante = parseFloat(anteInput.value);
+        var pp = parseFloat(ppInput.value) || 0;
+        if (isNaN(ante) || ante < 0.50 || ante > 250) {
+            setStatus('Ante must be $0.50 \u2013 $250', 'lose');
+            return;
+        }
+
+        tcpState.busy = true;
+        dealBtn.disabled = true;
+        setStatus('Dealing...', 'info');
+        clearCards();
+
+        var tk = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        fetch('/api/threecardpoker/deal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
+            body: JSON.stringify({ bet: ante, pairPlus: pp })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                setStatus(data.error || 'Deal failed', 'lose');
+                tcpState.busy = false;
+                dealBtn.disabled = false;
+                return;
+            }
+            tcpState.gameId = data.gameId;
+
+            // Render player cards
+            data.playerCards.forEach(function(c) { renderCard(c, playerCards); });
+
+            // Render dealer: one face up, two face down
+            renderCard(data.dealerUp, dealerCards);
+            renderFaceDown(dealerCards);
+            renderFaceDown(dealerCards);
+
+            // Evaluate player hand name locally
+            var pVals = data.playerCards.map(function(c) { return c.value; }).sort(function(a,b) { return b - a; });
+            var pSuits = data.playerCards.map(function(c) { return c.suit; });
+            var isFlush = pSuits[0] === pSuits[1] && pSuits[1] === pSuits[2];
+            var span = pVals[0] - pVals[2];
+            var unique = new Set(pVals).size;
+            var isStraight = unique === 3 && span === 2;
+            if (!isStraight && pVals[0] === 14 && pVals[1] === 3 && pVals[2] === 2) isStraight = true;
+
+            var handName = 'High Card';
+            if (isFlush && isStraight) handName = 'Straight Flush';
+            else if (unique === 1) handName = 'Three of a Kind';
+            else if (isStraight) handName = 'Straight';
+            else if (isFlush) handName = 'Flush';
+            else if (pVals[0] === pVals[1] || pVals[1] === pVals[2]) handName = 'Pair';
+            playerHandName.textContent = handName;
+
+            setStatus('Play (raise ' + (typeof formatMoney === 'function' ? formatMoney(ante) : '$' + ante.toFixed(2)) + ') or Fold?', 'info');
+            actionsRow.style.display = 'flex';
+            playBtn.disabled = false;
+            foldBtn.disabled = false;
+        })
+        .catch(function(err) {
+            console.error('[3CP UI] Deal error:', err);
+            setStatus('Network error', 'lose');
+            tcpState.busy = false;
+            dealBtn.disabled = false;
+        });
+    }
+
+    // ── Play ──────────────────────────────────────────
+    function doPlay() {
+        if (!tcpState.gameId) return;
+        playBtn.disabled = true;
+        foldBtn.disabled = true;
+        setStatus('Playing...', 'info');
+
+        var tk = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        fetch('/api/threecardpoker/play', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
+            body: JSON.stringify({ gameId: tcpState.gameId })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                setStatus(data.error || 'Play failed', 'lose');
+                endRound();
+                return;
+            }
+
+            // Reveal dealer cards
+            dealerCards.innerHTML = '';
+            data.dealerHand.cards.forEach(function(c) { renderCard(c, dealerCards); });
+            dealerHandName.textContent = data.dealerHand.name;
+
+            // Build result message
+            var msg = '';
+            if (data.result === 'win') {
+                msg = 'You win! ' + data.playerHand.name + ' beats ' + data.dealerHand.name;
+            } else if (data.result === 'no-qualify') {
+                msg = 'Dealer doesn\'t qualify (' + data.dealerHand.name + '). Ante wins, play pushes!';
+            } else if (data.result === 'tie') {
+                msg = 'Push! Both have ' + data.playerHand.name;
+            } else {
+                msg = 'Dealer wins with ' + data.dealerHand.name + ' vs your ' + data.playerHand.name;
+            }
+
+            if (data.profit > 0) {
+                var profitStr = typeof formatMoney === 'function' ? formatMoney(data.profit) : '$' + data.profit.toFixed(2);
+                msg += ' (+' + profitStr + ')';
+                setStatus(msg, 'win');
+            } else if (data.profit === 0) {
+                setStatus(msg, 'push');
+            } else {
+                var lossStr = typeof formatMoney === 'function' ? formatMoney(Math.abs(data.profit)) : '$' + Math.abs(data.profit).toFixed(2);
+                msg += ' (-' + lossStr + ')';
+                setStatus(msg, 'lose');
+            }
+
+            if (typeof updateBalanceDisplay === 'function' && data.newBalance !== null) {
+                updateBalanceDisplay(data.newBalance);
+            }
+            endRound();
+        })
+        .catch(function(err) {
+            console.error('[3CP UI] Play error:', err);
+            setStatus('Network error', 'lose');
+            endRound();
+        });
+    }
+
+    // ── Fold ──────────────────────────────────────────
+    function doFold() {
+        if (!tcpState.gameId) return;
+        playBtn.disabled = true;
+        foldBtn.disabled = true;
+
+        var tk = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        fetch('/api/threecardpoker/fold', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
+            body: JSON.stringify({ gameId: tcpState.gameId })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                setStatus(data.error || 'Fold failed', 'lose');
+                endRound();
+                return;
+            }
+
+            // Reveal dealer cards
+            dealerCards.innerHTML = '';
+            data.dealerCards.forEach(function(c) { renderCard(c, dealerCards); });
+
+            var lossStr = typeof formatMoney === 'function' ? formatMoney(Math.abs(data.profit)) : '$' + Math.abs(data.profit).toFixed(2);
+            setStatus('Folded. Lost ' + lossStr, 'lose');
+
+            if (typeof updateBalanceDisplay === 'function' && data.newBalance !== null) {
+                updateBalanceDisplay(data.newBalance);
+            }
+            endRound();
+        })
+        .catch(function(err) {
+            console.error('[3CP UI] Fold error:', err);
+            setStatus('Network error', 'lose');
+            endRound();
+        });
+    }
+
+    function endRound() {
+        tcpState.gameId = null;
+        tcpState.busy = false;
+        actionsRow.style.display = 'none';
+        dealBtn.disabled = false;
+        dealBtn.textContent = 'DEAL AGAIN';
+    }
+
+    // ── Wire events ──────────────────────────────────
+    dealBtn.addEventListener('click', doDeal);
+    playBtn.addEventListener('click', doPlay);
+    foldBtn.addEventListener('click', doFold);
 }

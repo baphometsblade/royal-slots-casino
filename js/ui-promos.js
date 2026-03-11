@@ -2218,6 +2218,7 @@ function initPromoEngine() {
             if (!window._plinkoCardInit) { window._plinkoCardInit = true; renderPlinkoCard(promosSidebar); }
             if (!window._scratchCardGameInit) { window._scratchCardGameInit = true; renderScratchCardGame(promosSidebar); }
             if (!window._baccaratCardInit) { window._baccaratCardInit = true; renderBaccaratCard(promosSidebar); }
+            if (!window._dragonTigerInit) { window._dragonTigerInit = true; renderDragonTigerCard(promosSidebar); }
         }
     }, 4000);
 
@@ -6970,6 +6971,303 @@ function renderBaccaratCard(container) {
             busy = false;
             dealBtn.disabled = false;
             dealBtn.textContent = 'DEAL';
+        });
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// DRAGON TIGER CARD WIDGET
+// ─────────────────────────────────────────────────────────────────────
+
+function renderDragonTigerCard(container) {
+    // Auth guard
+    if (typeof isServerAuthToken !== 'function' || !isServerAuthToken()) return;
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+    // Idempotency
+    if (document.getElementById('dragonTigerCard')) return;
+
+    var suitSymbols = { hearts: '\u2665', diamonds: '\u2666', clubs: '\u2663', spades: '\u2660' };
+    var redSuits = { hearts: true, diamonds: true };
+    var selectedBet = 'dragon';
+    var busy = false;
+
+    // Helper: clear children
+    function clearChildren(el) {
+        while (el.firstChild) { el.removeChild(el.firstChild); }
+    }
+
+    // Inject CSS once
+    if (!document.getElementById('dragon-tiger-css')) {
+        var style = document.createElement('style');
+        style.id = 'dragon-tiger-css';
+        style.textContent = [
+            '#dragonTigerCard { background: linear-gradient(135deg, #1a0a0a, #2d1020); border: 1px solid #8b2252; border-radius: 12px; padding: 16px; margin-bottom: 14px; color: #fff; }',
+            '#dragonTigerCard .dt-title { color: #fbbf24; margin: 0 0 6px 0; font-size: 15px; font-weight: 800; text-align: center; }',
+            '#dragonTigerCard .dt-desc { color: #aaa; font-size: 12px; margin: 0 0 12px 0; text-align: center; }',
+            '#dragonTigerCard .dt-bet-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; color: #ccc; justify-content: center; }',
+            '#dragonTigerCard .dt-bet-input { background: #1a1f2e; border: 1px solid #4a4a7a; color: #fff; padding: 6px 10px; border-radius: 6px; width: 80px; font-size: 13px; text-align: center; }',
+            '#dragonTigerCard .dt-beton-row { display: flex; gap: 6px; margin-bottom: 10px; }',
+            '#dragonTigerCard .dt-beton-btn { flex: 1; padding: 8px 0; border: 1.5px solid #4a4a7a; border-radius: 6px; background: transparent; color: #aaa; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; }',
+            '#dragonTigerCard .dt-beton-btn.dt-active-dragon { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.12); }',
+            '#dragonTigerCard .dt-beton-btn.dt-active-tiger { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.12); }',
+            '#dragonTigerCard .dt-beton-btn.dt-active-tie { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.12); }',
+            '#dragonTigerCard .dt-play-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background: linear-gradient(135deg, #7f1d1d, #dc2626); color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; margin-bottom: 10px; }',
+            '#dragonTigerCard .dt-play-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
+            '#dragonTigerCard .dt-hands { display: flex; gap: 10px; margin-bottom: 10px; }',
+            '#dragonTigerCard .dt-hand { flex: 1; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 6px; text-align: center; }',
+            '#dragonTigerCard .dt-hand-label { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }',
+            '#dragonTigerCard .dt-card-area { display: flex; justify-content: center; min-height: 54px; align-items: center; }',
+            '#dragonTigerCard .dt-card { width: 44px; height: 60px; background: #fff; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.35); }',
+            '#dragonTigerCard .dt-card-rank { font-size: 16px; line-height: 1; }',
+            '#dragonTigerCard .dt-card-suit { font-size: 16px; line-height: 1; }',
+            '#dragonTigerCard .dt-card.dt-red { color: #dc2626; }',
+            '#dragonTigerCard .dt-card.dt-black { color: #1a1a1a; }',
+            '#dragonTigerCard .dt-result { text-align: center; font-size: 13px; font-weight: 600; min-height: 20px; margin-top: 4px; }',
+            '#dragonTigerCard .dt-again-btn { width: 100%; padding: 8px; border: 1px solid #8b2252; border-radius: 6px; background: transparent; color: #d4a0b0; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 6px; display: none; }'
+        ].join('\n');
+        document.head.appendChild(style);
+    }
+
+    // Card root
+    var card = document.createElement('div');
+    card.id = 'dragonTigerCard';
+
+    // Title
+    var titleEl = document.createElement('div');
+    titleEl.className = 'dt-title';
+    titleEl.textContent = '\uD83D\uDC09 Dragon Tiger';
+    card.appendChild(titleEl);
+
+    // Description
+    var descEl = document.createElement('p');
+    descEl.className = 'dt-desc';
+    descEl.textContent = 'One card each. Higher card wins. Tie pays 8:1!';
+    card.appendChild(descEl);
+
+    // Bet row
+    var betRow = document.createElement('div');
+    betRow.className = 'dt-bet-row';
+    var betLabel = document.createElement('span');
+    betLabel.textContent = 'Bet $';
+    betRow.appendChild(betLabel);
+    var betInput = document.createElement('input');
+    betInput.type = 'number';
+    betInput.className = 'dt-bet-input';
+    betInput.min = '1';
+    betInput.max = '1000';
+    betInput.value = '10';
+    betRow.appendChild(betInput);
+    card.appendChild(betRow);
+
+    // Bet-on row (Dragon / Tiger / Tie)
+    var betonRow = document.createElement('div');
+    betonRow.className = 'dt-beton-row';
+
+    function createBetonBtn(label, value) {
+        var btn = document.createElement('button');
+        btn.className = 'dt-beton-btn';
+        btn.textContent = label;
+        btn.setAttribute('data-bet', value);
+        btn.addEventListener('click', function() {
+            selectedBet = value;
+            updateBetonHighlight();
+        });
+        return btn;
+    }
+
+    var dragonBtn = createBetonBtn('Dragon', 'dragon');
+    var tigerBtn = createBetonBtn('Tiger', 'tiger');
+    var tieBtn = createBetonBtn('Tie', 'tie');
+    betonRow.appendChild(dragonBtn);
+    betonRow.appendChild(tigerBtn);
+    betonRow.appendChild(tieBtn);
+    card.appendChild(betonRow);
+
+    function updateBetonHighlight() {
+        dragonBtn.className = 'dt-beton-btn' + (selectedBet === 'dragon' ? ' dt-active-dragon' : '');
+        tigerBtn.className = 'dt-beton-btn' + (selectedBet === 'tiger' ? ' dt-active-tiger' : '');
+        tieBtn.className = 'dt-beton-btn' + (selectedBet === 'tie' ? ' dt-active-tie' : '');
+    }
+    updateBetonHighlight();
+
+    // Play button
+    var playBtn = document.createElement('button');
+    playBtn.className = 'dt-play-btn';
+    playBtn.textContent = 'PLAY';
+    card.appendChild(playBtn);
+
+    // Hands area
+    var handsDiv = document.createElement('div');
+    handsDiv.className = 'dt-hands';
+
+    // Dragon hand
+    var dragonHand = document.createElement('div');
+    dragonHand.className = 'dt-hand';
+    var dragonLabel = document.createElement('div');
+    dragonLabel.className = 'dt-hand-label';
+    dragonLabel.textContent = '\uD83D\uDC09 Dragon';
+    dragonHand.appendChild(dragonLabel);
+    var dragonCardArea = document.createElement('div');
+    dragonCardArea.className = 'dt-card-area';
+    dragonHand.appendChild(dragonCardArea);
+
+    // Tiger hand
+    var tigerHand = document.createElement('div');
+    tigerHand.className = 'dt-hand';
+    var tigerLabel = document.createElement('div');
+    tigerLabel.className = 'dt-hand-label';
+    tigerLabel.textContent = '\uD83D\uDC05 Tiger';
+    tigerHand.appendChild(tigerLabel);
+    var tigerCardArea = document.createElement('div');
+    tigerCardArea.className = 'dt-card-area';
+    tigerHand.appendChild(tigerCardArea);
+
+    handsDiv.appendChild(dragonHand);
+    handsDiv.appendChild(tigerHand);
+    card.appendChild(handsDiv);
+
+    // Result
+    var resultEl = document.createElement('div');
+    resultEl.className = 'dt-result';
+    card.appendChild(resultEl);
+
+    // Play Again button
+    var againBtn = document.createElement('button');
+    againBtn.className = 'dt-again-btn';
+    againBtn.textContent = 'Play Again';
+    card.appendChild(againBtn);
+
+    container.appendChild(card);
+
+    // Render a single card into an area
+    function renderSingleCard(area, cardData) {
+        clearChildren(area);
+        if (!cardData) return;
+        var el = document.createElement('div');
+        var suitChar = suitSymbols[cardData.suit] || cardData.suit || '';
+        var isRed = redSuits[cardData.suit] || false;
+        el.className = 'dt-card' + (isRed ? ' dt-red' : ' dt-black');
+
+        var rankSpan = document.createElement('span');
+        rankSpan.className = 'dt-card-rank';
+        rankSpan.textContent = cardData.rank || '';
+        el.appendChild(rankSpan);
+
+        var suitSpan = document.createElement('span');
+        suitSpan.className = 'dt-card-suit';
+        suitSpan.textContent = suitChar;
+        el.appendChild(suitSpan);
+
+        area.appendChild(el);
+    }
+
+    // Reset for new round
+    function resetRound() {
+        clearChildren(dragonCardArea);
+        clearChildren(tigerCardArea);
+        resultEl.textContent = '';
+        resultEl.style.color = '';
+        againBtn.style.display = 'none';
+        playBtn.style.display = '';
+    }
+
+    againBtn.addEventListener('click', function() {
+        resetRound();
+    });
+
+    // Play handler
+    playBtn.addEventListener('click', function() {
+        if (busy) return;
+        var bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet < 1) {
+            resultEl.textContent = 'Minimum bet is $1.';
+            resultEl.style.color = '#f87171';
+            return;
+        }
+
+        busy = true;
+        playBtn.disabled = true;
+        playBtn.textContent = 'DEALING...';
+        resultEl.textContent = '';
+        clearChildren(dragonCardArea);
+        clearChildren(tigerCardArea);
+
+        var currentToken = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!currentToken) {
+            resultEl.textContent = 'Not authenticated.';
+            resultEl.style.color = '#f87171';
+            busy = false;
+            playBtn.disabled = false;
+            playBtn.textContent = 'PLAY';
+            return;
+        }
+
+        fetch('/api/dragontiger/play', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + currentToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ bet: bet, betOn: selectedBet })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data.success && data.error) {
+                resultEl.textContent = data.error || 'Play failed.';
+                resultEl.style.color = '#f87171';
+                busy = false;
+                playBtn.disabled = false;
+                playBtn.textContent = 'PLAY';
+                return;
+            }
+
+            // Render dragon card
+            renderSingleCard(dragonCardArea, data.dragonCard);
+
+            // Short delay then render tiger card
+            setTimeout(function() {
+                renderSingleCard(tigerCardArea, data.tigerCard);
+
+                // Show result
+                var winnerText = '';
+                if (data.winner === 'dragon') {
+                    winnerText = 'Dragon Wins!';
+                } else if (data.winner === 'tiger') {
+                    winnerText = 'Tiger Wins!';
+                } else {
+                    winnerText = 'Tie!';
+                }
+
+                var payout = data.payout || 0;
+                if (payout > 0) {
+                    resultEl.textContent = winnerText + ' +$' + payout.toFixed(2);
+                    resultEl.style.color = '#4ade80';
+                } else {
+                    resultEl.textContent = winnerText + ' -$' + bet.toFixed(2);
+                    resultEl.style.color = '#f87171';
+                }
+
+                // Update balance
+                if (typeof data.newBalance === 'number') {
+                    if (typeof updateBalanceDisplay === 'function') {
+                        updateBalanceDisplay(data.newBalance);
+                    }
+                }
+
+                busy = false;
+                playBtn.disabled = false;
+                playBtn.textContent = 'PLAY';
+                playBtn.style.display = 'none';
+                againBtn.style.display = '';
+            }, 400);
+        })
+        .catch(function() {
+            resultEl.textContent = 'Connection error. Try again.';
+            resultEl.style.color = '#f87171';
+            busy = false;
+            playBtn.disabled = false;
+            playBtn.textContent = 'PLAY';
         });
     });
 }
