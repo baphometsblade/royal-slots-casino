@@ -94,6 +94,8 @@ app.use('/api/payment/withdraw', paymentLimiter);
 app.use('/api/crypto/verify-deposit', paymentLimiter);
 app.use('/api/balance/deposit', paymentLimiter);
 app.use('/api/bundles/purchase', paymentLimiter);
+app.use('/api/matrix-money/purchase', paymentLimiter);
+app.use('/api/matrix-money/withdraw', paymentLimiter);
 app.use('/api/gifts/send', paymentLimiter);
 
 // Admin endpoint rate limit — prevent brute-force admin access
@@ -154,6 +156,7 @@ app.use('/api/user', require('./routes/lossstreak.routes'));
 app.use('/api/user', require('./routes/vipdeposit.routes'));
 app.use('/api/user', require('./routes/comeback.routes'));
 app.use('/api/payment', paymentRoutes);
+app.use('/api/matrix-money', require('./routes/matrix-money.routes'));
 app.use('/api/crypto', require('./routes/crypto.routes'));
 app.use('/api/jackpot', jackpotRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
