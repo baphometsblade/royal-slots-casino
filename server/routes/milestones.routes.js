@@ -137,10 +137,10 @@ router.post('/claim', authenticate, async function(req, res) {
       return res.status(400).json({ error: 'Milestone already claimed' });
     }
 
-    // Credit reward to player balance
+    // Credit reward to bonus_balance with 15x wagering requirement
     await db.run(
-      'UPDATE users SET balance = COALESCE(balance, 0) + ? WHERE id = ?',
-      [milestone.reward, userId]
+      'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+      [milestone.reward, milestone.reward * 15, userId]
     );
 
     // Record in milestone_claims table
@@ -155,8 +155,8 @@ router.post('/claim', authenticate, async function(req, res) {
       [userId, milestone.reward, `Milestone reward: ${milestone.label}`]
     );
 
-    // Fetch updated player balance
-    const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+    // Fetch updated player bonus balance
+    const updatedUser = await db.get('SELECT bonus_balance FROM users WHERE id = ?', [userId]);
 
     res.json({
       success: true,
@@ -164,7 +164,7 @@ router.post('/claim', authenticate, async function(req, res) {
       label: milestone.label,
       reward: milestone.reward,
       vipTier: milestone.vipTier,
-      newBalance: parseFloat(updatedUser?.balance || 0)
+      newBonusBalance: parseFloat(updatedUser?.bonus_balance || 0)
     });
   } catch (err) {
     console.warn('[Milestones] claim error:', err.message);

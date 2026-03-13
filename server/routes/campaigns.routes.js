@@ -284,10 +284,10 @@ router.post('/claim', authenticate, async function(req, res) {
             [userId, campaignId, depositAmount, bonusAmount]
         );
 
-        // Credit bonus to user's balance
+        // Credit bonus to bonus_balance with 30x wagering (deposit match)
         await db.run(
-            'UPDATE users SET balance = COALESCE(balance, 0) + ? WHERE id = ?',
-            [bonusAmount, userId]
+            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+            [bonusAmount, bonusAmount * 30, userId]
         );
 
         // Record transaction
@@ -297,9 +297,9 @@ router.post('/claim', authenticate, async function(req, res) {
             [userId, 'bonus', bonusAmount, 'Deposit Match Bonus: ' + campaign.name + ' (' + matchPercent + '%) — $' + bonusAmount.toFixed(2)]
         );
 
-        // Fetch updated user balance
+        // Fetch updated user bonus balance
         var updated = await db.get(
-            'SELECT balance FROM users WHERE id = ?',
+            'SELECT bonus_balance FROM users WHERE id = ?',
             [userId]
         );
 
@@ -315,7 +315,7 @@ router.post('/claim', authenticate, async function(req, res) {
             depositAmount: depositAmount,
             matchPercent: matchPercent,
             bonusAmount: bonusAmount,
-            newBalance: parseFloat(updated.balance) || 0
+            newBonusBalance: parseFloat(updated?.bonus_balance) || 0
         });
     } catch (err) {
         console.warn('[campaigns] POST /claim error:', err);

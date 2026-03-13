@@ -163,10 +163,10 @@ router.post('/claim', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'No cashback available' });
     }
 
-    // Credit to bonus_balance with 5x wagering requirement
+    // Credit to bonus_balance with 10x wagering requirement (loss compensation)
     await db.run(
       'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
-      [credited, credited * 5, req.user.id]
+      [credited, credited * 10, req.user.id]
     );
 
     // Record the claim
