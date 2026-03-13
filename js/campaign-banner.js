@@ -72,7 +72,7 @@
 
   async function fetchCampaigns() {
     try {
-      var data = await api('/api/campaigns/active');
+      var data = await api('/api/deposit-campaigns/active');
       if (!data || data.error || !data.campaigns) return;
       campaigns = data.campaigns;
 
