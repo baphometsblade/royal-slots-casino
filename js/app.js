@@ -304,6 +304,18 @@
             if (typeof DailyWheel !== 'undefined' && DailyWheel.init) {
                 setTimeout(function() { DailyWheel.init(); }, 2500);
             }
+            // VIP tier progress dashboard
+            if (typeof VipDashboard !== 'undefined' && VipDashboard.init) {
+                setTimeout(function() { VipDashboard.init(); }, 3500);
+            }
+            // Live wins social proof ticker
+            if (typeof LiveWinsTicker !== 'undefined' && LiveWinsTicker.init) {
+                setTimeout(function() { LiveWinsTicker.init(); }, 1000);
+            }
+            // First-deposit conversion nudges
+            if (typeof DepositNudge !== 'undefined' && DepositNudge.init) {
+                setTimeout(function() { DepositNudge.init(); }, 5000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
