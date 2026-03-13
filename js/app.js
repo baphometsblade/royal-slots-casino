@@ -228,6 +228,10 @@
             if (typeof SessionTimeout !== 'undefined' && SessionTimeout.init) {
                 SessionTimeout.init();
             }
+            // Initialize support chat widget
+            if (typeof SupportChat !== 'undefined' && SupportChat.init) {
+                SupportChat.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
