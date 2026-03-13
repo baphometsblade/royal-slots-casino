@@ -316,6 +316,14 @@
             if (typeof DepositNudge !== 'undefined' && DepositNudge.init) {
                 setTimeout(function() { DepositNudge.init(); }, 5000);
             }
+            // Withdrawal retention enhancement
+            if (typeof WithdrawalEnhance !== 'undefined' && WithdrawalEnhance.init) {
+                setTimeout(function() { WithdrawalEnhance.init(); }, 2000);
+            }
+            // Newsletter signup banner
+            if (typeof NewsletterSignup !== 'undefined' && NewsletterSignup.init) {
+                setTimeout(function() { NewsletterSignup.init(); }, 6000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

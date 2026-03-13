@@ -439,6 +439,27 @@ const TABLES = [
         prize_amount REAL NOT NULL,
         spun_at TEXT DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS withdrawal_offers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        offer_type TEXT NOT NULL,
+        offer_amount REAL NOT NULL,
+        withdrawal_amount REAL NOT NULL,
+        accepted INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL UNIQUE,
+        user_id INTEGER,
+        subscribed_at TEXT DEFAULT (datetime('now')),
+        unsubscribed INTEGER DEFAULT 0,
+        source TEXT DEFAULT 'website',
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 

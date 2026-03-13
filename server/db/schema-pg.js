@@ -411,6 +411,25 @@ const TABLES = [
         prize_type TEXT NOT NULL,
         prize_amount NUMERIC(15,2) NOT NULL,
         spun_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS withdrawal_offers (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        offer_type TEXT NOT NULL,
+        offer_amount NUMERIC(15,2) NOT NULL,
+        withdrawal_amount NUMERIC(15,2) NOT NULL,
+        accepted INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        user_id INTEGER REFERENCES users(id),
+        subscribed_at TIMESTAMPTZ DEFAULT NOW(),
+        unsubscribed INTEGER DEFAULT 0,
+        source TEXT DEFAULT 'website'
     )`
 ];
 
