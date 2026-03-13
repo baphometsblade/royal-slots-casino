@@ -83,6 +83,8 @@ const CSRF_EXEMPT_PATHS = [
     /^\/api\/perf/,
     /^\/api\/affiliate\/track$/,
     /^\/api\/socialproof/,
+    /^\/api\/newsletter\/subscribe$/,
+    /^\/api\/newsletter\/unsubscribe$/,
 ];
 
 /**
