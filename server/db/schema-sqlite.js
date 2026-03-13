@@ -430,6 +430,15 @@ const TABLES = [
         created_at TEXT DEFAULT (datetime('now')),
         FOREIGN KEY (referrer_id) REFERENCES users(id),
         FOREIGN KEY (referred_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS daily_wheel_spins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        prize_type TEXT NOT NULL,
+        prize_amount REAL NOT NULL,
+        spun_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 

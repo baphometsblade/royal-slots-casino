@@ -300,6 +300,10 @@
             if (typeof ReferralWidget !== 'undefined' && ReferralWidget.init) {
                 setTimeout(function() { ReferralWidget.init(); }, 3000);
             }
+            // Daily bonus wheel
+            if (typeof DailyWheel !== 'undefined' && DailyWheel.init) {
+                setTimeout(function() { DailyWheel.init(); }, 2500);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

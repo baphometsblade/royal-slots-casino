@@ -258,6 +258,7 @@ app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
 app.use('/api/feedback', require('./routes/feedback.routes'));
 app.use('/api/deposit-campaigns', require('./routes/campaigns.routes'));
 app.use('/api/loss-cashback',    require('./routes/losscashback.routes'));
+app.use('/api/daily-wheel',      require('./routes/dailywheel.routes'));
 // REMOVED: non-slot game
 // app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
 // REMOVED: non-slot game

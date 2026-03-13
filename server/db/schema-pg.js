@@ -403,6 +403,14 @@ const TABLES = [
         referred_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
         bonus_given INTEGER DEFAULT 0,
         created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS daily_wheel_spins (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        prize_type TEXT NOT NULL,
+        prize_amount NUMERIC(15,2) NOT NULL,
+        spun_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 
