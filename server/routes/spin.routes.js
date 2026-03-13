@@ -113,6 +113,16 @@ router.post('/', authenticate, async (req, res) => {
         const { gameId, betAmount } = req.body;
         const userId = req.user.id;
 
+        // ── Check self-exclusion before allowing spin ──
+        const exclusion = await db.get(
+            "SELECT * FROM self_exclusions WHERE user_id = ? AND is_active = 1 AND (ends_at IS NULL OR ends_at > datetime('now'))",
+            [userId]
+        );
+        if (exclusion) {
+            console.warn(`[Spin] User ${userId} attempted spin while self-excluded`);
+            return res.status(403).json({ error: 'Your account is currently self-excluded from playing.' });
+        }
+
         // ── Validate game ──
         const game = games.find(g => g.id === gameId);
         if (!game) {

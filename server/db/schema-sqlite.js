@@ -300,6 +300,22 @@ const TABLES = [
         metadata TEXT,
         created_at TEXT DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS deposit_limits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        daily_limit REAL,
+        weekly_limit REAL,
+        monthly_limit REAL,
+        pending_daily_limit REAL,
+        pending_daily_effective_at TEXT,
+        pending_weekly_limit REAL,
+        pending_weekly_effective_at TEXT,
+        pending_monthly_limit REAL,
+        pending_monthly_effective_at TEXT,
+        updated_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 
@@ -332,7 +348,8 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_battle_pass_progress_season ON battle_pass_progress(season_id)`,
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_user ON nft_ledger(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_token ON nft_ledger(token_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_type ON nft_ledger(type, created_at)`
+    `CREATE INDEX IF NOT EXISTS idx_nft_ledger_type ON nft_ledger(type, created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_deposit_limits_user ON deposit_limits(user_id)`
 ];
 
 
