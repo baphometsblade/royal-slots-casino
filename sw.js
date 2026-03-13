@@ -78,3 +78,67 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// ─── Push Notifications ────────────────────────────────────────────────────
+self.addEventListener('push', (event) => {
+  let notificationData = {
+    title: 'Matrix Spins Casino',
+    body: 'You have a new message!',
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
+    tag: 'matrix-spins-notification'
+  };
+
+  if (event.data) {
+    try {
+      // Try parsing as JSON first
+      const data = event.data.json();
+      notificationData = {
+        title: data.title || notificationData.title,
+        body: data.body || notificationData.body,
+        icon: data.icon || notificationData.icon,
+        badge: data.badge || notificationData.badge,
+        tag: data.tag || notificationData.tag,
+        data: data.data || {}
+      };
+    } catch (e) {
+      // Fall back to text payload
+      notificationData.body = event.data.text();
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(notificationData.title, {
+      body: notificationData.body,
+      icon: notificationData.icon,
+      badge: notificationData.badge,
+      tag: notificationData.tag,
+      data: notificationData.data || {}
+    })
+  );
+});
+
+// ─── Notification Click Handler ────────────────────────────────────────────
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const casinoUrl = '/';
+  const urlToOpen = event.notification.data.url || casinoUrl;
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        // Check if a window with the casino is already open
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i];
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // If no window is open, open a new one
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
+});

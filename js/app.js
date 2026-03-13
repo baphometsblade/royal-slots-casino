@@ -240,6 +240,14 @@
             if (typeof WinLimit !== 'undefined' && WinLimit.init) {
                 WinLimit.init();
             }
+            // Render personalized game recommendations
+            if (typeof GameRecommendations !== 'undefined' && GameRecommendations.init) {
+                setTimeout(function() { GameRecommendations.init(); GameRecommendations.renderWidget(); }, 2000);
+            }
+            // Initialize push notifications (ask permission after engagement)
+            if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {
+                setTimeout(function() { PushNotifications.init(); }, 10000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
