@@ -231,6 +231,8 @@ app.use('/api/ab', require('./routes/abtesting.routes'));
 app.use('/api/deposit-limits', require('./routes/depositlimits.routes'));
 app.use('/api/favorites',      require('./routes/favorites.routes'));
 app.use('/api/player-stats',   require('./routes/playerstats.routes'));
+app.use('/api/game-history',   require('./routes/gamehistory.routes'));
+app.use('/api/chat',           require('./routes/chat.routes'));
 app.use('/api/affiliate',      require('./routes/affiliate.routes'));
 app.use('/api/admin-metrics',  require('./routes/adminmetrics.routes'));
 app.use('/api/account',        require('./routes/accountdeletion.routes'));

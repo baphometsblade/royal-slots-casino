@@ -241,6 +241,70 @@ Matrix Spins`,
 }
 
 /**
+ * Send an email verification link.
+ * @param {string} toEmail - User's email address
+ * @param {string} username - Username for personalization
+ * @param {string} token - Verification token
+ * @returns {boolean} true if sent, false if SMTP not configured
+ */
+async function sendVerificationEmail(toEmail, username, token) {
+    const transporter = getTransporter();
+    if (!transporter) {
+        console.warn('[Email] SMTP not configured — verification email not sent for', username);
+        return false;
+    }
+
+    const baseUrl = config.BASE_URL || 'https://msaart.online';
+    const verificationUrl = `${baseUrl}/?verify=${token}`;
+
+    await transporter.sendMail({
+        from: config.SMTP_FROM,
+        to: toEmail,
+        subject: 'Verify your Matrix Spins email address',
+        text: [
+            `Hi ${username},`,
+            '',
+            'Welcome to Matrix Spins! Please verify your email address to get started.',
+            '',
+            'Click the link below to confirm your email:',
+            '',
+            verificationUrl,
+            '',
+            'This link expires in 24 hours.',
+            '',
+            'If you did not create this account, please ignore this email.',
+            '',
+            'Matrix Spins',
+        ].join('\n'),
+        html: `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#0d0d1a;color:#fff;padding:40px;margin:0">
+  <div style="max-width:520px;margin:0 auto;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,215,0,0.3);border-radius:12px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#ffd700,#ff8c00);padding:20px;text-align:center">
+      <h1 style="margin:0;color:#0d0d1a;font-size:24px">&#127920; Matrix Spins</h1>
+    </div>
+    <div style="padding:32px">
+      <h2 style="color:#ffd700;margin-top:0">Verify Your Email</h2>
+      <p style="color:#ccc;line-height:1.6">Hi ${username},</p>
+      <p style="color:#ccc;line-height:1.6">Welcome to Matrix Spins! Please verify your email address to complete your registration and start playing.</p>
+      <div style="text-align:center;margin:32px 0">
+        <a href="${verificationUrl}" style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;display:inline-block">Verify My Email</a>
+      </div>
+      <p style="color:#888;font-size:13px">If the button doesn&rsquo;t work, copy and paste this link:</p>
+      <p style="color:#aaa;font-size:12px;word-break:break-all">${verificationUrl}</p>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:24px 0">
+      <p style="color:#666;font-size:12px">This link expires in <strong>24 hours</strong>. If you did not create this account, please ignore this email.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+    });
+
+    return true;
+}
+
+/**
  * Send a VIP tier-up congratulation email.
  * @param {string} toEmail
  * @param {string} username
@@ -310,6 +374,7 @@ Matrix Spins`,
 
 module.exports = {
     sendPasswordReset,
+    sendVerificationEmail,
     sendReengagementEmail,
     sendWeeklyReport,
     sendDepositNudgeEmail,

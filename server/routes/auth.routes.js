@@ -8,6 +8,7 @@ const { authenticate } = require('../middleware/auth');
 const crypto = require('crypto');
 
 const router = express.Router();
+const emailService = require('../services/email.service');
 
 // Dummy hash for constant-time auth when user not found (prevents timing attacks)
 const DUMMY_HASH = bcrypt.hashSync('dummy-password-never-matches', 12);
@@ -89,8 +90,8 @@ router.post('/register', async (req, res) => {
         const startBalance = config.DEFAULT_BALANCE;
 
         const result = await db.run(
-            'INSERT INTO users (username, email, password_hash, balance, referral_code, referred_by) VALUES (?, ?, ?, ?, ?, ?)',
-            [username, email, passwordHash, startBalance, newReferralCode, referrerId]
+            'INSERT INTO users (username, email, password_hash, balance, referral_code, referred_by, email_verified) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [username, email, passwordHash, startBalance, newReferralCode, referrerId, 0]
         );
 
         const userId = result.lastInsertRowid;
@@ -134,6 +135,28 @@ router.post('/register', async (req, res) => {
             } catch (refErr) {
                 // Non-fatal: log but don't fail registration
                 console.warn('[Auth] Referral bonus grant failed:', refErr.message);
+            }
+        }
+
+        // Generate email verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const VERIFICATION_EXPIRY_HOURS = 24;
+        const verificationExpiresAt = new Date(Date.now() + VERIFICATION_EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
+
+        // Store verification token
+        await db.run(
+            'INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+            [userId, verificationToken, verificationExpiresAt]
+        );
+
+        // Send verification email (non-blocking)
+        try {
+            await emailService.sendVerificationEmail(email, username, verificationToken);
+        } catch (emailErr) {
+            console.warn('[Auth] Verification email failed:', emailErr.message);
+            // In dev mode, log the token
+            if (config.NODE_ENV !== 'production') {
+                console.log('[Auth] DEV verification token:', verificationToken);
             }
         }
 
@@ -220,6 +243,15 @@ db.run(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
     expires_at TEXT NOT NULL,
     used INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now'))
+)`).catch(() => {});
+
+// Bootstrap: create email_verification_tokens table
+db.run(`CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    used INTEGER DEFAULT 0
 )`).catch(() => {});
 
 // POST /api/auth/forgot-password
@@ -373,6 +405,94 @@ router.get('/me', authenticate, (req, res) => {
             referralCode: req.user.referral_code || null,
         },
     });
+});
+
+// POST /api/auth/verify-email
+router.post('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ error: 'Verification token is required' });
+        }
+
+        // Find the token
+        const verifyRecord = await db.get(
+            'SELECT * FROM email_verification_tokens WHERE token = ? AND used = 0',
+            [token]
+        );
+
+        if (!verifyRecord) {
+            return res.status(400).json({ error: 'Invalid or expired verification link' });
+        }
+
+        // Check expiry
+        if (new Date(verifyRecord.expires_at) < new Date()) {
+            await db.run('UPDATE email_verification_tokens SET used = 1 WHERE id = ?', [verifyRecord.id]);
+            return res.status(400).json({ error: 'Verification link has expired. Please request a new one.' });
+        }
+
+        // Mark email as verified
+        await db.run('UPDATE users SET email_verified = 1 WHERE id = ?', [verifyRecord.user_id]);
+
+        // Mark token as used
+        await db.run('UPDATE email_verification_tokens SET used = 1 WHERE id = ?', [verifyRecord.id]);
+
+        res.json({ message: 'Email verified successfully!' });
+    } catch (err) {
+        console.error('[Auth] Verify email error:', err);
+        res.status(500).json({ error: 'Email verification failed' });
+    }
+});
+
+// POST /api/auth/resend-verification
+router.post('/resend-verification', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+        }
+
+        const successMsg = 'If an account with that email exists and is not verified, a new verification link has been sent.';
+
+        const user = await db.get('SELECT id, username, email, email_verified FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+        if (!user) {
+            return res.json({ message: successMsg });
+        }
+
+        // If already verified, return success without doing anything
+        if (user.email_verified) {
+            return res.json({ message: 'Email is already verified.' });
+        }
+
+        // Invalidate any existing tokens for this user
+        await db.run('UPDATE email_verification_tokens SET used = 1 WHERE user_id = ? AND used = 0', [user.id]);
+
+        // Generate new verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const VERIFICATION_EXPIRY_HOURS = 24;
+        const verificationExpiresAt = new Date(Date.now() + VERIFICATION_EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
+
+        // Store verification token
+        await db.run(
+            'INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+            [user.id, verificationToken, verificationExpiresAt]
+        );
+
+        // Send verification email (non-blocking)
+        try {
+            await emailService.sendVerificationEmail(user.email, user.username, verificationToken);
+        } catch (emailErr) {
+            console.warn('[Auth] Resend verification email failed:', emailErr.message);
+            if (config.NODE_ENV !== 'production') {
+                console.log('[Auth] DEV verification token:', verificationToken);
+            }
+        }
+
+        res.json({ message: successMsg });
+    } catch (err) {
+        console.error('[Auth] Resend verification error:', err);
+        res.status(500).json({ error: 'Request failed' });
+    }
 });
 
 module.exports = router;
