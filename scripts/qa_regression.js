@@ -392,6 +392,8 @@ async function run() {
       // Inject a QA test user so the auth gate is bypassed
       localStorage.setItem("casinoUser", JSON.stringify({ id: 0, username: "QA_Test", is_admin: false }));
       localStorage.setItem("casinoToken", "local-qa-regression-token");
+      // Accept terms consent gate so it doesn't block QA interactions
+      localStorage.setItem("matrixSpins_termsAccepted", Date.now().toString());
     });
     await page.goto(baseUrl + "?noBonus=1", { waitUntil: "domcontentloaded" });
 
