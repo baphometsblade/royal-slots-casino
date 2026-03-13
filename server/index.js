@@ -681,9 +681,7 @@ async function start() {
     const megawheelService = require('./services/megawheel.service');
     await megawheelService.initSchema();
 
-    // Initialise feedback tables (game_ratings)
-    const { initFeedbackTable } = require('./routes/feedback.routes');
-    await initFeedbackTable();
+    // Feedback tables auto-initialize on module load
 
     app.listen(config.PORT, () => {
         console.log(`\n${'='.repeat(50)}`);

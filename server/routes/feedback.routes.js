@@ -199,5 +199,7 @@ router.get('/top-rated', async (req, res) => {
     }
 });
 
+// Auto-initialize table on load
+initFeedbackTable();
+
 module.exports = router;
-module.exports.initFeedbackTable = initFeedbackTable;

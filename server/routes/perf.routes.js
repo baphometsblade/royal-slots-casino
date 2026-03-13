@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
         res.status(200).json({ status: 'recorded' });
     } catch (err) {
         // Log error but don't fail the response (fire-and-forget)
-        console.error('[Perf] Failed to record metrics:', err);
+        console.warn('[Perf] Failed to record metrics:', err);
         res.status(200).json({ status: 'error', message: err.message });
     }
 });
@@ -125,7 +125,7 @@ router.get('/summary', requireAdmin, async (req, res) => {
             timeRange: 'Last 7 days',
         });
     } catch (err) {
-        console.error('[Perf] Failed to fetch summary:', err);
+        console.warn('[Perf] Failed to fetch summary:', err);
         res.status(500).json({ error: 'Failed to fetch performance summary', details: err.message });
     }
 });

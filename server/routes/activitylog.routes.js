@@ -67,7 +67,7 @@ function logActivity(userId, action, details, req) {
  * GET /api/activity-log
  * Authenticated - returns user's own recent activity (last 50)
  */
-router.get('/api/activity-log', authenticate, (req, res) => {
+router.get('/', authenticate, (req, res) => {
   try {
     const stmt = db.prepare(`
       SELECT id, user_id, action, details, ip_address, user_agent, created_at
@@ -98,7 +98,7 @@ router.get('/api/activity-log', authenticate, (req, res) => {
  * Admin only - returns all recent activity with optional filters
  * Query params: ?userId=X&action=login&limit=100
  */
-router.get('/api/activity-log/admin', authenticate, requireAdmin, (req, res) => {
+router.get('/admin', authenticate, requireAdmin, (req, res) => {
   try {
     const { userId, action, limit = 100 } = req.query;
 

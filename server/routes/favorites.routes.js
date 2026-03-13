@@ -21,92 +21,77 @@ async function _bootstrapFavoritesTable() {
 _bootstrapFavoritesTable();
 
 // GET /api/favorites/ - Get list of favorited game IDs for authenticated user
-router.get('/', authenticate, (req, res) => {
-  const userId = req.user.id;
+router.get('/', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const rows = await db.all(
+      'SELECT game_id FROM game_favorites WHERE user_id = ? ORDER BY created_at DESC',
+      [userId]
+    );
 
-  db.all(
-    'SELECT game_id FROM game_favorites WHERE user_id = ? ORDER BY created_at DESC',
-    [userId],
-    (err, rows) => {
-      if (err) {
-        console.warn('Error fetching favorites:', err);
-        return res.status(500).json({ error: 'Failed to fetch favorites' });
-      }
-
-      const favorites = rows.map(row => row.game_id);
-      res.json({ favorites });
-    }
-  );
+    const favorites = (rows || []).map(row => row.game_id);
+    res.json({ favorites });
+  } catch (err) {
+    console.warn('Error fetching favorites:', err);
+    res.status(500).json({ error: 'Failed to fetch favorites' });
+  }
 });
 
 // POST /api/favorites/toggle - Toggle a game as favorite
-router.post('/toggle', authenticate, (req, res) => {
-  const userId = req.user.id;
-  const { gameId } = req.body;
+router.post('/toggle', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { gameId } = req.body;
 
-  if (!gameId) {
-    return res.status(400).json({ error: 'gameId is required' });
-  }
-
-  // Check if already favorited
-  db.get(
-    'SELECT id FROM game_favorites WHERE user_id = ? AND game_id = ?',
-    [userId, gameId],
-    (err, row) => {
-      if (err) {
-        console.warn('Error checking favorite status:', err);
-        return res.status(500).json({ error: 'Failed to process request' });
-      }
-
-      if (row) {
-        // Remove favorite
-        db.run(
-          'DELETE FROM game_favorites WHERE user_id = ? AND game_id = ?',
-          [userId, gameId],
-          (deleteErr) => {
-            if (deleteErr) {
-              console.warn('Error removing favorite:', deleteErr);
-              return res.status(500).json({ error: 'Failed to remove favorite' });
-            }
-            res.json({ favorited: false, gameId });
-          }
-        );
-      } else {
-        // Add favorite
-        db.run(
-          'INSERT INTO game_favorites (user_id, game_id) VALUES (?, ?)',
-          [userId, gameId],
-          (insertErr) => {
-            if (insertErr) {
-              console.warn('Error adding favorite:', insertErr);
-              return res.status(500).json({ error: 'Failed to add favorite' });
-            }
-            res.json({ favorited: true, gameId });
-          }
-        );
-      }
+    if (!gameId) {
+      return res.status(400).json({ error: 'gameId is required' });
     }
-  );
+
+    // Check if already favorited
+    const row = await db.get(
+      'SELECT id FROM game_favorites WHERE user_id = ? AND game_id = ?',
+      [userId, gameId]
+    );
+
+    if (row) {
+      // Remove favorite
+      await db.run(
+        'DELETE FROM game_favorites WHERE user_id = ? AND game_id = ?',
+        [userId, gameId]
+      );
+      res.json({ favorited: false, gameId });
+    } else {
+      // Add favorite
+      await db.run(
+        'INSERT INTO game_favorites (user_id, game_id) VALUES (?, ?)',
+        [userId, gameId]
+      );
+      res.json({ favorited: true, gameId });
+    }
+  } catch (err) {
+    console.warn('Error toggling favorite:', err);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
 });
 
 // GET /api/favorites/count - Get favorite counts per game (no auth required)
-router.get('/count', (req, res) => {
-  db.all(
-    'SELECT game_id, COUNT(*) as count FROM game_favorites GROUP BY game_id HAVING count > 0',
-    (err, rows) => {
-      if (err) {
-        console.warn('Error fetching favorite counts:', err);
-        return res.status(500).json({ error: 'Failed to fetch counts' });
-      }
+router.get('/count', async (req, res) => {
+  try {
+    const rows = await db.all(
+      'SELECT game_id, COUNT(*) as count FROM game_favorites GROUP BY game_id HAVING count > 0',
+      []
+    );
 
-      const counts = {};
-      rows.forEach(row => {
-        counts[row.game_id] = row.count;
-      });
+    const counts = {};
+    (rows || []).forEach(row => {
+      counts[row.game_id] = row.count;
+    });
 
-      res.json({ counts });
-    }
-  );
+    res.json({ counts });
+  } catch (err) {
+    console.warn('Error fetching favorite counts:', err);
+    res.status(500).json({ error: 'Failed to fetch counts' });
+  }
 });
 
 module.exports = router;
