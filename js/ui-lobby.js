@@ -979,7 +979,7 @@ function renderGames() {
                     </div>
                     <div class="game-info">
                         <div class="game-name">${game.name}</div>
-                        <div class="game-provider">${game.provider || ''}</div>
+                        <div class="game-provider">${game.provider || ''}${game.rtp ? ' · RTP ' + game.rtp.toFixed(1) + '%' : ''}</div>
                     </div>
                     ${_hotIds.has(game.id) ? '<span class="lobby-badge lobby-badge-hot">🔥 HOT</span>' : ''}
                     ${_newIds.has(game.id) ? '<span class="lobby-badge lobby-badge-new">✨ NEW</span>' : ''}
@@ -4525,11 +4525,33 @@ function initSocialProofTicker() {
         statMembers.appendChild(numMembers);
         statMembers.appendChild(labelMembers);
 
+        var dot3 = document.createElement('span');
+        dot3.className = 'sp-dot';
+        dot3.textContent = '\u00B7';
+
+        // Stat: platform RTP
+        var statRtp = document.createElement('div');
+        statRtp.className = 'sp-stat';
+        var iconRtp = document.createElement('span');
+        iconRtp.textContent = '\uD83D\uDCC8';
+        var numRtp = document.createElement('span');
+        numRtp.className = 'sp-num';
+        numRtp.id = 'sp-rtp';
+        numRtp.textContent = '95.4%';
+        numRtp.style.color = '#4ade80';
+        var labelRtp = document.createElement('span');
+        labelRtp.textContent = 'avg RTP';
+        statRtp.appendChild(iconRtp);
+        statRtp.appendChild(numRtp);
+        statRtp.appendChild(labelRtp);
+
         bar.appendChild(statOnline);
         bar.appendChild(dot1);
         bar.appendChild(statSpins);
         bar.appendChild(dot2);
         bar.appendChild(statMembers);
+        bar.appendChild(dot3);
+        bar.appendChild(statRtp);
 
         // Insert before #filterTabs
         var filterTabs = document.getElementById('filterTabs');
@@ -4561,6 +4583,12 @@ function initSocialProofTicker() {
                 _fadeUpdate(elOnline,  data.onlineNow       || 0);
                 _fadeUpdate(elSpins,   data.spinsToday      || 0);
                 _fadeUpdate(elMembers, data.registeredUsers || 0);
+
+                // Update platform RTP if available
+                var elRtp = document.getElementById('sp-rtp');
+                if (elRtp && data.platformRtp) {
+                    _fadeUpdate(elRtp, data.platformRtp.toFixed(1) + '%');
+                }
             })
             .catch(function() { /* silently ignore — endpoint may not exist yet */ });
     }
