@@ -990,5 +990,232 @@ Examples:
     print(f"{'='*60}\n")
 
 
+# ═══════════════════════════════════════════════════════════════
+# BONUS GAME ASSET PROMPTS
+# Generate HD backgrounds and UI elements for bonus game GUIs
+# Usage: python generate_sdxl_assets.py --bonus-assets --all --quality standard
+# ═══════════════════════════════════════════════════════════════
+
+BONUS_TYPE_PROMPTS = {
+    'tumble': {
+        'bg': "Crystal cascade waterfall interior, glowing gem blocks falling through golden light rays, "
+              "fantasy treasure cave with cascading precious stones, deep purple and gold atmosphere, "
+              "magical particle effects, volumetric lighting, ultra detailed game background, 4K",
+        'frame': "Ornate golden frame border with cascading crystal gems, jewel-encrusted edges, "
+                 "multiplier ladder glowing with divine light, premium slot game UI element, transparent center, 4K",
+    },
+    'avalanche': {
+        'bg': "Snow-capped mountain peak with avalanche of golden rocks and treasures, dramatic cliff edge, "
+              "massive boulders cascading down mountainside through clouds, epic fantasy landscape, "
+              "storm clouds with lightning, volumetric fog, cinematic game background, 4K",
+        'frame': "Rough stone and ice frame border with mountain peaks and snow, avalanche rocks embedded in edges, "
+                 "rugged natural stone texture, premium game UI element, transparent center, 4K",
+    },
+    'hold_and_win': {
+        'bg': "Luxurious casino vault interior with golden safety deposit boxes, dramatic spotlight beams, "
+              "locked golden grid of treasure compartments, velvet and chrome decor, "
+              "atmospheric fog, jackpot glow effects, premium casino game background, 4K",
+        'frame': "Golden vault door frame with combination lock details, chrome bolts and hinges, "
+                 "safety deposit box grid pattern, premium metallic finish, transparent center, 4K",
+    },
+    'random_multiplier': {
+        'bg': "Ethereal cosmic void with floating multiplier orbs of different colors, swirling nebula background, "
+              "magical energy spheres raining down through starfield, fantasy space scene, "
+              "glowing particle trails, aurora borealis colors, game background, 4K",
+        'frame': "Cosmic energy ring frame with floating orb gems, stellar particle effects around edges, "
+                 "nebula gradient border, glowing energy wisps, transparent center, 4K",
+    },
+    'wheel_multiplier': {
+        'bg': "Grand fortune wheel in opulent casino hall, massive spinning prize wheel with colored segments, "
+              "dramatic stage lighting with spotlights, rich red velvet curtains, golden accents, "
+              "fireworks and sparkle effects, premium game show background, 4K",
+        'frame': "Circular fortune wheel ornate frame, golden spokes and gem-studded rim, "
+                 "spotlight rays emanating outward, show stage border, transparent center, 4K",
+    },
+    'expanding_symbol': {
+        'bg': "Ancient mystical library with floating glowing book, magical symbols expanding from pages, "
+              "golden hieroglyphic energy spreading across stone walls, Egyptian temple interior, "
+              "candlelight and magical glow, mystical atmosphere, game background, 4K",
+        'frame': "Ancient papyrus scroll frame border with expanding hieroglyphic symbols, "
+                 "golden Egyptian cartouche edges, mystical energy tendrils, transparent center, 4K",
+    },
+    'expanding_wild_respin': {
+        'bg': "Cosmic starburst explosion with wild energy columns expanding across space, "
+              "crystalline pillars of light stretching vertically, supernova background, "
+              "prismatic light beams and rainbow energy, sci-fi game background, 4K",
+        'frame': "Energy column frame with expanding light beams, crystalline edges glowing with power, "
+                 "prismatic rainbow refraction effects, premium sci-fi UI element, transparent center, 4K",
+    },
+    'zeus_multiplier': {
+        'bg': "Mount Olympus throne room with Zeus wielding lightning bolts, dramatic storm clouds, "
+              "golden multiplier orbs floating among marble columns, epic Greek temple, "
+              "lightning strikes illuminating the scene, divine power effects, game background, 4K",
+        'frame': "Greek temple column frame with lightning bolt accents, marble and gold edges, "
+                 "laurel wreath ornaments, divine light rays, Olympian game UI border, transparent center, 4K",
+    },
+    'money_collect': {
+        'bg': "Treasure-filled chamber with golden coin piles and money bags, central magnetic collector device, "
+              "coins flying toward collection point with trail effects, vault of riches, "
+              "dramatic golden lighting, money rain particles, premium game background, 4K",
+        'frame': "Golden coin-studded frame border with money bag accents, treasure chest corner pieces, "
+                 "magnetic energy effects pulling coins inward, premium gold finish, transparent center, 4K",
+    },
+    'stacked_wilds': {
+        'bg': "Towering crystal pillar chamber with stacked wild card totems, vertical light columns, "
+              "mystical cave with glowing reel columns reaching to ceiling, magical atmosphere, "
+              "aurora light effects, crystal formations, fantasy game background, 4K",
+        'frame': "Stacked card pillar frame with wild symbols embedded in edges, vertical energy beams, "
+                 "crystal column border elements, golden wild emblem accents, transparent center, 4K",
+    },
+    'sticky_wilds': {
+        'bg': "Enchanted spider web chamber with glowing sticky positions, magical crystallized web strands, "
+              "dark mystical cave with amber-trapped wild symbols, bioluminescent effects, "
+              "sticky golden web pattern overlay, fantasy game background, 4K",
+        'frame': "Crystallized web frame border with sticky amber gem nodes at intersections, "
+                 "golden web strand edges, trapped wild symbol accents, transparent center, 4K",
+    },
+    'walking_wilds': {
+        'bg': "Mystical pathway through enchanted forest with walking spirit figures, moonlit trail, "
+              "glowing footstep markers leading through magical landscape, ethereal walking characters, "
+              "fairy dust trail effects, mystical fog, fantasy game background, 4K",
+        'frame': "Enchanted path frame border with walking spirit silhouettes, moonlit edges, "
+                 "glowing footstep trail accents, mystical vine and fairy light decorations, transparent center, 4K",
+    },
+    'mystery_stacks': {
+        'bg': "Mysterious treasure room with glowing question mark boxes stacked on pedestals, "
+              "magical reveal light beams, ancient mystery vault with unopened chest grid, "
+              "suspenseful atmospheric lighting, fog and sparkle effects, game background, 4K",
+        'frame': "Mystery box frame border with question mark emblems and locked chest accents, "
+                 "glowing reveal energy edges, magical keyhole decorations, transparent center, 4K",
+    },
+    'multiplier_wilds': {
+        'bg': "Floating card table in cosmic void with multiplier-stamped wild cards fanning out, "
+              "glowing number values on each card face, magical poker table atmosphere, "
+              "dramatic spotlight on card spread, premium casino fantasy background, 4K",
+        'frame': "Playing card frame border with wild card fan accents, multiplier number gems embedded, "
+                 "golden card suit decorations, casino premium finish, transparent center, 4K",
+    },
+    'coin_respin': {
+        'bg': "Royal mint chamber with golden coins cascading through mechanical gears, coin press machinery, "
+              "golden coin grid landing positions with magical lock effects, steampunk treasury, "
+              "dramatic industrial lighting with gold glow, game background, 4K",
+        'frame': "Steampunk gear frame border with cascading coin accents, mechanical lock mechanisms, "
+                 "golden gear tooth edges, coin slot decorations, transparent center, 4K",
+    },
+    'chamber_spins': {
+        'bg': "Ancient vault door opening to reveal treasure chamber beyond, massive circular vault door, "
+              "combination lock mechanisms, dramatic light streaming through opening door, "
+              "gold and jewels visible inside, atmospheric fog effects, game background, 4K",
+        'frame': "Vault door frame border with combination dial accents, heavy bolt and hinge details, "
+                 "chrome and gold metalwork, security mechanism decorations, transparent center, 4K",
+    },
+    'fisherman_collect': {
+        'bg': "Magical underwater treasure pond with golden fish swimming among treasure chests, "
+              "fishing rod with glowing line dipping into crystal clear water, coral reef scenery, "
+              "bioluminescent sea creatures, sunbeams through water surface, game background, 4K",
+        'frame': "Fishing net and rope frame border with golden fish and seashell accents, "
+                 "coral reef corner pieces, water ripple effects on edges, transparent center, 4K",
+    },
+    'wild_collect': {
+        'bg': "Magnetic collector machine chamber with wild symbol energy being drawn to central meter, "
+              "glowing collection meter filling with golden wild energy, sci-fi collection device, "
+              "energy beam effects converging to center, premium game background, 4K",
+        'frame': "Energy meter frame border with wild symbol accents, collection progress bar edges, "
+                 "magnetic field effect lines, golden energy conduit decorations, transparent center, 4K",
+    },
+    'respin': {
+        'bg': "Classic luxury casino with spotlight on three golden slot reels mid-spin, "
+              "locked reel positions glowing with confirmation, red velvet and chrome decor, "
+              "dramatic stage lighting, vintage premium casino atmosphere, game background, 4K",
+        'frame': "Classic slot reel frame border with chrome edges and locked position indicators, "
+                 "vintage casino decorations, golden reel mechanism accents, transparent center, 4K",
+    },
+}
+
+
+def generate_bonus_assets(args):
+    """Generate SDXL assets specifically for bonus game GUIs."""
+    from tqdm import tqdm
+
+    output_dir = Path(args.output or 'assets/bonus')
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    quality_steps = {'draft': 20, 'standard': 35, 'ultra': 50}
+    num_steps = quality_steps.get(args.quality, 35)
+
+    # Load pipeline
+    print("Loading SDXL pipeline...")
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0",
+        torch_dtype=torch.float16,
+        variant="fp16",
+        use_safetensors=True,
+    )
+    pipe = pipe.to("cuda")
+    pipe.enable_attention_slicing()
+
+    negative_prompt = (
+        "blurry, low quality, distorted, watermark, text, logo, signature, "
+        "deformed, ugly, bad anatomy, poorly drawn, amateur, low resolution, "
+        "jpeg artifacts, noisy, overexposed, underexposed"
+    )
+
+    bonus_types = list(BONUS_TYPE_PROMPTS.keys())
+    if args.games:
+        bonus_types = [t for t in args.games.split(',') if t in BONUS_TYPE_PROMPTS]
+
+    for bt in tqdm(bonus_types, desc="Generating bonus assets"):
+        prompts = BONUS_TYPE_PROMPTS[bt]
+
+        # Background (1920x1080)
+        bg_path = output_dir / f"{bt}_bg.png"
+        if not bg_path.exists() or args.force:
+            print(f"\n  Generating {bt} background...")
+            image = pipe(
+                prompt=prompts['bg'],
+                negative_prompt=negative_prompt,
+                width=1024, height=576,  # SDXL native, will upscale
+                num_inference_steps=num_steps,
+                guidance_scale=7.5,
+            ).images[0]
+            image = image.resize((1920, 1080), Image.LANCZOS)
+            image.save(bg_path, 'PNG', optimize=True)
+            # WebP version
+            webp_path = output_dir / f"{bt}_bg.webp"
+            small = image.resize((960, 540), Image.LANCZOS)
+            small.save(webp_path, 'WEBP', quality=85)
+            print(f"    Saved: {bg_path}")
+
+        # Frame overlay (1024x768, transparent bg if possible)
+        frame_path = output_dir / f"{bt}_frame.png"
+        if not frame_path.exists() or args.force:
+            print(f"  Generating {bt} frame...")
+            image = pipe(
+                prompt=prompts['frame'],
+                negative_prompt=negative_prompt,
+                width=1024, height=768,
+                num_inference_steps=num_steps,
+                guidance_scale=7.5,
+            ).images[0]
+            image.save(frame_path, 'PNG', optimize=True)
+            print(f"    Saved: {frame_path}")
+
+    print(f"\nBonus assets generated in: {output_dir.absolute()}")
+
+
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='SDXL Asset Generator for Royal Slots Casino')
+    parser.add_argument('--bonus-assets', action='store_true', help='Generate bonus game GUI assets')
+    parser.add_argument('--all', action='store_true', help='Generate for all games/bonus types')
+    parser.add_argument('--games', type=str, help='Comma-separated game IDs or bonus types')
+    parser.add_argument('--type', choices=['thumb', 'bg', 'both'], default='both')
+    parser.add_argument('--quality', choices=['draft', 'standard', 'ultra'], default='standard')
+    parser.add_argument('--output', type=str, help='Output directory')
+    parser.add_argument('--force', action='store_true', help='Overwrite existing files')
+    parser.add_argument('--use-refiner', action='store_true', help='Use SDXL refiner')
+    args = parser.parse_args()
+
+    if args.bonus_assets:
+        generate_bonus_assets(args)
+    else:
+        main()
