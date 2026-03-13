@@ -181,7 +181,7 @@ router.get('/top-rated', async (req, res) => {
                 AVG(rating) as avg_rating
             FROM game_ratings
             GROUP BY game_id
-            HAVING total_ratings >= 3
+            HAVING COUNT(*) >= 3
             ORDER BY avg_rating DESC, total_ratings DESC
             LIMIT ?
         `, [limit]);

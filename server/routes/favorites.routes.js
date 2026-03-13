@@ -78,7 +78,7 @@ router.post('/toggle', authenticate, async (req, res) => {
 router.get('/count', async (req, res) => {
   try {
     const rows = await db.all(
-      'SELECT game_id, COUNT(*) as count FROM game_favorites GROUP BY game_id HAVING count > 0',
+      'SELECT game_id, COUNT(*) as count FROM game_favorites GROUP BY game_id HAVING COUNT(*) > 0',
       []
     );
 
