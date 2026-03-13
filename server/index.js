@@ -160,7 +160,9 @@ const jackpotRoutes = require('./routes/jackpot.routes');
 const leaderboardRoutes = require('./routes/leaderboard.routes');
 const tournamentRoutes = require('./routes/tournament.routes');
 const feedRoutes = require('./routes/feed.routes');
+const perfRoutes = require('./routes/perf.routes');
 
+app.use('/api/perf', perfRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/spin', spinRoutes);
 app.use('/api/balance', balanceRoutes);
@@ -212,6 +214,7 @@ app.use('/api/player-stats',   require('./routes/playerstats.routes'));
 app.use('/api/affiliate',      require('./routes/affiliate.routes'));
 app.use('/api/admin-metrics',  require('./routes/adminmetrics.routes'));
 app.use('/api/account',        require('./routes/accountdeletion.routes'));
+app.use('/api/activity-log',   require('./routes/activitylog.routes'));
 app.use('/api/depositmatch', require('./routes/depositmatch.routes'));
 app.use('/api/spinstreak',   require('./routes/spinstreak.routes'));
 app.use('/api/vipwheel',     require('./routes/vipwheel.routes'));

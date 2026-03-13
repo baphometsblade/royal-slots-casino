@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Royal Slots Casino</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .slot-machine {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: spin 2s infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0%, 100% { transform: rotateZ(0deg); }
+            25% { transform: rotateZ(5deg); }
+            75% { transform: rotateZ(-5deg); }
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffa500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 20px 0;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            animation: glow 2s ease-in-out infinite;
+            letter-spacing: 10px;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-size: 28px;
+            color: #ffffff;
+            margin: 20px 0;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .message {
+            font-size: 18px;
+            color: #b0b0b0;
+            margin: 30px 0 40px;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 40px;
+            margin: 15px 10px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #0a0a1a;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            border: 2px solid #ffd700;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+            background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+        }
+
+        .cta-button:active {
+            transform: translateY(-1px);
+        }
+
+        .secondary-links {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .secondary-links a {
+            color: #ffd700;
+            text-decoration: none;
+            margin: 0 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .secondary-links a:hover {
+            color: #ffed4e;
+            background: rgba(255, 215, 0, 0.1);
+            text-decoration: underline;
+        }
+
+        .footer-text {
+            color: #808080;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            .error-code {
+                font-size: 80px;
+                letter-spacing: 5px;
+            }
+
+            .subtitle {
+                font-size: 22px;
+                letter-spacing: 1px;
+            }
+
+            .message {
+                font-size: 16px;
+            }
+
+            .slot-machine {
+                font-size: 60px;
+            }
+
+            .cta-button {
+                padding: 14px 30px;
+                font-size: 14px;
+                margin: 12px 5px;
+            }
+
+            .secondary-links {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+                margin-top: 40px;
+            }
+
+            .secondary-links a {
+                margin: 0;
+                flex: 0 1 45%;
+            }
+        }
+
+        /* Pulse animation for accent */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .pulse {
+            animation: pulse 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="slot-machine">🎰</div>
+
+        <div class="error-code">404</div>
+
+        <div class="subtitle">Page Not Found</div>
+
+        <p class="message">
+            Looks like this page hit a losing streak!
+            <br>The jackpot you're searching for doesn't exist here.
+        </p>
+
+        <a href="/" class="cta-button">🎯 Back to Lobby</a>
+
+        <div class="secondary-links">
+            <a href="/#games">Games</a>
+            <a href="/#responsible-gambling">Responsible Gambling</a>
+            <a href="mailto:support@msaart.online">Support</a>
+        </div>
+
+        <div class="footer-text pulse">
+            © 2026 Royal Slots Casino. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

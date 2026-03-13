@@ -296,6 +296,21 @@ const TABLES = [
         pending_monthly_limit NUMERIC(15,2),
         pending_monthly_effective_at TIMESTAMPTZ,
         updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS perf_metrics (
+        id SERIAL PRIMARY KEY,
+        page_load_time INTEGER,
+        fcp INTEGER,
+        lcp INTEGER,
+        tti INTEGER,
+        dom_nodes INTEGER,
+        memory_used_mb NUMERIC(10,2),
+        memory_total_mb NUMERIC(10,2),
+        memory_limit_mb NUMERIC(10,2),
+        url TEXT,
+        user_agent TEXT,
+        collected_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 
@@ -329,7 +344,9 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_user ON nft_ledger(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_token ON nft_ledger(token_id)`,
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_type ON nft_ledger(type, created_at)`,
-    `CREATE INDEX IF NOT EXISTS idx_deposit_limits_user ON deposit_limits(user_id)`
+    `CREATE INDEX IF NOT EXISTS idx_deposit_limits_user ON deposit_limits(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_perf_metrics_collected_at ON perf_metrics(collected_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_perf_metrics_url ON perf_metrics(url)`
 ];
 
 
