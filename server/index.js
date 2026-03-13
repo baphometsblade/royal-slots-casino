@@ -32,8 +32,22 @@ app.use(helmet({
             formAction: ["'self'"],                         // restrict form submission targets
         }
     },
+    // HSTS: enforce HTTPS for 1 year with subdomains
+    strictTransportSecurity: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    },
+    // Referrer policy: send origin only for cross-origin requests
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     crossOriginEmbedderPolicy: false, // needed for loading cross-origin images
 }));
+
+// Permissions-Policy: restrict sensitive browser features
+app.use((req, res, next) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self)');
+    next();
+});
 // In production restrict CORS to the declared origin; open in development
 const corsOrigin = config.NODE_ENV === 'production'
     ? (process.env.ALLOWED_ORIGIN || false)
@@ -555,7 +569,7 @@ app.post('/api/contests/prizes/:id/claim', verifyToken, async (req, res) => {
 // ─── Static Files ───
 // Block access to sensitive files BEFORE static middleware
 app.use((req, res, next) => {
-    const blocked = /\/(\.env|\.git|\.claude|package\.json|package-lock\.json|CLAUDE\.md|render\.yaml|node_modules|server|scripts|casino\.db)/i;
+    const blocked = /\/(\.env|\.git|\.claude|package\.json|package-lock\.json|CLAUDE\.md|render\.yaml|node_modules|server|scripts|casino\.db|\.sql|\.bak|\.log|config\.js|\.dockerignore|Dockerfile)/i;
     if (blocked.test(req.path)) {
         return res.status(404).json({ error: 'Not found' });
     }
@@ -576,6 +590,19 @@ app.get('*', (req, res) => {
         return res.status(404).json({ error: 'API endpoint not found' });
     }
     res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+// ─── Global Express Error Handler ───
+// Must be defined AFTER all routes (4-parameter signature)
+app.use((err, req, res, _next) => {
+    const status = err.status || err.statusCode || 500;
+    const message = config.NODE_ENV === 'production'
+        ? 'Internal server error'
+        : (err.message || 'Internal server error');
+    console.error(`[Express] Unhandled error on ${req.method} ${req.path}:`, err.stack || err);
+    if (!res.headersSent) {
+        res.status(status).json({ error: message });
+    }
 });
 
 // ─── Start Server ───
@@ -681,4 +708,17 @@ process.on('SIGINT', async () => {
         }
     } catch (e) { /* backend not initialized yet */ }
     process.exit(0);
+});
+
+// ─── Global Process Error Handlers ───
+// Catch unhandled promise rejections and uncaught exceptions to prevent silent crashes
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Server] Unhandled Promise Rejection:', reason);
+    // Don't exit — let the process continue serving requests
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('[Server] Uncaught Exception:', err.stack || err);
+    // Exit after logging — the process manager (Render) will restart us
+    process.exit(1);
 });

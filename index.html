@@ -9,6 +9,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Matrix Spins">
     <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/logo-192.png">
+    <link rel="apple-touch-icon" href="/images/logo-192.png">
     <!-- SEO Meta Tags -->
     <meta name="description" content="Matrix Spins Casino — Play 100+ premium slot games with massive jackpots up to $25,000. Get $2,500 welcome bonus + 150 free spins. Instant play, no download. Provably fair &amp; mobile-friendly.">
     <meta name="keywords" content="online slots, slot games, casino, jackpot, free spins, online casino, slot machines, real money slots, progressive jackpot">
@@ -1700,5 +1703,14 @@
 
 <script src="visual-overhaul.js"></script>
 <script src="bonus-games.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('[SW] Registered:', reg.scope))
+            .catch(err => console.warn('[SW] Registration failed:', err));
+    });
+}
+</script>
 </body>
 </html>
