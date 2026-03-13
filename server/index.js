@@ -61,6 +61,16 @@ app.use(cors({ origin: corsOrigin }));
 app.use('/api/payment/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '1mb' }));
 
+// ─── Input Sanitization Middleware ───
+// Runs on all requests to prevent XSS, prototype pollution, and other injection attacks
+const sanitizeMiddleware = require('./middleware/sanitize');
+app.use(sanitizeMiddleware);
+
+// ─── Maintenance Mode Middleware ───
+// Checks if system is under maintenance; blocks non-admin API routes
+const { maintenanceMiddleware } = require('./middleware/maintenance');
+app.use(maintenanceMiddleware);
+
 // Global rate limiter
 const globalLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -173,6 +183,7 @@ const authRoutes = require('./routes/auth.routes');
 const spinRoutes = require('./routes/spin.routes');
 const balanceRoutes = require('./routes/balance.routes');
 const adminRoutes = require('./routes/admin.routes');
+const maintenanceRoutes = require('./routes/maintenance.routes');
 const userRoutes = require('./routes/user.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const jackpotRoutes = require('./routes/jackpot.routes');
@@ -186,6 +197,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/spin', spinRoutes);
 app.use('/api/balance', balanceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/maintenance', maintenanceRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/user', require('./routes/lossstreak.routes'));
 app.use('/api/user', require('./routes/vipdeposit.routes'));
