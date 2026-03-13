@@ -430,6 +430,30 @@ const TABLES = [
         subscribed_at TIMESTAMPTZ DEFAULT NOW(),
         unsubscribed INTEGER DEFAULT 0,
         source TEXT DEFAULT 'website'
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS premium_tournaments (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        entry_fee NUMERIC(15,2) NOT NULL,
+        prize_pool NUMERIC(15,2) NOT NULL,
+        max_players INTEGER DEFAULT 100,
+        current_players INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        starts_at TIMESTAMPTZ,
+        ends_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS premium_tournament_entries (
+        id SERIAL PRIMARY KEY,
+        tournament_id INTEGER NOT NULL REFERENCES premium_tournaments(id),
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        score NUMERIC(15,2) DEFAULT 0,
+        spins INTEGER DEFAULT 0,
+        best_win NUMERIC(15,2) DEFAULT 0,
+        joined_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(tournament_id, user_id)
     )`
 ];
 

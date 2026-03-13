@@ -324,6 +324,10 @@
             if (typeof NewsletterSignup !== 'undefined' && NewsletterSignup.init) {
                 setTimeout(function() { NewsletterSignup.init(); }, 6000);
             }
+            // Premium tournaments
+            if (typeof PremiumTournaments !== 'undefined' && PremiumTournaments.init) {
+                setTimeout(function() { PremiumTournaments.init(); }, 3000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

@@ -178,7 +178,7 @@ router.post('/record', verifyToken, async (req, res) => {
 
     return res.json({ recorded: true, score: row.score, rank });
   } catch (err) {
-    console.error('[Tournament] POST /record error:', err.message);
+    console.warn('[Tournament] POST /record error:', err.message);
     return res.status(500).json({ error: 'Failed to record tournament score' });
   }
 });
@@ -219,7 +219,7 @@ router.get('/leaderboard', async (req, res) => {
 
     return res.json({ weekStart, leaderboard });
   } catch (err) {
-    console.error('[Tournament] GET /leaderboard error:', err.message);
+    console.warn('[Tournament] GET /leaderboard error:', err.message);
     return res.status(500).json({ error: 'Failed to load leaderboard' });
   }
 });
@@ -266,7 +266,7 @@ router.get('/mystats', verifyToken, async (req, res) => {
       nextReset,
     });
   } catch (err) {
-    console.error('[Tournament] GET /mystats error:', err.message);
+    console.warn('[Tournament] GET /mystats error:', err.message);
     return res.status(500).json({ error: 'Failed to load tournament stats' });
   }
 });
@@ -300,7 +300,7 @@ router.get('/', async (req, res) => {
 
     return res.json({ active, upcoming: [] });
   } catch (err) {
-    console.error('[Tournament] GET / error:', err.message);
+    console.warn('[Tournament] GET / error:', err.message);
     return res.status(500).json({ error: 'Failed to fetch tournaments' });
   }
 });
@@ -335,7 +335,7 @@ router.get('/:id/leaderboard', async (req, res) => {
 
     return res.json({ weekStart, leaderboard });
   } catch (err) {
-    console.error('[Tournament] GET /:id/leaderboard error:', err.message);
+    console.warn('[Tournament] GET /:id/leaderboard error:', err.message);
     return res.status(500).json({ error: 'Failed to load leaderboard' });
   }
 });

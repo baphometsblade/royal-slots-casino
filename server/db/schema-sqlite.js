@@ -460,6 +460,32 @@ const TABLES = [
         unsubscribed INTEGER DEFAULT 0,
         source TEXT DEFAULT 'website',
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS premium_tournaments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        entry_fee REAL NOT NULL,
+        prize_pool REAL NOT NULL,
+        max_players INTEGER DEFAULT 100,
+        current_players INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        starts_at TEXT,
+        ends_at TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS premium_tournament_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tournament_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        score REAL DEFAULT 0,
+        spins INTEGER DEFAULT 0,
+        best_win REAL DEFAULT 0,
+        joined_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(tournament_id, user_id),
+        FOREIGN KEY (tournament_id) REFERENCES premium_tournaments(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 
