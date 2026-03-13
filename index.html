@@ -1494,6 +1494,7 @@
     <script src="js/game-rating.js"></script>
     <script src="js/csrf-helper.js"></script>
     <script src="js/reality-check.js"></script>
+    <script src="js/pwa-install.js"></script>
 
     <!-- Matrix Rain Canvas Animation -->
     <script>
@@ -1723,22 +1724,65 @@
 
 <!-- Low-balance deposit nudge -->
 
-    <!-- Trust & Responsible Gambling Footer -->
-    <div id="trustFooter" style="background:rgba(0,0,0,.6);border-top:1px solid rgba(255,255,255,.08);padding:16px;text-align:center;font-size:11px;color:rgba(255,255,255,.3);line-height:1.6;margin-top:auto">
-        <div style="margin-bottom:8px">
-            <span style="margin:0 8px;font-size:13px">🔒</span>
-            <span style="margin:0 8px">18+ Only</span>
-            <span style="margin:0 8px">·</span>
-            <span style="margin:0 8px">🎰 Play Responsibly</span>
-            <span style="margin:0 8px">·</span>
-            <span style="margin:0 8px">Provably Fair</span>
-            <span style="margin:0 8px">·</span>
-            <span style="margin:0 8px">SSL Secured</span>
+    <!-- Responsible Gambling Footer -->
+    <footer id="responsibleGamblingFooter" style="
+        position: sticky;
+        bottom: 0;
+        background: #0a0e1a;
+        border-top: 2px solid rgba(212, 175, 55, 0.3);
+        padding: 16px 12px;
+        text-align: center;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+        line-height: 1.6;
+        z-index: 10;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+    ">
+        <!-- Navigation Links -->
+        <div style="margin-bottom: 10px; font-size: 10px; letter-spacing: 0.5px">
+            <a href="/" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 6px">Home</a>
+            <span style="color: rgba(255, 255, 255, 0.2)">|</span>
+            <a href="#games" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 6px">Games</a>
+            <span style="color: rgba(255, 255, 255, 0.2)">|</span>
+            <a href="#provably-fair" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 6px">Provably Fair</a>
+            <span style="color: rgba(255, 255, 255, 0.2)">|</span>
+            <a href="#responsible-gambling" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 6px">Responsible Gambling</a>
+            <span style="color: rgba(255, 255, 255, 0.2)">|</span>
+            <a href="#terms" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 6px">Terms</a>
+            <span style="color: rgba(255, 255, 255, 0.2)">|</span>
+            <a href="#privacy" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 6px">Privacy</a>
         </div>
-        <div>Gambling can be addictive. Please play responsibly. If you need help, visit <a href="https://www.begambleaware.org" target="_blank" rel="noopener" style="color:rgba(255,255,255,.4);text-decoration:underline">BeGambleAware.org</a> or <a href="https://www.gamstop.co.uk" target="_blank" rel="noopener" style="color:rgba(255,255,255,.4);text-decoration:underline">GamStop</a>.</div>
-        <div style="margin-top:6px">© 2026 Matrix Spins Casino — msaart.online. For entertainment purposes only.</div>
-        <div style="margin-top:4px;font-size:11px;color:#888;line-height:1.4">Matrix Money is a virtual entertainment currency with no real-world monetary value. Purchasing Matrix Money constitutes the purchase of a digital collectible (NFT). Must be 18+ to play. Please gamble responsibly.</div>
-    </div>
+
+        <!-- Age Badge & Responsible Gaming Message -->
+        <div style="margin-bottom: 8px">
+            <span style="display: inline-block; background: rgba(212, 175, 55, 0.2); border: 1px solid rgba(212, 175, 55, 0.5); border-radius: 4px; padding: 2px 8px; margin: 0 8px; font-weight: bold; font-size: 11px">18+</span>
+        </div>
+
+        <!-- Primary Responsible Gambling Message -->
+        <div style="margin-bottom: 8px; font-style: italic; color: rgba(255, 255, 255, 0.6)">
+            Play responsibly. Set limits, take breaks.
+        </div>
+
+        <!-- Support Organization Links -->
+        <div style="margin-bottom: 8px; font-size: 10px">
+            Need help? Visit:
+            <a href="https://www.ncpg.org" target="_blank" rel="noopener" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 4px">NCPG</a>
+            <span style="color: rgba(255, 255, 255, 0.2)">·</span>
+            <a href="https://www.gamcare.org.uk" target="_blank" rel="noopener" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 4px">GamCare</a>
+            <span style="color: rgba(255, 255, 255, 0.2)">·</span>
+            <a href="https://www.begambleaware.org" target="_blank" rel="noopener" style="color: rgba(212, 175, 55, 0.8); text-decoration: none; margin: 0 4px">BeGambleAware</a>
+        </div>
+
+        <!-- Copyright -->
+        <div style="margin-bottom: 6px; color: rgba(255, 255, 255, 0.4)">
+            © 2024-2026 Matrix Spins Casino. All rights reserved.
+        </div>
+
+        <!-- Social Casino Disclaimer -->
+        <div style="font-size: 10px; color: rgba(255, 255, 255, 0.4); line-height: 1.4">
+            This is a social casino for entertainment only. No real money gambling. Matrix Money is a virtual currency with no real-world value.
+        </div>
+    </footer>
 
 <script src="visual-overhaul.js"></script>
 <script src="bonus-games.js"></script>

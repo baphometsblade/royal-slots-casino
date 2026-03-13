@@ -280,6 +280,10 @@
             if (typeof RealityCheck !== 'undefined' && RealityCheck.init) {
                 RealityCheck.init();
             }
+            // PWA install prompt (after engagement)
+            if (typeof PwaInstall !== 'undefined' && PwaInstall.init) {
+                PwaInstall.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

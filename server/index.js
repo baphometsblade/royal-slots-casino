@@ -165,25 +165,10 @@ app.use('/api/spin', spinLimiter);
 // Per-user spin limit: 60 spins per minute per authenticated user
 app.use('/api/spin', userRateLimit({ maxRequests: 60, windowMs: 60000 }));
 
-// ─── Health Check (used by Render / load balancers) ───
-app.get('/api/health', async (req, res) => {
-    try {
-        const db = require('./database');
-        // Use a generous timeout for PG cold starts on Render free tier
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('DB ping timeout')), 25000));
-        await Promise.race([db.get('SELECT 1'), timeoutPromise]);
-        res.json({ status: 'ok', uptime: process.uptime() });
-    } catch (err) {
-        // Return 200 with degraded status during startup — Render health checks
-        // need a 200 response; 503 causes deploy failure on PG cold starts
-        if (process.uptime() < 60) {
-            res.json({ status: 'starting', uptime: process.uptime(), note: 'DB warming up' });
-        } else {
-            res.status(503).json({ status: 'error', message: err.message });
-        }
-    }
-});
+// ─── Health Check Routes (used by Render / load balancers) ───
+// Register BEFORE static middleware so health checks are always fast & accessible
+const healthRoutes = require('./routes/health.routes');
+app.use('/api/health', healthRoutes);
 
 // ─── API Routes ───
 const authRoutes = require('./routes/auth.routes');
