@@ -1557,8 +1557,9 @@
             modal.classList.add(`slot-template-${tmpl}`);
 
             // Apply per-game chrome style (replicates parent slot visual chrome)
-            const CHROME_STYLES = ['candy','olympus','wild','egyptian','neon',
-                                   'western','oriental','joker','dark','fishing'];
+            const CHROME_STYLES = ['novaspin','celestial','ironreel','goldenedge','vaultx',
+                                   'solstice','phantomworks','arcadeforge','neoncore','frostbyte',
+                                   'desertgold','orientreels'];
             CHROME_STYLES.forEach(c => modal.classList.remove(`slot-chrome-${c}`));
             const chromeStyle = (typeof getGameChromeStyle === 'function')
                 ? getGameChromeStyle(currentGame) : 'wild';

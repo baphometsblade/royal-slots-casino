@@ -2,7 +2,7 @@
 // Chrome Styles — maps every game ID to its provider chrome key
 // ═══════════════════════════════════════════════════════════════════
 //
-// 8 fictional provider brands, each with a distinct visual identity:
+// 12 fictional provider brands, each with a distinct visual identity:
 //
 //  novaspin     — NovaSpin Studios     (sci-fi electric cyan, dark space)
 //  celestial    — Celestial Plays      (Greek gold columns, deep azure)
@@ -12,6 +12,10 @@
 //  solstice     — SolsticeFX           (red lacquer, imperial gold)
 //  phantomworks — PhantomWorks         (gothic purple, blood-red shadow)
 //  arcadeforge  — ArcadeForge          (chrome ring, retro pub-machine)
+//  neoncore     — NeonCore Labs        (matrix green, circuit data streams)
+//  frostbyte    — FrostByte Gaming     (icy blue, frozen crystal edges)
+//  desertgold   — Desert Gold Studios  (warm sand, golden heat haze)
+//  orientreels  — Orient Reels         (red lantern, ink brush elegance)
 //
 // ═══════════════════════════════════════════════════════════════════
 
@@ -182,6 +186,38 @@ const GAME_CHROME_STYLES = {
     'solar_fist':        'novaspin',     // energy
     'thunder_hero':      'phantomworks', // mythology
     'world_cup_glory':   'arcadeforge',  // sports
+
+    // -- 30 New Slots (Session 8) ─────────────────────────────────────
+    'golden_vault_pharaoh': 'goldenedge',   // GoldenEdge Gaming
+    'mythic_olympiad':      'celestial',    // Celestial Plays
+    'neon_nexus':           'neoncore',     // NeonCore Labs
+    'anglers_fortune':      'vaultx',       // VaultX Gaming
+    'mecha_warriors':       'phantomworks', // PhantomWorks
+    'enchanted_grove':      'novaspin',     // NovaSpin Studios
+    'dragons_hoard':        'ironreel',     // IronReel Entertainment
+    'time_keepers_book':    'solstice',     // SolsticeFX
+    'cyber_rebellion':      'neoncore',     // NeonCore Labs
+    'volcano_riches':       'ironreel',     // IronReel Entertainment
+    'sunken_treasure':      'vaultx',       // VaultX Gaming
+    'wild_stallion':        'goldenedge',   // GoldenEdge Gaming
+    'celestial_cosmos':     'celestial',    // Celestial Plays
+    'jade_prosperity':      'orientreels',  // Orient Reels
+    'inferno_fiesta':       'arcadeforge',  // ArcadeForge
+    'mystic_wolf':          'phantomworks', // PhantomWorks
+    'ancient_alchemist':    'solstice',     // SolsticeFX
+    'thunder_titan':        'celestial',    // Celestial Plays
+    'carnival_chaos':       'arcadeforge',  // ArcadeForge
+    'safari_king':          'goldenedge',   // GoldenEdge Gaming
+    'crystal_royals':       'novaspin',     // NovaSpin Studios
+    'infernal_depths':      'phantomworks', // PhantomWorks
+    'rainbow_riches_quest': 'goldenedge',   // GoldenEdge Gaming
+    'steampunk_gears':      'solstice',     // SolsticeFX
+    'phoenix_rising':       'ironreel',     // IronReel Entertainment
+    'arctic_frost':         'frostbyte',    // FrostByte Gaming
+    'urban_rooftop':        'novaspin',     // NovaSpin Studios
+    'enchanted_maze':       'novaspin',     // NovaSpin Studios
+    'samurai_honor':        'desertgold',   // Desert Gold Studios
+    'mega_diamond_rush':    'vaultx',       // VaultX Gaming
 };
 
 // Fallback chrome style by template type (used when no explicit mapping)
@@ -316,6 +352,54 @@ const PROVIDER_FULL_THEMES = {
         ambientStyle: 'volcanic',
         winTextStyle: 'linear-gradient(135deg, #ff1744 0%, #ff6d00 50%, #ffff00 100%)',
         symbolHitStyle: 'golden'     // classic hot/retro → warm golden pulse
+    },
+    // ── NeonCore Labs: matrix green, circuit data streams ────────────────
+    neoncore: {
+        visual: { primary: '#00ff80', secondary: '#001a0d', glow: '#00ff80', accent: 'linear-gradient(135deg,#00ff80,#00e5ff)' },
+        particles: { colors: ['#00ff80','#00e5ff','#b2ff59','#69f0ae','#ffffff'], style: 'digital', gravity: 0.01, drag: 0.98, turbulence: 0.08 },
+        sound: { waveform: 'sawtooth', baseFreq: 440, scale: [440,494,554,587,659,740], filterFreq: 3500, reverb: 0.35, attack: 0.01, decay: 0.25 },
+        ambient: { waveform: 'sawtooth', freq: 110, filterFreq: 500, volume: 0.015 },
+        animation: { chrome: 'neonCoreFrame', idle: 'pulse', win: 'digitalBurst' },
+        particleColors: ['#00ff80','#00e5ff','#b2ff59','#ffffff','#69f0ae'],
+        ambientStyle: 'digital',
+        winTextStyle: 'linear-gradient(135deg, #00ff80 0%, #00e5ff 50%, #b2ff59 100%)',
+        symbolHitStyle: 'electric'
+    },
+    // ── FrostByte Gaming: icy blue, frozen crystal edges ─────────────────
+    frostbyte: {
+        visual: { primary: '#8cd2ff', secondary: '#041020', glow: '#b4e6ff', accent: 'linear-gradient(135deg,#8cd2ff,#e0f2fe)' },
+        particles: { colors: ['#8cd2ff','#b4e6ff','#e0f2fe','#60a5fa','#ffffff'], style: 'snow', gravity: 0.03, drag: 0.97, turbulence: 0.06 },
+        sound: { waveform: 'sine', baseFreq: 660, scale: [660,740,830,880,990,1050], filterFreq: 5000, reverb: 0.5, attack: 0.02, decay: 0.4 },
+        ambient: { waveform: 'sine', freq: 165, filterFreq: 600, volume: 0.015 },
+        animation: { chrome: 'frostFrame', idle: 'shimmer', win: 'iceBurst' },
+        particleColors: ['#8cd2ff','#b4e6ff','#e0f2fe','#ffffff','#60a5fa'],
+        ambientStyle: 'frozen',
+        winTextStyle: 'linear-gradient(135deg, #60a5fa 0%, #e0f2fe 50%, #8cd2ff 100%)',
+        symbolHitStyle: 'electric'
+    },
+    // ── Desert Gold Studios: warm sand, golden heat haze ─────────────────
+    desertgold: {
+        visual: { primary: '#daa63c', secondary: '#1a0f00', glow: '#f0c040', accent: 'linear-gradient(135deg,#daa63c,#c8963c)' },
+        particles: { colors: ['#daa63c','#f0c040','#c8963c','#fbbf24','#ffffff'], style: 'embers', gravity: 0.04, drag: 0.96, turbulence: 0.10 },
+        sound: { waveform: 'triangle', baseFreq: 370, scale: [370,415,440,494,554,587], filterFreq: 2800, reverb: 0.3, attack: 0.015, decay: 0.3 },
+        ambient: { waveform: 'triangle', freq: 92, filterFreq: 450, volume: 0.018 },
+        animation: { chrome: 'desertFrame', idle: 'heatwave', win: 'sandstorm' },
+        particleColors: ['#daa63c','#f0c040','#fbbf24','#ffffff','#c8963c'],
+        ambientStyle: 'desert',
+        winTextStyle: 'linear-gradient(135deg, #c8963c 0%, #f0c040 50%, #fbbf24 100%)',
+        symbolHitStyle: 'golden'
+    },
+    // ── Orient Reels: red lantern, ink brush elegance ────────────────────
+    orientreels: {
+        visual: { primary: '#e63228', secondary: '#1a0000', glow: '#ff4040', accent: 'linear-gradient(135deg,#e63228,#dc2626)' },
+        particles: { colors: ['#e63228','#ff4040','#fbbf24','#dc2626','#ffffff'], style: 'lantern', gravity: -0.02, drag: 0.97, turbulence: 0.05 },
+        sound: { waveform: 'triangle', baseFreq: 523, scale: [523,587,659,784,880,1046], filterFreq: 3200, reverb: 0.4, attack: 0.01, decay: 0.35 },
+        ambient: { waveform: 'sine', freq: 131, filterFreq: 550, volume: 0.015 },
+        animation: { chrome: 'orientFrame', idle: 'lanternFloat', win: 'fireworks' },
+        particleColors: ['#e63228','#ff4040','#fbbf24','#dc2626','#ffffff'],
+        ambientStyle: 'oriental',
+        winTextStyle: 'linear-gradient(135deg, #dc2626 0%, #fbbf24 50%, #e63228 100%)',
+        symbolHitStyle: 'golden'
     }
 };
 

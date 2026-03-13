@@ -24,6 +24,10 @@ var PROVIDER_ANIM_THEMES = {
     solstice:     { particles: ['🏮','🎋','🔱','🌸','🐉'], color: '#ef4444', glow: '#ef444444' },
     phantomworks: { particles: ['💀','🕷️','🌑','🦇','💜'], color: '#a855f7', glow: '#a855f744' },
     arcadeforge:  { particles: ['👾','🕹️','⭐','🎮','🔴'], color: '#06b6d4', glow: '#06b6d444' },
+    neoncore:     { particles: ['💻','🔋','📡','⚡','🟢'], color: '#00ff80', glow: '#00ff8044' },
+    frostbyte:    { particles: ['❄️','🧊','💎','🌨️','✨'], color: '#8cd2ff', glow: '#8cd2ff44' },
+    desertgold:   { particles: ['🏜️','🌅','💰','🐪','⭐'], color: '#daa63c', glow: '#daa63c44' },
+    orientreels:  { particles: ['🏮','🐉','🎋','🧧','✨'], color: '#e63228', glow: '#e6322844' },
 };
 
 function getProviderAnimTheme(game) {

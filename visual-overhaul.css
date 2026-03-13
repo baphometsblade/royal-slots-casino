@@ -1501,7 +1501,11 @@
 .slot-chrome-vaultx .slot-reel-area,
 .slot-chrome-solstice .slot-reel-area,
 .slot-chrome-phantomworks .slot-reel-area,
-.slot-chrome-arcadeforge .slot-reel-area {
+.slot-chrome-arcadeforge .slot-reel-area,
+.slot-chrome-neoncore .slot-reel-area,
+.slot-chrome-frostbyte .slot-reel-area,
+.slot-chrome-desertgold .slot-reel-area,
+.slot-chrome-orientreels .slot-reel-area {
   will-change: box-shadow;
   transform: translateZ(0);
   backface-visibility: hidden;
