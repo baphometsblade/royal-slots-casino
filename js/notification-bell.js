@@ -335,7 +335,7 @@
         return true;
       }
     } catch (err) {
-      console.error('Failed to fetch notifications:', err);
+      console.warn('[NotificationBell] Could not fetch notifications:', err.message || err);
     }
     return false;
   }
@@ -345,7 +345,7 @@
     try {
       await api(`/api/notifications/read/${notificationId}`, { method: 'POST' });
     } catch (err) {
-      console.error('Failed to mark notification as read:', err);
+      console.warn('[NotificationBell] Could not mark as read:', err.message || err);
     }
   }
 
@@ -355,7 +355,7 @@
       await api('/api/notifications/read-all', { method: 'POST' });
       await refresh();
     } catch (err) {
-      console.error('Failed to mark all as read:', err);
+      console.warn('[NotificationBell] Could not mark all as read:', err.message || err);
     }
   }
 

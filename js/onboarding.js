@@ -574,7 +574,7 @@
             }, 3000);
           }
         } catch (err) {
-          console.error('Failed to claim reward:', err);
+          console.warn('[Onboarding] Could not claim daily reward:', err.message || err);
           claimBtn.disabled = false;
           claimBtn.textContent = 'Claim Reward';
         }
