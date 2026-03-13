@@ -32,27 +32,31 @@ db.run(`CREATE TABLE IF NOT EXISTS deposit_campaign_claims (
 )`).catch(function() {});
 
 // Bootstrap: seed default "Welcome Weekend" campaign if none exist
-(async function seedDefaultCampaign() {
-    try {
-        var count = await db.get('SELECT COUNT(*) as cnt FROM deposit_campaigns');
-        if (count && count.cnt === 0) {
-            var now = new Date();
-            var endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+// Retry with delay since DB may not be ready at module load time
+function seedDefaultCampaign() {
+    setTimeout(async function() {
+        try {
+            var count = await db.get('SELECT COUNT(*) as cnt FROM deposit_campaigns');
+            if (count && count.cnt === 0) {
+                var now = new Date();
+                var endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-            var startAt = now.toISOString();
-            var endAt = endDate.toISOString();
+                var startAt = now.toISOString();
+                var endAt = endDate.toISOString();
 
-            await db.run(
-                `INSERT INTO deposit_campaigns (name, description, match_percent, max_bonus, min_deposit, start_at, end_at, is_active)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                ['Welcome Weekend', 'Double your deposit! 100% match up to $500 on your next deposit.', 100, 500, 20, startAt, endAt, 1]
-            );
-            console.warn('[campaigns] Seeded default "Welcome Weekend" campaign');
+                await db.run(
+                    `INSERT INTO deposit_campaigns (name, description, match_percent, max_bonus, min_deposit, start_at, end_at, is_active)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    ['Welcome Weekend', 'Double your deposit! 100% match up to $500 on your next deposit.', 100, 500, 20, startAt, endAt, 1]
+                );
+                console.warn('[campaigns] Seeded default "Welcome Weekend" campaign');
         }
     } catch (err) {
         console.warn('[campaigns] Error seeding default campaign:', err.message);
     }
-})();
+    }, 5000); // 5s delay for DB to initialize
+}
+seedDefaultCampaign();
 
 /**
  * GET /active
