@@ -46,21 +46,22 @@ function extractUserIdFromAuth(authHeader) {
  */
 async function bootstrapTable() {
     try {
+        var isPg = !!process.env.DATABASE_URL;
+        var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+        var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
         await db.run(
-            `CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT UNIQUE NOT NULL,
-                user_id INTEGER NULL,
-                subscribed_at TEXT DEFAULT (datetime('now')),
-                unsubscribed INTEGER DEFAULT 0,
-                source TEXT DEFAULT 'website',
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )`,
-            []
+            'CREATE TABLE IF NOT EXISTS newsletter_subscribers (' +
+            '  id ' + idDef + ',' +
+            '  email TEXT UNIQUE NOT NULL,' +
+            '  user_id INTEGER NULL,' +
+            '  subscribed_at ' + tsDef + ',' +
+            '  unsubscribed INTEGER DEFAULT 0,' +
+            "  source TEXT DEFAULT 'website'" +
+            ')'
         );
-        console.log('[Newsletter] Table bootstrapped: newsletter_subscribers');
+        console.warn('[Newsletter] Table initialized');
     } catch (err) {
-        console.warn('[Newsletter] Bootstrap error:', err);
+        console.warn('[Newsletter] Bootstrap error:', err.message);
     }
 }
 

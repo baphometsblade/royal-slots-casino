@@ -23,34 +23,29 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
  */
 async function bootstrapTables() {
   try {
-    // Check if referral_codes table exists
-    await db.get('SELECT 1 FROM referral_codes LIMIT 1').catch(async () => {
-      // Table doesn't exist, create it
-      await db.run(`
-        CREATE TABLE IF NOT EXISTS referral_codes (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
-          code TEXT NOT NULL UNIQUE,
-          created_at TEXT DEFAULT (datetime('now'))
-        )
-      `);
-      console.warn('[Referral] referral_codes table created');
-    });
+    var isPg = !!process.env.DATABASE_URL;
+    var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
 
-    // Check if referral_claims table exists
-    await db.get('SELECT 1 FROM referral_claims LIMIT 1').catch(async () => {
-      // Table doesn't exist, create it
-      await db.run(`
-        CREATE TABLE IF NOT EXISTS referral_claims (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          referrer_id INTEGER NOT NULL REFERENCES users(id),
-          referred_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
-          bonus_given INTEGER DEFAULT 0,
-          created_at TEXT DEFAULT (datetime('now'))
-        )
-      `);
-      console.warn('[Referral] referral_claims table created');
-    });
+    await db.run(
+      'CREATE TABLE IF NOT EXISTS referral_codes (' +
+      '  id ' + idDef + ',' +
+      '  user_id INTEGER NOT NULL UNIQUE,' +
+      '  code TEXT NOT NULL UNIQUE,' +
+      '  created_at ' + tsDef +
+      ')'
+    );
+
+    await db.run(
+      'CREATE TABLE IF NOT EXISTS referral_claims (' +
+      '  id ' + idDef + ',' +
+      '  referrer_id INTEGER NOT NULL,' +
+      '  referred_id INTEGER NOT NULL UNIQUE,' +
+      '  bonus_given INTEGER DEFAULT 0,' +
+      '  created_at ' + tsDef +
+      ')'
+    );
+    console.warn('[Referral] Tables initialized');
   } catch (err) {
     console.warn('[Referral] bootstrapTables error:', err.message);
   }

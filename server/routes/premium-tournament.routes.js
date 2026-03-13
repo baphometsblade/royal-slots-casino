@@ -4,36 +4,44 @@ const router = require('express').Router();
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const db = require('../database');
 
-// Bootstrap tables at module load
-db.run(
-    'CREATE TABLE IF NOT EXISTS premium_tournaments (' +
-    '  id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-    '  name TEXT NOT NULL,' +
-    '  entry_fee REAL NOT NULL,' +
-    '  prize_pool REAL NOT NULL,' +
-    '  max_players INTEGER DEFAULT 100,' +
-    '  current_players INTEGER DEFAULT 0,' +
-    '  status TEXT DEFAULT \'active\',' +
-    '  starts_at TEXT NOT NULL,' +
-    '  ends_at TEXT NOT NULL,' +
-    "  created_at TEXT DEFAULT datetime('now')" +
-    ')'
-).catch(function() {});
-
-db.run(
-    'CREATE TABLE IF NOT EXISTS premium_tournament_entries (' +
-    '  id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-    '  tournament_id INTEGER NOT NULL,' +
-    '  user_id INTEGER NOT NULL,' +
-    '  score REAL DEFAULT 0,' +
-    '  spins INTEGER DEFAULT 0,' +
-    '  best_win REAL DEFAULT 0,' +
-    "  joined_at TEXT DEFAULT datetime('now')," +
-    '  UNIQUE(tournament_id, user_id),' +
-    '  FOREIGN KEY(tournament_id) REFERENCES premium_tournaments(id),' +
-    '  FOREIGN KEY(user_id) REFERENCES users(id)' +
-    ')'
-).catch(function() {});
+// Bootstrap tables at module load — tables are also in schema files for production
+// This is a fallback for dev/SQLite; PG uses schema-pg.js SERIAL definitions
+(async function bootstrapTables() {
+    try {
+        var isPg = !!process.env.DATABASE_URL;
+        var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+        var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+        await db.run(
+            'CREATE TABLE IF NOT EXISTS premium_tournaments (' +
+            '  id ' + idDef + ',' +
+            '  name TEXT NOT NULL,' +
+            '  entry_fee REAL NOT NULL,' +
+            '  prize_pool REAL NOT NULL,' +
+            '  max_players INTEGER DEFAULT 100,' +
+            '  current_players INTEGER DEFAULT 0,' +
+            "  status TEXT DEFAULT 'active'," +
+            '  starts_at TEXT,' +
+            '  ends_at TEXT,' +
+            '  created_at ' + tsDef +
+            ')'
+        );
+        await db.run(
+            'CREATE TABLE IF NOT EXISTS premium_tournament_entries (' +
+            '  id ' + idDef + ',' +
+            '  tournament_id INTEGER NOT NULL,' +
+            '  user_id INTEGER NOT NULL,' +
+            '  score REAL DEFAULT 0,' +
+            '  spins INTEGER DEFAULT 0,' +
+            '  best_win REAL DEFAULT 0,' +
+            '  joined_at ' + tsDef + ',' +
+            '  UNIQUE(tournament_id, user_id)' +
+            ')'
+        );
+        console.warn('[PremiumTournaments] Tables initialized');
+    } catch (err) {
+        console.warn('[PremiumTournaments] Bootstrap error (tables may already exist):', err.message);
+    }
+})();
 
 // Seed default premium tournaments at module load (with 5s delay to allow schema setup)
 setTimeout(function() {

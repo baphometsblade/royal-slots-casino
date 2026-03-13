@@ -7,18 +7,21 @@ const db = require('../database');
 // ─── Bootstrap withdrawal_offers table ───
 async function bootstrapTable() {
     try {
-        await db.run(`
-            CREATE TABLE IF NOT EXISTS withdrawal_offers (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                offer_type TEXT NOT NULL,
-                offer_amount REAL NOT NULL,
-                withdrawal_amount REAL NOT NULL,
-                accepted INTEGER DEFAULT 0,
-                created_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        `);
+        const isPg = !!process.env.DATABASE_URL;
+        const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+        const tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+        await db.run(
+            'CREATE TABLE IF NOT EXISTS withdrawal_offers (' +
+            '  id ' + idDef + ',' +
+            '  user_id INTEGER NOT NULL,' +
+            '  offer_type TEXT NOT NULL,' +
+            '  offer_amount REAL NOT NULL,' +
+            '  withdrawal_amount REAL NOT NULL,' +
+            '  accepted INTEGER DEFAULT 0,' +
+            '  created_at ' + tsDef +
+            ')'
+        );
+        console.warn('[WithdrawalEnhance] Table initialized');
     } catch (err) {
         console.warn('[WithdrawalEnhance] Bootstrap table error:', err.message);
     }

@@ -17,19 +17,21 @@ const WHEEL_PRIZES = [
 // Bootstrap daily_wheel_spins table
 async function initializeDailyWheelTable() {
   try {
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS daily_wheel_spins (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        prize_type TEXT NOT NULL,
-        prize_amount REAL NOT NULL,
-        spun_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      )
-    `);
-    console.warn('Daily wheel spins table initialized');
+    var isPg = !!process.env.DATABASE_URL;
+    var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+    await db.run(
+      'CREATE TABLE IF NOT EXISTS daily_wheel_spins (' +
+      '  id ' + idDef + ',' +
+      '  user_id INTEGER NOT NULL,' +
+      '  prize_type TEXT NOT NULL,' +
+      '  prize_amount REAL NOT NULL,' +
+      '  spun_at ' + tsDef +
+      ')'
+    );
+    console.warn('[DailyWheel] Table initialized');
   } catch (err) {
-    console.warn('Error initializing daily wheel spins table:', err.message);
+    console.warn('[DailyWheel] Bootstrap error:', err.message);
   }
 }
 
