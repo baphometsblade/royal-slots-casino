@@ -63,6 +63,11 @@ async function ensureDailyMissionsSchema() {
 // Rate limiting state per user
 const lastSpinTime = new Map();
 const freeSpinStateByUser = new Map();
+// Anti-fraud spin velocity tracking per user
+const spinTimestamps = new Map(); // userId -> { last: timestamp, recentSpins: [timestamps] }
+const MIN_SPIN_INTERVAL_MS = 500;
+const BURST_WINDOW_MS = 30000;
+const BURST_MAX_SPINS = 20;
 // Session win cap duration — caps reset after 24 hours
 const SESSION_CAP_DURATION_HOURS = 24;
 
@@ -123,6 +128,26 @@ router.post('/', authenticate, async (req, res) => {
             return res.status(403).json({ error: 'Your account is currently self-excluded from playing.' });
         }
 
+        // ── Anti-fraud spin velocity check ──
+        const now = Date.now();
+        let userSpinData = spinTimestamps.get(userId) || { last: 0, recentSpins: [] };
+
+        // Check minimum interval (500ms between spins)
+        if (now - userSpinData.last < MIN_SPIN_INTERVAL_MS) {
+            return res.status(429).json({ error: 'Too fast. Please slow down.' });
+        }
+
+        // Track recent spins for burst detection
+        userSpinData.recentSpins = userSpinData.recentSpins.filter(t => now - t < BURST_WINDOW_MS);
+        userSpinData.recentSpins.push(now);
+        userSpinData.last = now;
+        spinTimestamps.set(userId, userSpinData);
+
+        // Flag burst pattern (20+ spins in 30 seconds)
+        if (userSpinData.recentSpins.length > BURST_MAX_SPINS) {
+            console.warn(`[Spin] User ${userId} triggered burst pattern: ${userSpinData.recentSpins.length} spins in ${BURST_WINDOW_MS}ms`);
+        }
+
         // ── Validate game ──
         const game = games.find(g => g.id === gameId);
         if (!game) {
@@ -155,14 +180,6 @@ router.post('/', authenticate, async (req, res) => {
         if (bet > config.MAX_BET) {
             return res.status(400).json({ error: `Maximum bet is $${config.MAX_BET}` });
         }
-
-        // ── Rate limit (2 spins/sec) ──
-        const now = Date.now();
-        const lastSpin = lastSpinTime.get(userId) || 0;
-        if (now - lastSpin < 1000 / config.MAX_SPINS_PER_SECOND) {
-            return res.status(429).json({ error: 'Spinning too fast. Please wait.' });
-        }
-        lastSpinTime.set(userId, now);
 
         // ── Daily loss limit check (before spinning) ──
         const lossLimitService = require('../services/loss-limit.service');

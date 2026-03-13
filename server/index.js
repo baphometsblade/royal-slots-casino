@@ -208,6 +208,7 @@ app.use('/api/firstdeposit', require('./routes/firstdeposit.routes'));
 app.use('/api/self-exclusion', require('./routes/selfexclusion.routes'));
 app.use('/api/deposit-limits', require('./routes/depositlimits.routes'));
 app.use('/api/favorites',      require('./routes/favorites.routes'));
+app.use('/api/player-stats',   require('./routes/playerstats.routes'));
 app.use('/api/depositmatch', require('./routes/depositmatch.routes'));
 app.use('/api/spinstreak',   require('./routes/spinstreak.routes'));
 app.use('/api/vipwheel',     require('./routes/vipwheel.routes'));
