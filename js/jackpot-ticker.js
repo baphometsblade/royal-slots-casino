@@ -7,7 +7,7 @@
  */
 
 const JACKPOT_TIERS = ['mini', 'major', 'grand'];
-const TICKER_UPDATE_INTERVAL = 3000; // Refresh API every 3s
+const TICKER_UPDATE_INTERVAL = 30000; // Refresh API every 30s (counter animation smooths between fetches)
 const COUNTER_TICK_INTERVAL = 50; // Smooth counting animation every 50ms
 const SIMULATED_INCREMENT = 0.85; // Cents per tick when simulating
 
