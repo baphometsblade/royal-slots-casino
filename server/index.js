@@ -210,6 +210,8 @@ app.use('/api/deposit-limits', require('./routes/depositlimits.routes'));
 app.use('/api/favorites',      require('./routes/favorites.routes'));
 app.use('/api/player-stats',   require('./routes/playerstats.routes'));
 app.use('/api/affiliate',      require('./routes/affiliate.routes'));
+app.use('/api/admin-metrics',  require('./routes/adminmetrics.routes'));
+app.use('/api/account',        require('./routes/accountdeletion.routes'));
 app.use('/api/depositmatch', require('./routes/depositmatch.routes'));
 app.use('/api/spinstreak',   require('./routes/spinstreak.routes'));
 app.use('/api/vipwheel',     require('./routes/vipwheel.routes'));
