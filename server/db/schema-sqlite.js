@@ -367,6 +367,51 @@ const TABLES = [
         ip_address TEXT,
         user_agent TEXT,
         created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS milestone_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        milestone_id TEXT NOT NULL,
+        reward_amount REAL NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, milestone_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS deposit_campaigns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        match_percent INTEGER NOT NULL DEFAULT 100,
+        max_bonus REAL NOT NULL DEFAULT 500,
+        min_deposit REAL NOT NULL DEFAULT 10,
+        start_at TEXT NOT NULL,
+        end_at TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS deposit_campaign_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        campaign_id INTEGER NOT NULL,
+        deposit_amount REAL NOT NULL,
+        bonus_amount REAL NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, campaign_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (campaign_id) REFERENCES deposit_campaigns(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS loss_cashback_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        tier TEXT NOT NULL,
+        loss_amount REAL NOT NULL,
+        cashback_amount REAL NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, tier, claimed_at)
     )`
 ];
 
@@ -386,8 +431,8 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_spins_wins ON spins(win_amount, created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_achievements_user ON user_achievements(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_campaigns_active ON campaigns(active, start_at, end_at)`,
-    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_cid ON campaign_claims(campaign_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_campaign_claims_uid ON campaign_claims(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_deposit_campaign_claims_cid ON deposit_campaign_claims(campaign_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_deposit_campaign_claims_uid ON deposit_campaign_claims(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_gifts_to ON gifts(to_user_id, status)`,
     `CREATE INDEX IF NOT EXISTS idx_gifts_from ON gifts(from_user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_contest_entries_rank ON contest_entries(contest_id, metric_type, metric_value DESC)`,

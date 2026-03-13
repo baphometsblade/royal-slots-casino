@@ -1,122 +1,174 @@
 'use strict';
-
 const router = require('express').Router();
-const { authenticate } = require('../middleware/auth');
 const db = require('../database');
+const { authenticate } = require('../middleware/auth');
 
-// Bootstrap: add milestone_last_claimed column safely (no-op if already exists)
-db.run("ALTER TABLE users ADD COLUMN milestone_last_claimed INTEGER DEFAULT 0").catch(function() {});
-
+// Define spend milestones
 const MILESTONES = [
-  { spins: 100,   gems: 50,   credits: 0,     label: 'First Century' },
-  { spins: 250,   gems: 100,  credits: 0.50,  label: 'Quarter Thousand' },
-  { spins: 500,   gems: 200,  credits: 1.00,  label: 'Half Grand' },
-  { spins: 1000,  gems: 500,  credits: 2.00,  label: 'Spinning Centurion' },
-  { spins: 2500,  gems: 1000, credits: 5.00,  label: 'High Roller' },
-  { spins: 5000,  gems: 2000, credits: 10.00, label: 'Legend' },
-  { spins: 10000, gems: 5000, credits: 25.00, label: 'Elite' },
+  { id: 'bronze_starter', threshold: 50, reward: 10, rewardType: 'balance', label: 'Bronze Starter', vipTier: 'bronze' },
+  { id: 'silver_player', threshold: 250, reward: 50, rewardType: 'balance', label: 'Silver Player', vipTier: 'silver' },
+  { id: 'gold_high_roller', threshold: 1000, reward: 150, rewardType: 'balance', label: 'Gold High Roller', vipTier: 'gold' },
+  { id: 'platinum_elite', threshold: 5000, reward: 500, rewardType: 'balance', label: 'Platinum Elite', vipTier: 'platinum' },
+  { id: 'diamond_vip', threshold: 25000, reward: 2000, rewardType: 'balance', label: 'Diamond VIP', vipTier: 'diamond' }
 ];
 
-// GET /api/milestones/status
-router.get('/status', authenticate, async function(req, res) {
+// Bootstrap: create milestone_claims table
+db.run(`CREATE TABLE IF NOT EXISTS milestone_claims (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  milestone_id TEXT NOT NULL,
+  reward_amount REAL NOT NULL,
+  claimed_at TEXT DEFAULT (datetime('now')),
+  UNIQUE(user_id, milestone_id)
+)`).catch(function() {});
+
+// GET /api/milestones — Get player's milestone progress
+router.get('/', authenticate, async function(req, res) {
   try {
-    var userId = req.user.id;
+    const userId = req.user.id;
 
-    var spinRow = await db.get('SELECT COUNT(*) as cnt FROM spins WHERE user_id = ?', [userId]);
-    var totalSpins = spinRow ? (spinRow.cnt || 0) : 0;
+    // Get total lifetime wagered from spins table
+    const wagerRow = await db.get(
+      'SELECT COALESCE(SUM(bet_amount), 0) as total_wagered FROM spins WHERE user_id = ?',
+      [userId]
+    );
+    const totalWagered = parseFloat(wagerRow?.total_wagered || 0);
 
-    var userRow = await db.get('SELECT milestone_last_claimed FROM users WHERE id = ?', [userId]);
-    var lastClaimed = userRow ? (userRow.milestone_last_claimed || 0) : 0;
+    // Get claimed milestones
+    const claimed = await db.all(
+      'SELECT milestone_id, reward_amount, claimed_at FROM milestone_claims WHERE user_id = ?',
+      [userId]
+    );
+    const claimedIds = new Set(claimed.map(c => c.milestone_id));
 
-    var pendingMilestone = null;
-    for (var i = MILESTONES.length - 1; i >= 0; i--) {
-      if (MILESTONES[i].spins <= totalSpins && MILESTONES[i].spins > lastClaimed) {
-        pendingMilestone = MILESTONES[i];
+    // Build milestone progress
+    const milestonesList = MILESTONES.map(m => {
+      const isClaimed = claimedIds.has(m.id);
+      const isReached = totalWagered >= m.threshold;
+      return {
+        id: m.id,
+        label: m.label,
+        threshold: m.threshold,
+        reward: m.reward,
+        rewardType: m.rewardType,
+        vipTier: m.vipTier,
+        reached: isReached,
+        claimed: isClaimed
+      };
+    });
+
+    // Find next unclaimed milestone
+    let nextMilestone = null;
+    for (const m of MILESTONES) {
+      if (!claimedIds.has(m.id) && totalWagered < m.threshold) {
+        nextMilestone = {
+          id: m.id,
+          label: m.label,
+          threshold: m.threshold,
+          reward: m.reward,
+          progress: totalWagered,
+          remaining: m.threshold - totalWagered
+        };
         break;
       }
     }
 
-    var nextMilestone = null;
-    for (var j = 0; j < MILESTONES.length; j++) {
-      if (MILESTONES[j].spins > totalSpins) {
-        nextMilestone = MILESTONES[j];
+    // Get current VIP tier (highest claimed milestone's vipTier)
+    let currentVipTier = 'none';
+    for (let i = MILESTONES.length - 1; i >= 0; i--) {
+      if (claimedIds.has(MILESTONES[i].id)) {
+        currentVipTier = MILESTONES[i].vipTier;
         break;
       }
     }
 
-    return res.json({
-      totalSpins: totalSpins,
-      nextMilestone: nextMilestone ? nextMilestone.spins : null,
-      nextMilestoneLabel: nextMilestone ? nextMilestone.label : null,
-      spinsUntilNext: nextMilestone ? nextMilestone.spins - totalSpins : 0,
-      pendingClaim: !!pendingMilestone,
-      pendingMilestone: pendingMilestone || null,
+    res.json({
+      success: true,
+      totalWagered: parseFloat(totalWagered.toFixed(2)),
+      currentVipTier: currentVipTier,
+      milestones: milestonesList,
+      nextMilestone: nextMilestone
     });
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
+    console.warn('[Milestones] getProgress error:', err.message);
+    res.status(500).json({ error: 'Failed to load milestone progress' });
   }
 });
 
-// POST /api/milestones/claim
+// POST /api/milestones/claim — Claim a milestone reward
 router.post('/claim', authenticate, async function(req, res) {
   try {
-    var userId = req.user.id;
+    const userId = req.user.id;
+    const { milestoneId } = req.body;
 
-    var spinRow = await db.get('SELECT COUNT(*) as cnt FROM spins WHERE user_id = ?', [userId]);
-    var totalSpins = spinRow ? (spinRow.cnt || 0) : 0;
-
-    var userRow = await db.get('SELECT milestone_last_claimed, balance FROM users WHERE id = ?', [userId]);
-    var lastClaimed = userRow ? (userRow.milestone_last_claimed || 0) : 0;
-
-    var milestone = null;
-    for (var i = MILESTONES.length - 1; i >= 0; i--) {
-      if (MILESTONES[i].spins <= totalSpins && MILESTONES[i].spins > lastClaimed) {
-        milestone = MILESTONES[i];
-        break;
-      }
+    if (!milestoneId) {
+      return res.status(400).json({ error: 'milestoneId required' });
     }
 
+    // Find milestone definition
+    const milestone = MILESTONES.find(m => m.id === milestoneId);
     if (!milestone) {
-      return res.status(400).json({ error: 'No milestone to claim' });
+      return res.status(404).json({ error: 'Milestone not found' });
     }
 
-    // Atomic guard: only claim if milestone_last_claimed hasn't changed (prevents race condition)
-    var claimGuard = await db.run(
-      'UPDATE users SET milestone_last_claimed = ? WHERE id = ? AND (milestone_last_claimed IS NULL OR milestone_last_claimed < ?)',
-      [milestone.spins, userId, milestone.spins]
+    // Get total lifetime wagered
+    const wagerRow = await db.get(
+      'SELECT COALESCE(SUM(bet_amount), 0) as total_wagered FROM spins WHERE user_id = ?',
+      [userId]
     );
-    if (!claimGuard || claimGuard.changes === 0) {
+    const totalWagered = parseFloat(wagerRow?.total_wagered || 0);
+
+    // Verify player has reached threshold
+    if (totalWagered < milestone.threshold) {
+      return res.status(400).json({
+        error: 'Threshold not reached',
+        required: milestone.threshold,
+        current: totalWagered,
+        remaining: milestone.threshold - totalWagered
+      });
+    }
+
+    // Check if already claimed
+    const existing = await db.get(
+      'SELECT id FROM milestone_claims WHERE user_id = ? AND milestone_id = ?',
+      [userId, milestoneId]
+    );
+    if (existing) {
       return res.status(400).json({ error: 'Milestone already claimed' });
     }
 
-    // Award credits to bonus_balance with 15x wagering
-    if (milestone.credits > 0) {
-      await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [milestone.credits, milestone.credits * 15, userId]);
-    }
-
-    // Record transaction
-    var description = 'Milestone: ' + milestone.label + ' (' + milestone.spins + ' spins)';
+    // Credit reward to player balance
     await db.run(
-      "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'milestone', ?, ?)",
-      [userId, milestone.credits, description]
+      'UPDATE users SET balance = COALESCE(balance, 0) + ? WHERE id = ?',
+      [milestone.reward, userId]
     );
 
-    // Get updated balance
-    var updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
-    var newBalance = updatedUser ? (updatedUser.balance || 0) : 0;
+    // Record in milestone_claims table
+    await db.run(
+      'INSERT INTO milestone_claims (user_id, milestone_id, reward_amount) VALUES (?, ?, ?)',
+      [userId, milestoneId, milestone.reward]
+    );
 
-    return res.json({
+    // Record transaction
+    await db.run(
+      "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'milestone_reward', ?, ?)",
+      [userId, milestone.reward, `Milestone reward: ${milestone.label}`]
+    );
+
+    // Fetch updated player balance
+    const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+
+    res.json({
       success: true,
-      milestone: milestone.spins,
+      milestoneId: milestoneId,
       label: milestone.label,
-      reward: {
-        gems: milestone.gems,
-        credits: milestone.credits,
-      },
-      newBalance: newBalance,
+      reward: milestone.reward,
+      vipTier: milestone.vipTier,
+      newBalance: parseFloat(updatedUser?.balance || 0)
     });
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
+    console.warn('[Milestones] claim error:', err.message);
+    res.status(500).json({ error: 'Failed to claim milestone' });
   }
 });
 

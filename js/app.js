@@ -284,6 +284,18 @@
             if (typeof PwaInstall !== 'undefined' && PwaInstall.init) {
                 PwaInstall.init();
             }
+            // VIP milestone progress widget
+            if (typeof MilestoneProgress !== 'undefined' && MilestoneProgress.init) {
+                setTimeout(function() { MilestoneProgress.init(); }, 2000);
+            }
+            // Active campaign deposit banners
+            if (typeof CampaignBanner !== 'undefined' && CampaignBanner.init) {
+                setTimeout(function() { CampaignBanner.init(); }, 4000);
+            }
+            // Loss-driven cashback escalation
+            if (typeof LossCashback !== 'undefined' && LossCashback.init) {
+                LossCashback.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
