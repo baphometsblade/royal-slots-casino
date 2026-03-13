@@ -639,6 +639,156 @@ GAME_PROMPTS = {
         'thumb': 'world cup trophy golden, football stadium, confetti celebration, championship glory, slot game sports art',
         'bg': 'massive football stadium with world cup celebration, confetti rain, spotlight, championship atmosphere',
     },
+    'golden_vault_pharaoh': {
+        'name': 'Golden Vault Pharaoh',
+        'thumb': 'pharaoh king standing before golden treasure vault overflowing with riches, jeweled sarcophagus, golden hieroglyphic walls, ancient egyptian treasure chamber, dramatic amber lighting, slot game art',
+        'bg': 'cavernous pharaoh treasure vault with towering gold piles, flickering torch light, hieroglyphic inscriptions glowing, sacred treasures gleaming, mystical egyptian vault atmosphere',
+    },
+    'mythic_olympiad': {
+        'name': 'Mythic Olympiad',
+        'thumb': 'grand olympic arena with greek columns, warrior athletes competing, golden laurel wreaths, divine light from above, spectators in stands, epic mythology slot game art',
+        'bg': 'massive ancient greek olympic stadium, columns framing arena, athletes in battle stance, dramatic sunset sky, divine golden light, mythic championship atmosphere',
+    },
+    'neon_nexus': {
+        'name': 'Neon Nexus',
+        'thumb': 'cyberpunk neon megacity skyline, holographic billboards, flying vehicles, electric blue and pink neon lights, futuristic architecture, cyber consciousness, slot game sci-fi art',
+        'bg': 'sprawling neon cyberpunk city at night, towering skyscrapers with neon signs, rain-slicked streets reflecting light, flying cars, dark neon futuristic atmosphere',
+    },
+    'anglers_fortune': {
+        'name': 'Angler\'s Fortune',
+        'thumb': 'serene mountain lake at sunrise, fisherman casting line with shimmering catch, water ripples, golden light reflecting, pine trees, peaceful fishing scene, slot game nature art',
+        'bg': 'tranquil alpine lake surrounded by evergreens, golden sunrise light, mist over water, fishing boat in distance, serene peaceful fishing atmosphere',
+    },
+    'mecha_warriors': {
+        'name': 'Mecha Warriors',
+        'thumb': 'giant mecha robots locked in epic battle, metallic armor glinting, energy weapons firing, explosion effects, robot detail, dynamic action composition, slot game mecha art',
+        'bg': 'dramatic mecha robot battle scene, towering robots clashing, explosive energy beams, industrial cityscape destroyed, intense battle atmosphere',
+    },
+    'enchanted_grove': {
+        'name': 'Enchanted Grove',
+        'thumb': 'magical forest clearing with glowing bioluminescent mushrooms, ethereal glowing flowers, floating fairy lights, twisted ancient trees, mystical mist, enchanted woodland, slot game fantasy art',
+        'bg': 'enchanted forest grove with towering magical trees, glowing mushroom circles, ethereal light wisps, floating magical particles, mystical magical atmosphere',
+    },
+    'dragons_hoard': {
+        'name': 'Dragon\'s Hoard',
+        'thumb': 'fearsome red dragon coiled upon mountain of treasure, golden coins and gems, breathing flames, glowing scales, treasure chest, medieval fantasy, slot game dragon art',
+        'bg': 'dragon\'s cave chamber with towering treasure piles, molten lava glow, dragon shadow looming above, precious gems and coins scattered, treasure hoard atmosphere',
+    },
+    'time_keepers_book': {
+        'name': 'Time Keeper\'s Book',
+        'thumb': 'mystical ancient book floating in time vortex, clockwork gears, swirling time portals, glowing runes, quantum energy, time travel theme, slot game fantasy art',
+        'bg': 'interdimensional library with floating ancient books, swirling temporal vortex, glowing clock mechanisms, cosmic time energy, mystical time-travel atmosphere',
+    },
+    'cyber_rebellion': {
+        'name': 'Cyber Rebellion',
+        'thumb': 'urban hacker rebellion scene, masked hackers at workstations, code cascading down screens, neon green terminal lines, encrypted data, cyberpunk uprising, slot game tech art',
+        'bg': 'futuristic hacker hideout with glowing computer screens, neon code matrix, dark industrial warehouse, green and purple neon glow, cyber rebellion atmosphere',
+    },
+    'volcano_riches': {
+        'name': 'Volcano Riches',
+        'thumb': 'erupting volcano with molten lava fountain, precious gemstones scattered in lava flow, golden light from eruption, tropical island setting, dramatic explosion, slot game nature art',
+        'bg': 'massive volcanic eruption with lava rivers, glowing gemstones embedded in lava, night sky lit by eruption glow, smoke and ash, intense volcanic atmosphere',
+    },
+    'sunken_treasure': {
+        'name': 'Sunken Treasure',
+        'thumb': 'underwater pirate shipwreck with broken masts, treasure chest overflowing with coins and jewels, bioluminescent sea creatures, coral formations, deep ocean murk, slot game ocean art',
+        'bg': 'dark ocean depths with sunken pirate ship, treasure chest surrounded by coral, bioluminescent creatures swimming, filtered blue underwater light, mysterious shipwreck atmosphere',
+    },
+    'wild_stallion': {
+        'name': 'Wild Stallion',
+        'thumb': 'wild mustang horse herd galloping across desert dunes, dust clouds billowing, golden sunset light, adobe cliffs, powerful wild horses, dramatic western scene, slot game nature art',
+        'bg': 'vast desert landscape with wild mustang herd thundering across sand, dramatic sunset sky, dust clouds rising, desert rock formations, free untamed nature atmosphere',
+    },
+    'celestial_cosmos': {
+        'name': 'Celestial Cosmos',
+        'thumb': 'deep space scene with multiple galaxies and nebulas, cosmic dust clouds, colorful star clusters, black hole silhouette, infinite universe, slot game space art',
+        'bg': 'infinite cosmos with swirling nebulas, colorful galaxy clusters, distant stars twinkling, cosmic rays of light, deep space exploration atmosphere',
+    },
+    'jade_prosperity': {
+        'name': 'Jade Prosperity',
+        'thumb': 'serene chinese jade garden with ornate stone bridges, koi fish in ponds, bamboo groves, jade temple structures, golden sunset light, asian harmony, slot game oriental art',
+        'bg': 'peaceful traditional chinese jade garden, stone moon bridge, koi pond reflection, bamboo trees, temple pagoda, serene oriental prosperity atmosphere',
+    },
+    'inferno_fiesta': {
+        'name': 'Inferno Fiesta',
+        'thumb': 'mexican fire festival with flaming performers, illuminated float parade, mariachi band, colorful papel picado banners, fireworks explosion, festive heat, slot game party art',
+        'bg': 'mexican village fire festival night, flaming torches lighting streets, fireworks bursting, festive decorations, warm orange glow, vibrant fiesta atmosphere',
+    },
+    'mystic_wolf': {
+        'name': 'Mystic Wolf',
+        'thumb': 'wolf pack howling at blood moon, mystical lunar glow, dark forest silhouettes, glowing wolf eyes, paranormal energy, moonlit wilderness, slot game wildlife art',
+        'bg': 'dark forest clearing under blood-red full moon, wolf pack silhouettes, mystical purple moonlight, bare twisted trees, mysterious pack atmosphere',
+    },
+    'ancient_alchemist': {
+        'name': 'Ancient Alchemist',
+        'thumb': 'medieval alchemy laboratory with bubbling potions, alchemist robed figure, floating crystal orbs, transmutation circles, mystical experiments, occult atmosphere, slot game fantasy art',
+        'bg': 'ancient stone alchemy laboratory, shelves of glowing potion bottles, alchemist workspace, glowing runes on walls, purple mystical smoke, occult alchemy atmosphere',
+    },
+    'thunder_titan': {
+        'name': 'Thunder Titan',
+        'thumb': 'colossal greek titan wielding thunderbolt, lightning crackling around body, olympus in background, divine power, mythological god-figure, epic scale, slot game mythology art',
+        'bg': 'mount olympus with towering titan silhouette, massive lightning bolts striking ground, epic clouds, divine golden light, mythological titan power atmosphere',
+    },
+    'carnival_chaos': {
+        'name': 'Carnival Chaos',
+        'thumb': 'vibrant carnival fairground with spinning ferris wheel, colorful roller coaster loops, carousel horses, carnival lights, playful chaos, cotton candy stands, slot game carnival art',
+        'bg': 'festive carnival at night with illuminated rides, ferris wheel spinning, colorful carnival tent tops, bright carnival lights, playful joyful atmosphere',
+    },
+    'safari_king': {
+        'name': 'Safari King',
+        'thumb': 'majestic lion king surveying african savanna herd, golden mane, crown of power, gazelle and zebra, acacia trees, dramatic dawn light, slot game wildlife art',
+        'bg': 'golden african savanna with lion king standing proud, wildlife scattered below, acacia trees dotting horizon, dramatic sunrise sky, majestic safari atmosphere',
+    },
+    'crystal_royals': {
+        'name': 'Crystal Royals',
+        'thumb': 'crystal palace with towering gem formations, golden royal crown hovering above, glowing crystal throne, refracted rainbow light, jeweled ornaments, divine luxury, slot game fantasy art',
+        'bg': 'magnificent crystal palace interior, towering crystal formations, golden royal throne room, rainbow light refractions, mystical gem glow, royal crystal atmosphere',
+    },
+    'infernal_depths': {
+        'name': 'Infernal Depths',
+        'thumb': 'hellish underworld depths with demonic architecture, molten lava rivers, demonic statues, dark gothic structures, flames and smoke, infernal red glow, slot game horror art',
+        'bg': 'deep hellish underworld cavern, rivers of molten lava, demonic stone structures, flames licking walls, dark crimson atmosphere, infernal depths darkness',
+    },
+    'rainbow_riches_quest': {
+        'name': 'Rainbow Riches Quest',
+        'thumb': 'irish leprechaun dancing before pot of gold at rainbow\'s end, four-leaf clovers, golden coins scattered, mystical rainbow light, magical forest, slot game luck art',
+        'bg': 'magical irish landscape with full rainbow spanning sky, pot of gold glowing at rainbow\'s end, magical forest clearing, golden light beams, lucky enchanted atmosphere',
+    },
+    'steampunk_gears': {
+        'name': 'Steampunk Gears',
+        'thumb': 'massive interlocking brass gears turning, victorian clockwork mechanisms, steam vents, copper pipes, mechanical precision, industrial revolution era, slot game steampunk art',
+        'bg': 'victorian steampunk clockwork mechanism, giant brass gears rotating, steam and pressure vents, copper tubing, amber industrial lighting, mechanical steampunk atmosphere',
+    },
+    'phoenix_rising': {
+        'name': 'Phoenix Rising',
+        'thumb': 'majestic phoenix bird emerging from flames, fiery wings spread wide, golden feathers glowing, rebirth flames, mythological power, dramatic ascension, slot game mythology art',
+        'bg': 'phoenix rising from inferno of flames, golden fire light, dramatic sky with mystical energy, ash and embers swirling, rebirth transformation atmosphere',
+    },
+    'arctic_frost': {
+        'name': 'Arctic Frost',
+        'thumb': 'arctic tundra landscape with polar bear, aurora borealis dancing overhead, ice crystals glittering, snow-covered peaks, northern lights magic, frozen wilderness, slot game nature art',
+        'bg': 'arctic polar region with massive polar bear, aurora borealis filling sky, ice sheet landscape, starlit night with green aurora glow, frozen arctic atmosphere',
+    },
+    'urban_rooftop': {
+        'name': 'Urban Rooftop',
+        'thumb': 'city penthouse rooftop party at night, manhattan skyline backdrop, champagne glasses, luxury furniture, city lights below, glamorous nightlife, slot game luxury art',
+        'bg': 'exclusive rooftop terrace high above city, stunning urban skyline at night, city lights twinkling below, luxury decor, nighttime metropolitan atmosphere',
+    },
+    'enchanted_maze': {
+        'name': 'Enchanted Maze',
+        'thumb': 'magical labyrinth with glowing hedge walls, floating magical orbs marking path, mystical creatures peeking out, ethereal light, enchanted woodland, winding passages, slot game fantasy art',
+        'bg': 'mysterious enchanted hedge maze from above, glowing orbs floating above paths, magical forest surrounding maze, mystical purple light, enchanted atmosphere',
+    },
+    'samurai_honor': {
+        'name': 'Samurai Honor',
+        'thumb': 'japanese samurai warrior in combat stance, katana sword gleaming, traditional armor with gold accents, cherry blossoms falling, temple background, honor and discipline, slot game warrior art',
+        'bg': 'japanese temple grounds with samurai warrior standing proud, cherry blossom tree overhead, traditional architecture, sunset golden light, honorable warrior atmosphere',
+    },
+    'mega_diamond_rush': {
+        'name': 'Mega Diamond Rush',
+        'thumb': 'massive diamond mine with glittering gems everywhere, miners with pickaxes, precious gemstones cascading, sparkling crystal formations, treasure wealth, mega jackpot, slot game treasure art',
+        'bg': 'vast underground diamond mine with towering gem formations, cascading diamonds, mine shafts and tunnel, crystal light refractions, wealth treasure atmosphere',
+    },
 }
 
 # Shared negative prompt for quality

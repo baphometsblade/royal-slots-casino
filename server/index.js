@@ -170,7 +170,8 @@ app.use('/api/battlepass', require('./routes/battlepass.routes'));
 app.use('/api/cosmetics',  require('./routes/cosmetics.routes'));
 app.use('/api/wagerace',   require('./routes/wagerace.routes'));
 app.use('/api/rentals',    require('./routes/rental.routes'));
-app.use('/api/megawheel',  require('./routes/megawheel.routes'));
+// REMOVED: non-slot game
+// app.use('/api/megawheel',  require('./routes/megawheel.routes'));
 app.use('/api/referral',   require('./routes/referral.routes'));
 app.use('/api/achievements', require('./routes/achievements.routes'));
 app.use('/api/gifts',      require('./routes/gifts.routes'));
@@ -182,7 +183,8 @@ app.use('/api/luckyhours',    require('./routes/luckyhours.routes'));
 app.use('/api/milestones',    require('./routes/milestones.routes'));
 app.use('/api/notifications', require('./routes/notifications.routes'));
 app.use('/api/freespins',     require('./routes/freespins.routes'));
-app.use('/api/scratchcard',   require('./routes/scratchcard.routes'));
+// REMOVED: non-slot game
+// app.use('/api/scratchcard',   require('./routes/scratchcard.routes'));
 app.use('/api/promocode',    require('./routes/promocode.routes'));
 app.use('/api/socialproof',  require('./routes/socialproof.routes'));
 app.use('/api/firstdeposit', require('./routes/firstdeposit.routes'));
@@ -199,34 +201,62 @@ app.use('/api/levelupbonus',  require('./routes/levelupbonus.routes'));
 app.use('/api/birthday',       require('./routes/birthday.routes'));
 app.use('/api/deposit-streak', require('./routes/depositstreak.routes'));
 app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
-app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
-app.use('/api/mines',         require('./routes/mines.routes'));
-app.use('/api/crash',         require('./routes/crash.routes'));
-app.use('/api/plinko',        require('./routes/plinko.routes'));
-app.use('/api/hilo',          require('./routes/hilo.routes'));
-app.use('/api/roulette',      require('./routes/roulette.routes'));
-app.use('/api/dice',          require('./routes/dice.routes'));
-app.use('/api/blackjack',     require('./routes/blackjack.routes'));
-app.use('/api/videopoker',    require('./routes/videopoker.routes'));
-app.use('/api/keno',          require('./routes/keno.routes'));
-app.use('/api/baccarat',      require('./routes/baccarat.routes'));
-app.use('/api/dragontiger',   require('./routes/dragontiger.routes'));
-app.use('/api/limbo',         require('./routes/limbo.routes'));
-app.use('/api/tower',         require('./routes/tower.routes'));
-app.use('/api/wheel',         require('./routes/wheel.routes'));
-app.use('/api/coinflip',      require('./routes/coinflip.routes'));
-app.use('/api/sicbo',         require('./routes/sicbo.routes'));
-app.use('/api/casinowar',     require('./routes/casinowar.routes'));
-app.use('/api/reddog',        require('./routes/reddog.routes'));
-app.use('/api/caribbeanstud',    require('./routes/caribbeanstud.routes'));
-app.use('/api/threecardpoker',  require('./routes/threecardpoker.routes'));
-app.use('/api/letitride',       require('./routes/letitride.routes'));
-app.use('/api/scratch',        require('./routes/scratch.routes'));
-app.use('/api/bigsixwheel',    require('./routes/bigsixwheel.routes'));
-app.use('/api/chuckaluck',     require('./routes/chuckaluck.routes'));
-app.use('/api/moneywheel',     require('./routes/moneywheel.routes'));
-app.use('/api/kenoturbo',      require('./routes/kenoturbo.routes'));
-app.use('/api/horseracing',    require('./routes/horseracing.routes'));
+// REMOVED: non-slot game
+// app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
+// REMOVED: non-slot game
+// app.use('/api/mines',         require('./routes/mines.routes'));
+// REMOVED: non-slot game
+// app.use('/api/crash',         require('./routes/crash.routes'));
+// REMOVED: non-slot game
+// app.use('/api/plinko',        require('./routes/plinko.routes'));
+// REMOVED: non-slot game
+// app.use('/api/hilo',          require('./routes/hilo.routes'));
+// REMOVED: non-slot game
+// app.use('/api/roulette',      require('./routes/roulette.routes'));
+// REMOVED: non-slot game
+// app.use('/api/dice',          require('./routes/dice.routes'));
+// REMOVED: non-slot game
+// app.use('/api/blackjack',     require('./routes/blackjack.routes'));
+// REMOVED: non-slot game
+// app.use('/api/videopoker',    require('./routes/videopoker.routes'));
+// REMOVED: non-slot game
+// app.use('/api/keno',          require('./routes/keno.routes'));
+// REMOVED: non-slot game
+// app.use('/api/baccarat',      require('./routes/baccarat.routes'));
+// REMOVED: non-slot game
+// app.use('/api/dragontiger',   require('./routes/dragontiger.routes'));
+// REMOVED: non-slot game
+// app.use('/api/limbo',         require('./routes/limbo.routes'));
+// REMOVED: non-slot game
+// app.use('/api/tower',         require('./routes/tower.routes'));
+// REMOVED: non-slot game
+// app.use('/api/wheel',         require('./routes/wheel.routes'));
+// REMOVED: non-slot game
+// app.use('/api/coinflip',      require('./routes/coinflip.routes'));
+// REMOVED: non-slot game
+// app.use('/api/sicbo',         require('./routes/sicbo.routes'));
+// REMOVED: non-slot game
+// app.use('/api/casinowar',     require('./routes/casinowar.routes'));
+// REMOVED: non-slot game
+// app.use('/api/reddog',        require('./routes/reddog.routes'));
+// REMOVED: non-slot game
+// app.use('/api/caribbeanstud',    require('./routes/caribbeanstud.routes'));
+// REMOVED: non-slot game
+// app.use('/api/threecardpoker',  require('./routes/threecardpoker.routes'));
+// REMOVED: non-slot game
+// app.use('/api/letitride',       require('./routes/letitride.routes'));
+// REMOVED: non-slot game
+// app.use('/api/scratch',        require('./routes/scratch.routes'));
+// REMOVED: non-slot game
+// app.use('/api/bigsixwheel',    require('./routes/bigsixwheel.routes'));
+// REMOVED: non-slot game
+// app.use('/api/chuckaluck',     require('./routes/chuckaluck.routes'));
+// REMOVED: non-slot game
+// app.use('/api/moneywheel',     require('./routes/moneywheel.routes'));
+// REMOVED: non-slot game
+// app.use('/api/kenoturbo',      require('./routes/kenoturbo.routes'));
+// REMOVED: non-slot game
+// app.use('/api/horseracing',    require('./routes/horseracing.routes'));
 app.use('/api/buy-feature',   require('./routes/buyfeature.routes'));
 app.use('/api/xpshop',        require('./routes/xpshop.routes'));
 app.use('/api',               require('./routes/winback.routes'));

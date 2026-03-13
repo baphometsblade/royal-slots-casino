@@ -1492,14 +1492,16 @@
   will-change: auto;
 }
 
-.slot-chrome-novaspin,
-.slot-chrome-celestial,
-.slot-chrome-ironreel,
-.slot-chrome-goldenedge,
-.slot-chrome-vaultx,
-.slot-chrome-solstice,
-.slot-chrome-phantomworks,
-.slot-chrome-arcadeforge {
+/* GPU hints moved to .slot-reel-area child to avoid breaking
+   position:fixed on #slotModal (transform creates containing block) */
+.slot-chrome-novaspin .slot-reel-area,
+.slot-chrome-celestial .slot-reel-area,
+.slot-chrome-ironreel .slot-reel-area,
+.slot-chrome-goldenedge .slot-reel-area,
+.slot-chrome-vaultx .slot-reel-area,
+.slot-chrome-solstice .slot-reel-area,
+.slot-chrome-phantomworks .slot-reel-area,
+.slot-chrome-arcadeforge .slot-reel-area {
   will-change: box-shadow;
   transform: translateZ(0);
   backface-visibility: hidden;

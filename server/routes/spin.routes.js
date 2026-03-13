@@ -344,13 +344,27 @@ router.post('/', authenticate, async (req, res) => {
         // ── Credit win (atomic — prevents race condition balance overwrites) ──
         let finalBalance = balanceAfterBet;
         if (spinResult.winAmount > 0) {
-            await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [spinResult.winAmount, userId]);
-            finalBalance = balanceAfterBet + spinResult.winAmount;
+            if (usedFreeSpin) {
+                // Free spin winnings credit to bonus_balance with 10x wagering requirement
+                const wageringReq = spinResult.winAmount * 10;
+                await db.run('UPDATE users SET bonus_balance = bonus_balance + ?, wagering_requirement = ?, wagering_progress = 0 WHERE id = ?',
+                    [spinResult.winAmount, wageringReq, userId]);
+                finalBalance = balanceAfterBet + spinResult.winAmount;
 
-            await db.run(
-                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                [userId, 'win', spinResult.winAmount, balanceAfterBet, finalBalance, `spin:${gameId}`]
-            );
+                await db.run(
+                    'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                    [userId, 'free_spin_win', spinResult.winAmount, balanceAfterBet, finalBalance, `spin:${gameId}`]
+                );
+            } else {
+                // Regular win credits to balance
+                await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [spinResult.winAmount, userId]);
+                finalBalance = balanceAfterBet + spinResult.winAmount;
+
+                await db.run(
+                    'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
+                    [userId, 'win', spinResult.winAmount, balanceAfterBet, finalBalance, `spin:${gameId}`]
+                );
+            }
         }
 
         // -- Jackpot contribution + award check --
@@ -541,6 +555,11 @@ router.post('/', authenticate, async (req, res) => {
         }
 
         // ── Wagering progress tracking ──
+        // Only apply wagering progress if:
+        // 1. Not a free spin bet
+        // 2. User has an active wagering requirement
+        // 3. User hasn't met that specific requirement yet
+        // Conversion only happens when the SAME bonus's wagering requirement is fully met
         if (!usedFreeSpin && bet > 0) {
             try {
                 const wagerUser = await db.get(
@@ -552,14 +571,15 @@ router.post('/', authenticate, async (req, res) => {
                         wagerUser.wagering_progress + bet,
                         wagerUser.wagering_requirement
                     );
+                    // CRITICAL: Only convert if this specific bonus's requirement is met
                     if (newProgress >= wagerUser.wagering_requirement && wagerUser.bonus_balance > 0) {
-                        // Wagering complete — convert bonus to real balance
+                        // Wagering requirement for THIS bonus is complete — convert bonus to real balance
                         const userNow = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [userId]);
                         const convertAmount = userNow.bonus_balance;
                         const balanceBeforeConversion = userNow.balance;
                         await db.run(
-                            'UPDATE users SET wagering_progress = ?, bonus_balance = 0, balance = balance + ? WHERE id = ?',
-                            [newProgress, convertAmount, userId]
+                            'UPDATE users SET wagering_progress = 0, wagering_requirement = 0, bonus_balance = 0, balance = balance + ? WHERE id = ?',
+                            [convertAmount, userId]
                         );
                         finalBalance += convertAmount;
                         await db.run(
