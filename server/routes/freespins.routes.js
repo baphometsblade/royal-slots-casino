@@ -83,11 +83,14 @@ router.post('/use', authenticate, async function(req, res) {
       return res.status(400).json({ error: 'Free spins have expired' });
     }
 
-    // Atomic: decrement spin count AND credit balance in one UPDATE
+    // Atomic: decrement spin count AND credit bonus_balance (NOT real balance) in one UPDATE
     // WHERE free_spins_count > 0 prevents race condition double-claim
+    // Free spins are a bonus — winnings go to bonus_balance with 10x wagering requirement
+    var WAGERING_MULTIPLIER = 10;
+    var wagerReq = parseFloat((FREE_SPIN_VALUE * WAGERING_MULTIPLIER).toFixed(2));
     var result = await db.run(
-      'UPDATE users SET free_spins_count = free_spins_count - 1, balance = balance + ? WHERE id = ? AND free_spins_count > 0',
-      [FREE_SPIN_VALUE, userId]
+      'UPDATE users SET free_spins_count = free_spins_count - 1, bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ? AND free_spins_count > 0',
+      [FREE_SPIN_VALUE, wagerReq, userId]
     );
     if (result.changes === 0) {
       return res.status(400).json({ error: 'No free spins available' });

@@ -136,31 +136,36 @@ router.post('/claim', verifyToken, withSchema, async (req, res) => {
 
     // Calculate bonus
     const bonus = parseFloat(Math.min(deposit * MATCH_PERCENT, MAX_BONUS).toFixed(2));
-    const currentBalance = parseFloat(user.balance) || 0;
-    const newBalance = parseFloat((currentBalance + bonus).toFixed(2));
+    const WAGERING_MULTIPLIER = 15; // Must wager 15x bonus before withdrawal
+    const wagerReq = parseFloat((bonus * WAGERING_MULTIPLIER).toFixed(2));
 
-    // Update user: credit bonus, record claim timestamp, increment count
+    // Update user: credit bonus to bonus_balance (NOT real balance) with wagering requirement
     await db.run(
       `UPDATE users
-       SET balance = ?,
+       SET bonus_balance = COALESCE(bonus_balance, 0) + ?,
+           wagering_requirement = COALESCE(wagering_requirement, 0) + ?,
            reload_bonus_claimed_at = datetime('now'),
            reload_bonus_count = COALESCE(reload_bonus_count, 0) + 1
        WHERE id = ?`,
-      [newBalance, userId]
+      [bonus, wagerReq, userId]
     );
 
     // Insert transaction record
     await db.run(
       `INSERT INTO transactions (user_id, type, amount, description, created_at)
-       VALUES (?, 'bonus', ?, 'Weekly reload bonus (25% match)', datetime('now'))`,
+       VALUES (?, 'bonus', ?, 'Weekly reload bonus (25% match) → bonus balance', datetime('now'))`,
       [userId, bonus]
     );
+
+    const updatedUser = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [userId]);
 
     return res.json({
       success: true,
       bonus,
-      newBalance,
-      message: `Reload bonus of $${bonus.toFixed(2)} credited to your account!`
+      newBalance: parseFloat(updatedUser.balance) || 0,
+      bonusBalance: parseFloat(updatedUser.bonus_balance) || 0,
+      wageringRequired: wagerReq,
+      message: `Reload bonus of $${bonus.toFixed(2)} added to bonus balance! Wager ${WAGERING_MULTIPLIER}x to unlock.`
     });
   } catch (err) {
     console.error('[reloadbonus] POST /claim error:', err);
