@@ -2,16 +2,23 @@ const router = require('express').Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
-// Bootstrap game_favorites table
-db.run(`
-  CREATE TABLE IF NOT EXISTS game_favorites (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    game_id TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    UNIQUE(user_id, game_id)
-  )
-`);
+// Bootstrap game_favorites table (deferred to avoid calling db before init)
+async function _bootstrapFavoritesTable() {
+  try {
+    await db.run(`
+      CREATE TABLE IF NOT EXISTS game_favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        game_id TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, game_id)
+      )
+    `);
+  } catch (e) {
+    console.warn('[Favorites] Table bootstrap:', e.message);
+  }
+}
+_bootstrapFavoritesTable();
 
 // GET /api/favorites/ - Get list of favorited game IDs for authenticated user
 router.get('/', authenticate, (req, res) => {

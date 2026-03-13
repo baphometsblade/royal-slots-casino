@@ -229,7 +229,7 @@ async function initChatRoutes(db) {
   }
 }
 
-module.exports = {
-  router,
-  initChatRoutes
-};
+// Initialize chat tables on first load
+initChatRoutes().catch(err => console.warn('[Chat] Init error:', err.message));
+
+module.exports = router;

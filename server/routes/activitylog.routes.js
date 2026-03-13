@@ -5,7 +5,7 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 /**
  * Initialize activity_log table if it doesn't exist
  */
-function initActivityLogTable() {
+async function initActivityLogTable() {
   const schema = `
     CREATE TABLE IF NOT EXISTS activity_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +19,7 @@ function initActivityLogTable() {
   `;
 
   try {
-    db.exec(schema);
+    await db.run(schema);
   } catch (err) {
     console.warn('Failed to initialize activity_log table:', err.message);
   }
