@@ -138,6 +138,8 @@ function showWalletModal() {
     if (typeof renderMoneyWheelCard === 'function') renderMoneyWheelCard(modal);
     if (typeof renderWheelOfFortuneCard === 'function') renderWheelOfFortuneCard(modal);
     if (typeof renderDepositStreakCard === 'function') renderDepositStreakCard(modal);
+    // Render the Reload Bonus card section
+    _renderReloadBonusSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -6997,4 +6999,121 @@ function renderDepositStreakCard(parentContainer) {
         errorEl.textContent = 'Could not load streak data. Try again later.';
         card.appendChild(errorEl);
     });
+}
+
+// ═══════════════════════════════════════════════════════
+// RELOAD BONUS CARD
+// ═══════════════════════════════════════════════════════
+async function _renderReloadBonusSection(modal) {
+    if (!modal || modal.querySelector('#walletReloadBonusCard')) return;
+    if (!currentUser) return;
+
+    // Inject CSS once
+    if (!document.getElementById('reload-bonus-css')) {
+        var s = document.createElement('style');
+        s.id = 'reload-bonus-css';
+        s.textContent = [
+            '.rb-card{background:linear-gradient(135deg,#1a0a2e,#2e1a3e);border:1px solid rgba(168,85,247,0.4);border-radius:10px;padding:14px;margin:14px 0;color:#fff;}',
+            '.rb-title{font-size:15px;font-weight:700;color:#c084fc;margin:0 0 4px;}',
+            '.rb-desc{font-size:12px;color:rgba(255,255,255,0.6);margin:0 0 10px;line-height:1.4;}',
+            '.rb-eligible{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);border-radius:6px;padding:10px;margin-bottom:10px;font-size:13px;color:#e9d5ff;text-align:center;}',
+            '.rb-claim-btn{width:100%;padding:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-weight:700;border-radius:8px;border:none;cursor:pointer;font-size:14px;margin-top:6px;transition:all 0.2s;}',
+            '.rb-claim-btn:hover:not(:disabled){transform:scale(1.02);box-shadow:0 0 16px rgba(168,85,247,0.5);}',
+            '.rb-claim-btn:disabled{opacity:0.4;cursor:not-allowed;}',
+            '.rb-cooldown{font-size:12px;color:#888;text-align:center;margin-top:6px;}'
+        ].join('');
+        document.head.appendChild(s);
+    }
+
+    var card = document.createElement('div');
+    card.id = 'walletReloadBonusCard';
+    card.className = 'rb-card';
+
+    var title = document.createElement('div');
+    title.className = 'rb-title';
+    title.textContent = '\uD83D\uDD04 Weekly Reload Bonus';
+    card.appendChild(title);
+
+    var desc = document.createElement('div');
+    desc.className = 'rb-desc';
+    desc.textContent = '25% match on your next deposit (up to $2.50) — resets every 7 days.';
+    card.appendChild(desc);
+
+    var content = document.createElement('div');
+    content.textContent = 'Loading...';
+    content.style.fontSize = '12px';
+    content.style.color = '#888';
+    card.appendChild(content);
+
+    // Insert above walletContent or at end
+    var walletContent = modal.querySelector('#walletContent');
+    if (walletContent) {
+        walletContent.parentNode.insertBefore(card, walletContent);
+    } else {
+        modal.appendChild(card);
+    }
+
+    try {
+        var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+        if (!token) { card.style.display = 'none'; return; }
+        var res = await fetch('/api/reloadbonus/status', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) { card.style.display = 'none'; return; }
+        var data = await res.json();
+
+        content.innerHTML = '';
+
+        if (data.eligible || data.available) {
+            var eligibleBox = document.createElement('div');
+            eligibleBox.className = 'rb-eligible';
+            eligibleBox.innerHTML = '\u2728 <strong>Reload Bonus Available!</strong><br>Deposit $' + data.minDeposit.toFixed(2) + '+ to get 25% match (up to $' + data.maxBonus.toFixed(2) + ')';
+            content.appendChild(eligibleBox);
+
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'rb-claim-btn';
+            claimBtn.textContent = 'CLAIM RELOAD BONUS';
+            claimBtn.onclick = async function() {
+                claimBtn.disabled = true;
+                claimBtn.textContent = 'Claiming...';
+                try {
+                    var claimRes = await fetch('/api/reloadbonus/claim', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({})
+                    });
+                    var claimData = await claimRes.json();
+                    if (claimData.success) {
+                        if (typeof showToast === 'function') showToast('\uD83C\uDF89 Reload bonus of $' + claimData.bonus.toFixed(2) + ' added to bonus balance!', 'success');
+                        content.innerHTML = '<div class="rb-eligible" style="color:#86efac;border-color:#22c55e;">\u2705 Bonus claimed! $' + claimData.bonus.toFixed(2) + ' added to bonus balance.</div>';
+                        if (typeof updateBalance === 'function') updateBalance();
+                    } else {
+                        claimBtn.disabled = false;
+                        claimBtn.textContent = 'CLAIM RELOAD BONUS';
+                        if (typeof showToast === 'function') showToast(claimData.error || 'Could not claim bonus', 'error');
+                    }
+                } catch (e) {
+                    claimBtn.disabled = false;
+                    claimBtn.textContent = 'CLAIM RELOAD BONUS';
+                }
+            };
+            content.appendChild(claimBtn);
+        } else {
+            var cooldown = document.createElement('div');
+            cooldown.className = 'rb-cooldown';
+            if (data.nextAvailableAt) {
+                var nextDate = new Date(data.nextAvailableAt);
+                var now = new Date();
+                var diffMs = nextDate - now;
+                var days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                cooldown.textContent = '\u23F3 Next reload bonus available in ' + days + ' day' + (days === 1 ? '' : 's');
+            } else {
+                cooldown.textContent = 'Reload bonus not available yet.';
+            }
+            content.appendChild(cooldown);
+        }
+    } catch (err) {
+        content.textContent = '';
+        card.style.display = 'none';
+    }
 }

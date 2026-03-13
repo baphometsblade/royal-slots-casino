@@ -88,11 +88,45 @@ router.post('/register', async (req, res) => {
             );
         }
 
+        // Auto-grant referral bonus to both referrer and new user ($1 each)
+        if (referrerId) {
+            const REFERRAL_BONUS = 1.00;
+            const WAGERING_MULT = 15;
+            try {
+                // Create referral record
+                await db.run(
+                    'INSERT INTO referrals (referrer_id, referred_id, bonus_amount) VALUES (?, ?, ?)',
+                    [referrerId, userId, REFERRAL_BONUS]
+                );
+                // Credit referrer
+                await db.run(
+                    'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, referral_count = COALESCE(referral_count, 0) + 1, referral_bonus_earned = COALESCE(referral_bonus_earned, 0) + ? WHERE id = ?',
+                    [REFERRAL_BONUS, REFERRAL_BONUS * WAGERING_MULT, REFERRAL_BONUS, referrerId]
+                );
+                await db.run(
+                    "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
+                    [referrerId, REFERRAL_BONUS, 'Referral bonus — new user joined with your code']
+                );
+                // Credit new user
+                await db.run(
+                    'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+                    [REFERRAL_BONUS, REFERRAL_BONUS * WAGERING_MULT, userId]
+                );
+                await db.run(
+                    "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
+                    [userId, REFERRAL_BONUS, 'Welcome bonus — joined via referral code']
+                );
+            } catch (refErr) {
+                // Non-fatal: log but don't fail registration
+                console.warn('[Auth] Referral bonus grant failed:', refErr.message);
+            }
+        }
+
         const token = jwt.sign({ userId }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRES_IN });
 
         res.status(201).json({
             token,
-            user: { id: userId, username, email, balance: startBalance, referralCode: newReferralCode },
+            user: { id: userId, username, email, balance: startBalance, referralCode: newReferralCode, referralBonusGranted: !!referrerId },
         });
     } catch (err) {
         console.error('[Auth] Register error:', err);
