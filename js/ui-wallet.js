@@ -13,6 +13,30 @@ let walletHistoryTotalPages = 1;
 let walletAddMethodType = null; // tracks which sub-form is open
 let walletSessionStartBalance = null;
 
+/**
+ * Open wallet modal directly to the withdraw tab.
+ * Useful for header shortcuts and engagement nudges.
+ */
+function showWalletWithdraw() {
+    if (!currentUser) {
+        showToast('Please log in to access withdrawals.', 'error');
+        return;
+    }
+    walletActiveTab = 'withdraw';
+    const modal = document.getElementById('walletModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    const walletBal = document.getElementById('walletBalance');
+    if (walletBal) walletBal.textContent = formatMoney(balance);
+    loadPaymentMethods();
+    renderWalletContent();
+    // Highlight the correct tab
+    const tabBtns = document.querySelectorAll('.wallet-tab');
+    tabBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === 'withdraw');
+    });
+}
+
 
 // ── Payment Type Metadata ─────────────────────────────
 const WALLET_PAYMENT_TYPES = {

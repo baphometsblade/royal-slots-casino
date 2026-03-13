@@ -112,6 +112,10 @@
             refreshBetControls();
             // Balance sparkline (Sprint 29)
             recordBalancePoint(balance);
+            // Engagement safeguards — low-balance check
+            if (typeof EngagementSafeguards !== 'undefined' && EngagementSafeguards.checkLowBalance) {
+                EngagementSafeguards.checkLowBalance(balance);
+            }
         }
 
         // ── Wagering Progress Display ────────────────────────────────
