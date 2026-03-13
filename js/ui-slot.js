@@ -1954,7 +1954,7 @@
                 _initRtpGauge();         // 64 — RTP gauge
                 _initBalSparkline();     // 65 — balance sparkline
                 _resetCashoutHint();     // 66 — cashout hint
-        _resetSpinCounter();     // 67 — spin counter
+        _resetSessionSpinCounter();     // 67 — spin counter
         _resetRecentOutcomes();  // 68 — recent outcomes
         _resetSessionHiLo();     // 69 — session hi-lo
         _initBalBuffer();        // 70 — balance buffer
@@ -2002,7 +2002,7 @@
         _resetLuckyCoins();      // 121 — lucky coins
         _initVolumeSliderMicro(); // 122 — volume slider
         _initHighWinBadge();      // 123 — highest win badge
-        _resetLossStreak();       // 124 — loss streak alert
+        _resetLossStreak124();       // 124 — loss streak alert
         _resetSparkline();        // 125 — sparkline
         _resetBonusTimer();       // 126 — bonus timer
         _resetPeakBalance();      // 127 — peak balance
@@ -2044,7 +2044,7 @@
         _resetWinTypeLabel();     // 163 — win type label
         _resetLongestStreak();    // 164 — longest streak
         _resetBetChanges();       // 165 — bet changes
-        _resetLuckySymbol();      // 166 — lucky symbol
+        _resetLuckySymbol154();      // 166 — lucky symbol
         _resetReturnGap();        // 167 — return gap
         _resetValueRatio();       // 168 — value ratio
         _resetLongestDrought();   // 169 — longest drought
@@ -2827,7 +2827,7 @@
             _checkBalanceMilestone();    // Sprint 58 — balance milestones
             _updateSlotNet();            // Sprint 59 — session net
             _updateBalSparkline(balance); // Sprint 65 — balance sparkline
-        _incrementSpinCounter();      // Sprint 67 — spin counter
+        _incrementSessionSpinCounter();      // Sprint 67 — spin counter
         _updateBalBuffer();           // Sprint 70 — balance buffer
         _updateSessionHiLo(balance);  // Sprint 69 — session hi-lo
         _updateLossRecovery(balance); // Sprint 72 — loss recovery
@@ -3761,8 +3761,8 @@
                 _earnLuckyCoin(true);                   // 121 — lucky coins (win)
                 if (typeof _dispatchSpinToasts === 'function') _dispatchSpinToasts(true, winAmount, currentBet, { bonusTriggered: (typeof freeSpinsActive !== 'undefined' && freeSpinsActive) }); // cinematic
                 _updateHighWinBadge(winAmount);         // 123 — highest win
-                _updateLossStreak(true);                // 124 — loss streak
-                _updateSparkline(winAmount);            // 125 — sparkline
+                _updateLossStreak124(true);                // 124 — loss streak
+                _updateSparkline125(winAmount);            // 125 — sparkline
                 _updatePeakBalance();                   // 127 — peak balance
                 _addMultHistory(winAmount, currentBet); // 128 — mult history
                 _updateBetEfficiency(winAmount, currentBet); // 129 — bet efficiency
@@ -3797,14 +3797,14 @@
                 _updateBiggestLoss(winAmount, currentBet); // 162 — biggest loss
             _updateLongestStreak(winAmount > 0);       // 164 — longest streak
             _checkBetChange();                         // 165 — bet changes
-            _updateLuckySymbol(winAmount, currentBet, currentGrid); // 166 — lucky sym
+            _updateLuckySymbol154(winAmount, currentBet, currentGrid); // 166 — lucky sym
             _updateReturnGap(winAmount, currentBet);   // 167 — return gap
             _updateValueRatio(winAmount, currentBet);  // 168 — value ratio
             _updateLongestDrought(winAmount > 0);      // 169 — longest drought
                 _setWinTypeLabel('line');               // 163 — win type label
                 _updateLongestStreak(true);             // 164 — longest streak
                 _checkBetChange();                      // 165 — bet changes
-                _updateLuckySymbol(winAmount, currentBet, currentGrid); // 166 — lucky sym
+                _updateLuckySymbol154(winAmount, currentBet, currentGrid); // 166 — lucky sym
                 _updateReturnGap(winAmount, currentBet); // 167 — return gap
                 _updateValueRatio(winAmount, currentBet); // 168 — value ratio
                 _updateLongestDrought(true);            // 169 — longest drought
@@ -3995,8 +3995,8 @@
             _earnLuckyCoin(false);                     // 121 — lucky coins
             if (typeof _dispatchSpinToasts === 'function') _dispatchSpinToasts(winAmount > 0, winAmount, currentBet, {}); // cinematic
             _updateHighWinBadge(winAmount);             // 123 — highest win
-            _updateLossStreak(winAmount > 0);           // 124 — loss streak
-            _updateSparkline(winAmount);                // 125 — sparkline
+            _updateLossStreak124(winAmount > 0);           // 124 — loss streak
+            _updateSparkline125(winAmount);                // 125 — sparkline
             _updatePeakBalance();                       // 127 — peak balance
             _addMultHistory(winAmount, currentBet);     // 128 — mult history
             _updateBetEfficiency(winAmount, currentBet); // 129 — bet efficiency
@@ -4030,7 +4030,7 @@
             _updateBiggestLoss(winAmount, currentBet); // 162 — biggest loss
             _updateLongestStreak(winAmount > 0);       // 164 — longest streak
             _checkBetChange();                         // 165 — bet changes
-            _updateLuckySymbol(winAmount, currentBet, currentGrid); // 166 — lucky sym
+            _updateLuckySymbol154(winAmount, currentBet, currentGrid); // 166 — lucky sym
             _updateReturnGap(winAmount, currentBet);   // 167 — return gap
             _updateValueRatio(winAmount, currentBet);  // 168 — value ratio
             _updateLongestDrought(winAmount > 0);      // 169 — longest drought
@@ -8714,13 +8714,13 @@ var _DSN = String.fromCharCode(36);
 // Sprint 67: Spin Counter
 var _sessionSpinCount = 0;
 
-function _resetSpinCounter() {
+function _resetSessionSpinCounter() {
     _sessionSpinCount = 0;
     var el = document.getElementById("spinCounter");
     if (el) el.style.display = "none";
 }
 
-function _incrementSpinCounter() {
+function _incrementSessionSpinCounter() {
     _sessionSpinCount++;
     var el = document.getElementById("spinCounter");
     if (!el) return;
@@ -9886,12 +9886,12 @@ function _initHighWinBadge() {
 
 // Sprint 124: Consecutive loss streak alert
 var _lossStreak124 = 0;
-function _resetLossStreak() {
+function _resetLossStreak124() {
     _lossStreak124 = 0;
     var el = document.getElementById('lossStreakAlert');
     if (el) el.style.display = 'none';
 }
-function _updateLossStreak(won) {
+function _updateLossStreak124(won) {
     if (won) {
         _lossStreak124 = 0;
         var el = document.getElementById('lossStreakAlert');
@@ -9917,7 +9917,7 @@ function _resetSparkline() {
     var el = document.getElementById('spinSparkline');
     if (el) { while (el.firstChild) el.removeChild(el.firstChild); }
 }
-function _updateSparkline(winAmount) {
+function _updateSparkline125(winAmount) {
     _sparkHistory125.push(winAmount);
     if (_sparkHistory125.length > 20) _sparkHistory125.shift();
     var max = 0;
@@ -10922,12 +10922,12 @@ function _checkBetChange() {
 
 // Sprint 166: Lucky symbol (symbol with best avg multiplier)
 var _symMultSums166 = {}; var _symMultCounts166 = {};
-function _resetLuckySymbol() {
+function _resetLuckySymbol154() {
     _symMultSums166 = {}; _symMultCounts166 = {};
     var el = document.getElementById('luckySymbolBadge');
     if (el) el.style.display = 'none';
 }
-function _updateLuckySymbol(winAmount, betAmount, grid) {
+function _updateLuckySymbol154(winAmount, betAmount, grid) {
     if (!winAmount || !betAmount || betAmount <= 0 || !grid) return;
     var mult = winAmount / betAmount;
     if (mult < 2) return;
