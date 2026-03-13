@@ -517,6 +517,8 @@ function renderGames() {
             if (!window._leaderboardWidgetInit) initLeaderboardWidget();
             if (!window._bigWinsFeedInit)       initBigWinsFeed();
             if (!window._promoCodeWidgetInit)   initPromoCodeWidget();
+            // Load user's favorites from API (Sprint XX)
+            if (typeof _loadFavoritesFromApi === 'function') _loadFavoritesFromApi();
             // Apply HOT/COLD RTP labels from game-stats API (reset flag so re-render refreshes labels)
             window._gameStatsApplied = false;
             setTimeout(fetchAndApplyGameStats, 100);
@@ -1021,7 +1023,64 @@ function renderGames() {
                 _favsSet.add(gameId);
             }
             try { localStorage.setItem(_favKey, JSON.stringify([..._favsSet])); } catch(e) {}
+
+            // Send toggle to API
+            _syncFavoriteToApi(gameId, _favsSet.has(gameId));
+
             return _favsSet.has(gameId);
+        }
+
+        function _syncFavoriteToApi(gameId, isFavorited) {
+            var authToken = (typeof getAuthToken === 'function') ? getAuthToken() :
+                           (typeof TOKEN !== 'undefined') ? TOKEN :
+                           (typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null);
+
+            if (!authToken) {
+                console.warn('No auth token available for favorite sync');
+                return;
+            }
+
+            fetch('/api/favorites/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({ gameId: gameId, favorited: isFavorited })
+            }).catch(function(err) {
+                console.warn('Failed to sync favorite for game ' + gameId + ':', err);
+            });
+        }
+
+        function _loadFavoritesFromApi() {
+            var authToken = (typeof getAuthToken === 'function') ? getAuthToken() :
+                           (typeof TOKEN !== 'undefined') ? TOKEN :
+                           (typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null);
+
+            if (!authToken) {
+                console.warn('No auth token available for loading favorites');
+                return;
+            }
+
+            fetch('/api/favorites/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken
+                }
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(function(data) {
+                if (data && Array.isArray(data.favorites)) {
+                    _favsSet = new Set(data.favorites);
+                    try { localStorage.setItem(_favKey, JSON.stringify([..._favsSet])); } catch(e) {}
+                }
+            })
+            .catch(function(err) {
+                console.warn('Failed to load favorites from API:', err);
+            });
         }
         // ===== Filter Tabs =====
         function setFilter(filter) {

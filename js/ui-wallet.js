@@ -140,6 +140,8 @@ function showWalletModal() {
     if (typeof renderDepositStreakCard === 'function') renderDepositStreakCard(modal);
     // Render the Reload Bonus card section
     _renderReloadBonusSection(modal);
+    // Render the Deposit Limits section
+    _renderDepositLimitsSection(modal);
 }
 
 function _injectWalletGemBar(modal) {
@@ -7115,5 +7117,315 @@ async function _renderReloadBonusSection(modal) {
     } catch (err) {
         content.textContent = '';
         card.style.display = 'none';
+    }
+}
+
+/**
+ * Render Deposit Limits section showing current limits and usage,
+ * with inline form to set/update limits.
+ */
+async function _renderDepositLimitsSection(modal) {
+    if (!modal) return;
+    if (!currentUser) return;
+
+    var token = localStorage.getItem(typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken');
+    if (!token) return;
+
+    // Inject CSS once
+    if (!document.getElementById('deposit-limits-css')) {
+        var s = document.createElement('style');
+        s.id = 'deposit-limits-css';
+        s.textContent = [
+            '.dl-card{background:linear-gradient(135deg,rgba(217,119,6,0.08),rgba(180,83,9,0.05));border:1.5px solid rgba(217,119,6,0.25);border-radius:12px;padding:16px;margin:14px 0;color:#fff;}',
+            '.dl-title{font-size:15px;font-weight:800;color:#fbbf24;margin:0 0 10px;letter-spacing:0.3px;display:flex;align-items:center;gap:6px;}',
+            '.dl-limit-row{background:rgba(0,0,0,0.3);border-radius:8px;padding:10px 12px;margin-bottom:8px;}',
+            '.dl-limit-label{font-size:12px;color:#d97706;font-weight:600;margin-bottom:4px;}',
+            '.dl-limit-display{display:flex;align-items:center;gap:8px;margin-bottom:6px;}',
+            '.dl-limit-amount{font-size:18px;font-weight:700;color:#fbbf24;font-family:monospace;}',
+            '.dl-limit-status{font-size:11px;color:rgba(255,255,255,0.6);}',
+            '.dl-progress-bar{width:100%;height:6px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden;margin-bottom:4px;}',
+            '.dl-progress-fill{height:100%;background:linear-gradient(90deg,#d97706,#f97316);transition:width 0.3s;}',
+            '.dl-progress-text{font-size:10px;color:rgba(255,255,255,0.5);text-align:right;}',
+            '.dl-button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}',
+            '.dl-set-btn{flex:1;min-width:120px;padding:8px 12px;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;}',
+            '.dl-set-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 12px rgba(217,119,6,0.4);}',
+            '.dl-set-btn:disabled{opacity:0.5;cursor:not-allowed;}',
+            '.dl-form-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;}',
+            '.dl-form-overlay.active{display:flex;}',
+            '.dl-form-modal{background:rgba(17,24,39,0.95);border:1.5px solid rgba(217,119,6,0.3);border-radius:10px;padding:20px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;}',
+            '.dl-form-title{font-size:16px;font-weight:800;color:#fbbf24;margin-bottom:14px;letter-spacing:0.3px;}',
+            '.dl-form-group{margin-bottom:12px;}',
+            '.dl-form-label{display:block;font-size:12px;color:#fbbf24;font-weight:600;margin-bottom:4px;}',
+            '.dl-form-input{width:100%;padding:8px 10px;background:rgba(0,0,0,0.4);border:1px solid rgba(217,119,6,0.3);border-radius:6px;color:#fff;font-size:13px;font-family:monospace;}',
+            '.dl-form-input:focus{outline:none;border-color:rgba(217,119,6,0.6);box-shadow:0 0 8px rgba(217,119,6,0.2);}',
+            '.dl-form-note{font-size:11px;color:rgba(255,255,255,0.6);margin-top:3px;line-height:1.4;}',
+            '.dl-form-buttons{display:flex;gap:8px;margin-top:16px;}',
+            '.dl-form-save{flex:1;padding:10px;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;}',
+            '.dl-form-save:hover:not(:disabled){transform:scale(1.02);box-shadow:0 0 12px rgba(217,119,6,0.4);}',
+            '.dl-form-save:disabled{opacity:0.5;cursor:not-allowed;}',
+            '.dl-form-cancel{flex:1;padding:10px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(217,119,6,0.2);border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;}',
+            '.dl-form-cancel:hover{background:rgba(0,0,0,0.5);}',
+            '.dl-no-limit{color:#6ee7b7;font-style:italic;}'
+        ].join('');
+        document.head.appendChild(s);
+    }
+
+    // Create or get the wrapper
+    var walletInner = modal.querySelector('.wallet-modal') || modal;
+    var wrapper = walletInner.querySelector('#walletDepositLimitsWrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = 'walletDepositLimitsWrapper';
+        wrapper.style.cssText = 'padding:0 16px;';
+        var walletContentEl = walletInner.querySelector('#walletContent');
+        if (walletContentEl) {
+            walletInner.insertBefore(wrapper, walletContentEl);
+        } else {
+            walletInner.appendChild(wrapper);
+        }
+    }
+
+    // Remove existing card
+    var existing = wrapper.querySelector('#walletDepositLimitsCard');
+    if (existing) existing.remove();
+
+    // Create the card
+    var card = document.createElement('div');
+    card.id = 'walletDepositLimitsCard';
+    card.className = 'dl-card';
+
+    // Title
+    var title = document.createElement('div');
+    title.className = 'dl-title';
+    title.textContent = '🔒 Deposit Limits';
+    card.appendChild(title);
+
+    // Limits container
+    var limitsContainer = document.createElement('div');
+    limitsContainer.id = 'dlLimitsContainer';
+    card.appendChild(limitsContainer);
+
+    // Buttons row
+    var btnRow = document.createElement('div');
+    btnRow.className = 'dl-button-row';
+
+    var setLimitsBtn = document.createElement('button');
+    setLimitsBtn.className = 'dl-set-btn';
+    setLimitsBtn.textContent = '⚙️ Set/Update Limits';
+    btnRow.appendChild(setLimitsBtn);
+
+    card.appendChild(btnRow);
+    wrapper.appendChild(card);
+
+    // Form overlay (hidden until button clicked)
+    var formOverlay = document.createElement('div');
+    formOverlay.id = 'dlFormOverlay';
+    formOverlay.className = 'dl-form-overlay';
+
+    var formModal = document.createElement('div');
+    formModal.className = 'dl-form-modal';
+
+    var formTitle = document.createElement('div');
+    formTitle.className = 'dl-form-title';
+    formTitle.textContent = 'Set Your Deposit Limits';
+    formModal.appendChild(formTitle);
+
+    // Form inputs
+    var dailyGroup = document.createElement('div');
+    dailyGroup.className = 'dl-form-group';
+    dailyGroup.innerHTML = '<label class="dl-form-label">Daily Limit ($)</label><input class="dl-form-input" id="dlDailyInput" type="number" min="0" step="0.01" placeholder="0 for no limit">';
+    formModal.appendChild(dailyGroup);
+
+    var weeklyGroup = document.createElement('div');
+    weeklyGroup.className = 'dl-form-group';
+    weeklyGroup.innerHTML = '<label class="dl-form-label">Weekly Limit ($)</label><input class="dl-form-input" id="dlWeeklyInput" type="number" min="0" step="0.01" placeholder="0 for no limit">';
+    formModal.appendChild(weeklyGroup);
+
+    var monthlyGroup = document.createElement('div');
+    monthlyGroup.className = 'dl-form-group';
+    monthlyGroup.innerHTML = '<label class="dl-form-label">Monthly Limit ($)</label><input class="dl-form-input" id="dlMonthlyInput" type="number" min="0" step="0.01" placeholder="0 for no limit">';
+    formModal.appendChild(monthlyGroup);
+
+    var noteEl = document.createElement('div');
+    noteEl.className = 'dl-form-note';
+    noteEl.textContent = '📋 Note: Raising limits has a 24-hour cooling-off period. Enter 0 or leave blank for no limit.';
+    formModal.appendChild(noteEl);
+
+    // Form buttons
+    var formBtnRow = document.createElement('div');
+    formBtnRow.className = 'dl-form-buttons';
+
+    var saveBtn = document.createElement('button');
+    saveBtn.className = 'dl-form-save';
+    saveBtn.textContent = 'Save Limits';
+    saveBtn.onclick = function() { _saveLimits(modal, token, formOverlay); };
+    formBtnRow.appendChild(saveBtn);
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'dl-form-cancel';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.onclick = function() { formOverlay.classList.remove('active'); };
+    formBtnRow.appendChild(cancelBtn);
+
+    formModal.appendChild(formBtnRow);
+    formOverlay.appendChild(formModal);
+    document.body.appendChild(formOverlay);
+
+    // Set Limits button click handler
+    setLimitsBtn.onclick = function() {
+        formOverlay.classList.add('active');
+    };
+
+    // Close overlay when clicking outside modal
+    formOverlay.addEventListener('click', function(e) {
+        if (e.target === formOverlay) {
+            formOverlay.classList.remove('active');
+        }
+    });
+
+    // Fetch and display limits
+    try {
+        var resp = await fetch('/api/deposit-limits/', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!resp.ok) {
+            limitsContainer.textContent = 'Could not load deposit limits.';
+            return;
+        }
+        var data = await resp.json();
+
+        // Clear container
+        limitsContainer.innerHTML = '';
+
+        // Helper to format limit display
+        function displayLimit(label, amount, usage) {
+            var row = document.createElement('div');
+            row.className = 'dl-limit-row';
+
+            var labelEl = document.createElement('div');
+            labelEl.className = 'dl-limit-label';
+            labelEl.textContent = label;
+            row.appendChild(labelEl);
+
+            var displayEl = document.createElement('div');
+            displayEl.className = 'dl-limit-display';
+
+            var amountEl = document.createElement('span');
+            amountEl.className = 'dl-limit-amount';
+            if (amount <= 0) {
+                amountEl.textContent = 'No limit set';
+                amountEl.className += ' dl-no-limit';
+            } else {
+                amountEl.textContent = '$' + parseFloat(amount).toFixed(2);
+            }
+            displayEl.appendChild(amountEl);
+
+            if (usage !== undefined && amount > 0) {
+                var statusEl = document.createElement('span');
+                statusEl.className = 'dl-limit-status';
+                var usageStr = ' (' + parseFloat(usage).toFixed(2) + ' used)';
+                statusEl.textContent = usageStr;
+                displayEl.appendChild(statusEl);
+            }
+
+            row.appendChild(displayEl);
+
+            // Progress bar if usage exists and limit is set
+            if (usage !== undefined && amount > 0) {
+                var barContainer = document.createElement('div');
+                barContainer.className = 'dl-progress-bar';
+
+                var barFill = document.createElement('div');
+                barFill.className = 'dl-progress-fill';
+                var pct = Math.min(100, (usage / amount) * 100);
+                barFill.style.width = pct + '%';
+                barContainer.appendChild(barFill);
+
+                row.appendChild(barContainer);
+
+                var pctText = document.createElement('div');
+                pctText.className = 'dl-progress-text';
+                pctText.textContent = pct.toFixed(1) + '% used';
+                row.appendChild(pctText);
+            }
+
+            limitsContainer.appendChild(row);
+        }
+
+        // Display each limit
+        displayLimit('Daily Limit', data.dailyLimit || 0, data.dailyUsage || 0);
+        displayLimit('Weekly Limit', data.weeklyLimit || 0, data.weeklyUsage || 0);
+        displayLimit('Monthly Limit', data.monthlyLimit || 0, data.monthlyUsage || 0);
+
+        // Populate form inputs for editing
+        var dailyInput = document.getElementById('dlDailyInput');
+        var weeklyInput = document.getElementById('dlWeeklyInput');
+        var monthlyInput = document.getElementById('dlMonthlyInput');
+
+        if (dailyInput && data.dailyLimit > 0) dailyInput.value = parseFloat(data.dailyLimit).toFixed(2);
+        if (weeklyInput && data.weeklyLimit > 0) weeklyInput.value = parseFloat(data.weeklyLimit).toFixed(2);
+        if (monthlyInput && data.monthlyLimit > 0) monthlyInput.value = parseFloat(data.monthlyLimit).toFixed(2);
+
+    } catch (err) {
+        console.warn('[Deposit Limits] Error fetching limits:', err);
+        limitsContainer.textContent = 'Unable to load deposit limits at this time.';
+    }
+}
+
+/**
+ * Save new deposit limits via POST /api/deposit-limits/
+ */
+async function _saveLimits(modal, token, formOverlay) {
+    var dailyInput = document.getElementById('dlDailyInput');
+    var weeklyInput = document.getElementById('dlWeeklyInput');
+    var monthlyInput = document.getElementById('dlMonthlyInput');
+
+    if (!dailyInput || !weeklyInput || !monthlyInput) return;
+
+    var daily = parseFloat(dailyInput.value) || 0;
+    var weekly = parseFloat(weeklyInput.value) || 0;
+    var monthly = parseFloat(monthlyInput.value) || 0;
+
+    // Basic validation
+    if ((daily < 0 || daily > 999999) || (weekly < 0 || weekly > 999999) || (monthly < 0 || monthly > 999999)) {
+        if (typeof showToast === 'function') {
+            showToast('Please enter valid limit amounts (0-999999)', 'error', 3000);
+        }
+        return;
+    }
+
+    try {
+        var resp = await fetch('/api/deposit-limits/', {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                dailyLimit: daily,
+                weeklyLimit: weekly,
+                monthlyLimit: monthly
+            })
+        });
+
+        var result = await resp.json();
+
+        if (result.success) {
+            formOverlay.classList.remove('active');
+            if (typeof showToast === 'function') {
+                showToast('✅ Deposit limits saved successfully!', 'success', 3000);
+            }
+            // Refresh the limits display
+            await _renderDepositLimitsSection(modal);
+        } else {
+            if (typeof showToast === 'function') {
+                showToast(result.error || 'Failed to save limits', 'error', 3000);
+            }
+        }
+    } catch (err) {
+        console.warn('[Deposit Limits] Error saving limits:', err);
+        if (typeof showToast === 'function') {
+            showToast('Error saving limits. Please try again.', 'error', 3000);
+        }
     }
 }

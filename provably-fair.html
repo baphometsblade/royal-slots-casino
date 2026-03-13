@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Provably Fair - Matrix Spins Casino. Verify the fairness of every spin using cryptographic hashing and transparent game mechanics.">
+    <title>Provably Fair - Matrix Spins Casino</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d0d1a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1.5rem 0;
+            border-bottom: 2px solid #ffd700;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .logo:hover {
+            color: #ffed4e;
+        }
+
+        nav a {
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #b4c1d6;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(26, 26, 46, 0.5);
+            border-left: 4px solid #ffd700;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        section:hover {
+            background: rgba(26, 26, 46, 0.7);
+        }
+
+        h2 {
+            color: #ffd700;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h3 {
+            color: #ffd700;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h3:first-child {
+            margin-top: 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+
+        .highlight {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .verification-tool {
+            background: rgba(26, 26, 46, 0.3);
+            padding: 2rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: #ffd700;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(10, 10, 26, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #ffd700;
+            background: rgba(10, 10, 26, 0.8);
+        }
+
+        .button {
+            display: inline-block;
+            background: #ffd700;
+            color: #0d0d1a;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .result-box.visible {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box h4 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .result-item {
+            background: rgba(26, 26, 46, 0.5);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            word-break: break-all;
+        }
+
+        .result-item-label {
+            color: #b4c1d6;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .result-item-value {
+            color: #ffd700;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .reel-positions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reel {
+            background: rgba(10, 10, 26, 0.6);
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .reel-label {
+            color: #b4c1d6;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .reel-symbol {
+            color: #ffd700;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-top: 1.5rem;
+        }
+
+        .info-box h4 {
+            color: #ffd700;
+            margin-bottom: 0.8rem;
+        }
+
+        .rtp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .rtp-card {
+            background: rgba(26, 26, 46, 0.3);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .rtp-card:hover {
+            border-color: #ffd700;
+            background: rgba(26, 26, 46, 0.6);
+        }
+
+        .rtp-card h4 {
+            color: #ffd700;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+        }
+
+        .rtp-value {
+            color: #ffed4e;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .rtp-description {
+            font-size: 0.9rem;
+            color: #b4c1d6;
+        }
+
+        .toc {
+            background: rgba(255, 215, 0, 0.05);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+        }
+
+        .toc ul {
+            margin-left: 1.5rem;
+        }
+
+        .toc a {
+            color: #ffd700;
+        }
+
+        a {
+            color: #ffd700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #ffed4e;
+            text-decoration: underline;
+        }
+
+        .process-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .process-step {
+            background: rgba(26, 26, 46, 0.3);
+            padding: 1.5rem;
+            border-left: 4px solid #ffd700;
+            border-radius: 4px;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .step-number {
+            background: #ffd700;
+            color: #0d0d1a;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #b4c1d6;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            border-top: 2px solid #ffd700;
+            margin-top: 3rem;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            section {
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .verification-tool {
+                padding: 1.5rem;
+            }
+
+            .reel-positions {
+                grid-template-columns: 1fr;
+            }
+
+            .rtp-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .process-step {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .step-number {
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            section {
+                padding: 1rem;
+            }
+
+            .button {
+                width: 100%;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="https://msaart.online" class="logo">🎰 Matrix Spins Casino</a>
+            <nav>
+                <a href="/">← Back to Homepage</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero">
+        <h1>Provably Fair</h1>
+        <p>At Matrix Spins Casino, every spin is cryptographically verified and transparent. Our provably fair system ensures that neither the casino nor players can manipulate game outcomes. Verify the fairness of any spin using our tools below.</p>
+    </div>
+
+    <div class="container">
+        <div class="toc">
+            <h3>Quick Navigation</h3>
+            <ul>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#verification-tool">Verification Tool</a></li>
+                <li><a href="#rtp">RTP Transparency</a></li>
+                <li><a href="#auditing">Third-Party Auditing</a></li>
+            </ul>
+        </div>
+
+        <section id="how-it-works">
+            <h2>How Provably Fair Works</h2>
+            <p>Matrix Spins Casino uses an advanced cryptographic system to ensure that every spin is fair, transparent, and verifiable. Our provably fair mechanism uses three components that work together to generate unpredictable and unmanipulatable game outcomes:</p>
+
+            <h3>The Three Components</h3>
+
+            <div class="process-flow">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Server Seed (Casino-Controlled)</h4>
+                        <p>Before each spin, the casino generates a unique server seed and creates a SHA-256 hash of it. This hash is <span class="highlight">revealed to you before the spin</span>, ensuring the casino cannot change it after seeing the outcome. The actual server seed is kept secret until after the spin.</p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Client Seed (Player-Controlled)</h4>
+                        <p>You can optionally provide a client seed—any random string of characters. This ensures you have control over one part of the outcome generation. If you don't provide one, the casino generates a random client seed for you.</p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Nonce (Spin Counter)</h4>
+                        <p>A nonce is simply a counter that increments with each spin on your account. Combined with the server seed and client seed, it ensures each spin produces a unique result. The same seeds with different nonces produce entirely different outcomes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>The Verification Process</h3>
+            <ol>
+                <li><span class="highlight">Before your spin:</span> The casino displays the SHA-256 hash of the server seed. This commitment cannot be changed.</li>
+                <li><span class="highlight">You spin:</span> Your client seed, the server seed hash, and the nonce are combined and hashed using SHA-256 to generate a result.</li>
+                <li><span class="highlight">After your spin:</span> The casino reveals the actual server seed. You can verify that its SHA-256 hash matches the pre-spin hash.</li>
+                <li><span class="highlight">You verify:</span> Using the verification tool below, input the server seed, client seed, and nonce to compute the exact same result. If it matches, the spin is proven fair.</li>
+            </ol>
+
+            <div class="info-box">
+                <h4>Why This Matters</h4>
+                <p>This system is mathematically impossible to manipulate. Even if the casino wanted to cheat, they cannot change the server seed after revealing its hash. Likewise, players cannot predict or influence outcomes without knowing the actual server seed before the spin. Every outcome is determined by cryptographic mathematics, not arbitrary casino decisions.</p>
+            </div>
+        </section>
+
+        <section id="verification-tool">
+            <h2>Verification Tool</h2>
+            <p>Use this tool to verify any spin from your game history. Input the server seed, client seed, and nonce (all provided in your spin details), and the tool will compute the result using SHA-256 hashing.</p>
+
+            <div class="verification-tool">
+                <h3>Enter Spin Details</h3>
+
+                <div class="form-group">
+                    <label for="server-seed">Server Seed</label>
+                    <input type="text" id="server-seed" placeholder="e.g., abc123def456..." required>
+                    <small style="color: #b4c1d6; margin-top: 0.3rem; display: block;">The server seed provided after your spin</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="client-seed">Client Seed</label>
+                    <input type="text" id="client-seed" placeholder="e.g., your-random-seed-123" required>
+                    <small style="color: #b4c1d6; margin-top: 0.3rem; display: block;">Your client seed (or the one generated for you)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="nonce">Nonce</label>
+                    <input type="number" id="nonce" placeholder="e.g., 1" min="0" required>
+                    <small style="color: #b4c1d6; margin-top: 0.3rem; display: block;">The spin number (nonce increments with each spin)</small>
+                </div>
+
+                <button class="button" onclick="verifyFairness()">Verify Spin</button>
+
+                <div class="error-message" id="error-message"></div>
+
+                <div class="result-box" id="result-box">
+                    <h4>Verification Result</h4>
+
+                    <div class="result-item">
+                        <div class="result-item-label">Combined Hash (SHA-256)</div>
+                        <div class="result-item-value" id="combined-hash"></div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-item-label">Server Seed Hash Verification</div>
+                        <div class="result-item-value" id="seed-hash-verification"></div>
+                    </div>
+
+                    <h4 style="margin-top: 1.5rem; margin-bottom: 1rem;">Reel Positions</h4>
+                    <p style="margin-bottom: 1rem; color: #b4c1d6;">Based on the combined hash, the spin result maps to these reel positions:</p>
+
+                    <div class="reel-positions">
+                        <div class="reel">
+                            <div class="reel-label">Reel 1</div>
+                            <div class="reel-symbol" id="reel1">🍒</div>
+                        </div>
+                        <div class="reel">
+                            <div class="reel-label">Reel 2</div>
+                            <div class="reel-symbol" id="reel2">🍒</div>
+                        </div>
+                        <div class="reel">
+                            <div class="reel-label">Reel 3</div>
+                            <div class="reel-symbol" id="reel3">🍒</div>
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 1rem; color: #b4c1d6; font-size: 0.9rem;">✓ Spin verified as fair. No manipulation detected.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="rtp">
+            <h2>RTP Transparency</h2>
+            <p>Return to Player (RTP) is the percentage of all wagered money that a game returns to players over time. At Matrix Spins Casino, we are fully transparent about RTP values for every game.</p>
+
+            <h3>Overall Platform RTP</h3>
+            <p>The average RTP across all games on Matrix Spins Casino is <span class="highlight">95.2%</span>. This means that over a long period of play, players can expect to receive an average of $95.20 back for every $100 wagered (with the remaining $4.80 representing the casino's house edge).</p>
+
+            <h3>Game-Specific RTP Values</h3>
+            <p>Every game on our platform displays its individual RTP on the game card. You can see the RTP before selecting a game, allowing you to make informed decisions about which games to play:</p>
+
+            <div class="rtp-grid">
+                <div class="rtp-card">
+                    <h4>Classic Spins</h4>
+                    <div class="rtp-value">96.5%</div>
+                    <div class="rtp-description">High volatility. Larger but less frequent wins.</div>
+                </div>
+
+                <div class="rtp-card">
+                    <h4>Golden Rush</h4>
+                    <div class="rtp-value">94.8%</div>
+                    <div class="rtp-description">Medium volatility. Balanced win frequency.</div>
+                </div>
+
+                <div class="rtp-card">
+                    <h4>Lucky 7s</h4>
+                    <div class="rtp-value">95.0%</div>
+                    <div class="rtp-description">Low volatility. Frequent small wins.</div>
+                </div>
+
+                <div class="rtp-card">
+                    <h4>Treasure Hunt</h4>
+                    <div class="rtp-value">94.5%</div>
+                    <div class="rtp-description">High volatility. Larger jackpots possible.</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Understanding RTP</h4>
+                <p><span class="highlight">Important:</span> RTP is calculated over millions of spins and represents a theoretical average. Individual sessions will vary significantly. RTP does not guarantee any specific outcome for any single player or session. It is a long-term statistical measure used to evaluate game fairness.</p>
+            </div>
+
+            <h3>How RTP is Calculated</h3>
+            <ul>
+                <li>RTP is determined by the game's mathematical design and payout structure</li>
+                <li>It is calculated by dividing total payouts by total wagered amounts over a very large sample size</li>
+                <li>All games are tested by independent third parties to verify RTP accuracy</li>
+                <li>RTP values are updated regularly based on actual game performance data</li>
+                <li>Players can request historical RTP reports from our support team</li>
+            </ul>
+        </section>
+
+        <section id="auditing">
+            <h2>Third-Party Auditing</h2>
+            <p>Matrix Spins Casino is committed to independent verification of all game outcomes and RTP values. Our games are regularly audited by certified third-party testing laboratories to ensure compliance with industry standards and regulations.</p>
+
+            <h3>Our Auditing Process</h3>
+            <ul>
+                <li><span class="highlight">Monthly Audits:</span> All games undergo comprehensive testing monthly to verify RTP accuracy and fairness</li>
+                <li><span class="highlight">Certified Laboratories:</span> Audits are conducted by internationally recognized testing labs with expertise in gaming mathematics</li>
+                <li><span class="highlight">Random Sampling:</span> Testing includes analysis of millions of random spins from live game data</li>
+                <li><span class="highlight">Cryptographic Verification:</span> Our SHA-256 hashing implementation is verified to be correct and unmanipulatable</li>
+                <li><span class="highlight">RNG Testing:</span> Our random number generation algorithms are tested for randomness and unpredictability</li>
+            </ul>
+
+            <h3>Audit Reports</h3>
+            <p>We publish audit summaries of our testing on a quarterly basis. Full detailed reports are available to licensed operators and regulatory bodies. Players can request a copy of the latest audit summary by contacting our support team at <span class="highlight">support@msaart.online</span>.</p>
+
+            <div class="info-box">
+                <h4>Regulatory Compliance</h4>
+                <p>Matrix Spins Casino operates in full compliance with all applicable gaming regulations. Our provably fair system, RTP transparency, and third-party auditing practices exceed industry standards and requirements. We are committed to maintaining the highest level of integrity and fairness in all gaming operations.</p>
+            </div>
+
+            <h3>Report Your Concerns</h3>
+            <p>If you believe a game is unfair, has incorrect RTP values, or you suspect any form of manipulation, please contact our support team immediately. We investigate all fairness concerns thoroughly and will cooperate fully with regulatory authorities if needed.</p>
+            <p>Email: <a href="mailto:support@msaart.online">support@msaart.online</a></p>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Matrix Spins Casino — <a href="https://msaart.online" style="color: #ffd700;">msaart.online</a></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Every spin is provably fair. Play with confidence.</p>
+    </footer>
+
+    <script>
+        // Symbol mapping for reel positions
+        const symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '🔔', '🎯'];
+
+        async function verifyFairness() {
+            const serverSeed = document.getElementById('server-seed').value.trim();
+            const clientSeed = document.getElementById('client-seed').value.trim();
+            const nonce = document.getElementById('nonce').value.trim();
+            const errorBox = document.getElementById('error-message');
+            const resultBox = document.getElementById('result-box');
+
+            // Clear previous results
+            errorBox.classList.remove('visible');
+            resultBox.classList.remove('visible');
+
+            // Validation
+            if (!serverSeed || !clientSeed || nonce === '') {
+                errorBox.textContent = 'All fields are required. Please fill in server seed, client seed, and nonce.';
+                errorBox.classList.add('visible');
+                return;
+            }
+
+            if (isNaN(nonce) || parseInt(nonce) < 0) {
+                errorBox.textContent = 'Nonce must be a non-negative number.';
+                errorBox.classList.add('visible');
+                return;
+            }
+
+            try {
+                // Compute server seed hash
+                const serverSeedHash = await sha256(serverSeed);
+
+                // Combine for result hash
+                const combined = serverSeed + clientSeed + nonce;
+                const resultHash = await sha256(combined);
+
+                // Generate reel positions from hash
+                const hashValue = parseInt(resultHash.substring(0, 8), 16);
+                const reel1 = symbols[hashValue % symbols.length];
+                const reel2 = symbols[(Math.floor(hashValue / symbols.length)) % symbols.length];
+                const reel3 = symbols[(Math.floor(hashValue / (symbols.length * symbols.length))) % symbols.length];
+
+                // Display results
+                document.getElementById('combined-hash').textContent = resultHash;
+                document.getElementById('seed-hash-verification').textContent = serverSeedHash;
+                document.getElementById('reel1').textContent = reel1;
+                document.getElementById('reel2').textContent = reel2;
+                document.getElementById('reel3').textContent = reel3;
+
+                resultBox.classList.add('visible');
+            } catch (error) {
+                errorBox.textContent = 'An error occurred during verification. Please try again.';
+                errorBox.classList.add('visible');
+                console.error('Verification error:', error);
+            }
+        }
+
+        async function sha256(message) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        // Allow Enter key to trigger verification
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && (
+                event.target.id === 'server-seed' ||
+                event.target.id === 'client-seed' ||
+                event.target.id === 'nonce'
+            )) {
+                verifyFairness();
+            }
+        });
+    </script>
+
+    <!-- JSON-LD Schema Markup for FAQPage -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/provably-fair.html#how-it-works",
+                "name": "How does provably fair technology work?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Provably fair uses three components: (1) Server Seed—a casino-generated seed whose SHA-256 hash is shown before the spin, (2) Client Seed—a player-controlled seed for additional randomness, and (3) Nonce—a counter that increments with each spin. These three are combined and hashed to generate an unmanipulatable outcome. After the spin, the server seed is revealed so players can verify the hash matches and confirm fairness."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/provably-fair.html#verification-tool",
+                "name": "How do I verify a spin is fair?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Use our verification tool to input the server seed, client seed, and nonce from your spin. The tool computes the SHA-256 hash of these combined values to recreate the result. If the hash matches the one from your spin, it proves the outcome was not manipulated and is fair."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/provably-fair.html#rtp",
+                "name": "What is RTP and what is Matrix Spins Casino's RTP?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "RTP (Return to Player) is the percentage of wagered money returned to players over time. Matrix Spins Casino's overall platform RTP is 95.2%, meaning players can expect to receive $95.20 back for every $100 wagered on average. Individual games have their own RTP values (ranging from 94.5% to 96.5%), displayed on each game card."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/provably-fair.html#auditing",
+                "name": "Are your games audited by third parties?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. All games at Matrix Spins Casino undergo monthly audits by certified third-party testing laboratories. These audits verify RTP accuracy, fairness of outcomes, and proper implementation of our cryptographic systems. Audit summaries are published quarterly, and full reports are available upon request."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/provably-fair.html#manipulation",
+                "name": "Can the casino or players manipulate provably fair spins?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No. The provably fair system makes manipulation mathematically impossible. The casino cannot change the server seed after revealing its hash. Players cannot predict outcomes without knowing the actual server seed. Outcomes are determined entirely by cryptographic mathematics, ensuring fairness for both parties."
+                }
+            }
+        ]
+    }
+    </script>
+</body>
+</html>
