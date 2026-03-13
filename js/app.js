@@ -259,6 +259,16 @@
             if (typeof I18n !== 'undefined' && I18n.init) {
                 I18n.init();
             }
+            // Initialize bonus countdown and keyboard shortcuts
+            if (typeof BonusCountdown !== 'undefined' && BonusCountdown.init) {
+                BonusCountdown.init();
+            }
+            if (typeof KeyboardShortcuts !== 'undefined' && KeyboardShortcuts.init) {
+                KeyboardShortcuts.init();
+            }
+            if (typeof SoundSettings !== 'undefined' && SoundSettings.init) {
+                SoundSettings.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
