@@ -236,6 +236,10 @@
             if (typeof SocialShare !== 'undefined' && SocialShare.init) {
                 SocialShare.init();
             }
+            // Initialize win limit (responsible gambling)
+            if (typeof WinLimit !== 'undefined' && WinLimit.init) {
+                WinLimit.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
