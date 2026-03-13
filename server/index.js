@@ -12,6 +12,9 @@ const app = express();
 // client IP rather than the load-balancer IP (which would bucket all users together)
 app.set('trust proxy', 1);
 
+// Per-user rate limiting (complements IP-based limits)
+const userRateLimit = require('./middleware/user-ratelimit');
+
 // NOTE: No www redirect here — Cloudflare sits in front and already handles
 // SSL for both msaart.online and www.msaart.online. Adding a server-side
 // redirect creates a loop because Cloudflare redirects www→bare domain.
@@ -75,6 +78,10 @@ const authLimiter = rateLimit({
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/login', authLimiter);
 
+// Per-user auth limit: 20 requests per minute per authenticated user
+const userAuthLimit = userRateLimit({ maxRequests: 20, windowMs: 60000 });
+app.use('/api/auth/', userAuthLimit);
+
 // Strict rate limit for bonus/reward endpoints (prevent rapid-fire exploitation)
 const bonusLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -112,6 +119,16 @@ app.use('/api/matrix-money/purchase', paymentLimiter);
 app.use('/api/matrix-money/withdraw', paymentLimiter);
 app.use('/api/gifts/send', paymentLimiter);
 
+// Per-user payment limit: 5 requests per minute per authenticated user
+const userPaymentLimit = userRateLimit({ maxRequests: 5, windowMs: 60000 });
+app.use('/api/payment/deposit', userPaymentLimit);
+app.use('/api/payment/withdraw', userPaymentLimit);
+app.use('/api/crypto/verify-deposit', userPaymentLimit);
+app.use('/api/balance/deposit', userPaymentLimit);
+app.use('/api/bundles/purchase', userPaymentLimit);
+app.use('/api/matrix-money/purchase', userPaymentLimit);
+app.use('/api/matrix-money/withdraw', userPaymentLimit);
+
 // Admin endpoint rate limit — prevent brute-force admin access
 const adminLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -128,6 +145,8 @@ const spinLimiter = rateLimit({
     message: { error: 'Spinning too fast. Please slow down.' },
 });
 app.use('/api/spin', spinLimiter);
+// Per-user spin limit: 60 spins per minute per authenticated user
+app.use('/api/spin', userRateLimit({ maxRequests: 60, windowMs: 60000 }));
 
 // ─── Health Check (used by Render / load balancers) ───
 app.get('/api/health', async (req, res) => {

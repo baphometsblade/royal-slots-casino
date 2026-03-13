@@ -244,6 +244,10 @@
             if (typeof GameRecommendations !== 'undefined' && GameRecommendations.init) {
                 setTimeout(function() { GameRecommendations.init(); GameRecommendations.renderWidget(); }, 2000);
             }
+            // Initialize game search autocomplete
+            if (typeof SearchAutocomplete !== 'undefined' && SearchAutocomplete.init) {
+                SearchAutocomplete.init();
+            }
             // Initialize push notifications (ask permission after engagement)
             if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {
                 setTimeout(function() { PushNotifications.init(); }, 10000);

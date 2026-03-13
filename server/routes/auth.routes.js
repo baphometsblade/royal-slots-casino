@@ -12,6 +12,20 @@ const router = express.Router();
 // Dummy hash for constant-time auth when user not found (prevents timing attacks)
 const DUMMY_HASH = bcrypt.hashSync('dummy-password-never-matches', 12);
 
+/**
+ * Validate password strength
+ * @param {string} password - The password to validate
+ * @returns {string[]} Array of issues, empty if valid
+ */
+function validatePassword(password) {
+    const issues = [];
+    if (password.length < 8) issues.push('at least 8 characters');
+    if (!/[A-Z]/.test(password)) issues.push('an uppercase letter');
+    if (!/[a-z]/.test(password)) issues.push('a lowercase letter');
+    if (!/[0-9]/.test(password)) issues.push('a number');
+    return issues;
+}
+
 /** Generate an 8-char uppercase alphanumeric referral code */
 function generateReferralCode() {
     return crypto.randomBytes(4).toString('hex').toUpperCase();
@@ -33,8 +47,9 @@ router.post('/register', async (req, res) => {
         if (username.length < 3 || username.length > 20) {
             return res.status(400).json({ error: 'Username must be 3-20 characters' });
         }
-        if (password.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        const passwordIssues = validatePassword(password);
+        if (passwordIssues.length > 0) {
+            return res.status(400).json({ error: `Password must contain ${passwordIssues.join(', ')}` });
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return res.status(400).json({ error: 'Invalid email format' });
@@ -267,8 +282,9 @@ router.post('/reset-password', async (req, res) => {
         if (!token || !newPassword) {
             return res.status(400).json({ error: 'Token and new password are required' });
         }
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        const passwordIssues = validatePassword(newPassword);
+        if (passwordIssues.length > 0) {
+            return res.status(400).json({ error: `Password must contain ${passwordIssues.join(', ')}` });
         }
 
         // Find the token
@@ -313,8 +329,9 @@ router.post('/change-password', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Current password and new password are required' });
         }
 
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'New password must be at least 6 characters' });
+        const passwordIssues = validatePassword(newPassword);
+        if (passwordIssues.length > 0) {
+            return res.status(400).json({ error: `Password must contain ${passwordIssues.join(', ')}` });
         }
 
         // Fetch current user from database

@@ -12401,6 +12401,102 @@
 .search-no-results strong { color: rgba(255,255,255,0.7); }
 
 /* ═══════════════════════════════════════════════════════════
+   GAME AUTOCOMPLETE / TYPEAHEAD
+   ═══════════════════════════════════════════════════════════ */
+.game-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: rgba(20, 25, 35, 0.95);
+    border: 1px solid rgba(99, 179, 237, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    max-height: 320px;
+    overflow-y: auto;
+    backdrop-filter: blur(8px);
+}
+
+.game-autocomplete-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.game-autocomplete-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.game-autocomplete-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(99, 179, 237, 0.3);
+    border-radius: 3px;
+}
+
+.game-autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 179, 237, 0.5);
+}
+
+.game-autocomplete-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.game-autocomplete-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color 0.15s;
+}
+
+.game-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.game-autocomplete-item:hover,
+.game-autocomplete-item.selected {
+    background: rgba(99, 179, 237, 0.15);
+}
+
+.game-autocomplete-item.selected {
+    background: rgba(99, 179, 237, 0.25);
+}
+
+.game-autocomplete-name {
+    font-size: 13px;
+    color: #e2e8f0;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.game-autocomplete-name strong {
+    color: #63b3ed;
+    font-weight: 600;
+}
+
+.game-autocomplete-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.game-autocomplete-info .provider {
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.game-autocomplete-info .rtp {
+    color: rgba(99, 179, 237, 0.7);
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════
    WIN JUICE — Loss Droop
    ═══════════════════════════════════════════════════════════ */
 
