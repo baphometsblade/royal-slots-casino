@@ -232,6 +232,10 @@
             if (typeof SupportChat !== 'undefined' && SupportChat.init) {
                 SupportChat.init();
             }
+            // Initialize social sharing for big wins
+            if (typeof SocialShare !== 'undefined' && SocialShare.init) {
+                SocialShare.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

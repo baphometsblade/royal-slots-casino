@@ -72,35 +72,70 @@ async function sendPasswordReset(toEmail, resetUrl, expiryHours) {
     return true;
 }
 
-async function sendReengagementEmail(toEmail, username, balance) {
+/**
+ * Send a reengagement email to inactive users.
+ * Includes personalized message and bonus offer to encourage return.
+ * @param {string} toEmail - User's email address
+ * @param {string} username - Username for personalization
+ * @param {number} daysSinceLogin - Days since last login
+ * @returns {boolean} true if sent, false if SMTP not configured
+ */
+async function sendReengagementEmail(toEmail, username, daysSinceLogin) {
     const transporter = getTransporter();
-    if (!transporter) return false;
+    if (!transporter) {
+        console.warn('[Email] SMTP not configured — reengagement email not sent for', username);
+        return false;
+    }
 
-    const balStr = Number(balance) > 0 ? `${Number(balance).toFixed(2)}` : null;
-    const balLine = balStr
-        ? `<p style="color:#10b981;font-size:14px;">You still have <strong>${balStr}</strong> in your account ready to play!</p>`
-        : '';
+    const daysStr = daysSinceLogin === 1 ? 'day' : 'days';
+    const newGamesMsg = daysSinceLogin > 7
+        ? 'We\'ve added exciting new games that you won\'t want to miss!'
+        : 'Check out the latest games added to our collection!';
 
     await transporter.sendMail({
         from: config.SMTP_FROM,
         to: toEmail,
-        subject: `${username}, your luck is waiting at Matrix Spins 🎰`,
+        subject: `${username}, come back to Matrix Spins and claim your bonus! 🎰`,
         text: `Hi ${username},
 
-We noticed you haven't spun in a few days. Come back and try your luck — new games added daily!
+We miss you! It's been ${daysSinceLogin} ${daysStr} since your last visit to Matrix Spins.
 
-Play now: https://matrixspins.com
+${newGamesMsg}
+
+Come back and claim 50 free bonus coins — no deposit required!
+
+Play now: https://msaart.online
 
 Matrix Spins`,
-        html: `<!DOCTYPE html><html><body style="background:#0d0d1a;font-family:sans-serif;padding:24px;">
-<div style="max-width:480px;margin:0 auto;background:#1a1a2e;border-radius:12px;padding:28px;color:#f1f5f9;text-align:center;">
-  <div style="font-size:3rem;margin-bottom:8px;">🎰</div>
-  <h2 style="color:#ffd700;margin:0 0 8px;">We miss you, ${username}!</h2>
-  <p style="color:#94a3b8;margin:0 0 16px;">It's been a few days since your last spin. Your luck could be different today.</p>
-  ${balLine}
-  <a href="https://matrixspins.com" style="display:inline-block;margin:16px 0;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;">Spin Now</a>
-  <p style="color:#64748b;font-size:12px;margin-top:20px;">Matrix Spins — Play responsibly. Unsubscribe at any time.</p>
-</div></body></html>`,
+        html: `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#0d0d1a;color:#fff;padding:40px;margin:0">
+  <div style="max-width:520px;margin:0 auto;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,215,0,0.3);border-radius:12px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#ffd700,#ff8c00);padding:28px;text-align:center">
+      <h1 style="margin:0;color:#0d0d1a;font-size:26px">&#127920; Matrix Spins</h1>
+      <p style="margin:6px 0 0;color:#0d0d1a;font-size:14px;font-weight:bold;">We miss you!</p>
+    </div>
+    <div style="padding:32px;text-align:center">
+      <h2 style="color:#ffd700;margin-top:0;font-size:22px">Welcome back, ${username}!</h2>
+      <p style="color:#ccc;line-height:1.7;margin:0 0 16px;">It's been <strong style="color:#ffd700">${daysSinceLogin} ${daysStr}</strong> since your last spin. We hope you're doing well!</p>
+
+      <p style="color:#e2e8f0;margin:0 0 24px;line-height:1.7;">${newGamesMsg}</p>
+
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(16,185,129,0.1));border:2px solid rgba(16,185,129,0.5);border-radius:12px;padding:24px;margin:0 0 24px;">
+        <div style="font-size:3rem;margin-bottom:8px;">🎁</div>
+        <div style="color:#10b981;font-size:28px;font-weight:900;letter-spacing:-1px;">50 FREE BONUS COINS</div>
+        <div style="color:#fff;font-size:14px;margin:8px 0 0;">Waiting for your return!</div>
+      </div>
+
+      <a href="https://msaart.online" style="display:inline-block;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0d0d1a;text-decoration:none;padding:16px 40px;border-radius:10px;font-weight:900;font-size:18px;letter-spacing:0.5px;">Claim My Bonus &amp; Play &#8594;</a>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:28px 0 20px">
+      <p style="color:#475569;font-size:12px;margin:0;">Matrix Spins — Play responsibly. 18+ only. <a href="https://msaart.online/unsubscribe" style="color:#888;text-decoration:none;">Unsubscribe</a></p>
+    </div>
+  </div>
+</body>
+</html>`,
     });
     return true;
 }
