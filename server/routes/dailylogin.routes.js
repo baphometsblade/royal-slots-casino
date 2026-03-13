@@ -171,24 +171,31 @@ router.post('/claim', authenticate, async function(req, res) {
       return res.status(500).json({ error: 'Reward schedule error' });
     }
 
-    // Apply reward
-    var newBalance = user.balance;
+    // Apply reward — credits go to bonus_balance with 15x wagering (not withdrawable balance)
+    var creditAmount = 0;
     var newGems = user.gems || 0;
 
     if (reward.type === 'credits') {
-      newBalance = newBalance + reward.amount;
+      creditAmount = reward.amount;
     } else if (reward.type === 'gems') {
       newGems = newGems + reward.amount;
     } else if (reward.type === 'both') {
-      newBalance = newBalance + reward.amount;
+      creditAmount = reward.amount;
       newGems = newGems + reward.gemsAmount;
     }
 
-    // Update user record
-    await db.run(
-      'UPDATE users SET login_streak = ?, last_login_reward_date = ?, balance = ?, gems = ? WHERE id = ?',
-      [newStreak, today, newBalance, newGems, userId]
-    );
+    // Update user record — credits to bonus_balance with wagering requirement
+    if (creditAmount > 0) {
+      await db.run(
+        'UPDATE users SET login_streak = ?, last_login_reward_date = ?, bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, gems = ? WHERE id = ?',
+        [newStreak, today, creditAmount, creditAmount * 15, newGems, userId]
+      );
+    } else {
+      await db.run(
+        'UPDATE users SET login_streak = ?, last_login_reward_date = ?, gems = ? WHERE id = ?',
+        [newStreak, today, newGems, userId]
+      );
+    }
 
     // Log transaction for credits
     if (reward.type === 'credits' || reward.type === 'both') {

@@ -142,10 +142,10 @@ async function claimGift(giftId, userId) {
         throw new Error('Gift has already been claimed');
     }
 
-    // Credit recipient
+    // Credit recipient — bonus_balance with 15x wagering (prevents chip dumping/laundering)
     await db.run(
-        'UPDATE users SET balance = balance + ? WHERE id = ?',
-        [gift.amount, userId]
+        'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+        [gift.amount, gift.amount * 15, userId]
     );
 
     // Mark gift as claimed

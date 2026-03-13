@@ -116,13 +116,17 @@ async function _completeTournament(t, cfg) {
         );
         if (!entry) continue;
         try {
-            const user = await db.get("SELECT balance FROM users WHERE id = ?", [entry.user_id]);
+            const user = await db.get("SELECT bonus_balance FROM users WHERE id = ?", [entry.user_id]);
             if (!user) continue;
-            const newBalance = (user.balance || 0) + prize;
-            await db.run("UPDATE users SET balance = ? WHERE id = ?", [newBalance, entry.user_id]);
+            const bonusBefore = user.bonus_balance || 0;
+            // Tournament prizes go to bonus_balance with 15x wagering (not withdrawable balance)
+            await db.run(
+                "UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?",
+                [prize, prize * 15, entry.user_id]
+            );
             await db.run(
                 "INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, 'tournament_prize', ?, ?, ?, ?)",
-                [entry.user_id, prize, user.balance, newBalance, `tournament:${t.id}:rank${i + 1}`]
+                [entry.user_id, prize, bonusBefore, bonusBefore + prize, `tournament:${t.id}:rank${i + 1}`]
             );
         } catch (e) {
             console.error('[Tournament] Prize credit error:', e.message);

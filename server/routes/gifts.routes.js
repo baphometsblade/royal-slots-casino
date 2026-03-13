@@ -178,12 +178,15 @@ router.post('/claim/:id', authenticate, async (req, res) => {
             [giftId]
         );
 
-        // --- Credit recipient balance ---
-        var recipient = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-        var balanceBefore = recipient ? recipient.balance : 0;
+        // --- Credit recipient bonus_balance with 15x wagering (prevents chip dumping/laundering) ---
+        var recipient = await db.get('SELECT bonus_balance FROM users WHERE id = ?', [req.user.id]);
+        var balanceBefore = recipient ? (recipient.bonus_balance || 0) : 0;
         var balanceAfter  = balanceBefore + gift.amount;
 
-        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [gift.amount, req.user.id]);
+        await db.run(
+            'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+            [gift.amount, gift.amount * 15, req.user.id]
+        );
 
         // --- Insert transaction record ---
         await db.run(
@@ -192,9 +195,9 @@ router.post('/claim/:id', authenticate, async (req, res) => {
         );
 
         // --- Fetch confirmed new balance ---
-        var updated = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+        var updated = await db.get('SELECT bonus_balance FROM users WHERE id = ?', [req.user.id]);
 
-        res.json({ ok: true, newBalance: updated ? updated.balance : balanceAfter });
+        res.json({ ok: true, newBonusBalance: updated ? updated.bonus_balance : balanceAfter });
     } catch (err) {
         console.error('[Gifts] POST /claim error:', err.message);
         res.status(500).json({ error: 'Failed to claim gift' });
