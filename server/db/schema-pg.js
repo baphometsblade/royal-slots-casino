@@ -388,6 +388,21 @@ const TABLES = [
         loss_amount NUMERIC(15,2) NOT NULL,
         cashback_amount NUMERIC(15,2) NOT NULL,
         claimed_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS referral_codes (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+        code TEXT NOT NULL UNIQUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS referral_claims (
+        id SERIAL PRIMARY KEY,
+        referrer_id INTEGER NOT NULL REFERENCES users(id),
+        referred_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+        bonus_given INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 

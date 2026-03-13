@@ -296,6 +296,10 @@
             if (typeof LossCashback !== 'undefined' && LossCashback.init) {
                 LossCashback.init();
             }
+            // Referral widget — invite friends
+            if (typeof ReferralWidget !== 'undefined' && ReferralWidget.init) {
+                setTimeout(function() { ReferralWidget.init(); }, 3000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

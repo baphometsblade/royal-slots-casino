@@ -412,6 +412,24 @@ const TABLES = [
         cashback_amount REAL NOT NULL,
         claimed_at TEXT DEFAULT (datetime('now')),
         UNIQUE(user_id, tier, claimed_at)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS referral_codes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        code TEXT NOT NULL UNIQUE,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS referral_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        referrer_id INTEGER NOT NULL,
+        referred_id INTEGER NOT NULL UNIQUE,
+        bonus_given INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (referrer_id) REFERENCES users(id),
+        FOREIGN KEY (referred_id) REFERENCES users(id)
     )`
 ];
 
