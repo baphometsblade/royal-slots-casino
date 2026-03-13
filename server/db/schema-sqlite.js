@@ -331,6 +331,42 @@ const TABLES = [
         url TEXT,
         user_agent TEXT,
         collected_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS game_favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        game_id TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, game_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS game_ratings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        game_id TEXT NOT NULL,
+        rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+        review TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, game_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS chat_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        username TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS activity_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        action TEXT NOT NULL,
+        details TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
     )`
 ];
 

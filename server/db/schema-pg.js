@@ -311,6 +311,42 @@ const TABLES = [
         url TEXT,
         user_agent TEXT,
         collected_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS game_favorites (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        game_id TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, game_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS game_ratings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        game_id TEXT NOT NULL,
+        rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+        review TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, game_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS chat_messages (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        username TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS activity_log (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER,
+        action TEXT NOT NULL,
+        details TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 
