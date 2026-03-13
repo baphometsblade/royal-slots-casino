@@ -216,6 +216,7 @@ app.use('/api/winstreak',     require('./routes/winstreak.routes'));
 app.use('/api/referralbonus', require('./routes/referralbonus.routes'));
 app.use('/api/levelupbonus',  require('./routes/levelupbonus.routes'));
 app.use('/api/birthday',       require('./routes/birthday.routes'));
+app.use('/api/daily-login',    require('./routes/dailylogin.routes'));
 app.use('/api/deposit-streak', require('./routes/depositstreak.routes'));
 app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
 // REMOVED: non-slot game
@@ -267,7 +268,7 @@ app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
 // REMOVED: non-slot game
 // app.use('/api/bigsixwheel',    require('./routes/bigsixwheel.routes'));
 // REMOVED: non-slot game
-// app.use('/api/chuckaluck',     require('./routes/chuckaluck.routes'));
+// REMOVED: chuckaluck (deleted)
 // REMOVED: non-slot game
 // app.use('/api/moneywheel',     require('./routes/moneywheel.routes'));
 // REMOVED: non-slot game

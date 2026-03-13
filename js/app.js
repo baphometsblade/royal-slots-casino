@@ -212,6 +212,13 @@
             _checkGiftsInbox();
             _syncXpWithServer();
             _initTournamentRecording();
+            // Initialize notification bell and check daily login reward
+            if (typeof NotificationBell !== 'undefined' && NotificationBell.init) {
+                NotificationBell.init();
+            }
+            if (typeof checkDailyLoginReward === 'function') {
+                setTimeout(checkDailyLoginReward, 3000);
+            }
             _initLossStreakMonitor();
             _initSpinStreakTicker();
             _initMysteryDropChecker();

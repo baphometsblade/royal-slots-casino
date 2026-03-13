@@ -233,6 +233,18 @@
         }
 
 
+        // Check daily login reward availability and show modal if claimable
+        async function checkDailyLoginReward() {
+            try {
+                const data = await apiRequest('/api/daily-login/', { requireAuth: true });
+                if (data && data.canClaim && typeof Onboarding !== 'undefined' && Onboarding.showDailyLoginModal) {
+                    setTimeout(() => Onboarding.showDailyLoginModal(data), 1500);
+                }
+            } catch (e) {
+                console.warn('[DailyLogin] Could not check:', e);
+            }
+        }
+
         // Hash a password with SHA-256 via Web Crypto (returns hex string).
         async function hashPassword(password) {
             const encoded = new TextEncoder().encode(password);
@@ -309,6 +321,8 @@
                 hideAuthModal();
                 showToast(`Welcome back, ${response.user.username}!`, 'success');
                 if (typeof onPostAuthInit === 'function') onPostAuthInit();
+                // Check for daily login reward after login
+                checkDailyLoginReward();
                 return;
             } catch (error) {
                 serverError = error;
@@ -346,6 +360,10 @@
                 hideAuthModal();
                 showToast(`Welcome, ${response.user.username}! Your account has been created.`, 'success');
                 if (typeof onPostAuthInit === 'function') onPostAuthInit();
+                // Show welcome onboarding modal for new registrations
+                if (typeof Onboarding !== 'undefined' && Onboarding.showWelcomeModal) {
+                    setTimeout(() => Onboarding.showWelcomeModal(response.user), 600);
+                }
                 return;
             } catch (error) {
                 serverError = error;
