@@ -197,6 +197,113 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Bootstrap: create password_reset_tokens table
+db.run(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    used INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+)`).catch(() => {});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+        }
+
+        // Always return success to prevent email enumeration
+        const successMsg = 'If an account with that email exists, a reset link has been sent.';
+
+        const user = await db.get('SELECT id, email FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+        if (!user) {
+            return res.json({ message: successMsg });
+        }
+
+        // Generate secure reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const EXPIRY_HOURS = 1;
+        const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
+
+        // Invalidate any existing tokens for this user
+        await db.run('UPDATE password_reset_tokens SET used = 1 WHERE user_id = ? AND used = 0', [user.id]);
+
+        // Store the token
+        await db.run(
+            'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+            [user.id, resetToken, expiresAt]
+        );
+
+        // Build reset URL
+        const baseUrl = config.BASE_URL || 'https://msaart.online';
+        const resetUrl = `${baseUrl}/?resetToken=${resetToken}`;
+
+        // Send email (non-blocking — don't fail the request if email doesn't send)
+        try {
+            const emailService = require('../services/email.service');
+            await emailService.sendPasswordReset(user.email, resetUrl, EXPIRY_HOURS);
+        } catch (emailErr) {
+            console.warn('[Auth] Password reset email failed:', emailErr.message);
+            // In dev mode, log the token so it can be used for testing
+            if (config.NODE_ENV !== 'production') {
+                console.log('[Auth] DEV reset token:', resetToken);
+            }
+        }
+
+        res.json({ message: successMsg });
+    } catch (err) {
+        console.error('[Auth] Forgot password error:', err);
+        res.status(500).json({ error: 'Request failed' });
+    }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ error: 'Token and new password are required' });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
+
+        // Find the token
+        const resetRecord = await db.get(
+            'SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0',
+            [token]
+        );
+
+        if (!resetRecord) {
+            return res.status(400).json({ error: 'Invalid or expired reset link' });
+        }
+
+        // Check expiry
+        if (new Date(resetRecord.expires_at) < new Date()) {
+            await db.run('UPDATE password_reset_tokens SET used = 1 WHERE id = ?', [resetRecord.id]);
+            return res.status(400).json({ error: 'Reset link has expired. Please request a new one.' });
+        }
+
+        // Hash new password and update user
+        const passwordHash = bcrypt.hashSync(newPassword, 12);
+        await db.run('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, resetRecord.user_id]);
+
+        // Mark token as used
+        await db.run('UPDATE password_reset_tokens SET used = 1 WHERE id = ?', [resetRecord.id]);
+
+        // Clear any lockouts
+        failedLogins.delete(resetRecord.user_id);
+
+        res.json({ message: 'Password reset successful! You can now sign in.' });
+    } catch (err) {
+        console.error('[Auth] Reset password error:', err);
+        res.status(500).json({ error: 'Password reset failed' });
+    }
+});
+
 // GET /api/auth/me
 router.get('/me', authenticate, (req, res) => {
     res.json({

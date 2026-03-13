@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Matrix Spins Casino Responsible Gambling Page - Resources and tools for safe gaming.">
+    <title>Responsible Gambling - Matrix Spins Casino</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d0d1a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1.5rem 0;
+            border-bottom: 2px solid #ffd700;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .logo:hover {
+            color: #ffed4e;
+        }
+
+        nav a {
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #b4c1d6;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(26, 26, 46, 0.5);
+            border-left: 4px solid #ffd700;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        section:hover {
+            background: rgba(26, 26, 46, 0.7);
+        }
+
+        h2 {
+            color: #ffd700;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h3 {
+            color: #ffd700;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h3:first-child {
+            margin-top: 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+
+        .highlight {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .resource-card {
+            background: rgba(26, 26, 46, 0.3);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .resource-card:hover {
+            border-color: #ffd700;
+            background: rgba(26, 26, 46, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .resource-card h4 {
+            color: #ffd700;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .resource-card p {
+            font-size: 0.95rem;
+        }
+
+        .phone {
+            color: #ffd700;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+        }
+
+        a {
+            color: #ffd700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #ffed4e;
+            text-decoration: underline;
+        }
+
+        .warning-box {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: #ff6b6b;
+            margin-bottom: 0.8rem;
+        }
+
+        .limits-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .limits-table th {
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            padding: 1rem;
+            text-align: left;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .limits-table td {
+            padding: 1rem;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            color: #e2e8f0;
+        }
+
+        .limits-table tr:nth-child(even) {
+            background: rgba(26, 26, 46, 0.3);
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #ffd700;
+            color: #0d0d1a;
+            padding: 0.8rem 2rem;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .cta-button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #b4c1d6;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            border-top: 2px solid #ffd700;
+            margin-top: 3rem;
+        }
+
+        .toc {
+            background: rgba(255, 215, 0, 0.05);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+        }
+
+        .toc ul {
+            margin-left: 1.5rem;
+        }
+
+        .toc a {
+            color: #ffd700;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            section {
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .limits-table {
+                font-size: 0.9rem;
+            }
+
+            .limits-table th,
+            .limits-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="https://msaart.online" class="logo">🎰 Matrix Spins Casino</a>
+            <nav>
+                <a href="https://msaart.online">← Back to Homepage</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero">
+        <h1>Responsible Gambling</h1>
+        <p>At Matrix Spins Casino, we believe in promoting safe and responsible gaming. This page provides essential information, tools, and resources to help you maintain control over your gaming experience.</p>
+    </div>
+
+    <div class="container">
+        <div class="toc">
+            <h3>Quick Navigation</h3>
+            <ul>
+                <li><a href="#commitment">Our Commitment</a></li>
+                <li><a href="#limits">Know Your Limits</a></li>
+                <li><a href="#assessment">Self-Assessment</a></li>
+                <li><a href="#self-exclusion">Self-Exclusion</a></li>
+                <li><a href="#deposit-limits">Deposit & Loss Limits</a></li>
+                <li><a href="#session-limits">Session Time Limits</a></li>
+                <li><a href="#underage">Underage Gambling Prevention</a></li>
+                <li><a href="#support">Support Resources</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+            </ul>
+        </div>
+
+        <section id="commitment">
+            <h2>Our Commitment</h2>
+            <p>Matrix Spins Casino is committed to providing a safe, enjoyable, and responsible gaming environment for all players. We understand that gaming should be entertainment, not a way to make money or solve financial problems. Our platform is designed with player protection as a priority, and we provide comprehensive tools and resources to help you maintain control over your gaming habits.</p>
+            <p>We have a zero-tolerance policy toward problem gambling and actively promote responsible gaming practices across our platform. Every player has the right to set limits, take breaks, and seek help when needed.</p>
+        </section>
+
+        <section id="limits">
+            <h2>Know Your Limits</h2>
+            <p>Setting personal gaming limits is one of the most effective ways to maintain control over your gaming activity. A responsible player:</p>
+            <ul>
+                <li>Sets a budget they can afford to lose as entertainment</li>
+                <li>Never gambles with money needed for essentials like rent, food, or utilities</li>
+                <li>Establishes both deposit limits and time limits</li>
+                <li>Monitors their gaming frequency and spending</li>
+                <li>Takes regular breaks from gaming</li>
+                <li>Seeks support if gaming becomes problematic</li>
+            </ul>
+            <p>At Matrix Spins Casino, you can access comprehensive limit-setting tools directly from your <span class="highlight">Account Settings</span>. These include deposit limits, loss limits, and session time limits. We encourage all players to use these features to create a gaming experience that fits within their budget and lifestyle.</p>
+        </section>
+
+        <section id="assessment">
+            <h2>Self-Assessment</h2>
+            <p>Problem gambling can develop gradually. It's important to recognize warning signs early. If you answer yes to any of these questions, you may want to consider reducing your gaming activity or seeking support:</p>
+
+            <div class="warning-box">
+                <h4>Warning Signs of Problem Gambling</h4>
+                <ul>
+                    <li><span class="highlight">Chasing Losses</span> — Continuing to gamble to win back money you've lost</li>
+                    <li><span class="highlight">Gambling with Money You Can't Afford to Lose</span> — Using money intended for bills, rent, food, or other essentials</li>
+                    <li><span class="highlight">Neglecting Responsibilities</span> — Spending so much time gaming that work, school, family, or personal care suffer</li>
+                    <li><span class="highlight">Borrowing to Gamble</span> — Taking out loans, using credit cards, or asking others for money to fund gaming</li>
+                    <li><span class="highlight">Lying About Gaming</span> — Hiding the amount of time spent gaming or concealing losses from family or friends</li>
+                    <li><span class="highlight">Tolerance and Escalation</span> — Needing to gamble with larger amounts to achieve the same excitement</li>
+                    <li><span class="highlight">Failed Control Attempts</span> — Repeatedly trying and failing to reduce gaming activity</li>
+                    <li><span class="highlight">Emotional Escape</span> — Gaming primarily to cope with stress, anxiety, or depression</li>
+                </ul>
+            </div>
+
+            <p>If you recognize these signs in your own behavior, we strongly encourage you to reach out to one of our support resources listed below.</p>
+        </section>
+
+        <section id="self-exclusion">
+            <h2>Self-Exclusion</h2>
+            <p>Self-exclusion is a powerful tool that allows you to take a break from gaming by restricting your access to your account. If you feel that your gaming has become problematic, self-exclusion provides a structured way to step back.</p>
+
+            <h3>How to Self-Exclude</h3>
+            <p>You have two options to initiate self-exclusion:</p>
+            <ol>
+                <li><span class="highlight">Account Settings:</span> Log in to your Matrix Spins account, go to <span class="highlight">Account Settings → Responsible Gambling → Self-Exclusion</span>, and follow the prompts to activate self-exclusion.</li>
+                <li><span class="highlight">Contact Support:</span> Email <span class="highlight">support@msaart.online</span> with "Self-Exclusion Request" in the subject line, and our team will process your request immediately.</li>
+            </ol>
+
+            <h3>Self-Exclusion Details</h3>
+            <ul>
+                <li><span class="highlight">Minimum Period:</span> Self-exclusion applies for a minimum of 6 months</li>
+                <li><span class="highlight">During Exclusion:</span> Your account will be disabled, and you will not be able to deposit, play, or access any gaming features</li>
+                <li><span class="highlight">No Reactivation During Period:</span> You cannot reactivate your account before the 6-month period ends, even if requested</li>
+                <li><span class="highlight">After Exclusion Ends:</span> We will notify you before your exclusion expires. You can choose to remain excluded or reactivate your account</li>
+            </ul>
+
+            <p>If you wish to extend your self-exclusion after the initial 6-month period, you can do so immediately upon expiration or at any time by contacting our support team.</p>
+        </section>
+
+        <section id="deposit-limits">
+            <h2>Deposit & Loss Limits</h2>
+            <p>Deposit and loss limits are essential tools for maintaining control over your gaming budget. Matrix Spins allows you to set limits across different timeframes to suit your personal situation.</p>
+
+            <h3>Types of Limits Available</h3>
+            <table class="limits-table">
+                <thead>
+                    <tr>
+                        <th>Limit Type</th>
+                        <th>Description</th>
+                        <th>How Often Can I Change It?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Daily Deposit Limit</strong></td>
+                        <td>Maximum amount you can deposit in a 24-hour period</td>
+                        <td>Changes take effect immediately</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Weekly Deposit Limit</strong></td>
+                        <td>Maximum amount you can deposit in a 7-day rolling period</td>
+                        <td>Changes take effect immediately</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Monthly Deposit Limit</strong></td>
+                        <td>Maximum amount you can deposit in a 30-day rolling period</td>
+                        <td>Changes take effect immediately</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Daily Loss Limit</strong></td>
+                        <td>Maximum amount you can lose in a 24-hour period</td>
+                        <td>Changes take effect immediately</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Weekly Loss Limit</strong></td>
+                        <td>Maximum amount you can lose in a 7-day rolling period</td>
+                        <td>Changes take effect immediately</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Monthly Loss Limit</strong></td>
+                        <td>Maximum amount you can lose in a 30-day rolling period</td>
+                        <td>Changes take effect immediately</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Important Information About Limits</h3>
+            <ul>
+                <li><span class="highlight">Reductions Take Effect Immediately:</span> If you lower your limit, the new limit is applied right away</li>
+                <li><span class="highlight">Increases Have a 24-Hour Cooling-Off Period:</span> If you want to increase a limit, your change will take effect 24 hours after you request it, allowing time for reconsideration</li>
+                <li><span class="highlight">Access Your Limits Anytime:</span> Log in to your account and navigate to <span class="highlight">Account Settings → Responsible Gambling → Deposit & Loss Limits</span></li>
+                <li><span class="highlight">Once You Reach a Limit:</span> You will not be able to continue gaming until the timeframe resets or until the next limit period begins</li>
+            </ul>
+
+            <p>Using deposit and loss limits is one of the most effective ways to ensure your gaming remains within your financial means.</p>
+        </section>
+
+        <section id="session-limits">
+            <h2>Session Time Limits</h2>
+            <p>Session time limits help prevent extended gaming sessions and promote healthy play patterns. You can set maximum session durations to ensure you take regular breaks.</p>
+
+            <h3>Session Limit Features</h3>
+            <ul>
+                <li><span class="highlight">Customizable Duration:</span> Set session time limits ranging from 15 minutes to 8 hours (or choose unlimited)</li>
+                <li><span class="highlight">Automatic Reminder:</span> As you approach your time limit, you'll receive visual and text reminders on your screen</li>
+                <li><span class="highlight">Session Lockout:</span> When your time limit is reached, your account is temporarily locked for gaming until you manually log back in</li>
+                <li><span class="highlight">Multiple Daily Sessions:</span> Limits apply to each individual gaming session, giving you control between breaks</li>
+                <li><span class="highlight">Easy to Adjust:</span> Access your session limits anytime in <span class="highlight">Account Settings → Responsible Gambling → Session Time Limits</span></li>
+            </ul>
+
+            <p>We recommend setting a session limit that aligns with your lifestyle and allows for enjoyable gaming without excessive time commitment.</p>
+        </section>
+
+        <section id="underage">
+            <h2>Underage Gambling Prevention</h2>
+            <p>Matrix Spins Casino is strictly for players aged 18 and older. We have a zero-tolerance policy toward underage gambling and implement multiple safeguards to prevent minors from accessing our platform.</p>
+
+            <h3>Our Protections</h3>
+            <ul>
+                <li><span class="highlight">Age Verification Required:</span> All players must verify their identity and age during account creation</li>
+                <li><span class="highlight">ID Verification:</span> We use industry-standard verification methods to confirm that all account holders are 18 years or older</li>
+                <li><span class="highlight">Ongoing Compliance:</span> We maintain strict compliance with all local and international laws regarding age-restricted gaming</li>
+                <li><span class="highlight">Account Review:</span> Accounts that appear to violate age requirements are investigated and closed immediately</li>
+                <li><span class="highlight">Parental Controls:</span> We recommend that parents and guardians use device-level restrictions to prevent minor access to gaming sites</li>
+            </ul>
+
+            <h3>If You Suspect Underage Gaming</h3>
+            <p>If you believe a minor is accessing Matrix Spins Casino, please contact us immediately at <span class="highlight">support@msaart.online</span> with details. We will investigate and take appropriate action.</p>
+        </section>
+
+        <section id="support">
+            <h2>Support Resources</h2>
+            <p>If you or someone you know is struggling with problem gambling, help is available. The following organizations provide free, confidential support:</p>
+
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <h4>National Council on Problem Gambling</h4>
+                    <p>The leading national nonprofit organization providing resources and referrals for problem gambling.</p>
+                    <div class="phone">1-800-522-4700</div>
+                    <p><a href="https://ncpgambling.org" target="_blank">ncpgambling.org</a></p>
+                </div>
+
+                <div class="resource-card">
+                    <h4>Gamblers Anonymous</h4>
+                    <p>A peer support fellowship for people who have a desire to stop gambling. Offers meetings and group support.</p>
+                    <p><a href="https://gamblersanonymous.org" target="_blank">gamblersanonymous.org</a></p>
+                </div>
+
+                <div class="resource-card">
+                    <h4>GamCare</h4>
+                    <p>A UK-based organization providing free advice and support for people affected by problem gambling.</p>
+                    <p><a href="https://gamcare.org.uk" target="_blank">gamcare.org.uk</a></p>
+                </div>
+
+                <div class="resource-card">
+                    <h4>BeGambleAware</h4>
+                    <p>Provides free information, guidance, and support for problem gambling in the UK and internationally.</p>
+                    <p><a href="https://begambleaware.org" target="_blank">begambleaware.org</a></p>
+                </div>
+            </div>
+
+            <h3>Additional Resources</h3>
+            <p>Many countries have their own problem gambling helplines and support services. If you need additional resources specific to your location, contact our support team at <span class="highlight">support@msaart.online</span> and we can provide relevant local resources.</p>
+        </section>
+
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>If you have questions about responsible gambling, need assistance setting limits, or have concerns about your gaming, our support team is here to help.</p>
+
+            <div style="background: rgba(255, 215, 0, 0.05); padding: 2rem; border-radius: 4px; margin-top: 1.5rem;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;"><span class="highlight">Email:</span> <a href="mailto:support@msaart.online">support@msaart.online</a></p>
+                <p>When contacting us about responsible gambling concerns, our team will respond within 24 hours. You can also reach out to us about:</p>
+                <ul style="margin-top: 1rem;">
+                    <li>Setting or adjusting deposit and loss limits</li>
+                    <li>Enabling session time limits</li>
+                    <li>Initiating self-exclusion</li>
+                    <li>Requesting information about problem gambling resources</li>
+                    <li>Reporting concerns about another player's behavior</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Matrix Spins Casino — <a href="https://msaart.online" style="color: #ffd700;">msaart.online</a></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Play responsibly. Gaming should be for entertainment only.</p>
+    </footer>
+
+    <!-- JSON-LD Schema Markup for FAQPage -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/responsible-gambling.html#limits",
+                "name": "How can I set deposit and loss limits?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "You can set deposit and loss limits by logging into your Matrix Spins account and navigating to Account Settings > Responsible Gambling > Deposit & Loss Limits. You can set daily, weekly, and monthly limits. Reductions take effect immediately, while increases have a 24-hour cooling-off period."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/responsible-gambling.html#self-exclusion",
+                "name": "What is self-exclusion and how do I use it?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Self-exclusion allows you to restrict access to your account for a minimum of 6 months. You can initiate self-exclusion through your Account Settings > Responsible Gambling > Self-Exclusion, or by emailing support@msaart.online. During exclusion, you cannot deposit, play, or access any gaming features."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/responsible-gambling.html#session-limits",
+                "name": "How do session time limits work?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Session time limits allow you to set maximum gaming durations ranging from 15 minutes to 8 hours per session. You'll receive automatic reminders as you approach your limit, and your account will be temporarily locked when the limit is reached."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/responsible-gambling.html#assessment",
+                "name": "What are the warning signs of problem gambling?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Warning signs include chasing losses, gambling with money you cannot afford to lose, neglecting responsibilities, borrowing to gamble, lying about gaming, needing larger amounts to feel the same excitement, failing to control gaming, and using gaming to escape emotional problems."
+                }
+            },
+            {
+                "@type": "Question",
+                "@id": "https://msaart.online/responsible-gambling.html#support",
+                "name": "Where can I get help for problem gambling?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Several organizations provide free support: National Council on Problem Gambling (1-800-522-4700, ncpgambling.org), Gamblers Anonymous (gamblersanonymous.org), GamCare (gamcare.org.uk), and BeGambleAware (begambleaware.org). You can also contact our support team at support@msaart.online."
+                }
+            }
+        ]
+    }
+    </script>
+</body>
+</html>
