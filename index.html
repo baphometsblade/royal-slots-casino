@@ -406,9 +406,11 @@
             <div class="footer-legal">
                 <span>18+ | Play Responsibly | Gambling can be addictive</span>
                 <span class="footer-legal-sep">|</span>
-                <a href="#" onclick="event.preventDefault(); showToast('Terms of Service - Coming soon','info')">Terms of Service</a>
+                <a href="#" onclick="event.preventDefault(); if(typeof showTermsOfService==='function') showTermsOfService();">Terms of Service</a>
                 <span class="footer-legal-sep">|</span>
-                <a href="#" onclick="event.preventDefault(); showToast('Privacy Policy - Coming soon','info')">Privacy Policy</a>
+                <a href="#" onclick="event.preventDefault(); if(typeof showPrivacyPolicy==='function') showPrivacyPolicy();">Privacy Policy</a>
+                <span class="footer-legal-sep">|</span>
+                <a href="#" onclick="event.preventDefault(); if(typeof showMatrixMoneyInfo==='function') showMatrixMoneyInfo();">Matrix Money Info</a>
             </div>
             <p class="footer-copyright">&copy; 2024-2026 Matrix Spins. All rights reserved. This is a social gaming platform.</p>
         </div>
@@ -1447,6 +1449,8 @@
     <script src="js/qa-tools.js"></script>
     <script src="js/app.js"></script>
     <script src="js/ui-premium-effects.js"></script>
+    <script src="js/legal-terms.js"></script>
+    <script src="js/matrix-money.js"></script>
 
     <!-- Matrix Rain Canvas Animation -->
     <script>
@@ -1690,6 +1694,7 @@
         </div>
         <div>Gambling can be addictive. Please play responsibly. If you need help, visit <a href="https://www.begambleaware.org" target="_blank" rel="noopener" style="color:rgba(255,255,255,.4);text-decoration:underline">BeGambleAware.org</a> or <a href="https://www.gamstop.co.uk" target="_blank" rel="noopener" style="color:rgba(255,255,255,.4);text-decoration:underline">GamStop</a>.</div>
         <div style="margin-top:6px">© 2026 Matrix Spins Casino — msaart.online. For entertainment purposes only.</div>
+        <div style="margin-top:4px;font-size:11px;color:#888;line-height:1.4">Matrix Money is a virtual entertainment currency with no real-world monetary value. Purchasing Matrix Money constitutes the purchase of a digital collectible (NFT). Must be 18+ to play. Please gamble responsibly.</div>
     </div>
 
 <script src="visual-overhaul.js"></script>
