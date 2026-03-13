@@ -269,6 +269,17 @@
             if (typeof SoundSettings !== 'undefined' && SoundSettings.init) {
                 SoundSettings.init();
             }
+            // Initialize game rating system
+            if (typeof GameRating !== 'undefined' && GameRating.init) {
+                GameRating.init();
+            }
+            // Initialize CSRF protection and reality check
+            if (typeof CsrfHelper !== 'undefined' && CsrfHelper.init) {
+                CsrfHelper.init();
+            }
+            if (typeof RealityCheck !== 'undefined' && RealityCheck.init) {
+                RealityCheck.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

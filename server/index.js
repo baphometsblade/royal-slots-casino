@@ -66,6 +66,13 @@ app.use(express.json({ limit: '1mb' }));
 const sanitizeMiddleware = require('./middleware/sanitize');
 app.use(sanitizeMiddleware);
 
+// ─── CSRF Protection Middleware ───
+// Validates CSRF tokens on mutation endpoints (POST/PUT/DELETE)
+const { csrfMiddleware, getCsrfTokenHandler } = require('./middleware/csrf');
+const { authenticate: verifyToken } = require('./middleware/auth');
+app.get('/api/csrf-token', verifyToken, getCsrfTokenHandler);
+app.use(csrfMiddleware);
+
 // ─── Maintenance Mode Middleware ───
 // Checks if system is under maintenance; blocks non-admin API routes
 const { maintenanceMiddleware } = require('./middleware/maintenance');
@@ -263,6 +270,7 @@ app.use('/api/birthday',       require('./routes/birthday.routes'));
 app.use('/api/daily-login',    require('./routes/dailylogin.routes'));
 app.use('/api/deposit-streak', require('./routes/depositstreak.routes'));
 app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
+app.use('/api/feedback', require('./routes/feedback.routes'));
 // REMOVED: non-slot game
 // app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
 // REMOVED: non-slot game
@@ -390,8 +398,6 @@ app.get('/api/games', (req, res) => {
     }));
     res.json({ games: sanitized });
 });
-
-const { authenticate: verifyToken } = require('./middleware/auth');
 
 // ─── Personalized bonus offers ───
 app.get('/api/offers', verifyToken, async (req, res) => {
@@ -689,6 +695,10 @@ async function start() {
     await rentalService.initSchema();
     const megawheelService = require('./services/megawheel.service');
     await megawheelService.initSchema();
+
+    // Initialise feedback tables (game_ratings)
+    const { initFeedbackTable } = require('./routes/feedback.routes');
+    await initFeedbackTable();
 
     app.listen(config.PORT, () => {
         console.log(`\n${'='.repeat(50)}`);
