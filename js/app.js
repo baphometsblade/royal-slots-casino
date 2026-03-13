@@ -252,6 +252,13 @@
             if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {
                 setTimeout(function() { PushNotifications.init(); }, 10000);
             }
+            // Initialize A/B testing and i18n
+            if (typeof ABTesting !== 'undefined' && ABTesting.init) {
+                ABTesting.init();
+            }
+            if (typeof I18n !== 'undefined' && I18n.init) {
+                I18n.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
