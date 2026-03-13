@@ -67,8 +67,9 @@ router.post('/claim', authenticate, async (req, res) => {
         if (pendingRakeback < 0.01) {
             return res.status(400).json({ error: 'Nothing to claim - minimum is $0.01' });
         }
-        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [pendingRakeback, req.user.id]);
-        const description = 'Weekly rakeback - ' + weeklyWagered.toFixed(2) + ' wagered';
+        // Credit to bonus_balance with 10x wagering (loss compensation)
+        await db.run('UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?', [pendingRakeback, pendingRakeback * 10, req.user.id]);
+        const description = 'Weekly rakeback - ' + weeklyWagered.toFixed(2) + ' wagered (bonus, 10x wagering)';
         await db.run("INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'rakeback', ?, ?)", [req.user.id, pendingRakeback, description]);
         const userRow = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
         const newBalance = userRow ? parseFloat(userRow.balance) : 0;

@@ -73,24 +73,15 @@ router.post('/purchase', authenticate, async function (req, res) {
         let granted = {};
 
         if (item.type === 'balance') {
-            // Credit the cash reward and log it for auditing.
-            const balanceAfter = currentBalance + item.amount;
+            // Credit to bonus_balance with 15x wagering (revenue protection)
             await db.run(
-                'UPDATE users SET balance = balance + ? WHERE id = ?',
-                [item.amount, userId]
+                'UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ? WHERE id = ?',
+                [item.amount, item.amount * 15, userId]
             );
             await db.run(
-                'INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, reference) VALUES (?, ?, ?, ?, ?, ?)',
-                [
-                    userId,
-                    'xpshop',
-                    item.amount,
-                    currentBalance,
-                    balanceAfter,
-                    'XP Shop: ' + itemId + ' (cost ' + item.cost + ' XP)',
-                ]
+                "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'xpshop', ?, ?)",
+                [userId, item.amount, 'XP Shop: ' + itemId + ' (cost ' + item.cost + ' XP, bonus, 15x wagering)']
             );
-            newBalance = balanceAfter;
             granted = { type: 'balance', amount: item.amount };
         } else if (item.type === 'freespins') {
             // Free spins are fulfilled client-side; server just validates XP deduction.

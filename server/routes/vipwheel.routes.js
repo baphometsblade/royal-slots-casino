@@ -106,14 +106,14 @@ router.post('/spin', authenticate, async function(req, res) {
     var newBalance = user.balance;
 
     if (result.prize.type === 'credits') {
-      newBalance = parseFloat((user.balance + result.prize.value).toFixed(2));
+      // Credit to bonus_balance with 15x wagering (revenue protection)
       await db.run(
-        "UPDATE users SET balance = ?, vip_wheel_last = ? WHERE id = ?",
-        [newBalance, nowISO, req.user.id]
+        "UPDATE users SET bonus_balance = COALESCE(bonus_balance, 0) + ?, wagering_requirement = COALESCE(wagering_requirement, 0) + ?, vip_wheel_last = ? WHERE id = ?",
+        [result.prize.value, result.prize.value * 15, nowISO, req.user.id]
       );
       await db.run(
-        "INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, 'bonus', ?, ?, ?)",
-        [req.user.id, result.prize.value, newBalance, 'VIP Wheel: ' + result.prize.label]
+        "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, 'bonus', ?, ?)",
+        [req.user.id, result.prize.value, 'VIP Wheel: ' + result.prize.label + ' (bonus, 15x wagering)']
       );
     } else {
       var newGems = (user.gems || 0) + result.prize.value;

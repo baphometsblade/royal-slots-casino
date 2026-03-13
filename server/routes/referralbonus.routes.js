@@ -7,11 +7,15 @@
 
 const express  = require('express');
 const router   = express.Router();
+const crypto   = require('crypto');
 const jwt      = require('jsonwebtoken');
 const db       = require('../database');
 const { JWT_SECRET } = require('../config');
 
 const REFERRAL_BONUS_AMOUNT = 1.0; // $1 credited to both referrer and new user
+
+// Separate internal secret — never reuse JWT_SECRET for internal auth headers
+const INTERNAL_SECRET = crypto.randomBytes(32).toString('hex');
 
 // --- Auth middleware (JWT Bearer) ---
 function verifyToken(req, res, next) {
@@ -27,9 +31,10 @@ function verifyToken(req, res, next) {
 }
 
 // --- Internal-call middleware (X-Internal-Secret header) ---
+// Uses a per-process random secret — impossible to guess from JWT tokens
 function verifyInternal(req, res, next) {
   const secret = req.headers['x-internal-secret'] || '';
-  if (secret !== JWT_SECRET) {
+  if (secret !== INTERNAL_SECRET) {
     return res.status(403).json({ error: 'Forbidden: invalid internal secret' });
   }
   next();
