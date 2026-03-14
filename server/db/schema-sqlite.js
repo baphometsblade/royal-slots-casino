@@ -633,6 +633,18 @@ const TABLES = [
         tier_claimed TEXT NOT NULL,
         claimed_at TEXT DEFAULT (datetime('now')),
         UNIQUE(user_id, pass_id, level)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS daily_login_rewards (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        login_date TEXT NOT NULL,
+        day_streak INTEGER NOT NULL,
+        reward_type TEXT NOT NULL,
+        reward_amount INTEGER NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, login_date),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 
@@ -760,6 +772,9 @@ const USER_MIGRATIONS = [
     ['vip_deposit_claimed', 'TEXT'],
     // Comeback bonus
     ['comeback_bonus_last', 'TEXT'],
+    // Daily login rewards calendar
+    ['current_streak', 'INTEGER DEFAULT 0'],
+    ['last_login_date', 'TEXT'],
 ];
 
 /** Extra columns added to withdrawals table via migrations (column name → definition). */

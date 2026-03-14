@@ -258,7 +258,7 @@ app.use('/api/winstreak',     require('./routes/winstreak.routes'));
 app.use('/api/referralbonus', require('./routes/referralbonus.routes'));
 app.use('/api/levelupbonus',  require('./routes/levelupbonus.routes'));
 app.use('/api/birthday',       require('./routes/birthday.routes'));
-app.use('/api/daily-login',    require('./routes/dailylogin.routes'));
+app.use('/api/daily-login',    require('./routes/daily-login.routes'));
 app.use('/api/deposit-streak', require('./routes/depositstreak.routes'));
 app.use('/api/dailymissions', require('./routes/dailymissions.routes'));
 app.use('/api/feedback', require('./routes/feedback.routes'));

@@ -252,6 +252,14 @@
             if (typeof Tournament !== 'undefined' && Tournament.init) {
                 setTimeout(function() { Tournament.init(); }, 4000);
             }
+            // Initialize comeback offers (personalized retention)
+            if (typeof ComebackOffers !== 'undefined' && ComebackOffers.init) {
+                setTimeout(function() { ComebackOffers.init(); }, 2000);
+            }
+            // Initialize daily login calendar with 1.5s delay, show popup if unclaimed
+            if (typeof DailyLoginCalendar !== 'undefined' && DailyLoginCalendar.init) {
+                setTimeout(function() { DailyLoginCalendar.init(); DailyLoginCalendar.showCalendar(); }, 1500);
+            }
             // Initialize push notifications (ask permission after engagement)
             if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {
                 setTimeout(function() { PushNotifications.init(); }, 10000);

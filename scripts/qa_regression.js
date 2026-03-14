@@ -319,6 +319,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "referral-overlay",
       "tournament-fab-button",
       "tournament-modal",
+      "comeback-offer-overlay",
+      "comeback-offer-modal",
+      "comeback-offer-particles",
+      "daily-login-overlay",
+      "daily-login-modal",
+      "daily-login-confetti",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
