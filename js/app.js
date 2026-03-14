@@ -348,6 +348,14 @@
             if (typeof PushNotify !== 'undefined' && PushNotify.init) {
                 setTimeout(function() { PushNotify.init(); }, 8000);
             }
+            // Deposit urgency and social proof
+            if (typeof DepositUrgency !== 'undefined' && DepositUrgency.init) {
+                setTimeout(function() { DepositUrgency.init(); }, 3000);
+            }
+            // Achievement unlock popups
+            if (typeof AchievementPopup !== 'undefined' && AchievementPopup.init) {
+                setTimeout(function() { AchievementPopup.init(); }, 2000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
