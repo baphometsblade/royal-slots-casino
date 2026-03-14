@@ -310,6 +310,11 @@ async function dismissFeaturePopupIfVisible(page) {
       "whale-vip-modal",
       "whale-vip-meter",
       "whale-vip-tooltip",
+      "referral-fab",
+      "referral-modal",
+      "referral-overlay",
+      "tournament-fab-button",
+      "tournament-modal",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

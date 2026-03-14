@@ -200,6 +200,7 @@ app.use('/api/crypto', require('./routes/crypto.routes'));
 app.use('/api/jackpot', jackpotRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/tournaments', tournamentRoutes);
+app.use('/api/tournament', tournamentRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/session', require('./routes/session.routes'));
 app.use('/api/game-of-day', require('./routes/gameofday.routes'));

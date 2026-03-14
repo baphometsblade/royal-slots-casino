@@ -142,12 +142,14 @@ const TABLES = [
     `CREATE TABLE IF NOT EXISTS tournaments (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
+        description TEXT,
         type TEXT NOT NULL,
-        prize_pool NUMERIC(15,2) DEFAULT 0,
         entry_fee NUMERIC(15,2) DEFAULT 0,
-        status TEXT DEFAULT 'upcoming',
-        starts_at TIMESTAMPTZ NOT NULL,
-        ends_at TIMESTAMPTZ NOT NULL,
+        prize_pool NUMERIC(15,2) DEFAULT 0,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        status TEXT DEFAULT 'active',
+        max_participants INTEGER,
         created_at TIMESTAMPTZ DEFAULT NOW()
     )`,
 
@@ -155,10 +157,21 @@ const TABLES = [
         id SERIAL PRIMARY KEY,
         tournament_id INTEGER NOT NULL REFERENCES tournaments(id),
         user_id INTEGER NOT NULL REFERENCES users(id),
-        best_mult NUMERIC(15,4) DEFAULT 0,
-        spins INTEGER DEFAULT 0,
-        joined_at TIMESTAMPTZ DEFAULT NOW(),
+        score NUMERIC(15,4) DEFAULT 0,
+        spins_played INTEGER DEFAULT 0,
+        biggest_win NUMERIC(15,4) DEFAULT 0,
+        entry_time TIMESTAMPTZ DEFAULT NOW(),
+        last_spin_time TIMESTAMPTZ,
         UNIQUE(tournament_id, user_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS tournament_prizes (
+        id SERIAL PRIMARY KEY,
+        tournament_id INTEGER NOT NULL REFERENCES tournaments(id),
+        rank INTEGER NOT NULL,
+        prize_gems INTEGER DEFAULT 0,
+        prize_description TEXT,
+        UNIQUE(tournament_id, rank)
     )`,
 
     `CREATE TABLE IF NOT EXISTS user_achievements (

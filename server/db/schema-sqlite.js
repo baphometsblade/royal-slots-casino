@@ -149,12 +149,14 @@ const TABLES = [
     `CREATE TABLE IF NOT EXISTS tournaments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        description TEXT,
         type TEXT NOT NULL,
-        prize_pool REAL DEFAULT 0,
         entry_fee REAL DEFAULT 0,
-        status TEXT DEFAULT 'upcoming',
-        starts_at TEXT NOT NULL,
-        ends_at TEXT NOT NULL,
+        prize_pool REAL DEFAULT 0,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        status TEXT DEFAULT 'active',
+        max_participants INTEGER,
         created_at TEXT DEFAULT (datetime('now'))
     )`,
 
@@ -162,12 +164,24 @@ const TABLES = [
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tournament_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
-        best_mult REAL DEFAULT 0,
-        spins INTEGER DEFAULT 0,
-        joined_at TEXT DEFAULT (datetime('now')),
+        score REAL DEFAULT 0,
+        spins_played INTEGER DEFAULT 0,
+        biggest_win REAL DEFAULT 0,
+        entry_time TEXT DEFAULT (datetime('now')),
+        last_spin_time TEXT,
         UNIQUE(tournament_id, user_id),
         FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS tournament_prizes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tournament_id INTEGER NOT NULL,
+        rank INTEGER NOT NULL,
+        prize_gems INTEGER DEFAULT 0,
+        prize_description TEXT,
+        UNIQUE(tournament_id, rank),
+        FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
     )`,
 
     `CREATE TABLE IF NOT EXISTS user_achievements (

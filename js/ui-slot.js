@@ -4112,6 +4112,10 @@
             }
             // Dispatch spin:complete event for loyalty points and other hooks
             window.dispatchEvent(new CustomEvent('spin:complete', { detail: { won: winAmount > 0, winAmount: winAmount, betAmount: currentBet } }));
+            // Record spin for tournaments
+            if (typeof Tournament !== 'undefined' && Tournament.recordSpin) {
+                Tournament.recordSpin({ winAmount: winAmount, betAmount: currentBet });
+            }
             // Low balance nudge — quick-deposit overlay (throttled to once per 5 min)
             (function() {
                 var threshold = Math.max(20, currentBet * 2);

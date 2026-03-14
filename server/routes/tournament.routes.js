@@ -1,350 +1,536 @@
 'use strict';
 
 /**
- * Weekly Slot Tournament routes
+ * Tournament/Leaderboard System
  *
- * POST /api/tournament/record      -- record a spin result (auth required)
- * GET  /api/tournament/leaderboard -- top-20 for current week (public)
- * GET  /api/tournament/mystats     -- caller stats + rank (auth required)
+ * Supports multiple concurrent tournaments with flexible scoring and entry fees.
+ * Daily tournaments reset at midnight UTC, weekly on Monday midnight UTC.
  */
 
-const express  = require('express');
-const router   = express.Router();
-const jwt      = require('jsonwebtoken');
-const db       = require('../database');
-const { JWT_SECRET } = require('../config');
+const express = require('express');
+const { authenticate } = require('../middleware/auth');
+const db = require('../database');
 
-// ---------------------------------------------------------------------------
-// Auth middleware
-// ---------------------------------------------------------------------------
+const router = express.Router();
 
-function verifyToken(req, res, next) {
-  const auth  = req.headers.authorization || '';
-  const token = auth.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'No token' });
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch (e) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
+// ─────────────────────────────────────────────────────────────────────────────
+// Initialize schema and seed data (lazy pattern)
+// ─────────────────────────────────────────────────────────────────────────────
+
+var _schemaReady = false;
+
+async function _ensureTournamentTables() {
+    if (_schemaReady) return;
+
+    var isPg = !!process.env.DATABASE_URL;
+    var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    var dateDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
+    // Tables should already exist from schema bootstrap, but ensure they do
+    try {
+        await db.run(
+            'CREATE TABLE IF NOT EXISTS tournaments (' +
+            '  id               ' + idDef + ',' +
+            '  name             TEXT NOT NULL,' +
+            '  description      TEXT,' +
+            '  type             TEXT NOT NULL,' +
+            '  entry_fee        REAL DEFAULT 0,' +
+            '  prize_pool       REAL DEFAULT 0,' +
+            '  start_date       TEXT NOT NULL,' +
+            '  end_date         TEXT NOT NULL,' +
+            '  status           TEXT DEFAULT "active",' +
+            '  max_participants INTEGER,' +
+            '  created_at       ' + dateDef +
+            ')'
+        );
+
+        await db.run(
+            'CREATE TABLE IF NOT EXISTS tournament_entries (' +
+            '  id               ' + idDef + ',' +
+            '  tournament_id    INTEGER NOT NULL,' +
+            '  user_id          INTEGER NOT NULL,' +
+            '  score            REAL DEFAULT 0,' +
+            '  spins_played     INTEGER DEFAULT 0,' +
+            '  biggest_win      REAL DEFAULT 0,' +
+            '  entry_time       TEXT,' +
+            '  last_spin_time   TEXT,' +
+            '  UNIQUE(tournament_id, user_id),' +
+            '  FOREIGN KEY (tournament_id) REFERENCES tournaments(id),' +
+            '  FOREIGN KEY (user_id) REFERENCES users(id)' +
+            ')'
+        );
+
+        await db.run(
+            'CREATE TABLE IF NOT EXISTS tournament_prizes (' +
+            '  id               ' + idDef + ',' +
+            '  tournament_id    INTEGER NOT NULL,' +
+            '  rank             INTEGER NOT NULL,' +
+            '  prize_gems       INTEGER DEFAULT 0,' +
+            '  prize_description TEXT,' +
+            '  UNIQUE(tournament_id, rank),' +
+            '  FOREIGN KEY (tournament_id) REFERENCES tournaments(id)' +
+            ')'
+        );
+    } catch (err) {
+        // Tables may already exist
+    }
+
+    _schemaReady = true;
 }
 
-// ---------------------------------------------------------------------------
-// Schema
-// ---------------------------------------------------------------------------
+async function _seedTournaments() {
+    // Seed only once per process
+    var existing = await db.get('SELECT COUNT(*) AS cnt FROM tournaments');
+    if (existing && existing.cnt > 0) return;
 
-let schemaReady = false;
+    var today = new Date().toISOString().split('T')[0];
+    var tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    var nextMonday = getNextMondayDate();
+    var nextSunday = new Date(new Date(nextMonday).getTime() + 6 * 86400000).toISOString().split('T')[0];
 
-async function ensureSchema() {
-  if (schemaReady) return;
-  const isPg = !!process.env.DATABASE_URL;
-  const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-  await db.run(
-    'CREATE TABLE IF NOT EXISTS tournament_scores (' +
-    '  id               ' + idDef + ',' +
-    '  user_id          INTEGER NOT NULL,' +
-    '  week_start       TEXT    NOT NULL,' +
-    '  best_multiplier  REAL    DEFAULT 0,' +
-    '  total_wins       REAL    DEFAULT 0,' +
-    '  spin_count       INTEGER DEFAULT 0,' +
-    '  score            REAL    DEFAULT 0,' +
-    "  updated_at       TEXT    DEFAULT (datetime('now'))," +
-    '  UNIQUE(user_id, week_start)' +
-    ')'
-  );
-  schemaReady = true;
+    try {
+        // 1. Daily Spin Blitz — free entry, daily, score by total winnings
+        var daily = await db.run(
+            'INSERT INTO tournaments (name, description, type, entry_fee, prize_pool, start_date, end_date, status, max_participants) ' +
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                'Daily Spin Blitz',
+                'Free daily tournament — top 10 by total winnings win gems',
+                'daily',
+                0,  // free entry
+                4600,  // 1000+500+250+100*7
+                today,
+                tomorrow,
+                'active',
+                null
+            ]
+        );
+        var dailyId = daily.lastID || (await db.get('SELECT id FROM tournaments WHERE name = ? LIMIT 1', ['Daily Spin Blitz'])).id;
+
+        // Daily prizes
+        var dailyPrizes = [
+            { rank: 1, gems: 1000, desc: '1st Place - Daily Champ' },
+            { rank: 2, gems: 500, desc: '2nd Place' },
+            { rank: 3, gems: 250, desc: '3rd Place' },
+            { rank: 4, gems: 100, desc: '4-10th Place' },
+            { rank: 5, gems: 100, desc: '4-10th Place' },
+            { rank: 6, gems: 100, desc: '4-10th Place' },
+            { rank: 7, gems: 100, desc: '4-10th Place' },
+            { rank: 8, gems: 100, desc: '4-10th Place' },
+            { rank: 9, gems: 100, desc: '4-10th Place' },
+            { rank: 10, gems: 100, desc: '4-10th Place' }
+        ];
+
+        for (var i = 0; i < dailyPrizes.length; i++) {
+            await db.run(
+                'INSERT OR IGNORE INTO tournament_prizes (tournament_id, rank, prize_gems, prize_description) VALUES (?, ?, ?, ?)',
+                [dailyId, dailyPrizes[i].rank, dailyPrizes[i].gems, dailyPrizes[i].desc]
+            );
+        }
+
+        // 2. High Roller Weekly — 500 gem entry, weekly, score by biggest single win
+        var weekly = await db.run(
+            'INSERT INTO tournaments (name, description, type, entry_fee, prize_pool, start_date, end_date, status, max_participants) ' +
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                'High Roller Weekly',
+                'Elite tournament — 500 gem entry, top 5 by biggest single win get gems',
+                'weekly',
+                500,  // gem entry fee
+                9250,  // 5000+2500+1000+500+250
+                today,
+                nextSunday,
+                'active',
+                null
+            ]
+        );
+        var weeklyId = weekly.lastID || (await db.get('SELECT id FROM tournaments WHERE name = ? LIMIT 1', ['High Roller Weekly'])).id;
+
+        var weeklyPrizes = [
+            { rank: 1, gems: 5000, desc: '1st Place - High Roller Champion' },
+            { rank: 2, gems: 2500, desc: '2nd Place' },
+            { rank: 3, gems: 1000, desc: '3rd Place' },
+            { rank: 4, gems: 500, desc: '4th Place' },
+            { rank: 5, gems: 250, desc: '5th Place' }
+        ];
+
+        for (var j = 0; j < weeklyPrizes.length; j++) {
+            await db.run(
+                'INSERT OR IGNORE INTO tournament_prizes (tournament_id, rank, prize_gems, prize_description) VALUES (?, ?, ?, ?)',
+                [weeklyId, weeklyPrizes[j].rank, weeklyPrizes[j].gems, weeklyPrizes[j].desc]
+            );
+        }
+
+        // 3. Matrix Marathon — 100 gem entry, weekly, score by total spins
+        var matrix = await db.run(
+            'INSERT INTO tournaments (name, description, type, entry_fee, prize_pool, start_date, end_date, status, max_participants) ' +
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                'Matrix Marathon',
+                'Spin grind tournament — 100 gem entry, top 10 by spins played get gems',
+                'weekly',
+                100,  // gem entry fee
+                4200,  // 2000+1000+500+200*7
+                today,
+                nextSunday,
+                'active',
+                null
+            ]
+        );
+        var matrixId = matrix.lastID || (await db.get('SELECT id FROM tournaments WHERE name = ? LIMIT 1', ['Matrix Marathon'])).id;
+
+        var matrixPrizes = [
+            { rank: 1, gems: 2000, desc: '1st Place - Marathon Master' },
+            { rank: 2, gems: 1000, desc: '2nd Place' },
+            { rank: 3, gems: 500, desc: '3rd Place' },
+            { rank: 4, gems: 200, desc: '4-10th Place' },
+            { rank: 5, gems: 200, desc: '4-10th Place' },
+            { rank: 6, gems: 200, desc: '4-10th Place' },
+            { rank: 7, gems: 200, desc: '4-10th Place' },
+            { rank: 8, gems: 200, desc: '4-10th Place' },
+            { rank: 9, gems: 200, desc: '4-10th Place' },
+            { rank: 10, gems: 200, desc: '4-10th Place' }
+        ];
+
+        for (var k = 0; k < matrixPrizes.length; k++) {
+            await db.run(
+                'INSERT OR IGNORE INTO tournament_prizes (tournament_id, rank, prize_gems, prize_description) VALUES (?, ?, ?, ?)',
+                [matrixId, matrixPrizes[k].rank, matrixPrizes[k].gems, matrixPrizes[k].desc]
+            );
+        }
+    } catch (err) {
+        console.warn('[Tournament] Seed error:', err.message);
+    }
 }
 
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // Helpers
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Returns the ISO date string (YYYY-MM-DD) of the most recent Monday.
- * Monday is weekday index 1; if today IS Monday, returns today.
- * Example: Wednesday 2026-03-04 -> 2026-03-03
- */
-function getWeekStart() {
-  const now      = new Date();
-  const day      = now.getUTCDay(); // 0 = Sunday, 1 = Monday ... 6 = Saturday
-  const daysBack = day === 0 ? 6 : day - 1; // back to nearest Monday
-  const monday   = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() - daysBack
-  ));
-  return monday.toISOString().slice(0, 10); // YYYY-MM-DD
+function getTodayDate() {
+    return new Date().toISOString().split('T')[0];
 }
 
-/**
- * ISO string for the NEXT Monday at midnight UTC (next tournament reset).
- */
-function getNextReset() {
-  const weekStart = getWeekStart();
-  const monday    = new Date(weekStart + 'T00:00:00.000Z');
-  const next      = new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000);
-  return next.toISOString();
+function getNextMondayDate() {
+    var now = new Date();
+    var day = now.getUTCDay();
+    var daysBack = day === 0 ? 6 : day - 1;
+    var monday = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - daysBack + 7  // next Monday
+    ));
+    return monday.toISOString().split('T')[0];
 }
 
-/**
- * Score formula: big wins weighted heavily, total volume breaks ties.
- *   score = (best_multiplier * 10) + (total_wins * 0.001)
- */
-function calcScore(bestMultiplier, totalWins) {
-  return (bestMultiplier * 10) + (totalWins * 0.001);
+function getTimeRemaining(endDate) {
+    var end = new Date(endDate);
+    var now = new Date();
+    var ms = end.getTime() - now.getTime();
+    if (ms < 0) return '0s';
+
+    var hours = Math.floor(ms / 3600000);
+    var mins = Math.floor((ms % 3600000) / 60000);
+    if (hours > 0) return hours + 'h ' + mins + 'm';
+    return mins + 'm';
 }
 
-/**
- * Full prize table (1-based position -> prize amount USD).
- */
-const PRIZES = [
-  { position: 1,  amount: 15.00 },
-  { position: 2,  amount:  8.00 },
-  { position: 3,  amount:  4.00 },
-  { position: 4,  amount:  2.00 },
-  { position: 5,  amount:  2.00 },
-  { position: 6,  amount:  1.00 },
-  { position: 7,  amount:  1.00 },
-  { position: 8,  amount:  1.00 },
-  { position: 9,  amount:  1.00 },
-  { position: 10, amount:  1.00 },
-];
+// ─────────────────────────────────────────────────────────────────────────────
+// Routes
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ---------------------------------------------------------------------------
-// POST /api/tournament/record  -- record a winning spin
-// ---------------------------------------------------------------------------
+// GET /api/tournament/active — list active tournaments with entry counts
+router.get('/active', async (req, res) => {
+    try {
+        await _ensureTournamentTables();
 
-router.post('/record', verifyToken, async (req, res) => {
-  try {
-    await ensureSchema();
+        var rows = await db.all(
+            'SELECT t.*, COUNT(te.id) AS entry_count ' +
+            'FROM tournaments t ' +
+            'LEFT JOIN tournament_entries te ON te.tournament_id = t.id ' +
+            'WHERE t.status = ? ' +
+            'GROUP BY t.id',
+            ['active']
+        );
 
-    const { winAmount, betAmount, multiplier } = req.body;
+        var result = rows.map(function(t) {
+            return {
+                id: t.id,
+                name: t.name,
+                description: t.description,
+                type: t.type,
+                entry_fee: t.entry_fee,
+                prize_pool: t.prize_pool,
+                participant_count: t.entry_count || 0,
+                time_remaining: getTimeRemaining(t.end_date),
+                start_date: t.start_date,
+                end_date: t.end_date
+            };
+        });
 
-    if (!winAmount || winAmount <= 0) {
-      return res.status(400).json({ error: 'winAmount must be > 0' });
+        return res.json({ tournaments: result });
+    } catch (err) {
+        console.warn('[Tournament] GET /active error:', err.message);
+        return res.status(500).json({ error: 'Failed to load active tournaments' });
     }
-
-    const userId    = req.user.id;
-    const weekStart = getWeekStart();
-    const newMult   = (typeof multiplier === 'number' && isFinite(multiplier)) ? multiplier : 0;
-    const initScore = calcScore(newMult, winAmount);
-
-    // Upsert: insert fresh row OR update existing row on unique-constraint hit.
-    // ON CONFLICT recomputes best_multiplier and score atomically in SQL.
-    await db.run(
-      'INSERT INTO tournament_scores' +
-      '  (user_id, week_start, best_multiplier, total_wins, spin_count, score, updated_at)' +
-      " VALUES (?, ?, ?, ?, 1, ?, datetime('now'))" +
-      ' ON CONFLICT(user_id, week_start) DO UPDATE SET' +
-      '   spin_count      = tournament_scores.spin_count + 1,' +
-      '   total_wins      = tournament_scores.total_wins + excluded.total_wins,' +
-      '   best_multiplier = CASE' +
-      '                       WHEN excluded.best_multiplier > tournament_scores.best_multiplier' +
-      '                       THEN excluded.best_multiplier' +
-      '                       ELSE tournament_scores.best_multiplier' +
-      '                     END,' +
-      '   score           = (' +
-      '                       CASE' +
-      '                         WHEN excluded.best_multiplier > tournament_scores.best_multiplier' +
-      '                         THEN excluded.best_multiplier' +
-      '                         ELSE tournament_scores.best_multiplier' +
-      '                       END * 10' +
-      '                     ) + (' +
-      '                       (tournament_scores.total_wins + excluded.total_wins) * 0.001' +
-      '                     ),' +
-      "   updated_at      = datetime('now')",
-      [userId, weekStart, newMult, winAmount, initScore]
-    );
-
-    // Read back the freshly upserted row
-    const row = await db.get(
-      'SELECT score, best_multiplier FROM tournament_scores WHERE user_id = ? AND week_start = ?',
-      [userId, weekStart]
-    );
-
-    // Rank = rows with a strictly higher score + 1
-    const rankRow = await db.get(
-      'SELECT COUNT(*) AS cnt FROM tournament_scores WHERE week_start = ? AND score > ?',
-      [weekStart, row.score]
-    );
-
-    const rank = (rankRow ? parseInt(rankRow.cnt, 10) : 0) + 1;
-
-    // Grant tournament_win achievement when player reaches #1 (idempotent — fires once)
-    if (rank === 1) {
-        require('../services/achievement.service').grant(userId, 'tournament_win').catch(function() {});
-    }
-
-    return res.json({ recorded: true, score: row.score, rank });
-  } catch (err) {
-    console.warn('[Tournament] POST /record error:', err.message);
-    return res.status(500).json({ error: 'Failed to record tournament score' });
-  }
 });
 
-// ---------------------------------------------------------------------------
-// GET /api/tournament/leaderboard  -- top-20 for the current week (public)
-// ---------------------------------------------------------------------------
+// GET /api/tournament/:id — tournament details + leaderboard (top 20)
+router.get('/:id', async (req, res) => {
+    try {
+        await _ensureTournamentTables();
 
-router.get('/leaderboard', async (req, res) => {
-  try {
-    await ensureSchema();
+        var id = parseInt(req.params.id, 10);
+        if (!id || isNaN(id)) return res.status(400).json({ error: 'Invalid tournament id' });
 
-    const weekStart = getWeekStart();
+        var tournament = await db.get('SELECT * FROM tournaments WHERE id = ?', [id]);
+        if (!tournament) return res.status(404).json({ error: 'Tournament not found' });
 
-    const rows = await db.all(
-      'SELECT' +
-      '  ts.score,' +
-      '  ts.best_multiplier,' +
-      '  ts.total_wins,' +
-      '  ts.spin_count,' +
-      '  COALESCE(u.display_name, u.username) AS username' +
-      ' FROM tournament_scores ts' +
-      ' JOIN users u ON u.id = ts.user_id' +
-      ' WHERE ts.week_start = ?' +
-      ' ORDER BY ts.score DESC' +
-      ' LIMIT 20',
-      [weekStart]
-    );
+        // Get leaderboard (top 20)
+        var leaderboard = await db.all(
+            'SELECT te.id, te.user_id, te.score, te.spins_played, te.biggest_win, te.entry_time, ' +
+            '       COALESCE(u.display_name, u.username) AS username ' +
+            'FROM tournament_entries te ' +
+            'JOIN users u ON u.id = te.user_id ' +
+            'WHERE te.tournament_id = ? ' +
+            'ORDER BY te.score DESC LIMIT 20',
+            [id]
+        );
 
-    const leaderboard = rows.map((row, idx) => ({
-      rank:           idx + 1,
-      username:       row.username,
-      score:          row.score,
-      bestMultiplier: row.best_multiplier,
-      totalWins:      row.total_wins,
-      spinCount:      row.spin_count,
-    }));
+        var leaderboardWithRank = leaderboard.map(function(row, idx) {
+            return {
+                rank: idx + 1,
+                user_id: row.user_id,
+                username: row.username,
+                score: row.score,
+                spins_played: row.spins_played,
+                biggest_win: row.biggest_win
+            };
+        });
 
-    return res.json({ weekStart, leaderboard });
-  } catch (err) {
-    console.warn('[Tournament] GET /leaderboard error:', err.message);
-    return res.status(500).json({ error: 'Failed to load leaderboard' });
-  }
+        // Get prizes
+        var prizes = await db.all(
+            'SELECT * FROM tournament_prizes WHERE tournament_id = ? ORDER BY rank ASC',
+            [id]
+        );
+
+        return res.json({
+            tournament: {
+                id: tournament.id,
+                name: tournament.name,
+                description: tournament.description,
+                type: tournament.type,
+                entry_fee: tournament.entry_fee,
+                prize_pool: tournament.prize_pool,
+                start_date: tournament.start_date,
+                end_date: tournament.end_date,
+                time_remaining: getTimeRemaining(tournament.end_date)
+            },
+            leaderboard: leaderboardWithRank,
+            prizes: prizes
+        });
+    } catch (err) {
+        console.warn('[Tournament] GET /:id error:', err.message);
+        return res.status(500).json({ error: 'Failed to load tournament' });
+    }
 });
 
-// ---------------------------------------------------------------------------
-// GET /api/tournament/mystats  -- caller stats + rank (auth required)
-// ---------------------------------------------------------------------------
+// GET /api/tournament/:id/my-rank — user's current rank and score
+router.get('/:id/my-rank', authenticate, async (req, res) => {
+    try {
+        await _ensureTournamentTables();
 
-router.get('/mystats', verifyToken, async (req, res) => {
-  try {
-    await ensureSchema();
+        var id = parseInt(req.params.id, 10);
+        var userId = req.user.id;
 
-    const userId    = req.user.id;
-    const weekStart = getWeekStart();
-    const nextReset = getNextReset();
+        var entry = await db.get(
+            'SELECT * FROM tournament_entries WHERE tournament_id = ? AND user_id = ?',
+            [id, userId]
+        );
 
-    const row = await db.get(
-      'SELECT score, best_multiplier, total_wins, spin_count' +
-      ' FROM tournament_scores' +
-      ' WHERE user_id = ? AND week_start = ?',
-      [userId, weekStart]
-    );
+        if (!entry) {
+            return res.json({ rank: null, score: 0, entered: false });
+        }
 
-    let myStats = null;
-    if (row) {
-      const rankRow = await db.get(
-        'SELECT COUNT(*) AS cnt FROM tournament_scores WHERE week_start = ? AND score > ?',
-        [weekStart, row.score]
-      );
-      const rank = (rankRow ? parseInt(rankRow.cnt, 10) : 0) + 1;
-      myStats = {
-        score:          row.score,
-        rank,
-        bestMultiplier: row.best_multiplier,
-        totalWins:      row.total_wins,
-        spinCount:      row.spin_count,
-      };
+        var rankRow = await db.get(
+            'SELECT COUNT(*) AS cnt FROM tournament_entries WHERE tournament_id = ? AND score > ?',
+            [id, entry.score]
+        );
+
+        var rank = (rankRow ? parseInt(rankRow.cnt, 10) : 0) + 1;
+
+        return res.json({
+            entered: true,
+            rank: rank,
+            score: entry.score,
+            spins_played: entry.spins_played,
+            biggest_win: entry.biggest_win
+        });
+    } catch (err) {
+        console.warn('[Tournament] GET /:id/my-rank error:', err.message);
+        return res.status(500).json({ error: 'Failed to load rank' });
     }
+});
 
-    return res.json({
-      weekStart,
-      myStats,
-      prizes:    PRIZES,
-      nextReset,
+// POST /api/tournament/:id/enter — enter tournament (deduct entry fee if applicable)
+router.post('/:id/enter', authenticate, async (req, res) => {
+    try {
+        await _ensureTournamentTables();
+
+        var id = parseInt(req.params.id, 10);
+        var userId = req.user.id;
+
+        var tournament = await db.get('SELECT * FROM tournaments WHERE id = ?', [id]);
+        if (!tournament) return res.status(404).json({ error: 'Tournament not found' });
+
+        // Check if already entered
+        var existing = await db.get(
+            'SELECT id FROM tournament_entries WHERE tournament_id = ? AND user_id = ?',
+            [id, userId]
+        );
+        if (existing) return res.status(400).json({ error: 'Already entered' });
+
+        // Check gem balance if entry fee
+        if (tournament.entry_fee > 0) {
+            var user = await db.get('SELECT balance FROM users WHERE id = ?', [userId]);
+            if (user.balance < tournament.entry_fee) {
+                return res.status(400).json({ error: 'Insufficient gems for entry fee' });
+            }
+
+            // Deduct gems
+            await db.run(
+                'UPDATE users SET balance = balance - ? WHERE id = ?',
+                [tournament.entry_fee, userId]
+            );
+        }
+
+        // Create entry
+        var now = new Date().toISOString();
+        var result = await db.run(
+            'INSERT INTO tournament_entries (tournament_id, user_id, score, spins_played, biggest_win, entry_time, last_spin_time) ' +
+            'VALUES (?, ?, 0, 0, 0, ?, ?)',
+            [id, userId, now, now]
+        );
+
+        return res.json({
+            success: true,
+            message: 'Entered tournament successfully',
+            entry_id: result.lastID
+        });
+    } catch (err) {
+        console.warn('[Tournament] POST /:id/enter error:', err.message);
+        return res.status(500).json({ error: 'Failed to enter tournament' });
+    }
+});
+
+// POST /api/tournament/:id/record-spin — record a spin result
+router.post('/:id/record-spin', authenticate, async (req, res) => {
+    try {
+        await _ensureTournamentTables();
+
+        var id = parseInt(req.params.id, 10);
+        var userId = req.user.id;
+        var { winAmount, spins, betAmount } = req.body;
+
+        var entry = await db.get(
+            'SELECT * FROM tournament_entries WHERE tournament_id = ? AND user_id = ?',
+            [id, userId]
+        );
+        if (!entry) return res.status(404).json({ error: 'Not entered in tournament' });
+
+        // Update entry based on tournament type
+        var tournament = await db.get('SELECT type FROM tournaments WHERE id = ?', [id]);
+        var newScore = entry.score;
+        var newBiggestWin = entry.biggest_win;
+
+        if (tournament.type === 'daily') {
+            // Daily: score by total winnings
+            newScore = entry.score + (winAmount || 0);
+        } else if (tournament.type === 'weekly') {
+            // Detect scoring type from name or use biggest win as default
+            if (tournament.name && tournament.name.includes('Roller')) {
+                // High Roller: score by biggest single win
+                newBiggestWin = Math.max(entry.biggest_win, winAmount || 0);
+                newScore = newBiggestWin;
+            } else if (tournament.name && tournament.name.includes('Marathon')) {
+                // Marathon: score by total spins
+                newScore = entry.spins_played + (spins || 1);
+            } else {
+                // Default: total winnings
+                newScore = entry.score + (winAmount || 0);
+            }
+        }
+
+        if (winAmount && winAmount > newBiggestWin) {
+            newBiggestWin = winAmount;
+        }
+
+        var now = new Date().toISOString();
+        await db.run(
+            'UPDATE tournament_entries SET score = ?, spins_played = spins_played + ?, ' +
+            'biggest_win = ?, last_spin_time = ? WHERE tournament_id = ? AND user_id = ?',
+            [newScore, (spins || 1), newBiggestWin, now, id, userId]
+        );
+
+        // Get updated rank
+        var rankRow = await db.get(
+            'SELECT COUNT(*) AS cnt FROM tournament_entries WHERE tournament_id = ? AND score > ?',
+            [id, newScore]
+        );
+        var rank = (rankRow ? parseInt(rankRow.cnt, 10) : 0) + 1;
+
+        return res.json({
+            recorded: true,
+            score: newScore,
+            rank: rank
+        });
+    } catch (err) {
+        console.warn('[Tournament] POST /:id/record-spin error:', err.message);
+        return res.status(500).json({ error: 'Failed to record spin' });
+    }
+});
+
+// GET /api/tournament/history — past tournament results (inactive tournaments)
+router.get('/history', async (req, res) => {
+    try {
+        await _ensureTournamentTables();
+
+        var tournaments = await db.all(
+            'SELECT t.*, COUNT(te.id) AS participants ' +
+            'FROM tournaments t ' +
+            'LEFT JOIN tournament_entries te ON te.tournament_id = t.id ' +
+            'WHERE t.status = ? OR t.end_date < ? ' +
+            'GROUP BY t.id ' +
+            'ORDER BY t.end_date DESC ' +
+            'LIMIT 50',
+            ['inactive', getTodayDate()]
+        );
+
+        var result = tournaments.map(function(t) {
+            return {
+                id: t.id,
+                name: t.name,
+                type: t.type,
+                prize_pool: t.prize_pool,
+                participants: t.participants || 0,
+                end_date: t.end_date
+            };
+        });
+
+        return res.json({ history: result });
+    } catch (err) {
+        console.warn('[Tournament] GET /history error:', err.message);
+        return res.status(500).json({ error: 'Failed to load history' });
+    }
+});
+
+// Bootstrap on load
+_ensureTournamentTables().then(function() {
+    _seedTournaments().catch(function(err) {
+        console.warn('[Tournament] Seed failed:', err.message);
     });
-  } catch (err) {
-    console.warn('[Tournament] GET /mystats error:', err.message);
-    return res.status(500).json({ error: 'Failed to load tournament stats' });
-  }
+}).catch(function(err) {
+    console.warn('[Tournament] Bootstrap failed:', err.message);
 });
-
-// ---------------------------------------------------------------------------
-// Compatibility layer — existing ui-tournament.js expects list/join/id-leaderboard
-// ---------------------------------------------------------------------------
-
-// GET /  — list tournaments (weekly leaderboard presented as active tournament)
-router.get('/', async (req, res) => {
-  try {
-    await ensureSchema();
-    const weekStart = getWeekStart();
-    const countRow  = await db.get(
-      'SELECT COUNT(*) AS cnt FROM tournament_scores WHERE week_start = ?',
-      [weekStart]
-    );
-    const PRIZE_TOTAL = PRIZES.reduce(function (sum, p) { return sum + p.amount; }, 0);
-
-    const active = [{
-      id:          weekStart,
-      name:        'Weekly Spin Champion',
-      type:        'weekly',
-      status:      'active',
-      prize_pool:  PRIZE_TOTAL,
-      entry_fee:   0,
-      entry_count: countRow ? parseInt(countRow.cnt, 10) : 0,
-      ends_at:     getNextReset(),
-      starts_at:   weekStart + 'T00:00:00.000Z',
-    }];
-
-    return res.json({ active, upcoming: [] });
-  } catch (err) {
-    console.warn('[Tournament] GET / error:', err.message);
-    return res.status(500).json({ error: 'Failed to fetch tournaments' });
-  }
-});
-
-// GET /:id/leaderboard  — per-tournament leaderboard (uses current week)
-router.get('/:id/leaderboard', async (req, res) => {
-  try {
-    await ensureSchema();
-    const weekStart = getWeekStart();
-
-    const rows = await db.all(
-      'SELECT ts.score, ts.best_multiplier, ts.total_wins, ts.spin_count,' +
-      '       COALESCE(u.display_name, u.username) AS username, u.id AS user_id' +
-      ' FROM tournament_scores ts' +
-      ' JOIN users u ON u.id = ts.user_id' +
-      ' WHERE ts.week_start = ?' +
-      ' ORDER BY ts.score DESC LIMIT 20',
-      [weekStart]
-    );
-
-    const leaderboard = rows.map(function (row, idx) {
-      return {
-        rank:           idx + 1,
-        username:       row.username,
-        user_id:        row.user_id,
-        score:          row.score,
-        bestMultiplier: row.best_multiplier,
-        totalWins:      row.total_wins,
-        spinCount:      row.spin_count,
-      };
-    });
-
-    return res.json({ weekStart, leaderboard });
-  } catch (err) {
-    console.warn('[Tournament] GET /:id/leaderboard error:', err.message);
-    return res.status(500).json({ error: 'Failed to load leaderboard' });
-  }
-});
-
-// POST /:id/join  — weekly tournament auto-enrolment
-router.post('/:id/join', verifyToken, async (req, res) => {
-  return res.json({ joined: true, message: 'You\'re enrolled in the weekly tournament — spin to climb the leaderboard!' });
-});
-
-// ---------------------------------------------------------------------------
 
 module.exports = router;

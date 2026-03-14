@@ -248,6 +248,10 @@
             if (typeof SearchAutocomplete !== 'undefined' && SearchAutocomplete.init) {
                 SearchAutocomplete.init();
             }
+            // Initialize tournament/leaderboard system
+            if (typeof Tournament !== 'undefined' && Tournament.init) {
+                setTimeout(function() { Tournament.init(); }, 4000);
+            }
             // Initialize push notifications (ask permission after engagement)
             if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {
                 setTimeout(function() { PushNotifications.init(); }, 10000);
@@ -287,6 +291,10 @@
             // VIP milestone progress widget
             if (typeof MilestoneProgress !== 'undefined' && MilestoneProgress.init) {
                 setTimeout(function() { MilestoneProgress.init(); }, 2000);
+            }
+            // Initialize referral system (viral player acquisition)
+            if (typeof Referral !== 'undefined' && Referral.init) {
+                setTimeout(function() { Referral.init(); }, 3000);
             }
             // Active campaign deposit banners
             if (typeof CampaignBanner !== 'undefined' && CampaignBanner.init) {
