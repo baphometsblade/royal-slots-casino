@@ -381,6 +381,14 @@
             if (typeof DepositBonus !== 'undefined' && DepositBonus.init) {
                 setTimeout(function() { DepositBonus.init(); }, 4000);
             }
+            // Automatic daily cashback rewards
+            // Loyalty points store
+            if (typeof LoyaltyStore !== 'undefined' && LoyaltyStore.init) {
+                setTimeout(function() { LoyaltyStore.init(); }, 6000);
+            }
+            if (typeof CashbackWidget !== 'undefined' && CashbackWidget.init) {
+                setTimeout(function() { CashbackWidget.init(); }, 5000);
+            }
             // Achievement unlock popups
             if (typeof AchievementPopup !== 'undefined' && AchievementPopup.init) {
                 setTimeout(function() { AchievementPopup.init(); }, 2000);

@@ -3178,6 +3178,19 @@
                 if (typeof DepositBonus !== 'undefined' && DepositBonus.recordWager) {
                     DepositBonus.recordWager(currentBet);
                 }
+            // Loyalty Points: earn points based on bet amount
+            try {
+                if (typeof LoyaltyStore !== 'undefined' && LoyaltyStore.earnPoints) {
+                    LoyaltyStore.earnPoints(currentBet);
+                }
+            } catch(e) { /* silent */ }
+            } catch(e) { /* silent */ }
+
+            // Cashback: track wager and win for daily cashback calculation
+            try {
+                if (typeof CashbackWidget !== 'undefined' && CashbackWidget.recordSpin) {
+                    CashbackWidget.recordSpin(currentBet, _lastHistEntry ? (_lastHistEntry.win || 0) : 0);
+                }
             } catch(e) { /* silent */ }
 
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)

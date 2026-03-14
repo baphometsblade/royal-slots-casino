@@ -281,6 +281,8 @@ async function dismissFeaturePopupIfVisible(page) {
       "winConfettiBurst",
       "slotRecommendCard",
       "cashbackTimerOffer",
+      "cashback-widget",
+      "cashback-panel",
       "speedBoostToken",
       "balanceMilestonePopup",
       "dailyJackpotPool",
@@ -338,6 +340,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "social-proof-ticker",
       "social-proof-toast-container",
       "social-proof-bigwin",
+      "loyalty-badge",
+      "loyalty-store-modal",
+      "loyalty-store-overlay",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

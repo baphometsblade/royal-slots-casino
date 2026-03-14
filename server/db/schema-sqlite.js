@@ -697,6 +697,55 @@ const TABLES = [
         created_at TEXT,
         expires_at TEXT,
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS cashback_rewards (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        period_date TEXT NOT NULL,
+        total_wagered INTEGER DEFAULT 0,
+        total_won INTEGER DEFAULT 0,
+        net_loss INTEGER DEFAULT 0,
+        cashback_rate REAL DEFAULT 0,
+        cashback_amount INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'pending',
+        claimed_at TEXT,
+        created_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, period_date)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS loyalty_points (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER UNIQUE NOT NULL,
+        total_earned INTEGER DEFAULT 0,
+        current_balance INTEGER DEFAULT 0,
+        lifetime_redeemed INTEGER DEFAULT 0,
+        updated_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS loyalty_transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        description TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS loyalty_store_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        cost INTEGER NOT NULL,
+        reward_type TEXT NOT NULL,
+        reward_value INTEGER NOT NULL,
+        category TEXT,
+        stock INTEGER DEFAULT -1,
+        active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now'))
     )`
 ];
 
