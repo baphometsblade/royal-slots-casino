@@ -120,9 +120,42 @@ const tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'
   }
 })();
 
+// Lazy seed — ensures event data exists when first request arrives
+async function _ensureSeedData() {
+  try {
+    var existing = await db.get('SELECT id FROM seasonal_events WHERE theme = ?', ['st-patricks']);
+    if (existing) return;
+    var challenges = JSON.stringify([
+      { id: 1, name: 'Spin 50 times', reward: 100 },
+      { id: 2, name: 'Win $100 total', reward: 200 },
+      { id: 3, name: 'Hit 3 wins in a row', reward: 150 },
+      { id: 4, name: 'Play 5 different games', reward: 250 },
+      { id: 5, name: 'Spin during Happy Hour', reward: 300 }
+    ]);
+    await db.run(
+      'INSERT INTO seasonal_events (name, theme, start_date, end_date, bonus_multiplier, special_currency, challenges) VALUES (?,?,?,?,?,?,?)',
+      ['Lucky Leprechaun Festival', 'st-patricks', '2026-03-15', '2026-03-20', 1.5, 'shamrocks', challenges]
+    );
+    var evt = await db.get('SELECT id FROM seasonal_events WHERE theme = ?', ['st-patricks']);
+    var eid = evt ? evt.id : 1;
+    var prizes = [
+      [eid, 50, 'free_spins', '10 Free Spins', '{"spins":10}'],
+      [eid, 150, 'bonus_cash', '$5 Bonus', '{"amount":5}'],
+      [eid, 300, 'bonus_cash', '$15 Bonus', '{"amount":15}'],
+      [eid, 500, 'cosmetic', 'Lucky Clover Avatar', '{"avatar":"lucky-clover"}'],
+      [eid, 1000, 'combo', '$50 Bonus + Pot of Gold', '{"amount":50,"effect":"pot-of-gold"}']
+    ];
+    for (var p of prizes) {
+      await db.run('INSERT INTO seasonal_event_prizes (event_id, shamrock_cost, prize_type, prize_name, prize_details) VALUES (?,?,?,?,?)', p);
+    }
+    console.warn('[SeasonalEvent] Lazy seed completed');
+  } catch(e) { console.warn('[SeasonalEvent] Lazy seed:', e.message); }
+}
+
 // GET / - Returns active seasonal event with time remaining
 router.get('/', async (req, res) => {
   try {
+    await _ensureSeedData();
     const event = await db.get(
       `SELECT id, name, theme, start_date, end_date, bonus_multiplier, special_currency, challenges
        FROM seasonal_events WHERE end_date >= CURRENT_DATE LIMIT 1`,
