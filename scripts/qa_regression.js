@@ -299,6 +299,13 @@ async function dismissFeaturePopupIfVisible(page) {
       "battle-pass-fab",
       "battle-pass-modal",
       "battle-pass-overlay",
+      "deposit-nudge-toast",
+      "deposit-nudge-overlay",
+      "deposit-nudge-pulse",
+      "deposit-nudge-badge",
+      "flash-bonus-banner",
+      "flash-bonus-popup",
+      "flash-bonus-badge",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

@@ -3124,6 +3124,31 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Smart Deposit Nudge: track spin result for behavioral triggers
+            try {
+                var _lastHistEntry = spinHistory && spinHistory[0];
+                var _spinWon = _lastHistEntry && _lastHistEntry.win > 0;
+                var _spinReels = (typeof currentGame !== 'undefined' && currentGame && currentGame.lastGrid)
+                    ? currentGame.lastGrid[0] || [] : [];
+                if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.onSpin) {
+                    SmartDepositNudge.onSpin({
+                        won: !!_spinWon,
+                        amount: _lastHistEntry ? (_lastHistEntry.win || 0) : 0,
+                        reels: _spinReels
+                    });
+                }
+                if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.onBalanceChange) {
+                    SmartDepositNudge.onBalanceChange(typeof balance !== 'undefined' ? balance : 0);
+                }
+            } catch(e) { /* silent */ }
+
+            // Flash Bonus: track spin for time-limited bonus triggers
+            try {
+                if (typeof FlashBonus !== 'undefined' && FlashBonus.onSpin) {
+                    FlashBonus.onSpin();
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

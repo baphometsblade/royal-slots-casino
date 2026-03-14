@@ -380,6 +380,14 @@
             if (typeof BattlePass !== 'undefined' && BattlePass.init) {
                 setTimeout(function() { BattlePass.init(); }, 2000);
             }
+            // Smart Deposit Nudge — behavioral deposit triggers
+            if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
+                setTimeout(function() { SmartDepositNudge.init(); }, 5000);
+            }
+            // Flash Bonus — time-limited deposit multipliers
+            if (typeof FlashBonus !== 'undefined' && FlashBonus.init) {
+                setTimeout(function() { FlashBonus.init(); }, 6000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
