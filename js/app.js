@@ -388,6 +388,10 @@
             if (typeof FlashBonus !== 'undefined' && FlashBonus.init) {
                 setTimeout(function() { FlashBonus.init(); }, 6000);
             }
+            // Whale VIP detection + upsell nudge
+            if (typeof WhaleVipNudge !== 'undefined' && WhaleVipNudge.init) {
+                setTimeout(function() { WhaleVipNudge.init(); }, 8000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

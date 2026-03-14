@@ -3149,6 +3149,13 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Whale VIP: update whale score after each spin
+            try {
+                if (typeof WhaleVipNudge !== 'undefined' && WhaleVipNudge.onSpin) {
+                    WhaleVipNudge.onSpin();
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

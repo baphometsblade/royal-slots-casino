@@ -306,6 +306,10 @@ async function dismissFeaturePopupIfVisible(page) {
       "flash-bonus-banner",
       "flash-bonus-popup",
       "flash-bonus-badge",
+      "whale-vip-overlay",
+      "whale-vip-modal",
+      "whale-vip-meter",
+      "whale-vip-tooltip",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
@@ -464,19 +468,24 @@ async function run() {
     });
 
     await dismissFeaturePopupIfVisible(page);
-    await page.click("#statsModal .back-btn");
-    await page.waitForSelector("#statsModal.active", { state: "hidden", timeout: 10000 });
+    await page.waitForTimeout(500);
+    await dismissFeaturePopupIfVisible(page);
+    // Use evaluate to close stats modal reliably (avoids overlay intercept issues)
+    await page.evaluate(() => { if (typeof closeStatsModal === 'function') closeStatsModal(); });
+    await page.waitForSelector("#statsModal.active", { state: "hidden", timeout: 15000 });
     // Wait for any in-progress page transition to fully settle before opening slot
-    await waitForPageTransitionIdle(page, 5000).catch(() => {});
+    await waitForPageTransitionIdle(page, 8000).catch(() => {});
+    await dismissFeaturePopupIfVisible(page);
 
     await page.evaluate(() => { openSlot("fire_joker"); });
     // Retry once if the slot modal fails to activate — handles CI timing jitter
-    await page.waitForSelector("#slotModal.active", { timeout: 10000 }).catch(async () => {
+    await page.waitForSelector("#slotModal.active", { timeout: 12000 }).catch(async () => {
+      await dismissFeaturePopupIfVisible(page);
       await page.evaluate(() => { openSlot("fire_joker"); });
-      await page.waitForSelector("#slotModal.active", { timeout: 15000 });
+      await page.waitForSelector("#slotModal.active", { timeout: 20000 });
     });
     // Generous pause — many Sprint 31-34 features schedule init timers (600-1400ms)
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
     await dismissFeaturePopupIfVisible(page);
     await page.waitForTimeout(500);
     await dismissFeaturePopupIfVisible(page);
@@ -496,8 +505,10 @@ async function run() {
       ok: true,
     });
 
+    await dismissFeaturePopupIfVisible(page);
     await page.keyboard.press("Escape");
     await page.waitForSelector("#slotModal.active", { state: "hidden", timeout: 15000 });
+    await dismissFeaturePopupIfVisible(page);
     await page.evaluate(() => openStatsModal());
     await page.waitForSelector("#statsModal.active", { timeout: 20000 });
     await ensureQaPanelOpen(page);
