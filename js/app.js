@@ -360,6 +360,14 @@
             if (typeof HeroEnhance !== 'undefined' && HeroEnhance.init) {
                 HeroEnhance.init();
             }
+            // Cosmetic shop widget
+            if (typeof CosmeticShop !== 'undefined' && CosmeticShop.init) {
+                setTimeout(function() { CosmeticShop.init(); }, 3500);
+            }
+            // Loss streak insurance
+            if (typeof LossInsurance !== 'undefined' && LossInsurance.init) {
+                setTimeout(function() { LossInsurance.init(); }, 4000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

@@ -530,6 +530,18 @@ const TABLES = [
         end_at TEXT NOT NULL,
         is_active INTEGER DEFAULT 1,
         created_at TEXT DEFAULT (datetime('now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS loss_insurance_policies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        tier TEXT NOT NULL,
+        cost REAL NOT NULL,
+        threshold REAL NOT NULL,
+        refund_pct REAL NOT NULL,
+        purchased_at TEXT DEFAULT (datetime('now')),
+        expires_at TEXT NOT NULL,
+        claimed INTEGER DEFAULT 0,
+        claim_amount REAL DEFAULT 0
     )`
 ];
 
