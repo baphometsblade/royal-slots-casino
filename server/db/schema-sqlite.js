@@ -542,6 +542,48 @@ const TABLES = [
         expires_at TEXT NOT NULL,
         claimed INTEGER DEFAULT 0,
         claim_amount REAL DEFAULT 0
+    )`,
+    `CREATE TABLE IF NOT EXISTS seasonal_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        theme TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        bonus_multiplier REAL NOT NULL DEFAULT 1.0,
+        special_currency TEXT,
+        challenges TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS seasonal_event_progress (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        event_id INTEGER NOT NULL,
+        challenge_index INTEGER NOT NULL,
+        current_progress INTEGER DEFAULT 0,
+        completed INTEGER DEFAULT 0,
+        collected INTEGER DEFAULT 0,
+        shamrocks_earned INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, event_id, challenge_index)
+    )`,
+    `CREATE TABLE IF NOT EXISTS seasonal_event_prizes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        cost INTEGER NOT NULL,
+        prize_type TEXT NOT NULL,
+        prize_value TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS gem_purchases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        package_id TEXT NOT NULL,
+        gems_amount INTEGER NOT NULL,
+        price_usd REAL NOT NULL,
+        bonus_percent INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
     )`
 ];
 
