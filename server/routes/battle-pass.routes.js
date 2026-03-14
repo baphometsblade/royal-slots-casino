@@ -338,7 +338,12 @@ router.get('/', async (req, res) => {
     );
 
     if (!pass) {
-      return res.json({ error: 'No active battle pass' });
+      // Debug: check what's in the table
+      const allPasses = await db.all('SELECT id, season_number, name, start_date, end_date FROM battle_passes', []);
+      const dateCheck = isPg
+        ? await db.get("SELECT CURRENT_DATE::text as today", [])
+        : await db.get("SELECT date('now') as today", []);
+      return res.json({ error: 'No active battle pass', debug_passes: allPasses, debug_date: dateCheck });
     }
 
     const rewards = JSON.parse(pass.rewards);
