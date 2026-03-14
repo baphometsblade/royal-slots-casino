@@ -690,6 +690,30 @@ async function start() {
             await db.run('CREATE TABLE IF NOT EXISTS seasonal_event_progress (id ' + idDef + ', user_id INTEGER NOT NULL, event_id INTEGER NOT NULL, challenge_id INTEGER NOT NULL, completed_at TEXT, shamrock_balance INTEGER NOT NULL DEFAULT 0, created_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ', updated_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ')');
             await db.run('CREATE TABLE IF NOT EXISTS seasonal_event_prizes (id ' + idDef + ', event_id INTEGER NOT NULL, shamrock_cost INTEGER NOT NULL, prize_type TEXT NOT NULL, prize_name TEXT NOT NULL, prize_details TEXT, created_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ')');
             console.warn('[Migration] Recreated seasonal event tables with correct columns');
+            // Seed St. Patrick's Day event
+            var challenges = JSON.stringify([
+                { id: 1, name: 'Spin 50 times', reward: 100 },
+                { id: 2, name: 'Win $100 total', reward: 200 },
+                { id: 3, name: 'Hit 3 wins in a row', reward: 150 },
+                { id: 4, name: 'Play 5 different games', reward: 250 },
+                { id: 5, name: 'Spin during Happy Hour', reward: 300 }
+            ]);
+            var eventResult = await db.run(
+                'INSERT INTO seasonal_events (name, theme, start_date, end_date, bonus_multiplier, special_currency, challenges) VALUES (?,?,?,?,?,?,?)',
+                ['Lucky Leprechaun Festival', 'st-patricks', '2026-03-15', '2026-03-20', 1.5, 'shamrocks', challenges]
+            );
+            // Seed prizes (use event id 1 as default)
+            var prizes = [
+                [1, 50, 'free_spins', '10 Free Spins', '{"spins":10}'],
+                [1, 150, 'bonus_cash', '$5 Bonus', '{"amount":5}'],
+                [1, 300, 'bonus_cash', '$15 Bonus', '{"amount":15}'],
+                [1, 500, 'cosmetic', 'Lucky Clover Avatar', '{"avatar":"lucky-clover"}'],
+                [1, 1000, 'combo', '$50 Bonus + Pot of Gold', '{"amount":50,"effect":"pot-of-gold"}']
+            ];
+            for (var p of prizes) {
+                await db.run('INSERT INTO seasonal_event_prizes (event_id, shamrock_cost, prize_type, prize_name, prize_details) VALUES (?,?,?,?,?)', p);
+            }
+            console.warn('[Migration] Seeded St. Patricks Day event and prizes');
         } catch(e2) { console.warn('[Migration] Seasonal table migration:', e2.message); }
     }
 
