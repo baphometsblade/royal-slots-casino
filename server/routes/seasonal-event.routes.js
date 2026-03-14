@@ -120,9 +120,24 @@ const tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'
   }
 })();
 
-// Lazy seed — ensures event data exists when first request arrives
+// Lazy seed — ensures tables + event data exist when first request arrives
 async function _ensureSeedData() {
   try {
+    // Ensure tables exist (handles case where bootstrap failed)
+    await db.run(`CREATE TABLE IF NOT EXISTS seasonal_events (
+      id ${idDef}, name TEXT NOT NULL, theme TEXT NOT NULL, start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL, bonus_multiplier REAL NOT NULL DEFAULT 1.0,
+      special_currency TEXT, challenges TEXT NOT NULL, created_at ${tsDef}, updated_at ${tsDef}
+    )`);
+    await db.run(`CREATE TABLE IF NOT EXISTS seasonal_event_progress (
+      id ${idDef}, user_id INTEGER NOT NULL, event_id INTEGER NOT NULL,
+      challenge_id INTEGER NOT NULL, completed_at TEXT,
+      shamrock_balance INTEGER NOT NULL DEFAULT 0, created_at ${tsDef}, updated_at ${tsDef}
+    )`);
+    await db.run(`CREATE TABLE IF NOT EXISTS seasonal_event_prizes (
+      id ${idDef}, event_id INTEGER NOT NULL, shamrock_cost INTEGER NOT NULL,
+      prize_type TEXT NOT NULL, prize_name TEXT NOT NULL, prize_details TEXT, created_at ${tsDef}
+    )`);
     var existing = await db.get('SELECT id FROM seasonal_events WHERE theme = ?', ['st-patricks']);
     if (existing) return;
     var challenges = JSON.stringify([
