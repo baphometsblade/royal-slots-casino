@@ -3173,6 +3173,13 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Deposit Bonus: track wagering progress
+            try {
+                if (typeof DepositBonus !== 'undefined' && DepositBonus.recordWager) {
+                    DepositBonus.recordWager(currentBet);
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

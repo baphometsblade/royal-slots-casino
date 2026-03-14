@@ -237,6 +237,7 @@ app.use('/api/self-exclusion', require('./routes/selfexclusion.routes'));
 app.use('/api/ab', require('./routes/abtesting.routes'));
 app.use('/api/deposit-limits', require('./routes/depositlimits.routes'));
 app.use('/api/favorites',      require('./routes/favorites.routes'));
+app.use('/api/deposit-bonus',  require('./routes/deposit-bonus.routes'));
 app.use('/api/player-stats',   require('./routes/playerstats.routes'));
 app.use('/api/game-history',   require('./routes/gamehistory.routes'));
 app.use('/api/chat',           require('./routes/chat.routes'));

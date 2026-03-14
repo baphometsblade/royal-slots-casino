@@ -173,6 +173,10 @@ async function dismissFeaturePopupIfVisible(page) {
       "lossComfortOverlay",
       "achievementContainer",
       "flashDealBanner",
+      "deposit-bonus-banner",
+      "deposit-bonus-modal",
+      "deposit-bonus-overlay",
+      "deposit-bonus-tracker",
       "vipProgressMeter",
       "socialProofContainer",
       "comebackOverlay",
@@ -331,6 +335,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "slot-race-banner",
       "slot-race-results",
       "slot-race-join-popup",
+      "social-proof-ticker",
+      "social-proof-toast-container",
+      "social-proof-bigwin",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

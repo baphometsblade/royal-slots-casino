@@ -682,6 +682,21 @@ const TABLES = [
         prize_credits INTEGER DEFAULT 0,
         claimed_at TEXT,
         created_at TEXT DEFAULT (datetime('now'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS deposit_bonuses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        bonus_type TEXT NOT NULL,
+        deposit_amount INTEGER NOT NULL,
+        bonus_amount INTEGER NOT NULL,
+        bonus_multiplier REAL NOT NULL,
+        wagering_requirement INTEGER NOT NULL,
+        wagered_so_far INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        created_at TEXT,
+        expires_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 
@@ -717,7 +732,9 @@ const INDEXES = [
     `CREATE INDEX IF NOT EXISTS idx_nft_ledger_type ON nft_ledger(type, created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_deposit_limits_user ON deposit_limits(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_perf_metrics_collected_at ON perf_metrics(collected_at)`,
-    `CREATE INDEX IF NOT EXISTS idx_perf_metrics_url ON perf_metrics(url)`
+    `CREATE INDEX IF NOT EXISTS idx_perf_metrics_url ON perf_metrics(url)`,
+    `CREATE INDEX IF NOT EXISTS idx_deposit_bonuses_user ON deposit_bonuses(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_deposit_bonuses_status ON deposit_bonuses(status, created_at)`
 ];
 
 

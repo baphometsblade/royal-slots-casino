@@ -269,6 +269,10 @@
             if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {
                 setTimeout(function() { PushNotifications.init(); }, 10000);
             }
+            // Initialize social proof live win feed (FOMO/urgency system)
+            if (typeof SocialProofFeed !== 'undefined' && SocialProofFeed.init) {
+                setTimeout(function() { SocialProofFeed.init(); }, 10000);
+            }
             // Initialize A/B testing and i18n
             if (typeof ABTesting !== 'undefined' && ABTesting.init) {
                 ABTesting.init();
@@ -372,6 +376,10 @@
             // Deposit urgency and social proof
             if (typeof DepositUrgency !== 'undefined' && DepositUrgency.init) {
                 setTimeout(function() { DepositUrgency.init(); }, 3000);
+            }
+            // Deposit bonus matcher system
+            if (typeof DepositBonus !== 'undefined' && DepositBonus.init) {
+                setTimeout(function() { DepositBonus.init(); }, 4000);
             }
             // Achievement unlock popups
             if (typeof AchievementPopup !== 'undefined' && AchievementPopup.init) {
