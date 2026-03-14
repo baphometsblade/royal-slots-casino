@@ -454,6 +454,21 @@ const TABLES = [
         best_win NUMERIC(15,2) DEFAULT 0,
         joined_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(tournament_id, user_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS happy_hour_bonuses (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        happy_hour_name TEXT NOT NULL,
+        bonus_amount NUMERIC(15,2) NOT NULL,
+        claimed_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS session_reengage_claims (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        bonus_amount NUMERIC(15,2) NOT NULL,
+        claimed_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 

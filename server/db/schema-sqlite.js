@@ -486,6 +486,23 @@ const TABLES = [
         UNIQUE(tournament_id, user_id),
         FOREIGN KEY (tournament_id) REFERENCES premium_tournaments(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS happy_hour_bonuses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        happy_hour_name TEXT NOT NULL,
+        bonus_amount REAL NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS session_reengage_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        bonus_amount REAL NOT NULL,
+        claimed_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 

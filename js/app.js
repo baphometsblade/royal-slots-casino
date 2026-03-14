@@ -328,6 +328,14 @@
             if (typeof PremiumTournaments !== 'undefined' && PremiumTournaments.init) {
                 setTimeout(function() { PremiumTournaments.init(); }, 3000);
             }
+            // Happy hour bonus system
+            if (typeof HappyHour !== 'undefined' && HappyHour.init) {
+                setTimeout(function() { HappyHour.init(); }, 1500);
+            }
+            // Session re-engagement for idle players
+            if (typeof SessionReengage !== 'undefined' && SessionReengage.init) {
+                setTimeout(function() { SessionReengage.init(); }, 4000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
