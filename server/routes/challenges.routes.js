@@ -16,7 +16,7 @@ router.get('/', authenticate, async (req, res) => {
         var result = await challengesService.getDailyChallenges(req.user.id);
         res.json(result);
     } catch (err) {
-        console.error('[Challenges] Get error:', err.message);
+        console.warn('[Challenges] Get error:', err.message);
         res.status(500).json({ error: 'Failed to load daily challenges' });
     }
 });
@@ -53,7 +53,7 @@ router.post('/:id/claim', authenticate, async (req, res) => {
             credits:     ch.reward_credits || 0,
         });
     } catch (err) {
-        console.error('[Challenges] Claim error:', err.message);
+        console.warn('[Challenges] Claim error:', err.message);
         res.status(500).json({ error: 'Failed to claim challenge reward' });
     }
 });
@@ -68,7 +68,7 @@ router.post('/skip', authenticate, async (req, res) => {
         var result = await challengesService.skipChallenge(req.user.id, parseInt(challengeId));
         res.json(result);
     } catch (err) {
-        console.error('[Challenges] Skip error:', err.message);
+        console.warn('[Challenges] Skip error:', err.message);
         if (err.message.includes('not found') || err.message.includes('already completed') || err.message.includes('Insufficient gem balance')) {
             return res.status(400).json({ error: err.message });
         }

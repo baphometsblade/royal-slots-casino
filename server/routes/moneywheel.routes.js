@@ -78,7 +78,7 @@ router.post('/spin', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[MoneyWheel] /spin error:', err.message);
+    console.warn('[MoneyWheel] /spin error:', err.message);
     return res.status(500).json({ error: 'Spin failed' });
   }
 });

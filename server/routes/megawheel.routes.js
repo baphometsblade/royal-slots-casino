@@ -12,7 +12,7 @@ router.get('/config', async (req, res) => {
         var config = megawheelService.getWheelConfig(tier);
         res.json(config);
     } catch (err) {
-        console.error('[MegaWheel] GET /config error:', err.message);
+        console.warn('[MegaWheel] GET /config error:', err.message);
         res.status(400).json({ error: err.message });
     }
 });
@@ -24,7 +24,7 @@ router.post('/spin', authenticate, async (req, res) => {
         var result = await megawheelService.spin(req.user.id, tier);
         res.json(result);
     } catch (err) {
-        console.error('[MegaWheel] POST /spin error:', err.message);
+        console.warn('[MegaWheel] POST /spin error:', err.message);
         res.status(400).json({ error: err.message });
     }
 });
@@ -36,7 +36,7 @@ router.get('/history', authenticate, async (req, res) => {
         var history = await megawheelService.getHistory(req.user.id, limit);
         res.json({ history: history });
     } catch (err) {
-        console.error('[MegaWheel] GET /history error:', err.message);
+        console.warn('[MegaWheel] GET /history error:', err.message);
         res.status(500).json({ error: 'Failed to fetch spin history' });
     }
 });

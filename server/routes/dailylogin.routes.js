@@ -115,7 +115,7 @@ router.get('/', authenticate, async function(req, res) {
       })
     });
   } catch (err) {
-    console.error('[dailylogin] GET /status error:', err);
+    console.warn('[dailylogin] GET /status error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -226,7 +226,7 @@ router.post('/claim', authenticate, async function(req, res) {
       claimedAt: today
     });
   } catch (err) {
-    console.error('[dailylogin] POST /claim error:', err);
+    console.warn('[dailylogin] POST /claim error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

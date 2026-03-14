@@ -104,7 +104,7 @@ router.post('/play', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[DragonTiger] POST /play error:', err.message);
+    console.warn('[DragonTiger] POST /play error:', err.message);
     return res.status(500).json({ error: 'Failed to play Dragon Tiger' });
   }
 });

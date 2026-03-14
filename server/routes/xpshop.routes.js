@@ -101,7 +101,7 @@ router.post('/purchase', authenticate, async function (req, res) {
             granted,
         });
     } catch (err) {
-        console.error('[XPShop] purchase error:', err.message);
+        console.warn('[XPShop] purchase error:', err.message);
         return res.status(500).json({ error: 'Purchase failed' });
     }
 });
@@ -114,7 +114,7 @@ router.get('/xp', authenticate, async function (req, res) {
         const user = await db.get('SELECT xp FROM users WHERE id = ?', [req.user.id]);
         return res.json({ xp: parseInt((user && user.xp) || 0, 10) });
     } catch (err) {
-        console.error('[XPShop] GET /xp error:', err.message);
+        console.warn('[XPShop] GET /xp error:', err.message);
         return res.status(500).json({ error: 'Failed to fetch XP' });
     }
 });
@@ -151,7 +151,7 @@ router.post('/sync-xp', authenticate, async function (req, res) {
 
         return res.json({ xp: serverXp });
     } catch (err) {
-        console.error('[XPShop] sync-xp error:', err.message);
+        console.warn('[XPShop] sync-xp error:', err.message);
         return res.status(500).json({ error: 'Failed to sync XP' });
     }
 });

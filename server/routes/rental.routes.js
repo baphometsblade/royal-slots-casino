@@ -13,7 +13,7 @@ router.get('/locked-games', async (req, res) => {
             tiers: rentalService.getRentalTiers()
         });
     } catch (err) {
-        console.error('[Rental] GET /locked-games error:', err.message);
+        console.warn('[Rental] GET /locked-games error:', err.message);
         res.status(500).json({ error: 'Failed to fetch locked games' });
     }
 });
@@ -47,7 +47,7 @@ router.get('/status/:gameId', authenticate, async (req, res) => {
             rental: rental
         });
     } catch (err) {
-        console.error('[Rental] GET /status error:', err.message);
+        console.warn('[Rental] GET /status error:', err.message);
         res.status(500).json({ error: 'Failed to fetch rental status' });
     }
 });
@@ -58,7 +58,7 @@ router.get('/my-rentals', authenticate, async (req, res) => {
         const rentals = await rentalService.getActiveRentals(req.user.id);
         res.json({ rentals: rentals });
     } catch (err) {
-        console.error('[Rental] GET /my-rentals error:', err.message);
+        console.warn('[Rental] GET /my-rentals error:', err.message);
         res.status(500).json({ error: 'Failed to fetch rentals' });
     }
 });
@@ -75,7 +75,7 @@ router.post('/rent', authenticate, async (req, res) => {
         const result = await rentalService.rentSlot(req.user.id, gameId, tierId, payWith);
         res.json(result);
     } catch (err) {
-        console.error('[Rental] POST /rent error:', err.message);
+        console.warn('[Rental] POST /rent error:', err.message);
         // Client-facing validation errors vs server errors
         if (err.message.includes('not a locked') ||
             err.message.includes('Invalid rental') ||

@@ -160,7 +160,7 @@ router.get('/state', authenticate, async function(req, res) {
     if (!game) return res.json({ active: false });
     return res.json({ active: true, ...gameResponse(game, false) });
   } catch (err) {
-    console.error('[BJ] GET /state error:', err.message);
+    console.warn('[BJ] GET /state error:', err.message);
     return res.status(500).json({ error: 'Failed to get state' });
   }
 });
@@ -235,7 +235,7 @@ router.post('/start', authenticate, async function(req, res) {
       ...gameResponse(gameRow, showHole),
     });
   } catch (err) {
-    console.error('[BJ] POST /start error:', err.message);
+    console.warn('[BJ] POST /start error:', err.message);
     return res.status(500).json({ error: 'Failed to start game' });
   }
 });
@@ -288,7 +288,7 @@ router.post('/hit', authenticate, async function(req, res) {
       ...gameResponse(updated, showHole),
     });
   } catch (err) {
-    console.error('[BJ] POST /hit error:', err.message);
+    console.warn('[BJ] POST /hit error:', err.message);
     return res.status(500).json({ error: 'Failed to hit' });
   }
 });
@@ -340,7 +340,7 @@ router.post('/stand', authenticate, async function(req, res) {
       ...gameResponse(updated, true),
     });
   } catch (err) {
-    console.error('[BJ] POST /stand error:', err.message);
+    console.warn('[BJ] POST /stand error:', err.message);
     return res.status(500).json({ error: 'Failed to stand' });
   }
 });
@@ -411,7 +411,7 @@ router.post('/double', authenticate, async function(req, res) {
       ...gameResponse(updated, true),
     });
   } catch (err) {
-    console.error('[BJ] POST /double error:', err.message);
+    console.warn('[BJ] POST /double error:', err.message);
     return res.status(500).json({ error: 'Failed to double' });
   }
 });

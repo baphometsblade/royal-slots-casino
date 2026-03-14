@@ -276,7 +276,7 @@ const MatrixMoney = (() => {
           : 'You can now use your Matrix Money to play games on the Platform!'
       );
     } catch (err) {
-      console.error('[MatrixMoney] Purchase error:', err);
+      console.warn('[MatrixMoney] Purchase error:', err);
       if (btn) {
         btn.disabled = false;
         btn.textContent = 'Confirm Purchase';
@@ -479,7 +479,7 @@ const MatrixMoney = (() => {
           : `Your funds will arrive in ${wdInfo.estimatedDays || 4} business days. You will receive an email confirmation.`
       );
     } catch (err) {
-      console.error('[MatrixMoney] Withdrawal error:', err);
+      console.warn('[MatrixMoney] Withdrawal error:', err);
       if (btn) {
         btn.disabled = false;
         btn.textContent = 'Confirm Withdrawal';
@@ -500,7 +500,7 @@ const MatrixMoney = (() => {
       const data = await api('/api/matrix-money/transactions', { requireAuth: true });
       return data.transactions || [];
     } catch (err) {
-      console.error('[MatrixMoney] Failed to load transactions:', err.message);
+      console.warn('[MatrixMoney] Failed to load transactions:', err.message);
       return [];
     }
   }
@@ -513,7 +513,7 @@ const MatrixMoney = (() => {
       const data = await api('/api/matrix-money/nfts', { requireAuth: true });
       return data.nfts || [];
     } catch (err) {
-      console.error('[MatrixMoney] Failed to load NFTs:', err.message);
+      console.warn('[MatrixMoney] Failed to load NFTs:', err.message);
       return [];
     }
   }
@@ -525,7 +525,7 @@ const MatrixMoney = (() => {
     try {
       return await api('/api/matrix-money/balance', { requireAuth: true });
     } catch (err) {
-      console.error('[MatrixMoney] Failed to load balance:', err.message);
+      console.warn('[MatrixMoney] Failed to load balance:', err.message);
       return null;
     }
   }
@@ -607,6 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   } catch (error) {
-    console.error('Error initializing Matrix Money event listeners:', error);
+    console.warn('Error initializing Matrix Money event listeners:', error);
   }
 });

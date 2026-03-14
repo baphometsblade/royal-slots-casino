@@ -76,7 +76,7 @@ router.get('/loss-streak-offer', authenticate, async function (req, res) {
             }
         });
     } catch (err) {
-        console.error('[LossStreak] Offer check error:', err.message);
+        console.warn('[LossStreak] Offer check error:', err.message);
         return res.status(500).json({ error: 'Failed to check loss streak offer' });
     }
 });
@@ -128,7 +128,7 @@ router.post('/claim-loss-offer', authenticate, async function (req, res) {
             bonusBalance: updated ? updated.bonus_balance : 0
         });
     } catch (err) {
-        console.error('[LossStreak] Claim error:', err.message);
+        console.warn('[LossStreak] Claim error:', err.message);
         return res.status(500).json({ error: 'Failed to claim loss streak offer' });
     }
 });

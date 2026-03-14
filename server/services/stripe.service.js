@@ -284,7 +284,7 @@ async function handlePaymentSuccess(metadata, externalId, amountFromStripe, even
     // Credit the user
     const user = await db.get('SELECT balance, bonus_balance FROM users WHERE id = ?', [depositUserId]);
     if (!user) {
-        console.error(`[Stripe Webhook] User ${depositUserId} not found for deposit ${deposit.id}`);
+        console.warn(`[Stripe Webhook] User ${depositUserId} not found for deposit ${deposit.id}`);
         return { type: eventType, handled: false, reason: 'user_not_found' };
     }
 

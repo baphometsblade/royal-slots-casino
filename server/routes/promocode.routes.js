@@ -96,7 +96,7 @@ router.post('/redeem', authenticate, async function(req, res) {
       newBalance: user ? user.balance : 0
     });
   } catch(err) {
-    console.error('[PromoCode] Redemption error:', err.message);
+    console.warn('[PromoCode] Redemption error:', err.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -122,7 +122,7 @@ router.post('/deal', authenticate, async function(req, res) {
     };
     return res.json({ success:true, gameId:gameId, playerCards:[deck[0],deck[1],deck[2]] });
   } catch(err) {
-    console.error('[LIR] /deal error:',err.message);
+    console.warn('[LIR] /deal error:',err.message);
     return res.status(500).json({ error:'Failed to deal' });
   }
 });
@@ -148,7 +148,7 @@ router.post('/decide1', authenticate, async function(req, res) {
 
     return res.json({ success:true, community1:game.comm[0], pulledBack:pullBack });
   } catch(err) {
-    console.error('[LIR] /decide1 error:',err.message);
+    console.warn('[LIR] /decide1 error:',err.message);
     return res.status(500).json({ error:'Failed to process decision' });
   }
 });
@@ -214,7 +214,7 @@ router.post('/decide2', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch(err) {
-    console.error('[LIR] /decide2 error:',err.message);
+    console.warn('[LIR] /decide2 error:',err.message);
     return res.status(500).json({ error:'Failed to process decision' });
   }
 });

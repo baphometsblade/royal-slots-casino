@@ -34,7 +34,7 @@ router.get('/profile', authenticate, async (req, res) => {
 
         res.json({ user });
     } catch (err) {
-        console.error('[User] Profile fetch error:', err);
+        console.warn('[User] Profile fetch error:', err);
         res.status(500).json({ error: 'Failed to fetch profile' });
     }
 });
@@ -107,7 +107,7 @@ router.put('/profile', authenticate, async (req, res) => {
 
         res.json({ user: updated, message: 'Profile updated' });
     } catch (err) {
-        console.error('[User] Profile update error:', err);
+        console.warn('[User] Profile update error:', err);
         res.status(500).json({ error: 'Failed to update profile' });
     }
 });
@@ -131,7 +131,7 @@ router.put('/profile/avatar', authenticate, async (req, res) => {
 
         res.json({ avatar_url, message: 'Avatar updated' });
     } catch (err) {
-        console.error('[User] Avatar update error:', err);
+        console.warn('[User] Avatar update error:', err);
         res.status(500).json({ error: 'Failed to update avatar' });
     }
 });
@@ -154,7 +154,7 @@ router.get('/stats', authenticate, async (req, res) => {
             res.json({ stats: null });
         }
     } catch (err) {
-        console.error('[User] Stats fetch error:', err);
+        console.warn('[User] Stats fetch error:', err);
         res.status(500).json({ error: 'Failed to fetch stats' });
     }
 });
@@ -183,7 +183,7 @@ router.put('/stats', authenticate, async (req, res) => {
         );
         res.json({ message: 'Stats saved' });
     } catch (err) {
-        console.error('[User] Stats save error:', err);
+        console.warn('[User] Stats save error:', err);
         res.status(500).json({ error: 'Failed to save stats' });
     }
 });
@@ -253,7 +253,7 @@ router.post('/claim-daily-bonus', authenticate, async (req, res) => {
             newBalance: updatedDailyUser ? parseFloat(updatedDailyUser.balance) : (user.balance || 0),
         });
     } catch (err) {
-        console.error('[User] Daily bonus error:', err);
+        console.warn('[User] Daily bonus error:', err);
         res.status(500).json({ error: 'Failed to claim daily bonus' });
     }
 });
@@ -324,7 +324,7 @@ router.post('/spin-wheel', authenticate, async (req, res) => {
             xp: seg.xp,
         });
     } catch (err) {
-        console.error('[User] Wheel spin error:', err);
+        console.warn('[User] Wheel spin error:', err);
         res.status(500).json({ error: 'Failed to spin wheel' });
     }
 });
@@ -404,7 +404,7 @@ router.post('/redeem-promo', authenticate, async (req, res) => {
             newBalance
         });
     } catch (err) {
-        console.error('[User] Promo code error:', err);
+        console.warn('[User] Promo code error:', err);
         res.status(500).json({ error: 'Failed to redeem promo code' });
     }
 });
@@ -449,7 +449,7 @@ router.get('/referral', authenticate, async (req, res) => {
             minDeposit: REFERRAL_MIN_DEPOSIT,
         });
     } catch (err) {
-        console.error('[User] Referral info error:', err);
+        console.warn('[User] Referral info error:', err);
         res.status(500).json({ error: 'Failed to fetch referral info' });
     }
 });
@@ -501,7 +501,7 @@ router.post('/claim-referral-bonus', authenticate, async (req, res) => {
             newBalance: updatedRefUser ? parseFloat(updatedRefUser.balance) : (user.balance || 0),
         });
     } catch (err) {
-        console.error('[User] Referral bonus error:', err);
+        console.warn('[User] Referral bonus error:', err);
         res.status(500).json({ error: 'Failed to claim referral bonus' });
     }
 });
@@ -534,7 +534,7 @@ router.get('/wagering', authenticate, async (req, res) => {
             complete: user.wagering_requirement > 0 && user.wagering_progress >= user.wagering_requirement,
         });
     } catch (err) {
-        console.error('[User] Wagering status error:', err);
+        console.warn('[User] Wagering status error:', err);
         res.status(500).json({ error: 'Failed to fetch wagering status' });
     }
 });
@@ -568,7 +568,7 @@ router.post('/forfeit-bonus', authenticate, async (req, res) => {
             balance: user.balance,
         });
     } catch (err) {
-        console.error('[User] Forfeit bonus error:', err);
+        console.warn('[User] Forfeit bonus error:', err);
         res.status(500).json({ error: 'Failed to forfeit bonus' });
     }
 });
@@ -609,7 +609,7 @@ router.put('/change-password', authenticate, async (req, res) => {
 
         res.json({ message: 'Password changed successfully' });
     } catch (err) {
-        console.error('[User] Change password error:', err);
+        console.warn('[User] Change password error:', err);
         res.status(500).json({ error: 'Failed to change password' });
     }
 });
@@ -655,7 +655,7 @@ router.post('/forgot-password', async (req, res) => {
 
         // Send email (non-blocking — always return success to prevent email enumeration)
         sendPasswordReset(user.email, resetUrl, expiryHours).catch(err => {
-            console.error('[User] Failed to send password reset email:', err.message);
+            console.warn('[User] Failed to send password reset email:', err.message);
         });
 
         // In dev mode also log the token so it can be tested without SMTP
@@ -666,7 +666,7 @@ router.post('/forgot-password', async (req, res) => {
 
         res.json({ message: 'If that email is registered, a password reset link has been sent.' });
     } catch (err) {
-        console.error('[User] Forgot password error:', err);
+        console.warn('[User] Forgot password error:', err);
         res.status(500).json({ error: 'Failed to process password reset request' });
     }
 });
@@ -705,7 +705,7 @@ router.post('/reset-password', async (req, res) => {
 
         res.json({ message: 'Password has been reset successfully' });
     } catch (err) {
-        console.error('[User] Reset password error:', err);
+        console.warn('[User] Reset password error:', err);
         res.status(500).json({ error: 'Failed to reset password' });
     }
 });
@@ -729,7 +729,7 @@ router.get('/verification', authenticate, async (req, res) => {
             verification: verification || null,
         });
     } catch (err) {
-        console.error('[User] Verification fetch error:', err);
+        console.warn('[User] Verification fetch error:', err);
         res.status(500).json({ error: 'Failed to fetch verification status' });
     }
 });
@@ -773,7 +773,7 @@ router.post('/verification', authenticate, async (req, res) => {
 
         res.json({ message: 'Verification submitted', kyc_status: 'pending' });
     } catch (err) {
-        console.error('[User] Verification submit error:', err);
+        console.warn('[User] Verification submit error:', err);
         res.status(500).json({ error: 'Failed to submit verification' });
     }
 });
@@ -822,7 +822,7 @@ router.get('/transactions', authenticate, async (req, res) => {
             },
         });
     } catch (err) {
-        console.error('[User] Transactions fetch error:', err);
+        console.warn('[User] Transactions fetch error:', err);
         res.status(500).json({ error: 'Failed to fetch transactions' });
     }
 });
@@ -841,7 +841,7 @@ router.post('/close-account', authenticate, async (req, res) => {
 
         res.json({ message: 'Account has been closed' });
     } catch (err) {
-        console.error('[User] Close account error:', err);
+        console.warn('[User] Close account error:', err);
         res.status(500).json({ error: 'Failed to close account' });
     }
 });

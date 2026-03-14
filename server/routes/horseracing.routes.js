@@ -314,7 +314,7 @@ router.post('/race', authenticate, async (req, res) => {
       balance: finalBalance,
     });
   } catch (err) {
-    console.error('[horseracing] POST /race error:', err);
+    console.warn('[horseracing] POST /race error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

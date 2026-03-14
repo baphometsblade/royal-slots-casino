@@ -91,7 +91,7 @@ router.post('/play', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[CasinoWar] POST /play error:', err.message);
+    console.warn('[CasinoWar] POST /play error:', err.message);
     return res.status(500).json({ error: 'Failed to play Casino War' });
   }
 });
@@ -171,7 +171,7 @@ router.post('/war', authenticate, async function(req, res) {
       newBalance:     u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[CasinoWar] POST /war error:', err.message);
+    console.warn('[CasinoWar] POST /war error:', err.message);
     return res.status(500).json({ error: 'Failed to process war' });
   }
 });

@@ -56,7 +56,7 @@ router.get('/revenue', async (req, res) => {
         );
         res.json({ lifetime, dailyPnl, deposits: depositsStats, withdrawals: withdrawalsStats, topPlayers, pending, thisWeek, lastWeek });
     } catch (e) {
-        console.error('[Admin] Revenue error:', e.message);
+        console.warn('[Admin] Revenue error:', e.message);
         res.status(500).json({ error: 'Failed to load revenue data' });
     }
 });
@@ -96,7 +96,7 @@ router.get('/stats', async (req, res) => {
             gameStats,
         });
     } catch (err) {
-        console.error('[Admin] Stats error:', err);
+        console.warn('[Admin] Stats error:', err);
         res.status(500).json({ error: 'Failed to load stats' });
     }
 });
@@ -199,7 +199,7 @@ router.get('/fraud-alerts', async (req, res) => {
 
         res.json({ alerts, count: alerts.length });
     } catch (err) {
-        console.error('[Admin] Fraud alerts error:', err);
+        console.warn('[Admin] Fraud alerts error:', err);
         res.status(500).json({ error: 'Failed to load fraud alerts' });
     }
 });
@@ -218,7 +218,7 @@ router.get('/users', async (req, res) => {
 
         res.json({ users, total: total ? total.count : 0 });
     } catch (err) {
-        console.error('[Admin] Users list error:', err);
+        console.warn('[Admin] Users list error:', err);
         res.status(500).json({ error: 'Failed to load users' });
     }
 });
@@ -246,7 +246,7 @@ router.get('/user/:id', async (req, res) => {
 
         res.json({ user, transactions, spinHistory, spinStats });
     } catch (err) {
-        console.error('[Admin] User detail error:', err);
+        console.warn('[Admin] User detail error:', err);
         res.status(500).json({ error: 'Failed to load user details' });
     }
 });
@@ -258,7 +258,7 @@ router.post('/user/:id/ban', async (req, res) => {
         await db.run('UPDATE users SET is_banned = 1 WHERE id = ?', [userId]);
         res.json({ message: 'User banned' });
     } catch (err) {
-        console.error('[Admin] Ban error:', err);
+        console.warn('[Admin] Ban error:', err);
         res.status(500).json({ error: 'Failed to ban user' });
     }
 });
@@ -270,7 +270,7 @@ router.post('/user/:id/unban', async (req, res) => {
         await db.run('UPDATE users SET is_banned = 0 WHERE id = ?', [userId]);
         res.json({ message: 'User unbanned' });
     } catch (err) {
-        console.error('[Admin] Unban error:', err);
+        console.warn('[Admin] Unban error:', err);
         res.status(500).json({ error: 'Failed to unban user' });
     }
 });
@@ -300,7 +300,7 @@ router.post('/user/:id/adjust-balance', async (req, res) => {
 
         res.json({ balance: balanceAfter });
     } catch (err) {
-        console.error('[Admin] Adjust balance error:', err);
+        console.warn('[Admin] Adjust balance error:', err);
         res.status(500).json({ error: 'Failed to adjust balance' });
     }
 });
@@ -339,7 +339,7 @@ router.post('/user/:id/send-bonus', async (req, res) => {
             newBalance: balanceAfter,
         });
     } catch (err) {
-        console.error('[Admin] Send bonus error:', err);
+        console.warn('[Admin] Send bonus error:', err);
         res.status(500).json({ error: 'Failed to send bonus' });
     }
 });
@@ -384,7 +384,7 @@ router.post('/bulk-bonus', async (req, res) => {
 
         res.json({ message: 'Bulk bonus sent', credited, totalAmount: credited * bonusAmount });
     } catch (err) {
-        console.error('[Admin] Bulk bonus error:', err);
+        console.warn('[Admin] Bulk bonus error:', err);
         res.status(500).json({ error: 'Failed to send bulk bonus' });
     }
 });
@@ -401,7 +401,7 @@ router.get('/recent-spins', async (req, res) => {
         );
         res.json({ spins });
     } catch (err) {
-        console.error('[Admin] Recent spins error:', err);
+        console.warn('[Admin] Recent spins error:', err);
         res.status(500).json({ error: 'Failed to load recent spins' });
     }
 });
@@ -459,7 +459,7 @@ router.get('/profit-status', async (req, res) => {
             topWinners,
         });
     } catch (err) {
-        console.error('[Admin] Profit status error:', err);
+        console.warn('[Admin] Profit status error:', err);
         res.status(500).json({ error: 'Failed to load profit status' });
     }
 });
@@ -474,7 +474,7 @@ router.post('/house-edge/config', async (req, res) => {
         if (profitFloor !== undefined) config.PROFIT_FLOOR = parseFloat(profitFloor);
         res.json({ message: 'Config updated', config: { TARGET_RTP: config.TARGET_RTP, MAX_WIN_MULTIPLIER: config.MAX_WIN_MULTIPLIER, PROFIT_FLOOR: config.PROFIT_FLOOR } });
     } catch (err) {
-        console.error('[Admin] House edge config error:', err);
+        console.warn('[Admin] House edge config error:', err);
         res.status(500).json({ error: 'Failed to update config' });
     }
 });
@@ -492,7 +492,7 @@ router.get('/pending-deposits', async (req, res) => {
         );
         res.json({ deposits });
     } catch (err) {
-        console.error('[Admin] Pending deposits error:', err);
+        console.warn('[Admin] Pending deposits error:', err);
         res.status(500).json({ error: 'Failed to load pending deposits' });
     }
 });
@@ -563,7 +563,7 @@ router.post('/approve-deposit', async (req, res) => {
             : 'Deposit approved';
         res.json({ message: msg, depositId, amount: deposit.amount, bonus: bonusAmount, wageringRequired: bonusAmount * wageringMult, newBalance: balanceAfter });
     } catch (err) {
-        console.error('[Admin] Approve deposit error:', err);
+        console.warn('[Admin] Approve deposit error:', err);
         res.status(500).json({ error: 'Failed to approve deposit' });
     }
 });
@@ -582,7 +582,7 @@ router.post('/reject-deposit', async (req, res) => {
 
         res.json({ message: 'Deposit rejected', depositId, reason: reason || 'No reason provided' });
     } catch (err) {
-        console.error('[Admin] Reject deposit error:', err);
+        console.warn('[Admin] Reject deposit error:', err);
         res.status(500).json({ error: 'Failed to reject deposit' });
     }
 });
@@ -625,7 +625,7 @@ router.get('/pending-withdrawals', async (req, res) => {
 
         res.json({ withdrawals });
     } catch (err) {
-        console.error('[Admin] Pending withdrawals error:', err);
+        console.warn('[Admin] Pending withdrawals error:', err);
         res.status(500).json({ error: 'Failed to load pending withdrawals' });
     }
 });
@@ -664,7 +664,7 @@ router.post('/approve-withdrawal', async (req, res) => {
 
         res.json({ message: 'Withdrawal approved and ready for payout', withdrawalId, amount: wd.amount });
     } catch (err) {
-        console.error('[Admin] Approve withdrawal error:', err);
+        console.warn('[Admin] Approve withdrawal error:', err);
         res.status(500).json({ error: 'Failed to approve withdrawal' });
     }
 });
@@ -698,7 +698,7 @@ router.post('/reject-withdrawal', async (req, res) => {
 
         res.json({ message: 'Withdrawal rejected and refunded', withdrawalId, amount: wd.amount, newBalance: balanceAfter });
     } catch (err) {
-        console.error('[Admin] Reject withdrawal error:', err);
+        console.warn('[Admin] Reject withdrawal error:', err);
         res.status(500).json({ error: 'Failed to reject withdrawal' });
     }
 });
@@ -757,7 +757,7 @@ router.get('/lapsed-players', async (req, res) => {
             daysThreshold,
         });
     } catch (err) {
-        console.error('[Admin] Lapsed players error:', err);
+        console.warn('[Admin] Lapsed players error:', err);
         res.status(500).json({ error: 'Failed to load lapsed players' });
     }
 });
@@ -812,7 +812,7 @@ router.get('/analytics/retention', async (req, res) => {
 
         res.json({ cohorts: formatted });
     } catch (e) {
-        console.error('[Admin] retention analytics error:', e.message);
+        console.warn('[Admin] retention analytics error:', e.message);
         res.status(500).json({ error: 'Failed to fetch retention data' });
     }
 });
@@ -854,7 +854,7 @@ router.get('/analytics/kpis', async (req, res) => {
             }
         });
     } catch (e) {
-        console.error('[Admin] KPI analytics error:', e.message);
+        console.warn('[Admin] KPI analytics error:', e.message);
         res.status(500).json({ error: 'Failed to fetch KPIs' });
     }
 });
@@ -887,7 +887,7 @@ router.get('/analytics/revenue-by-game', async (req, res) => {
 
         res.json({ games: formatted });
     } catch (e) {
-        console.error('[Admin] revenue-by-game error:', e.message);
+        console.warn('[Admin] revenue-by-game error:', e.message);
         res.status(500).json({ error: 'Failed to fetch game revenue' });
     }
 });
@@ -938,7 +938,7 @@ router.get('/analytics/vip-distribution', async (req, res) => {
 
         res.json({ tiers });
     } catch (e) {
-        console.error('[Admin] VIP distribution error:', e.message);
+        console.warn('[Admin] VIP distribution error:', e.message);
         res.status(500).json({ error: 'Failed to fetch VIP distribution' });
     }
 });
@@ -968,7 +968,7 @@ router.get('/analytics/top-players', async (req, res) => {
         `);
         res.json({ players });
     } catch (e) {
-        console.error('[Admin] top-players error:', e.message);
+        console.warn('[Admin] top-players error:', e.message);
         res.status(500).json({ error: 'Failed to fetch top players' });
     }
 });
@@ -984,7 +984,7 @@ router.get('/campaigns', async (req, res) => {
         const campaigns = await campaignService.getAllCampaigns();
         res.json({ campaigns });
     } catch (e) {
-        console.error('[Admin] Campaigns list error:', e.message);
+        console.warn('[Admin] Campaigns list error:', e.message);
         res.status(500).json({ error: 'Failed to fetch campaigns' });
     }
 });
@@ -998,7 +998,7 @@ router.post('/campaigns', async (req, res) => {
         await campaignService.createCampaign({ name, type, bonusPct, maxBonus, wageringMult, minDeposit, startAt, endAt, promoCode, targetSegment, maxClaims });
         res.json({ success: true });
     } catch (e) {
-        console.error('[Admin] Create campaign error:', e.message);
+        console.warn('[Admin] Create campaign error:', e.message);
         res.status(500).json({ error: 'Failed to create campaign' });
     }
 });
@@ -1010,7 +1010,7 @@ router.post('/campaigns/:id/toggle', async (req, res) => {
         await campaignService.toggleCampaign(req.params.id, req.body.active);
         res.json({ success: true });
     } catch (e) {
-        console.error('[Admin] Toggle campaign error:', e.message);
+        console.warn('[Admin] Toggle campaign error:', e.message);
         res.status(500).json({ error: 'Failed to toggle campaign' });
     }
 });
@@ -1026,7 +1026,7 @@ router.get('/events', async (req, res) => {
         const events = await eventService.getAllEvents();
         res.json({ events });
     } catch (e) {
-        console.error('[Admin] Events list error:', e.message);
+        console.warn('[Admin] Events list error:', e.message);
         res.status(500).json({ error: 'Failed to fetch events' });
     }
 });
@@ -1042,7 +1042,7 @@ router.post('/events', async (req, res) => {
         await eventService.createEvent({ name, description, event_type, multiplier, target_games, start_at, end_at });
         res.json({ success: true });
     } catch (e) {
-        console.error('[Admin] Create event error:', e.message);
+        console.warn('[Admin] Create event error:', e.message);
         res.status(400).json({ error: e.message });
     }
 });
@@ -1054,7 +1054,7 @@ router.post('/events/:id/toggle', async (req, res) => {
         await eventService.toggleEvent(req.params.id, req.body.active);
         res.json({ success: true });
     } catch (e) {
-        console.error('[Admin] Toggle event error:', e.message);
+        console.warn('[Admin] Toggle event error:', e.message);
         res.status(500).json({ error: 'Failed to toggle event' });
     }
 });
@@ -1091,7 +1091,7 @@ router.get('/withdrawals', async (req, res) => {
         const withdrawals = await db.all(query, params);
         res.json({ withdrawals, count: withdrawals.length, filter: status });
     } catch (err) {
-        console.error('[Admin] List withdrawals error:', err);
+        console.warn('[Admin] List withdrawals error:', err);
         res.status(500).json({ error: 'Failed to load withdrawals' });
     }
 });
@@ -1143,7 +1143,7 @@ router.get('/withdrawals/:id', async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[Admin] Get withdrawal detail error:', err);
+        console.warn('[Admin] Get withdrawal detail error:', err);
         res.status(500).json({ error: 'Failed to load withdrawal details' });
     }
 });
@@ -1183,7 +1183,7 @@ router.post('/withdrawals/:id/approve', async (req, res) => {
             admin_note: admin_note || 'Approved by admin'
         });
     } catch (err) {
-        console.error('[Admin] Approve withdrawal error:', err);
+        console.warn('[Admin] Approve withdrawal error:', err);
         res.status(500).json({ error: 'Failed to approve withdrawal' });
     }
 });
@@ -1236,7 +1236,7 @@ router.post('/withdrawals/:id/reject', async (req, res) => {
             admin_note: admin_note.trim()
         });
     } catch (err) {
-        console.error('[Admin] Reject withdrawal error:', err);
+        console.warn('[Admin] Reject withdrawal error:', err);
         res.status(500).json({ error: 'Failed to reject withdrawal' });
     }
 });
@@ -1299,7 +1299,7 @@ router.post('/users/:id/freeze', async (req, res) => {
             reason: reason || null
         });
     } catch (err) {
-        console.error('[Admin] Freeze user error:', err);
+        console.warn('[Admin] Freeze user error:', err);
         res.status(500).json({ error: 'Failed to freeze/unfreeze user' });
     }
 });
@@ -1330,7 +1330,7 @@ router.get('/conversion-funnel', async (req, res) => {
             avgDaysToFirstDeposit: avgFirstDepositDays?.avg_days || null
         });
     } catch (e) {
-        console.error('[Admin] Conversion funnel error:', e.message);
+        console.warn('[Admin] Conversion funnel error:', e.message);
         res.status(500).json({ error: 'Failed to load conversion data' });
     }
 });
@@ -1362,7 +1362,7 @@ router.get('/player-segments', async (req, res) => {
         );
         res.json({ segments: segments || [], dormantPlayers: dormant?.count || 0 });
     } catch (e) {
-        console.error('[Admin] Player segments error:', e.message);
+        console.warn('[Admin] Player segments error:', e.message);
         res.status(500).json({ error: 'Failed to load segment data' });
     }
 });
@@ -1380,7 +1380,7 @@ router.get('/game-profitability', async (req, res) => {
         );
         res.json({ games: games || [] });
     } catch (e) {
-        console.error('[Admin] Game profitability error:', e.message);
+        console.warn('[Admin] Game profitability error:', e.message);
         res.status(500).json({ error: 'Failed to load game data' });
     }
 });
@@ -1403,7 +1403,7 @@ router.get('/nft-ledger', async (req, res) => {
         );
         res.json({ summary: summary || {}, recent: recent || [] });
     } catch (e) {
-        console.error('[Admin] NFT ledger error:', e.message);
+        console.warn('[Admin] NFT ledger error:', e.message);
         res.status(500).json({ error: 'Failed to load NFT data' });
     }
 });
@@ -1420,7 +1420,7 @@ router.get('/hourly-activity', async (req, res) => {
         );
         res.json({ hourly: hourly || [] });
     } catch (e) {
-        console.error('[Admin] Hourly activity error:', e.message);
+        console.warn('[Admin] Hourly activity error:', e.message);
         res.status(500).json({ error: 'Failed to load hourly data' });
     }
 });

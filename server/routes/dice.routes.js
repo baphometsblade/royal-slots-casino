@@ -95,7 +95,7 @@ router.post('/roll', authenticate, async function(req, res) {
     });
 
   } catch (err) {
-    console.error('[Dice] POST /roll error:', err.message);
+    console.warn('[Dice] POST /roll error:', err.message);
     return res.status(500).json({ error: 'Failed to process roll' });
   }
 });

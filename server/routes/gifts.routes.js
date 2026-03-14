@@ -38,7 +38,7 @@ router.get('/inbox', authenticate, async (req, res) => {
         });
         res.json({ gifts: gifts });
     } catch (err) {
-        console.error('[Gifts] GET /inbox error:', err.message);
+        console.warn('[Gifts] GET /inbox error:', err.message);
         res.status(500).json({ error: 'Failed to fetch inbox' });
     }
 });
@@ -67,7 +67,7 @@ router.get('/sent', authenticate, async (req, res) => {
         });
         res.json({ gifts: gifts });
     } catch (err) {
-        console.error('[Gifts] GET /sent error:', err.message);
+        console.warn('[Gifts] GET /sent error:', err.message);
         res.status(500).json({ error: 'Failed to fetch sent gifts' });
     }
 });
@@ -148,7 +148,7 @@ router.post('/send', authenticate, async (req, res) => {
 
         res.json({ ok: true, newBalance: balanceAfter });
     } catch (err) {
-        console.error('[Gifts] POST /send error:', err.message);
+        console.warn('[Gifts] POST /send error:', err.message);
         res.status(500).json({ error: 'Failed to send gift' });
     }
 });
@@ -199,7 +199,7 @@ router.post('/claim/:id', authenticate, async (req, res) => {
 
         res.json({ ok: true, newBonusBalance: updated ? updated.bonus_balance : balanceAfter });
     } catch (err) {
-        console.error('[Gifts] POST /claim error:', err.message);
+        console.warn('[Gifts] POST /claim error:', err.message);
         res.status(500).json({ error: 'Failed to claim gift' });
     }
 });

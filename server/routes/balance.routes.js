@@ -10,7 +10,7 @@ router.get('/', authenticate, async (req, res) => {
         const user = await db.get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
         res.json({ balance: user ? user.balance : 0 });
     } catch (err) {
-        console.error('[Balance] Get balance error:', err);
+        console.warn('[Balance] Get balance error:', err);
         res.status(500).json({ error: 'Failed to get balance' });
     }
 });
@@ -57,7 +57,7 @@ router.post('/deposit', authenticate, async (req, res) => {
 
         res.json({ balance: balanceAfter, message: `Deposited $${deposit.toFixed(2)}` });
     } catch (err) {
-        console.error('[Balance] Deposit error:', err);
+        console.warn('[Balance] Deposit error:', err);
         res.status(500).json({ error: 'Deposit failed' });
     }
 });
@@ -98,7 +98,7 @@ router.post('/withdraw', authenticate, async (req, res) => {
 
         res.json({ balance: user ? user.balance : 0, message: `Withdrawal of $${withdrawal.toFixed(2)} processed` });
     } catch (err) {
-        console.error('[Balance] Withdrawal error:', err);
+        console.warn('[Balance] Withdrawal error:', err);
         res.status(500).json({ error: 'Withdrawal failed' });
     }
 });
@@ -113,7 +113,7 @@ router.get('/transactions', authenticate, async (req, res) => {
         );
         res.json({ transactions: rows });
     } catch (err) {
-        console.error('[Balance] Transactions error:', err);
+        console.warn('[Balance] Transactions error:', err);
         res.status(500).json({ error: 'Failed to load transactions' });
     }
 });

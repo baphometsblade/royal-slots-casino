@@ -129,7 +129,7 @@ async function _completeTournament(t, cfg) {
                 [entry.user_id, prize, bonusBefore, bonusBefore + prize, `tournament:${t.id}:rank${i + 1}`]
             );
         } catch (e) {
-            console.error('[Tournament] Prize credit error:', e.message);
+            console.warn('[Tournament] Prize credit error:', e.message);
         }
     }
 }
@@ -149,7 +149,7 @@ async function tick() {
         try {
             await _completeTournament(t, cfg);
         } catch (e) {
-            console.error('[Tournament] Complete error:', e.message);
+            console.warn('[Tournament] Complete error:', e.message);
         }
     }
 

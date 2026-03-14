@@ -108,7 +108,7 @@ router.post('/start', authenticate, async function(req, res) {
 
     return res.json({ success: true, gameId: gameId, gridSize: GRID_SIZE, mines: mines });
   } catch (err) {
-    console.error('[Mines] POST /start error:', err.message);
+    console.warn('[Mines] POST /start error:', err.message);
     return res.status(500).json({ error: 'Failed to start Mines' });
   }
 });
@@ -190,7 +190,7 @@ router.post('/reveal', authenticate, async function(req, res) {
       gameOver:   false,
     });
   } catch (err) {
-    console.error('[Mines] POST /reveal error:', err.message);
+    console.warn('[Mines] POST /reveal error:', err.message);
     return res.status(500).json({ error: 'Failed to reveal tile' });
   }
 });
@@ -234,7 +234,7 @@ router.post('/cashout', authenticate, async function(req, res) {
       minePositions: minePositions,
     });
   } catch (err) {
-    console.error('[Mines] POST /cashout error:', err.message);
+    console.warn('[Mines] POST /cashout error:', err.message);
     return res.status(500).json({ error: 'Failed to cashout' });
   }
 });

@@ -165,7 +165,7 @@ router.post('/deal', authenticate, async function(req, res) {
       dealerUp:    dealerCards[0],  // only first card shown
     });
   } catch (err) {
-    console.error('[CStud] POST /deal error:', err.message);
+    console.warn('[CStud] POST /deal error:', err.message);
     return res.status(500).json({ error: 'Failed to deal' });
   }
 });
@@ -195,7 +195,7 @@ router.post('/fold', authenticate, async function(req, res) {
       dealerCards: game.dealerCards,
     });
   } catch (err) {
-    console.error('[CStud] POST /fold error:', err.message);
+    console.warn('[CStud] POST /fold error:', err.message);
     return res.status(500).json({ error: 'Failed to fold' });
   }
 });
@@ -281,7 +281,7 @@ router.post('/call', authenticate, async function(req, res) {
       newBalance:  u2 ? parseFloat(u2.balance) : null,
     });
   } catch (err) {
-    console.error('[CStud] POST /call error:', err.message);
+    console.warn('[CStud] POST /call error:', err.message);
     return res.status(500).json({ error: 'Failed to call' });
   }
 });

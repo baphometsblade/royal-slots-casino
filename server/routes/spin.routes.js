@@ -293,7 +293,7 @@ router.post('/', authenticate, async (req, res) => {
                     };
                 }
             } catch (evtErr) {
-                console.error('[Spin] Event boost check error:', evtErr);
+                console.warn('[Spin] Event boost check error:', evtErr);
                 // Non-blocking — proceed without boost
             }
         }
@@ -317,7 +317,7 @@ router.post('/', authenticate, async (req, res) => {
                     spinResult.winAmount = Math.round((spinResult.winAmount + _boostWinBonus) * 100) / 100;
                 }
             } catch (_boostErr) {
-                console.error('[Boost] Boost check error:', _boostErr);
+                console.warn('[Boost] Boost check error:', _boostErr);
                 // Non-blocking — proceed without boosts
             }
         }
@@ -397,7 +397,7 @@ router.post('/', authenticate, async (req, res) => {
         // -- Jackpot contribution + award check --
         if (!usedFreeSpin && bet > 0) {
             // Contribute to pool (fire-and-forget style -- failures do not block spin)
-            jackpotService.contribute(bet).catch(err => console.error('[Jackpot] Contribute error:', err));
+            jackpotService.contribute(bet).catch(err => console.warn('[Jackpot] Contribute error:', err));
 
             // Check for jackpot win
             const isJackpotGame = Boolean(game.jackpot);
@@ -447,7 +447,7 @@ router.post('/', authenticate, async (req, res) => {
                             "   updated_at      = datetime('now')",
                             [userId, weekStart, _winMult, spinResult.winAmount, initScore]
                         ).catch(function() {});
-                    } catch (e) { console.error('[Tournament] score update error:', e.message); }
+                    } catch (e) { console.warn('[Tournament] score update error:', e.message); }
                 }());
             }
         }
@@ -493,13 +493,13 @@ router.post('/', authenticate, async (req, res) => {
                     const battlepassService = require('../services/battlepass.service');
                     await battlepassService.addXp(userId, bet);
                     if (_hasBpRush) { await battlepassService.addXp(userId, bet); } // bp_rush: 2x XP
-                } catch (_bpErr) { console.error('[BattlePass] addXp error:', _bpErr); }
+                } catch (_bpErr) { console.warn('[BattlePass] addXp error:', _bpErr); }
             }());
             if (_hasGemMiner) {
                 (async function () {
                     try {
                         await require('../services/gems.service').addGems(userId, 1, 'Boost: Gem Miner');
-                    } catch (_gmErr) { console.error('[GemMiner] addGems error:', _gmErr); }
+                    } catch (_gmErr) { console.warn('[GemMiner] addGems error:', _gmErr); }
                 }());
             }
         }
@@ -541,7 +541,7 @@ router.post('/', authenticate, async (req, res) => {
                     }
                     await Promise.all(progressCalls);
                 } catch (e) {
-                    console.error('[Challenges] Progress error:', e);
+                    console.warn('[Challenges] Progress error:', e);
                 }
             }());
         }
@@ -576,7 +576,7 @@ router.post('/', authenticate, async (req, res) => {
                         ]);
                     }
                 } catch (_dmErr) {
-                    console.error('[DailyMissions] Progress error:', _dmErr);
+                    console.warn('[DailyMissions] Progress error:', _dmErr);
                 }
             }());
         }
@@ -623,7 +623,7 @@ router.post('/', authenticate, async (req, res) => {
                     }
                 }
             } catch (wagerErr) {
-                console.error('[Spin] Wagering progress error:', wagerErr);
+                console.warn('[Spin] Wagering progress error:', wagerErr);
                 // Non-blocking — don't fail the spin
             }
         }
@@ -644,7 +644,7 @@ router.post('/', authenticate, async (req, res) => {
                     pct: Math.min(100, Math.round((wu.wagering_progress / wu.wagering_requirement) * 100)),
                 };
             }
-        } catch (_wagerErr) { console.error('[Wagering] status check error:', _wagerErr.message); }
+        } catch (_wagerErr) { console.warn('[Wagering] status check error:', _wagerErr.message); }
 
         // ── Achievement check (non-blocking) ──
         let newAchievements = [];
@@ -665,7 +665,7 @@ router.post('/', authenticate, async (req, res) => {
                 const r = await achievementService.grant(userId, 'jackpot_winner');
                 if (r) newAchievements.push(r);
             }
-        } catch (e) { console.error('[Achievement] check error:', e.message); }
+        } catch (e) { console.warn('[Achievement] check error:', e.message); }
 
         // ── Gems from wins (engagement incentive, fire-and-forget) ──────
         if (!usedFreeSpin && spinResult.winAmount >= 5) {
@@ -676,7 +676,7 @@ router.post('/', authenticate, async (req, res) => {
                         userId, _gemsFromWin,
                         'Win reward: $' + spinResult.winAmount.toFixed(2)
                     );
-                } catch (_gfwErr) { console.error('[Gems] Win reward error:', _gfwErr); }
+                } catch (_gfwErr) { console.warn('[Gems] Win reward error:', _gfwErr); }
             }());
         }
 
@@ -699,7 +699,7 @@ router.post('/', authenticate, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('[Spin] Error:', err);
+        console.warn('[Spin] Error:', err);
         res.status(500).json({ error: 'Spin failed' });
     }
 });

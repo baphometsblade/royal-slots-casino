@@ -85,7 +85,7 @@ router.post('/bet', authenticate, async function(req, res) {
       gameId:  gameId,
     });
   } catch (err) {
-    console.error('[Crash] POST /bet error:', err.message);
+    console.warn('[Crash] POST /bet error:', err.message);
     return res.status(500).json({ error: 'Failed to place bet' });
   }
 });
@@ -140,7 +140,7 @@ router.post('/cashout', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[Crash] POST /cashout error:', err.message);
+    console.warn('[Crash] POST /cashout error:', err.message);
     return res.status(500).json({ error: 'Failed to cashout' });
   }
 });
@@ -172,7 +172,7 @@ router.post('/result', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[Crash] POST /result error:', err.message);
+    console.warn('[Crash] POST /result error:', err.message);
     return res.status(500).json({ error: 'Failed to get result' });
   }
 });

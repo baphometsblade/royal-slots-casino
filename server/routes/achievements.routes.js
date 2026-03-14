@@ -181,7 +181,7 @@ router.get('/', authenticate, async (req, res) => {
             },
         });
     } catch (err) {
-        console.error('[Achievements] GET / error:', err.message);
+        console.warn('[Achievements] GET / error:', err.message);
         res.status(500).json({ error: 'Failed to fetch achievements' });
     }
 });
@@ -285,7 +285,7 @@ router.post('/check', authenticate, async (req, res) => {
                     );
                 }
             } catch (rewardErr) {
-                console.error('[Achievements] Failed to credit reward for', ach.id, ':', rewardErr.message);
+                console.warn('[Achievements] Failed to credit reward for', ach.id, ':', rewardErr.message);
             }
         }
 
@@ -300,7 +300,7 @@ router.post('/check', authenticate, async (req, res) => {
             })),
         });
     } catch (err) {
-        console.error('[Achievements] POST /check error:', err.message);
+        console.warn('[Achievements] POST /check error:', err.message);
         res.status(500).json({ error: 'Failed to check achievements' });
     }
 });

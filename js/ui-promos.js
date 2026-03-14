@@ -4614,7 +4614,7 @@ async function renderBirthdaySetCard(container) {
         if (!statusRes.ok) return;
         statusData = await statusRes.json();
     } catch (e) {
-        console.error('[Birthday]', e);
+        console.warn('[Birthday]', e);
         return;
     }
     if (!statusData) return;
@@ -4718,7 +4718,7 @@ async function renderBirthdaySetCard(container) {
                 }
             })
             .catch(function(e) {
-                console.error('[Birthday]', e);
+                console.warn('[Birthday]', e);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Save Birthday';
                 msgEl.className = 'bsc-error';
@@ -4826,7 +4826,7 @@ async function renderBirthdaySetCard(container) {
                 }
             })
             .catch(function(e) {
-                console.error('[Birthday]', e);
+                console.warn('[Birthday]', e);
                 claimBtn.disabled = false;
                 claimBtn.textContent = '\uD83C\uDF81 Claim Birthday Bonus';
                 claimMsg.className = 'bsc-error';
@@ -5026,7 +5026,7 @@ function renderCoinflipCard(container) {
             }, 1500);
         })
         .catch(function(err) {
-            console.error('[CoinFlip]', err);
+            console.warn('[CoinFlip]', err);
             coinEl.textContent = '\u26A0\uFE0F';
             var netErrMsg = document.createElement('span');
             netErrMsg.textContent = 'Network error. Please try again.';
@@ -5263,7 +5263,7 @@ function renderDiceCard(container) {
         })
         .catch(function(err) {
             clearInterval(spinInterval);
-            console.error('[Dice]', err);
+            console.warn('[Dice]', err);
             rollDisplay.textContent = '--';
             resultEl.className = 'dc-result err';
             var netErr = document.createElement('span');
@@ -5479,7 +5479,7 @@ function renderLossStreakCard(container) {
                 }
             })
             .catch(function(err) {
-                console.error('[LossStreakOffer]', err);
+                console.warn('[LossStreakOffer]', err);
                 resultDiv.style.color = '#e74c3c';
                 resultDiv.textContent = '';
                 var netErr = document.createElement('span');
@@ -5492,7 +5492,7 @@ function renderLossStreakCard(container) {
         container.appendChild(card);
     })
     .catch(function(err) {
-        console.error('[LossStreakOffer] eligibility check failed', err);
+        console.warn('[LossStreakOffer] eligibility check failed', err);
     });
 }
 
@@ -5764,7 +5764,7 @@ function renderReferralCard(container) {
                 }
             })
             .catch(function(err) {
-                console.error('[ReferralCard] apply error', err);
+                console.warn('[ReferralCard] apply error', err);
                 applyMsg.style.color = '#f87171';
                 applyMsg.textContent = '';
                 var netSpan = document.createElement('span');
@@ -5775,7 +5775,7 @@ function renderReferralCard(container) {
         });
     })
     .catch(function(err) {
-        console.error('[ReferralCard] fetch error', err);
+        console.warn('[ReferralCard] fetch error', err);
         card.removeChild(loadingEl);
         var errEl = document.createElement('div');
         errEl.className = 'ref-error';
@@ -5954,7 +5954,7 @@ function renderCrashGameCard(container) {
             }, 100);
         })
         .catch(function(err) {
-            console.error('[CrashCard] bet error', err);
+            console.warn('[CrashCard] bet error', err);
             setResult('Network error.', '#f87171');
             startBtn.disabled = false;
             betInput.disabled = false;
@@ -5999,7 +5999,7 @@ function renderCrashGameCard(container) {
             setTimeout(resetUI, 3000);
         })
         .catch(function(err) {
-            console.error('[CrashCard] cashout error', err);
+            console.warn('[CrashCard] cashout error', err);
             setResult('Network error on cashout.', '#f87171');
             gameActive = false;
             if (animInterval) { clearInterval(animInterval); animInterval = null; }
@@ -6031,7 +6031,7 @@ function renderCrashGameCard(container) {
             setTimeout(resetUI, 3000);
         })
         .catch(function(err) {
-            console.error('[CrashCard] result error', err);
+            console.warn('[CrashCard] result error', err);
             cashoutRow.style.display = 'none';
             multDisplay.className = 'crash-mult-display crashed';
             multDisplay.textContent = '\uD83D\uDCA5 CRASHED!';
@@ -6304,7 +6304,7 @@ function renderPlinkoCard(container) {
             }, 50);
         })
         .catch(function(err) {
-            console.error('[PlinkoCard] error', err);
+            console.warn('[PlinkoCard] error', err);
             resultEl.textContent = 'Connection error. Try again.';
             resultEl.style.color = '#f87171';
             dropping = false;
@@ -8758,7 +8758,7 @@ function renderGameOfDayCard(container) {
         buildMainContent(data);
     })
     .catch(function(err) {
-        console.error('[GameOfDay] fetch error:', err);
+        console.warn('[GameOfDay] fetch error:', err);
         showError('Could not load game of the day');
     });
 }

@@ -32,7 +32,7 @@ router.get('/status', authenticate, async function(req, res) {
       pendingPoints:  points
     });
   } catch (err) {
-    console.error('[LoyaltyShop] GET /status error:', err.message);
+    console.warn('[LoyaltyShop] GET /status error:', err.message);
     return res.status(500).json({ error: 'Failed to fetch loyalty status' });
   }
 });
@@ -67,7 +67,7 @@ router.post('/earn', authenticate, async function(req, res) {
 
     return res.json({ points: points, earned: earned });
   } catch (err) {
-    console.error('[LoyaltyShop] POST /earn error:', err.message);
+    console.warn('[LoyaltyShop] POST /earn error:', err.message);
     return res.status(500).json({ error: 'Failed to award loyalty points' });
   }
 });
@@ -124,7 +124,7 @@ router.post('/redeem', authenticate, async function(req, res) {
       credited:   creditAmount
     });
   } catch (err) {
-    console.error('[LoyaltyShop] POST /redeem error:', err.message);
+    console.warn('[LoyaltyShop] POST /redeem error:', err.message);
     return res.status(500).json({ error: 'Redemption failed' });
   }
 });

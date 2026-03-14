@@ -147,7 +147,7 @@ router.get('/state', authenticate, async function(req, res) {
       payTable: PAY_TABLE,
     });
   } catch (err) {
-    console.error('[VP] GET /state error:', err.message);
+    console.warn('[VP] GET /state error:', err.message);
     return res.status(500).json({ error: 'Failed to get state' });
   }
 });
@@ -194,7 +194,7 @@ router.post('/deal', authenticate, async function(req, res) {
       payTable:   PAY_TABLE,
     });
   } catch (err) {
-    console.error('[VP] POST /deal error:', err.message);
+    console.warn('[VP] POST /deal error:', err.message);
     return res.status(500).json({ error: 'Failed to deal' });
   }
 });
@@ -260,7 +260,7 @@ router.post('/draw', authenticate, async function(req, res) {
       payTable:   PAY_TABLE,
     });
   } catch (err) {
-    console.error('[VP] POST /draw error:', err.message);
+    console.warn('[VP] POST /draw error:', err.message);
     return res.status(500).json({ error: 'Failed to draw' });
   }
 });

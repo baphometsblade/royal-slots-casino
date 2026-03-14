@@ -89,7 +89,7 @@ router.get('/status', verifyToken, withSchema, async (req, res) => {
       nextAvailableAt
     });
   } catch (err) {
-    console.error('[reloadbonus] GET /status error:', err);
+    console.warn('[reloadbonus] GET /status error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -168,7 +168,7 @@ router.post('/claim', verifyToken, withSchema, async (req, res) => {
       message: `Reload bonus of $${bonus.toFixed(2)} added to bonus balance! Wager ${WAGERING_MULTIPLIER}x to unlock.`
     });
   } catch (err) {
-    console.error('[reloadbonus] POST /claim error:', err);
+    console.warn('[reloadbonus] POST /claim error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

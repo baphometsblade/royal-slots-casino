@@ -99,7 +99,7 @@ router.get('/price/:gameId', authenticate, async (req, res) => {
             priceAtMaxBet: Math.round(maxBet * multiplier * 100) / 100,
         });
     } catch (err) {
-        console.error('[BuyFeature] Price error:', err);
+        console.warn('[BuyFeature] Price error:', err);
         res.status(500).json({ error: 'Failed to fetch buy-feature price' });
     }
 });
@@ -245,7 +245,7 @@ router.post('/', authenticate, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('[BuyFeature] Error:', err);
+        console.warn('[BuyFeature] Error:', err);
         res.status(500).json({ error: 'Buy-feature failed' });
     }
 });

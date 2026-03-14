@@ -148,7 +148,7 @@ router.post('/deal', authenticate, async function(req, res) {
       dealerUp:    dealerCards[0],
     });
   } catch (err) {
-    console.error('[3CP] POST /deal error:', err.message);
+    console.warn('[3CP] POST /deal error:', err.message);
     return res.status(500).json({ error: 'Failed to deal' });
   }
 });
@@ -177,7 +177,7 @@ router.post('/fold', authenticate, async function(req, res) {
       dealerCards: game.dealerCards,
     });
   } catch (err) {
-    console.error('[3CP] POST /fold error:', err.message);
+    console.warn('[3CP] POST /fold error:', err.message);
     return res.status(500).json({ error: 'Failed to fold' });
   }
 });
@@ -265,7 +265,7 @@ router.post('/play', authenticate, async function(req, res) {
       newBalance: u2 ? parseFloat(u2.balance) : null,
     });
   } catch (err) {
-    console.error('[3CP] POST /play error:', err.message);
+    console.warn('[3CP] POST /play error:', err.message);
     return res.status(500).json({ error: 'Failed to play' });
   }
 });

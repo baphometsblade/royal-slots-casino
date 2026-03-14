@@ -7716,8 +7716,8 @@ function renderGameStatsWidget() {
         errDiv.textContent = 'Could not load game stats';
         widget.appendChild(errDiv);
 
-        if (typeof console !== 'undefined' && console.error) {
-            console.error('[GameStatsWidget] Fetch failed:', err.message || err);
+        if (typeof console !== 'undefined' && console.warn) {
+            console.warn('[GameStatsWidget] Fetch failed:', err.message || err);
         }
     });
 }

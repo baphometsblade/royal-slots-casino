@@ -33,7 +33,7 @@ router.post('/admin/run-winback', authenticate, requireAdmin, async function (re
             totalBonused: result.totalBonused,
         });
     } catch (err) {
-        console.error('[WinBack] Run cycle error:', err.message);
+        console.warn('[WinBack] Run cycle error:', err.message);
         res.status(500).json({ error: 'Failed to run win-back cycle' });
     }
 });
@@ -68,7 +68,7 @@ router.get('/user/winback-status', authenticate, async function (req, res) {
             } : null,
         });
     } catch (err) {
-        console.error('[WinBack] Status check error:', err.message);
+        console.warn('[WinBack] Status check error:', err.message);
         res.status(500).json({ error: 'Failed to check win-back status' });
     }
 });
@@ -147,7 +147,7 @@ router.get('/user/return-status', authenticate, async function (req, res) {
             message: matchedTier.message,
         });
     } catch (err) {
-        console.error('[ReturnStatus] Error:', err.message);
+        console.warn('[ReturnStatus] Error:', err.message);
         return res.status(500).json({ error: 'Failed to check return status' });
     }
 });

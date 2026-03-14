@@ -31,7 +31,7 @@ async function initAffiliateTable() {
         await db.run(sql, []);
         console.log('[Affiliate] Table initialized: affiliate_tracking');
     } catch (err) {
-        console.error('[Affiliate] Failed to initialize table:', err.message);
+        console.warn('[Affiliate] Failed to initialize table:', err.message);
     }
 }
 
@@ -109,7 +109,7 @@ router.post('/track', async (req, res) => {
 
         res.json({ tracked: true });
     } catch (err) {
-        console.error('[Affiliate] Track error:', err.message);
+        console.warn('[Affiliate] Track error:', err.message);
         res.status(500).json({ error: 'Failed to track attribution' });
     }
 });
@@ -181,7 +181,7 @@ router.post('/convert', authenticate, async (req, res) => {
 
         res.json({ converted: true, updated: result.changes || 0 });
     } catch (err) {
-        console.error('[Affiliate] Convert error:', err.message);
+        console.warn('[Affiliate] Convert error:', err.message);
         res.status(500).json({ error: 'Failed to record conversion' });
     }
 });
@@ -241,7 +241,7 @@ router.get('/stats', authenticate, async (req, res) => {
             generated_at: new Date().toISOString()
         });
     } catch (err) {
-        console.error('[Affiliate] Stats error:', err.message);
+        console.warn('[Affiliate] Stats error:', err.message);
         res.status(500).json({ error: 'Failed to retrieve stats' });
     }
 });
@@ -297,7 +297,7 @@ router.get('/stats/detail', authenticate, async (req, res) => {
             generated_at: new Date().toISOString()
         });
     } catch (err) {
-        console.error('[Affiliate] Detail stats error:', err.message);
+        console.warn('[Affiliate] Detail stats error:', err.message);
         res.status(500).json({ error: 'Failed to retrieve detail stats' });
     }
 });

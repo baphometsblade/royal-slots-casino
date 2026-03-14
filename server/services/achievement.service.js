@@ -43,7 +43,7 @@ async function grant(userId, achievementId) {
         // PG uses ON CONFLICT DO NOTHING instead of OR IGNORE
         // The query adapter handles this, but catch duplicate key errors gracefully
         if (e.message && e.message.includes('duplicate')) return null;
-        console.error('[Achievement] grant error:', e.message);
+        console.warn('[Achievement] grant error:', e.message);
         return null;
     }
 }

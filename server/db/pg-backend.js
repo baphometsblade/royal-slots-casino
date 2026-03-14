@@ -42,7 +42,7 @@ class PgBackend {
 
         // Surface pool errors so they don't crash the process silently
         this.pool.on('error', function (err) {
-            console.error('[DB/PG] Idle client error:', err.message);
+            console.warn('[DB/PG] Idle client error:', err.message);
         });
     }
 

@@ -207,7 +207,7 @@ router.post('/purchase', authenticate, async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[MatrixMoney] Purchase error:', err);
+        console.warn('[MatrixMoney] Purchase error:', err);
         res.status(500).json({ error: 'Purchase failed. Please try again.' });
     }
 });
@@ -350,7 +350,7 @@ router.post('/withdraw', authenticate, async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[MatrixMoney] Withdrawal error:', err);
+        console.warn('[MatrixMoney] Withdrawal error:', err);
         res.status(500).json({ error: 'Withdrawal failed. Please try again.' });
     }
 });
@@ -395,7 +395,7 @@ router.get('/balance', authenticate, async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[MatrixMoney] Balance error:', err);
+        console.warn('[MatrixMoney] Balance error:', err);
         res.status(500).json({ error: 'Failed to retrieve balance' });
     }
 });
@@ -424,7 +424,7 @@ router.get('/nfts', authenticate, async (req, res) => {
             disclaimer: 'Matrix Money NFTs are digital entertainment collectibles with no real-world monetary value and cannot be transferred to third parties.'
         });
     } catch (err) {
-        console.error('[MatrixMoney] NFTs error:', err);
+        console.warn('[MatrixMoney] NFTs error:', err);
         res.status(500).json({ error: 'Failed to retrieve NFT collection' });
     }
 });
@@ -451,7 +451,7 @@ router.get('/transactions', authenticate, async (req, res) => {
             }))
         });
     } catch (err) {
-        console.error('[MatrixMoney] Transactions error:', err);
+        console.warn('[MatrixMoney] Transactions error:', err);
         res.status(500).json({ error: 'Failed to retrieve transaction history' });
     }
 });

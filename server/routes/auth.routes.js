@@ -167,7 +167,7 @@ router.post('/register', async (req, res) => {
             user: { id: userId, username, email, balance: startBalance, referralCode: newReferralCode, referralBonusGranted: !!referrerId },
         });
     } catch (err) {
-        console.error('[Auth] Register error:', err);
+        console.warn('[Auth] Register error:', err);
         res.status(500).json({ error: 'Registration failed' });
     }
 });
@@ -230,7 +230,7 @@ router.post('/login', async (req, res) => {
             },
         });
     } catch (err) {
-        console.error('[Auth] Login error:', err);
+        console.warn('[Auth] Login error:', err);
         res.status(500).json({ error: 'Login failed' });
     }
 });
@@ -302,7 +302,7 @@ router.post('/forgot-password', async (req, res) => {
 
         res.json({ message: successMsg });
     } catch (err) {
-        console.error('[Auth] Forgot password error:', err);
+        console.warn('[Auth] Forgot password error:', err);
         res.status(500).json({ error: 'Request failed' });
     }
 });
@@ -347,7 +347,7 @@ router.post('/reset-password', async (req, res) => {
 
         res.json({ message: 'Password reset successful! You can now sign in.' });
     } catch (err) {
-        console.error('[Auth] Reset password error:', err);
+        console.warn('[Auth] Reset password error:', err);
         res.status(500).json({ error: 'Password reset failed' });
     }
 });
@@ -439,7 +439,7 @@ router.post('/verify-email', async (req, res) => {
 
         res.json({ message: 'Email verified successfully!' });
     } catch (err) {
-        console.error('[Auth] Verify email error:', err);
+        console.warn('[Auth] Verify email error:', err);
         res.status(500).json({ error: 'Email verification failed' });
     }
 });
@@ -490,7 +490,7 @@ router.post('/resend-verification', async (req, res) => {
 
         res.json({ message: successMsg });
     } catch (err) {
-        console.error('[Auth] Resend verification error:', err);
+        console.warn('[Auth] Resend verification error:', err);
         res.status(500).json({ error: 'Request failed' });
     }
 });

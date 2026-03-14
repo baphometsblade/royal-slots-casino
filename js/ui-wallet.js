@@ -3680,7 +3680,7 @@ async function walletRenderWeekendCashbackSection(parentContainer) {
             data = await resp.json();
         }
     } catch (e) {
-        console.error('[WeekendCashback]', e);
+        console.warn('[WeekendCashback]', e);
     }
 
     if (data && data.active === true) {
@@ -3800,7 +3800,7 @@ async function walletRenderWinbackSection(parentContainer) {
             data = await resp.json();
         }
     } catch (e) {
-        console.error('[Winback]', e);
+        console.warn('[Winback]', e);
     }
 
     // No active winback — silently remove the placeholder and bail out
@@ -3929,7 +3929,7 @@ async function walletRenderVipDepositBonusSection(parentContainer) {
         });
         if (resp.ok) data = await resp.json();
     } catch (err) {
-        console.error('[VipDepositBonus]', err);
+        console.warn('[VipDepositBonus]', err);
     }
 
     // If no data or tier is none, don't render anything
@@ -4022,7 +4022,7 @@ async function walletRenderVipDepositBonusSection(parentContainer) {
                 });
                 claimResult = await claimResp.json();
             } catch (claimErr) {
-                console.error('[VipDepositBonus claim]', claimErr);
+                console.warn('[VipDepositBonus claim]', claimErr);
             }
 
             if (claimResult && claimResult.success) {
@@ -4152,7 +4152,7 @@ async function walletRenderSubscriptionSection(parentContainer) {
         });
         if (resp.ok) data = await resp.json();
     } catch (err) {
-        console.error('[SubscriptionSection]', err);
+        console.warn('[SubscriptionSection]', err);
     }
 
     // Remove skeletons
@@ -4228,7 +4228,7 @@ async function walletRenderSubscriptionSection(parentContainer) {
                 });
                 result = await claimResp.json();
             } catch (claimErr) {
-                console.error('[SubscriptionSection claim]', claimErr);
+                console.warn('[SubscriptionSection claim]', claimErr);
             }
 
             if (result && result.success) {
@@ -4690,7 +4690,7 @@ function renderLimboCard(parentContainer) {
                 if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay(data.newBalance);
             }
         } catch (e) {
-            console.error('Limbo play error:', e);
+            console.warn('Limbo play error:', e);
             if (typeof showToast === 'function') showToast('Network error. Please try again.', 'error');
         }
 
@@ -5007,7 +5007,7 @@ function renderBlackjackWidget(parentContainer) {
             dealBtn.textContent = 'DEAL';
 
         } catch (e) {
-            console.error('Blackjack start error:', e);
+            console.warn('Blackjack start error:', e);
             if (typeof showToast === 'function') showToast('Network error. Please try again.', 'error');
             bjResetUI();
         }
@@ -5050,7 +5050,7 @@ function renderBlackjackWidget(parentContainer) {
             }
 
         } catch (e) {
-            console.error('Blackjack hit error:', e);
+            console.warn('Blackjack hit error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             bjSetActionButtons(true, false);
         }
@@ -5080,7 +5080,7 @@ function renderBlackjackWidget(parentContainer) {
             bjHandleEnd(data, parseFloat(betInput.value));
 
         } catch (e) {
-            console.error('Blackjack stand error:', e);
+            console.warn('Blackjack stand error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             bjSetActionButtons(true, false);
         }
@@ -5110,7 +5110,7 @@ function renderBlackjackWidget(parentContainer) {
             bjHandleEnd(data, parseFloat(betInput.value) * 2);
 
         } catch (e) {
-            console.error('Blackjack double error:', e);
+            console.warn('Blackjack double error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             bjSetActionButtons(true, bjFirstAction);
         }
@@ -5371,7 +5371,7 @@ function renderSicBoWidget(parentContainer) {
             });
 
         } catch (e) {
-            console.error('Sic Bo roll error:', e);
+            console.warn('Sic Bo roll error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             rollBtn.disabled = false;
             rollBtn.textContent = 'ROLL';
@@ -5723,7 +5723,7 @@ function renderRedDogCard(parentContainer) {
                             dealBtn.textContent = 'PLAY AGAIN';
                         }
                     } catch (e2) {
-                        console.error('Red Dog stand error:', e2);
+                        console.warn('Red Dog stand error:', e2);
                         rdShowResult('Network error.', 'loss');
                         dealBtn.disabled = false;
                         dealBtn.textContent = 'PLAY AGAIN';
@@ -5749,7 +5749,7 @@ function renderRedDogCard(parentContainer) {
                             dealBtn.textContent = 'PLAY AGAIN';
                         }
                     } catch (e3) {
-                        console.error('Red Dog pair draw error:', e3);
+                        console.warn('Red Dog pair draw error:', e3);
                         rdShowResult('Network error.', 'loss');
                         dealBtn.disabled = false;
                         dealBtn.textContent = 'PLAY AGAIN';
@@ -5763,7 +5763,7 @@ function renderRedDogCard(parentContainer) {
             }
 
         } catch (e) {
-            console.error('Red Dog deal error:', e);
+            console.warn('Red Dog deal error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             dealBtn.disabled = false;
             dealBtn.textContent = 'DEAL';
@@ -5797,7 +5797,7 @@ function renderRedDogCard(parentContainer) {
             rdRevealThirdCard(data.card3, data.win, data.payout, data.profit, data.newBalance, false);
 
         } catch (e) {
-            console.error('Red Dog raise error:', e);
+            console.warn('Red Dog raise error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             raiseBtn.disabled = false;
             standBtn.disabled = false;
@@ -5831,7 +5831,7 @@ function renderRedDogCard(parentContainer) {
             rdRevealThirdCard(data.card3, data.win, data.payout, data.profit, data.newBalance, false);
 
         } catch (e) {
-            console.error('Red Dog stand error:', e);
+            console.warn('Red Dog stand error:', e);
             if (typeof showToast === 'function') showToast('Network error.', 'error');
             raiseBtn.disabled = false;
             standBtn.disabled = false;
@@ -6231,7 +6231,7 @@ function renderMoneyWheelCard(parentContainer) {
             });
 
         } catch (e) {
-            console.error('Money Wheel spin error:', e);
+            console.warn('Money Wheel spin error:', e);
             if (typeof showToast === 'function') showToast('Network error. Please try again.', 'error');
             mwSpinning = false;
             spinBtn.disabled = false;
@@ -6681,7 +6681,7 @@ function renderWheelOfFortuneCard(parentContainer) {
 
         })
         .catch(function(e) {
-            console.error('Wheel of Fortune spin error:', e);
+            console.warn('Wheel of Fortune spin error:', e);
             if (typeof showToast === 'function') showToast(e.message || 'Network error. Please try again.', 'error');
             wofSpinning = false;
             spinBtn.disabled = false;
@@ -6993,7 +6993,7 @@ function renderDepositStreakCard(parentContainer) {
         }
     })
     .catch(function(err) {
-        console.error('Deposit streak load error:', err);
+        console.warn('Deposit streak load error:', err);
         card.innerHTML = '';
 
         var errorEl = document.createElement('div');

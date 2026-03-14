@@ -203,7 +203,7 @@ async function finalizeContest(contestId) {
                 wagering: wageringReq
             });
         } catch (e) {
-            console.error('[Contest] Prize award error for user', entry.userId, ':', e.message);
+            console.warn('[Contest] Prize award error for user', entry.userId, ':', e.message);
         }
     }
 
@@ -243,7 +243,7 @@ async function checkAndFinalizeExpired() {
         try {
             await finalizeContest(contest.id);
         } catch (e) {
-            console.error('[Contest] Auto-finalize error for contest', contest.id, ':', e.message);
+            console.warn('[Contest] Auto-finalize error for contest', contest.id, ':', e.message);
         }
     }
 }

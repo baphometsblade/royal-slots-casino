@@ -224,7 +224,7 @@ async function getPersonalizedOffers(userId) {
         return offers.slice(0, 3);
 
     } catch (e) {
-        console.error('[BonusRules] error:', e.message);
+        console.warn('[BonusRules] error:', e.message);
         return offers;
     }
 }

@@ -165,7 +165,7 @@ router.get('/rate', async (req, res) => {
             updated_at: new Date().toISOString()
         });
     } catch (err) {
-        console.error('[Crypto] Rate fetch error:', err);
+        console.warn('[Crypto] Rate fetch error:', err);
         res.status(500).json({ error: 'Failed to fetch ETH price' });
     }
 });
@@ -337,7 +337,7 @@ router.post('/verify-deposit', authenticate, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('[Crypto] Verify deposit error:', err);
+        console.warn('[Crypto] Verify deposit error:', err);
         res.status(500).json({ error: 'Failed to verify transaction. Please try again.' });
     }
 });
@@ -377,7 +377,7 @@ router.get('/deposit-status/:txHash', authenticate, async (req, res) => {
             required: MIN_CONFIRMATIONS
         });
     } catch (err) {
-        console.error('[Crypto] Deposit status error:', err);
+        console.warn('[Crypto] Deposit status error:', err);
         res.status(500).json({ error: 'Failed to check transaction status' });
     }
 });

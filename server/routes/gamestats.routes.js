@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
         });
         res.json({ stats });
     } catch (err) {
-        console.error('[GameStats] Error:', err);
+        console.warn('[GameStats] Error:', err);
         res.status(500).json({ error: 'Failed to load game stats' });
     }
 });

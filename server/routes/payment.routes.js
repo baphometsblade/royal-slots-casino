@@ -158,7 +158,7 @@ router.get('/methods', authenticate, async (req, res) => {
         );
         res.json({ methods });
     } catch (err) {
-        console.error('[Payment] List methods error:', err);
+        console.warn('[Payment] List methods error:', err);
         res.status(500).json({ error: 'Failed to retrieve payment methods' });
     }
 });
@@ -244,7 +244,7 @@ router.post('/methods', authenticate, async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[Payment] Add method error:', err);
+        console.warn('[Payment] Add method error:', err);
         res.status(500).json({ error: 'Failed to add payment method' });
     }
 });
@@ -280,7 +280,7 @@ router.delete('/methods/:id', authenticate, async (req, res) => {
 
         res.json({ message: 'Payment method removed' });
     } catch (err) {
-        console.error('[Payment] Delete method error:', err);
+        console.warn('[Payment] Delete method error:', err);
         res.status(500).json({ error: 'Failed to remove payment method' });
     }
 });
@@ -307,7 +307,7 @@ router.put('/methods/:id/default', authenticate, async (req, res) => {
 
         res.json({ message: 'Default payment method updated' });
     } catch (err) {
-        console.error('[Payment] Set default error:', err);
+        console.warn('[Payment] Set default error:', err);
         res.status(500).json({ error: 'Failed to update default payment method' });
     }
 });
@@ -396,7 +396,7 @@ router.post('/deposit', authenticate, async (req, res) => {
             gemsAwarded: 0
         });
     } catch (err) {
-        console.error('[Payment] Deposit error:', err);
+        console.warn('[Payment] Deposit error:', err);
         res.status(500).json({ error: 'Deposit failed' });
     }
 });
@@ -411,7 +411,7 @@ router.get('/deposits', authenticate, async (req, res) => {
         );
         res.json({ deposits });
     } catch (err) {
-        console.error('[Payment] List deposits error:', err);
+        console.warn('[Payment] List deposits error:', err);
         res.status(500).json({ error: 'Failed to retrieve deposit history' });
     }
 });
@@ -584,7 +584,7 @@ router.post('/withdraw', authenticate, async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[Payment] Withdrawal error:', err);
+        console.warn('[Payment] Withdrawal error:', err);
         res.status(500).json({ error: 'Withdrawal failed' });
     }
 });
@@ -599,7 +599,7 @@ router.get('/withdrawals', authenticate, async (req, res) => {
         );
         res.json({ withdrawals });
     } catch (err) {
-        console.error('[Payment] List withdrawals error:', err);
+        console.warn('[Payment] List withdrawals error:', err);
         res.status(500).json({ error: 'Failed to retrieve withdrawal history' });
     }
 });
@@ -654,7 +654,7 @@ router.post('/withdraw/verify-otp', authenticate, otpLimiter, async (req, res) =
         );
         res.json({ message: 'OTP verified. Withdrawal approved for processing.', withdrawal_id: wd.id });
     } catch (err) {
-        console.error('[Payment] OTP verify error:', err);
+        console.warn('[Payment] OTP verify error:', err);
         res.status(500).json({ error: 'Failed to verify OTP' });
     }
 });
@@ -703,7 +703,7 @@ router.post('/withdraw/:id/cancel', authenticate, async (req, res) => {
             balance: newBalance
         });
     } catch (err) {
-        console.error('[Payment] Cancel withdrawal error:', err);
+        console.warn('[Payment] Cancel withdrawal error:', err);
         res.status(500).json({ error: 'Failed to cancel withdrawal' });
     }
 });
@@ -722,7 +722,7 @@ router.get('/limits', authenticate, async (req, res) => {
         );
         res.json({ limits });
     } catch (err) {
-        console.error('[Payment] Get limits error:', err);
+        console.warn('[Payment] Get limits error:', err);
         res.status(500).json({ error: 'Failed to retrieve limits' });
     }
 });
@@ -813,7 +813,7 @@ router.put('/limits', authenticate, async (req, res) => {
 
         res.json(response);
     } catch (err) {
-        console.error('[Payment] Update limits error:', err);
+        console.warn('[Payment] Update limits error:', err);
         res.status(500).json({ error: 'Failed to update limits' });
     }
 });
@@ -846,7 +846,7 @@ router.post('/self-exclude', authenticate, async (req, res) => {
             self_excluded_until: excludedUntil
         });
     } catch (err) {
-        console.error('[Payment] Self-exclude error:', err);
+        console.warn('[Payment] Self-exclude error:', err);
         res.status(500).json({ error: 'Failed to activate self-exclusion' });
     }
 });
@@ -960,7 +960,7 @@ router.post('/admin/approve-deposit', authenticate, async (req, res) => {
             gemsAwarded: depositGems
         });
     } catch (err) {
-        console.error('[Payment] Approve deposit error:', err);
+        console.warn('[Payment] Approve deposit error:', err);
         res.status(500).json({ error: 'Failed to approve deposit' });
     }
 });
@@ -980,7 +980,7 @@ router.post('/webhook/confirm', async (req, res) => {
         // Never falls back to JWT_SECRET (attacker who knows default JWT secret could forge deposits).
         const expectedSecret = process.env.WEBHOOK_SECRET;
         if (!expectedSecret) {
-            console.error('[Webhook] WEBHOOK_SECRET not configured — rejecting webhook');
+            console.warn('[Webhook] WEBHOOK_SECRET not configured — rejecting webhook');
             return res.status(503).json({ error: 'Webhook not configured' });
         }
         if (!webhookSecret || webhookSecret !== expectedSecret) {
@@ -1077,7 +1077,7 @@ router.post('/webhook/confirm', async (req, res) => {
         console.log(`[Webhook] Deposit ${deposit.id} confirmed — $${deposit.amount} + $${bonusAmount} bonus credited to user ${deposit.user_id}`);
         res.json({ message: 'Deposit confirmed', depositId: deposit.id, amount: deposit.amount, bonus: bonusAmount, gemsAwarded: depositGems });
     } catch (err) {
-        console.error('[Webhook] Payment confirm error:', err);
+        console.warn('[Webhook] Payment confirm error:', err);
         res.status(500).json({ error: 'Webhook processing failed' });
     }
 });
@@ -1150,7 +1150,7 @@ router.post('/stripe/checkout', authenticate, async (req, res) => {
             reference: result.reference,
         });
     } catch (err) {
-        console.error('[Stripe] Checkout error:', err);
+        console.warn('[Stripe] Checkout error:', err);
         res.status(500).json({ error: err.message || 'Failed to create Stripe checkout session' });
     }
 });
@@ -1208,7 +1208,7 @@ router.post('/stripe/payment-intent', authenticate, async (req, res) => {
             reference: result.reference,
         });
     } catch (err) {
-        console.error('[Stripe] PaymentIntent error:', err);
+        console.warn('[Stripe] PaymentIntent error:', err);
         res.status(500).json({ error: err.message || 'Failed to create payment intent' });
     }
 });
@@ -1230,7 +1230,7 @@ router.post('/stripe/webhook', async (req, res) => {
         // req.body should be a raw Buffer (configured via express.raw in index.js)
         const rawBody = req.body;
         if (!Buffer.isBuffer(rawBody)) {
-            console.error('[Stripe Webhook] Body is not a Buffer — ensure express.raw() middleware is applied for this route');
+            console.warn('[Stripe Webhook] Body is not a Buffer — ensure express.raw() middleware is applied for this route');
             return res.status(400).json({ error: 'Webhook body must be raw — check server middleware configuration' });
         }
 
@@ -1239,7 +1239,7 @@ router.post('/stripe/webhook', async (req, res) => {
         console.log(`[Stripe Webhook] Processed: ${result.event.type} — handled: ${result.action.handled}`);
         res.json({ received: true, event: result.event.type, handled: result.action.handled });
     } catch (err) {
-        console.error('[Stripe Webhook] Error:', err.message);
+        console.warn('[Stripe Webhook] Error:', err.message);
         // Stripe recommends returning 400 for signature failures so it retries
         res.status(400).json({ error: err.message });
     }

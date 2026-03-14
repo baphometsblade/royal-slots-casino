@@ -89,7 +89,7 @@ router.post('/play', authenticate, async function(req, res) {
       totalSegments: SEGMENTS.length,
     });
   } catch (err) {
-    console.error('[Wheel] POST /play error:', err.message);
+    console.warn('[Wheel] POST /play error:', err.message);
     return res.status(500).json({ error: 'Failed to spin wheel' });
   }
 });

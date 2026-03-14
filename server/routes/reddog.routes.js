@@ -109,7 +109,7 @@ router.post('/deal', authenticate, async function(req, res) {
       spread:  spread,
     });
   } catch (err) {
-    console.error('[RedDog] POST /deal error:', err.message);
+    console.warn('[RedDog] POST /deal error:', err.message);
     return res.status(500).json({ error: 'Failed to deal' });
   }
 });
@@ -205,7 +205,7 @@ router.post('/raise', authenticate, async function(req, res) {
   try {
     await resolveGame(req.body.gameId, req.user.id, true, res);
   } catch (err) {
-    console.error('[RedDog] POST /raise error:', err.message);
+    console.warn('[RedDog] POST /raise error:', err.message);
     return res.status(500).json({ error: 'Failed to raise' });
   }
 });
@@ -216,7 +216,7 @@ router.post('/stand', authenticate, async function(req, res) {
   try {
     await resolveGame(req.body.gameId, req.user.id, false, res);
   } catch (err) {
-    console.error('[RedDog] POST /stand error:', err.message);
+    console.warn('[RedDog] POST /stand error:', err.message);
     return res.status(500).json({ error: 'Failed to stand' });
   }
 });

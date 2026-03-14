@@ -108,7 +108,7 @@ router.post('/buy', authenticate, async function(req, res) {
 
     return res.json({ success: true, gameId, cost, tier, label: TIERS[tier].label });
   } catch (err) {
-    console.error('[Scratch] POST /buy error:', err.message);
+    console.warn('[Scratch] POST /buy error:', err.message);
     return res.status(500).json({ error: 'Failed to buy scratch card' });
   }
 });
@@ -153,7 +153,7 @@ router.post('/reveal', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[Scratch] POST /reveal error:', err.message);
+    console.warn('[Scratch] POST /reveal error:', err.message);
     return res.status(500).json({ error: 'Failed to reveal card' });
   }
 });

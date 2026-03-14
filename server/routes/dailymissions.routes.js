@@ -100,7 +100,7 @@ router.get('/', authenticate, async function(req, res) {
     const missions = await getMissionsWithProgress(req.user.id);
     return res.json({ missions, date: todayStr() });
   } catch (err) {
-    console.error('[DailyMissions] GET / error:', err.message);
+    console.warn('[DailyMissions] GET / error:', err.message);
     return res.status(500).json({ error: 'Failed to get missions' });
   }
 });
@@ -115,7 +115,7 @@ router.post('/progress', authenticate, async function(req, res) {
     const missions = await getMissionsWithProgress(req.user.id);
     return res.json({ success: true, missions });
   } catch (err) {
-    console.error('[DailyMissions] POST /progress error:', err.message);
+    console.warn('[DailyMissions] POST /progress error:', err.message);
     return res.status(500).json({ error: 'Failed to get missions' });
   }
 });
@@ -164,7 +164,7 @@ router.post('/claim/:slot', authenticate, async function(req, res) {
       newBalance,
     });
   } catch (err) {
-    console.error('[DailyMissions] POST /claim error:', err.message);
+    console.warn('[DailyMissions] POST /claim error:', err.message);
     return res.status(500).json({ error: 'Failed to claim mission reward' });
   }
 });

@@ -104,7 +104,7 @@ async function checkDailyLossLimit(userId, proposedBet) {
             cashback: null
         };
     } catch (e) {
-        console.error('[LossLimit] check error:', e.message);
+        console.warn('[LossLimit] check error:', e.message);
         return { allowed: true, dailyLoss: 0, limit: 0 }; // fail open
     }
 }

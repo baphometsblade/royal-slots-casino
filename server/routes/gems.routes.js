@@ -11,7 +11,7 @@ router.get('/', authenticate, async (req, res) => {
         const result = await gemsService.getBalance(req.user.id);
         res.json(result);
     } catch (err) {
-        console.error('[Gems] GET / error:', err.message);
+        console.warn('[Gems] GET / error:', err.message);
         res.status(500).json({ error: 'Failed to fetch gem balance' });
     }
 });
@@ -21,7 +21,7 @@ router.get('/packs', async (req, res) => {
     try {
         res.json({ packs: gemsService.GEM_PACKS });
     } catch (err) {
-        console.error('[Gems] GET /packs error:', err.message);
+        console.warn('[Gems] GET /packs error:', err.message);
         res.status(500).json({ error: 'Failed to fetch gem packs' });
     }
 });
@@ -34,7 +34,7 @@ router.post('/purchase', authenticate, async (req, res) => {
         const result = await gemsService.purchaseGems(req.user.id, packId);
         res.json(result);
     } catch (err) {
-        console.error('[Gems] POST /purchase error:', err.message);
+        console.warn('[Gems] POST /purchase error:', err.message);
         res.status(400).json({ error: err.message });
     }
 });
@@ -46,7 +46,7 @@ router.get('/history', authenticate, async (req, res) => {
         const history = await gemsService.getHistory(req.user.id, limit);
         res.json({ history });
     } catch (err) {
-        console.error('[Gems] GET /history error:', err.message);
+        console.warn('[Gems] GET /history error:', err.message);
         res.status(500).json({ error: 'Failed to fetch gem history' });
     }
 });
@@ -74,7 +74,7 @@ router.post('/award', authenticate, async (req, res) => {
         const result = await gemsService.addGems(req.user.id, amount, 'Earned via gameplay: ' + reason);
         res.json({ success: true, gemsAwarded: amount, newBalance: result.newBalance });
     } catch (err) {
-        console.error('[Gems] POST /award error:', err.message);
+        console.warn('[Gems] POST /award error:', err.message);
         res.status(500).json({ error: 'Failed to award gems' });
     }
 });

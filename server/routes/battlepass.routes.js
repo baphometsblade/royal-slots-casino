@@ -10,7 +10,7 @@ router.get('/', authenticate, async (req, res) => {
         const progress = await battlepass.getProgress(req.user.id);
         res.json(progress || { error: 'No active season' });
     } catch (err) {
-        console.error('[BattlePass] getProgress error:', err.message);
+        console.warn('[BattlePass] getProgress error:', err.message);
         res.status(500).json({ error: 'Failed to load battle pass' });
     }
 });
@@ -21,7 +21,7 @@ router.post('/buy-premium', authenticate, async (req, res) => {
         const result = await battlepass.buyPremium(req.user.id);
         res.json(result);
     } catch (err) {
-        console.error('[BattlePass] buyPremium error:', err.message);
+        console.warn('[BattlePass] buyPremium error:', err.message);
         res.status(400).json({ error: err.message });
     }
 });
@@ -34,7 +34,7 @@ router.post('/claim/:level', authenticate, async (req, res) => {
         const result = await battlepass.claimReward(req.user.id, level, track);
         res.json(result);
     } catch (err) {
-        console.error('[BattlePass] claimReward error:', err.message);
+        console.warn('[BattlePass] claimReward error:', err.message);
         res.status(400).json({ error: err.message });
     }
 });

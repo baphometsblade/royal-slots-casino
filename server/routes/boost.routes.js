@@ -11,7 +11,7 @@ router.get('/', authenticate, async (req, res) => {
         const boosts = await boostService.getActiveBoosts(req.user.id);
         res.json({ boosts });
     } catch (err) {
-        console.error('[Boosts] GET / error:', err.message);
+        console.warn('[Boosts] GET / error:', err.message);
         res.status(500).json({ error: 'Failed to fetch active boosts' });
     }
 });
@@ -21,7 +21,7 @@ router.get('/available', async (req, res) => {
     try {
         res.json({ boosts: boostService.getBoostDefs() });
     } catch (err) {
-        console.error('[Boosts] GET /available error:', err.message);
+        console.warn('[Boosts] GET /available error:', err.message);
         res.status(500).json({ error: 'Failed to fetch boost definitions' });
     }
 });
@@ -34,7 +34,7 @@ router.post('/purchase', authenticate, async (req, res) => {
         const result = await boostService.purchaseBoost(req.user.id, boostType);
         res.json(result);
     } catch (err) {
-        console.error('[Boosts] POST /purchase error:', err.message);
+        console.warn('[Boosts] POST /purchase error:', err.message);
         res.status(400).json({ error: err.message });
     }
 });

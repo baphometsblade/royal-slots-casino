@@ -107,7 +107,7 @@ router.post('/start', authenticate, async function(req, res) {
       canCashout: false,
     });
   } catch (err) {
-    console.error('[Hilo] POST /start error:', err.message);
+    console.warn('[Hilo] POST /start error:', err.message);
     return res.status(500).json({ error: 'Failed to start Hilo' });
   }
 });
@@ -167,7 +167,7 @@ router.post('/guess', authenticate, async function(req, res) {
       });
     }
   } catch (err) {
-    console.error('[Hilo] POST /guess error:', err.message);
+    console.warn('[Hilo] POST /guess error:', err.message);
     return res.status(500).json({ error: 'Failed to process guess' });
   }
 });
@@ -210,7 +210,7 @@ router.post('/cashout', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[Hilo] POST /cashout error:', err.message);
+    console.warn('[Hilo] POST /cashout error:', err.message);
     return res.status(500).json({ error: 'Failed to cashout' });
   }
 });

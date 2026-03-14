@@ -165,7 +165,7 @@ router.post('/spin', authenticate, async function(req, res) {
     });
 
   } catch (err) {
-    console.error('[Roulette] POST /spin error:', err.message);
+    console.warn('[Roulette] POST /spin error:', err.message);
     return res.status(500).json({ error: 'Failed to process spin' });
   }
 });

@@ -156,7 +156,7 @@ async function getActiveCampaigns(userId) {
             description: null
         }));
     } catch (e) {
-        console.error('[Campaign] DB query error:', e.message);
+        console.warn('[Campaign] DB query error:', e.message);
         // Continue — we can still return standing campaigns
     }
 
@@ -177,7 +177,7 @@ async function getActiveCampaigns(userId) {
             }
         }
     } catch (e) {
-        console.error('[Campaign] standing campaigns error:', e.message);
+        console.warn('[Campaign] standing campaigns error:', e.message);
         // Non-fatal — return whatever DB campaigns we have
     }
 

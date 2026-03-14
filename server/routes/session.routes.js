@@ -42,7 +42,7 @@ router.get('/status', authenticate, async (req, res) => {
             remaining
         });
     } catch (err) {
-        console.error('[Session] Status error:', err);
+        console.warn('[Session] Status error:', err);
         res.status(500).json({ error: 'Failed to get session status' });
     }
 });
@@ -58,7 +58,7 @@ router.post('/start', authenticate, async (req, res) => {
             startedAt: new Date(session.startedAt).toISOString()
         });
     } catch (err) {
-        console.error('[Session] Start error:', err);
+        console.warn('[Session] Start error:', err);
         res.status(500).json({ error: 'Failed to start session' });
     }
 });
@@ -75,7 +75,7 @@ router.post('/end', authenticate, async (req, res) => {
             elapsed: info ? info.elapsedMinutes : 0
         });
     } catch (err) {
-        console.error('[Session] End error:', err);
+        console.warn('[Session] End error:', err);
         res.status(500).json({ error: 'Failed to end session' });
     }
 });
@@ -94,7 +94,7 @@ router.get('/limit', authenticate, async (req, res) => {
 
         res.json({ limit });
     } catch (err) {
-        console.error('[Session] Get limit error:', err);
+        console.warn('[Session] Get limit error:', err);
         res.status(500).json({ error: 'Failed to get session limit' });
     }
 });
@@ -147,7 +147,7 @@ router.put('/limit', authenticate, async (req, res) => {
             res.json({ message: 'Session time limit removed', limit: null });
         }
     } catch (err) {
-        console.error('[Session] Set limit error:', err);
+        console.warn('[Session] Set limit error:', err);
         res.status(500).json({ error: 'Failed to set session limit' });
     }
 });

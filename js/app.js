@@ -978,7 +978,7 @@
                 if (!data.active) return;
                 _showWeekendCashbackToast(data);
             })
-            .catch(function(e) { console.error('[WeekendCashback]', e); });
+            .catch(function(e) { console.warn('[WeekendCashback]', e); });
         }
 
         function _showWeekendCashbackToast(data) {

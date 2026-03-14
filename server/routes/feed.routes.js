@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
 
         res.json({ feed });
     } catch (err) {
-        console.error('[Feed] GET / error:', err.message);
+        console.warn('[Feed] GET / error:', err.message);
         res.status(500).json({ error: 'Failed to load feed' });
     }
 });

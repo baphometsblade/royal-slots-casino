@@ -76,7 +76,7 @@ async function mintOnDeposit(db, opts) {
         return tokenId;
     } catch (err) {
         // Fire-and-forget — never block the deposit flow
-        console.error('[NFT] mintOnDeposit error:', err.message);
+        console.warn('[NFT] mintOnDeposit error:', err.message);
         return null;
     }
 }
@@ -108,7 +108,7 @@ async function recordResaleOnWithdrawal(db, opts) {
         return tokenId;
     } catch (err) {
         // Fire-and-forget — never block the withdrawal flow
-        console.error('[NFT] recordResaleOnWithdrawal error:', err.message);
+        console.warn('[NFT] recordResaleOnWithdrawal error:', err.message);
         return null;
     }
 }

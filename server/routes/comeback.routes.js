@@ -84,7 +84,7 @@ router.get('/comeback-bonus', authenticate, async function (req, res) {
             message: result.message
         });
     } catch (err) {
-        console.error('[ComebackBonus] Check error:', err.message);
+        console.warn('[ComebackBonus] Check error:', err.message);
         return res.status(500).json({ error: 'Failed to check comeback bonus eligibility' });
     }
 });
@@ -129,7 +129,7 @@ router.post('/claim-comeback-bonus', authenticate, async function (req, res) {
             bonusBalance: updated ? parseFloat(updated.bonus_balance) : 0
         });
     } catch (err) {
-        console.error('[ComebackBonus] Claim error:', err.message);
+        console.warn('[ComebackBonus] Claim error:', err.message);
         return res.status(500).json({ error: 'Failed to claim comeback bonus' });
     }
 });

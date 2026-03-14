@@ -74,7 +74,7 @@ router.post('/request-deletion', authenticate, async (req, res) => {
             scheduledFor: scheduledFor
         });
     } catch (err) {
-        console.error('[AccountDeletion] Request deletion error:', err);
+        console.warn('[AccountDeletion] Request deletion error:', err);
         res.status(500).json({ error: 'Failed to schedule account deletion' });
     }
 });
@@ -109,7 +109,7 @@ router.post('/cancel-deletion', authenticate, async (req, res) => {
             message: 'Account deletion cancelled. Your account is safe.'
         });
     } catch (err) {
-        console.error('[AccountDeletion] Cancel deletion error:', err);
+        console.warn('[AccountDeletion] Cancel deletion error:', err);
         res.status(500).json({ error: 'Failed to cancel account deletion' });
     }
 });
@@ -140,7 +140,7 @@ router.get('/deletion-status', authenticate, async (req, res) => {
             scheduledFor: deletionRequest.scheduled_for
         });
     } catch (err) {
-        console.error('[AccountDeletion] Deletion status error:', err);
+        console.warn('[AccountDeletion] Deletion status error:', err);
         res.status(500).json({ error: 'Failed to check deletion status' });
     }
 });

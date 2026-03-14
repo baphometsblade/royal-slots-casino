@@ -56,7 +56,7 @@ router.get('/status', authenticate, async function(req, res) {
     const available = lastSpin !== todayStr();
     return res.json({ available, lastSpin, segments: SEGMENTS.map(function(s, i) { return { index: i, label: s.label, type: s.type }; }) });
   } catch (err) {
-    console.error('[FortuneWheel] GET /status error:', err.message);
+    console.warn('[FortuneWheel] GET /status error:', err.message);
     return res.status(500).json({ error: 'Failed to get status' });
   }
 });
@@ -120,7 +120,7 @@ router.post('/spin', authenticate, async function(req, res) {
       newBalance,
     });
   } catch (err) {
-    console.error('[FortuneWheel] POST /spin error:', err.message);
+    console.warn('[FortuneWheel] POST /spin error:', err.message);
     return res.status(500).json({ error: 'Failed to spin' });
   }
 });

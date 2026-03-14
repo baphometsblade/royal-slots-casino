@@ -119,7 +119,7 @@ router.get('/vip-deposit-bonus', authenticate, async function(req, res) {
             })
         });
     } catch (err) {
-        console.error('[vipdeposit] GET /vip-deposit-bonus error:', err);
+        console.warn('[vipdeposit] GET /vip-deposit-bonus error:', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -211,7 +211,7 @@ router.post('/claim-vip-deposit-bonus', authenticate, async function(req, res) {
             newBonusBalance: updated ? parseFloat(updated.bonus_balance) || 0 : 0
         });
     } catch (err) {
-        console.error('[vipdeposit] POST /claim-vip-deposit-bonus error:', err);
+        console.warn('[vipdeposit] POST /claim-vip-deposit-bonus error:', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -255,7 +255,7 @@ router.get('/weekend-cashback', authenticate, async function(req, res) {
             });
         }
     } catch (err) {
-        console.error('[vipdeposit] GET /weekend-cashback error:', err);
+        console.warn('[vipdeposit] GET /weekend-cashback error:', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });

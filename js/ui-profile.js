@@ -1483,7 +1483,7 @@ function _renderBirthdaySection(container) {
 
         container.appendChild(section);
     })
-    .catch(function(e) { console.error('[Birthday]', e); });
+    .catch(function(e) { console.warn('[Birthday]', e); });
 }
 
 function renderProfileOverview() {
@@ -5033,7 +5033,7 @@ function renderComebackBonusTab() {
         errDiv.className = 'comeback-error';
         errDiv.textContent = 'Could not check eligibility. Please try again later.';
         dynamicContainer.appendChild(errDiv);
-        console.error('Comeback bonus eligibility check failed:', err);
+        console.warn('Comeback bonus eligibility check failed:', err);
     });
 }
 
@@ -5183,7 +5183,7 @@ function _claimComebackBonus(token, btn, feedbackEl, card, fmtMoney) {
         errDiv.textContent = 'Network error. Please try again later.';
         feedbackEl.innerHTML = '';
         feedbackEl.appendChild(errDiv);
-        console.error('Comeback bonus claim failed:', err);
+        console.warn('Comeback bonus claim failed:', err);
     });
 }
 

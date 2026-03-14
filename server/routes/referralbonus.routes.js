@@ -119,7 +119,7 @@ router.get('/mycode', verifyToken, async function(req, res) {
       bonusEarned:   (user && user.referral_bonus_earned)  || 0,
     });
   } catch (err) {
-    console.error('[ReferralBonus] GET /mycode error:', err.message);
+    console.warn('[ReferralBonus] GET /mycode error:', err.message);
     return res.status(500).json({ error: 'Failed to fetch referral code' });
   }
 });
@@ -143,7 +143,7 @@ router.get('/check/:code', async function(req, res) {
       : referrer.username;
     return res.json({ valid: true, referrerUsername: displayName });
   } catch (err) {
-    console.error('[ReferralBonus] GET /check error:', err.message);
+    console.warn('[ReferralBonus] GET /check error:', err.message);
     return res.status(500).json({ error: 'Failed to validate referral code' });
   }
 });
@@ -197,7 +197,7 @@ router.post('/apply', verifyInternal, async function(req, res) {
       message: '$' + REFERRAL_BONUS_AMOUNT.toFixed(2) + ' credited to both the referrer and the new user',
     });
   } catch (err) {
-    console.error('[ReferralBonus] POST /apply error:', err.message);
+    console.warn('[ReferralBonus] POST /apply error:', err.message);
     return res.status(500).json({ success: false, message: 'Failed to apply referral bonus' });
   }
 });

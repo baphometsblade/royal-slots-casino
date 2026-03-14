@@ -41,7 +41,7 @@ async function initDatabase() {
             } else if (config.DATABASE_URL) {
                 // PostgreSQL unavailable after 3 attempts — fall back to SQLite so the site
                 // stays alive (e.g. when the Render free-tier PG instance expires)
-                console.error(`[DB] PostgreSQL unreachable after 3 attempts: ${err.message}`);
+                console.warn(`[DB] PostgreSQL unreachable after 3 attempts: ${err.message}`);
                 console.warn('[DB] Falling back to SQLite — data will not persist across restarts');
                 const SqliteBackend = require('./db/sqlite-backend');
                 backend = new SqliteBackend(config.DB_PATH);

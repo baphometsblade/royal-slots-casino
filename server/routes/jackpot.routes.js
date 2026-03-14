@@ -43,7 +43,7 @@ router.get('/status', async (req, res) => {
 
     return res.json({ pools });
   } catch (err) {
-    console.error('[Jackpot] status error:', err);
+    console.warn('[Jackpot] status error:', err);
     return res.status(500).json({ error: 'Failed to fetch jackpot status' });
   }
 });
@@ -78,7 +78,7 @@ router.get('/mywin', verifyToken, async (req, res) => {
       recentWin: { amount: parseFloat(row.amount), tier, wonAt: row.created_at },
     });
   } catch (err) {
-    console.error('[Jackpot] mywin error:', err);
+    console.warn('[Jackpot] mywin error:', err);
     return res.status(500).json({ error: 'Failed to fetch recent win' });
   }
 });

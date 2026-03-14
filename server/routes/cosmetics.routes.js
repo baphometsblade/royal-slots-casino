@@ -31,7 +31,7 @@ router.get('/shop', async (req, res) => {
 
         res.json({ shop: enrichedShop });
     } catch (err) {
-        console.error('[Cosmetics] Shop error:', err.message);
+        console.warn('[Cosmetics] Shop error:', err.message);
         res.status(500).json({ error: 'Failed to load cosmetic shop' });
     }
 });
@@ -42,7 +42,7 @@ router.get('/inventory', authenticate, async (req, res) => {
         const inventory = await cosmeticsService.getInventory(req.user.id);
         res.json({ inventory });
     } catch (err) {
-        console.error('[Cosmetics] Inventory error:', err.message);
+        console.warn('[Cosmetics] Inventory error:', err.message);
         res.status(500).json({ error: 'Failed to load inventory' });
     }
 });
@@ -57,7 +57,7 @@ router.post('/purchase', authenticate, async (req, res) => {
         const result = await cosmeticsService.purchaseItem(req.user.id, parseInt(itemId));
         res.json(result);
     } catch (err) {
-        console.error('[Cosmetics] Purchase error:', err.message);
+        console.warn('[Cosmetics] Purchase error:', err.message);
         // Client-facing errors (validation, balance) vs server errors
         if (err.message.includes('not found') || err.message.includes('already own') || err.message.includes('Not enough gems')) {
             return res.status(400).json({ error: err.message });
@@ -76,7 +76,7 @@ router.post('/equip', authenticate, async (req, res) => {
         const result = await cosmeticsService.equipItem(req.user.id, parseInt(itemId));
         res.json(result);
     } catch (err) {
-        console.error('[Cosmetics] Equip error:', err.message);
+        console.warn('[Cosmetics] Equip error:', err.message);
         if (err.message.includes('do not own') || err.message.includes('not found')) {
             return res.status(400).json({ error: err.message });
         }
@@ -90,7 +90,7 @@ router.get('/equipped', authenticate, async (req, res) => {
         const equipped = await cosmeticsService.getEquipped(req.user.id);
         res.json({ equipped });
     } catch (err) {
-        console.error('[Cosmetics] Equipped error:', err.message);
+        console.warn('[Cosmetics] Equipped error:', err.message);
         res.status(500).json({ error: 'Failed to load equipped cosmetics' });
     }
 });

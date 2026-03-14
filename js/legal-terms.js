@@ -145,7 +145,7 @@ const LegalTerms = (() => {
         if (e.target === overlay) overlay.remove();
       });
     } catch (error) {
-      console.error('Error displaying Terms of Service:', error);
+      console.warn('Error displaying Terms of Service:', error);
     }
   }
 
@@ -228,7 +228,7 @@ const LegalTerms = (() => {
         if (e.target === overlay) overlay.remove();
       });
     } catch (error) {
-      console.error('Error displaying Privacy Policy:', error);
+      console.warn('Error displaying Privacy Policy:', error);
     }
   }
 
@@ -339,7 +339,7 @@ const LegalTerms = (() => {
         if (e.target === overlay) overlay.remove();
       });
     } catch (error) {
-      console.error('Error displaying Matrix Money Info:', error);
+      console.warn('Error displaying Matrix Money Info:', error);
     }
   }
 

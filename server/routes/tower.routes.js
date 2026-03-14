@@ -111,7 +111,7 @@ router.get('/state', authenticate, async function(req, res) {
       rows:          ROWS,
     });
   } catch (err) {
-    console.error('[Tower] GET /state error:', err.message);
+    console.warn('[Tower] GET /state error:', err.message);
     return res.status(500).json({ error: 'Failed to get game state' });
   }
 });
@@ -167,7 +167,7 @@ router.post('/start', authenticate, async function(req, res) {
       newBalance:  updatedUser ? parseFloat(updatedUser.balance) : null,
     });
   } catch (err) {
-    console.error('[Tower] POST /start error:', err.message);
+    console.warn('[Tower] POST /start error:', err.message);
     return res.status(500).json({ error: 'Failed to start Tower game' });
   }
 });
@@ -255,7 +255,7 @@ router.post('/step', authenticate, async function(req, res) {
       gameOver:   false,
     });
   } catch (err) {
-    console.error('[Tower] POST /step error:', err.message);
+    console.warn('[Tower] POST /step error:', err.message);
     return res.status(500).json({ error: 'Failed to step Tower game' });
   }
 });
@@ -297,7 +297,7 @@ router.post('/cashout', authenticate, async function(req, res) {
       newBalance: updatedUser ? parseFloat(updatedUser.balance) : null,
     });
   } catch (err) {
-    console.error('[Tower] POST /cashout error:', err.message);
+    console.warn('[Tower] POST /cashout error:', err.message);
     return res.status(500).json({ error: 'Failed to cash out Tower game' });
   }
 });

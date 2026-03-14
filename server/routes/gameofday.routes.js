@@ -65,7 +65,7 @@ router.get('/', async (req, res) => {
             secondsUntilNext: secondsUntilMidnight()
         });
     } catch (err) {
-        console.error('[game-of-day] Error:', err.message);
+        console.warn('[game-of-day] Error:', err.message);
         // On DB error, fall back to deterministic rotation
         const dayIndex = Math.floor(Date.now() / 86400000);
         const sortedIds = getSortedGameIds();
@@ -104,7 +104,7 @@ router.get('/featured', async (req, res) => {
         }
         res.json(featured);
     } catch (err) {
-        console.error('[featured-games] Error:', err.message);
+        console.warn('[featured-games] Error:', err.message);
         // On DB error, return 6 deterministic game IDs
         const sortedIds = getSortedGameIds();
         const dayIndex = Math.floor(Date.now() / 86400000);

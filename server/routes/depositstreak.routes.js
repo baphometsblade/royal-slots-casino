@@ -58,7 +58,7 @@ router.get('/status', authenticate, async (req, res) => {
             rewards:       STREAK_REWARDS
         });
     } catch (err) {
-        console.error('[DepositStreak] Status error:', err.message);
+        console.warn('[DepositStreak] Status error:', err.message);
         res.status(500).json({ error: 'Failed to get streak status' });
     }
 });
@@ -130,7 +130,7 @@ router.post('/record', authenticate, async (req, res) => {
             newBalance:   newBalance
         });
     } catch (err) {
-        console.error('[DepositStreak] Record error:', err.message);
+        console.warn('[DepositStreak] Record error:', err.message);
         res.status(500).json({ error: 'Failed to record deposit streak' });
     }
 });

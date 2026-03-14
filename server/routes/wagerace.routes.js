@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
         const data = await wageraceService.getActiveRace();
         res.json(data);
     } catch (err) {
-        console.error('[WagerRace] GET / error:', err.message);
+        console.warn('[WagerRace] GET / error:', err.message);
         res.status(500).json({ error: 'Failed to load wager race' });
     }
 });
@@ -23,7 +23,7 @@ router.get('/history', authenticate, async (req, res) => {
         const history = await wageraceService.getRaceHistory(req.user.id, limit);
         res.json({ history });
     } catch (err) {
-        console.error('[WagerRace] GET /history error:', err.message);
+        console.warn('[WagerRace] GET /history error:', err.message);
         res.status(500).json({ error: 'Failed to load race history' });
     }
 });

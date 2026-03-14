@@ -48,7 +48,7 @@ router.get('/status', authenticate, async (req, res) => {
             bonusFreeSpins: BIRTHDAY_FREE_SPINS
         });
     } catch (err) {
-        console.error('[Birthday] Status error:', err.message);
+        console.warn('[Birthday] Status error:', err.message);
         res.status(500).json({ error: 'Failed to check birthday status' });
     }
 });
@@ -109,7 +109,7 @@ router.post('/claim', authenticate, async (req, res) => {
             newBalance:       updatedUser ? parseFloat(updatedUser.balance) : 0
         });
     } catch (err) {
-        console.error('[Birthday] Claim error:', err.message);
+        console.warn('[Birthday] Claim error:', err.message);
         res.status(500).json({ error: 'Failed to claim birthday bonus' });
     }
 });
@@ -142,7 +142,7 @@ router.post('/set', authenticate, async (req, res) => {
 
         res.json({ success: true, month: m, day: d });
     } catch (err) {
-        console.error('[Birthday] Set error:', err.message);
+        console.warn('[Birthday] Set error:', err.message);
         res.status(500).json({ error: 'Failed to set birthday' });
     }
 });

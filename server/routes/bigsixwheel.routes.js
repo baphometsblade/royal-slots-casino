@@ -109,7 +109,7 @@ router.post('/spin', authenticate, async function(req, res) {
       newBalance: u ? parseFloat(u.balance) : null,
     });
   } catch (err) {
-    console.error('[BigSix] /spin error:', err.message);
+    console.warn('[BigSix] /spin error:', err.message);
     return res.status(500).json({ error: 'Spin failed' });
   }
 });

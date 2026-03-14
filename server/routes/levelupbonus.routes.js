@@ -43,7 +43,7 @@ router.get('/status', authenticate, async function(req, res) {
       claimable: levelsGained > 0,
     });
   } catch (err) {
-    console.error('[LevelUpBonus] GET /status error:', err.message);
+    console.warn('[LevelUpBonus] GET /status error:', err.message);
     return res.status(500).json({ error: 'Failed to get status' });
   }
 });
@@ -83,7 +83,7 @@ router.post('/claim', authenticate, async function(req, res) {
       newBalance: updated ? parseFloat(updated.balance) : null,
     });
   } catch (err) {
-    console.error('[LevelUpBonus] POST /claim error:', err.message);
+    console.warn('[LevelUpBonus] POST /claim error:', err.message);
     return res.status(500).json({ error: 'Failed to claim bonus' });
   }
 });

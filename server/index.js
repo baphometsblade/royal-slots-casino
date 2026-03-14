@@ -419,7 +419,7 @@ app.post('/api/bundles/purchase', verifyToken, async (req, res) => {
         const result = await bundleService.purchaseBundle(req.user.id, bundleId);
         res.json(result);
     } catch (e) {
-        console.error('[Bundle] purchase error:', e.message);
+        console.warn('[Bundle] purchase error:', e.message);
         res.status(400).json({ error: e.message });
     }
 });
@@ -431,7 +431,7 @@ app.get('/api/campaigns', verifyToken, async (req, res) => {
         const campaigns = await campaignService.getActiveCampaigns(req.user.id);
         res.json({ campaigns });
     } catch (e) {
-        console.error('[Campaigns] Fetch error:', e.message);
+        console.warn('[Campaigns] Fetch error:', e.message);
         res.status(500).json({ error: 'Failed to fetch campaigns' });
     }
 });
@@ -459,7 +459,7 @@ app.get('/api/events/active', verifyToken, async (req, res) => {
         });
         res.json({ events: enriched });
     } catch (e) {
-        console.error('[Events] Fetch error:', e.message);
+        console.warn('[Events] Fetch error:', e.message);
         res.status(500).json({ error: 'Failed to fetch active events' });
     }
 });
@@ -476,7 +476,7 @@ app.post('/api/gifts/send', verifyToken, async (req, res) => {
         const result = await giftingService.sendGift(req.user.id, toUsername, amount, message);
         res.json(result);
     } catch (e) {
-        console.error('[Gifting] Send error:', e.message);
+        console.warn('[Gifting] Send error:', e.message);
         res.status(400).json({ error: e.message });
     }
 });
@@ -487,7 +487,7 @@ app.get('/api/gifts/pending', verifyToken, async (req, res) => {
         const gifts = await giftingService.getPendingGifts(req.user.id);
         res.json({ gifts });
     } catch (e) {
-        console.error('[Gifting] Pending fetch error:', e.message);
+        console.warn('[Gifting] Pending fetch error:', e.message);
         res.status(500).json({ error: 'Failed to fetch pending gifts' });
     }
 });
@@ -500,7 +500,7 @@ app.post('/api/gifts/:id/claim', verifyToken, async (req, res) => {
         const result = await giftingService.claimGift(giftId, req.user.id);
         res.json(result);
     } catch (e) {
-        console.error('[Gifting] Claim error:', e.message);
+        console.warn('[Gifting] Claim error:', e.message);
         res.status(400).json({ error: e.message });
     }
 });
@@ -512,7 +512,7 @@ app.get('/api/gifts/history', verifyToken, async (req, res) => {
         const history = await giftingService.getGiftHistory(req.user.id, limit);
         res.json({ history });
     } catch (e) {
-        console.error('[Gifting] History fetch error:', e.message);
+        console.warn('[Gifting] History fetch error:', e.message);
         res.status(500).json({ error: 'Failed to fetch gift history' });
     }
 });
@@ -535,7 +535,7 @@ app.get('/api/contests/current', verifyToken, async (req, res) => {
 
         res.json({ contest, entries, defaultMetric, userRank });
     } catch (e) {
-        console.error('[Contest] Current fetch error:', e.message);
+        console.warn('[Contest] Current fetch error:', e.message);
         res.status(500).json({ error: 'Failed to fetch current contest' });
     }
 });
@@ -557,7 +557,7 @@ app.get('/api/contests/leaderboard', verifyToken, async (req, res) => {
 
         res.json({ leaderboard, contest, metric, userRank });
     } catch (e) {
-        console.error('[Contest] Leaderboard fetch error:', e.message);
+        console.warn('[Contest] Leaderboard fetch error:', e.message);
         res.status(500).json({ error: 'Failed to fetch leaderboard' });
     }
 });
@@ -568,7 +568,7 @@ app.get('/api/contests/prizes', verifyToken, async (req, res) => {
         const prizes = await contestService.getUserPrizes(req.user.id);
         res.json({ prizes });
     } catch (e) {
-        console.error('[Contest] Prizes fetch error:', e.message);
+        console.warn('[Contest] Prizes fetch error:', e.message);
         res.status(500).json({ error: 'Failed to fetch prizes' });
     }
 });
@@ -603,7 +603,7 @@ app.post('/api/contests/prizes/:id/claim', verifyToken, async (req, res) => {
             bonusBalance: user ? user.bonus_balance : 0
         });
     } catch (e) {
-        console.error('[Contest] Prize claim error:', e.message);
+        console.warn('[Contest] Prize claim error:', e.message);
         res.status(500).json({ error: 'Failed to claim prize' });
     }
 });
@@ -641,7 +641,7 @@ app.use((err, req, res, _next) => {
     const message = config.NODE_ENV === 'production'
         ? 'Internal server error'
         : (err.message || 'Internal server error');
-    console.error(`[Express] Unhandled error on ${req.method} ${req.path}:`, err.stack || err);
+    console.warn(`[Express] Unhandled error on ${req.method} ${req.path}:`, err.stack || err);
     if (!res.headersSent) {
         res.status(status).json({ error: message });
     }
@@ -652,11 +652,11 @@ async function start() {
     // Production safety checks — refuse to start with insecure defaults
     if (config.NODE_ENV === 'production') {
         if (config.JWT_SECRET === 'dev-secret-change-in-production') {
-            console.error('[Security] FATAL: JWT_SECRET is the default dev value. Set JWT_SECRET in .env before running in production.');
+            console.warn('[Security] FATAL: JWT_SECRET is the default dev value. Set JWT_SECRET in .env before running in production.');
             process.exit(1);
         }
         if (config.ADMIN_PASSWORD === 'admin123changeme') {
-            console.error('[Security] FATAL: ADMIN_PASSWORD is the default dev value. Set ADMIN_PASSWORD in .env before running in production.');
+            console.warn('[Security] FATAL: ADMIN_PASSWORD is the default dev value. Set ADMIN_PASSWORD in .env before running in production.');
             process.exit(1);
         }
     }
@@ -699,19 +699,19 @@ async function start() {
 
         // Bootstrap tournament service
         const tournamentService = require('./services/tournament.service');
-        tournamentService.ensureActive().catch(err => console.error('[Tournament] Bootstrap error:', err.message));
-        setInterval(() => tournamentService.tick().catch(err => console.error('[Tournament] Tick error:', err.message)), 5 * 60 * 1000);
+        tournamentService.ensureActive().catch(err => console.warn('[Tournament] Bootstrap error:', err.message));
+        setInterval(() => tournamentService.tick().catch(err => console.warn('[Tournament] Tick error:', err.message)), 5 * 60 * 1000);
 
         // Bootstrap wager race service (hourly race, tick every 60s)
         const wageraceService = require('./services/wagerace.service');
-        wageraceService.ensureActiveRace().catch(err => console.error('[WagerRace] Bootstrap error:', err.message));
-        setInterval(() => wageraceService.tick().catch(err => console.error('[WagerRace] Tick error:', err.message)), 60 * 1000);
+        wageraceService.ensureActiveRace().catch(err => console.warn('[WagerRace] Bootstrap error:', err.message));
+        setInterval(() => wageraceService.tick().catch(err => console.warn('[WagerRace] Tick error:', err.message)), 60 * 1000);
 
         // Bootstrap weekly contest service — ensure current week contest exists
         const contestService = require('./services/contest.service');
-        contestService.getOrCreateCurrentContest().catch(err => console.error('[Contest] Bootstrap error:', err.message));
+        contestService.getOrCreateCurrentContest().catch(err => console.warn('[Contest] Bootstrap error:', err.message));
         // Check for expired contests every 10 minutes
-        setInterval(() => contestService.checkAndFinalizeExpired().catch(err => console.error('[Contest] Finalize tick error:', err.message)), 10 * 60 * 1000);
+        setInterval(() => contestService.checkAndFinalizeExpired().catch(err => console.warn('[Contest] Finalize tick error:', err.message)), 10 * 60 * 1000);
     });
 
     // Start background scheduler (re-engagement emails, P&L reports)
@@ -724,7 +724,7 @@ async function start() {
 }
 
 start().catch(err => {
-    console.error('Failed to start server:', err);
+    console.warn('Failed to start server:', err);
     process.exit(1);
 });
 
@@ -757,12 +757,12 @@ process.on('SIGINT', async () => {
 // ─── Global Process Error Handlers ───
 // Catch unhandled promise rejections and uncaught exceptions to prevent silent crashes
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('[Server] Unhandled Promise Rejection:', reason);
+    console.warn('[Server] Unhandled Promise Rejection:', reason);
     // Don't exit — let the process continue serving requests
 });
 
 process.on('uncaughtException', (err) => {
-    console.error('[Server] Uncaught Exception:', err.stack || err);
+    console.warn('[Server] Uncaught Exception:', err.stack || err);
     // Exit after logging — the process manager (Render) will restart us
     process.exit(1);
 });

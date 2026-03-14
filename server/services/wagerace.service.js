@@ -183,7 +183,7 @@ async function completeRace(raceId) {
                 [prize.credits, prize.credits * 15, entry.user_id]
             );
         } catch (e) {
-            console.error('[WagerRace] Credit prize error for user', entry.user_id, ':', e.message);
+            console.warn('[WagerRace] Credit prize error for user', entry.user_id, ':', e.message);
         }
 
         // Credit gems
@@ -226,7 +226,7 @@ async function tick() {
         try {
             await completeRace(race.id);
         } catch (e) {
-            console.error('[WagerRace] Complete error for race', race.id, ':', e.message);
+            console.warn('[WagerRace] Complete error for race', race.id, ':', e.message);
         }
     }
 

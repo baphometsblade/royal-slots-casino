@@ -72,7 +72,7 @@ async function checkSession(userId) {
             remaining
         };
     } catch (e) {
-        console.error('[SessionTimer] check error:', e.message);
+        console.warn('[SessionTimer] check error:', e.message);
         // Fail open — do not block spinning on service errors
         return { allowed: true, elapsed: 0, limit: null, remaining: null };
     }

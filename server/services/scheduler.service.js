@@ -66,7 +66,7 @@ async function _sendReengagementEmails() {
             console.log(`[Scheduler] Re-engagement emails sent to ${dormant.length} players`);
         }
     } catch (err) {
-        console.error('[Scheduler] Re-engagement error:', err.message);
+        console.warn('[Scheduler] Re-engagement error:', err.message);
     }
 }
 
@@ -94,7 +94,7 @@ async function _sendWeeklyReport() {
 
         await emailService.sendWeeklyReport(config.ADMIN_EMAIL, stats);
     } catch (err) {
-        console.error('[Scheduler] Weekly report error:', err.message);
+        console.warn('[Scheduler] Weekly report error:', err.message);
     }
 }
 
@@ -132,7 +132,7 @@ async function _sendDepositNudgeEmails() {
         }
         if (prospects.length > 0) console.log(`[Scheduler] Deposit nudge emails sent to ${prospects.length} players`);
     } catch (err) {
-        console.error('[Scheduler] Deposit nudge error:', err.message);
+        console.warn('[Scheduler] Deposit nudge error:', err.message);
     }
 }
 
@@ -175,7 +175,7 @@ async function _sendVipTierUpEmails() {
             }
         }
     } catch (err) {
-        console.error('[Scheduler] VIP tier-up email error:', err.message);
+        console.warn('[Scheduler] VIP tier-up email error:', err.message);
     }
 }
 
