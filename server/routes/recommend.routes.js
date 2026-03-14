@@ -63,7 +63,7 @@ router.get('/', authenticate, async (req, res) => {
        FROM spins
        WHERE created_at >= ?
        GROUP BY game_id
-       HAVING total_wins > 0
+       HAVING SUM(CASE WHEN win_amount > bet_amount THEN win_amount - bet_amount ELSE 0 END) > 0
        ORDER BY total_wins DESC
        LIMIT 5`,
       [twentyFourHoursAgo]
@@ -209,7 +209,7 @@ router.get('/trending', async (req, res) => {
        FROM spins
        WHERE created_at >= ?
        GROUP BY game_id
-       HAVING total_wins > 0
+       HAVING SUM(CASE WHEN win_amount > bet_amount THEN win_amount - bet_amount ELSE 0 END) > 0
        ORDER BY total_wins DESC
        LIMIT 10`,
       [twentyFourHoursAgo]
