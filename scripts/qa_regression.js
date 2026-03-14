@@ -448,6 +448,7 @@ async function run() {
 
     await page.goto(baseUrl + "?noBonus=1", { waitUntil: "domcontentloaded" });
     await page.evaluate(() => {
+      window._qaMode = true;
       localStorage.removeItem("casinoBalance");
       localStorage.removeItem("casinoStats");
       localStorage.removeItem("soundEnabled");
@@ -464,6 +465,7 @@ async function run() {
       sessionStorage.setItem("comeback_sessionFlag", "1");
     });
     await page.goto(baseUrl + "?noBonus=1", { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => { window._qaMode = true; });
 
     const lobbyState = await readState(page);
     assert(lobbyState.mode === "lobby", "Expected lobby mode after initial load");
@@ -473,6 +475,11 @@ async function run() {
       balance: lobbyState.balance,
       ok: true,
     });
+
+    // Suppress notification manager and dismiss any active popups before QA interactions
+    await dismissFeaturePopupIfVisible(page);
+    await page.waitForTimeout(1000);
+    await dismissFeaturePopupIfVisible(page);
 
     await page.evaluate(() => openStatsModal());
     await page.waitForSelector("#statsModal.active", { timeout: 10000 });
@@ -487,6 +494,13 @@ async function run() {
     });
 
     await dismissFeaturePopupIfVisible(page);
+    await page.waitForTimeout(500);
+    await page.evaluate(() => {
+      // Force-ensure QA input is visible
+      window._qaMode = true;
+      var input = document.getElementById('qaSeedInput');
+      if (input) { input.scrollIntoView(); input.focus(); }
+    });
     await page.fill("#qaSeedInput", "regression-seed-1");
     await dismissFeaturePopupIfVisible(page);
     await page.evaluate(() => {
