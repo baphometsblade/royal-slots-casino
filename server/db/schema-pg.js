@@ -608,6 +608,43 @@ const TABLES = [
         reward_amount INTEGER NOT NULL,
         claimed_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(user_id, login_date)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS slot_races (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        duration_minutes INTEGER DEFAULT 5,
+        entry_fee INTEGER DEFAULT 0,
+        prize_pool INTEGER DEFAULT 0,
+        max_players INTEGER DEFAULT 50,
+        status TEXT DEFAULT 'waiting',
+        started_at TEXT,
+        ends_at TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS slot_race_entries (
+        id SERIAL PRIMARY KEY,
+        race_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        spins_count INTEGER DEFAULT 0,
+        total_wagered INTEGER DEFAULT 0,
+        total_won INTEGER DEFAULT 0,
+        score INTEGER DEFAULT 0,
+        joined_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(race_id, user_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS slot_race_results (
+        id SERIAL PRIMARY KEY,
+        race_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        placement INTEGER,
+        score INTEGER,
+        prize_gems INTEGER DEFAULT 0,
+        prize_credits INTEGER DEFAULT 0,
+        claimed_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 

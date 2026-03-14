@@ -3124,6 +3124,13 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Progressive Jackpot: contribute % of bet to shared pools
+            try {
+                if (typeof JackpotPool !== 'undefined' && JackpotPool.contribute) {
+                    JackpotPool.contribute(currentBet);
+                }
+            } catch(e) { /* silent */ }
+
             // Smart Deposit Nudge: track spin result for behavioral triggers
             try {
                 var _lastHistEntry = spinHistory && spinHistory[0];
@@ -3153,6 +3160,16 @@
             try {
                 if (typeof WhaleVipNudge !== 'undefined' && WhaleVipNudge.onSpin) {
                     WhaleVipNudge.onSpin();
+                }
+            } catch(e) { /* silent */ }
+
+            // Slot Race: record spin for active race
+            try {
+                if (typeof SlotRace !== 'undefined' && SlotRace.recordSpin) {
+                    SlotRace.recordSpin({
+                        betAmount: currentBet,
+                        winAmount: _lastHistEntry ? (_lastHistEntry.win || 0) : 0
+                    });
                 }
             } catch(e) { /* silent */ }
 

@@ -397,6 +397,10 @@
             if (typeof GemStore !== 'undefined' && GemStore.init) {
                 setTimeout(function() { GemStore.init(); }, 3000);
             }
+            // Slot Race time-limited competitive sprints
+            if (typeof SlotRace !== 'undefined' && SlotRace.init) {
+                setTimeout(function() { SlotRace.init(); }, 3500);
+            }
             // Battle Pass system
             if (typeof BattlePass !== 'undefined' && BattlePass.init) {
                 setTimeout(function() { BattlePass.init(); }, 2000);

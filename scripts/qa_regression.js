@@ -325,6 +325,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "daily-login-overlay",
       "daily-login-modal",
       "daily-login-confetti",
+      "jackpot-win-overlay",
+      "jackpot-win-modal",
+      "jackpot-celebration",
+      "slot-race-banner",
+      "slot-race-results",
+      "slot-race-join-popup",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

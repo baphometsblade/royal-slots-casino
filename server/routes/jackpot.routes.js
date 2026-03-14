@@ -3,6 +3,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const db = require('../database');
+const config = require('../config');
 const { JWT_SECRET } = require('../config');
 
 const router = express.Router();
@@ -18,12 +19,74 @@ function verifyToken(req, res, next) {
   catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
 }
 
+/**
+ * Initialize jackpot tables if they don't exist
+ */
+async function _ensureJackpotTables() {
+  var isPg = !!process.env.DATABASE_URL;
+
+  // Check if tables exist
+  const checkTableSql = isPg
+    ? "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name='jackpot_pool')"
+    : "SELECT name FROM sqlite_master WHERE type='table' AND name='jackpot_pool'";
+
+  const tableExists = await db.get(checkTableSql);
+  if (tableExists) return; // Tables already exist, jackpot.service.js will seed them
+
+  // Create contribution tracking table
+  const createContribSql = isPg
+    ? `CREATE TABLE IF NOT EXISTS jackpot_contributions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        pool_tier TEXT NOT NULL,
+        amount NUMERIC(12,2) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )`
+    : `CREATE TABLE IF NOT EXISTS jackpot_contributions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        pool_tier TEXT NOT NULL,
+        amount REAL NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )`;
+
+  // Create wins tracking table
+  const createWinsSql = isPg
+    ? `CREATE TABLE IF NOT EXISTS jackpot_wins (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        pool_tier TEXT NOT NULL,
+        amount_won NUMERIC(12,2) NOT NULL,
+        won_at TIMESTAMPTZ DEFAULT NOW(),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )`
+    : `CREATE TABLE IF NOT EXISTS jackpot_wins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        pool_tier TEXT NOT NULL,
+        amount_won REAL NOT NULL,
+        won_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )`;
+
+  try {
+    await db.run(createContribSql, []);
+    await db.run(createWinsSql, []);
+  } catch (err) {
+    console.warn('[Jackpot] Table initialization (non-critical):', err.message);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/jackpot/status  (public — no auth required)
 // Returns live pool amounts from jackpot_pool (managed by jackpot.service.js)
 // ---------------------------------------------------------------------------
 router.get('/status', async (req, res) => {
   try {
+    await _ensureJackpotTables();
+
     const rows = await db.all(
       `SELECT jp.tier, jp.current_amount, jp.seed_amount, jp.last_won_at,
               u.username AS last_winner_username
@@ -45,6 +108,123 @@ router.get('/status', async (req, res) => {
   } catch (err) {
     console.warn('[Jackpot] status error:', err);
     return res.status(500).json({ error: 'Failed to fetch jackpot status' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/jackpot/contribute  (auth required)
+// Called after each spin to contribute % of bet to jackpot pools
+// Checks for jackpot win triggers
+// ---------------------------------------------------------------------------
+router.post('/contribute', verifyToken, async (req, res) => {
+  try {
+    await _ensureJackpotTables();
+
+    const userId = req.user.userId || req.user.id;
+    const { betAmount } = req.body;
+
+    if (!betAmount || betAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid bet amount' });
+    }
+
+    // Use jackpot service to process contribution
+    const jackpotService = require('../services/jackpot.service');
+    const win = await jackpotService.processJackpotContribution(userId, betAmount);
+
+    // Log contribution
+    const totalContrib = Math.round(betAmount * config.JACKPOT_CONTRIBUTION_RATE * 100) / 100;
+    if (totalContrib > 0) {
+      try {
+        await db.run(
+          `INSERT INTO jackpot_contributions (user_id, pool_tier, amount) VALUES (?, ?, ?)`,
+          [userId, 'total', totalContrib]
+        );
+      } catch (e) {
+        // Ignore contribution log failure
+      }
+    }
+
+    // If there was a win, log it
+    if (win) {
+      try {
+        await db.run(
+          `INSERT INTO jackpot_wins (user_id, pool_tier, amount_won) VALUES (?, ?, ?)`,
+          [userId, win.tier, win.amount]
+        );
+      } catch (e) {
+        // Ignore win log failure
+      }
+    }
+
+    return res.json({
+      contributed: totalContrib > 0,
+      win: win || null,
+    });
+  } catch (err) {
+    console.warn('[Jackpot] contribute error:', err);
+    return res.status(500).json({ error: 'Failed to process jackpot contribution' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/jackpot/winners  (public)
+// Returns recent jackpot winners (last 20)
+// ---------------------------------------------------------------------------
+router.get('/winners', async (req, res) => {
+  try {
+    await _ensureJackpotTables();
+
+    const rows = await db.all(
+      `SELECT jw.pool_tier, jw.amount_won, jw.won_at, u.username
+       FROM jackpot_wins jw
+       LEFT JOIN users u ON jw.user_id = u.id
+       ORDER BY jw.won_at DESC
+       LIMIT 20`
+    );
+
+    const winners = rows.map(row => ({
+      tier: row.pool_tier,
+      amount: parseFloat(row.amount_won) || 0,
+      wonAt: row.won_at,
+      winner: row.username || 'Anonymous',
+    }));
+
+    return res.json({ winners });
+  } catch (err) {
+    console.warn('[Jackpot] winners error:', err);
+    return res.status(500).json({ error: 'Failed to fetch winners' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/jackpot/history  (auth required)
+// Returns user's personal jackpot win history
+// ---------------------------------------------------------------------------
+router.get('/history', verifyToken, async (req, res) => {
+  try {
+    await _ensureJackpotTables();
+
+    const userId = req.user.userId || req.user.id;
+
+    const rows = await db.all(
+      `SELECT pool_tier, amount_won, won_at
+       FROM jackpot_wins
+       WHERE user_id = ?
+       ORDER BY won_at DESC
+       LIMIT 50`,
+      [userId]
+    );
+
+    const history = rows.map(row => ({
+      tier: row.pool_tier,
+      amount: parseFloat(row.amount_won) || 0,
+      wonAt: row.won_at,
+    }));
+
+    return res.json({ history });
+  } catch (err) {
+    console.warn('[Jackpot] history error:', err);
+    return res.status(500).json({ error: 'Failed to fetch jackpot history' });
   }
 });
 
