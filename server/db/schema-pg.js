@@ -469,6 +469,20 @@ const TABLES = [
         user_id INTEGER NOT NULL REFERENCES users(id),
         bonus_amount NUMERIC(15,2) NOT NULL,
         claimed_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS player_ltv (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+        total_deposited NUMERIC(15,2) DEFAULT 0,
+        total_withdrawn NUMERIC(15,2) DEFAULT 0,
+        total_wagered NUMERIC(15,2) DEFAULT 0,
+        total_won NUMERIC(15,2) DEFAULT 0,
+        net_revenue NUMERIC(15,2) DEFAULT 0,
+        session_count INTEGER DEFAULT 0,
+        last_active TIMESTAMPTZ,
+        whale_tier TEXT DEFAULT 'minnow',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 

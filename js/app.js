@@ -336,6 +336,10 @@
             if (typeof SessionReengage !== 'undefined' && SessionReengage.init) {
                 setTimeout(function() { SessionReengage.init(); }, 4000);
             }
+            // Smart game recommendations
+            if (typeof GameRecommend !== 'undefined' && GameRecommend.init) {
+                setTimeout(function() { GameRecommend.init(); }, 2000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

@@ -503,6 +503,21 @@ const TABLES = [
         bonus_amount REAL NOT NULL,
         claimed_at TEXT DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS player_ltv (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        total_deposited REAL DEFAULT 0,
+        total_withdrawn REAL DEFAULT 0,
+        total_wagered REAL DEFAULT 0,
+        total_won REAL DEFAULT 0,
+        net_revenue REAL DEFAULT 0,
+        session_count INTEGER DEFAULT 0,
+        last_active TEXT,
+        whale_tier TEXT DEFAULT 'minnow',
+        updated_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )`
 ];
 

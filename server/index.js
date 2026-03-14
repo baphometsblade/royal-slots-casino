@@ -322,6 +322,7 @@ app.use('/api/session-reengage', require('./routes/session-reengage.routes'));
 // app.use('/api/horseracing',    require('./routes/horseracing.routes'));
 app.use('/api/buy-feature',   require('./routes/buyfeature.routes'));
 app.use('/api/xpshop',        require('./routes/xpshop.routes'));
+app.use('/api/recommend',     require('./routes/recommend.routes'));
 app.use('/api',               require('./routes/winback.routes'));
 app.use('/api',               require('./routes/luckyhour.routes'));
 
