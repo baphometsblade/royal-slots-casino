@@ -5,86 +5,87 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../database');
 
 // ============================================================================
-// BOOTSTRAP: Create tables and seed initial battle pass data
+// LAZY INIT: Create tables and seed data on first request (not at require-time)
 // ============================================================================
-(async function _ensureBattlePassData() {
-  try {
-    const isPg = !!process.env.DATABASE_URL;
-    const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
-    const dateDef = isPg ? 'DATE' : 'TEXT';
+var _bpInitDone = false;
+var _bpInitPromise = null;
 
-    // Create battle_passes table (seasons)
-    await db.run(`CREATE TABLE IF NOT EXISTS battle_passes (
-      id ${idDef},
-      season_number INTEGER NOT NULL UNIQUE,
-      name TEXT NOT NULL,
-      start_date ${dateDef} NOT NULL,
-      end_date ${dateDef} NOT NULL,
-      premium_price INTEGER NOT NULL,
-      elite_price INTEGER NOT NULL,
-      rewards TEXT NOT NULL,
-      created_at ${tsDef}
-    )`);
+async function _ensureBattlePassData() {
+  if (_bpInitDone) return;
+  if (_bpInitPromise) return _bpInitPromise;
+  _bpInitPromise = (async function() {
+    try {
+      const isPg = !!process.env.DATABASE_URL;
+      const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+      const tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
 
-    // Create battle_pass_purchases table (user tier purchases)
-    await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_purchases (
-      id ${idDef},
-      user_id INTEGER NOT NULL,
-      pass_id INTEGER NOT NULL,
-      tier TEXT NOT NULL CHECK (tier IN ('free', 'premium', 'elite')),
-      purchased_at ${tsDef},
-      UNIQUE(user_id, pass_id)
-    )`);
+      await db.run(`CREATE TABLE IF NOT EXISTS battle_passes (
+        id ${idDef},
+        season_number INTEGER NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        premium_price INTEGER NOT NULL,
+        elite_price INTEGER NOT NULL,
+        rewards TEXT NOT NULL,
+        created_at ${tsDef}
+      )`);
 
-    // Create battle_pass_progress table (XP and level tracking)
-    await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_progress (
-      id ${idDef},
-      user_id INTEGER NOT NULL,
-      pass_id INTEGER NOT NULL,
-      xp INTEGER NOT NULL DEFAULT 0,
-      current_level INTEGER NOT NULL DEFAULT 1,
-      last_xp_gain ${tsDef},
-      updated_at ${tsDef},
-      UNIQUE(user_id, pass_id)
-    )`);
+      await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_purchases (
+        id ${idDef},
+        user_id INTEGER NOT NULL,
+        pass_id INTEGER NOT NULL,
+        tier TEXT NOT NULL,
+        purchased_at ${tsDef},
+        UNIQUE(user_id, pass_id)
+      )`);
 
-    // Create battle_pass_claims table (claimed rewards)
-    await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_claims (
-      id ${idDef},
-      user_id INTEGER NOT NULL,
-      pass_id INTEGER NOT NULL,
-      level INTEGER NOT NULL,
-      tier_claimed TEXT NOT NULL CHECK (tier_claimed IN ('free', 'premium', 'elite')),
-      claimed_at ${tsDef},
-      UNIQUE(user_id, pass_id, level)
-    )`);
+      await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_progress (
+        id ${idDef},
+        user_id INTEGER NOT NULL,
+        pass_id INTEGER NOT NULL,
+        xp INTEGER NOT NULL DEFAULT 0,
+        current_level INTEGER NOT NULL DEFAULT 1,
+        last_xp_gain ${tsDef},
+        updated_at ${tsDef},
+        UNIQUE(user_id, pass_id)
+      )`);
 
-    console.warn('[BattlePass] Tables ready');
+      await db.run(`CREATE TABLE IF NOT EXISTS battle_pass_claims (
+        id ${idDef},
+        user_id INTEGER NOT NULL,
+        pass_id INTEGER NOT NULL,
+        level INTEGER NOT NULL,
+        tier_claimed TEXT NOT NULL,
+        claimed_at ${tsDef},
+        UNIQUE(user_id, pass_id, level)
+      )`);
 
-    // Seed initial battle pass if not exists
-    const existing = await db.get(
-      'SELECT id FROM battle_passes WHERE season_number = ?',
-      [1]
-    );
+      console.warn('[BattlePass] Tables ready');
 
-    if (!existing) {
-      const rewards = generateRewardsStructure();
-      const startDate = '2026-03-15';
-      const endDate = '2026-04-14';
-      const premiumPrice = 999;
-      const elitePrice = 2499;
-
-      await db.run(
-        'INSERT INTO battle_passes (season_number, name, start_date, end_date, premium_price, elite_price, rewards) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [1, 'Season 1: Matrix Rising', startDate, endDate, premiumPrice, elitePrice, JSON.stringify(rewards)]
+      // Seed initial battle pass if not exists
+      const existing = await db.get(
+        'SELECT id FROM battle_passes WHERE season_number = ?',
+        [1]
       );
-      console.warn('[BattlePass] Seeded Season 1: Matrix Rising');
+
+      if (!existing) {
+        const rewards = generateRewardsStructure();
+        await db.run(
+          'INSERT INTO battle_passes (season_number, name, start_date, end_date, premium_price, elite_price, rewards) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [1, 'Season 1: Matrix Rising', '2026-03-15', '2026-04-14', 999, 2499, JSON.stringify(rewards)]
+        );
+        console.warn('[BattlePass] Seeded Season 1: Matrix Rising');
+      }
+
+      _bpInitDone = true;
+    } catch (err) {
+      console.warn('[BattlePass] Lazy init error:', err.message);
+      _bpInitPromise = null; // Allow retry
     }
-  } catch (err) {
-    console.warn('[BattlePass] Bootstrap error:', err.message);
-  }
-})();
+  })();
+  return _bpInitPromise;
+}
 
 // ============================================================================
 // REWARD STRUCTURE GENERATION
@@ -322,6 +323,7 @@ function getTotalXpForLevel(level) {
 // GET / — Get active battle pass info (public basics, full with auth)
 router.get('/', async (req, res) => {
   try {
+    await _ensureBattlePassData();
     // Get current active pass (by date)
     const isPg = !!process.env.DATABASE_URL;
     const dateFunc = isPg ? "CURRENT_DATE::text" : "date('now')";
@@ -401,6 +403,7 @@ router.get('/', async (req, res) => {
 // GET /progress — User's detailed progress (authenticated)
 router.get('/progress', authenticate, async (req, res) => {
   try {
+    await _ensureBattlePassData();
     const userId = req.user.id;
 
     // Get current active pass
@@ -476,6 +479,7 @@ router.get('/progress', authenticate, async (req, res) => {
 // POST /purchase — Buy premium or elite tier (authenticated)
 router.post('/purchase', authenticate, async (req, res) => {
   try {
+    await _ensureBattlePassData();
     const userId = req.user.id;
     const { tier } = req.body;
 
@@ -559,6 +563,7 @@ router.post('/purchase', authenticate, async (req, res) => {
 // POST /claim — Claim reward for a level (authenticated)
 router.post('/claim', authenticate, async (req, res) => {
   try {
+    await _ensureBattlePassData();
     const userId = req.user.id;
     const { level } = req.body;
 
@@ -683,6 +688,7 @@ router.post('/claim', authenticate, async (req, res) => {
 // POST /add-xp — Add XP from gameplay (authenticated, rate-limited)
 router.post('/add-xp', authenticate, async (req, res) => {
   try {
+    await _ensureBattlePassData();
     const userId = req.user.id;
     const { xp, source } = req.body;
 
@@ -766,6 +772,7 @@ router.post('/add-xp', authenticate, async (req, res) => {
 // GET /leaderboard — Top 20 players by XP (public)
 router.get('/leaderboard', async (req, res) => {
   try {
+    await _ensureBattlePassData();
     // Get current active pass
     const isPg = !!process.env.DATABASE_URL;
     const dateFunc = isPg ? "CURRENT_DATE::text" : "date('now')";
