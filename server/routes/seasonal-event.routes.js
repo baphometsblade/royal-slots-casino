@@ -200,8 +200,8 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (err) {
-    console.warn('Error fetching active event:', err.message);
-    res.status(500).json({ error: 'Failed to fetch event' });
+    console.warn('Error fetching active event:', err.message, err.stack);
+    res.status(500).json({ error: 'Failed to fetch event', debug: err.message });
   }
 });
 
