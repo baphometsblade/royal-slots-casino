@@ -239,6 +239,7 @@ app.use('/api/game-history',   require('./routes/gamehistory.routes'));
 app.use('/api/chat',           require('./routes/chat.routes'));
 app.use('/api/affiliate',      require('./routes/affiliate.routes'));
 app.use('/api/admin-metrics',  require('./routes/adminmetrics.routes'));
+app.use('/api/revenue-dashboard', require('./routes/revenue-dashboard.routes'));
 app.use('/api/account',        require('./routes/accountdeletion.routes'));
 app.use('/api/activity-log',   require('./routes/activitylog.routes'));
 app.use('/api/depositmatch', require('./routes/depositmatch.routes'));

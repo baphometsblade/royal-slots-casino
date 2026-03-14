@@ -356,6 +356,10 @@
             if (typeof AchievementPopup !== 'undefined' && AchievementPopup.init) {
                 setTimeout(function() { AchievementPopup.init(); }, 2000);
             }
+            // Hero section for non-logged-in visitors
+            if (typeof HeroEnhance !== 'undefined' && HeroEnhance.init) {
+                HeroEnhance.init();
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
