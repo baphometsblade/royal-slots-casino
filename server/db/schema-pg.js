@@ -524,21 +524,19 @@ const TABLES = [
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL,
         event_id INTEGER NOT NULL,
-        challenge_index INTEGER NOT NULL,
-        current_progress INTEGER DEFAULT 0,
-        completed INTEGER DEFAULT 0,
-        collected INTEGER DEFAULT 0,
-        shamrocks_earned INTEGER DEFAULT 0,
+        challenge_id INTEGER NOT NULL,
+        completed_at TEXT,
+        shamrock_balance INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMPTZ DEFAULT NOW(),
-        UNIQUE(user_id, event_id, challenge_index)
+        updated_at TIMESTAMPTZ DEFAULT NOW()
     )`,
     `CREATE TABLE IF NOT EXISTS seasonal_event_prizes (
         id SERIAL PRIMARY KEY,
         event_id INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        cost INTEGER NOT NULL,
+        shamrock_cost INTEGER NOT NULL,
         prize_type TEXT NOT NULL,
-        prize_value TEXT NOT NULL,
+        prize_name TEXT NOT NULL,
+        prize_details TEXT,
         created_at TIMESTAMPTZ DEFAULT NOW()
     )`,
     `CREATE TABLE IF NOT EXISTS gem_purchases (

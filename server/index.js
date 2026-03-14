@@ -671,6 +671,28 @@ async function start() {
 
     await initDatabase();
 
+    // One-time migration: fix seasonal event table columns (March 2026)
+    const db = require('./database');
+    try {
+        await db.get("SELECT shamrock_cost FROM seasonal_event_prizes LIMIT 1");
+        // Column exists — tables are correct, no migration needed
+    } catch(e) {
+        // Column doesn't exist or table doesn't exist — drop and let schema recreate
+        try {
+            await db.run('DROP TABLE IF EXISTS seasonal_event_progress');
+            await db.run('DROP TABLE IF EXISTS seasonal_event_prizes');
+            await db.run('DROP TABLE IF EXISTS seasonal_events');
+            // Re-create with correct schema
+            var isPg = !!process.env.DATABASE_URL;
+            var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+            var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+            await db.run('CREATE TABLE IF NOT EXISTS seasonal_events (id ' + idDef + ', name TEXT NOT NULL, theme TEXT NOT NULL, start_date TEXT NOT NULL, end_date TEXT NOT NULL, bonus_multiplier REAL NOT NULL DEFAULT 1.0, special_currency TEXT, challenges TEXT NOT NULL, created_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ', updated_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ')');
+            await db.run('CREATE TABLE IF NOT EXISTS seasonal_event_progress (id ' + idDef + ', user_id INTEGER NOT NULL, event_id INTEGER NOT NULL, challenge_id INTEGER NOT NULL, completed_at TEXT, shamrock_balance INTEGER NOT NULL DEFAULT 0, created_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ', updated_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ')');
+            await db.run('CREATE TABLE IF NOT EXISTS seasonal_event_prizes (id ' + idDef + ', event_id INTEGER NOT NULL, shamrock_cost INTEGER NOT NULL, prize_type TEXT NOT NULL, prize_name TEXT NOT NULL, prize_details TEXT, created_at ' + (isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))") + ')');
+            console.warn('[Migration] Recreated seasonal event tables with correct columns');
+        } catch(e2) { console.warn('[Migration] Seasonal table migration:', e2.message); }
+    }
+
     // Seed jackpot pool (4 tiers: mini, minor, major, grand)
     const jackpotService = require('./services/jackpot.service');
     await jackpotService.initJackpotPool();

@@ -125,7 +125,7 @@ router.get('/', async (req, res) => {
   try {
     const event = await db.get(
       `SELECT id, name, theme, start_date, end_date, bonus_multiplier, special_currency, challenges
-       FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+       FROM seasonal_events WHERE end_date >= CURRENT_DATE LIMIT 1`,
       []
     );
 
@@ -163,7 +163,7 @@ router.get('/progress', authenticate, async (req, res) => {
     const userId = req.user.id;
 
     const event = await db.get(
-      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      `SELECT id FROM seasonal_events WHERE end_date >= CURRENT_DATE LIMIT 1`,
       []
     );
 
@@ -210,7 +210,7 @@ router.post('/collect', authenticate, async (req, res) => {
     }
 
     const event = await db.get(
-      `SELECT id, challenges FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      `SELECT id, challenges FROM seasonal_events WHERE end_date >= CURRENT_DATE LIMIT 1`,
       []
     );
 
@@ -237,14 +237,14 @@ router.post('/collect', authenticate, async (req, res) => {
 
     if (existingProgress) {
       await db.run(
-        `UPDATE seasonal_event_progress SET completed_at = datetime('now'), shamrock_balance = shamrock_balance + ?
+        `UPDATE seasonal_event_progress SET completed_at = ${isPg ? 'NOW()' : "datetime('now')"}, shamrock_balance = shamrock_balance + ?
          WHERE id = ?`,
         [challenge.reward, existingProgress.id]
       );
     } else {
       await db.run(
         `INSERT INTO seasonal_event_progress (user_id, event_id, challenge_id, completed_at, shamrock_balance)
-         VALUES (?, ?, ?, datetime('now'), ?)`,
+         VALUES (?, ?, ?, ${isPg ? 'NOW()' : "datetime('now')"}, ?)`,
         [userId, event.id, challenge_id, challenge.reward]
       );
     }
@@ -263,7 +263,7 @@ router.post('/collect', authenticate, async (req, res) => {
 router.get('/prizes', async (req, res) => {
   try {
     const event = await db.get(
-      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      `SELECT id FROM seasonal_events WHERE end_date >= CURRENT_DATE LIMIT 1`,
       []
     );
 
@@ -303,7 +303,7 @@ router.post('/redeem', authenticate, async (req, res) => {
     }
 
     const event = await db.get(
-      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      `SELECT id FROM seasonal_events WHERE end_date >= CURRENT_DATE LIMIT 1`,
       []
     );
 
@@ -361,7 +361,7 @@ router.post('/redeem', authenticate, async (req, res) => {
 router.get('/leaderboard', async (req, res) => {
   try {
     const event = await db.get(
-      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      `SELECT id FROM seasonal_events WHERE end_date >= CURRENT_DATE LIMIT 1`,
       []
     );
 
