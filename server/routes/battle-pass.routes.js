@@ -73,9 +73,15 @@ async function _ensureBattlePassData() {
         const rewards = generateRewardsStructure();
         await db.run(
           'INSERT INTO battle_passes (season_number, name, start_date, end_date, premium_price, elite_price, rewards) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [1, 'Season 1: Matrix Rising', '2026-03-15', '2026-04-14', 999, 2499, JSON.stringify(rewards)]
+          [1, 'Season 1: Matrix Rising', '2026-03-01', '2026-04-30', 999, 2499, JSON.stringify(rewards)]
         );
         console.warn('[BattlePass] Seeded Season 1: Matrix Rising');
+      } else {
+        // Ensure dates are wide enough (fix for UTC timezone offset)
+        await db.run(
+          'UPDATE battle_passes SET start_date = ?, end_date = ? WHERE season_number = ? AND start_date > ?',
+          ['2026-03-01', '2026-04-30', 1, '2026-03-01']
+        );
       }
 
       _bpInitDone = true;
@@ -338,12 +344,7 @@ router.get('/', async (req, res) => {
     );
 
     if (!pass) {
-      // Debug: check what's in the table
-      const allPasses = await db.all('SELECT id, season_number, name, start_date, end_date FROM battle_passes', []);
-      const dateCheck = isPg
-        ? await db.get("SELECT CURRENT_DATE::text as today", [])
-        : await db.get("SELECT date('now') as today", []);
-      return res.json({ error: 'No active battle pass', debug_passes: allPasses, debug_date: dateCheck });
+      return res.json({ active: false, message: 'No active battle pass' });
     }
 
     const rewards = JSON.parse(pass.rewards);
