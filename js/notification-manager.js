@@ -170,7 +170,7 @@
 
     function processQueue() {
         // Skip if QA mode enabled
-        if (window._qaMode) {
+        if (window._qaMode || (window.location.search || '').indexOf('noBonus') !== -1) {
             return;
         }
 
@@ -356,7 +356,7 @@
          */
         enqueue: function(id, priority, showFn, dismissFn, options) {
             // Skip if QA mode
-            if (window._qaMode) {
+            if (window._qaMode || (window.location.search || '').indexOf('noBonus') !== -1) {
                 console.warn('[NotificationManager] QA mode active, skipping enqueue: ' + id);
                 return;
             }

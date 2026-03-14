@@ -437,6 +437,8 @@ async function run() {
 
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     page = await context.newPage();
+    // Inject _qaMode BEFORE any page scripts execute to suppress notification manager
+    await page.addInitScript(() => { window._qaMode = true; });
 
     page.on("console", (msg) => {
       if (msg.type() !== "error") return;
