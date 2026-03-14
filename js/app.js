@@ -258,7 +258,12 @@
             }
             // Initialize daily login calendar with 1.5s delay, show popup if unclaimed
             if (typeof DailyLoginCalendar !== 'undefined' && DailyLoginCalendar.init) {
-                setTimeout(function() { DailyLoginCalendar.init(); DailyLoginCalendar.showCalendar(); }, 1500);
+                setTimeout(function() {
+                    DailyLoginCalendar.init();
+                    if (!(window.location.search || '').includes('noBonus')) {
+                        DailyLoginCalendar.showCalendar();
+                    }
+                }, 1500);
             }
             // Initialize push notifications (ask permission after engagement)
             if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {

@@ -434,6 +434,9 @@ async function run() {
       localStorage.setItem("casinoToken", "local-qa-regression-token");
       // Accept terms consent gate so it doesn't block QA interactions
       localStorage.setItem("matrixSpins_termsAccepted", Date.now().toString());
+      // Suppress comeback overlay and daily login calendar in QA
+      localStorage.setItem("comeback_lastSessionTime", Date.now().toString());
+      sessionStorage.setItem("comeback_sessionFlag", "1");
     });
     await page.goto(baseUrl + "?noBonus=1", { waitUntil: "domcontentloaded" });
 
@@ -458,8 +461,14 @@ async function run() {
       ok: true,
     });
 
+    await dismissFeaturePopupIfVisible(page);
     await page.fill("#qaSeedInput", "regression-seed-1");
-    await page.click("button:has-text('Apply Seed')");
+    await dismissFeaturePopupIfVisible(page);
+    await page.evaluate(() => {
+      var btn = document.querySelector("button[onclick*='applyQaSeed']") ||
+                Array.from(document.querySelectorAll("button")).find(function(b) { return b.textContent.trim() === "Apply Seed"; });
+      if (btn) btn.click();
+    });
     // Queue a triple win outcome via JS API — use fire_joker (classic 3×3 grid)
     const firstSymbol = await page.evaluate(() => {
       const game = games.find(g => g.id === 'fire_joker');
@@ -528,8 +537,13 @@ async function run() {
     await page.waitForSelector("#statsModal.active", { timeout: 20000 });
     await ensureQaPanelOpen(page);
 
+    await dismissFeaturePopupIfVisible(page);
     await page.check("#qaResetClearSeed");
-    await page.click("button:has-text('Reset Balance + Stats')");
+    await page.evaluate(() => {
+      var btn = document.querySelector("button[onclick*='resetQaState']") ||
+                Array.from(document.querySelectorAll("button")).find(function(b) { return b.textContent.includes("Reset Balance"); });
+      if (btn) btn.click();
+    });
 
     const afterReset = await readState(page);
     const resetStatus = (await page.textContent("#qaStatusLine")) || "";

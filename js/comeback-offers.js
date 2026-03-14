@@ -500,11 +500,11 @@
             }
             sessionStorage.setItem(SESSION_FLAG_KEY, '1');
 
-            // Update last session time
-            localStorage.setItem(LAST_SESSION_KEY, Date.now().toString());
-
-            // Determine if we should show offer
+            // Determine if we should show offer BEFORE updating timestamp
             var offerType = getOfferType();
+
+            // Update last session time (after checking gap)
+            localStorage.setItem(LAST_SESSION_KEY, Date.now().toString());
             if (!offerType) {
                 return;
             }
