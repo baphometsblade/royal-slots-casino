@@ -3,6 +3,10 @@ const router = require('express').Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 // Define spend milestones
 const MILESTONES = [
   { id: 'bronze_starter', threshold: 50, reward: 10, rewardType: 'balance', label: 'Bronze Starter', vipTier: 'bronze' },
@@ -14,11 +18,11 @@ const MILESTONES = [
 
 // Bootstrap: create milestone_claims table
 db.run(`CREATE TABLE IF NOT EXISTS milestone_claims (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id ${idDef},
   user_id INTEGER NOT NULL,
   milestone_id TEXT NOT NULL,
   reward_amount REAL NOT NULL,
-  claimed_at TEXT DEFAULT (datetime('now')),
+  claimed_at ${tsDef},
   UNIQUE(user_id, milestone_id)
 )`).catch(function() {});
 

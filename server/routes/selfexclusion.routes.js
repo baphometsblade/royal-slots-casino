@@ -5,17 +5,21 @@ const router = express.Router();
 const { authenticate } = require('../middleware/auth');
 const db = require('../database');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 // ─── Bootstrap self_exclusions table ───
 db.run(`
     CREATE TABLE IF NOT EXISTS self_exclusions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         user_id INTEGER NOT NULL,
         exclusion_type TEXT NOT NULL,
         reason TEXT,
-        starts_at TEXT DEFAULT (datetime('now')),
+        starts_at ${tsDef},
         ends_at TEXT,
         is_active INTEGER DEFAULT 1,
-        created_at TEXT DEFAULT (datetime('now'))
+        created_at ${tsDef}
     )
 `).catch(function() {});
 

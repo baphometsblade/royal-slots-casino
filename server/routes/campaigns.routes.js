@@ -4,9 +4,13 @@ const router = require('express').Router();
 const db = require('../database');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 // Bootstrap: create deposit_campaigns table if it doesn't exist
 db.run(`CREATE TABLE IF NOT EXISTS deposit_campaigns (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id ${idDef},
     name TEXT NOT NULL,
     description TEXT,
     match_percent INTEGER NOT NULL DEFAULT 100,
@@ -15,17 +19,17 @@ db.run(`CREATE TABLE IF NOT EXISTS deposit_campaigns (
     start_at TEXT NOT NULL,
     end_at TEXT NOT NULL,
     is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at ${tsDef}
 )`).catch(function() {});
 
 // Bootstrap: create deposit_campaign_claims table if it doesn't exist
 db.run(`CREATE TABLE IF NOT EXISTS deposit_campaign_claims (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id ${idDef},
     user_id INTEGER NOT NULL,
     campaign_id INTEGER NOT NULL,
     deposit_amount REAL NOT NULL,
     bonus_amount REAL NOT NULL,
-    claimed_at TEXT DEFAULT (datetime('now')),
+    claimed_at ${tsDef},
     UNIQUE(user_id, campaign_id),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (campaign_id) REFERENCES deposit_campaigns(id)

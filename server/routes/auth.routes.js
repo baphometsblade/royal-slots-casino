@@ -10,6 +10,10 @@ const crypto = require('crypto');
 const router = express.Router();
 const emailService = require('../services/email.service');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 // Dummy hash for constant-time auth when user not found (prevents timing attacks)
 const DUMMY_HASH = bcrypt.hashSync('dummy-password-never-matches', 12);
 
@@ -237,17 +241,17 @@ router.post('/login', async (req, res) => {
 
 // Bootstrap: create password_reset_tokens table
 db.run(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id ${idDef},
     user_id INTEGER NOT NULL,
     token TEXT NOT NULL UNIQUE,
     expires_at TEXT NOT NULL,
     used INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at ${tsDef}
 )`).catch(() => {});
 
 // Bootstrap: create email_verification_tokens table
 db.run(`CREATE TABLE IF NOT EXISTS email_verification_tokens (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id ${idDef},
     user_id INTEGER NOT NULL,
     token TEXT NOT NULL UNIQUE,
     expires_at TEXT NOT NULL,

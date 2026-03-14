@@ -3,6 +3,10 @@ const router = express.Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 // Profanity filter - basic server-side list
 const PROFANITY_FILTER = [
   'badword1', 'badword2', 'badword3', 'badword4', 'badword5',
@@ -24,11 +28,11 @@ async function bootstrapChatTable() {
   try {
     await db.run(
       `CREATE TABLE IF NOT EXISTS chat_messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         user_id INTEGER NOT NULL,
         username TEXT NOT NULL,
         message TEXT NOT NULL,
-        created_at TEXT DEFAULT (datetime('now'))
+        created_at ${tsDef}
       )`
     );
     console.warn('[Chat] chat_messages table ready');

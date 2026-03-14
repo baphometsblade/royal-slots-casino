@@ -2,16 +2,20 @@ const router = require('express').Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT CURRENT_TIMESTAMP";
+
 // Bootstrap: create loss_cashback_claims table if it doesn't exist
 db.run(`
   CREATE TABLE IF NOT EXISTS loss_cashback_claims (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id ${idDef},
     user_id TEXT NOT NULL,
     tier TEXT NOT NULL,
     cashback_amount REAL NOT NULL,
     session_losses REAL NOT NULL,
-    claimed_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    claimed_at ${tsDef},
+    created_at ${tsDef},
     UNIQUE(user_id, tier, DATE(claimed_at))
   )
 `).catch(function(err) {

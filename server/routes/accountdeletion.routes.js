@@ -5,11 +5,15 @@ const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 // Bootstrap: create deletion_requests table for GDPR compliance
 db.run(`CREATE TABLE IF NOT EXISTS deletion_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id ${idDef},
     user_id INTEGER NOT NULL,
-    requested_at TEXT DEFAULT (datetime('now')),
+    requested_at ${tsDef},
     scheduled_for TEXT NOT NULL,
     cancelled INTEGER DEFAULT 0,
     completed INTEGER DEFAULT 0

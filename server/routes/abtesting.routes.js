@@ -13,6 +13,10 @@ const router = express.Router();
 const db = require('../database');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 /**
  * Bootstrap the ab_conversions table on module load.
  * This runs once per server startup.
@@ -24,11 +28,11 @@ async function bootstrapTable() {
       // Table doesn't exist, create it
       await db.run(`
         CREATE TABLE IF NOT EXISTS ab_conversions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          id ${idDef},
           test_name TEXT NOT NULL,
           variant TEXT NOT NULL,
           user_id INTEGER,
-          created_at TEXT DEFAULT (datetime('now'))
+          created_at ${tsDef}
         )
       `);
       console.warn('[ABTesting] ab_conversions table created');

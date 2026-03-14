@@ -2,19 +2,23 @@ const router = require('express').Router();
 const db = require('../database');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 /**
  * Initialize activity_log table if it doesn't exist
  */
 async function initActivityLogTable() {
   const schema = `
     CREATE TABLE IF NOT EXISTS activity_log (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id ${idDef},
       user_id INTEGER,
       action TEXT NOT NULL,
       details TEXT,
       ip_address TEXT,
       user_agent TEXT,
-      created_at TEXT DEFAULT (datetime('now'))
+      created_at ${tsDef}
     )
   `;
 

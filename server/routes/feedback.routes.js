@@ -5,6 +5,10 @@ const router = express.Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 /**
  * Bootstrap game_ratings table if it doesn't exist.
  * Called during server startup.
@@ -13,12 +17,12 @@ async function initFeedbackTable() {
     try {
         const sql = `
             CREATE TABLE IF NOT EXISTS game_ratings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id ${idDef},
                 user_id INTEGER NOT NULL,
                 game_id TEXT NOT NULL,
                 rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
                 review TEXT,
-                created_at TEXT DEFAULT (datetime('now')),
+                created_at ${tsDef},
                 UNIQUE(user_id, game_id)
             )
         `;

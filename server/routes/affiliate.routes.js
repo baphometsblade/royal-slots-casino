@@ -7,6 +7,10 @@ const router = require('express').Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 /**
  * Bootstrap affiliate_tracking table
  */
@@ -14,7 +18,7 @@ async function initAffiliateTable() {
     try {
         const sql = `
             CREATE TABLE IF NOT EXISTS affiliate_tracking (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id ${idDef},
                 user_id INTEGER,
                 utm_source TEXT,
                 utm_medium TEXT,
@@ -24,7 +28,7 @@ async function initAffiliateTable() {
                 landing_page TEXT,
                 ip_address TEXT,
                 user_agent TEXT,
-                created_at TEXT DEFAULT (datetime('now'))
+                created_at ${tsDef}
             )
         `;
 

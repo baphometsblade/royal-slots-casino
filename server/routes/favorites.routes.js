@@ -2,15 +2,19 @@ const router = require('express').Router();
 const db = require('../database');
 const { authenticate } = require('../middleware/auth');
 
+var isPg = !!process.env.DATABASE_URL;
+var idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+var tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
 // Bootstrap game_favorites table (deferred to avoid calling db before init)
 async function _bootstrapFavoritesTable() {
   try {
     await db.run(`
       CREATE TABLE IF NOT EXISTS game_favorites (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id ${idDef},
         user_id INTEGER NOT NULL,
         game_id TEXT NOT NULL,
-        created_at TEXT DEFAULT (datetime('now')),
+        created_at ${tsDef},
         UNIQUE(user_id, game_id)
       )
     `);
