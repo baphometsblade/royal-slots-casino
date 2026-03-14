@@ -122,7 +122,11 @@ async function waitForState(page, predicate, timeoutMs) {
 async function ensureQaPanelOpen(page) {
   const panelOpen = await page.$eval("#qaToolsBody", (el) => el.classList.contains("active"));
   if (!panelOpen) {
-    await page.click("#qaToggleBtn");
+    await dismissFeaturePopupIfVisible(page);
+    await page.evaluate(() => {
+      var btn = document.getElementById("qaToggleBtn");
+      if (btn) btn.click();
+    });
     await page.waitForFunction(
       () => document.getElementById("qaToolsBody")?.classList.contains("active") === true,
       { timeout: 5000 }
