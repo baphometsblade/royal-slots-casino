@@ -651,6 +651,7 @@
         createBanner() {
             var banner = document.createElement('div');
             banner.className = 'seasonal-event-banner';
+            banner.id = 'seasonalEventBanner';
 
             var content = document.createElement('div');
             content.className = 'seasonal-event-banner-content';

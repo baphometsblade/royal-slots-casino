@@ -83,7 +83,7 @@
                     var user = generateMaskedUsername();
                     var deposit = generateRealisticAmount(50, 500);
                     var bonus = deposit;
-                    return icon + ' Player ' + user + ' just deposited $' + deposit + ' and got $' + bonus + ' FREE!';
+                    return '💰 Player ' + user + ' just deposited $' + deposit + ' and got $' + bonus + ' FREE!';
                 }
             },
             {
@@ -92,21 +92,21 @@
                     var user = generateMaskedUsername();
                     var win = generateRealisticAmount(500, 5000);
                     var deposit = generateRealisticAmount(50, 500);
-                    return icon + ' ' + user + ' won $' + win + ' after depositing only $' + deposit + '!';
+                    return '🎰 ' + user + ' won $' + win + ' after depositing only $' + deposit + '!';
                 }
             },
             {
                 icon: '🏆',
                 gen: function() {
                     var user = generateMaskedUsername();
-                    return icon + ' New VIP member! ' + user + ' unlocked Diamond tier!';
+                    return '🏆 New VIP member! ' + user + ' unlocked Diamond tier!';
                 }
             },
             {
                 icon: '💎',
                 gen: function() {
                     var count = Math.floor(Math.random() * 5) + 1;
-                    return icon + ' ' + count + ' players just claimed their deposit bonus!';
+                    return '💎 ' + count + ' players just claimed their deposit bonus!';
                 }
             }
         ];

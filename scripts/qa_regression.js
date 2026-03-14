@@ -285,6 +285,17 @@ async function dismissFeaturePopupIfVisible(page) {
       "hotColdIndicator",
       "quickDepositBanner",
       "seasonPassWidget",
+      "seasonalEventBanner",
+      "seasonal-modal-overlay",
+      "seasonal-event-modal",
+      "seasonal-event-counter",
+      "seasonal-particle-overlay",
+      "cosmetic-shop-modal",
+      "cosmetic-shop-fab",
+      "loss-insurance-modal",
+      "loss-insurance-shield-container",
+      "gem-store-fab",
+      "gem-store-overlay",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
@@ -378,7 +389,7 @@ async function run() {
       trackRuntimeError("console.error", msg.text());
     });
     page.on("pageerror", (err) => {
-      trackRuntimeError("pageerror", String(err));
+      trackRuntimeError("pageerror", err.stack || String(err));
     });
 
     await page.goto(baseUrl + "?noBonus=1", { waitUntil: "domcontentloaded" });
@@ -442,6 +453,7 @@ async function run() {
       ok: true,
     });
 
+    await dismissFeaturePopupIfVisible(page);
     await page.click("#statsModal .back-btn");
     await page.waitForSelector("#statsModal.active", { state: "hidden", timeout: 10000 });
     // Wait for any in-progress page transition to fully settle before opening slot

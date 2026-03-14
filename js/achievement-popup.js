@@ -1,4 +1,20 @@
 (function() {
+    var api = (function() {
+        return async function(path, opts) {
+            opts = opts || {};
+            if (typeof apiRequest === 'function') return apiRequest(path, opts);
+            var tokenKey = typeof STORAGE_KEY_TOKEN !== 'undefined' ? STORAGE_KEY_TOKEN : 'casinoToken';
+            var token = localStorage.getItem(tokenKey);
+            if (!token) return null;
+            var res = await fetch(path, Object.assign({}, opts, {
+                headers: Object.assign({ 'Content-Type': 'application/json' },
+                    token ? { Authorization: 'Bearer ' + token } : {},
+                    opts.headers || {})
+            }));
+            return res.json();
+        };
+    })();
+
     var achievementState = {
         unlockedIds: {},
         spinCount: 0,

@@ -404,6 +404,7 @@ window.GemStore = (function() {
   var createButton = function() {
     var btn = document.createElement('button');
     btn.className = 'gem-store-btn';
+    btn.id = 'gem-store-fab';
     btn.innerHTML = '💎';
     btn.onclick = openModal;
     document.body.appendChild(btn);
@@ -414,6 +415,7 @@ window.GemStore = (function() {
   var createModal = function() {
     var overlay = document.createElement('div');
     overlay.className = 'gem-store-overlay';
+    overlay.id = 'gem-store-overlay';
     overlay.onclick = closeModal;
     document.body.appendChild(overlay);
     DOM.overlay = overlay;
