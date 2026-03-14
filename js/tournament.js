@@ -419,7 +419,11 @@
         var closeBtn = document.createElement('button');
         closeBtn.className = 'tournament-modal-close';
         closeBtn.textContent = '×';
-        closeBtn.addEventListener('click', closeModal);
+        closeBtn.addEventListener('click', function() {
+            if (window.Tournament && window.Tournament.closeModal) {
+                window.Tournament.closeModal();
+            }
+        });
         container.appendChild(closeBtn);
 
         var title = document.createElement('h2');
@@ -466,8 +470,10 @@
         // Update button state
         document.querySelectorAll('.tournament-tab').forEach(function(btn) {
             btn.classList.remove('active');
+            if (btn.textContent.toLowerCase().indexOf(tab) !== -1) {
+                btn.classList.add('active');
+            }
         });
-        event.target.classList.add('active');
 
         // Update content visibility
         document.querySelectorAll('.tournament-tab-content').forEach(function(content) {
@@ -733,7 +739,9 @@
             if (modal) {
                 modal.classList.add('show');
             }
-            loadActiveTournaments().then(renderActiveTournaments);
+            loadActiveTournaments().then(renderActiveTournaments).catch(function(err) {
+                console.warn('[Tournament] load error:', err.message);
+            });
         },
 
         closeModal: function() {
