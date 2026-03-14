@@ -3116,6 +3116,14 @@
             saveStats();
             updateStatsSummary();
 
+            // Battle Pass XP: earn 10-25 XP per spin based on bet
+            try {
+                if (typeof BattlePass !== 'undefined' && BattlePass.addXp) {
+                    var bpXp = Math.min(50, Math.max(10, Math.round(currentBet * 2)));
+                    BattlePass.addXp(bpXp, 'spin');
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

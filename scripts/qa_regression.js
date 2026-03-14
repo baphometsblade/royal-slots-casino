@@ -296,6 +296,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "loss-insurance-shield-container",
       "gem-store-fab",
       "gem-store-overlay",
+      "battle-pass-fab",
+      "battle-pass-modal",
+      "battle-pass-overlay",
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

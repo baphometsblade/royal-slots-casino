@@ -209,6 +209,7 @@ app.use('/api/gems', require('./routes/gems.routes'));
 app.use('/api/boosts', require('./routes/boost.routes'));
 app.use('/api/challenges', require('./routes/challenges.routes'));
 app.use('/api/battlepass', require('./routes/battlepass.routes'));
+app.use('/api/battle-pass', require('./routes/battle-pass.routes'));
 app.use('/api/cosmetics',  require('./routes/cosmetics.routes'));
 app.use('/api/wagerace',   require('./routes/wagerace.routes'));
 app.use('/api/rentals',    require('./routes/rental.routes'));

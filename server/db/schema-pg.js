@@ -547,6 +547,43 @@ const TABLES = [
         price_usd NUMERIC(15,2) NOT NULL,
         bonus_percent INTEGER DEFAULT 0,
         created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS battle_passes (
+        id SERIAL PRIMARY KEY,
+        season_number INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        premium_price INTEGER DEFAULT 999,
+        elite_price INTEGER DEFAULT 2499,
+        rewards TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS battle_pass_purchases (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        pass_id INTEGER NOT NULL,
+        tier TEXT DEFAULT 'free',
+        purchased_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, pass_id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS battle_pass_progress (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        pass_id INTEGER NOT NULL,
+        xp INTEGER DEFAULT 0,
+        current_level INTEGER DEFAULT 0,
+        last_xp_gain TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, pass_id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS battle_pass_claims (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        pass_id INTEGER NOT NULL,
+        level INTEGER NOT NULL,
+        tier_claimed TEXT NOT NULL,
+        claimed_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, pass_id, level)
     )`
 ];
 

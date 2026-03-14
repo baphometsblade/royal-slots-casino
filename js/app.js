@@ -376,6 +376,10 @@
             if (typeof GemStore !== 'undefined' && GemStore.init) {
                 setTimeout(function() { GemStore.init(); }, 3000);
             }
+            // Battle Pass system
+            if (typeof BattlePass !== 'undefined' && BattlePass.init) {
+                setTimeout(function() { BattlePass.init(); }, 2000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
