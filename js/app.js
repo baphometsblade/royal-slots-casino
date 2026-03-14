@@ -340,6 +340,14 @@
             if (typeof GameRecommend !== 'undefined' && GameRecommend.init) {
                 setTimeout(function() { GameRecommend.init(); }, 2000);
             }
+            // FOMO limited-time slot events
+            if (typeof SlotEvents !== 'undefined' && SlotEvents.init) {
+                setTimeout(function() { SlotEvents.init(); }, 1500);
+            }
+            // Push notification opt-in
+            if (typeof PushNotify !== 'undefined' && PushNotify.init) {
+                setTimeout(function() { PushNotify.init(); }, 8000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {

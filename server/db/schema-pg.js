@@ -483,6 +483,18 @@ const TABLES = [
         last_active TIMESTAMPTZ,
         whale_tier TEXT DEFAULT 'minnow',
         updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS slot_events (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        game_id TEXT,
+        bonus_type TEXT NOT NULL,
+        bonus_value NUMERIC(15,2) NOT NULL,
+        start_at TIMESTAMPTZ NOT NULL,
+        end_at TIMESTAMPTZ NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     )`
 ];
 

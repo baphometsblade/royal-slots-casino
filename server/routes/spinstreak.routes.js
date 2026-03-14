@@ -1,118 +1,145 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../database');
-const { authenticate } = require('../middleware/auth');
+'use strict';
 
-// Bootstrap columns
-db.run("ALTER TABLE users ADD COLUMN spin_streak_count INTEGER DEFAULT 0").catch(function() {});
-db.run("ALTER TABLE users ADD COLUMN spin_streak_last TEXT").catch(function() {});
+var router = require('express').Router();
+var { authenticate } = require('../middleware/auth');
+var db = require('../database');
 
-// Streak tiers: spins needed → multiplier
-var TIERS = [
-  { min: 0,  mult: 1.0, label: 'No Streak' },
-  { min: 5,  mult: 1.2, label: 'Warm' },
-  { min: 15, mult: 1.5, label: 'Hot' },
-  { min: 30, mult: 2.0, label: 'On Fire' },
-  { min: 50, mult: 3.0, label: 'Blazing' }
+/**
+ * Spin Streak Bonus Multiplier System
+ *
+ * Tracks consecutive spins within a 2-hour session window.
+ * Multiplier tiers based on spin count in that window.
+ */
+
+var STREAK_TIERS = [
+    { spins: 10, multiplier: 1.1, tierName: 'Bronze Streak' },
+    { spins: 25, multiplier: 1.25, tierName: 'Silver Streak' },
+    { spins: 50, multiplier: 1.5, tierName: 'Gold Streak' },
+    { spins: 100, multiplier: 2.0, tierName: 'FIRE STREAK!' },
+    { spins: 200, multiplier: 3.0, tierName: 'LEGENDARY STREAK!' }
 ];
 
-var STREAK_GAP_MS = 5 * 60 * 1000; // 5 minutes max gap between spins
+var SESSION_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
 
-function getTier(count) {
-  var tier = TIERS[0];
-  for (var i = 1; i < TIERS.length; i++) {
-    if (count >= TIERS[i].min) tier = TIERS[i];
-  }
-  return tier;
-}
+/**
+ * Calculate multiplier based on spin count
+ */
+function getMultiplierAndTier(spinCount) {
+    var multiplier = 1.0;
+    var tierName = 'No Streak';
 
-function getNextTier(count) {
-  for (var i = 0; i < TIERS.length; i++) {
-    if (count < TIERS[i].min) return TIERS[i];
-  }
-  return null;
-}
-
-// GET /api/spinstreak/status
-router.get('/status', authenticate, async function(req, res) {
-  try {
-    var row = await db.get(
-      "SELECT spin_streak_count, spin_streak_last FROM users WHERE id = ?",
-      [req.user.id]
-    );
-    if (!row) return res.status(404).json({ error: 'User not found' });
-
-    var count = row.spin_streak_count || 0;
-    var last = row.spin_streak_last;
-    var now = Date.now();
-
-    // Check if streak expired
-    if (last && (now - new Date(last).getTime()) > STREAK_GAP_MS) {
-      count = 0;
-      await db.run(
-        "UPDATE users SET spin_streak_count = 0 WHERE id = ?",
-        [req.user.id]
-      );
+    for (var i = 0; i < STREAK_TIERS.length; i++) {
+        var tier = STREAK_TIERS[i];
+        if (spinCount >= tier.spins) {
+            multiplier = tier.multiplier;
+            tierName = tier.tierName;
+        }
     }
 
-    var tier = getTier(count);
-    var next = getNextTier(count);
+    return { multiplier: multiplier, tierName: tierName };
+}
 
-    res.json({
-      count: count,
-      multiplier: tier.mult,
-      tierLabel: tier.label,
-      nextTier: next ? { spinsNeeded: next.min - count, multiplier: next.mult, label: next.label } : null,
-      lastSpin: last,
-      gapMs: STREAK_GAP_MS
-    });
-  } catch (e) {
-    res.status(500).json({ error: 'Server error' });
-  }
+/**
+ * Find next tier threshold
+ */
+function getNextTier(spinCount) {
+    for (var i = 0; i < STREAK_TIERS.length; i++) {
+        var tier = STREAK_TIERS[i];
+        if (spinCount < tier.spins) {
+            return tier;
+        }
+    }
+    return null;
+}
+
+/**
+ * GET /api/spin-streak
+ * Get current streak status for authenticated user
+ *
+ * Returns:
+ * {
+ *   currentStreak: number,
+ *   currentMultiplier: number,
+ *   nextTier: object | null,
+ *   spinsToNext: number,
+ *   tierName: string
+ * }
+ */
+router.get('/', authenticate, async function(req, res) {
+    try {
+        var userId = req.user.id;
+        var twoHoursAgo = new Date(Date.now() - SESSION_WINDOW_MS);
+        var isPg = !!process.env.DATABASE_URL;
+
+        // Count spins in last 2 hours
+        var result = await db.get(
+            isPg
+                ? "SELECT COUNT(*) as spin_count FROM spins WHERE user_id = $1 AND created_at > $2"
+                : "SELECT COUNT(*) as spin_count FROM spins WHERE user_id = ? AND created_at > ?",
+            [userId, twoHoursAgo.toISOString()]
+        );
+
+        var currentStreak = result && result.spin_count ? parseInt(result.spin_count, 10) : 0;
+
+        // Find current tier and next tier
+        var tierInfo = getMultiplierAndTier(currentStreak);
+        var nextTier = getNextTier(currentStreak);
+        var spinsToNext = nextTier ? (nextTier.spins - currentStreak) : 0;
+
+        return res.json({
+            currentStreak: currentStreak,
+            currentMultiplier: tierInfo.multiplier,
+            nextTier: nextTier,
+            spinsToNext: spinsToNext,
+            tierName: tierInfo.tierName
+        });
+    } catch (err) {
+        console.warn('[SpinStreak] GET / error:', err.message);
+        return res.status(500).json({ error: 'Failed to fetch streak status' });
+    }
 });
 
-// POST /api/spinstreak/tick — called after each spin
-router.post('/tick', authenticate, async function(req, res) {
-  try {
-    var row = await db.get(
-      "SELECT spin_streak_count, spin_streak_last FROM users WHERE id = ?",
-      [req.user.id]
-    );
-    if (!row) return res.status(404).json({ error: 'User not found' });
+/**
+ * GET /api/spin-streak/leaderboard
+ * Get leaderboard of top streakers (last 24 hours)
+ * Public endpoint (no auth required)
+ *
+ * Returns:
+ * {
+ *   leaderboard: [
+ *     { username, spinCount, multiplier, tierName },
+ *     ...
+ *   ]
+ * }
+ */
+router.get('/leaderboard', async function(req, res) {
+    try {
+        var oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        var isPg = !!process.env.DATABASE_URL;
 
-    var count = row.spin_streak_count || 0;
-    var last = row.spin_streak_last;
-    var now = Date.now();
-    var nowISO = new Date(now).toISOString();
+        var query = isPg
+            ? "SELECT u.username, COUNT(s.id) as spin_count FROM spins s JOIN users u ON s.user_id = u.id WHERE s.created_at > $1 GROUP BY u.id, u.username ORDER BY spin_count DESC LIMIT 10"
+            : "SELECT u.username, COUNT(s.id) as spin_count FROM spins s JOIN users u ON s.user_id = u.id WHERE s.created_at > ? GROUP BY u.id, u.username ORDER BY spin_count DESC LIMIT 10";
 
-    // Reset streak if gap exceeded
-    if (last && (now - new Date(last).getTime()) > STREAK_GAP_MS) {
-      count = 0;
+        var rows = await db.all(query, [oneDayAgo.toISOString()]);
+
+        var leaderboard = (rows || []).map(function(row) {
+            var spinCount = row.spin_count ? parseInt(row.spin_count, 10) : 0;
+            var tierInfo = getMultiplierAndTier(spinCount);
+
+            return {
+                username: row.username,
+                spinCount: spinCount,
+                multiplier: tierInfo.multiplier,
+                tierName: tierInfo.tierName
+            };
+        });
+
+        return res.json({ leaderboard: leaderboard });
+    } catch (err) {
+        console.warn('[SpinStreak] GET /leaderboard error:', err.message);
+        return res.status(500).json({ error: 'Failed to fetch leaderboard' });
     }
-
-    count++;
-
-    await db.run(
-      "UPDATE users SET spin_streak_count = ?, spin_streak_last = ? WHERE id = ?",
-      [count, nowISO, req.user.id]
-    );
-
-    var tier = getTier(count);
-    var next = getNextTier(count);
-    var prevTier = getTier(count - 1);
-    var tieredUp = tier.mult > prevTier.mult;
-
-    res.json({
-      count: count,
-      multiplier: tier.mult,
-      tierLabel: tier.label,
-      tieredUp: tieredUp,
-      nextTier: next ? { spinsNeeded: next.min - count, multiplier: next.mult, label: next.label } : null,
-      gapMs: STREAK_GAP_MS
-    });
-  } catch (e) {
-    res.status(500).json({ error: 'Server error' });
-  }
 });
 
 module.exports = router;

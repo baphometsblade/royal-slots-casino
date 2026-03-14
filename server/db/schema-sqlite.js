@@ -518,6 +518,18 @@ const TABLES = [
         whale_tier TEXT DEFAULT 'minnow',
         updated_at TEXT DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS slot_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        game_id TEXT,
+        bonus_type TEXT NOT NULL,
+        bonus_value REAL NOT NULL,
+        start_at TEXT NOT NULL,
+        end_at TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now'))
     )`
 ];
 
