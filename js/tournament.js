@@ -400,7 +400,11 @@
         fab.id = TROPHY_FAB_ID;
         fab.textContent = '🏆';
         fab.title = 'Tournaments';
-        fab.addEventListener('click', showModal);
+        fab.addEventListener('click', function() {
+            if (window.Tournament && window.Tournament.showModal) {
+                window.Tournament.showModal();
+            }
+        });
         document.body.appendChild(fab);
         return fab;
     }
