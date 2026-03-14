@@ -1520,8 +1520,15 @@
 
 
         function openSlot(gameId) {
+            try {
+            if (!gameId) { console.warn('[openSlot] No gameId provided'); return; }
+            if (typeof games === 'undefined' || !Array.isArray(games)) {
+                console.warn('[openSlot] games array not available');
+                if (typeof showToast === 'function') showToast('Games are still loading, please try again.', 'info');
+                return;
+            }
             currentGame = games.find(g => g.id === gameId);
-            if (!currentGame) return;
+            if (!currentGame) { console.warn('[openSlot] Game not found:', gameId); return; }
 
             // Reset spin history for the new game session
             spinHistory = [];
@@ -1920,20 +1927,21 @@
                 if (reelGridEl) reelGridEl.classList.add('reel-ambient-breath');
 
                 // Start idle spin invitation timer
-                resetIdleTimer();
+                if (typeof resetIdleTimer === 'function') resetIdleTimer();
                 // Sprint 38 — session timer
-                _startSessionTimer();
+                if (typeof _startSessionTimer === 'function') _startSessionTimer();
                 // Sprint 41 — quick switch strip
-                _refreshQuickSwitch();
+                if (typeof _refreshQuickSwitch === 'function') _refreshQuickSwitch();
                 // Sprint 44+46 — sparkline + streak reset on open
                 if (typeof _initSparkline === 'function') _initSparkline();
                 if (typeof _resetStreak === 'function') _resetStreak();
                 // Sprint 47 — ambient button sync + stats tooltip wiring
                 _syncAmbientBtn();
                 _wireStatsTooltip();
-                // Sprint 48 — reset spin counter
+                // Sprint 48+ — batch reset calls wrapped for safety
+                // (if any single reset fn is missing, don't crash the entire openSlot)
+                try {
                 _resetSpinCounter();
-                // Sprint 49 — record game in explored set + update lobby badge
                 _recordGameExplored(currentGame && currentGame.id);
                 // Sprint 50 — clear last win preview
                 _clearLastWinPreview();
@@ -2051,8 +2059,9 @@
         _resetLongestDrought();   // 169 — longest drought
         _resetGameSessionCount(); // 170 — game session count
         if (typeof _initCinematicUI === 'function') _initCinematicUI(); // cinematic
+                } catch(_sprintResetErr) { console.warn('[openSlot] Sprint reset error (non-fatal):', _sprintResetErr.message); }
                 // ── Lucky Hour polling ──
-                _startLuckyHourPolling();
+                if (typeof _startLuckyHourPolling === 'function') _startLuckyHourPolling();
 
                 // ── Intro Splash Overlay ──
                 // Remove any leftover overlay from a previous game open
@@ -2252,8 +2261,17 @@
                     }, { passive: true });
                 })();
                 // Inject tournament active badge
-                _injectTournamentBadge();
+                if (typeof _injectTournamentBadge === 'function') _injectTournamentBadge();
             });
+            } catch(_openSlotErr) {
+                console.warn('[openSlot] Error opening game:', _openSlotErr.message, _openSlotErr.stack);
+                // Still try to show the modal even if setup partially failed
+                var _fallbackModal = document.getElementById('slotModal');
+                if (_fallbackModal && !_fallbackModal.classList.contains('active')) {
+                    _fallbackModal.classList.add('active');
+                }
+                if (typeof showToast === 'function') showToast('Game loaded with reduced features.', 'info');
+            }
         }
 
 
@@ -11278,3 +11296,10 @@ function _initCinematicUI() {
         }
     }, 1800);
 }
+
+// ── Ensure critical functions are globally accessible ──────────────────
+// Some browsers / strict CSP setups may not hoist function declarations
+// from indented (but technically top-level) code to window scope.
+if (typeof openSlot === 'function')  window.openSlot  = openSlot;
+if (typeof spin === 'function')      window.spin      = spin;
+if (typeof closeSlot === 'function') window.closeSlot = closeSlot;

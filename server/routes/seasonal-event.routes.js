@@ -1,0 +1,397 @@
+const express = require('express');
+const router = express.Router();
+const { authenticate } = require('../middleware/auth');
+const db = require('../database');
+
+// Database setup pattern
+const isPg = !!process.env.DATABASE_URL;
+const idDef = isPg ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+const tsDef = isPg ? 'TIMESTAMPTZ DEFAULT NOW()' : "TEXT DEFAULT (datetime('now'))";
+
+// Bootstrap tables and seed data
+(async () => {
+  try {
+    // Create seasonal_events table
+    const createEventsTable = `
+      CREATE TABLE IF NOT EXISTS seasonal_events (
+        id ${idDef},
+        name TEXT NOT NULL,
+        theme TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        bonus_multiplier REAL NOT NULL DEFAULT 1.0,
+        special_currency TEXT,
+        challenges TEXT NOT NULL,
+        created_at ${tsDef},
+        updated_at ${tsDef}
+      )
+    `;
+    await db.run(createEventsTable, []);
+
+    // Create seasonal_event_progress table
+    const createProgressTable = `
+      CREATE TABLE IF NOT EXISTS seasonal_event_progress (
+        id ${idDef},
+        user_id INTEGER NOT NULL,
+        event_id INTEGER NOT NULL,
+        challenge_id INTEGER NOT NULL,
+        completed_at TEXT,
+        shamrock_balance INTEGER NOT NULL DEFAULT 0,
+        created_at ${tsDef},
+        updated_at ${tsDef},
+        FOREIGN KEY (event_id) REFERENCES seasonal_events(id)
+      )
+    `;
+    await db.run(createProgressTable, []);
+
+    // Create seasonal_event_prizes table
+    const createPrizesTable = `
+      CREATE TABLE IF NOT EXISTS seasonal_event_prizes (
+        id ${idDef},
+        event_id INTEGER NOT NULL,
+        shamrock_cost INTEGER NOT NULL,
+        prize_type TEXT NOT NULL,
+        prize_name TEXT NOT NULL,
+        prize_details TEXT,
+        created_at ${tsDef},
+        FOREIGN KEY (event_id) REFERENCES seasonal_events(id)
+      )
+    `;
+    await db.run(createPrizesTable, []);
+
+    // Seed St. Patrick's Day event
+    const challenges = JSON.stringify([
+      { id: 1, name: 'Spin 50 times', reward: 100 },
+      { id: 2, name: 'Win $100 total', reward: 200 },
+      { id: 3, name: 'Hit 3 wins in a row', reward: 150 },
+      { id: 4, name: 'Play 5 different games', reward: 250 },
+      { id: 5, name: 'Spin during Happy Hour', reward: 300 }
+    ]);
+
+    const checkEvent = await db.get(
+      'SELECT id FROM seasonal_events WHERE theme = ?',
+      ['st-patricks']
+    );
+
+    if (!checkEvent) {
+      const insertEvent = `
+        INSERT INTO seasonal_events (name, theme, start_date, end_date, bonus_multiplier, special_currency, challenges)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+      const result = await db.run(insertEvent, [
+        'Lucky Leprechaun Festival',
+        'st-patricks',
+        '2026-03-15',
+        '2026-03-20',
+        1.5,
+        'shamrocks',
+        challenges
+      ]);
+
+      const eventId = result.id || (Array.isArray(result) ? result[0] : result);
+
+      // Seed prizes for the event
+      const prizes = [
+        { shamrock_cost: 50, prize_type: 'free_spins', prize_name: '10 Free Spins', prize_details: '{"spins": 10}' },
+        { shamrock_cost: 150, prize_type: 'bonus_cash', prize_name: '$5 Bonus', prize_details: '{"amount": 5}' },
+        { shamrock_cost: 300, prize_type: 'bonus_cash', prize_name: '$15 Bonus', prize_details: '{"amount": 15}' },
+        { shamrock_cost: 500, prize_type: 'cosmetic', prize_name: 'Lucky Clover Avatar', prize_details: '{"avatar": "lucky-clover"}' },
+        { shamrock_cost: 1000, prize_type: 'combo', prize_name: '$50 Bonus + Pot of Gold Effect', prize_details: '{"amount": 50, "effect": "pot-of-gold"}' }
+      ];
+
+      for (const prize of prizes) {
+        const insertPrize = `
+          INSERT INTO seasonal_event_prizes (event_id, shamrock_cost, prize_type, prize_name, prize_details)
+          VALUES (?, ?, ?, ?, ?)
+        `;
+        await db.run(insertPrize, [
+          eventId,
+          prize.shamrock_cost,
+          prize.prize_type,
+          prize.prize_name,
+          prize.prize_details
+        ]);
+      }
+
+      console.warn('St. Patrick\'s Day event seeded successfully');
+    }
+  } catch (err) {
+    console.warn('Error bootstrapping seasonal event tables:', err.message);
+  }
+})();
+
+// GET / - Returns active seasonal event with time remaining
+router.get('/', async (req, res) => {
+  try {
+    const event = await db.get(
+      `SELECT id, name, theme, start_date, end_date, bonus_multiplier, special_currency, challenges
+       FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      []
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: 'No active seasonal event' });
+    }
+
+    const now = new Date();
+    const endDate = new Date(event.end_date);
+    const timeRemaining = Math.max(0, endDate - now);
+    const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+
+    res.json({
+      event: {
+        id: event.id,
+        name: event.name,
+        theme: event.theme,
+        start_date: event.start_date,
+        end_date: event.end_date,
+        bonus_multiplier: event.bonus_multiplier,
+        special_currency: event.special_currency,
+        challenges: JSON.parse(event.challenges),
+        days_remaining: daysRemaining
+      }
+    });
+  } catch (err) {
+    console.warn('Error fetching active event:', err.message);
+    res.status(500).json({ error: 'Failed to fetch event' });
+  }
+});
+
+// GET /progress - Returns user's challenge progress and shamrock balance
+router.get('/progress', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const event = await db.get(
+      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      []
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: 'No active seasonal event' });
+    }
+
+    const progress = await db.all(
+      `SELECT challenge_id, completed_at FROM seasonal_event_progress
+       WHERE user_id = ? AND event_id = ?`,
+      [userId, event.id]
+    );
+
+    const shamrockBalance = await db.get(
+      `SELECT SUM(shamrock_balance) as total FROM seasonal_event_progress
+       WHERE user_id = ? AND event_id = ?`,
+      [userId, event.id]
+    );
+
+    const completedChallenges = progress
+      .filter(p => p.completed_at)
+      .map(p => p.challenge_id);
+
+    res.json({
+      event_id: event.id,
+      shamrock_balance: shamrockBalance?.total || 0,
+      completed_challenges: completedChallenges,
+      progress: progress
+    });
+  } catch (err) {
+    console.warn('Error fetching user progress:', err.message);
+    res.status(500).json({ error: 'Failed to fetch progress' });
+  }
+});
+
+// POST /collect - Collect reward for completed challenge
+router.post('/collect', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { challenge_id } = req.body;
+
+    if (!challenge_id) {
+      return res.status(400).json({ error: 'challenge_id required' });
+    }
+
+    const event = await db.get(
+      `SELECT id, challenges FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      []
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: 'No active seasonal event' });
+    }
+
+    const challenges = JSON.parse(event.challenges);
+    const challenge = challenges.find(c => c.id === challenge_id);
+
+    if (!challenge) {
+      return res.status(400).json({ error: 'Invalid challenge_id' });
+    }
+
+    const existingProgress = await db.get(
+      `SELECT id, completed_at FROM seasonal_event_progress
+       WHERE user_id = ? AND event_id = ? AND challenge_id = ?`,
+      [userId, event.id, challenge_id]
+    );
+
+    if (existingProgress && existingProgress.completed_at) {
+      return res.status(400).json({ error: 'Challenge already completed' });
+    }
+
+    if (existingProgress) {
+      await db.run(
+        `UPDATE seasonal_event_progress SET completed_at = datetime('now'), shamrock_balance = shamrock_balance + ?
+         WHERE id = ?`,
+        [challenge.reward, existingProgress.id]
+      );
+    } else {
+      await db.run(
+        `INSERT INTO seasonal_event_progress (user_id, event_id, challenge_id, completed_at, shamrock_balance)
+         VALUES (?, ?, ?, datetime('now'), ?)`,
+        [userId, event.id, challenge_id, challenge.reward]
+      );
+    }
+
+    res.json({
+      message: 'Challenge completed',
+      shamrocks_earned: challenge.reward
+    });
+  } catch (err) {
+    console.warn('Error collecting challenge reward:', err.message);
+    res.status(500).json({ error: 'Failed to collect reward' });
+  }
+});
+
+// GET /prizes - Returns redeemable prizes
+router.get('/prizes', async (req, res) => {
+  try {
+    const event = await db.get(
+      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      []
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: 'No active seasonal event' });
+    }
+
+    const prizes = await db.all(
+      `SELECT id, shamrock_cost, prize_type, prize_name, prize_details
+       FROM seasonal_event_prizes WHERE event_id = ? ORDER BY shamrock_cost ASC`,
+      [event.id]
+    );
+
+    const formattedPrizes = prizes.map(p => ({
+      id: p.id,
+      shamrock_cost: p.shamrock_cost,
+      prize_type: p.prize_type,
+      prize_name: p.prize_name,
+      prize_details: JSON.parse(p.prize_details)
+    }));
+
+    res.json({ prizes: formattedPrizes });
+  } catch (err) {
+    console.warn('Error fetching prizes:', err.message);
+    res.status(500).json({ error: 'Failed to fetch prizes' });
+  }
+});
+
+// POST /redeem - Redeem shamrocks for a prize
+router.post('/redeem', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { prize_id } = req.body;
+
+    if (!prize_id) {
+      return res.status(400).json({ error: 'prize_id required' });
+    }
+
+    const event = await db.get(
+      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      []
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: 'No active seasonal event' });
+    }
+
+    const prize = await db.get(
+      `SELECT id, shamrock_cost, prize_name FROM seasonal_event_prizes
+       WHERE id = ? AND event_id = ?`,
+      [prize_id, event.id]
+    );
+
+    if (!prize) {
+      return res.status(400).json({ error: 'Invalid prize_id' });
+    }
+
+    const userBalance = await db.get(
+      `SELECT SUM(shamrock_balance) as total FROM seasonal_event_progress
+       WHERE user_id = ? AND event_id = ?`,
+      [userId, event.id]
+    );
+
+    const balance = userBalance?.total || 0;
+
+    if (balance < prize.shamrock_cost) {
+      return res.status(400).json({
+        error: 'Insufficient shamrocks',
+        current_balance: balance,
+        required: prize.shamrock_cost
+      });
+    }
+
+    // Deduct shamrocks
+    await db.run(
+      `UPDATE seasonal_event_progress SET shamrock_balance = shamrock_balance - ?
+       WHERE user_id = ? AND event_id = ? AND shamrock_balance > 0
+       LIMIT ?`,
+      [prize.shamrock_cost, userId, event.id, 1]
+    );
+
+    res.json({
+      message: 'Prize redeemed successfully',
+      prize_name: prize.prize_name,
+      shamrocks_spent: prize.shamrock_cost,
+      new_balance: balance - prize.shamrock_cost
+    });
+  } catch (err) {
+    console.warn('Error redeeming prize:', err.message);
+    res.status(500).json({ error: 'Failed to redeem prize' });
+  }
+});
+
+// GET /leaderboard - Top 10 shamrock earners
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const event = await db.get(
+      `SELECT id FROM seasonal_events WHERE end_date >= date('now') LIMIT 1`,
+      []
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: 'No active seasonal event' });
+    }
+
+    const leaderboard = await db.all(
+      `SELECT user_id, SUM(shamrock_balance) as total_shamrocks,
+              COUNT(DISTINCT challenge_id) as challenges_completed
+       FROM seasonal_event_progress
+       WHERE event_id = ?
+       GROUP BY user_id
+       ORDER BY total_shamrocks DESC
+       LIMIT 10`,
+      [event.id]
+    );
+
+    const ranked = leaderboard.map((entry, index) => ({
+      rank: index + 1,
+      user_id: entry.user_id,
+      total_shamrocks: entry.total_shamrocks,
+      challenges_completed: entry.challenges_completed
+    }));
+
+    res.json({ leaderboard: ranked });
+  } catch (err) {
+    console.warn('Error fetching leaderboard:', err.message);
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
+module.exports = router;

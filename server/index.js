@@ -245,6 +245,8 @@ app.use('/api/activity-log',   require('./routes/activitylog.routes'));
 app.use('/api/depositmatch', require('./routes/depositmatch.routes'));
 app.use('/api/spinstreak',   require('./routes/spinstreak.routes'));
 app.use('/api/loss-insurance', require('./routes/loss-insurance.routes'));
+app.use('/api/seasonal-event', require('./routes/seasonal-event.routes'));
+app.use('/api/gem-store', require('./routes/gem-store.routes'));
 app.use('/api/vipwheel',     require('./routes/vipwheel.routes'));
 app.use('/api/dailycashback', require('./routes/dailycashback.routes'));
 app.use('/api/hotgame',       require('./routes/hotgame.routes'));

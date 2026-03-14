@@ -368,6 +368,14 @@
             if (typeof LossInsurance !== 'undefined' && LossInsurance.init) {
                 setTimeout(function() { LossInsurance.init(); }, 4000);
             }
+            // Seasonal event (St. Patrick's Day etc.)
+            if (typeof SeasonalEvent !== 'undefined' && SeasonalEvent.init) {
+                setTimeout(function() { SeasonalEvent.init(); }, 1500);
+            }
+            // Gem purchase store
+            if (typeof GemStore !== 'undefined' && GemStore.init) {
+                setTimeout(function() { GemStore.init(); }, 3000);
+            }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {
                 window._lossStreakCheckTimer = setInterval(function() {
