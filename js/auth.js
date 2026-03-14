@@ -432,11 +432,45 @@
                 if (label) label.textContent = currentUser.username.toUpperCase();
                 btn.title = 'View profile';
                 btn.onclick = () => showProfileModal();
+                // Show admin button if user is admin
+                _updateAdminButton();
             } else {
                 if (label) label.textContent = 'LOGIN';
                 btn.title = 'Click to login';
                 btn.onclick = () => showAuthModal();
+                _hideAdminButton();
             }
+        }
+
+        function _updateAdminButton() {
+            if (!currentUser || (currentUser.is_admin !== 1 && currentUser.is_admin !== true)) {
+                _hideAdminButton();
+                return;
+            }
+            var xpDisplay = document.getElementById('xpDisplay');
+            if (!xpDisplay) return;
+            var adminBtn = document.getElementById('adminAnalyticsBtn');
+            if (!adminBtn) {
+                adminBtn = document.createElement('button');
+                adminBtn.id = 'adminAnalyticsBtn';
+                adminBtn.className = 'btn btn-user';
+                adminBtn.title = 'Admin Analytics Dashboard';
+                adminBtn.innerHTML = '📊';
+                adminBtn.style.fontSize = '18px';
+                adminBtn.style.padding = '8px 10px';
+                adminBtn.onclick = function() {
+                    if (typeof AdminAnalytics !== 'undefined' && AdminAnalytics.show) {
+                        AdminAnalytics.show();
+                    }
+                };
+                xpDisplay.parentElement.insertBefore(adminBtn, xpDisplay.nextSibling);
+            }
+            adminBtn.style.display = 'block';
+        }
+
+        function _hideAdminButton() {
+            var adminBtn = document.getElementById('adminAnalyticsBtn');
+            if (adminBtn) adminBtn.style.display = 'none';
         }
 
 

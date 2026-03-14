@@ -189,6 +189,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/spin', spinRoutes);
 app.use('/api/balance', balanceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/analytics', require('./routes/admin-analytics.routes'));
 app.use('/api/admin/maintenance', maintenanceRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/user', require('./routes/lossstreak.routes'));

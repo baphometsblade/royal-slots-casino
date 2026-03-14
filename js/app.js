@@ -212,6 +212,11 @@
             _checkGiftsInbox();
             _syncXpWithServer();
             _initTournamentRecording();
+            // Initialize notification manager (must happen before any notifications)
+            if (typeof NotificationManager !== 'undefined') {
+                NotificationManager.init();
+                NotificationManager.onLogin();
+            }
             // Initialize notification bell and check daily login reward
             if (typeof NotificationBell !== 'undefined' && NotificationBell.init) {
                 NotificationBell.init();
@@ -254,16 +259,29 @@
             }
             // Initialize comeback offers (personalized retention)
             if (typeof ComebackOffers !== 'undefined' && ComebackOffers.init) {
-                setTimeout(function() { ComebackOffers.init(); }, 2000);
+                ComebackOffers.init();
+                if (typeof NotificationManager !== 'undefined') {
+                    NotificationManager.enqueue('comeback-offers', 7, function() {
+                        // The offer will display; ComebackOffers already created the overlay
+                    }, function() {
+                        // Dismiss handler if needed
+                    });
+                }
             }
             // Initialize daily login calendar with 1.5s delay, show popup if unclaimed
             if (typeof DailyLoginCalendar !== 'undefined' && DailyLoginCalendar.init) {
-                setTimeout(function() {
-                    DailyLoginCalendar.init();
-                    if (!(window.location.search || '').includes('noBonus')) {
-                        DailyLoginCalendar.showCalendar();
+                DailyLoginCalendar.init();
+                if (!(window.location.search || '').includes('noBonus')) {
+                    if (typeof NotificationManager !== 'undefined') {
+                        NotificationManager.enqueue('daily-login', 7, function() {
+                            DailyLoginCalendar.showCalendar();
+                        }, function() {
+                            DailyLoginCalendar.closeCalendar();
+                        });
+                    } else {
+                        setTimeout(function() { DailyLoginCalendar.showCalendar(); }, 1500);
                     }
-                }, 1500);
+                }
             }
             // Initialize push notifications (ask permission after engagement)
             if (typeof PushNotifications !== 'undefined' && PushNotifications.init) {
@@ -379,7 +397,17 @@
             }
             // Deposit bonus matcher system
             if (typeof DepositBonus !== 'undefined' && DepositBonus.init) {
-                setTimeout(function() { DepositBonus.init(); }, 4000);
+                DepositBonus.init();
+                if (typeof NotificationManager !== 'undefined') {
+                    // Check if first-time deposit for priority
+                    var isFirstDeposit = localStorage.getItem('_firstDepositBonusShown') === null;
+                    var priority = isFirstDeposit ? 10 : 5;
+                    NotificationManager.enqueue('deposit-bonus', priority, function() {
+                        // Deposit bonus will show via deposit events
+                    }, function() {
+                        localStorage.setItem('_depositBonusDismissed', Date.now().toString());
+                    });
+                }
             }
             // Automatic daily cashback rewards
             // Loyalty points store
@@ -423,15 +451,29 @@
             }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
-                setTimeout(function() { SmartDepositNudge.init(); }, 5000);
+                SmartDepositNudge.init();
             }
             // Flash Bonus — time-limited deposit multipliers
             if (typeof FlashBonus !== 'undefined' && FlashBonus.init) {
-                setTimeout(function() { FlashBonus.init(); }, 6000);
+                FlashBonus.init();
+                if (typeof NotificationManager !== 'undefined') {
+                    NotificationManager.enqueue('flash-bonus', 5, function() {
+                        // Flash bonus will show itself via events
+                    }, function() {
+                        // Dismiss handler
+                    });
+                }
             }
             // Whale VIP detection + upsell nudge
             if (typeof WhaleVipNudge !== 'undefined' && WhaleVipNudge.init) {
-                setTimeout(function() { WhaleVipNudge.init(); }, 8000);
+                WhaleVipNudge.init();
+                if (typeof NotificationManager !== 'undefined') {
+                    NotificationManager.enqueue('whale-vip-invite', 5, function() {
+                        // Whale VIP nudge will show itself
+                    }, function() {
+                        // Dismiss handler
+                    });
+                }
             }
             // Periodic loss-streak check — fires every 3 minutes during active play
             if (!window._lossStreakCheckTimer) {

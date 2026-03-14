@@ -149,6 +149,8 @@ async function dismissFeaturePopupIfVisible(page) {
   // Avoids waitForFunction timeouts caused by CSS transitions or re-opens.
   // Also clears Sprint 27-33 promotional overlays that may appear during QA.
   await page.evaluate(() => {
+    // Enable QA mode to suppress notification manager
+    window._qaMode = true;
     if (typeof dismissFeaturePopup === "function") dismissFeaturePopup();
     const overlayIds = [
       "slotFeaturePopup",
@@ -343,6 +345,11 @@ async function dismissFeaturePopupIfVisible(page) {
       "loyalty-badge",
       "loyalty-store-modal",
       "loyalty-store-overlay",
+      "notification-manager-overlay",
+      "notification-manager-modal",
+      "notification-manager-backdrop",
+      "admin-analytics-overlay",
+      "admin-analytics-panel"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
