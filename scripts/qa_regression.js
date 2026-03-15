@@ -370,7 +370,11 @@ async function dismissFeaturePopupIfVisible(page) {
       "funnel-admin-widget",
       "funnel-admin-panel",
       "re-engagement-modal",
-      "re-engagement-overlay"
+      "re-engagement-overlay",
+      "ltv-vip-badge",
+      "ltv-vip-lounge-btn",
+      "ltv-welcome-banner",
+      "ltv-progress-bar"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

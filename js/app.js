@@ -485,6 +485,17 @@
             if (typeof ABTesting !== 'undefined' && ABTesting.init) {
                 ABTesting.init();
             }
+            // Session RTP Client — dynamic difficulty tracking (invisible)
+            if (typeof SessionRTPClient !== 'undefined' && SessionRTPClient.init) {
+                var _rtpUserId = currentUser ? currentUser.id : null;
+                var _rtpSession = 'ses_' + Date.now();
+                var _rtpBalance = typeof balance !== 'undefined' ? balance : 5000;
+                SessionRTPClient.init(_rtpUserId, _rtpSession, _rtpBalance);
+            }
+            // LTV Personalization — tier-based UI customization
+            if (typeof LTVPersonalization !== 'undefined' && LTVPersonalization.init) {
+                setTimeout(function() { LTVPersonalization.init(); }, 4000);
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();

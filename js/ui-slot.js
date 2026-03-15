@@ -3222,6 +3222,18 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Session RTP Client: track spin for dynamic difficulty
+            try {
+                if (typeof SessionRTPClient !== 'undefined' && SessionRTPClient.onSpinResult) {
+                    SessionRTPClient.onSpinResult({
+                        won: !!(_lastHistEntry && _lastHistEntry.win > 0),
+                        amount: _lastHistEntry ? (_lastHistEntry.win || 0) : 0,
+                        bet: currentBet,
+                        balance: typeof balance !== 'undefined' ? balance : 0
+                    });
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);
