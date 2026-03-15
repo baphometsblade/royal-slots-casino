@@ -1811,8 +1811,15 @@
             }
 
             // Fast-path: if no session exists, show auth immediately.
-            // currentUser is already restored from localStorage by globals.js.
-            if (!currentUser) {
+            // currentUser is already restored from localStorage by globals.js,
+            // but authToken may be missing (e.g. cleared/expired). Treat stale
+            // user data without a token as unauthenticated.
+            if (!currentUser || !authToken) {
+                // Clear stale user data if token is gone but user object remains
+                if (currentUser && !authToken) {
+                    currentUser = null;
+                    localStorage.removeItem(STORAGE_KEY_USER);
+                }
                 document.body.classList.add('auth-gate');
                 // Still run essential non-lobby inits so modals work correctly
                 loadXP();
@@ -1851,6 +1858,8 @@
                 saveBalance();
             }
 
+            // Successfully authenticated — ensure auth-gate is removed
+            document.body.classList.remove('auth-gate');
             onPostAuthInit();
         }
 
