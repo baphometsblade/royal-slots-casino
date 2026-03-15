@@ -33,6 +33,7 @@ app.use(helmet({
             frameAncestors: ["'none'"],                     // no iframing (clickjacking protection)
             baseUri: ["'self'"],                            // prevent base tag hijacking
             formAction: ["'self'"],                         // restrict form submission targets
+            scriptSrcAttr: ["'unsafe-inline'"],               // allow onclick= handlers (helmet defaults to 'none')
         }
     },
     // HSTS: enforce HTTPS for 1 year with subdomains
