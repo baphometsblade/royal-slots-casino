@@ -280,6 +280,7 @@ app.use('/api/segments',         require('./routes/player-segments.routes'));
 app.use('/api/re-engagement',   require('./routes/re-engagement.routes'));
 app.use('/api/dynamic-rtp',    require('./routes/dynamic-rtp.routes'));
 app.use('/api/player-ltv',     require('./routes/player-ltv.routes'));
+app.use('/api/revenue-analytics', require('./routes/revenue-analytics.routes'));
 app.use('/api/slot-events',      require('./routes/slotevents.routes'));
 // REMOVED: non-slot game
 // app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));

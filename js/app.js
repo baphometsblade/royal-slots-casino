@@ -496,6 +496,10 @@
             if (typeof LTVPersonalization !== 'undefined' && LTVPersonalization.init) {
                 setTimeout(function() { LTVPersonalization.init(); }, 4000);
             }
+            // Loss Streak Intervention — churn prevention with deposit nudges
+            if (typeof LossStreakIntervention !== 'undefined' && LossStreakIntervention.init) {
+                LossStreakIntervention.init();
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();

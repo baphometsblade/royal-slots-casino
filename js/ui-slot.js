@@ -3234,6 +3234,18 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Loss Streak Intervention: detect losing streaks and intervene
+            try {
+                if (typeof LossStreakIntervention !== 'undefined' && LossStreakIntervention.onSpinResult) {
+                    LossStreakIntervention.onSpinResult({
+                        won: !!(_lastHistEntry && _lastHistEntry.win > 0),
+                        amount: _lastHistEntry ? (_lastHistEntry.win || 0) : 0,
+                        bet: currentBet,
+                        balance: typeof balance !== 'undefined' ? balance : 0
+                    });
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

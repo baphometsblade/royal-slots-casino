@@ -374,7 +374,11 @@ async function dismissFeaturePopupIfVisible(page) {
       "ltv-vip-badge",
       "ltv-vip-lounge-btn",
       "ltv-welcome-banner",
-      "ltv-progress-bar"
+      "ltv-progress-bar",
+      "loss-streak-banner",
+      "loss-streak-modal",
+      "loss-streak-overlay",
+      "low-balance-alert"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
