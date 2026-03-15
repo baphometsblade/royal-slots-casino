@@ -349,7 +349,12 @@ async function dismissFeaturePopupIfVisible(page) {
       "notification-manager-modal",
       "notification-manager-backdrop",
       "admin-analytics-overlay",
-      "admin-analytics-panel"
+      "admin-analytics-panel",
+      "onboarding-overlay",
+      "onboarding-welcome",
+      "onboarding-tour",
+      "onboarding-nudge",
+      "onboarding-milestone"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

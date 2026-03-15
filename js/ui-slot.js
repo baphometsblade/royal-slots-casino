@@ -3193,6 +3193,14 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Onboarding funnel: track spins for new player milestones
+            try {
+                if (typeof OnboardingFunnel !== 'undefined' && OnboardingFunnel.onSpin) {
+                    var _spinWonOnb = _lastHistEntry && _lastHistEntry.win > 0;
+                    OnboardingFunnel.onSpin({ won: !!_spinWonOnb, amount: _lastHistEntry ? (_lastHistEntry.win || 0) : 0 });
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

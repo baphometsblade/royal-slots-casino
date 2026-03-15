@@ -212,6 +212,10 @@
             _checkGiftsInbox();
             _syncXpWithServer();
             _initTournamentRecording();
+            // Initialize onboarding funnel (early, before other systems)
+            if (typeof OnboardingFunnel !== 'undefined' && OnboardingFunnel.init) {
+                OnboardingFunnel.init();
+            }
             // Initialize notification manager (must happen before any notifications)
             if (typeof NotificationManager !== 'undefined') {
                 NotificationManager.init();
