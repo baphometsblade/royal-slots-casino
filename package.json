@@ -4,7 +4,8 @@
   "description": "Server-side casino with secure RNG, JWT auth, and house edge enforcement",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js",
+    "build": "node scripts/bundle-js.js",
+    "start": "node scripts/bundle-js.js && node server/index.js",
     "dev": "node server/index.js",
     "test:adapter": "node scripts/test_query_adapter.js",
     "qa:regression": "node scripts/qa_regression.js",

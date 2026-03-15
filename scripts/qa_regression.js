@@ -368,7 +368,9 @@ async function dismissFeaturePopupIfVisible(page) {
       "auto-promo-toast",
       "first-spin-boost-badge",
       "funnel-admin-widget",
-      "funnel-admin-panel"
+      "funnel-admin-panel",
+      "re-engagement-modal",
+      "re-engagement-overlay"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

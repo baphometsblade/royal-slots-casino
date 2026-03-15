@@ -26,3 +26,6 @@ pnpm-debug.log*
 /*.png
 nul
 test-results/
+
+# Build output
+dist/

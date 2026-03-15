@@ -277,6 +277,7 @@ app.use('/api/happy-hour', require('./routes/happyhour.routes'));
 app.use('/api/session-reengage', require('./routes/session-reengage.routes'));
 app.use('/api/session-analytics', require('./routes/session-analytics.routes'));
 app.use('/api/segments',         require('./routes/player-segments.routes'));
+app.use('/api/re-engagement',   require('./routes/re-engagement.routes'));
 app.use('/api/slot-events',      require('./routes/slotevents.routes'));
 // REMOVED: non-slot game
 // app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
@@ -635,10 +636,21 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve the casino client from the project root
-app.use(express.static(path.join(__dirname, '..'), {
-    dotfiles: 'deny',  // block dotfiles (.env, .git, etc.)
-}));
+// Prefer bundled dist/ if it exists (production), otherwise serve from root (dev)
+const distPath = path.join(__dirname, '..', 'dist');
+const hasBundle = require('fs').existsSync(path.join(distPath, 'index.html'));
+
+if (hasBundle) {
+    // Production: serve from dist/
+    app.use(express.static(distPath, {
+        dotfiles: 'deny',
+    }));
+} else {
+    // Development: serve from root
+    app.use(express.static(path.join(__dirname, '..'), {
+        dotfiles: 'deny',  // block dotfiles (.env, .git, etc.)
+    }));
+}
 
 // Admin dashboard
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
@@ -648,7 +660,10 @@ app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API endpoint not found' });
     }
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
+    const indexPath = hasBundle
+        ? path.join(distPath, 'index.html')
+        : path.join(__dirname, '..', 'index.html');
+    res.sendFile(indexPath);
 });
 
 // ─── Global Express Error Handler ───

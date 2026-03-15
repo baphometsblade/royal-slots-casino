@@ -477,6 +477,14 @@
             if (typeof FunnelTracker !== 'undefined' && FunnelTracker.init) {
                 FunnelTracker.init();
             }
+            // Re-Engagement Handler — show comeback campaigns
+            if (typeof ReEngagementHandler !== 'undefined' && ReEngagementHandler.init) {
+                setTimeout(function() { ReEngagementHandler.init(); }, 7000);
+            }
+            // A/B Testing — revenue optimization experiments
+            if (typeof ABTesting !== 'undefined' && ABTesting.init) {
+                ABTesting.init();
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();
