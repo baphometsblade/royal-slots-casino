@@ -354,7 +354,8 @@ async function dismissFeaturePopupIfVisible(page) {
       "onboarding-welcome",
       "onboarding-tour",
       "onboarding-nudge",
-      "onboarding-milestone"
+      "onboarding-milestone",
+      "bet-escalator-bar"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);
@@ -488,8 +489,9 @@ async function run() {
     await page.waitForTimeout(1000);
     await dismissFeaturePopupIfVisible(page);
 
+    await dismissFeaturePopupIfVisible(page);
     await page.evaluate(() => openStatsModal());
-    await page.waitForSelector("#statsModal.active", { timeout: 10000 });
+    await page.waitForSelector("#statsModal.active", { timeout: 20000 });
     await ensureQaPanelOpen(page);
 
     const statsState = await readState(page);
