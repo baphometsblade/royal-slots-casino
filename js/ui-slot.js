@@ -3212,6 +3212,16 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Near-Miss Amplifier: detect almost-wins and amplify excitement
+            try {
+                if (typeof NearMissAmplifier !== 'undefined' && NearMissAmplifier.onSpinResult) {
+                    var _nmReels = (typeof currentGame !== 'undefined' && currentGame && currentGame.lastGrid)
+                        ? currentGame.lastGrid : [];
+                    var _nmWon = !!(_lastHistEntry && _lastHistEntry.win > 0);
+                    NearMissAmplifier.onSpinResult(_nmReels, _nmWon, _lastHistEntry ? (_lastHistEntry.win || 0) : 0, currentBet);
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

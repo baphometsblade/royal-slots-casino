@@ -355,7 +355,15 @@ async function dismissFeaturePopupIfVisible(page) {
       "onboarding-tour",
       "onboarding-nudge",
       "onboarding-milestone",
-      "bet-escalator-bar"
+      "bet-escalator-bar",
+      "near-miss-banner",
+      "near-miss-counter",
+      "near-miss-warmup",
+      "smart-recommend-card",
+      "smart-recommend-row",
+      "smart-recommend-loss",
+      "exit-intent-overlay",
+      "exit-intent-card"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

@@ -457,6 +457,18 @@
             if (typeof BetEscalator !== 'undefined' && BetEscalator.init) {
                 BetEscalator.init();
             }
+            // Near-Miss Amplifier — excitement amplification on near-wins
+            if (typeof NearMissAmplifier !== 'undefined' && NearMissAmplifier.init) {
+                NearMissAmplifier.init();
+            }
+            // Smart Game Recommendations — behavioral game suggestions
+            if (typeof SmartRecommend !== 'undefined' && SmartRecommend.init) {
+                setTimeout(function() { SmartRecommend.init(); }, 2000);
+            }
+            // Exit Intent Saver — anti-churn retention offers
+            if (typeof ExitIntentSaver !== 'undefined' && ExitIntentSaver.init) {
+                setTimeout(function() { ExitIntentSaver.init(); }, 5000);
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();
