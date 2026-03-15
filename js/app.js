@@ -453,6 +453,10 @@
             if (typeof BattlePass !== 'undefined' && BattlePass.init) {
                 setTimeout(function() { BattlePass.init(); }, 2000);
             }
+            // Bet Escalator — streak-based bet increase suggestions
+            if (typeof BetEscalator !== 'undefined' && BetEscalator.init) {
+                BetEscalator.init();
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();

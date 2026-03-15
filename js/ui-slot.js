@@ -3201,6 +3201,17 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Bet Escalator: track wins for streak-based bet suggestions
+            try {
+                if (typeof BetEscalator !== 'undefined' && BetEscalator.onSpinResult) {
+                    BetEscalator.onSpinResult({
+                        won: !!(_lastHistEntry && _lastHistEntry.win > 0),
+                        amount: _lastHistEntry ? (_lastHistEntry.win || 0) : 0,
+                        bet: currentBet
+                    });
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);
