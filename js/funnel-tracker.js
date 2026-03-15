@@ -552,7 +552,7 @@
   function setupUnloadHandler() {
     window.addEventListener('beforeunload', function() {
       recordEvent('session_end', {
-        duration: Date.now() - (getOrCreateFunnelState().VISIT.timestamp || Date.now())
+        duration: Date.now() - ((getOrCreateFunnelState().VISIT && getOrCreateFunnelState().VISIT.timestamp) || Date.now())
       });
       flushEventBatch();
     });
