@@ -469,6 +469,10 @@
             if (typeof ExitIntentSaver !== 'undefined' && ExitIntentSaver.init) {
                 setTimeout(function() { ExitIntentSaver.init(); }, 5000);
             }
+            // Auto Promo Engine — time-based and event-based promotions
+            if (typeof AutoPromoEngine !== 'undefined' && AutoPromoEngine.init) {
+                setTimeout(function() { AutoPromoEngine.init(); }, 3000);
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();

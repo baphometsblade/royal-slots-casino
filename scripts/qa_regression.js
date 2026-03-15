@@ -363,7 +363,10 @@ async function dismissFeaturePopupIfVisible(page) {
       "smart-recommend-row",
       "smart-recommend-loss",
       "exit-intent-overlay",
-      "exit-intent-card"
+      "exit-intent-card",
+      "auto-promo-banner",
+      "auto-promo-toast",
+      "first-spin-boost-badge"
     ];
     overlayIds.forEach((id) => {
       const el = document.getElementById(id);

@@ -276,6 +276,7 @@ app.use('/api/premium-tournaments', require('./routes/premium-tournament.routes'
 app.use('/api/happy-hour', require('./routes/happyhour.routes'));
 app.use('/api/session-reengage', require('./routes/session-reengage.routes'));
 app.use('/api/session-analytics', require('./routes/session-analytics.routes'));
+app.use('/api/segments',         require('./routes/player-segments.routes'));
 app.use('/api/slot-events',      require('./routes/slotevents.routes'));
 // REMOVED: non-slot game
 // app.use('/api/fortunewheel',  require('./routes/fortunewheel.routes'));
