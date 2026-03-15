@@ -64,6 +64,8 @@
 </head>
 <body>
     <script src="js/error-handler.js"></script>
+    <!-- CSP polyfill: convert onclick= attrs to addEventListener (script-src-attr 'none' blocks inline handlers) -->
+    <script src="js/onclick-polyfill.js"></script>
     <!-- Auth gate: hide all content instantly if no session token exists -->
     <script>
     (function(){
