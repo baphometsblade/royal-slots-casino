@@ -1477,6 +1477,8 @@
     <script src="js/session-rtp-client.js"></script>
     <script src="js/ltv-personalization.js"></script>
     <script src="js/loss-streak-intervention.js"></script>
+    <script src="js/social-jackpot-widget.js"></script>
+    <script src="js/deposit-timing-optimizer.js"></script>
     <script src="js/app.js"></script>
     <script src="js/ui-premium-effects.js"></script>
     <script src="js/legal-terms.js"></script>
@@ -1709,6 +1711,14 @@
         body.auth-gate > *:not(#authModal):not(.toast-container) {
             visibility: hidden !important;
             pointer-events: none !important;
+        }
+        /* Ensure auth modal is visible even when nested inside a hidden wrapper */
+        body.auth-gate #authModal {
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+        body.auth-gate #casinoMainWrap {
+            pointer-events: auto !important;
         }
     </style>
 

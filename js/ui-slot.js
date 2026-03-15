@@ -3246,6 +3246,28 @@
                 }
             } catch(e) { /* silent */ }
 
+            // Social Jackpot Widget: contribute from spin and check for wins
+            try {
+                if (typeof SocialJackpotWidget !== 'undefined' && SocialJackpotWidget.onSpinResult) {
+                    SocialJackpotWidget.onSpinResult({
+                        bet: currentBet,
+                        won: !!(_lastHistEntry && _lastHistEntry.win > 0)
+                    });
+                }
+            } catch(e) { /* silent */ }
+
+            // Deposit Timing Optimizer: track behavioral signals
+            try {
+                if (typeof DepositTimingOptimizer !== 'undefined' && DepositTimingOptimizer.onSpinResult) {
+                    DepositTimingOptimizer.onSpinResult({
+                        won: !!(_lastHistEntry && _lastHistEntry.win > 0),
+                        amount: _lastHistEntry ? (_lastHistEntry.win || 0) : 0,
+                        bet: currentBet,
+                        balance: typeof balance !== 'undefined' ? balance : 0
+                    });
+                }
+            } catch(e) { /* silent */ }
+
             // Guest-to-registered conversion prompt — every 15 spins (after 5+)
             if (currentUser && currentUser.isGuest && stats.totalSpins >= 5 && stats.totalSpins % 15 === 0) {
                 setTimeout(() => _showGuestConversionModal(), 1800);

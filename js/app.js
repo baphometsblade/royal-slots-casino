@@ -500,6 +500,14 @@
             if (typeof LossStreakIntervention !== 'undefined' && LossStreakIntervention.init) {
                 LossStreakIntervention.init();
             }
+            // Social Jackpot Widget — shared community jackpot pools
+            if (typeof SocialJackpotWidget !== 'undefined' && SocialJackpotWidget.init) {
+                setTimeout(function() { SocialJackpotWidget.init(); }, 3000);
+            }
+            // Deposit Timing Optimizer — behavioral deposit moment detection
+            if (typeof DepositTimingOptimizer !== 'undefined' && DepositTimingOptimizer.init) {
+                DepositTimingOptimizer.init();
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();
