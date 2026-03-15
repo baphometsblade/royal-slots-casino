@@ -473,6 +473,10 @@
             if (typeof AutoPromoEngine !== 'undefined' && AutoPromoEngine.init) {
                 setTimeout(function() { AutoPromoEngine.init(); }, 3000);
             }
+            // Funnel Tracker — conversion analytics
+            if (typeof FunnelTracker !== 'undefined' && FunnelTracker.init) {
+                FunnelTracker.init();
+            }
             // Smart Deposit Nudge — behavioral deposit triggers
             if (typeof SmartDepositNudge !== 'undefined' && SmartDepositNudge.init) {
                 SmartDepositNudge.init();
